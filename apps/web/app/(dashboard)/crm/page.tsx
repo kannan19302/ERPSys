@@ -25,12 +25,10 @@ import {
   Button,
   Card,
   DashboardChart,
-  ListView,
-  StatCard,
   Spinner,
-  KpiCard,
+  KPICard,
 } from "@unerp/ui";
-import { RouteGuard } from "@unerp/framework";
+import { RouteGuard, ListView } from "@unerp/framework";
 import {
   CrmTabLayout,
   useCrmKeyMigration,
@@ -128,29 +126,29 @@ const TAB_DEFINITIONS: CrmTab[] = [
   },
 ];
 
-function KpiCardGroup({ data }: { data: DashboardData }) {
+function KPICardGroup({ data }: { data: DashboardData }) {
   const kpis = data?.kpis;
   return (
     <div className="ui-grid-4" style={{ marginBottom: "var(--space-4)" }}>
-      <KpiCard
-        icon={UserPlus}
+      <KPICard
+        icon={<UserPlus className="w-5 h-5 text-primary" />}
         value={kpis?.totalLeads ?? 0}
-        label="Total Leads"
+        title="Total Leads"
       />
-      <KpiCard
-        icon={Target}
+      <KPICard
+        icon={<Target className="w-5 h-5 text-primary" />}
         value={kpis?.totalOpportunities ?? 0}
-        label="Opportunities"
+        title="Opportunities"
       />
-      <KpiCard
-        icon={Building2}
+      <KPICard
+        icon={<Building2 className="w-5 h-5 text-primary" />}
         value={kpis?.totalCustomers ?? 0}
-        label="Customers"
+        title="Customers"
       />
-      <KpiCard
-        icon={DollarSign}
+      <KPICard
+        icon={<DollarSign className="w-5 h-5 text-primary" />}
         value={`$${(kpis?.pipelineValue ?? 0).toLocaleString()}`}
-        label="Pipeline Value"
+        title="Pipeline Value"
       />
     </div>
   );
@@ -283,7 +281,7 @@ export default function CrmPage() {
                 </button>
               </div>
 
-              {data && <KpiCardGroup data={data} />}
+              {data && <KPICardGroup data={data} />}
 
               {/* Page Navigation Arrows */}
               {prevPage && (

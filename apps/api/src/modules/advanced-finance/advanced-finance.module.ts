@@ -3,6 +3,7 @@ import { AdvancedFinanceController } from "./advanced-finance.controller";
 import { ArApDeepController } from "./ar-ap-deep.controller";
 import { FinanceExpansionDeepController } from "./finance-expansion-deep.controller";
 import { FinanceMoreDeepController } from "./finance-more-deep.controller";
+import { FinanceTaxJournalDeepController } from "./finance-tax-journal-deep.controller";
 import { AdvancedFinanceService } from "./advanced-finance.service";
 import { FinanceExpansionDeepService } from "./services/finance-expansion-deep.service";
 import {
@@ -33,6 +34,9 @@ import {
   CashPoolingService,
   ConsolidationDeepService,
   Form1099Service,
+  TaxJurisdictionLookupService,
+  TaxFilingCalendarService,
+  RecurringJournalSchedulerService,
 } from "./services";
 import { TaxEngineDeepService } from "./services/tax-engine-deep.service";
 import { TreasuryDeepService } from "./services/treasury-deep.service";
@@ -84,6 +88,9 @@ const domainServices = [
   Form1099Service,
   EconomicNexusService,
   FinanceExpansionDeepService,
+  TaxJurisdictionLookupService,
+  TaxFilingCalendarService,
+  RecurringJournalSchedulerService,
 ];
 
 @Module({
@@ -92,6 +99,7 @@ const domainServices = [
     ArApDeepController,
     FinanceExpansionDeepController,
     FinanceMoreDeepController,
+    FinanceTaxJournalDeepController,
   ],
   providers: [AdvancedFinanceService, ...domainServices],
   exports: [AdvancedFinanceService, ...domainServices],

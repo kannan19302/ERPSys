@@ -13,6 +13,8 @@ import TaxFilingSummaryPage from "../advanced/tax-filing-summary/page";
 import Form1099Page from "../advanced/1099-reporting/page";
 import TaxNexusPage from "../advanced/tax-nexus/page";
 import AuditLogsPage from "../advanced/audit-logs/page";
+import { TaxJurisdictionLookupTab } from "./TaxJurisdictionLookupTab";
+import { TaxFilingCalendarTab } from "./TaxFilingCalendarTab";
 
 const TAX_TABS = [
   {
@@ -21,6 +23,20 @@ const TAX_TABS = [
     href: "/finance/tax",
     icon: Calculator,
     description: "Tax management summary",
+  },
+  {
+    id: "jurisdictions",
+    label: "Tax Rates & Lookup",
+    href: "/finance/tax?tab=jurisdictions",
+    icon: Globe,
+    description: "Real-time multi-jurisdiction tax lookup",
+  },
+  {
+    id: "calendar",
+    label: "Filing Calendar",
+    href: "/finance/tax?tab=calendar",
+    icon: FileText,
+    description: "Filing schedule timeline & reminders",
   },
   {
     id: "tax-engine",
@@ -127,6 +143,16 @@ export default function TaxPage() {
               </Card>
             </div>
             <TaxEnginePage />
+          </div>
+        )}
+        {activeTab === "jurisdictions" && (
+          <div className="ui-stack-4 ui-animate-in">
+            <TaxJurisdictionLookupTab />
+          </div>
+        )}
+        {activeTab === "calendar" && (
+          <div className="ui-stack-4 ui-animate-in">
+            <TaxFilingCalendarTab />
           </div>
         )}
         {activeTab === "tax-engine" && (

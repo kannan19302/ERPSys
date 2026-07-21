@@ -29,6 +29,7 @@ import RevenueRecognitionPage from "../advanced/revenue-schedules/page";
 import AllocationsPage from "../advanced/allocations/page";
 import AccountingBooksPage from "../advanced/accounting-books/page";
 import ConsolidationPage from "../advanced/consolidation/page";
+import { RecurringJournalsTab } from "../journal-entries/RecurringJournalsTab";
 
 const GL_TABS = [
   {
@@ -296,7 +297,7 @@ export default function GLPage() {
               {subTab === "revenue" ? (
                 <RevenueRecognitionPage />
               ) : (
-                <RecurringInvoicesPage />
+                <RecurringJournalsTab />
               )}
             </div>
           </div>

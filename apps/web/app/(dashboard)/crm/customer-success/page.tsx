@@ -11,7 +11,7 @@ import {
   ClipboardList,
   MessageSquare,
 } from "lucide-react";
-import { PageHeader, Button, Card, Spinner, KpiCard } from "@unerp/ui";
+import { PageHeader, Button, Card, Spinner, KPICard } from "@unerp/ui";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 import {
   CrmTabLayout,
@@ -105,25 +105,25 @@ export default function CrmCustomerSuccessPage() {
           <Spinner />
         ) : (
           <div className="ui-grid-4" style={{ marginBottom: "var(--space-4)" }}>
-            <KpiCard
-              icon={Heart}
+            <KPICard
+              icon={<Heart className="w-5 h-5 text-primary" />}
               value={dashboard?.avgHealthScore?.toFixed(1) ?? 0}
-              label="Avg Health Score"
+              title="Avg Health Score"
             />
-            <KpiCard
-              icon={MessageSquare}
+            <KPICard
+              icon={<MessageSquare className="w-5 h-5 text-primary" />}
               value={dashboard?.totalSurveys ?? 0}
-              label="NPS Surveys"
+              title="NPS Surveys"
             />
-            <KpiCard
-              icon={ClipboardList}
+            <KPICard
+              icon={<ClipboardList className="w-5 h-5 text-primary" />}
               value={dashboard?.activeChecklists ?? 0}
-              label="Active Onboarding"
+              title="Active Onboarding"
             />
-            <KpiCard
-              icon={Target}
+            <KPICard
+              icon={<Target className="w-5 h-5 text-primary" />}
               value={dashboard?.retentionRate?.toFixed(1) ?? 0}
-              label="Retention Rate %"
+              title="Retention Rate %"
             />
           </div>
         )}

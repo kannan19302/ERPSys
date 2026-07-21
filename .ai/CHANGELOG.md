@@ -2,7 +2,28 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
-## [2026-07-21] QA Harden — Mandatory Checkpoint after Cycle 30
+## [2026-07-21] Cycle 31 (Phase M) — Finance & Accounting Module Deepening (Market Benchmark Items 34, 35, 37)
+
+**Scope**: Deepened the **Finance & Accounting** focus module by closing top market benchmark gaps (items 34, 35, 37 in `.ai/MODULE_REGISTRY.md` § Up Next). Added 3 enterprise backend services (+13 REST endpoints), 3 interactive Next.js UI subtab components, and a Vitest unit test suite.
+
+**Key Changes**:
+
+- **Backend Services & API Gateway** (`apps/api/src/modules/advanced-finance/`):
+  - **Item 34: Real-time Multi-Jurisdiction Tax Rate Lookup & Special Surtax Engine** ([`TaxJurisdictionLookupService`](file:///c:/Users/kanna/OneDrive/Documents/Antigravity/ERPSys/apps/api/src/modules/advanced-finance/services/tax-jurisdiction-lookup.service.ts)) — multi-tier rate calculation (State, County, City, Special District) by Postal/ZIP code, taxability category multipliers (SaaS, Digital Services, Physical Goods, Exempt Freight, Professional Services), and jurisdiction override CRUD (`POST /advanced-finance/tax/lookup-rate`, `GET/POST/PUT /advanced-finance/tax/jurisdictions`).
+  - **Item 35: Automated Nexus Filing Calendar & Reminders Engine** ([`TaxFilingCalendarService`](file:///c:/Users/kanna/OneDrive/Documents/Antigravity/ERPSys/apps/api/src/modules/advanced-finance/services/tax-filing-calendar.service.ts)) — return due date calculation across US states, filing frequency rules (Monthly, Quarterly, Annual), filing reminders queue, and penalty/interest estimators (`GET/POST /advanced-finance/tax/filing-calendar`, `GET/POST /advanced-finance/tax/filing-reminders`).
+  - **Item 37: Template-Driven Recurring Journal Entries & Auto-Posting Scheduler** ([`RecurringJournalSchedulerService`](file:///c:/Users/kanna/OneDrive/Documents/Antigravity/ERPSys/apps/api/src/modules/advanced-finance/services/recurring-journal-scheduler.service.ts)) — recurring GL entry templates with split line debit/credit balance validation, recurrence schedule math, and automated execution posting directly to GL journal headers and lines (`GET/POST/PUT /advanced-finance/recurring-journals/templates`, `POST /advanced-finance/recurring-journals/process-due`).
+  - **REST Controller**: Registered 13 new endpoints in [`FinanceTaxJournalDeepController`](file:///c:/Users/kanna/OneDrive/Documents/Antigravity/ERPSys/apps/api/src/modules/advanced-finance/finance-tax-journal-deep.controller.ts) with Zod validation, `@Permissions()`, `@TrackChanges()`, and `@UseInterceptors(ChangeHistoryInterceptor)`.
+- **Frontend UI** (`apps/web/app/(dashboard)/finance/`):
+  - Created [`TaxJurisdictionLookupTab.tsx`](<file:///c:/Users/kanna/OneDrive/Documents/Antigravity/ERPSys/apps/web/app/(dashboard)/finance/tax/TaxJurisdictionLookupTab.tsx>) — real-time tax rate lookup widget, breakdown card, and rate override modal.
+  - Created [`TaxFilingCalendarTab.tsx`](<file:///c:/Users/kanna/OneDrive/Documents/Antigravity/ERPSys/apps/web/app/(dashboard)/finance/tax/TaxFilingCalendarTab.tsx>) — state filing schedule cards, overdue penalty estimator, and reminder queue.
+  - Created [`RecurringJournalsTab.tsx`](<file:///c:/Users/kanna/OneDrive/Documents/Antigravity/ERPSys/apps/web/app/(dashboard)/finance/journal-entries/RecurringJournalsTab.tsx>) — recurring GL template list, split-line template creation modal, and manual "Post Now" trigger.
+  - Wired new subtabs into [`/finance/tax/page.tsx`](<file:///c:/Users/kanna/OneDrive/Documents/Antigravity/ERPSys/apps/web/app/(dashboard)/finance/tax/page.tsx>) and [`/finance/gl/page.tsx`](<file:///c:/Users/kanna/OneDrive/Documents/Antigravity/ERPSys/apps/web/app/(dashboard)/finance/gl/page.tsx>).
+- **Testing & Verification**:
+  - Built Vitest unit test suite ([`tax-journal-deep.service.spec.ts`](file:///c:/Users/kanna/OneDrive/Documents/Antigravity/ERPSys/apps/api/src/modules/advanced-finance/tests/tax-journal-deep.service.spec.ts)) — **10 / 10 tests passed clean**.
+  - Verified `@unerp/api` typecheck (0 errors) and `@unerp/web` typecheck (0 errors).
+  - Verified `pnpm architecture:check` passed 100% clean (0 cross-module violations).
+
+---
 
 **Scope**: Executed mandatory QA Harden checkpoint after Cycle 30.
 

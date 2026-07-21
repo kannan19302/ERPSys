@@ -9,7 +9,7 @@ import {
   BarChart3,
   Target,
 } from "lucide-react";
-import { PageHeader, Button, Card, Spinner, KpiCard } from "@unerp/ui";
+import { PageHeader, Button, Card, Spinner, KPICard } from "@unerp/ui";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 import {
   CrmTabLayout,
@@ -115,25 +115,25 @@ export default function CrmAutomationPage() {
           <Spinner />
         ) : (
           <div className="ui-grid-4" style={{ marginBottom: "var(--space-4)" }}>
-            <KpiCard
-              icon={Zap}
+            <KPICard
+              icon={<Zap className="w-5 h-5 text-primary" />}
               value={dashboard?.totalRules ?? 0}
-              label="Total Rules"
+              title="Total Rules"
             />
-            <KpiCard
-              icon={Activity}
+            <KPICard
+              icon={<Activity className="w-5 h-5 text-primary" />}
               value={dashboard?.activeRules ?? 0}
-              label="Active Rules"
+              title="Active Rules"
             />
-            <KpiCard
-              icon={Target}
+            <KPICard
+              icon={<Target className="w-5 h-5 text-primary" />}
               value={dashboard?.totalSequences ?? 0}
-              label="Sequences"
+              title="Sequences"
             />
-            <KpiCard
-              icon={Users}
+            <KPICard
+              icon={<Users className="w-5 h-5 text-primary" />}
               value={dashboard?.totalAssignments ?? 0}
-              label="Assignments"
+              title="Assignments"
             />
           </div>
         )}
