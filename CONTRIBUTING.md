@@ -7,7 +7,7 @@ contribution may be incorporated under the project's existing terms.
 ## Before you start
 
 1. Read [AGENTS.md](AGENTS.md) — the architecture, critical rules, and module conventions.
-2. Read [docs/ARCHITECTURE_FOUNDATION.md](docs/ARCHITECTURE_FOUNDATION.md) for the binding
+2. Read [.ai/ARCHITECTURE_FOUNDATION.md](.ai/ARCHITECTURE_FOUNDATION.md) for the binding
    architectural governance every change must follow.
 3. Check the [Wiki](../../wiki) and open [Issues](../../issues) / [Discussions](../../discussions)
    to avoid duplicate work.

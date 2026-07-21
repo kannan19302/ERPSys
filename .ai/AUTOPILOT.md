@@ -5,18 +5,20 @@
 > Odoo, ERPNext, Workday, Salesforce, Infor, Acumatica, and Epicor while staying
 > simpler to run and extend.
 >
-> **⚡ Read [instructions.md](instructions.md) FIRST** — it is the supreme governance
-> document covering all architecture flows, coding standards, policies, velocity
-> targets, and repo hygiene rules. This file defines the two operational flows.
+> **⚡ [instructions.md](instructions.md) is the supreme governance document**
+> (architecture flows, coding standards, policies, velocity targets, repo
+> hygiene). It is standing policy — consult sections on demand rather than
+> re-reading it every cycle (see § DEV flow step 0, slim bootstrap). This
+> file defines the two operational flows.
 >
 > The ADP has exactly **two flows**. Everything else was retired on 2026-07-17;
 > the separate INTEGRATION flow was folded into the DEV flow on 2026-07-18
 > (cross-module workflow batches are now ordinary DEV work — see § DEV flow).
 >
-> | Trigger                                  | Flow         | Purpose                                                      | Velocity Target                                                                                                                          |
-> | :--------------------------------------- | :----------- | :----------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------- |
-> | "Start" / "/start" / "continue" / "next" | **DEV flow** | Phase-gated: foundation first, then features end-to-end      | **No per-cycle cap — keep building until the session/vendor credit budget for this run is exhausted** (Phase M/X; Phase F = track items) |
-> | "harden" / "/harden" / "find and fix"    | **QA flow**  | Find flaws, file as issues, fix at root cause, verify, close | **10+ fixes + 10+ feature suggestions per cycle**                                                                                        |
+> | Trigger                                  | Flow         | Purpose                                                      | Velocity Target                                                                                                                            |
+> | :--------------------------------------- | :----------- | :----------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
+> | "Start" / "/start" / "continue" / "next" | **DEV flow** | Phase-gated: foundation first, then features end-to-end      | **Throughput floor (binding): ship ≥ 5,000 net LOC OR ≥ 40 distinct features per cycle** (Phase M/X; Phase F = track items — floor exempt) |
+> | "harden" / "/harden" / "find and fix"    | **QA flow**  | Find flaws, file as issues, fix at root cause, verify, close | **10+ fixes + 10+ feature suggestions per cycle**                                                                                          |
 >
 > The QA flow runs two ways: **explicitly** (user types "harden") or
 > **automatically** — after every **10 completed DEV cycles**, the next "Start"
@@ -31,11 +33,11 @@ phases are strictly ordered; a later phase is unreachable while an earlier one
 is incomplete. This is the very first check of every DEV cycle, before the
 priority ladder, before the focus question, before anything.
 
-| Phase | Name                 | Entry condition                                                | What DEV cycles do                                                                                                                                                                                                                                                                                                                                                                                                                                         | Exit condition                                                                 |
-| :---- | :------------------- | :------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------- |
-| **F** | Foundation           | `.ai/FOUNDATION_HARDENING_ROADMAP.md` lift gate (§ 12) NOT met | Work foundation tracks in dependency order: 0 → A (#19) → B (#17) ∥ C (#21) → D (#22) → E (blockchain re-platform) → F/G/H/I. Velocity = **track items closed with their exit-gate proofs**, not feature count. The 40-feature target does NOT apply; the feature freeze DOES.                                                                                                                                                                             | All roadmap tracks closed, lift gate green, foundation **SEALED v1.0** (§ 12b) |
-| **M** | Module strengthening | Foundation SEALED                                              | Drive **every module to Complete (1500+ weighted features)**, in the fixed **focus order** below (not the old core→industry sort). Each module is built **horizontally** (§ Horizontal build order), not as independent vertical slices. Cross-module workflow batches (the old INTEGRATION flow) count as feature work here. No per-cycle feature cap — a cycle runs until the session's credit budget is exhausted, not until an arbitrary count is hit. | Every registered module at 1500+ with completion criteria met                  |
-| **X** | Expansion            | All modules Complete                                           | Plan and build **new apps/modules** (PM-scoped, market-benchmarked, through the sealed kernel contracts only).                                                                                                                                                                                                                                                                                                                                             | Open-ended                                                                     |
+| Phase | Name                 | Entry condition                                                | What DEV cycles do                                                                                                                                                                                                                                                                                                                                                                                                        | Exit condition                                                                 |
+| :---- | :------------------- | :------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------- |
+| **F** | Foundation           | `.ai/FOUNDATION_HARDENING_ROADMAP.md` lift gate (§ 12) NOT met | Work foundation tracks in dependency order: 0 → A (#19) → B (#17) ∥ C (#21) → D (#22) → E (blockchain re-platform) → F/G/H/I. Velocity = **track items closed with their exit-gate proofs**, not feature count. The 40-feature target does NOT apply; the feature freeze DOES.                                                                                                                                            | All roadmap tracks closed, lift gate green, foundation **SEALED v1.0** (§ 12b) |
+| **M** | Module strengthening | Foundation SEALED                                              | Drive **every module to Complete (1500+ weighted features)**, in the fixed **focus order** below (not the old core→industry sort). Each module is built **horizontally** (§ Horizontal build order), not as independent vertical slices. Cross-module workflow batches (the old INTEGRATION flow) count as feature work here. Throughput floor applies: ≥ 5,000 net LOC OR ≥ 40 features per cycle (§ DEV flow velocity). | Every registered module at 1500+ with completion criteria met                  |
+| **X** | Expansion            | All modules Complete                                           | Plan and build **new apps/modules** (PM-scoped, market-benchmarked, through the sealed kernel contracts only).                                                                                                                                                                                                                                                                                                            | Open-ended                                                                     |
 
 Phase determination is mechanical, not judgment: read
 `.ai/FOUNDATION_HARDENING_ROADMAP.md` § 12 (lift gate) — if any bullet is
@@ -137,11 +139,14 @@ must be actively watched every cycle:
 
 ## Shared bindings (both flows, every run)
 
-0. **Supreme governance.** Read [instructions.md](instructions.md) before any work.
-   It contains all architecture flows, coding standards, UI/backend/DB policies,
-   security governance, velocity targets, and repo hygiene rules.
+0. **Supreme governance.** [instructions.md](instructions.md) is the supreme
+   policy document (architecture flows, coding standards, UI/backend/DB
+   policies, security governance, velocity targets, repo hygiene). It is
+   standing policy — do NOT re-read it in full every cycle; consult the
+   relevant section on demand when a decision needs it (slim bootstrap,
+   § DEV flow step 0).
 1. **Architecture governance (permanent).** Every change follows
-   [docs/ARCHITECTURE_FOUNDATION.md](../docs/ARCHITECTURE_FOUNDATION.md) and the
+   [.ai/ARCHITECTURE_FOUNDATION.md](ARCHITECTURE_FOUNDATION.md) and the
    conventions in [HANDBOOK.md](HANDBOOK.md) + `AGENTS.md` Critical Rules:
    - `pnpm architecture:check` for every API change; `pnpm migration:discipline`
      for every database/dev-environment change.
@@ -153,10 +158,12 @@ must be actively watched every cycle:
    - Frontend goes through `@unerp/framework` (schema-driven) and `@unerp/ui-*`
      design tokens — no hand-rolled styling or ad-hoc fetch layers.
 2. **Launch blockers first.** Open GitHub issues labeled `security` or
-   critical/high — currently including the three architecture-foundation issues
-   (**#17** durable event delivery, **#19** migration-drift reconciliation,
-   **#21** transaction-scoped RLS) — outrank all feature work. The QA flow drains
-   them first; the DEV flow must pick them at P0/P1 before building anything new.
+   critical/high outrank all feature work. The QA flow drains them first; the
+   DEV flow must pick them at P0/P1 before building anything new. (The three
+   historical architecture-foundation blockers — #17 durable events, #19
+   migration drift, #21 transaction-scoped RLS — were closed when the
+   foundation was SEALED v1.0 on 2026-07-18; their contracts are now binding
+   sealed rules in `.ai/ARCHITECTURE_FOUNDATION.md`.)
 3. **3-file tracking (documentation gate).** State of record is exactly:
    [MODULE_REGISTRY.md](MODULE_REGISTRY.md) (module status + Collab Board),
    [CHANGELOG.md](CHANGELOG.md) (append-only history, newest first),
@@ -179,24 +186,28 @@ must be actively watched every cycle:
    inline in the main thread. Spawn a subagent only for a large genuinely-parallel
    chunk or on explicit user request — one hop max. Standing exception: the
    security-auditor pass on auth/tenancy/RBAC/payment changes may run as a subagent.
-7. **Duplicate check before building.** Regenerate the feature inventory
-   (`node scripts/feature-ledger.mjs`, output gitignored) and grep it + MODULE_REGISTRY
-   for your routes/entities before planning, and again after the pre-merge rebase.
+7. **Duplicate check before building.** Grep the existing feature inventory
+   (`.ai/FEATURE_LEDGER.md`, gitignored) + MODULE_REGISTRY for your
+   routes/entities before planning, and again after the pre-merge rebase.
+   Regenerate the ledger only if it is missing or stale — the full regen
+   happens once per cycle, at Record (binding #11).
 8. **Token efficiency.** Grep + ranged reads, never whole-file dumps; clone the
    newest reference pattern instead of exploring; one complete Write per file;
    reports contain counts and results, never pasted code.
-9. **PM market research (every cycle).** Before scoping features, check
-   `.ai/MARKET_BENCHMARK.md` first (cached research, regenerated weekly). If the
-   cache for the target module is > 7 days old, do fresh research on the top 10 ERP
+9. **PM market research.** Before scoping features, check
+   `.ai/MARKET_BENCHMARK.md` first (cached research, regenerated monthly). If the
+   cache for the target module is > 30 days old, do fresh research on the top 10 ERP
    market leaders (SAP, NetSuite, Dynamics 365, Workday, Salesforce, Odoo, ERPNext,
    Infor, Acumatica, Epicor). Score candidates using RICE. Append new findings to
    the benchmark cache. See [instructions.md § 12](instructions.md#12-pm-agent-market-research-protocol).
 10. **Temp file cleanup.** At cycle end, delete ALL temporary scripts, debug helpers,
     scratch files, and one-off data files. Verify no stray files at repo root or
     `scripts/`. The repo must always be production-grade and clean.
-11. **Feature ledger accuracy.** Regenerate at BOTH start and end of every cycle.
-    Cross-check totals with MODULE_REGISTRY. Verify module counts grew by the
-    expected delta. See [instructions.md § 9](instructions.md#9-feature-ledger-accuracy).
+11. **Feature ledger accuracy.** Regenerate ONCE per cycle, at Record (step 8) —
+    not at both start and end. Cross-check totals with MODULE_REGISTRY. Verify
+    module counts grew by the expected delta. At cycle start, grep the existing
+    ledger for duplicate checks (binding #7); regenerate early only if the file
+    is missing or clearly stale. See [instructions.md § 9](instructions.md#9-feature-ledger-accuracy).
 12. **Module health scoring.** Run `node scripts/module-health.mjs` at cycle end to
     compute per-module health scores (0–100). Use this to verify the weakest module
     is being targeted and that no module falls below the MVM threshold (50 features).
@@ -264,13 +275,20 @@ typecheck` + `--filter @unerp/web typecheck`) and vitest for the touched modules
 
 ## DEV flow — "Start" (one full cycle)
 
-> **Velocity target**: No per-cycle feature cap. A cycle runs continuously —
-> keep shipping features until the session's/vendor's credit budget for this
-> run is exhausted, not until an arbitrary count is hit. In Phase M each
-> feature still ends up as DB schema + API endpoint + UI page + tests, but a
-> given cycle builds one horizontal layer (§ Horizontal build order) across as
-> many features as the remaining budget allows, rather than one feature's
-> full vertical slice at a time.
+> **Velocity target (binding throughput floor)**: every Phase M/X DEV cycle
+> must ship **≥ 5,000 net LOC OR ≥ 40 distinct features** before it may Record
+>
+> - Ship. Net LOC = adds + modifies from `git diff --numstat <cycle-start-sha>..HEAD`,
+>   excluding lockfiles, generated Prisma client, and `*.map` (use
+>   `node scripts/cycle-report.mjs` — it computes this). If under BOTH floors at
+>   the point you would normally ship, do not ship yet: select the next item on
+>   the priority ladder (same focus module) and continue the same cycle. Only a
+>   genuine hard stop (budget exhaustion mid-build, red gate needing human input)
+>   excuses shipping under-floor — say so explicitly in the report. Phase F
+>   cycles and harden cycles are exempt (their velocity = track items / fixes).
+>   In Phase M each feature still ends up as DB schema + API endpoint + UI page
+> - tests, but a given cycle builds one horizontal layer (§ Horizontal build
+>   order) across as many features as the floor and remaining budget require.
 >
 > **System-wide QA phase**: once every module in the § Phase M focus order
 > has reached 1500+ features, Phase M's remaining cycles pivot from feature
@@ -285,11 +303,16 @@ typecheck` + `--filter @unerp/web typecheck`) and vitest for the touched modules
 > budget remains. Use `node scripts/scaffold-entity.mjs` for boilerplate.
 > Deep modules (200+) remain single-focus.
 
-0. **Bootstrap**: read [instructions.md](instructions.md) + `AGENTS.md` Critical
-   Rules + this file; `git pull`; `claim.mjs gc` (prune stale claims); read
-   MODULE_REGISTRY § Collab Board + System Progress Dashboard + **§ Cycle
-   Ledger** + recent CHANGELOG; `claim.mjs list`; `node scripts/module-health.mjs`
-   (see weakest modules); start the dev stack if needed. Leave any work you
+0. **Bootstrap (slim — read sections, not whole documents)**: read this file
+   (flow authority); from MODULE_REGISTRY read ONLY **§ Cycle Ledger**, **§ 0
+   Current Focus**, and **§ Collab Board** (ranged reads — never the whole
+   file); read the last ~5 CHANGELOG entries. Do NOT re-read `instructions.md`
+   or `AGENTS.md` in full each cycle — they are standing policy loaded via
+   CLAUDE.md pointers; consult specific sections on demand when a decision
+   needs them. Then: `git pull`; `claim.mjs gc` (prune stale claims);
+   `claim.mjs list`; `node scripts/module-health.mjs` (see weakest modules);
+   record the cycle-start SHA (`git rev-parse HEAD`) for the net-LOC
+   measurement at Record; start the dev stack if needed. Leave any work you
    didn't create alone (uncommitted files, other branches) — log it on the
    Collab Board, never commit over it.
    0a. **Harden checkpoint (mandatory, binding #17)**: if MODULE_REGISTRY § Cycle
@@ -300,8 +323,9 @@ typecheck` + `--filter @unerp/web typecheck`) and vitest for the touched modules
    this cycle's scope is the next unblocked foundation track item(s) in
    dependency order (0 → A → B∥C → D → E → F/G/H/I); the feature freeze holds
    and P2.5/P3/P4 are suspended. Lift gate met → **Phase M** (drive every
-   module to 500+, core → industry order) until all modules are Complete, then
-   **Phase X** (new apps/modules). State the detected phase in the report.
+   module to Complete (1500+), in the § Phase M focus order) until all modules
+   are Complete, then **Phase X** (new apps/modules). State the detected phase
+   in the report.
 1. **Focus question (interactive runs only — the ONE question; Phase M/X only —
    Phase F cycles never ask, their scope is the roadmap's dependency order)**: read
    MODULE_REGISTRY § 0's Current focus. If it's still IN FOCUS (completion
@@ -317,7 +341,7 @@ typecheck` + `--filter @unerp/web typecheck`) and vitest for the touched modules
    P2.5/P3/P4 constrained to `MODULE_REGISTRY.md` § 0's Current focus module —
    binding #18):
    - **P0**: Broken build/tests
-   - **P1**: Open `security`/critical/high issues (incl. #17/#19/#21)
+   - **P1**: Open `security`/critical/high issues
    - **P-F** _(Phase F only, replaces all lower rungs)_: next unblocked
      foundation roadmap track item(s) in dependency order
    - **P2**: Unfinished shipped work / Collab Board Up Next
@@ -332,15 +356,19 @@ typecheck` + `--filter @unerp/web typecheck`) and vitest for the touched modules
 3. **Claim** the sub-domain lock(s), add the Collab Board row(s).
 4. **Plan (mandatory phase, binding #16 — write `.ai/IMPLEMENTATION_PLAN.md`,
    no approval needed, then execute)**: check `.ai/MARKET_BENCHMARK.md` for
-   cached research (Phase M/X); deep-research top 10 competitors if cache
-   > 7 days old; duplicate-check; user stories; acceptance criteria;
-   > Definition of Done; ordered slice list (Phase F: track items + exit-gate
-   > proofs; Phase M/X: DB→API→UI slices, uncapped — plan as much as the
-   > session's credit budget will support). Score
-   > candidates with RICE. **Overwrite `.ai/IMPLEMENTATION_PLAN.md` with this
-   > plan — once, now, and not again until the next cycle** (mid-cycle scope
-   > changes = dated addendum lines). Commit it with the cycle's first commit.
-   > Append new findings to `.ai/MARKET_BENCHMARK.md`.
+   cached research (Phase M/X); deep-research top 10 competitors only if the
+   cache for the target module is > 30 days old; duplicate-check; ordered
+   slice list (Phase F: track items + exit-gate proofs; Phase M/X: DB→API→UI
+   slices sized to clear the throughput floor). **Plan depth is
+   phase-scaled**: Phase M deepening cycles keep the plan lean — scope + why,
+   feature/endpoint/model list, gate tier, rollback note; skip RICE scoring,
+   user stories, and per-feature acceptance criteria (the benchmark cache and
+   completion criteria already justify the work). Full PM treatment (RICE,
+   user stories, acceptance criteria, Definition of Done) is required only
+   for Phase X new modules/apps. **Overwrite `.ai/IMPLEMENTATION_PLAN.md`
+   with this plan — once, now, and not again until the next cycle**
+   (mid-cycle scope changes = dated addendum lines). Commit it with the
+   cycle's first commit. Append new findings to `.ai/MARKET_BENCHMARK.md`.
 5. **Build the batch, horizontally (§ Horizontal build order)**: within the
    focus module, work the layer that's next for this cycle's planned slice —
    DB (schema + migrations for the planned feature set) OR API (services/
@@ -348,26 +376,31 @@ typecheck` + `--filter @unerp/web typecheck`) and vitest for the touched modules
    (tab-based pages for API surface already built) — not a scramble of all
    three per feature. Respect § File-size discipline as you go; respect
    § UI navigation discipline when in the UI layer. Use scoped checks while
-   building. No feature cap — keep building in whichever layer(s) this cycle
-   covers until the session's/vendor's credit budget runs out.
-   **Micro-harden checkpoint**: At every 10th feature (10, 20, 30), run scoped
+   building. Keep building in whichever layer(s) this cycle covers until the
+   throughput floor (≥ 5,000 net LOC OR ≥ 40 features) is met — then continue
+   as budget allows; never stop short of the floor without a hard stop.
+   **Micro-harden checkpoint**: At every 20th feature (20, 40, 60), run scoped
    typecheck + vitest on the touched module. Fix any failures inline before
    continuing. This is NOT a full QA cycle — just a 2-minute sanity check.
 6. **Verify** at the tier the batch demands (see Gate tiers).
 7. **Review inline**: diff vs Critical Rules; security checklist on sensitive surfaces.
-8. **Record + Ship**: CHANGELOG entry + MODULE_REGISTRY update + regenerated ledger
+8. **Record + Ship**: FIRST verify the throughput floor — compute net LOC for
+   the cycle (`node scripts/cycle-report.mjs`, which diffs the cycle-start SHA
+   and excludes lockfiles/generated files); if net LOC < 5,000 AND features
+   < 40 and no hard stop occurred, return to step 5 and keep building. Then:
+   CHANGELOG entry + MODULE_REGISTRY update + regenerated ledger
    in the same commit as the code; release the lock; run `node scripts/pre-push-gate.mjs`;
    run `node scripts/module-health.mjs`; check the focus module against
    MODULE_REGISTRY § 0's Completion criteria and rotate if ALL five hold
    (binding #18); **update MODULE_REGISTRY § Cycle Ledger** (binding #17):
-   increment `DEV cycles completed`, append the cycle row, and if the counter
-   is now a multiple of 10 set `Next run: HARDEN (mandatory)`; push to `main`
+   increment `DEV cycles completed`, append the cycle row **including its Net
+   LOC column value**, and if the counter is now a multiple of 10 set
+   `Next run: HARDEN (mandatory)`; push to `main`
    (binding #4). Delete all temp files/scripts created during the cycle.
-   Generate cycle report: `node scripts/cycle-report.mjs`.
    Report: detected phase (F/M/X), items/features shipped (count + delta +
-   maturity levels), why selected, gate results, health score change, cycle
-   counter (+ cycles until mandatory harden), top 3 next items, competitor
-   gap assessment.
+   maturity levels), **net LOC vs the 5K floor**, why selected, gate results,
+   health score change, cycle counter (+ cycles until mandatory harden),
+   top 3 next items, competitor gap assessment.
 9. **Phase-F extra**: when a cycle closes a foundation track, mark it ✅ in
    `.ai/FOUNDATION_HARDENING_ROADMAP.md` with the closing evidence + commit
    (roadmap § 13). When the LAST track closes and the lift gate is green,
@@ -459,21 +492,25 @@ padding to inflate counts; no destructive ops without explicit user instruction
 | Docs drift after a big change            | `tech-writer`                                          |
 
 Every agent obeys [instructions.md](instructions.md), this file, `AGENTS.md`,
-and `docs/ARCHITECTURE_FOUNDATION.md`.
+and `.ai/ARCHITECTURE_FOUNDATION.md`. **Subagent context brief (binding)**:
+the invoking thread passes each subagent a distilled brief — current phase,
+focus module, the specific conventions that apply, and exact file paths —
+instead of the subagent re-reading MODULE_REGISTRY/HANDBOOK/CHANGELOG in
+full. Subagents read governance docs only when the brief is insufficient.
 
 ---
 
 ## ADP Tooling (scripts/)
 
-| Script                | Purpose                                 | When to Run                |
-| :-------------------- | :-------------------------------------- | :------------------------- |
-| `feature-ledger.mjs`  | Regenerate `.ai/FEATURE_LEDGER.md`      | Start + end of every cycle |
-| `module-health.mjs`   | Compute per-module health score (0–100) | Bootstrap + cycle end      |
-| `pre-push-gate.mjs`   | Automated checklist before `git push`   | Before every push          |
-| `cycle-report.mjs`    | Generate structured JSON cycle report   | Cycle end                  |
-| `scaffold-entity.mjs` | Boilerplate generator for new entities  | MVM-level work             |
-| `claim.mjs`           | Atomic work-claim locks                 | Before + after work        |
-| `claim.mjs gc`        | Garbage-collect stale claims (48h TTL)  | Bootstrap                  |
+| Script                | Purpose                                 | When to Run               |
+| :-------------------- | :-------------------------------------- | :------------------------ |
+| `feature-ledger.mjs`  | Regenerate `.ai/FEATURE_LEDGER.md`      | Once per cycle, at Record |
+| `module-health.mjs`   | Compute per-module health score (0–100) | Bootstrap + cycle end     |
+| `pre-push-gate.mjs`   | Automated checklist before `git push`   | Before every push         |
+| `cycle-report.mjs`    | JSON cycle report + net-LOC floor check | Record step (cycle end)   |
+| `scaffold-entity.mjs` | Boilerplate generator for new entities  | MVM-level work            |
+| `claim.mjs`           | Atomic work-claim locks                 | Before + after work       |
+| `claim.mjs gc`        | Garbage-collect stale claims (48h TTL)  | Bootstrap                 |
 
 ---
 

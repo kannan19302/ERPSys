@@ -6,19 +6,23 @@
  * markdown is only visible after commit->push->pull, but sessions sharing one
  * checkout (or lagging on pulls) race past it. This registry uses one small
  * lock file per claimed sub-domain in .ai/locks/ — atomic O_EXCL creation makes
- * it race-proof for every session on the same machine instantly, and committing
- * the lock file makes it visible cross-machine.
+ * it race-proof for every session on the same machine instantly. Lock files are
+ * LOCAL-ONLY (`.ai/locks/*.lock` is gitignored — never committed); cross-machine
+ * visibility comes from the Collab Board row you add for the claim.
  *
  * Usage:
  *   node scripts/claim.mjs acquire <slug> --agent <name> [--scope "<files/desc>"]
  *   node scripts/claim.mjs heartbeat <slug>        # refresh while working (each step)
- *   node scripts/claim.mjs release <slug>          # on cycle end (Step 8)
+ *   node scripts/claim.mjs release <slug>          # on cycle end (Record + Ship)
  *   node scripts/claim.mjs list                    # show all locks + staleness
+ *   node scripts/claim.mjs gc                      # prune claims stale > 48h (bootstrap)
  *
- * Rules (AUTOPILOT.md § Parallel Agents):
- *   - acquire BEFORE any code; commit+push .ai/locks/<slug>.lock immediately after.
+ * Rules (AUTOPILOT.md § Shared bindings #5):
+ *   - acquire BEFORE any code; add the matching Collab Board row for
+ *     cross-machine visibility (the lock file itself stays local/gitignored).
  *   - a lock with heartbeat older than 2h is STALE and may be taken over
  *     (acquire prints the takeover; the previous holder lost the claim).
+ *   - claims older than 48h without a heartbeat are EXPIRED — `gc` prunes them.
  *   - exit codes: 0 = ok, 1 = lock held by someone else (pick another sub-domain).
  */
 import { mkdirSync, writeFileSync, readFileSync, unlinkSync, readdirSync, openSync, closeSync } from 'node:fs';
@@ -70,7 +74,7 @@ if (cmd === 'acquire') {
     const fd = openSync(p, 'wx');
     writeFileSync(fd, payload);
     closeSync(fd);
-    console.log(`ACQUIRED ${slug} — now commit+push ${path.relative(root, p)} before writing code.`);
+    console.log(`ACQUIRED ${slug} — add the Collab Board row before writing code (lock file is local-only).`);
     process.exit(0);
   } catch (e) {
     if (e.code !== 'EEXIST') throw e;
@@ -78,7 +82,7 @@ if (cmd === 'acquire') {
     if (cur && age(cur.heartbeatAt) > STALE_MS) {
       writeFileSync(p, payload);
       console.log(
-        `TAKEOVER ${slug} — previous holder "${cur.agent}" stale (${fmtAge(age(cur.heartbeatAt))} since heartbeat). Log it in Collab Board §4. Commit+push the lock.`,
+        `TAKEOVER ${slug} — previous holder "${cur.agent}" stale (${fmtAge(age(cur.heartbeatAt))} since heartbeat). Log it in Collab Board §4.`,
       );
       process.exit(0);
     }
@@ -105,7 +109,7 @@ if (cmd === 'heartbeat') {
 if (cmd === 'release') {
   try {
     unlinkSync(lockPath(slug || ''));
-    console.log(`RELEASED ${slug} — commit+push the deletion.`);
+    console.log(`RELEASED ${slug} — move the Collab Board row to Recently Completed.`);
   } catch {
     console.log(`no lock for ${slug} (already released)`);
   }

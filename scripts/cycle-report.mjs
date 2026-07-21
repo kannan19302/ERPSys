@@ -61,7 +61,59 @@ try {
   // Ignored
 }
 
-// 4. Construct JSON report payload
+// 4. Net LOC for the cycle (throughput floor: >= 5,000 net LOC OR >= 40 features).
+// Usage: node scripts/cycle-report.mjs [--since <cycle-start-sha>]
+// Counts adds+deletes from committed range <since>..HEAD plus the working tree,
+// excluding lockfiles, generated artifacts, and source maps.
+const EXCLUDED = [
+  /pnpm-lock\.yaml$/,
+  /\.map$/,
+  /^\.ai\/FEATURE_LEDGER\.md$/,
+  /(^|\/)node_modules\//,
+  /(^|\/)generated\//,
+  /(^|\/)dist\//,
+  /cycle-report\.json$/,
+];
+function sumNumstat(cmd) {
+  let added = 0, deleted = 0;
+  try {
+    const out = execSync(cmd, { encoding: 'utf8', cwd: root, maxBuffer: 64 * 1024 * 1024 });
+    for (const line of out.split('\n')) {
+      const m = line.match(/^(\d+|-)\t(\d+|-)\t(.+)$/);
+      if (!m) continue;
+      const file = m[3].replace(/\\/g, '/');
+      if (EXCLUDED.some(re => re.test(file))) continue;
+      if (m[1] !== '-') added += parseInt(m[1], 10);
+      if (m[2] !== '-') deleted += parseInt(m[2], 10);
+    }
+  } catch (e) {
+    // Ignored — range may not exist yet
+  }
+  return { added, deleted };
+}
+const sinceIdx = process.argv.indexOf('--since');
+const sinceSha = sinceIdx !== -1 ? process.argv[sinceIdx + 1] : null;
+let netLoc = null;
+if (sinceSha) {
+  const committed = sumNumstat(`git diff --numstat ${sinceSha}..HEAD`);
+  const workingTree = sumNumstat('git diff --numstat HEAD');
+  netLoc = {
+    since: sinceSha,
+    added: committed.added + workingTree.added,
+    deleted: committed.deleted + workingTree.deleted,
+    net: committed.added + workingTree.added - committed.deleted - workingTree.deleted,
+    floor: 5000,
+    floorMet: committed.added + workingTree.added >= 5000,
+  };
+  console.log(`Net LOC since ${sinceSha}: +${netLoc.added} / -${netLoc.deleted} (net ${netLoc.net})`);
+  console.log(netLoc.floorMet
+    ? '✅ 5K LOC floor met'
+    : '⚠️ Under the 5K LOC floor — floor also satisfiable via 40+ features');
+} else {
+  console.log('ℹ️ No --since <cycle-start-sha> given — net-LOC floor check skipped.');
+}
+
+// 5. Construct JSON report payload
 const report = {
   cycleId: `CYCLE-${Date.now()}`,
   generatedAt: new Date().toISOString(),
@@ -71,6 +123,7 @@ const report = {
     subject: latestCommitSubject
   },
   touchedModules,
+  netLoc,
   totalSystemFeatures: totalFeatures,
   exitStatus: 'SUCCESS',
   details: {

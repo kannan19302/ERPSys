@@ -2,7 +2,7 @@
   "hooks": {
     "UserPromptSubmit": [
       {
-        "matcher": "(?i)\\b(add|create|build|implement|i want|let's add|can we add|we should add|new feature|new module|new page|new endpoint|new entity|new service|new component|new screen|new functionality|new capability|integrate|introduce|support for)\\b",
+        "matcher": "(?i)\\b(new (feature|module|app|page|screen|functionality|capability)|(build|create|implement|add) (a |an |the )?new (feature|module|app|entity|service|integration)|support for)\\b",
         "hooks": [
           {
             "type": "command",

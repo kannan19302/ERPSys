@@ -14,7 +14,9 @@ The Autonomous Development Protocol (`.ai/AUTOPILOT.md`) has exactly two flows:
   § Cycle Ledger), then the phase gate: while `.ai/FOUNDATION_HARDENING_ROADMAP.md`
   § 12's lift gate is unmet, cycles work ONLY foundation tracks in dependency
   order (Phase F); once the foundation is SEALED, cycles strengthen every module
-  to 500+ features minimum, core → industry order (Phase M); when all modules are
+  to Complete (1500+ weighted features), in AUTOPILOT's § Phase M focus order,
+  under the binding throughput floor of ≥ 5,000 net LOC OR ≥ 40 features per
+  cycle (Phase M); when all modules are
   Complete, new apps/modules (Phase X). Every cycle writes
   `.ai/IMPLEMENTATION_PLAN.md` before building (mandatory plan, zero approvals,
   one overwrite per cycle), then builds end-to-end (DB → API → UI → tests),
@@ -31,17 +33,18 @@ All other flows (issue-scan, fix-issues, integrate, and their variants) are reti
 
 ## Architecture governance (binding, permanent)
 
-Read `docs/ARCHITECTURE_FOUNDATION.md` before selecting work. Every change follows
-it plus `.ai/HANDBOOK.md` conventions and `AGENTS.md` Critical Rules:
+Read `.ai/ARCHITECTURE_FOUNDATION.md` before selecting work (foundation SEALED
+v1.0 on 2026-07-18 — its 8 rules are permanent sealed contracts). Every change
+follows it plus `.ai/HANDBOOK.md` conventions and `AGENTS.md` Critical Rules:
 
 - `pnpm architecture:check` for every API change; `pnpm migration:discipline` for
   every database/dev-environment change. `db:push` is disabled — use
   `pnpm db:deploy` and fail closed on drift.
 - Tenant isolation + RBAC + Zod validation on every endpoint; UI through
   `@unerp/framework` and `@unerp/ui-*` tokens.
-- Launch blockers outrank features: open `security`/critical/high issues —
-  including #17 (durable events), #19 (migration drift), #21 (transaction-scoped
-  RLS) — are picked first in both flows until closed.
+- Launch blockers outrank features: open `security`/critical/high issues are
+  picked first in both flows until closed. (Historical blockers #17/#19/#21
+  closed at the 2026-07-18 seal — their designs are now binding contracts.)
 
 ## Always land work on `main` (binding, every prompt)
 

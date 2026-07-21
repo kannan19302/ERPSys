@@ -14,7 +14,7 @@ ci:
 architecture:
   - changed-files:
       - any-glob-to-any-file:
-          [".ai/**", "docs/ARCHITECTURE_FOUNDATION.md", "AGENTS.md"]
+          [".ai/**", "AGENTS.md"]
 
 frontend:
   - changed-files:

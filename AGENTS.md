@@ -32,8 +32,10 @@ two flows; all other flows are retired:
   Bootstrap → **harden checkpoint** (every 10th completed DEV cycle auto-runs a full
   QA cycle; tracked in MODULE_REGISTRY § Cycle Ledger) → **phase gate**
   (`.ai/FOUNDATION_HARDENING_ROADMAP.md` § 12 lift gate unmet ⇒ Phase F: foundation
-  tracks only, in dependency order; sealed ⇒ Phase M: every module to 500+ features,
-  core → industry; all Complete ⇒ Phase X: new apps/modules) → select via the
+  tracks only, in dependency order; sealed ⇒ Phase M: every module to Complete
+  (1500+ weighted features), in AUTOPILOT's § Phase M focus order, under the
+  binding throughput floor of ≥ 5,000 net LOC OR ≥ 40 features per cycle;
+  all Complete ⇒ Phase X: new apps/modules) → select via the
   priority ladder (broken build > security/critical issues > [Phase F: roadmap
   items] > unfinished work > module deepening > new capability) → claim →
   **mandatory plan written to `.ai/IMPLEMENTATION_PLAN.md`** (no approvals; one
@@ -44,8 +46,9 @@ two flows; all other flows are retired:
   close — a closed find→file→fix→close loop.
 
 The generated feature inventory (`node scripts/feature-ledger.mjs` →
-`.ai/FEATURE_LEDGER.md`, gitignored) is the duplicate-check map — regenerate and grep
-it before building anything.
+`.ai/FEATURE_LEDGER.md`, gitignored) is the duplicate-check map — grep it before
+building anything (it is regenerated once per cycle, at Record; regenerate early
+only if missing or stale).
 
 Both flows benchmark against the top ERP market leaders (SAP, NetSuite,
 Dynamics 365, Odoo, ERPNext, Workday, Salesforce, …) when choosing feature work —
@@ -64,11 +67,11 @@ queue. Every rule in this file still applies inside autonomous mode.
 
 UniERP tracks its entire state in exactly **three files**. Nothing else counts as documentation of record:
 
-| File                                               | Purpose                                                                                                                                                                    |
-| :------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`.ai/MODULE_REGISTRY.md`](.ai/MODULE_REGISTRY.md) | Module status/phase/entities/paths for all 31 modules, **plus the § Collab Board** (live multi-agent sync — active claims, up-next work, recently completed, conflict log) |
-| [`.ai/CHANGELOG.md`](.ai/CHANGELOG.md)             | Append-only history — one entry per feature/fix/refactor, ever                                                                                                             |
-| [`.ai/HANDBOOK.md`](.ai/HANDBOOK.md)               | Architecture, coding conventions, data model, API standards, tech stack, security, testing — the "how we build" reference                                                  |
+| File                                               | Purpose                                                                                                                                                                                                           |
+| :------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`.ai/MODULE_REGISTRY.md`](.ai/MODULE_REGISTRY.md) | Module status/phase/entities/paths for all modules (see its dashboard for the current count), **plus the § Collab Board** (live multi-agent sync — active claims, up-next work, recently completed, conflict log) |
+| [`.ai/CHANGELOG.md`](.ai/CHANGELOG.md)             | Append-only history — one entry per feature/fix/refactor, ever                                                                                                                                                    |
+| [`.ai/HANDBOOK.md`](.ai/HANDBOOK.md)               | Architecture, coding conventions, data model, API standards, tech stack, security, testing — the "how we build" reference                                                                                         |
 
 **The concrete rule, every session, every task, no exceptions:**
 
@@ -137,51 +140,51 @@ This is a **composable, multi-tenant ERP** built on a TypeScript monorepo. The s
 
 ### Architecture
 
-6. **Never import directly between ERP modules.** Cross-module state changes use domain events; a feature module may consume a narrow capability only through an approved common integration port. Run `pnpm architecture:check` before merge; it mechanically rejects direct relative module imports and dependency cycles. Read [docs/ARCHITECTURE_FOUNDATION.md](docs/ARCHITECTURE_FOUNDATION.md) and [.ai/HANDBOOK.md#architecture-reference](.ai/HANDBOOK.md#architecture-reference) Section 4.
-7. **Never modify `packages/database/prisma/migrations/` manually.** Always use `pnpm db:migrate` to generate migrations from schema changes. `db:push` is deliberately disabled; use `pnpm db:deploy` to apply recorded history. Development startup must fail closed when migration history is invalid or drifted. The sole exception is the explicitly documented #19 reconciliation procedure in [docs/ARCHITECTURE_FOUNDATION.md](docs/ARCHITECTURE_FOUNDATION.md#19-reconciliation-plan-and-controlled-exception): Prisma must generate the candidate first; a named database owner and code owner must approve a column-mapping ledger and the limited data-preserving rename/backfill SQL; two database shapes must pass the prescribed proof. Generate the ledger using `pnpm migration:reconciliation:report` with an isolated `MIGRATION_SHADOW_DATABASE_URL`. No destructive SQL, broad `CASCADE`, or reset is permitted.
+6. **Never import directly between ERP modules.** Cross-module state changes use domain events; a feature module may consume a narrow capability only through an approved common integration port. Run `pnpm architecture:check` before merge; it mechanically rejects direct relative module imports and dependency cycles. Read [.ai/ARCHITECTURE_FOUNDATION.md](.ai/ARCHITECTURE_FOUNDATION.md) and [.ai/HANDBOOK.md#architecture-reference](.ai/HANDBOOK.md#architecture-reference) Section 4.
+7. **Never modify `packages/database/prisma/migrations/` manually.** Always use `pnpm db:migrate` to generate migrations from schema changes. `db:push` is deliberately disabled; use `pnpm db:deploy` to apply recorded history. Development startup must fail closed when migration history is invalid or drifted. The sole exception is the explicitly documented #19 reconciliation procedure in [.ai/ARCHITECTURE_FOUNDATION.md](.ai/ARCHITECTURE_FOUNDATION.md#19-reconciliation-plan-and-controlled-exception): Prisma must generate the candidate first; a named database owner and code owner must approve a column-mapping ledger and the limited data-preserving rename/backfill SQL; two database shapes must pass the prescribed proof. Generate the ledger using `pnpm migration:reconciliation:report` with an isolated `MIGRATION_SHADOW_DATABASE_URL`. No destructive SQL, broad `CASCADE`, or reset is permitted.
 8. **Every database table MUST include `tenant_id`.** Multi-tenancy is enforced at the data layer via Row-Level Security. Read [.ai/HANDBOOK.md#security](.ai/HANDBOOK.md#security).
 9. **Follow the Module Structure Template exactly.** Every new module must match the pattern in [.ai/HANDBOOK.md#architecture-reference](.ai/HANDBOOK.md#architecture-reference) Section 3.
-10. **Foundation freeze is binding.** Until the blockers listed in [docs/ARCHITECTURE_FOUNDATION.md](docs/ARCHITECTURE_FOUNDATION.md) are closed, work only on foundation remediation, tests, documentation, and architecture quality gates. Do not add product features, Prisma entities, public integration contracts, or critical cross-module workflows.
-11. **Extension API compatibility is enforced.** Marketplace bundles declare `apiVersion`; validate it with `@unerp/service-kit`'s `isSupportedExtApiVersion()` and publish any compatibility-window change in [docs/EXTENSION_SERVICE_CONTRACT.md](docs/EXTENSION_SERVICE_CONTRACT.md). Retain the previous contract version for one documented release before retiring it.
-12. **Service extraction requires evidence.** UniERP remains a modular monolith unless the extraction criteria in [docs/ARCHITECTURE_FOUNDATION.md](docs/ARCHITECTURE_FOUNDATION.md#service-extraction-is-earned-not-assumed) are met: stable contract, outbox delivery, explicit data ownership, verified tenant isolation, operational SLOs/runbook, and a rehearsed cutover/rollback. Never distribute a module merely to move a synchronous dependency or shared database over the network.
-13. **Critical facts require the transactional outbox.** `EventEmitter2`, BullMQ, and `BackgroundJob` are not a transactional business-event guarantee. Until the #17 design in [docs/ARCHITECTURE_FOUNDATION.md](docs/ARCHITECTURE_FOUNDATION.md#17-transactional-outbox-design-implementation-blocked-by-19) is implemented and proven, do not add a critical cross-module state change or external side effect; a consumer must use an idempotent receipt in the same transaction as its effect.
-14. **RLS requires a non-bypass transaction context.** AsyncLocalStorage and Prisma tenant filters are defense in depth, not database proof. Do not claim or depend on RLS until the #21 design in [docs/ARCHITECTURE_FOUNDATION.md](docs/ARCHITECTURE_FOUNDATION.md#21-transaction-scoped-rls-design-implementation-blocked-by-19) is implemented: a `NOBYPASSRLS` application role, `SET LOCAL`/`set_config(..., true)` inside the actual transaction client, policy inventory, and real two-tenant tests are all required.
+10. **Sealed foundation contracts are binding.** The foundation was SEALED v1.0 on 2026-07-18 (the historical feature freeze is LIFTED — see `.ai/FOUNDATION_HARDENING_ROADMAP.md` § 12/12b). The 8 non-negotiable rules in [.ai/ARCHITECTURE_FOUNDATION.md](.ai/ARCHITECTURE_FOUNDATION.md) apply to every change; changing a sealed contract requires a documented ADR, and the foundation gates keep running forever.
+11. **Extension API compatibility is enforced.** Marketplace bundles declare `apiVersion`; validate it with `@unerp/service-kit`'s `isSupportedExtApiVersion()` and publish any compatibility-window change per [docs/API_VERSIONING_POLICY.md](docs/API_VERSIONING_POLICY.md). Retain the previous contract version for one documented release before retiring it.
+12. **Service extraction requires evidence.** UniERP remains a modular monolith unless the extraction criteria in [.ai/ARCHITECTURE_FOUNDATION.md](.ai/ARCHITECTURE_FOUNDATION.md#service-extraction-is-earned-not-assumed) are met: stable contract, outbox delivery, explicit data ownership, verified tenant isolation, operational SLOs/runbook, and a rehearsed cutover/rollback. Never distribute a module merely to move a synchronous dependency or shared database over the network.
+13. **Critical facts require the transactional outbox.** `EventEmitter2`, BullMQ, and `BackgroundJob` are not a transactional business-event guarantee. The #17 outbox design in [.ai/ARCHITECTURE_FOUNDATION.md](.ai/ARCHITECTURE_FOUNDATION.md) is implemented and sealed — every critical cross-module state change or external side effect MUST go through it; a consumer must use an idempotent receipt in the same transaction as its effect.
+14. **RLS requires a non-bypass transaction context.** AsyncLocalStorage and Prisma tenant filters are defense in depth, not database proof. The #21 transaction-scoped RLS design in [.ai/ARCHITECTURE_FOUNDATION.md](.ai/ARCHITECTURE_FOUNDATION.md) is implemented and sealed: a `NOBYPASSRLS` application role, `SET LOCAL`/`set_config(..., true)` inside the actual transaction client, policy inventory, and real two-tenant tests. Every protected operation MUST run through that transaction client; never bypass it.
 15. **Foundation guidance must stay synchronized.** Run `pnpm foundation:check` whenever foundation policy, agent guidance, or architecture gate configuration changes. It verifies the benchmark, required blocker designs, package guards, and every supported agent/skill entry point references the canonical architecture baseline.
-16. **Architecture-flow governance is permanent.** All new development must adhere to the coding conventions and architectural policies in [docs/ARCHITECTURE_FOUNDATION.md](docs/ARCHITECTURE_FOUNDATION.md), [.ai/HANDBOOK.md](.ai/HANDBOOK.md), and this file — see `.ai/AUTOPILOT.md` § Shared bindings. Binding for every release: no hand-rolled per-page API types where generated ones exist, no new `EventEmitter2` critical effects, no direct cross-module imports, no ad-hoc custom-field storage; deviations require a documented, approved exception logged in `.ai/CHANGELOG.md` before merge.
+16. **Architecture-flow governance is permanent.** All new development must adhere to the coding conventions and architectural policies in [.ai/ARCHITECTURE_FOUNDATION.md](.ai/ARCHITECTURE_FOUNDATION.md), [.ai/HANDBOOK.md](.ai/HANDBOOK.md), and this file — see `.ai/AUTOPILOT.md` § Shared bindings. Binding for every release: no hand-rolled per-page API types where generated ones exist, no new `EventEmitter2` critical effects, no direct cross-module imports, no ad-hoc custom-field storage; deviations require a documented, approved exception logged in `.ai/CHANGELOG.md` before merge.
 
 ### Dependencies & Security
 
-10. **Never add npm dependencies without documenting rationale** in the commit message and updating [.ai/HANDBOOK.md#tech-stack](.ai/HANDBOOK.md#tech-stack).
-11. **Never store secrets in code.** Use environment variables. Reference `.env.example` for the required variables.
-12. **Never disable CORS, rate limiting, or security headers** without explicit approval.
+17. **Never add npm dependencies without documenting rationale** in the commit message and updating [.ai/HANDBOOK.md#tech-stack](.ai/HANDBOOK.md#tech-stack).
+18. **Never store secrets in code.** Use environment variables. Reference `.env.example` for the required variables.
+19. **Never disable CORS, rate limiting, or security headers** without explicit approval.
 
 ### Change History (Audit Trail)
 
-13. **Every entity mutation endpoint MUST use `@TrackChanges('EntityType')` decorator.** This ensures field-level change history is recorded automatically. Import from `../../common/decorators/track-changes.decorator` and apply `@UseInterceptors(ChangeHistoryInterceptor)` alongside.
-14. **Every record detail page MUST include `<ChangeHistory entityType="X" entityId={id} />` at the bottom.** This displays the ERPNext-style edit timeline in light gray below the main content. Import from `@unerp/ui`.
+20. **Every entity mutation endpoint MUST use `@TrackChanges('EntityType')` decorator.** This ensures field-level change history is recorded automatically. Import from `../../common/decorators/track-changes.decorator` and apply `@UseInterceptors(ChangeHistoryInterceptor)` alongside.
+21. **Every record detail page MUST include `<ChangeHistory entityType="X" entityId={id} />` at the bottom.** This displays the ERPNext-style edit timeline in light gray below the main content. Import from `@unerp/ui`.
 
 ### RBAC & Access Control
 
-15. **Every new endpoint MUST use `@Permissions('module.resource.action')` decorator.** Register new permissions in `packages/shared/src/permissions/registry.ts`.
-16. **Every UI component that controls a privileged action MUST be wrapped in `<ProtectedComponent permission="x">`** to conditionally render based on user permissions. Import from `@unerp/ui`.
+22. **Every new endpoint MUST use `@Permissions('module.resource.action')` decorator.** Register new permissions in `packages/shared/src/permissions/registry.ts`.
+23. **Every UI component that controls a privileged action MUST be wrapped in `<ProtectedComponent permission="x">`** to conditionally render based on user permissions. Import from `@unerp/ui`.
 
 ### Data Tables (Global Policy)
 
-16a. **Every entity list page MUST use the shared `DataTable` component** (`@unerp/ui`, `packages/ui/src/components/table.tsx`) instead of hand-rolled `<table>` markup. Column sorting is a single global CSS convention — set `sortable: true` on a `Column` and wire `sortBy`/`sortOrder`/`onSortChange` on `<DataTable>`; the up/down arrow indicators render via the shared `.dt-sort-th` / `.dt-sort-arrow` classes in `packages/ui/src/styles/globals.css`. Do not hand-roll per-page sort-arrow CSS.
-16b. **Any list that can exceed 20 records MUST paginate**, server-side by default (`page`/`limit`/`sortBy`/`sortOrder` query params handled by the backend's `findAll`) — client-side sort/paginate only when the backend endpoint genuinely doesn't support these params yet, and note that gap in the code and `.ai/CHANGELOG.md` as a backend follow-up.
-16c. **Every entity list `DataTable` MUST include an Actions column** (View/Edit/Delete as applicable) using `lucide-react` icons, each handler wrapped with `e.stopPropagation()` so it doesn't trigger the row's `onRowClick`. Omit an action only when the corresponding backend route genuinely doesn't exist (e.g. immutable audit records) — note why in the PR/changelog rather than guessing an endpoint.
+24. **Every entity list page MUST use the shared `DataTable` component** (`@unerp/ui`, `packages/ui/src/components/table.tsx`) instead of hand-rolled `<table>` markup. Column sorting is a single global CSS convention — set `sortable: true` on a `Column` and wire `sortBy`/`sortOrder`/`onSortChange` on `<DataTable>`; the up/down arrow indicators render via the shared `.dt-sort-th` / `.dt-sort-arrow` classes in `packages/ui/src/styles/globals.css`. Do not hand-roll per-page sort-arrow CSS.
+25. **Any list that can exceed 20 records MUST paginate**, server-side by default (`page`/`limit`/`sortBy`/`sortOrder` query params handled by the backend's `findAll`) — client-side sort/paginate only when the backend endpoint genuinely doesn't support these params yet, and note that gap in the code and `.ai/CHANGELOG.md` as a backend follow-up.
+26. **Every entity list `DataTable` MUST include an Actions column** (View/Edit/Delete as applicable) using `lucide-react` icons, each handler wrapped with `e.stopPropagation()` so it doesn't trigger the row's `onRowClick`. Omit an action only when the corresponding backend route genuinely doesn't exist (e.g. immutable audit records) — note why in the PR/changelog rather than guessing an endpoint.
 
 ### Process
 
-17. **Always update [.ai/MODULE_REGISTRY.md](.ai/MODULE_REGISTRY.md)** when creating or modifying ERP modules. See § Mandatory Tracking Convention above — this is non-negotiable.
-18. **Always update [.ai/CHANGELOG.md](.ai/CHANGELOG.md)** after completing a unit of work. See § Mandatory Tracking Convention above.
-19. **Always read [.ai/AUTOPILOT.md](.ai/AUTOPILOT.md)** before starting any task — it is the single protocol document (mission, the two flows, shared bindings, gate tiers, and the agent roster). Task-type conventions (new module/entity/endpoint/UI page) live in [.ai/HANDBOOK.md](.ai/HANDBOOK.md).
-20. **Always develop End-to-End.** When requested to "develop" or "build" a page or feature, AI agents MUST provide a completely end-to-end working implementation. This includes the database schema (Prisma), backend API (NestJS Controllers/Services), and the frontend (Next.js) hooked up to the API. Do not just build frontend mocks unless explicitly requested.
-21. **Zero-Code Builder Philosophy.** The Builder Studio module is strictly a **No-Code / Low-Code environment** aimed at non-technical users. AI agents MUST NOT provide "code snippets", "developer instructions", or expect the user to manually copy-paste React code to deploy forms. All form deployment, layout adjustment, and page creation MUST be handled via visual UI controls and dynamic rendering (via the Page Registry). Read [.ai/HANDBOOK.md#builder-studio-conventions](.ai/HANDBOOK.md#builder-studio-conventions).
+27. **Always update [.ai/MODULE_REGISTRY.md](.ai/MODULE_REGISTRY.md)** when creating or modifying ERP modules. See § Mandatory Tracking Convention above — this is non-negotiable.
+28. **Always update [.ai/CHANGELOG.md](.ai/CHANGELOG.md)** after completing a unit of work. See § Mandatory Tracking Convention above.
+29. **Always read [.ai/AUTOPILOT.md](.ai/AUTOPILOT.md)** before starting any task — it is the single protocol document (mission, the two flows, shared bindings, gate tiers, and the agent roster). Task-type conventions (new module/entity/endpoint/UI page) live in [.ai/HANDBOOK.md](.ai/HANDBOOK.md).
+30. **Always develop End-to-End.** When requested to "develop" or "build" a page or feature, AI agents MUST provide a completely end-to-end working implementation. This includes the database schema (Prisma), backend API (NestJS Controllers/Services), and the frontend (Next.js) hooked up to the API. Do not just build frontend mocks unless explicitly requested.
+31. **Zero-Code Builder Philosophy.** The Builder Studio module is strictly a **No-Code / Low-Code environment** aimed at non-technical users. AI agents MUST NOT provide "code snippets", "developer instructions", or expect the user to manually copy-paste React code to deploy forms. All form deployment, layout adjustment, and page creation MUST be handled via visual UI controls and dynamic rendering (via the Page Registry). Read [.ai/HANDBOOK.md#builder-studio-conventions](.ai/HANDBOOK.md#builder-studio-conventions).
 
 ### Dev Environment Startup (MANDATORY BEFORE ANY DEV WORK)
 
-18. **Always start the dev environment before making changes.** This allows the user to manually test each new feature in the browser in parallel.
+32. **Always start the dev environment before making changes.** This allows the user to manually test each new feature in the browser in parallel.
     - **One-command start**: `.\scripts\docker-start.ps1` (from the project root in PowerShell)
     - This script automatically: starts Docker, launches the containerized dev stack (Postgres, Redis, MinIO, and the API/Web app inside a single development container), runs database migrations, seeds data, and waits for health checks.
     - **Manual steps** (if the script cannot be run):
@@ -191,8 +194,8 @@ This is a **composable, multi-tenant ERP** built on a TypeScript monorepo. The s
       - URL: `http://localhost:3000`
       - Email: `admin@unerp.dev`
       - Password: `admin123`
-19. **Always verify both servers are running** before asking the user to test. Confirm port 3001 (API) and 3000 (Web) are listening.
-20. **Never run browser testing subagents** unless explicitly requested by the user. The user will handle manual testing in the browser themselves.
+33. **Always verify both servers are running** before asking the user to test. Confirm port 3001 (API) and 3000 (Web) are listening.
+34. **Never run browser testing subagents** unless explicitly requested by the user. The user will handle manual testing in the browser themselves.
 
 ---
 

@@ -89,7 +89,7 @@ flowchart LR
 ```
 
 Full detail: [Wiki § Architecture](../../wiki/Architecture) and
-[docs/ARCHITECTURE_FOUNDATION.md](docs/ARCHITECTURE_FOUNDATION.md) (binding governance).
+[.ai/ARCHITECTURE_FOUNDATION.md](.ai/ARCHITECTURE_FOUNDATION.md) (binding governance).
 
 ## Technology Stack
 
@@ -182,7 +182,7 @@ Full detail: [Wiki § Architecture](../../wiki/Architecture) and
 Industry apps live in **dedicated GitHub repos** and are installed/uninstalled in real time
 through the marketplace — each ships a declarative bundle plus a standalone service with its
 own database, reached via core's extension gateway at `/api/v1/ext/<slug>/*`
-(contract: [docs/EXTENSION_SERVICE_CONTRACT.md](docs/EXTENSION_SERVICE_CONTRACT.md)).
+(contract: [docs/API_VERSIONING_POLICY.md](docs/API_VERSIONING_POLICY.md)).
 
 | Module            | Repo                                                                              | Description                                        |
 | :---------------- | :-------------------------------------------------------------------------------- | :------------------------------------------------- |
@@ -345,7 +345,7 @@ At a glance:
 - [x] Builder Studio (zero-code forms/pages/dashboards/workflows) + Marketplace
 - [ ] Foundation hardening seal (see roadmap doc — tracks 0/A–I)
 - [ ] Public API/webhook GA + partner developer portal
-- [ ] Deeper module strengthening (500+ features per module, core → industry order)
+- [ ] Deeper module strengthening (1500+ weighted features per module, AUTOPILOT § Phase M focus order)
 
 See open [Issues](../../issues) and [Milestones](../../milestones) for granular, in-flight work.
 
@@ -353,7 +353,7 @@ See open [Issues](../../issues) and [Milestones](../../milestones) for granular,
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for branching, commit conventions, local verification
 steps, and the PR checklist. Please also read [AGENTS.md](AGENTS.md) and
-[docs/ARCHITECTURE_FOUNDATION.md](docs/ARCHITECTURE_FOUNDATION.md) before proposing changes —
+[.ai/ARCHITECTURE_FOUNDATION.md](.ai/ARCHITECTURE_FOUNDATION.md) before proposing changes —
 they're binding, not optional. This project follows a [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## AI-Agent Development

@@ -14,9 +14,10 @@ source of truth; this is the operating summary:
 > `MODULE_REGISTRY.md` § Cycle Ledger; only the mandatory checkpoint resets
 > `Next run` to `DEV` — an explicit user harden never resets the 10-cycle clock.
 
-## 0. Bootstrap
+## 0. Bootstrap (slim)
 
-Read `AGENTS.md` Critical Rules and `.ai/AUTOPILOT.md`; `git pull`; start the dev
+Read `.ai/AUTOPILOT.md` § QA flow (flow authority; consult `AGENTS.md` sections
+on demand, not in full); `git pull`; start the dev
 stack if runtime probing is needed. `node scripts/claim.mjs list` — if a user is
 present and another session holds the module they pick, say who holds it and ask
 for another; unattended runs restrict to unclaimed scope silently.

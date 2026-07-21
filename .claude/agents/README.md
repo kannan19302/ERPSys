@@ -12,7 +12,7 @@ CHANGELOG.md + MODULE_REGISTRY.md after finishing — every time, no exceptions.
 
 ## The three guarantees every agent provides
 
-> **Architecture foundation gate:** Every role must read [`docs/ARCHITECTURE_FOUNDATION.md`](../../docs/ARCHITECTURE_FOUNDATION.md) before selecting work. Product development is paused while #17, #19, and #21 are open; only foundation remediation, evidence gathering, tests, documentation, and architecture quality-gate work are permitted. API work must run `pnpm architecture:check`; policy/agent/gate edits must also run `pnpm foundation:check`. Extension work must honor the executable `apiVersion` compatibility range in [`docs/EXTENSION_SERVICE_CONTRACT.md`](../../docs/EXTENSION_SERVICE_CONTRACT.md).
+> **Architecture foundation gate:** Foundation SEALED v1.0 (2026-07-18) — the historical feature freeze is lifted. Every role follows the 8 non-negotiable rules in [`.ai/ARCHITECTURE_FOUNDATION.md`](../../.ai/ARCHITECTURE_FOUNDATION.md); changing a sealed contract requires a documented ADR. API work must run `pnpm architecture:check`; policy/agent/gate edits must also run `pnpm foundation:check`. Extension work must honor the executable `apiVersion` compatibility range enforced by `@unerp/service-kit` per [`docs/API_VERSIONING_POLICY.md`](../../docs/API_VERSIONING_POLICY.md).
 
 1. **Context-first**: reads MODULE_REGISTRY.md (all sections) and CHANGELOG.md before every session
 2. **Duplicate check**: verifies a feature doesn't already exist before building or speccing it
@@ -24,20 +24,20 @@ When you suggest any new functionality, the product-manager agent must run first
 
 ## Roles
 
-| Phase | Agent | Trigger |
-|:---|:---|:---|
-| Plan | `product-manager` | New feature request, user stories, acceptance criteria, duplicate check |
-| Design | `uiux-designer` | UI/UX layout, design system, accessibility, component design |
-| Design | `data-architect` | Schema changes, migrations, new Prisma models, RLS |
-| Build | `backend-developer` | NestJS modules, services, controllers, domain events |
-| Build | `frontend-developer` | Next.js pages, UI components, API wiring |
-| Build | `fullstack-developer` | End-to-end vertical slices (DB→API→UI) |
-| Build | `devops-engineer` | CI/CD, Docker, Turborepo, observability, secrets |
-| Verify | `qa-tester` | Unit/integration/E2E tests, coverage gaps, regression |
-| Verify | `code-reviewer` | Diff review, rule enforcement, merge gate |
-| Verify | `security-auditor` | Tenant isolation, RBAC, injection, secrets, HIPAA |
-| Verify | `business-analyst-uat` | User workflow validation, UAT sign-off before release |
-| Document | `tech-writer` | `.ai/` context files, MODULE_REGISTRY, CHANGELOG |
+| Phase    | Agent                  | Trigger                                                                 |
+| :------- | :--------------------- | :---------------------------------------------------------------------- |
+| Plan     | `product-manager`      | New feature request, user stories, acceptance criteria, duplicate check |
+| Design   | `uiux-designer`        | UI/UX layout, design system, accessibility, component design            |
+| Design   | `data-architect`       | Schema changes, migrations, new Prisma models, RLS                      |
+| Build    | `backend-developer`    | NestJS modules, services, controllers, domain events                    |
+| Build    | `frontend-developer`   | Next.js pages, UI components, API wiring                                |
+| Build    | `fullstack-developer`  | End-to-end vertical slices (DB→API→UI)                                  |
+| Build    | `devops-engineer`      | CI/CD, Docker, Turborepo, observability, secrets                        |
+| Verify   | `qa-tester`            | Unit/integration/E2E tests, coverage gaps, regression                   |
+| Verify   | `code-reviewer`        | Diff review, rule enforcement, merge gate                               |
+| Verify   | `security-auditor`     | Tenant isolation, RBAC, injection, secrets, HIPAA                       |
+| Verify   | `business-analyst-uat` | User workflow validation, UAT sign-off before release                   |
+| Document | `tech-writer`          | `.ai/` context files, MODULE_REGISTRY, CHANGELOG                        |
 
 ## Recommended feature flow
 
@@ -47,19 +47,20 @@ product-manager → data-architect → backend-developer / frontend-developer (o
 
 These agents are defined for Claude Code (`.claude/agents/*.md`), but equivalent rules exist for other tools:
 
-| IDE | Rules file |
-|:---|:---|
-| Claude Code | `.claude/agents/*.md` (this directory) |
-| Cursor | `.cursor/rules/unerp-agents.mdc` |
-| Windsurf | `.windsurfrules` |
-| GitHub Copilot | `.github/copilot-instructions.md` |
-| Any AI agent | `AGENTS.md` (master rule document) |
+| IDE            | Rules file                             |
+| :------------- | :------------------------------------- |
+| Claude Code    | `.claude/agents/*.md` (this directory) |
+| Cursor         | `.cursor/rules/unerp-agents.mdc`       |
+| Windsurf       | `.windsurfrules`                       |
+| GitHub Copilot | `.github/copilot-instructions.md`      |
+| Any AI agent   | `AGENTS.md` (master rule document)     |
 
 All rules point back to `AGENTS.md` and `.ai/MODULE_REGISTRY.md` as the single sources of truth.
 
 ## Editing agents
 
 Tweak behavior by editing the relevant `.md` file. Key sections in each:
+
 - **Mandatory Project Context** — what to read before doing anything
 - **Pushback Protocol** — how to correct the user
 - **Critical rules / Design rules** — domain-specific non-negotiables

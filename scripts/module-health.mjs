@@ -127,9 +127,11 @@ for (const name of apiModuleNames.sort()) {
 
   const healthScore = Math.max(0, Math.round(featureScore + testScore + decoratorScore + crudScore + docScore - penalties));
 
-  // Determine maturity tier
+  // Determine maturity tier (AUTOPILOT § Module Maturity Tiers)
   let tier = 'Skeleton';
-  if (totalFeatures >= 500) tier = 'Complete';
+  if (totalFeatures >= 1500) tier = 'Deep';
+  else if (totalFeatures >= 1000) tier = 'Complete';
+  else if (totalFeatures >= 500) tier = 'Advanced';
   else if (totalFeatures >= 200) tier = 'Competitive';
   else if (totalFeatures >= 50) tier = 'Functional';
   else if (totalFeatures >= 10) tier = 'MVM';
@@ -152,8 +154,11 @@ const skeletonCount = Object.values(modules).filter(m => m.tier === 'Skeleton').
 const mvmCount = Object.values(modules).filter(m => m.tier === 'MVM').length;
 const functionalCount = Object.values(modules).filter(m => m.tier === 'Functional').length;
 const competitiveCount = Object.values(modules).filter(m => m.tier === 'Competitive').length;
+const advancedCount = Object.values(modules).filter(m => m.tier === 'Advanced').length;
 const completeCount = Object.values(modules).filter(m => m.tier === 'Complete').length;
-const overallCompletionPercent = ((totalFeatures / (moduleCount * 500)) * 100).toFixed(1);
+const deepCount = Object.values(modules).filter(m => m.tier === 'Deep').length;
+const PER_MODULE_TARGET = 1500; // completion bar (AUTOPILOT § Module Completion Goal)
+const overallCompletionPercent = ((totalFeatures / (moduleCount * PER_MODULE_TARGET)) * 100).toFixed(1);
 
 // Generate progress dashboard markdown
 const dashboardMarkdown = [
@@ -163,13 +168,15 @@ const dashboardMarkdown = [
   '',
   '| Metric | Value | Target | Progress |',
   '|:---|:---|:---|:---|',
-  `| **Total Features** | ${totalFeatures} | ${moduleCount * 500} | ${overallCompletionPercent}% |`,
+  `| **Total Features** | ${totalFeatures} | ${moduleCount * PER_MODULE_TARGET} | ${overallCompletionPercent}% |`,
   `| **Modules in Skeleton (<10)** | ${skeletonCount} | 0 | - |`,
   `| **Modules at MVM (10-50)** | ${mvmCount} | 0 | - |`,
   `| **Modules at Functional (50-200)** | ${functionalCount} | 0 | - |`,
   `| **Modules at Competitive (200-500)** | ${competitiveCount} | 0 | - |`,
-  `| **Modules at Complete (500+)** | ${completeCount} | ${moduleCount} | ${(completeCount / moduleCount * 100).toFixed(1)}% |`,
-  `| **Average Features per Module** | ${Math.round(totalFeatures / moduleCount)} | 500 | ${(totalFeatures / moduleCount / 500 * 100).toFixed(1)}% |`,
+  `| **Modules at Advanced (500-1000)** | ${advancedCount} | 0 | - |`,
+  `| **Modules at Complete (1000-1500)** | ${completeCount} | 0 | - |`,
+  `| **Modules at Deep (1500+)** | ${deepCount} | ${moduleCount} | ${(deepCount / moduleCount * 100).toFixed(1)}% |`,
+  `| **Average Features per Module** | ${Math.round(totalFeatures / moduleCount)} | ${PER_MODULE_TARGET} | ${(totalFeatures / moduleCount / PER_MODULE_TARGET * 100).toFixed(1)}% |`,
   '',
   '### Module Health List',
   '',
@@ -177,7 +184,9 @@ const dashboardMarkdown = [
   '|:---|---:|---:|:---|:---|:---|',
   ...Object.entries(modules).map(([mName, m]) => {
     let statusIcon = '🔴';
-    if (m.tier === 'Complete') statusIcon = '👑';
+    if (m.tier === 'Deep') statusIcon = '👑';
+    else if (m.tier === 'Complete') statusIcon = '🏆';
+    else if (m.tier === 'Advanced') statusIcon = '🟣';
     else if (m.tier === 'Competitive') statusIcon = '🟢';
     else if (m.tier === 'Functional') statusIcon = '🟡';
     else if (m.tier === 'MVM') statusIcon = '🔵';
@@ -190,8 +199,8 @@ const dashboardMarkdown = [
 console.log('\n======================================================');
 console.log('                 UNIERP MODULE HEALTH REPORT');
 console.log('======================================================');
-console.log(`Total Features: ${totalFeatures} / ${moduleCount * 500} (${overallCompletionPercent}%)`);
-console.log(`Complete (500+): ${completeCount} | Competitive (200-500): ${competitiveCount}`);
+console.log(`Total Features: ${totalFeatures} / ${moduleCount * PER_MODULE_TARGET} (${overallCompletionPercent}%)`);
+console.log(`Deep (1500+): ${deepCount} | Complete (1000-1500): ${completeCount} | Advanced (500-1000): ${advancedCount} | Competitive (200-500): ${competitiveCount}`);
 console.log(`Functional (50-200): ${functionalCount} | MVM (10-50): ${mvmCount} | Skeleton (<10): ${skeletonCount}`);
 console.log('======================================================\n');
 
