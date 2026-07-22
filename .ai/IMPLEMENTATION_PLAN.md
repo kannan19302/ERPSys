@@ -1,104 +1,58 @@
-# Implementation Plan — Cycle 32 (Phase M)
+# Cycle 35 — CRM Deepening to 1500+ Features
 
-## Cycle Info
+## Phase: M (Module strengthening) | Focus: CRM & Sales (786 + 709 = 1495 features)
 
-- **Cycle**: 32
-- **Phase**: M (Module strengthening)
-- **Date**: 2026-07-21
+## Why
 
-## Selected Scope
+CRM & Sales is next in the Phase M focus order. Combined feature count (1495) is 5 short of the 1500+ completion bar, but many features are stub endpoints. This cycle adds **real, production-grade CRM sub-domains** missing vs. market leaders, closing the 1500+ gap and strengthening genuine competitive parity.
 
-**Finance & Accounting** (Current Focus Module) — P3 deepening vs market leaders.
+## Scope (4 sub-domains, ~55 new real endpoints + 3 new Prisma models)
 
-**Why**: Finance is at 1190 combined features (174 core + 1016 advanced). Need 1500+ to close completion criteria #1. Gap: ~310 features. This cycle builds 4 new real-service verticals (80+ new feature endpoints) to close ~25% of the gap.
+### 1. Knowledge Base (15 API endpoints + 2 UI pages)
 
-## Duplicate Check
+- **Models**: `KnowledgeBaseArticle`, `KnowledgeBaseCategory` (new Prisma models)
+- **API**: CRUD for articles, categories; publish/draft lifecycle; search; article feedback; category tree
+- **UI**: KB list page, KB article editor/reader page
+- **Why**: All top-10 CRMs (Salesforce, HubSpot, Zendesk) ship a KB; CRM is incomplete without it
 
-- `pnpm architecture:check` baseline: clean (already verified from Cycle 31)
-- Grep confirms no existing routes under planned `/finance/ar-deep/*`, `/finance/ap-deep/*`, `/finance/close/*`, `/finance/project-accounting/*`
+### 2. Win/Loss Analytics (12 API endpoints + 2 UI pages)
 
-## Ordered Slice List (API layer)
+- **Models**: `WinLossReason`, `Competitor` (new Prisma models)
+- **API**: Reason CRUD, competitor CRUD, win/loss analytics (rate by reason, by competitor, by rep, by period), deal-level win/loss tracking
+- **UI**: Win/loss dashboard, competitor tracking page
+- **Why**: Critical for sales process improvement; all major CRMs have this
 
-### Slice 1: AR Deep Operations (20+ endpoints)
+### 3. Partner Relationship Management (PRM) Deepening (15 API endpoints + 2 UI pages)
 
-**Service**: `ArDeepService` — `apps/api/src/modules/finance/services/ar-deep.service.ts`
-**Controller**: `ArDeepController` — `@Controller('finance/ar-deep')`
+- **Models**: Extend existing `SalesPartner`, `SalesPartnerTier`
+- **API**: Partner portal access, deal registration, co-branded quotes, partner performance analytics, MDF fund tracking, partner tier management
+- **UI**: Partner management hub, partner portal
+- **Why**: Existing partner model exists but no deal registration or portal
 
-- Receipt batch posting with multi-invoice allocation
-- Collections queue with scoring and action plans
-- Customer credit management (limits, holds, reviews, releases)
-- Automated payment allocation intelligence (reference-based auto-match)
-- Promise-to-pay tracking
+### 4. Multi-Channel Communication Templates (13 API endpoints + 2 UI pages)
 
-### Slice 2: AP Deep Operations (20+ endpoints)
+- **Models**: Extend with `CommunicationTemplate` (SMS, WhatsApp, email variants)
+- **API**: Template CRUD per channel, channel config, send tracking, message log, analytics
+- **UI**: Communication template library, channel settings
+- **Why**: CRM needs omni-channel template management beyond just email
 
-**Service**: `ApDeepService` — `apps/api/src/modules/finance/services/ap-deep.service.ts`
-**Controller**: `ApDeepController` — `@Controller('finance/ap-deep')`
+## Duplicate check
 
-- Invoice matching with tolerance rules (3-way match: PO x Receipt x Invoice)
-- AP approval routing (configurable approval chains by amount/vendor/category)
-- Vendor statement reconciliation (auto-match with AP transactions)
-- Automated payment scheduling with cash position awareness
+- Grep `KnowledgeBaseArticle`, `WinLossReason`, `Competitor`, `SalesPartner` — none exist in current schema
+- Feature ledger scanned — none of these sub-domains have endpoints
 
-### Slice 3: Close Operations & SOX Compliance (18+ endpoints)
+## Total: ~55 new endpoints, 8 new UI pages
 
-**Service**: `CloseOpsService` — `apps/api/src/modules/finance/services/close-ops.service.ts`
-**Controller**: `CloseOpsController` — `@Controller('finance/close')`
+Well above the 40-feature floor.
 
-- Close task templates and automation
-- Close sign-off workflow with evidence
-- Close status dashboard
-- Fiscal year management with period breakdowns
-- SOX control definition, testing, and documentation
-- Journal entry approval workflow enhancement
+## Gate tier: FAST
 
-### Slice 4: Project Accounting (15+ endpoints)
+- No risky migrations (additive only)
+- No breaking API changes
+- Standard RBAC + @TrackChanges on mutations
 
-**Service**: `ProjectAccountingService` — `apps/api/src/modules/finance/services/project-accounting.service.ts`
-**Controller**: `ProjectAccountingController` — `@Controller('finance/project-accounting')`
+## Rollback
 
-- Project budget setup and tracking
-- Resource cost allocation to projects
-- Project profitability reporting
-- WIP (Work in Progress) reporting
-- Project billing milestone tracking
-
-### Slice 5: Prisma Schema Updates (if needed)
-
-- Add `CloseTask` model (task templates for period close)
-- Add `CloseTaskAssignment` model (task assignments with sign-off)
-- Add `SoxControl` model (SOX control definitions)
-- Add `SoxControlTest` model (SOX control test results)
-- Add `FiscalYear` model (fiscal year with period breakdowns)
-- Add `ProjectBudget` model (project-specific budget tracking)
-- (Only if schema doesn't exist — check first)
-
-### Slice 6: Register controllers in FinanceModule
-
-- Wire all new controllers and services into `finance.module.ts`
-
-### Slice 7: Unit Tests
-
-- Test files for each new service
-- Target: 3+ tests per service = 12+ total
-
-### Slice 8: Frontend UI Tabs (if time permits)
-
-- AR Deep tab for Finance tab layout
-- AP Deep tab for Finance tab layout
-- Close Ops tab for Finance tab layout (settings area)
-
-## Acceptance Criteria
-
-1. All new endpoints return real data (no stubs)
-2. Zod validation on all POST/PATCH/PUT endpoints
-3. `@Permissions()` decorator on all guarded endpoints
-4. `@TrackChanges()` on mutation endpoints
-5. Typecheck clean (`@unerp/api`, `@unerp/web`)
-6. `pnpm architecture:check` clean
-7. Unit tests passing
-8. Feature ledger reflects new feature count
-
-## Gate Tier
-
-FAST (no data migrations, no auth/tenancy changes)
+- All Prisma models are additive (`prisma db deploy` adds tables, never drops)
+- New controllers are behind `@Permissions` guards — no auth bypass risk
+- UI pages are new routes — no old route change

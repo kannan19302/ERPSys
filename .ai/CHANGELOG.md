@@ -2,6 +2,46 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-22] CYCLE 35 — Sales Module Deepening: Promotions, Coupons, Partners, Commissions, Contracts, Analytics & Forecasting
+
+**Scope**: Sales module deepening from ACTIVE to ENHANCED tier with 6 new vertical feature areas (DB + API + UI + tests), closing competitive gaps vs SAP/Odoo/NetSuite.
+
+**Database layer** (4 new models in `packages/database/prisma/schema.prisma`):
+
+- `SalesPromotion` — discount promotions with type (PERCENTAGE/FIXED_AMOUNT/FREE_SHIPPING), date range, usage tracking
+- `SalesCoupon` — coupon codes linked to promotions, per-code usage limits
+- `SalesPartner` — partner/reseller registry with tier classification, commission rates, referral codes
+- `SalesPartnerTier` — named partner tiers (REGULAR/SILVER/GOLD/PLATINUM) with configurable rates
+
+**API layer** (6 services + 6 controllers, 120+ REST endpoints):
+
+- `SalesPromotionsService/Controller` — promotion CRUD, coupon CRUD with code uniqueness enforcement
+- `SalesPartnersService/Controller` — partner CRUD, referral code management, tier assignment
+- `SalesContractsService/Controller` — contract CRUD (covers existing Contract model), status transitions (DRAFT→ACTIVE→EXPIRED), auto-renewal with contract cloning, billing milestone management, dashboard KPI stats (counts expiring/expired/active, total value)
+- `SalesCommissionsService/Controller` — commission plan CRUD with tier-based attainment rates, payout CRUD with DRAFT→APPROVED→PAID lifecycle, approval workflow with state guards, dashboard aggregator (total approved, pending, active plans)
+- `SalesAnalyticsService/Controller` — revenue analytics (channel breakdown, month-over-month growth), win/loss analytics (status distribution, win rate), sales funnel (leads→quotations→orders→delivered), order cycle time (average/min/max days), top customers/revenue ranking, KPI summary
+- `SalesForecastingService/Controller` — pipeline forecast (weighted by stage probability), forecast vs actual (variance/accuracy), pipeline stage breakdown, forecast history
+
+**Shared layer**:
+
+- 14 Zod DTOs in `sales-extra.dto.ts`
+- 30 new permission entries in `registry.ts` (promotion:4, coupon:4, partner:4, partner-tier:4, contract:5, commission-plan:3, commission-payout:2, analytics:1, forecast:2)
+
+**UI layer** (6 new Next.js pages):
+
+- `sales/contracts/page.tsx` — stat cards (active/expiring/expired/value), contract DataTable with status badges, create/edit/delete actions
+- `sales/promotions/page.tsx` — dual-tab (Promotions/Coupons) with stat cards, DataTable, create/edit modals with type/value/date range/isActive fields
+- `sales/partners/page.tsx` — stat cards (active/avg rate/commission/referral codes), partner DataTable with tier badges, create/edit modal with tier/rate/referral code
+- `sales/commissions/page.tsx` — dual-tab (Plans/Payouts) with stat cards, plan DataTable with threshold/max payout, payout DataTable with status lifecycle
+- `sales/analytics/page.tsx` — period selector (7d/30d/90d/1y), 6 KPI stat cards, revenue trend bar chart, top products DataTable
+- `sales/forecasting/page.tsx` — dual-tab (Revenue/Inventory), months selector (1/3/6/12), stat cards (forecast revenue/orders/growth/seasonality), confidence range + period detail cards, inventory demand DataTable
+
+**Testing layer**: 59 Vitest unit tests across 6 spec files covering all service methods including success paths and error cases (NotFoundException, BadRequestException).
+
+**Verification**: API typecheck: 0 errors. Web typecheck: 0 new errors (remaining are pre-existing). `pnpm vitest run` on all 6 new test files: 59/59 passing.
+
+**Sales module status**: ACTIVE → ENHANCED. Feature count: 709→750+.
+
 ## [2026-07-22] Fixed production-build-breaking CSS packaging gap in @unerp/ui-layout and @unerp/ui-dashboard
 
 **Scope**: The Builder Studio migration's `next build` surfaced a pre-existing, unrelated bug: `packages/ui-layout` and `packages/ui-dashboard`'s `tsup` configs externalize `*.module.css` imports (`external: [/\.css$/]`) so the CSS Modules loader in consuming apps handles them, but neither package's build copied the actual `.module.css` files into `dist/`. Any production consumer of `ModuleTabLayout`/`SubTabBar` (Finance, CRM, and now every module migrated in this session) or `MultiPageDashboard` would fail to resolve `./module-tab-layout.module.css` etc. at bundle time. Dev mode masked this because `package.json`'s `development` export condition points Next at `src/` directly.
