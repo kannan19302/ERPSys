@@ -31,6 +31,19 @@ The Autonomous Development Protocol (`.ai/AUTOPILOT.md`) has exactly two flows:
 
 All other flows (issue-scan, fix-issues, integrate, and their variants) are retired.
 
+## Agile/GitHub tracking (binding, part of the two flows above)
+
+`.ai/COMPETITIVE_ROADMAP.md` is the program-management layer over the ADP —
+Epics (one per module), Program Increments, Sprints, and Stories, sequenced
+by AUTOPILOT's existing Phase M focus order (it does not change that order).
+Both the DEV and QA flows' Record step invoke the `sprint-sync` skill to
+mirror the cycle's work onto GitHub Issues (Epic/Story issues, `type:`/
+`module:`/`sprint:` labels). This is bookkeeping inside the existing two
+flows, not a third flow — see COMPETITIVE_ROADMAP.md § 6 for the one
+outstanding manual step (creating the GitHub Projects v2 board + sprint
+milestones) and § 4 for the time/cost projection to reach feature parity
+with the top 10 ERP market leaders.
+
 ## Architecture governance (binding, permanent)
 
 Read `.ai/ARCHITECTURE_FOUNDATION.md` before selecting work (foundation SEALED
