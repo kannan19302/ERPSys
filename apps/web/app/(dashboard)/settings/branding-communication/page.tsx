@@ -1,40 +1,80 @@
-'use client';
+"use client";
 
-import React, { useState, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { PageHeader, Tabs, Spinner } from '@unerp/ui';
-import { Image as ImageIcon, Mail, FileText, Megaphone, ShieldAlert } from 'lucide-react';
-import LoginPageTab from './LoginPageTab';
-import EmailServerTab from './EmailServerTab';
-import EmailTemplatesTab from './EmailTemplatesTab';
-import AnnouncementsTab from './AnnouncementsTab';
-import MaintenanceModeTab from './MaintenanceModeTab';
+import React, { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { PageHeader, Spinner } from "@unerp/ui";
+import { SubTabBar, type SubTab } from "@unerp/ui-layout";
+import {
+  Image as ImageIcon,
+  Mail,
+  FileText,
+  Megaphone,
+  ShieldAlert,
+} from "lucide-react";
+import LoginPageTab from "./LoginPageTab";
+import EmailServerTab from "./EmailServerTab";
+import EmailTemplatesTab from "./EmailTemplatesTab";
+import AnnouncementsTab from "./AnnouncementsTab";
+import MaintenanceModeTab from "./MaintenanceModeTab";
 
-const TAB_KEYS = ['login-page', 'email-server', 'email-templates', 'announcements', 'maintenance'] as const;
-type TabKey = typeof TAB_KEYS[number];
+const TAB_KEYS = [
+  "login-page",
+  "email-server",
+  "email-templates",
+  "announcements",
+  "maintenance",
+] as const;
+type TabKey = (typeof TAB_KEYS)[number];
 
 function isTabKey(value: string | null): value is TabKey {
   return !!value && (TAB_KEYS as readonly string[]).includes(value);
 }
 
-function BrandingCommunicationHubContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const initialTab = isTabKey(searchParams.get('tab')) ? (searchParams.get('tab') as TabKey) : 'login-page';
-  const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
-  const [visited, setVisited] = useState<Set<TabKey>>(new Set([initialTab]));
+const SUB_TABS: SubTab[] = [
+  {
+    id: "login-page",
+    label: "Login Page",
+    href: "/settings/branding-communication?subtab=login-page",
+    icon: ImageIcon,
+  },
+  {
+    id: "email-server",
+    label: "Email Server (SMTP)",
+    href: "/settings/branding-communication?subtab=email-server",
+    icon: Mail,
+  },
+  {
+    id: "email-templates",
+    label: "Email Templates",
+    href: "/settings/branding-communication?subtab=email-templates",
+    icon: FileText,
+  },
+  {
+    id: "announcements",
+    label: "Announcements",
+    href: "/settings/branding-communication?subtab=announcements",
+    icon: Megaphone,
+  },
+  {
+    id: "maintenance",
+    label: "Maintenance Mode",
+    href: "/settings/branding-communication?subtab=maintenance",
+    icon: ShieldAlert,
+  },
+];
 
-  const handleChange = (key: string) => {
-    if (!isTabKey(key)) return;
-    setActiveTab(key);
-    setVisited((prev) => {
-      if (prev.has(key)) return prev;
-      const next = new Set(prev);
-      next.add(key);
-      return next;
-    });
-    router.replace(`/settings/branding-communication?tab=${key}`, { scroll: false });
-  };
+function BrandingCommunicationHubContent() {
+  const searchParams = useSearchParams();
+  const activeTab: TabKey = isTabKey(searchParams.get("subtab"))
+    ? (searchParams.get("subtab") as TabKey)
+    : "login-page";
+  const [visited, setVisited] = useState<Set<TabKey>>(new Set([activeTab]));
+
+  useEffect(() => {
+    setVisited((prev) =>
+      prev.has(activeTab) ? prev : new Set(prev).add(activeTab),
+    );
+  }, [activeTab]);
 
   return (
     <div className="ui-stack-6">
@@ -42,37 +82,31 @@ function BrandingCommunicationHubContent() {
         title="Branding & Communication"
         description="Customize the login experience and manage outbound tenant communications"
         breadcrumbs={[
-          { label: 'Administration', href: '/settings' },
-          { label: 'Branding & Communication' },
+          { label: "Administration", href: "/settings" },
+          { label: "Branding & Communication" },
         ]}
       />
 
-      <Tabs
-        tabs={[
-          { key: 'login-page', label: 'Login Page', icon: <ImageIcon size={14} /> },
-          { key: 'email-server', label: 'Email Server (SMTP)', icon: <Mail size={14} /> },
-          { key: 'email-templates', label: 'Email Templates', icon: <FileText size={14} /> },
-          { key: 'announcements', label: 'Announcements', icon: <Megaphone size={14} /> },
-          { key: 'maintenance', label: 'Maintenance Mode', icon: <ShieldAlert size={14} /> },
-        ]}
-        value={activeTab}
-        onChange={handleChange}
-      />
+      <SubTabBar tabs={SUB_TABS} />
 
-      <div style={{ display: activeTab === 'login-page' ? 'block' : 'none' }}>
-        {visited.has('login-page') && <LoginPageTab />}
+      <div style={{ display: activeTab === "login-page" ? "block" : "none" }}>
+        {visited.has("login-page") && <LoginPageTab />}
       </div>
-      <div style={{ display: activeTab === 'email-server' ? 'block' : 'none' }}>
-        {visited.has('email-server') && <EmailServerTab />}
+      <div style={{ display: activeTab === "email-server" ? "block" : "none" }}>
+        {visited.has("email-server") && <EmailServerTab />}
       </div>
-      <div style={{ display: activeTab === 'email-templates' ? 'block' : 'none' }}>
-        {visited.has('email-templates') && <EmailTemplatesTab />}
+      <div
+        style={{ display: activeTab === "email-templates" ? "block" : "none" }}
+      >
+        {visited.has("email-templates") && <EmailTemplatesTab />}
       </div>
-      <div style={{ display: activeTab === 'announcements' ? 'block' : 'none' }}>
-        {visited.has('announcements') && <AnnouncementsTab />}
+      <div
+        style={{ display: activeTab === "announcements" ? "block" : "none" }}
+      >
+        {visited.has("announcements") && <AnnouncementsTab />}
       </div>
-      <div style={{ display: activeTab === 'maintenance' ? 'block' : 'none' }}>
-        {visited.has('maintenance') && <MaintenanceModeTab />}
+      <div style={{ display: activeTab === "maintenance" ? "block" : "none" }}>
+        {visited.has("maintenance") && <MaintenanceModeTab />}
       </div>
     </div>
   );
@@ -80,11 +114,13 @@ function BrandingCommunicationHubContent() {
 
 export default function BrandingCommunicationHubPage() {
   return (
-    <Suspense fallback={
-      <div className="ui-center-pad">
-        <Spinner size="lg" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="ui-center-pad">
+          <Spinner size="lg" />
+        </div>
+      }
+    >
       <BrandingCommunicationHubContent />
     </Suspense>
   );
