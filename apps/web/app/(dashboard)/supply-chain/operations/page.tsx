@@ -1,41 +1,92 @@
-'use client';
-import React, { useState, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { PageHeader, Tabs, Spinner } from '@unerp/ui';
-import { RouteGuard } from '@unerp/framework';
-import { Package, MapPin, Truck, Route as RouteIcon, ClipboardList, ArrowLeftRight } from 'lucide-react';
-import ShipmentsTab from './ShipmentsTab';
-import TrackingTab from './TrackingTab';
-import CarriersTab from './CarriersTab';
-import RoutesTab from './RoutesTab';
-import AsnsTab from './AsnsTab';
-import VendorReturnsTab from './VendorReturnsTab';
+"use client";
+import React, { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import { PageHeader, Spinner } from "@unerp/ui";
+import { SubTabBar, type SubTab } from "@unerp/ui-layout";
+import { RouteGuard } from "@unerp/framework";
+import {
+  Package,
+  MapPin,
+  Truck,
+  Route as RouteIcon,
+  ClipboardList,
+  ArrowLeftRight,
+} from "lucide-react";
+import ShipmentsTab from "./ShipmentsTab";
+import TrackingTab from "./TrackingTab";
+import CarriersTab from "./CarriersTab";
+import RoutesTab from "./RoutesTab";
+import AsnsTab from "./AsnsTab";
+import VendorReturnsTab from "./VendorReturnsTab";
 
-const TAB_KEYS = ['shipments', 'tracking', 'carriers', 'routes', 'asns', 'vendor-returns'] as const;
-type TabKey = typeof TAB_KEYS[number];
+const TAB_KEYS = [
+  "shipments",
+  "tracking",
+  "carriers",
+  "routes",
+  "asns",
+  "vendor-returns",
+] as const;
+type TabKey = (typeof TAB_KEYS)[number];
 
 function isTabKey(value: string | null): value is TabKey {
   return !!value && (TAB_KEYS as readonly string[]).includes(value);
 }
 
-function OperationsHubContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const initialTab = isTabKey(searchParams.get('tab')) ? (searchParams.get('tab') as TabKey) : 'shipments';
-  const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
-  const [visited, setVisited] = useState<Set<TabKey>>(new Set([initialTab]));
+const OPERATIONS_TABS: SubTab[] = [
+  {
+    id: "shipments",
+    label: "Shipments",
+    href: "/supply-chain/operations?tab=shipments",
+    icon: Package,
+  },
+  {
+    id: "tracking",
+    label: "Shipment Tracking",
+    href: "/supply-chain/operations?tab=tracking",
+    icon: MapPin,
+  },
+  {
+    id: "carriers",
+    label: "Carrier Management",
+    href: "/supply-chain/operations?tab=carriers",
+    icon: Truck,
+  },
+  {
+    id: "routes",
+    label: "Route Optimization",
+    href: "/supply-chain/operations?tab=routes",
+    icon: RouteIcon,
+  },
+  {
+    id: "asns",
+    label: "Advance Shipping Notices (ASN)",
+    href: "/supply-chain/operations?tab=asns",
+    icon: ClipboardList,
+  },
+  {
+    id: "vendor-returns",
+    label: "Vendor Returns",
+    href: "/supply-chain/operations?tab=vendor-returns",
+    icon: ArrowLeftRight,
+  },
+];
 
-  const handleChange = (key: string) => {
-    if (!isTabKey(key)) return;
-    setActiveTab(key);
+function OperationsHubContent() {
+  const searchParams = useSearchParams();
+  const activeTab: TabKey = isTabKey(searchParams.get("tab"))
+    ? (searchParams.get("tab") as TabKey)
+    : "shipments";
+  const [visited, setVisited] = useState<Set<TabKey>>(new Set([activeTab]));
+
+  useEffect(() => {
     setVisited((prev) => {
-      if (prev.has(key)) return prev;
+      if (prev.has(activeTab)) return prev;
       const next = new Set(prev);
-      next.add(key);
+      next.add(activeTab);
       return next;
     });
-    router.replace(`/supply-chain/operations?tab=${key}`, { scroll: false });
-  };
+  }, [activeTab]);
 
   return (
     <RouteGuard permission="supply-chain.shipment.read">
@@ -44,41 +95,30 @@ function OperationsHubContent() {
           title="Operations"
           description="Day-to-day shipment operations: view shipments, track deliveries, manage carriers, and optimize routes"
           breadcrumbs={[
-            { label: 'Supply Chain', href: '/supply-chain' },
-            { label: 'Operations' },
+            { label: "Supply Chain", href: "/supply-chain" },
+            { label: "Operations" },
           ]}
         />
 
-        <Tabs
-          tabs={[
-            { key: 'shipments', label: 'Shipments', icon: <Package size={14} /> },
-            { key: 'tracking', label: 'Shipment Tracking', icon: <MapPin size={14} /> },
-            { key: 'carriers', label: 'Carrier Management', icon: <Truck size={14} /> },
-            { key: 'routes', label: 'Route Optimization', icon: <RouteIcon size={14} /> },
-            { key: 'asns', label: 'Advance Shipping Notices (ASN)', icon: <ClipboardList size={14} /> },
-            { key: 'vendor-returns', label: 'Vendor Returns', icon: <ArrowLeftRight size={14} /> },
-          ]}
-          value={activeTab}
-          onChange={handleChange}
-        />
+        <SubTabBar tabs={OPERATIONS_TABS} />
 
-        <div className={activeTab === 'shipments' ? '' : 'hidden'}>
-          {visited.has('shipments') && <ShipmentsTab />}
+        <div className={activeTab === "shipments" ? "" : "hidden"}>
+          {visited.has("shipments") && <ShipmentsTab />}
         </div>
-        <div className={activeTab === 'tracking' ? '' : 'hidden'}>
-          {visited.has('tracking') && <TrackingTab />}
+        <div className={activeTab === "tracking" ? "" : "hidden"}>
+          {visited.has("tracking") && <TrackingTab />}
         </div>
-        <div className={activeTab === 'carriers' ? '' : 'hidden'}>
-          {visited.has('carriers') && <CarriersTab />}
+        <div className={activeTab === "carriers" ? "" : "hidden"}>
+          {visited.has("carriers") && <CarriersTab />}
         </div>
-        <div className={activeTab === 'routes' ? '' : 'hidden'}>
-          {visited.has('routes') && <RoutesTab />}
+        <div className={activeTab === "routes" ? "" : "hidden"}>
+          {visited.has("routes") && <RoutesTab />}
         </div>
-        <div className={activeTab === 'asns' ? '' : 'hidden'}>
-          {visited.has('asns') && <AsnsTab />}
+        <div className={activeTab === "asns" ? "" : "hidden"}>
+          {visited.has("asns") && <AsnsTab />}
         </div>
-        <div className={activeTab === 'vendor-returns' ? '' : 'hidden'}>
-          {visited.has('vendor-returns') && <VendorReturnsTab />}
+        <div className={activeTab === "vendor-returns" ? "" : "hidden"}>
+          {visited.has("vendor-returns") && <VendorReturnsTab />}
         </div>
       </div>
     </RouteGuard>
@@ -87,11 +127,13 @@ function OperationsHubContent() {
 
 export default function OperationsHubPage() {
   return (
-    <Suspense fallback={
-      <div className="ui-center-pad">
-        <Spinner size="lg" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="ui-center-pad">
+          <Spinner size="lg" />
+        </div>
+      }
+    >
       <OperationsHubContent />
     </Suspense>
   );

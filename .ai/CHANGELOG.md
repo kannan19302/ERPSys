@@ -2,6 +2,21 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-22] UI — page-level tab navigation migrated to SubTabBar/ModuleTabLayout (HANDBOOK §8.3)
+
+**Scope**: Audit found 20 page-level route files still driving section navigation with hand-rolled `useState('activeTab')` + `<button>` bars (or the `Tabs` primitive misused for page-level nav), instead of the mandated `SubTabBar`/`ModuleTabLayout` from `@unerp/ui-layout` with URL-driven `?subtab=`/`?tab=` state. Navigation-mechanism swap only — no content/behavior changes.
+
+**Key changes**:
+
+- **19 files converted** to `SubTabBar` (or kept existing `ModuleTabLayout`-adjacent lazy-tab pattern) with `useSearchParams`-derived active tab and `href`-based navigation, replacing local `useState` tab state:
+  `finance/advanced/{1099-reporting,allocations,budgeting,close-tasks,consolidation,expense-reports,intercompany/eliminations,reconciliations,tax-nexus}/page.tsx`,
+  `crm/commissions/page.tsx`, `hr/advanced/operations-service/page.tsx` (kept its lazy-mount "visited" tab set, now driven purely by `?tab=` via `SubTabBar`), `pos/advanced/page.tsx`, `pos/customers/page.tsx`, `analytics/advanced/page.tsx`, `communication/advanced/page.tsx`, `drive/advanced/page.tsx`, `education/fees/page.tsx`, `education/library/page.tsx`, `supply-chain/operations/page.tsx` (same lazy-tab pattern as HR operations-service), `dashboard/page.tsx` (Global Enterprise Overview / Personal Dashboard toggle — genuinely page-level, converted).
+- **1 file left alone by design**: `profile/page.tsx` — its Profile/Security/Sessions tabs are single-record (the current user's own account) detail toggles, matching the record-detail exemption (same class as `customers/[id]`), not page-level hub navigation. Left on local `useState`.
+- Two pages (`1099-reporting`, `allocations`) had post-action tab jumps (e.g. "generate forms" → jump to Forms tab); replaced `setActiveTab(x)` with a `router.push('?subtab=x')` helper of the same name/signature so call sites needed no changes.
+- Where labels embedded live counts (e.g. `Forms (${forms.length})`), tabs arrays were computed inline in the component body rather than hoisted to module scope, so counts stay dynamic.
+
+**Verification**: `npx turbo run typecheck --filter=@unerp/web` — clean, 0 errors. Browser-based visual verification was not possible from this session: the Browser-pane preview tooling launches the dev server against the main checkout (`ERPSys/apps/web`) rather than this git worktree, so it cannot render the worktree's uncommitted changes; typecheck plus manual code review were used instead.
+
 ## [2026-07-22] Inventory module — nav gap closed, all 61 pages wired into ModuleTabLayout
 
 **Scope**: UI navigation only (per HANDBOOK §8.3 platform mandate). The Inventory module had the largest raw-page-count gap in the app: an `InventoryTabLayout` wrapper existed but only 3 of 61 `page.tsx` files under `apps/web/app/(dashboard)/inventory/` used it (root dashboard, products, settings) — the other 58 feature pages were reachable only via the sidebar, with zero shared module nav. `inventory/advanced` and `inventory/rtv` also used hand-rolled `useState('activeTab')` tab bars instead of the shared framework, in violation of the binding "no hand-rolled tab state" rule.
