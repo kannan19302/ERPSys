@@ -88,7 +88,7 @@ interface Entity {
   name: string;
 }
 
-const API_BASE = "/api/v1/advanced-finance";
+const API_BASE = "/advanced-finance";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(

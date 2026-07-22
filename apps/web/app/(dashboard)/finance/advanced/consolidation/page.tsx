@@ -69,7 +69,7 @@ export default function ConsolidationPage() {
     try {
       setOverview(
         await client.get<ConsolidationOverview>(
-          "/api/v1/advanced-finance/consolidation/overview",
+          "/advanced-finance/consolidation/overview",
         ),
       );
     } finally {
@@ -87,7 +87,7 @@ export default function ConsolidationPage() {
       const now = new Date();
       const periodStart = new Date(now.getFullYear(), 0, 1).toISOString();
       const periodEnd = now.toISOString();
-      await client.post("/api/v1/advanced-finance/consolidation/run", {
+      await client.post("/advanced-finance/consolidation/run", {
         periodStart,
         periodEnd,
         eliminateIntercompany: true,

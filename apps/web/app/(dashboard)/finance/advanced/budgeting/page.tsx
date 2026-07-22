@@ -216,16 +216,14 @@ export default function BudgetingPage() {
     try {
       const [budRes, scnRes, accRes, configRes, reallocRes] = await Promise.all(
         [
-          client.get<BudgetAllocation[]>("/api/v1/advanced-finance/budgets"),
-          client.get<BudgetScenario[]>(
-            "/api/v1/advanced-finance/forecast-scenarios",
-          ),
-          client.get<GLAccount[]>("/api/v1/advanced-finance/accounts"),
+          client.get<BudgetAllocation[]>("/advanced-finance/budgets"),
+          client.get<BudgetScenario[]>("/advanced-finance/forecast-scenarios"),
+          client.get<GLAccount[]>("/advanced-finance/accounts"),
           client.get<BudgetControlConfig>(
-            "/api/v1/advanced-finance/budget-control/config",
+            "/advanced-finance/budget-control/config",
           ),
           client.get<BudgetReallocation[]>(
-            "/api/v1/advanced-finance/budget-reallocations",
+            "/advanced-finance/budget-reallocations",
           ),
         ],
       );
@@ -274,8 +272,8 @@ export default function BudgetingPage() {
     setSavingBudget(true);
     try {
       const url = editingBudget
-        ? `/api/v1/advanced-finance/budgets/${editingBudget.id}`
-        : "/api/v1/advanced-finance/budgets";
+        ? `/advanced-finance/budgets/${editingBudget.id}`
+        : "/advanced-finance/budgets";
       const method = editingBudget ? "PATCH" : "POST";
 
       const body: Record<string, unknown> = {
@@ -311,9 +309,7 @@ export default function BudgetingPage() {
     if (!deletingBudget) return;
     setDeleting(true);
     try {
-      await client.delete(
-        `/api/v1/advanced-finance/budgets/${deletingBudget.id}`,
-      );
+      await client.delete(`/advanced-finance/budgets/${deletingBudget.id}`);
       setDeleteOpen(false);
       setDeletingBudget(null);
       fetchData();
@@ -331,7 +327,7 @@ export default function BudgetingPage() {
     try {
       setVsActualData(
         await client.get<BudgetVsActualData>(
-          `/api/v1/advanced-finance/budgets/${budget.id}/vs-actuals`,
+          `/advanced-finance/budgets/${budget.id}/vs-actuals`,
         ),
       );
     } catch {
@@ -345,10 +341,7 @@ export default function BudgetingPage() {
     e.preventDefault();
     setSavingScenario(true);
     try {
-      await client.post(
-        "/api/v1/advanced-finance/forecast-scenarios",
-        scenarioData,
-      );
+      await client.post("/advanced-finance/forecast-scenarios", scenarioData);
       setShowScenarioForm(false);
       setScenarioData({ name: "", description: "", status: "DRAFT" });
       fetchData();
@@ -364,7 +357,7 @@ export default function BudgetingPage() {
     if (!config) return;
     setSavingConfig(true);
     try {
-      await client.request("/api/v1/advanced-finance/budget-control/config", {
+      await client.request("/advanced-finance/budget-control/config", {
         method: "PATCH",
         body: JSON.stringify({
           enforcementAction: config.enforcementAction,
@@ -391,7 +384,7 @@ export default function BudgetingPage() {
     }
     setSavingRealloc(true);
     try {
-      await client.post("/api/v1/advanced-finance/budget-reallocations", {
+      await client.post("/advanced-finance/budget-reallocations", {
         description: reallocData.description,
         lines: [
           {
@@ -434,7 +427,7 @@ export default function BudgetingPage() {
       }
 
       await client.request(
-        `/api/v1/advanced-finance/budget-reallocations/${id}/${action}`,
+        `/advanced-finance/budget-reallocations/${id}/${action}`,
         {
           method: "POST",
           body,

@@ -121,9 +121,9 @@ export default function AllocationsPage() {
     try {
       const [rulesRes, runsRes, accountsRes, ccRes, deptRes] =
         await Promise.all([
-          apiGet<AllocationRule[]>("/finance/allocations/rules"),
-          apiGet<AllocationRun[]>("/finance/allocations/runs"),
-          apiGet<Account[]>("/finance/accounts"),
+          apiGet<AllocationRule[]>("/advanced-finance/allocations/rules"),
+          apiGet<AllocationRun[]>("/advanced-finance/allocations/runs"),
+          apiGet<Account[]>("/advanced-finance/accounts"),
           apiGet<CostCenter[]>("/advanced-finance/cost-centers").catch(
             () => [],
           ),
@@ -184,7 +184,7 @@ export default function AllocationsPage() {
         })),
       };
 
-      await apiPost("/finance/allocations/rules", payload);
+      await apiPost("/advanced-finance/allocations/rules", payload);
       setShowCreate(false);
       // Reset form
       setName("");
@@ -201,7 +201,7 @@ export default function AllocationsPage() {
     if (!confirm("Are you sure you want to delete this allocation rule?"))
       return;
     try {
-      await apiDelete(`/finance/allocations/rules/${id}`);
+      await apiDelete(`/advanced-finance/allocations/rules/${id}`);
       loadData();
     } catch (err: any) {
       setError(err?.message || "Failed to delete rule.");
@@ -210,7 +210,7 @@ export default function AllocationsPage() {
 
   const handleToggleActive = async (rule: AllocationRule) => {
     try {
-      await apiPatch(`/finance/allocations/rules/${rule.id}`, {
+      await apiPatch(`/advanced-finance/allocations/rules/${rule.id}`, {
         isActive: !rule.isActive,
       });
       loadData();
@@ -224,7 +224,7 @@ export default function AllocationsPage() {
     if (!showRun) return;
     setError(null);
     try {
-      await apiPost(`/finance/allocations/rules/${showRun.id}/run`, {
+      await apiPost(`/advanced-finance/allocations/rules/${showRun.id}/run`, {
         periodStart,
         periodEnd,
       });
@@ -240,7 +240,7 @@ export default function AllocationsPage() {
 
   const handlePostRun = async (id: string) => {
     try {
-      await apiPost(`/finance/allocations/runs/${id}/post`);
+      await apiPost(`/advanced-finance/allocations/runs/${id}/post`);
       loadData();
     } catch (err: any) {
       setError(err?.message || "Failed to post allocation run.");
