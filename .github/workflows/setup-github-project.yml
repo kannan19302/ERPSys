@@ -43,29 +43,30 @@ jobs:
         run: |
           set -euo pipefail
           OWNER="kannan19302"
+          OWNER_FLAG="@me"
           REPO="erpsys"
           TITLE="UniERP Roadmap"
 
           echo "==> Creating project '$TITLE'..."
-          PROJECT_JSON=$(gh project create --owner "$OWNER" --title "$TITLE" --format json)
+          PROJECT_JSON=$(gh project create --owner "$OWNER_FLAG" --title "$TITLE" --format json)
           PROJECT_NUMBER=$(echo "$PROJECT_JSON" | jq -r '.number')
           echo "    Project #$PROJECT_NUMBER created."
 
           echo "==> Adding custom fields..."
-          gh project field-create "$PROJECT_NUMBER" --owner "$OWNER" --name "Epic" --data-type TEXT
-          gh project field-create "$PROJECT_NUMBER" --owner "$OWNER" --name "Sprint" --data-type NUMBER
-          gh project field-create "$PROJECT_NUMBER" --owner "$OWNER" --name "Story Points" --data-type NUMBER
-          gh project field-create "$PROJECT_NUMBER" --owner "$OWNER" --name "Status" --data-type SINGLE_SELECT \
+          gh project field-create "$PROJECT_NUMBER" --owner "$OWNER_FLAG" --name "Epic" --data-type TEXT
+          gh project field-create "$PROJECT_NUMBER" --owner "$OWNER_FLAG" --name "Sprint" --data-type NUMBER
+          gh project field-create "$PROJECT_NUMBER" --owner "$OWNER_FLAG" --name "Story Points" --data-type NUMBER
+          gh project field-create "$PROJECT_NUMBER" --owner "$OWNER_FLAG" --name "Status" --data-type SINGLE_SELECT \
             --single-select-options "Backlog,Ready,In Progress,In Review,Done"
-          gh project field-create "$PROJECT_NUMBER" --owner "$OWNER" --name "Phase" --data-type SINGLE_SELECT \
+          gh project field-create "$PROJECT_NUMBER" --owner "$OWNER_FLAG" --name "Phase" --data-type SINGLE_SELECT \
             --single-select-options "F-Foundation,M-Strengthening,X-Expansion"
           MODULES="finance,advanced-finance,crm,sales,hr,advanced-hr,procurement,supply-chain,inventory,manufacturing,projects,communication,builder,saas,admin,saas-portal,pos,marketplace,ecommerce,auth,analytics,reporting,documents,storage,drive,workflow,notifications,ai,blockchain,fixed-assets,people,subscriptions,api-platform,localization,devops,ext-gateway,pwa,saved-views,outbox,search,healthcare,education,real-estate,field-service"
-          gh project field-create "$PROJECT_NUMBER" --owner "$OWNER" --name "Module" --data-type SINGLE_SELECT \
+          gh project field-create "$PROJECT_NUMBER" --owner "$OWNER_FLAG" --name "Module" --data-type SINGLE_SELECT \
             --single-select-options "$MODULES"
 
           echo "==> Attaching issues #42-92..."
           for n in $(seq 42 92); do
-            gh project item-add "$PROJECT_NUMBER" --owner "$OWNER" \
+            gh project item-add "$PROJECT_NUMBER" --owner "$OWNER_FLAG" \
               --url "https://github.com/${OWNER}/${REPO}/issues/${n}" \
               && echo "    added #$n" \
               || echo "    skipped #$n"

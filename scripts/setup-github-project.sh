@@ -16,30 +16,31 @@
 set -euo pipefail
 
 OWNER="kannan19302"
+OWNER_FLAG="@me"
 REPO="erpsys"
 TITLE="UniERP Roadmap"
 
 echo "==> Creating project '$TITLE' for $OWNER..."
-PROJECT_JSON=$(gh project create --owner "$OWNER" --title "$TITLE" --format json)
+PROJECT_JSON=$(gh project create --owner "$OWNER_FLAG" --title "$TITLE" --format json)
 PROJECT_NUMBER=$(echo "$PROJECT_JSON" | grep -o '"number":[0-9]*' | head -1 | grep -o '[0-9]*')
 PROJECT_ID=$(echo "$PROJECT_JSON" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
 echo "    Project #$PROJECT_NUMBER created (id=$PROJECT_ID)."
 
 echo "==> Adding custom fields (per COMPETITIVE_ROADMAP.md § 6)..."
-gh project field-create "$PROJECT_NUMBER" --owner "$OWNER" --name "Epic" --data-type TEXT
-gh project field-create "$PROJECT_NUMBER" --owner "$OWNER" --name "Sprint" --data-type NUMBER
-gh project field-create "$PROJECT_NUMBER" --owner "$OWNER" --name "Story Points" --data-type NUMBER
-gh project field-create "$PROJECT_NUMBER" --owner "$OWNER" --name "Status" --data-type SINGLE_SELECT \
+gh project field-create "$PROJECT_NUMBER" --owner "$OWNER_FLAG" --name "Epic" --data-type TEXT
+gh project field-create "$PROJECT_NUMBER" --owner "$OWNER_FLAG" --name "Sprint" --data-type NUMBER
+gh project field-create "$PROJECT_NUMBER" --owner "$OWNER_FLAG" --name "Story Points" --data-type NUMBER
+gh project field-create "$PROJECT_NUMBER" --owner "$OWNER_FLAG" --name "Status" --data-type SINGLE_SELECT \
   --single-select-options "Backlog,Ready,In Progress,In Review,Done"
-gh project field-create "$PROJECT_NUMBER" --owner "$OWNER" --name "Phase" --data-type SINGLE_SELECT \
+gh project field-create "$PROJECT_NUMBER" --owner "$OWNER_FLAG" --name "Phase" --data-type SINGLE_SELECT \
   --single-select-options "F-Foundation,M-Strengthening,X-Expansion"
-gh project field-create "$PROJECT_NUMBER" --owner "$OWNER" --name "Module" --data-type SINGLE_SELECT \
+gh project field-create "$PROJECT_NUMBER" --owner "$OWNER_FLAG" --name "Module" --data-type SINGLE_SELECT \
   --single-select-options "$(printf '%s,' finance advanced-finance crm sales hr advanced-hr procurement supply-chain inventory manufacturing projects communication builder saas admin saas-portal pos marketplace ecommerce auth analytics reporting documents storage drive workflow notifications ai blockchain fixed-assets people subscriptions api-platform localization devops ext-gateway pwa saved-views outbox search healthcare education real-estate field-service | sed 's/,$//')"
 
 echo "==> Attaching issues #42-92 (Epics + PI-1 Finance stories)..."
 for n in $(seq 42 92); do
   url="https://github.com/${OWNER}/${REPO}/issues/${n}"
-  gh project item-add "$PROJECT_NUMBER" --owner "$OWNER" --url "$url" >/dev/null 2>&1 \
+  gh project item-add "$PROJECT_NUMBER" --owner "$OWNER_FLAG" --url "$url" >/dev/null 2>&1 \
     && echo "    added #$n" \
     || echo "    skipped #$n (already added or not found)"
 done
