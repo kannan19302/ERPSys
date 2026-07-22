@@ -2,6 +2,19 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-22] Inventory module — nav gap closed, all 61 pages wired into ModuleTabLayout
+
+**Scope**: UI navigation only (per HANDBOOK §8.3 platform mandate). The Inventory module had the largest raw-page-count gap in the app: an `InventoryTabLayout` wrapper existed but only 3 of 61 `page.tsx` files under `apps/web/app/(dashboard)/inventory/` used it (root dashboard, products, settings) — the other 58 feature pages were reachable only via the sidebar, with zero shared module nav. `inventory/advanced` and `inventory/rtv` also used hand-rolled `useState('activeTab')` tab bars instead of the shared framework, in violation of the binding "no hand-rolled tab state" rule.
+
+**Key changes**:
+
+- **`INVENTORY_TABS` expanded from 9 to 60 entries** in `apps/web/src/components/inventory/InventoryTabLayout.tsx` — 5 primary tabs (Dashboard, Products, Stock Levels, Warehouses, Material Transactions) plus 55 `advanced: true` tabs grouped into 7 logical dropdown groups: Quality & Traceability (13), Counting & Storage (6), Warehouse Operations (9), Transfers & Logistics (9), Analytics & Planning (10), Returns & Movement (5), Settings (3).
+- **57 previously-orphaned pages wrapped in `<InventoryTabLayout>`** (batches, cycle-counts, cycle-count-schedules, stock-takes, license-plates, bin-locations, slotting, warehouse-ops, dock-scheduling, cross-dock, yard-management, labor-management, mobile-pick, pick-waves, container-pallet, packaging-gs1, transfer-orders, transfer-approvals, shipment-tracking, logistics, freight-claims, asn, asl, vmi, consignment, inventory-analytics, demand-forecasting, velocity-abc-xyz, minmax-replen, reorder-rules, automation-rules, costing, landed-cost, valuations, stock-valuation, customer-returns, rtv, movement-history, stock-reservations, stock-ledger, qa-inspections, qa-templates, quality-compliance, serial-numbers, lot-serial, lot-expiry, expiry-fefo, catch-weight-recall, cold-chain-writeoff, hazmat, supplier-quality, traceability, advanced, kits, stock-entries, stock-levels, warehouses) — users now land in the shared module-nav context instead of a bare page reachable only from the sidebar. `products/[id]` (a record detail page) intentionally excluded from tab nav, consistent with other modules.
+- **`inventory/advanced` and `inventory/rtv` converted from hand-rolled `useState`/`onClick` tab state to `SubTabBar` (`@unerp/ui-layout`)** — URL-driven via `?subtab=`, matching the binding platform rule (HANDBOOK §8.3).
+- **0 typecheck errors** (`@unerp/web` scoped `tsc --noEmit`), 0 new lint errors (pre-existing `react-hooks/exhaustive-deps` warnings on `apiFetch`/`loadData` deps untouched — out of scope, business logic unchanged).
+
+**Files changed**: `apps/web/src/components/inventory/InventoryTabLayout.tsx`, 57 `apps/web/app/(dashboard)/inventory/*/page.tsx` files (nav wrapper + imports only — no data-fetching or business-logic changes).
+
 ## [2026-07-21] Cycle 33 — Finance 1500+ feature threshold crossed (DB + API)
 
 **Scope**: Complete the Finance & Accounting module to 1500+ combined features (UI + DB + API all working). Phase M / first focus module.
