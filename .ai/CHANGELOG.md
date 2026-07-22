@@ -2,6 +2,23 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-22] Builder Studio — Level-2 tab navigation migration (HANDBOOK §8.3)
+
+**Scope**: An audit found the Builder module (42 `page.tsx` files under `apps/web/app/(dashboard)/builder/`) almost entirely unmigrated to the mandated `ModuleTabLayout`/`SubTabBar` URL-driven tab framework — only the Studio home page existed, with no shared tab layout wired in, and 5 sub-pages used hand-rolled `useState('activeTab')` tab bars. Navigation/layout only — no business logic touched.
+
+**Key changes**:
+
+- **`packages/ui-layout/src/sub-tab-bar.tsx`** — fixed a latent active-tab bug: the old per-tab prefix check would highlight multiple tabs at once when tabs point at real nested routes (e.g. a hub root `/builder/erp` alongside a child `/builder/erp/forms` — both prefix-match `/builder/erp/forms/xyz`). Now resolves a single "best" active tab (exact query match first, then longest matching path). Backwards compatible with existing single-page `?tab=` consumers (Finance/CRM).
+- **`apps/web/src/components/builder/BuilderTabLayout.tsx`** (new) — thin `ModuleTabLayout` re-export + `BUILDER_TABS` (Studio Home / App Studio / Web Studio / Manage), wired into `builder/page.tsx` root. Marketplace stays a dashboard pillar card only (it lives at `/apps/store`, outside the `/builder` route tree, so it isn't a module tab).
+- **`apps/web/src/components/builder/{erp,web,manage}-sub-tabs.ts`** (new) — Level-2 `SubTab[]` lists mapped 1:1 to each hub's real routes (7 App Studio tabs, 12 Web Studio tabs, 12 Manage tabs). `web/canvas` deliberately excluded — it's the chrome-less iframe target the Pages visual editor embeds (`src="/builder/web/canvas?pageId=..."`), not a nav destination.
+- **`apps/web/app/(dashboard)/builder/{erp,manage}/layout.tsx`** (new) — render the hub's `SubTabBar` above `{children}` so every real route in the hub (including `[id]` detail pages) is tab-navigable, not sidebar-only.
+- **`apps/web/app/(dashboard)/builder/web/(hub)/*`** — moved all Web Studio routes except `canvas` into a `(hub)` route group (URLs unchanged) so `web/(hub)/layout.tsx` can render the `SubTabBar` for every Web Studio page while leaving `web/canvas` outside that layout (avoids injecting nav chrome into the embedded iframe).
+- **Converted 5 hand-rolled tab pages to `SubTabBar` with URL-driven `?subtab=`**: `builder/erp/logic` (rules/builder), `builder/web/(hub)/menus` (list/editor), `builder/web/(hub)/pages` (list/editor — kept selected-page id in local state, only the tab itself is URL-driven), `builder/web/(hub)/seo` (pages/technical/structured), `builder/web/(hub)/settings` (theme/general/code). Added `Suspense` boundaries where a page newly reads `useSearchParams()`.
+
+**Verification**: `npx turbo run typecheck --filter=@unerp/ui-layout --filter=@unerp/web` — clean, 0 errors. `eslint` on all changed files — 0 new errors (pre-existing warnings only, unrelated to this change). `next build` under `apps/web` fails, but on a **pre-existing, unrelated** packaging gap: `packages/ui-layout`'s (and `ui-dashboard`'s) `tsup` build externalizes `*.module.css` without ever copying the source CSS files into `dist/`, so any consumer of `ModuleTabLayout`/`SubTabBar` (this includes already-shipped Finance/CRM pages) hits "Module not found" at bundle time. Flagged as a separate follow-up task (not fixed here — out of scope for a navigation-only change).
+
+**Files changed**: see file list above; full paths under `apps/web/app/(dashboard)/builder/`, `apps/web/src/components/builder/`, `packages/ui-layout/src/sub-tab-bar.tsx`.
+
 ## [2026-07-22] Tab-UI migration audit + correction
 
 **Correction to the 2026-07-21 "Global ERP Modules Migration" entry below**: a
