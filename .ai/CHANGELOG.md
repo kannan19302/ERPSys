@@ -2,6 +2,12 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-22] Fixed production-build-breaking CSS packaging gap in @unerp/ui-layout and @unerp/ui-dashboard
+
+**Scope**: The Builder Studio migration's `next build` surfaced a pre-existing, unrelated bug: `packages/ui-layout` and `packages/ui-dashboard`'s `tsup` configs externalize `*.module.css` imports (`external: [/\.css$/]`) so the CSS Modules loader in consuming apps handles them, but neither package's build copied the actual `.module.css` files into `dist/`. Any production consumer of `ModuleTabLayout`/`SubTabBar` (Finance, CRM, and now every module migrated in this session) or `MultiPageDashboard` would fail to resolve `./module-tab-layout.module.css` etc. at bundle time. Dev mode masked this because `package.json`'s `development` export condition points Next at `src/` directly.
+
+**Fix**: Added `scripts/copy-css.mjs` (copies `src/*.module.css` to `dist/` on build success) to both packages and wired `onSuccess: 'node scripts/copy-css.mjs'` into their `tsup.config.ts`, mirroring the existing working pattern already used by `@unerp/ui-components`. Verified `dist/*.module.css` now present after `turbo run build --force` for both packages.
+
 ## [2026-07-22] Builder Studio — Level-2 tab navigation migration (HANDBOOK §8.3)
 
 **Scope**: An audit found the Builder module (42 `page.tsx` files under `apps/web/app/(dashboard)/builder/`) almost entirely unmigrated to the mandated `ModuleTabLayout`/`SubTabBar` URL-driven tab framework — only the Studio home page existed, with no shared tab layout wired in, and 5 sub-pages used hand-rolled `useState('activeTab')` tab bars. Navigation/layout only — no business logic touched.
