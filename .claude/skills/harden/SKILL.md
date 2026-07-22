@@ -61,7 +61,10 @@ observed behavior. If the stack can't start, run static rungs only and say so.
    fixes landed or any risky surface was touched; otherwise FAST bookkeeping.
 2. One CHANGELOG entry (found N / fixed M / blocked K) + MODULE_REGISTRY updates,
    in the same commit as the last fix where practical.
-3. Ship to `main`; re-query every issue fixed this run and close stragglers.
+3. Invoke the **`sprint-sync` skill** (AUTOPILOT § Shared bindings #19,
+   `sprint:qa` labeling) to mirror this run's fixes onto GitHub as closed
+   Story-shaped issues — best-effort, never blocks the ship.
+4. Ship to `main`; re-query every issue fixed this run and close stragglers.
 
 ## 4. Report
 
