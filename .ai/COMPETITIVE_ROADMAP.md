@@ -198,6 +198,13 @@ Once created, link it to the repo and the `sprint-sync` skill will set these
 fields on every issue it creates/updates via `issue_write`'s `issue_fields`
 parameter — no further manual steps after that.
 
+**Automated version of this step**: run `scripts/setup-github-project.sh`
+(requires `gh` CLI authenticated with the `project` scope —
+`gh auth refresh -s project` once, if not already granted). It creates the
+board, all six fields above, and attaches the 47 issues already seeded
+(#42-92) in one pass — this is the fastest way to make the Projects tab
+show the work described in this document.
+
 Milestones-as-Sprints are the other gap: the agent tooling here can create
 issues and labels but not milestones, so `sprint:<n>` is a **label**, not a
 GitHub Milestone, until someone with repo-admin access creates the six PI-1
