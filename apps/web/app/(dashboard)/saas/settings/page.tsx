@@ -1,6 +1,7 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { Card, PageHeader } from "@unerp/ui";
+import React, { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import { Card, PageHeader, Spinner } from "@unerp/ui";
 import {
   Palette,
   Globe,
@@ -15,6 +16,7 @@ import {
   Plug,
 } from "lucide-react";
 import { RouteGuard, useApiClient } from "@unerp/framework";
+import { SubTabBar } from "@/components/saas/SubTabBar";
 
 type Tab = "branding" | "domains" | "sso" | "notifications" | "integrations";
 
@@ -46,19 +48,25 @@ interface SSOProvider {
   issuerUrl: string;
 }
 
-export default function SaasSettingsPage() {
+const TAB_KEYS: Tab[] = [
+  "branding",
+  "domains",
+  "sso",
+  "notifications",
+  "integrations",
+];
+function isTab(v: string | null): v is Tab {
+  return !!v && (TAB_KEYS as readonly string[]).includes(v);
+}
+
+function SaasSettingsPageContent() {
+  const searchParams = useSearchParams();
+  const activeTab: Tab = isTab(searchParams.get("subtab"))
+    ? (searchParams.get("subtab") as Tab)
+    : "branding";
   const client = useApiClient();
-  const [activeTab, setActiveTab] = useState<Tab>("branding");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-
-  const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
-    { key: "branding", label: "Branding", icon: <Palette size={14} /> },
-    { key: "domains", label: "Domains", icon: <Globe size={14} /> },
-    { key: "sso", label: "SSO / Security", icon: <Shield size={14} /> },
-    { key: "notifications", label: "Notifications", icon: <Bell size={14} /> },
-    { key: "integrations", label: "Integrations", icon: <Plug size={14} /> },
-  ];
 
   const [companyName, setCompanyName] = useState("My Company");
   const [primaryColor, setPrimaryColor] = useState("#6366f1");
@@ -272,18 +280,40 @@ export default function SaasSettingsPage() {
           </div>
         )}
 
-        <div className="ui-tabs">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              className={`ui-tab ${activeTab === tab.key ? "ui-tab-active" : ""}`}
-              onClick={() => setActiveTab(tab.key)}
-            >
-              {tab.icon}
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        <SubTabBar
+          tabs={[
+            {
+              id: "branding",
+              label: "Branding",
+              href: "/saas/settings?subtab=branding",
+              icon: Palette,
+            },
+            {
+              id: "domains",
+              label: "Domains",
+              href: "/saas/settings?subtab=domains",
+              icon: Globe,
+            },
+            {
+              id: "sso",
+              label: "SSO / Security",
+              href: "/saas/settings?subtab=sso",
+              icon: Shield,
+            },
+            {
+              id: "notifications",
+              label: "Notifications",
+              href: "/saas/settings?subtab=notifications",
+              icon: Bell,
+            },
+            {
+              id: "integrations",
+              label: "Integrations",
+              href: "/saas/settings?subtab=integrations",
+              icon: Plug,
+            },
+          ]}
+        />
 
         <div className="ui-tab-content">
           {activeTab === "branding" && (
@@ -713,5 +743,19 @@ export default function SaasSettingsPage() {
         </div>
       </div>
     </RouteGuard>
+  );
+}
+
+export default function SaasSettingsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="ui-center-pad">
+          <Spinner size="lg" />
+        </div>
+      }
+    >
+      <SaasSettingsPageContent />
+    </Suspense>
   );
 }
