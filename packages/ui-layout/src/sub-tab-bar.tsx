@@ -9,14 +9,15 @@ export interface SubTab {
   id: string;
   label: string;
   href: string;
-  icon?: ComponentType<{ size?: number }>;
+  icon?: ComponentType<{ size?: number; className?: string }>;
 }
 
 export interface SubTabBarProps {
   tabs: SubTab[];
+  ariaLabel?: string;
 }
 
-export const SubTabBar: FC<SubTabBarProps> = ({ tabs }) => {
+export const SubTabBar: FC<SubTabBarProps> = ({ tabs, ariaLabel }) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -53,7 +54,11 @@ export const SubTabBar: FC<SubTabBarProps> = ({ tabs }) => {
   }
 
   return (
-    <div className={styles.bar}>
+    <div
+      className={styles.bar}
+      role="tablist"
+      aria-label={ariaLabel || "Sub-sections"}
+    >
       {tabs.map((tab) => {
         const isActive = tab.id === activeId;
         const Icon = tab.icon;
@@ -62,6 +67,9 @@ export const SubTabBar: FC<SubTabBarProps> = ({ tabs }) => {
           <Link
             key={tab.id}
             href={tab.href}
+            role="tab"
+            aria-selected={isActive}
+            aria-current={isActive ? "page" : undefined}
             className={`${styles.tab} ${isActive ? styles.tabActive : ""}`}
           >
             {Icon && <Icon size={14} />}
