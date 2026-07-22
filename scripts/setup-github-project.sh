@@ -20,22 +20,35 @@ OWNER_FLAG="@me"
 REPO="erpsys"
 TITLE="UniERP Roadmap"
 
-echo "==> Creating project '$TITLE' for $OWNER..."
-PROJECT_JSON=$(gh project create --owner "$OWNER_FLAG" --title "$TITLE" --format json)
-PROJECT_NUMBER=$(echo "$PROJECT_JSON" | grep -o '"number":[0-9]*' | head -1 | grep -o '[0-9]*')
-PROJECT_ID=$(echo "$PROJECT_JSON" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
-echo "    Project #$PROJECT_NUMBER created (id=$PROJECT_ID)."
+echo "==> Looking for an existing '$TITLE' project (idempotency)..."
+EXISTING_NUMBER=$(gh project list --owner "$OWNER_FLAG" --format json \
+  | jq -r --arg t "$TITLE" '.projects[] | select(.title == $t) | .number' | head -1)
+if [ -n "$EXISTING_NUMBER" ]; then
+  PROJECT_NUMBER="$EXISTING_NUMBER"
+  echo "    Found existing project #$PROJECT_NUMBER, reusing it."
+else
+  echo "==> Creating project '$TITLE' for $OWNER..."
+  PROJECT_JSON=$(gh project create --owner "$OWNER_FLAG" --title "$TITLE" --format json)
+  PROJECT_NUMBER=$(echo "$PROJECT_JSON" | jq -r '.number')
+  echo "    Project #$PROJECT_NUMBER created."
+fi
 
-echo "==> Adding custom fields (per COMPETITIVE_ROADMAP.md § 6)..."
-gh project field-create "$PROJECT_NUMBER" --owner "$OWNER_FLAG" --name "Epic" --data-type TEXT
-gh project field-create "$PROJECT_NUMBER" --owner "$OWNER_FLAG" --name "Sprint" --data-type NUMBER
-gh project field-create "$PROJECT_NUMBER" --owner "$OWNER_FLAG" --name "Story Points" --data-type NUMBER
-gh project field-create "$PROJECT_NUMBER" --owner "$OWNER_FLAG" --name "Status" --data-type SINGLE_SELECT \
-  --single-select-options "Backlog,Ready,In Progress,In Review,Done"
-gh project field-create "$PROJECT_NUMBER" --owner "$OWNER_FLAG" --name "Phase" --data-type SINGLE_SELECT \
-  --single-select-options "F-Foundation,M-Strengthening,X-Expansion"
-gh project field-create "$PROJECT_NUMBER" --owner "$OWNER_FLAG" --name "Module" --data-type SINGLE_SELECT \
-  --single-select-options "$(printf '%s,' finance advanced-finance crm sales hr advanced-hr procurement supply-chain inventory manufacturing projects communication builder saas admin saas-portal pos marketplace ecommerce auth analytics reporting documents storage drive workflow notifications ai blockchain fixed-assets people subscriptions api-platform localization devops ext-gateway pwa saved-views outbox search healthcare education real-estate field-service | sed 's/,$//')"
+echo "==> Adding custom fields (idempotent: skip ones that already exist)..."
+EXISTING_FIELDS=$(gh project field-list "$PROJECT_NUMBER" --owner "$OWNER_FLAG" --format json | jq -r '.fields[].name')
+add_field() {
+  local name="$1"; shift
+  if echo "$EXISTING_FIELDS" | grep -qxF "$name"; then
+    echo "    $name: already exists, skipping"
+  else
+    gh project field-create "$PROJECT_NUMBER" --owner "$OWNER_FLAG" --name "$name" "$@"
+  fi
+}
+add_field "Epic" --data-type TEXT
+add_field "Sprint" --data-type NUMBER
+add_field "Story Points" --data-type NUMBER
+add_field "Status" --data-type SINGLE_SELECT --single-select-options "Backlog,Ready,In Progress,In Review,Done"
+add_field "Phase" --data-type SINGLE_SELECT --single-select-options "F-Foundation,M-Strengthening,X-Expansion"
+add_field "Module" --data-type SINGLE_SELECT --single-select-options "$(printf '%s,' finance advanced-finance crm sales hr advanced-hr procurement supply-chain inventory manufacturing projects communication builder saas admin saas-portal pos marketplace ecommerce auth analytics reporting documents storage drive workflow notifications ai blockchain fixed-assets people subscriptions api-platform localization devops ext-gateway pwa saved-views outbox search healthcare education real-estate field-service | sed 's/,$//')"
 
 echo "==> Attaching issues #42-92 (Epics + PI-1 Finance stories)..."
 for n in $(seq 42 92); do
