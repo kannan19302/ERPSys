@@ -1,6 +1,7 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { Card, PageHeader, DataTable } from "@unerp/ui";
+import React, { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import { Card, PageHeader, DataTable, Spinner } from "@unerp/ui";
 import {
   DollarSign,
   Tag,
@@ -9,8 +10,10 @@ import {
   ShieldAlert,
   Sparkles,
   TrendingUp,
+  LayoutDashboard,
 } from "lucide-react";
 import { RouteGuard, useApiClient } from "@unerp/framework";
+import { SubTabBar } from "@/components/saas/SubTabBar";
 
 interface Plan {
   id: string;
@@ -29,7 +32,8 @@ interface Coupon {
   timesRedeemed: number;
 }
 
-export default function SaasAdminDashboard() {
+function SaasAdminDashboardContent() {
+  const searchParams = useSearchParams();
   const client = useApiClient();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [coupons, setCoupons] = useState<Coupon[]>([]);
@@ -55,9 +59,12 @@ export default function SaasAdminDashboard() {
   const [discountType, setDiscountType] = useState("PERCENTAGE");
   const [discountValue, setDiscountValue] = useState(10);
 
-  const [activeTab, setActiveTab] = useState<"overview" | "plans" | "coupons">(
-    "overview",
-  );
+  const activeTab: "overview" | "plans" | "coupons" =
+    searchParams.get("subtab") === "plans"
+      ? "plans"
+      : searchParams.get("subtab") === "coupons"
+        ? "coupons"
+        : "overview";
 
   const loadData = async () => {
     setLoading(true);
@@ -139,76 +146,28 @@ export default function SaasAdminDashboard() {
           description="Manage plans, publish discounts, and monitor platform recurring revenues."
         />
 
-        {/* Tab navigation */}
-        <div
-          style={{
-            display: "flex",
-            gap: "var(--space-4)",
-            borderBottom: "1px solid var(--color-border)",
-            paddingBottom: "var(--space-2)",
-          }}
-        >
-          <button
-            onClick={() => setActiveTab("overview")}
-            style={{
-              padding: "var(--space-2) var(--space-4)",
-              background: "none",
-              border: "none",
-              borderBottom:
-                activeTab === "overview"
-                  ? "2px solid var(--color-primary)"
-                  : "none",
-              color:
-                activeTab === "overview"
-                  ? "var(--color-primary)"
-                  : "var(--color-text-muted)",
-              cursor: "pointer",
-              fontWeight: "var(--weight-semibold)",
-            }}
-          >
-            Overview
-          </button>
-          <button
-            onClick={() => setActiveTab("plans")}
-            style={{
-              padding: "var(--space-2) var(--space-4)",
-              background: "none",
-              border: "none",
-              borderBottom:
-                activeTab === "plans"
-                  ? "2px solid var(--color-primary)"
-                  : "none",
-              color:
-                activeTab === "plans"
-                  ? "var(--color-primary)"
-                  : "var(--color-text-muted)",
-              cursor: "pointer",
-              fontWeight: "var(--weight-semibold)",
-            }}
-          >
-            Plan Templates
-          </button>
-          <button
-            onClick={() => setActiveTab("coupons")}
-            style={{
-              padding: "var(--space-2) var(--space-4)",
-              background: "none",
-              border: "none",
-              borderBottom:
-                activeTab === "coupons"
-                  ? "2px solid var(--color-primary)"
-                  : "none",
-              color:
-                activeTab === "coupons"
-                  ? "var(--color-primary)"
-                  : "var(--color-text-muted)",
-              cursor: "pointer",
-              fontWeight: "var(--weight-semibold)",
-            }}
-          >
-            Discount Coupons
-          </button>
-        </div>
+        <SubTabBar
+          tabs={[
+            {
+              id: "overview",
+              label: "Overview",
+              href: "/saas/admin?subtab=overview",
+              icon: LayoutDashboard,
+            },
+            {
+              id: "plans",
+              label: "Plan Templates",
+              href: "/saas/admin?subtab=plans",
+              icon: Tag,
+            },
+            {
+              id: "coupons",
+              label: "Discount Coupons",
+              href: "/saas/admin?subtab=coupons",
+              icon: Percent,
+            },
+          ]}
+        />
 
         {activeTab === "overview" && (
           <div className="ui-stack-6">
@@ -564,5 +523,19 @@ export default function SaasAdminDashboard() {
         )}
       </div>
     </RouteGuard>
+  );
+}
+
+export default function SaasAdminDashboard() {
+  return (
+    <Suspense
+      fallback={
+        <div className="ui-center-pad">
+          <Spinner size="lg" />
+        </div>
+      }
+    >
+      <SaasAdminDashboardContent />
+    </Suspense>
   );
 }

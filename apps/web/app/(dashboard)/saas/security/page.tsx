@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import {
   Card,
   PageHeader,
@@ -34,6 +34,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import { RouteGuard, Guarded, useApiClient } from "@unerp/framework";
+import { SubTabBar } from "@/components/saas/SubTabBar";
 
 /* ── Types ───────────────────────────────────────── */
 interface PasswordPolicy {
@@ -1421,20 +1422,17 @@ function ImpersonateTab() {
 
 /* ── Page ────────────────────────────────────────── */
 function SecurityPageContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const initialTab = isTabKey(searchParams.get("tab"))
-    ? (searchParams.get("tab") as TabKey)
+  const activeTab: TabKey = isTabKey(searchParams.get("subtab"))
+    ? (searchParams.get("subtab") as TabKey)
     : "mfa";
-  const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
-  const [visited, setVisited] = useState<Set<TabKey>>(new Set([initialTab]));
+  const [visited, setVisited] = useState<Set<TabKey>>(new Set([activeTab]));
 
-  const handleChange = (key: string) => {
-    if (!isTabKey(key)) return;
-    setActiveTab(key);
-    setVisited((prev) => (prev.has(key) ? prev : new Set(prev).add(key)));
-    router.replace(`/saas/security?tab=${key}`, { scroll: false });
-  };
+  useEffect(() => {
+    setVisited((prev) =>
+      prev.has(activeTab) ? prev : new Set(prev).add(activeTab),
+    );
+  }, [activeTab]);
 
   return (
     <RouteGuard permission="admin.security.read">
@@ -1448,40 +1446,63 @@ function SecurityPageContent() {
           ]}
         />
 
-        <Tabs
+        <SubTabBar
           tabs={[
-            { key: "mfa", label: "MFA / 2FA", icon: <Smartphone size={14} /> },
             {
-              key: "password-policy",
+              id: "mfa",
+              label: "MFA / 2FA",
+              href: "/saas/security?subtab=mfa",
+              icon: Smartphone,
+            },
+            {
+              id: "password-policy",
               label: "Password Policy",
-              icon: <Lock size={14} />,
+              href: "/saas/security?subtab=password-policy",
+              icon: Lock,
             },
-            { key: "sso", label: "SSO", icon: <Key size={14} /> },
             {
-              key: "ip-restrictions",
+              id: "sso",
+              label: "SSO",
+              href: "/saas/security?subtab=sso",
+              icon: Key,
+            },
+            {
+              id: "ip-restrictions",
               label: "IP Restrictions",
-              icon: <Globe size={14} />,
+              href: "/saas/security?subtab=ip-restrictions",
+              icon: Globe,
             },
-            { key: "sessions", label: "Sessions", icon: <Monitor size={14} /> },
-            { key: "api-keys", label: "API Keys", icon: <Key size={14} /> },
             {
-              key: "delegations",
+              id: "sessions",
+              label: "Sessions",
+              href: "/saas/security?subtab=sessions",
+              icon: Monitor,
+            },
+            {
+              id: "api-keys",
+              label: "API Keys",
+              href: "/saas/security?subtab=api-keys",
+              icon: Key,
+            },
+            {
+              id: "delegations",
               label: "Delegations",
-              icon: <UserCog size={14} />,
+              href: "/saas/security?subtab=delegations",
+              icon: UserCog,
             },
             {
-              key: "impersonate",
+              id: "impersonate",
               label: "Impersonate",
-              icon: <UserCheck size={14} />,
+              href: "/saas/security?subtab=impersonate",
+              icon: UserCheck,
             },
             {
-              key: "score",
+              id: "score",
               label: "Compliance Score",
-              icon: <History size={14} />,
+              href: "/saas/security?subtab=score",
+              icon: History,
             },
           ]}
-          value={activeTab}
-          onChange={handleChange}
         />
 
         <div style={{ display: activeTab === "mfa" ? "block" : "none" }}>
