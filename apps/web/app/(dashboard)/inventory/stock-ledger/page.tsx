@@ -1,15 +1,36 @@
-'use client';
-import { PageHeader } from '@unerp/ui';
-import { ListView, RouteGuard } from '@unerp/framework';
-import { stockLedgerResource } from '@/modules/inventory';
+"use client";
+import { PageHeader } from "@unerp/ui";
+import { ListView, RouteGuard } from "@unerp/framework";
+import { stockLedgerResource } from "@/modules/inventory";
 
+import {
+  InventoryTabLayout,
+  INVENTORY_TABS,
+} from "@/components/inventory/InventoryTabLayout";
+import { Package as InventoryModuleIcon } from "lucide-react";
 export default function StockLedgerPage() {
   return (
     <RouteGuard permission="inventory.stock.read">
-      <div className="ui-card">
-        <PageHeader title="Stock Ledger" description="Review inventory movements, valuation changes, and running balances." breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'Inventory', href: '/inventory' }, { label: 'Stock Ledger' }]} />
-        <ListView resource={stockLedgerResource} />
-      </div>
+      <InventoryTabLayout
+        tabs={INVENTORY_TABS}
+        moduleId="inventory"
+        moduleLabel="Inventory & Stock"
+        moduleIcon={InventoryModuleIcon}
+        moduleDescription="Review inventory movements, valuation changes, and running balances."
+      >
+        <div className="ui-card">
+          <PageHeader
+            title="Stock Ledger"
+            description="Review inventory movements, valuation changes, and running balances."
+            breadcrumbs={[
+              { label: "Home", href: "/dashboard" },
+              { label: "Inventory", href: "/inventory" },
+              { label: "Stock Ledger" },
+            ]}
+          />
+          <ListView resource={stockLedgerResource} />
+        </div>
+      </InventoryTabLayout>
     </RouteGuard>
   );
 }
