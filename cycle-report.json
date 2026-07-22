@@ -1,13 +1,20 @@
 {
-  "cycleId": "CYCLE-1784271182736",
-  "generatedAt": "2026-07-17T06:53:02.736Z",
+  "cycleId": "CYCLE-1784695092390",
+  "generatedAt": "2026-07-22T04:38:12.390Z",
   "agent": "kannan19302",
   "lastCommit": {
-    "hash": "4b84727998d46ce031c3ef743c40b41dcac2e59c",
-    "subject": "refactor(inventory): decompose products and catalog logic from InventoryService god-class"
+    "hash": "afcc40c459d9923745d352d30d38d76b13fb6be6",
+    "subject": "fix(ui-layout,ui-dashboard): copy CSS modules into dist to fix production builds"
   },
-  "touchedModules": [],
-  "totalSystemFeatures": 2655,
+  "touchedModules": [
+    "sales",
+    "crm",
+    "inventory",
+    "procurement",
+    "supply-chain"
+  ],
+  "netLoc": null,
+  "totalSystemFeatures": 6675,
   "exitStatus": "SUCCESS",
   "details": {
     "cleanBuild": true,

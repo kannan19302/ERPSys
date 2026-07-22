@@ -71,6 +71,7 @@ registerModule({
       items: [
         { label: 'Sales Enablement Hub', href: '/crm/sales-enablement', icon: 'BookOpen' },
         { label: 'Segments', href: '/crm/segments', icon: 'Target' },
+        { label: 'Knowledge Base', href: '/crm/knowledge-base', icon: 'BookOpen' },
       ],
     },
     {
@@ -93,6 +94,7 @@ registerModule({
         { label: 'Account Plans', href: '/crm/account-plans', icon: 'Shield' },
         { label: 'Account Hierarchy', href: '/crm/account-hierarchy', icon: 'Building2' },
         { label: 'Reports', href: '/crm/reports', icon: 'PieChart' },
+        { label: 'Win/Loss Analysis', href: '/crm/win-loss', icon: 'BarChart3' },
         { label: 'Dashboards', href: '/crm/dashboards', icon: 'Layers' },
         { label: 'Advanced', href: '/crm/advanced', icon: 'Settings' },
       ],
@@ -109,6 +111,7 @@ registerModule({
         { label: 'Sentiment & Health', href: '/crm/intelligence/sentiment', icon: 'Smile' },
         { label: 'CLV Analytics', href: '/crm/intelligence/clv', icon: 'DollarSign' },
         { label: 'Partner Management', href: '/crm/intelligence/partners', icon: 'Users' },
+        { label: 'Partner Deal Registration', href: '/crm/partner-management', icon: 'Handshake' },
         { label: 'Campaign Analytics', href: '/crm/intelligence/campaigns', icon: 'Target' },
       ],
     },
@@ -124,6 +127,7 @@ registerModule({
         { label: 'Pipelines', href: '/crm/settings/pipelines', icon: 'GitBranch' },
         { label: 'SLA Policies', href: '/crm/settings/sla-policies', icon: 'Clock' },
         { label: 'Email Integration', href: '/crm/settings/email-integration', icon: 'Mail' },
+        { label: 'Communication Templates', href: '/crm/communication-templates', icon: 'MessageSquare' },
       ],
     },
   ],

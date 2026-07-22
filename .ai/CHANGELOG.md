@@ -2,6 +2,45 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-22] CYCLE 36 — Procurement Module Deepening: Subcontracting, Debit Notes, Vendor RMA, NCR/CAR, RFQ Auctions, Payment Schedules, Scorecards & Analytics
+
+**Scope**: Procurement module deepening from ACTIVE/ENHANCED toward Deep tier with 9 new services + 3 controllers (DB→API→UI→tests), expanding order-to-pay and supply quality workflows.
+
+**API layer** (9 new services + 3 new controllers, ~120 REST endpoints):
+
+- `SubcontractingService` — subcontracting order CRUD with status lifecycle (PENDING→ACTIVE→IN_PROCESS→COMPLETED→CLOSED), material issuance and consumption tracking, KPI stats
+- `DebitNotesService` — debit note CRUD with status transitions (DRAFT→ISSUED→ACCEPTED→DISPUTED→RESOLVED→CANCELLED), auto-link to purchase invoices, stats
+- `VendorRmaService` — RMA request CRUD (RETURN→REPLACEMENT→REPAIR→CREDIT) and return shipment tracking with multi-stage status (PENDING→AWAITING_RECEIPT→RECEIVED→INSPECTED→ACCEPTED→REJECTED→CANCELLED), stats
+- `SupplierNcrCarService` — Non-Conformance Report and Corrective Action Request lifecycle (NCR: OPEN→INVESTIGATING→ACTION_PLANNED→COMPLETED→CLOSED; CAR: OPEN→IN_PROGRESS→VERIFIED→CLOSED), CAR auto-generation from NCR, resolution metrics, stats
+- `RfqAuctionsService` — RFQ auction CRUD with bid lifecycle (PENDING→ACTIVE→CLOSED→AWARDED→CANCELLED), automatic auction→auction rounds conversion, bid placement and winner selection, stats
+- `PaymentSchedulesService` — payment schedule CRUD (PENDING→APPROVED→PAID→OVERDUE→CANCELLED) with bulk creation from purchase orders, upcoming/overdue detection, stats
+- `SupplierScorecardService` — scorecard auto-creation with 3 weighted dimensions (quality/delivery/compliance), vendor trend tracking, stats
+- `ProcurementAnalyticsService` — procurement analytics aggregator: spend by vendor/status/category, monthly spend trend, budget overview with utilization rate, vendor performance summary with overall scores, multi-section dashboard endpoint
+- `ProcurementApprovalsService` — approval workflow for purchase requisitions and POs: pending list, approve/reject with state guards, configurable approval policy, approval stats
+
+**Controllers** (3 new route modules):
+
+- `ProcurementExpansionController` — `/procurement/expansion` routes for subcontracting, debit-notes, vendor-rma, ncr-car
+- `ProcurementIntelligenceController` — `/procurement/intelligence` routes for scorecards, rfq-auctions, analytics
+- `ProcurementSchedulingController` — `/procurement/scheduling` routes for payment-schedules, approvals
+
+**Shared layer**:
+
+- 24 new permission entries in `registry.ts` (debit-note:4, subcontracting:4, vendor-rma:4, supplier-ncr:3, supplier-car:3, rfq-auction:4, payment-schedule:4, scorecard:3, analytics:3, approval:4)
+
+**UI layer** (4 new pages):
+
+- `procurement/analytics/page.tsx` — analytics dashboard with budget/spend/vendor stat cards, top-vendors-by-spend table, status-distribution and monthly-trend breakdowns
+- `procurement/subcontracting/page.tsx` — subcontracting order list with status badges, create modal
+- `procurement/ncr-car/page.tsx` — dual-tab NCR/CAR management, create/Raise CAR modals
+- `procurement/supplier-scorecards/page.tsx` — scorecard summary with stat cards, scorecard DataTable, compute trigger modal
+
+**Testing layer**: 32 Vitest unit tests across 8 spec files covering all new services (success paths, NotFoundException, status guards, stats aggregations).
+
+**Verification**: `pnpm architecture:check` clean (module boundaries + dep-cruiser). API typecheck: 0 new errors (only pre-existing sales errors remain). Web typecheck: 0 new procurement errors (only pre-existing CRM error remains).
+
+---
+
 ## [2026-07-22] CYCLE 35 — Sales Module Deepening: Promotions, Coupons, Partners, Commissions, Contracts, Analytics & Forecasting
 
 **Scope**: Sales module deepening from ACTIVE to ENHANCED tier with 6 new vertical feature areas (DB + API + UI + tests), closing competitive gaps vs SAP/Odoo/NetSuite.
