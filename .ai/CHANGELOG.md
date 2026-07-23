@@ -2,6 +2,25 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-22] CYCLE 37 — CRM Module Deepening: Knowledge Base, Win/Loss Analytics, PRM Deal Registration, Communication Templates
+
+**Scope**: CRM module deepening toward Complete tier (1500+ weighted features) with 4 new sub-domains: Knowledge Base (articles/categories with lifecycle and search), Win/Loss Analytics (reasons, competitors, analytics), Partner Relationship Management (deal registrations, MDF funds, partner performance), Multi-Channel Communication Templates (channels, templates, send logs). Total: 4 services + 4 controllers (~55 REST endpoints) + 4 UI pages.
+
+**New Prisma models**: `KnowledgeBaseCategory`, `KnowledgeBaseArticle`, `KnowledgeBaseArticleVersion`, `WinLossReason`, `Competitor`, `SalesPartnerDealRegistration`, `SalesPartnerMdfFund`, `CommunicationChannel`, `CommunicationTemplate`, `CommunicationLog`
+
+**API layer** (4 new services + 4 controllers, ~55 REST endpoints):
+
+- `CrmKnowledgeBaseService` — category CRUD with tree support, article CRUD with publish/draft/archive lifecycle, versioned article editing, full-text search, article feedback (helpful/not helpful), KB stats
+- `CrmWinLossService` — win/loss reason CRUD (WIN/LOSS categories), competitor CRUD, record win/loss on opportunities, win/loss analytics (rate by reason/competitor/period), reasons breakdown
+- `CrmPartnerDeepService` — deal registration CRUD with status lifecycle (SUBMITTED→APPROVED→REJECTED→WON→LOST), approve/reject with state guards, MDF fund CRUD with budget/spend tracking, fund stats, partner performance analytics (win rate, MDF utilization)
+- `CrmCommunicationService` — channel CRUD (EMAIL/SMS/WHATSAPP/CHAT/PUSH), template CRUD with variable definitions and category grouping, send tracking with delivery status, communication log with entity linking, channel stats
+
+**Permissions** (11 new): `crm.knowledgebase.*` (4), `crm.winloss.*` (2), `crm.partner.*` (3), `crm.communication.*` (3)
+
+**UI pages**: `/crm/knowledge-base` (KB dashboard with stats, category tree, article list with publish/archive), `/crm/win-loss` (win-rate KPIs, reason/competitor management, reasons breakdown table), `/crm/partner-management` (deal registration dashboard with approve/reject, MDF funds table), `/crm/communication-templates` (channels management, template library filtered by channel)
+
+**Nav entries**: Knowledge Base, Win/Loss Analysis, Partner Deal Registration, Communication Templates added to CRM navigation
+
 ## [2026-07-22] CYCLE 36 — Procurement Module Deepening: Subcontracting, Debit Notes, Vendor RMA, NCR/CAR, RFQ Auctions, Payment Schedules, Scorecards & Analytics
 
 **Scope**: Procurement module deepening from ACTIVE/ENHANCED toward Deep tier with 9 new services + 3 controllers (DB→API→UI→tests), expanding order-to-pay and supply quality workflows.

@@ -1454,6 +1454,13 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
     "endpoint",
     "Delete supply chain budgets",
   ),
+  p(
+    "supply-chain",
+    "budget",
+    "approve",
+    "endpoint",
+    "Approve supply chain budgets",
+  ),
 
   // Supply Chain — Container Tracking (Cycle 35)
   p("supply-chain", "container", "read", "endpoint", "View container tracking"),

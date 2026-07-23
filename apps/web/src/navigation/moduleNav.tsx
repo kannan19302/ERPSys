@@ -966,9 +966,35 @@ export const getAppSpecificNavigation = (
           ],
         },
         {
+          name: "Supplier Management",
+          isHeader: true,
+          items: [
+            {
+              name: "Contracts",
+              href: "/supply-chain/contracts",
+              icon: FileText,
+            },
+            {
+              name: "Supplier Performance",
+              href: "/supply-chain/supplier-performance",
+              icon: Award,
+            },
+            {
+              name: "Supplier Assessments",
+              href: "/supply-chain/supplier-assessments",
+              icon: ClipboardCheck,
+            },
+          ],
+        },
+        {
           name: "Planning & Analytics",
           isHeader: true,
           items: [
+            {
+              name: "Budgets",
+              href: "/supply-chain/budgets",
+              icon: DollarSign,
+            },
             {
               name: "Demand Forecast",
               href: "/supply-chain/demand-forecast",
@@ -978,6 +1004,19 @@ export const getAppSpecificNavigation = (
               name: "Analytics",
               href: "/supply-chain/analytics",
               icon: BarChart3,
+            },
+          ],
+        },
+        {
+          name: "Logistics & Compliance",
+          isHeader: true,
+          items: [
+            { name: "Containers", href: "/supply-chain/containers", icon: Box },
+            { name: "Customs", href: "/supply-chain/customs", icon: Globe },
+            {
+              name: "Lane Rates",
+              href: "/supply-chain/lane-rates",
+              icon: MapPin,
             },
           ],
         },
