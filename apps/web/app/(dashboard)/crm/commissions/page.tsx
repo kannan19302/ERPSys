@@ -32,7 +32,7 @@ import {
 import { apiDelete, ApiRequestError } from "../../../../src/lib/api";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 import { SubTabBar, type SubTab } from "@unerp/ui-layout";
-import { CrmTabLayout, CRM_TABS } from "@/components/crm/CrmTabLayout";
+import { CrmTabLayout, type CrmTab } from "@/components/crm/CrmTabLayout";
 
 interface CommissionRule {
   id: string;
@@ -59,6 +59,16 @@ interface CommissionEntry {
   periodEnd: string;
   createdAt: string;
 }
+
+const CRM_TABS: CrmTab[] = [
+  { id: "deals", label: "Deals", href: "/crm/deals" },
+  { id: "leads", label: "Leads", href: "/crm/leads" },
+  { id: "contacts", label: "Contacts", href: "/crm/contacts" },
+  { id: "accounts", label: "Accounts", href: "/crm/customers" },
+  { id: "opportunities", label: "Opportunities", href: "/crm/opportunities" },
+  { id: "commissions", label: "Commissions", href: "/crm/commissions" },
+  { id: "reports", label: "Reports", href: "/crm/reports" },
+];
 
 export default function CommissionsPage() {
   const client = useApiClient();

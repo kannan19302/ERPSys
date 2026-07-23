@@ -94,7 +94,24 @@ model TenantLifecycleEvent {
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
-  @@index([tenantId])
+  formTemplates          FormTemplate[]
+  pageTemplates          PageTemplate[]
+  workflowDefinitions    WorkflowDefinition[]
+  aiModels               AiModel[]
+  aiModelDeployments     AiModelDeployment[]
+  aiPrompts              AiPrompt[]
+  aiConversations        AiConversation[]
+  aiDocuments            AiDocument[]
+  aiAgents               AiAgent[]
+  aiTrainingJobs         AiTrainingJob[]
+  chatRooms              ChatRoom[]
+  videoCallRooms         VideoCallRoom[]
+  communicationFileShares CommunicationFileShare[]
+  announcements          Announcement[]
+  driveFolders           DriveFolder[]
+  driveFiles             DriveFile[]
+
+    @@index([tenantId])
   @@map("tenant_lifecycle_events")
 }
 
@@ -462,7 +479,16 @@ model Customer {
   healthLogs     CustomerHealthLog[]
   portalUsers    CustomerPortalUser[]
 
-  @@index([tenantId])
+  renewalRiskPredictions  RenewalRiskPrediction[]
+  churnAnalyses           ChurnAnalysis[]
+  expansionRevenues       ExpansionRevenue[]
+  fieldSalesCheckins      FieldSalesCheckin[]
+  fieldSalesMeetingReports FieldSalesMeetingReport[]
+  accountTeams            AccountTeam[]
+  customerCatalogs        CustomerCatalog[]
+  recurringOrderTemplates RecurringOrderTemplate[]
+
+    @@index([tenantId])
   @@index([tenantId, orgId])
   @@index([parentCustomerId])
   @@map("customers")
@@ -672,7 +698,10 @@ model Opportunity {
   competitorRel Competitor?           @relation(fields: [competitorId], references: [id], onDelete: SetNull)
   winLossReason WinLossReason?        @relation(fields: [winLossReasonId], references: [id], onDelete: SetNull)
 
-  @@index([tenantId])
+  dealDeskRequests DealDeskRequest[]
+  dealAlerts       DealAlert[]
+
+    @@index([tenantId])
   @@index([tenantId, stage])
   @@index([tenantId, pipelineId])
   @@index([customerId])
@@ -1195,7 +1224,9 @@ model Product {
   productBundleItems            ProductBundleItem[]
 
   @@unique([tenantId, orgId, sku])
-  @@index([tenantId])
+  customerCatalogItems CustomerCatalogItem[]
+
+    @@index([tenantId])
   @@index([tenantId, categoryId])
   @@map("products")
 }
@@ -1738,7 +1769,9 @@ model SalesOrder {
   storefrontPayments StorefrontOrderPayment[]
 
   @@unique([tenantId, orgId, orderNumber])
-  @@index([tenantId])
+  recurringOrderTemplates RecurringOrderTemplate[]
+
+    @@index([tenantId])
   @@index([tenantId, status])
   @@index([tenantId, customerId])
   @@index([contractId])
@@ -1876,9 +1909,13 @@ model Project {
   changeRequests ChangeRequest[]
   costEntries    ProjectCostEntry[]
   invoices       Invoice[]
+  resourceAllocations ProjectResourceAllocation[]
+  projectBudgets      ProjectBudget[]
+  projectDocuments    ProjectDocument[]
+  projectActivities   ProjectActivity[]
 
   @@unique([tenantId, orgId, code])
-  @@index([tenantId])
+    @@index([tenantId])
   @@map("projects")
 }
 
@@ -1896,7 +1933,9 @@ model ProjectPortfolio {
 
   projects Project[]
 
-  @@index([tenantId])
+  members ProjectPortfolioMember[]
+
+    @@index([tenantId])
   @@map("project_portfolios")
 }
 
@@ -1915,7 +1954,9 @@ model ProjectRisk {
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
-  @@index([tenantId])
+  mitigations ProjectRiskMitigation[]
+
+    @@index([tenantId])
   @@index([projectId])
   @@map("project_risks")
 }
@@ -2106,7 +2147,9 @@ model Dashboard {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  @@index([tenantId])
+  analyticsWidgets AnalyticsDashboardWidget[]
+
+    @@index([tenantId])
   @@map("dashboards")
 }
 
@@ -2122,7 +2165,9 @@ model Report {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  @@index([tenantId])
+  analyticsFilters AnalyticsReportFilter[]
+
+    @@index([tenantId])
   @@map("reports")
 }
 
@@ -2140,7 +2185,9 @@ model KPI {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@unique([tenantId, orgId, code])
-  @@index([tenantId])
+  analyticsValues AnalyticsKpiValue[]
+
+    @@index([tenantId])
   @@map("kpis")
 }
 
@@ -4639,8 +4686,6 @@ model Budget {
 
   periodAmounts     BudgetPeriodAmount[]
   reallocationLines BudgetReallocationLine[]
-  budgetCommitments BudgetCommitment[]
-  budgetRevisions BudgetRevision[]
   budgetCommitments BudgetCommitment[]
   budgetRevisions   BudgetRevision[]
 
@@ -7387,7 +7432,9 @@ model Workstation {
   tools        EquipmentTool[]
 
   @@unique([tenantId, orgId, code])
-  @@index([tenantId])
+  capacityEntries WorkCenterCapacity[]
+
+    @@index([tenantId])
   @@map("workstations")
 }
 
@@ -10773,7 +10820,9 @@ model SalesPartner {
   mdfFunds          SalesPartnerMdfFund[]
 
   @@unique([tenantId, name])
-  @@index([tenantId])
+  partnerDealRegistrations PartnerDealRegistration[]
+
+    @@index([tenantId])
   @@index([tenantId, status])
   @@map("sales_partners")
 }
@@ -17398,27 +17447,6 @@ model CustomerPriceListItem {
   @@map("customer_price_list_items")
 }
 
-/// Contract-specific pricing overrides per product.
-model ContractPricingOverride {
-  id            String    @id @default(cuid())
-  tenantId      String    @map("tenant_id")
-  orgId         String    @map("org_id")
-  contractId    String    @map("contract_id")
-  productId     String    @map("product_id")
-  unitPrice     Decimal   @map("unit_price") @db.Decimal(15, 2)
-  discountPct   Decimal   @default(0) @map("discount_pct") @db.Decimal(5, 2)
-  effectiveDate DateTime  @map("effective_date")
-  expiryDate    DateTime? @map("expiry_date")
-  isActive      Boolean   @default(true) @map("is_active")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
-
-  @@unique([contractId, productId])
-  @@index([tenantId])
-  @@index([contractId])
-  @@map("contract_pricing_overrides")
-}
-
 /// Minimum allowable price per product/customer (floor pricing with approval).
 model FloorPriceOverride {
   id         String    @id @default(cuid())
@@ -19478,24 +19506,7 @@ model CustomerCatalogItem {
   @@map("customer_catalog_items")
 }
 
-model ContractPricingOverride {
-  id           String   @id @default(cuid())
-  tenantId     String   @map("tenant_id")
-  contractId   String   @map("contract_id")
-  productId    String   @map("product_id")
-  overridePrice Decimal @map("override_price") @db.Decimal(15, 2)
-  discountPct  Decimal? @map("discount_pct") @db.Decimal(5, 2)
-  minQuantity  Decimal? @map("min_quantity") @db.Decimal(15, 3)
-  maxQuantity  Decimal? @map("max_quantity") @db.Decimal(15, 3)
-  validFrom    DateTime? @map("valid_from")
-  validTo      DateTime? @map("valid_to")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
 
-  @@unique([tenantId, contractId, productId])
-  @@index([tenantId])
-  @@map("contract_pricing_overrides")
-}
 
 model BulkOrderUpload {
   id            String    @id @default(cuid())
@@ -19709,8 +19720,6 @@ model RMALine {
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
-  rma ReturnMerchandiseAuthorization @relation(fields: [rmaId], references: [id], onDelete: Cascade)
-
   @@index([tenantId])
   @@index([rmaId])
   @@map("rma_lines")
@@ -19729,8 +19738,6 @@ model RMAInspection {
   notes           String?
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
-
-  rma ReturnMerchandiseAuthorization @relation(fields: [rmaId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([rmaId])
@@ -21857,32 +21864,6 @@ model FieldServiceChecklist {
 // POS EXPANSION MODELS
 // ═══════════════════════════════════════════════════════════════
 
-model PosShift {
-  id          String   @id @default(cuid())
-  tenantId    String   @map("tenant_id")
-  registerId  String   @map("register_id")
-  employeeId  String   @map("employee_id")
-  startTime   DateTime @default(now()) @map("start_time")
-  endTime     DateTime? @map("end_time")
-  status      String   @default("OPEN")
-  totalSales  Decimal  @default(0) @map("total_sales")
-  totalReturns Decimal @default(0) @map("total_returns")
-  totalTransactions Int @default(0) @map("total_transactions")
-  openingCash Decimal  @default(0) @map("opening_cash")
-  closingCash Decimal? @map("closing_cash")
-  declaredCash Decimal? @map("declared_cash")
-  cashVariance Decimal? @map("cash_variance")
-  notes       String?
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  @@index([tenantId])
-  @@index([registerId])
-  @@index([tenantId, employeeId])
-  @@index([tenantId, status])
-  @@map("pos_shifts")
-}
-
 model PosShiftCashDrawer {
   id        String   @id @default(cuid())
   tenantId  String   @map("tenant_id")
@@ -21893,7 +21874,7 @@ model PosShiftCashDrawer {
   createdBy String   @map("created_by")
   createdAt DateTime @default(now()) @map("created_at")
 
-  shift PosShift @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  shift POSShift @relation(fields: [shiftId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([shiftId])
@@ -21909,14 +21890,14 @@ model PosShiftTransaction {
   amount    Decimal
   createdAt DateTime @default(now()) @map("created_at")
 
-  shift PosShift @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  shift POSShift @relation(fields: [shiftId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([shiftId])
   @@map("pos_shift_transactions")
 }
 
-model PosRegister {
+model PosRegister2 {
   id              String   @id @default(cuid())
   tenantId        String   @map("tenant_id")
   terminalId      String   @map("terminal_id")
@@ -21938,12 +21919,10 @@ model PosRegister {
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
-  terminal POSTerminal? @relation(fields: [terminalId], references: [id])
-
   @@index([tenantId])
   @@index([terminalId])
   @@index([tenantId, status])
-  @@map("pos_registers")
+  @@map("pos_registers_v2")
 }
 
 model PosPaymentMethod {
@@ -22012,7 +21991,7 @@ model PosRefundItem {
   @@map("pos_refund_items")
 }
 
-model PosGiftCard {
+model PosGiftCard2 {
   id              String   @id @default(cuid())
   tenantId        String   @map("tenant_id")
   orgId           String   @map("org_id")
@@ -22027,15 +22006,14 @@ model PosGiftCard {
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
-  transactions PosGiftCardTransaction[]
-  payments     PosPayment[]
+  transactions PosGiftCardTransaction2[]
 
   @@index([tenantId])
   @@index([code])
-  @@map("pos_gift_cards")
+  @@map("pos_gift_cards_v2")
 }
 
-model PosGiftCardTransaction {
+model PosGiftCardTransaction2 {
   id         String   @id @default(cuid())
   tenantId   String   @map("tenant_id")
   giftCardId String   @map("gift_card_id")
@@ -22047,11 +22025,11 @@ model PosGiftCardTransaction {
   createdBy  String?  @map("created_by")
   createdAt  DateTime @default(now()) @map("created_at")
 
-  giftCard PosGiftCard @relation(fields: [giftCardId], references: [id], onDelete: Cascade)
+  giftCard PosGiftCard2 @relation(fields: [giftCardId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([giftCardId])
-  @@map("pos_gift_card_transactions")
+  @@map("pos_gift_card_transactions_v2")
 }
 
 model PosCustomerDisplay {
@@ -22947,7 +22925,7 @@ model SaasSubscription {
 
   plan      SaasSubscriptionPlan     @relation(fields: [planId], references: [id])
   lineItems SaasSubscriptionLineItem[]
-  invoices  SaasInvoice[]
+  invoices  SaasInvoice2[]
   usage     SaasUsageRecord[]
 
   @@index([tenantId])
@@ -23014,7 +22992,7 @@ model SaasUsageMeter {
   @@map("saas_usage_meters")
 }
 
-model SaasInvoice {
+model SaasInvoice2 {
   id              String    @id @default(cuid())
   tenantId        String    @map("tenant_id")
   subscriptionId  String?   @map("subscription_id")
@@ -23036,17 +23014,17 @@ model SaasInvoice {
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
   subscription SaasSubscription? @relation(fields: [subscriptionId], references: [id])
-  lineItems    SaasInvoiceLineItem[]
-  payments     SaasPayment[]
+  lineItems    SaasInvoice2LineItem[]
+  payments     SaasPayment2[]
 
   @@index([tenantId])
   @@index([subscriptionId])
   @@index([billingTenantId])
   @@index([status])
-  @@map("saas_invoices")
+  @@map("saas_invoices_v2")
 }
 
-model SaasInvoiceLineItem {
+model SaasInvoice2LineItem {
   id             String   @id @default(cuid())
   tenantId       String   @map("tenant_id")
   invoiceId      String   @map("invoice_id")
@@ -23058,14 +23036,14 @@ model SaasInvoiceLineItem {
   metadata       Json     @default("{}")
   createdAt      DateTime @default(now()) @map("created_at")
 
-  invoice SaasInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoice SaasInvoice2 @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([invoiceId])
-  @@map("saas_invoice_line_items")
+  @@map("saas_invoice_line_items_v2")
 }
 
-model SaasPayment {
+model SaasPayment2 {
   id                  String   @id @default(cuid())
   tenantId            String   @map("tenant_id")
   invoiceId           String   @map("invoice_id")
@@ -23081,15 +23059,15 @@ model SaasPayment {
   paidAt              DateTime? @map("paid_at")
   createdAt           DateTime  @default(now()) @map("created_at")
 
-  invoice SaasInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoice SaasInvoice2 @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([invoiceId])
   @@index([subscriptionId])
-  @@map("saas_payments")
+  @@map("saas_payments_v2")
 }
 
-model SaasPaymentMethod {
+model SaasPaymentMethod2 {
   id             String   @id @default(cuid())
   tenantId       String   @map("tenant_id")
   tenantUserId   String   @map("tenant_user_id")
@@ -23109,10 +23087,10 @@ model SaasPaymentMethod {
 
   @@index([tenantId])
   @@index([tenantUserId])
-  @@map("saas_payment_methods")
+  @@map("saas_payment_methods_v2")
 }
 
-model SaasCoupon {
+model SaasCoupon2 {
   id              String   @id @default(cuid())
   tenantId        String   @map("tenant_id")
   code            String
@@ -23128,14 +23106,14 @@ model SaasCoupon {
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
-  redemptions SaasCouponRedemption[]
+  redemptions SaasCoupon2Redemption[]
 
   @@index([tenantId])
   @@index([code])
-  @@map("saas_coupons")
+  @@map("saas_coupons_v2")
 }
 
-model SaasCouponRedemption {
+model SaasCoupon2Redemption {
   id             String   @id @default(cuid())
   tenantId       String   @map("tenant_id")
   couponId       String   @map("coupon_id")
@@ -23143,7 +23121,7 @@ model SaasCouponRedemption {
   discountAmount Decimal  @map("discount_amount")
   createdAt      DateTime @default(now()) @map("created_at")
 
-  coupon       SaasCoupon        @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  coupon       SaasCoupon2        @relation(fields: [couponId], references: [id], onDelete: Cascade)
   subscription SaasSubscription  @relation(fields: [subscriptionId], references: [id])
 
   @@index([tenantId])
@@ -23895,7 +23873,7 @@ model WorkflowDefinition {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  steps       WorkflowStep[]
+  steps       WorkflowDefinitionStep[]
   executions  WorkflowExecution[]
   tenant      Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
@@ -23904,7 +23882,7 @@ model WorkflowDefinition {
   @@map("workflow_definitions")
 }
 
-model WorkflowStep {
+model WorkflowDefinitionStep {
   id           String   @id @default(cuid())
   tenantId     String   @map("tenant_id")
   definitionId String   @map("definition_id")
@@ -23919,7 +23897,7 @@ model WorkflowStep {
 
   @@index([tenantId])
   @@index([definitionId])
-  @@map("workflow_steps")
+  @@map("workflow_definition_steps")
 }
 
 model WorkflowExecution {
@@ -24261,7 +24239,7 @@ model ChatMessage {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   room      ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  reactions MessageReaction[]
+  reactions ChatMessageReaction[]
   readReceipts MessageReadReceipt[]
 
   @@index([tenantId])
@@ -24270,7 +24248,7 @@ model ChatMessage {
   @@map("chat_messages")
 }
 
-model MessageReaction {
+model ChatMessageReaction {
   id        String   @id @default(cuid())
   tenantId  String   @map("tenant_id")
   messageId String   @map("message_id")
@@ -24282,7 +24260,7 @@ model MessageReaction {
 
   @@index([tenantId])
   @@index([messageId])
-  @@map("message_reactions")
+  @@map("chat_message_reactions")
 }
 
 model MessageReadReceipt {
@@ -24590,8 +24568,8 @@ model DriveActivity {
   details   Json?
   createdAt DateTime @default(now()) @map("created_at")
 
-  folder DriveFolder? @relation(fields: [entityId], references: [id])
-  file   DriveFile?   @relation(fields: [entityId], references: [id])
+  folder DriveFolder? @relation(fields: [entityId], references: [id], map: "drive_activities_folder_fkey")
+  file   DriveFile?   @relation(fields: [entityId], references: [id], map: "drive_activities_file_fkey")
 
   @@index([tenantId])
   @@index([userId])

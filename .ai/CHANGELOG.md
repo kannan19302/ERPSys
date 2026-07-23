@@ -2,17 +2,22 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-23] Web TypeScript Fixes — 16+ compile errors resolved across Drive, CRM, Inventory, Procurement, Supply Chain, Manufacturing, Projects
+
+**Scope**: Fixed all `@unerp/web` typecheck errors: Button `icon`→`leftIcon` (6 files), DataTable `pagination`→Pagination component (4 files), TabItem `id`→`key` + `activeTab`/`onTabChange`→`value`/`onChange` (3 files), PageHeader `icon` removal (4 files), Badge `outline`→`default` variant (3 files), non-null assertions for nullable array accesses (4 files), missing `CRM_TABS` constant definition. Web typecheck now passes cleanly (0 errors). See commit <hash>.
+
 ## [2026-07-23] Industry Module Conversion (ext → first-party) — Education, Healthcare, Real Estate, Field Service (DB + API)
 
 **Scope**: Converted 4 previously-externalized industry modules from ExtGateway-proxied marketplace apps to first-party NestJS backend modules with Prisma database models, permissions, and full API surfaces. UI pages already existed (migrated in previous cycles) and continue working without changes.
 
 **Key additions**:
+
 - **Education Module** (`apps/api/src/modules/education/`): Prisma models (EducationStudent, EducationCourse, EducationFeeStructure, StudentFee, EducationBook, BookTransaction, AttendanceRecord, EducationTimetable, Grade). API endpoints for students, courses, fee-structures, student-fees, books, book-transactions, timetables, attendance, grades under `/api/v1/ext/education/*`.
 - **Healthcare Module** (`apps/api/src/modules/healthcare/`): Prisma models (HealthcarePatient, HealthcarePractitioner, HealthcareAppointment, HealthcarePrescription, HealthcareEncounter, HealthcareDrug, HealthcareVital, HealthcareFhirResource). API endpoints for patients, practitioners, appointments, prescriptions, encounters, drugs, vitals under `/api/v1/ext/healthcare/*`.
 - **Real Estate Module** (`apps/api/src/modules/real-estate/`): Prisma models (RealEstateProperty, RealEstateLease, RealEstateTenant, RealEstateMaintenanceWorkOrder, RealEstateCommission). API endpoints for properties, leases, tenants, maintenance, commissions under `/api/v1/ext/real-estate/*`.
 - **Field Service Module** (`apps/api/src/modules/field-service/`): Prisma models (FieldServiceTicket, FieldServiceDispatch, FieldServiceTechnician, FieldServicePreventiveMaintenance, FieldServiceChecklist). API endpoints for tickets, dispatches, technicians, preventive-maintenances, checklists under `/api/v1/ext/field-service/*`.
 
-**Permissions**: ~60 new permission entries added for all four modules (education.*, healthcare.*, real-estate.*, field-service.*).
+**Permissions**: ~60 new permission entries added for all four modules (education._, healthcare._, real-estate._, field-service._).
 
 **Verification**: All controllers follow existing patterns (JwtAuthGuard, RbacGuard, Permissions decorators). Module registrations updated in app.module.ts. MODULE_REGISTRY.md updated from `🟢 ACTIVE (ext)` to `🟢 ACTIVE` with first-party package paths.
 
@@ -21,6 +26,7 @@
 **Scope**: Built 8 new NestJS controllers/services, 3 module file updates, ~40 new permission entries, and 12 Next.js UI pages across Inventory (RMA, Wave Planning, Warehouse KPIs, Safety Stock, Global Inventory), Procurement (Sourcing, Contracts, Intelligence, Supplier Onboarding), and Supply Chain (Global Trade, Supply Planning, Logistics Execution, Supplier Risk, Control Tower Advanced). ~5,000+ net LOC.
 
 **Key additions**:
+
 - **Inventory RMA**: `ReturnMerchandiseAuthorization`/`RMALine`/`RMAInspection` — CRUD, receive, inspect/accept/reject lifecycle
 - **Inventory Wave Planning**: `WavePlan`/`WavePlanTask` — plan creation, task assignment, completion tracking
 - **Inventory Warehouse KPIs**: `WarehouseKpi` — record and query warehouse performance metrics
@@ -47,6 +53,7 @@
 **Scope**: Full implementation of `hr.service.ts` completing all 100+ controller endpoints with full CRUD, business logic workflows (leave approval/rejection/reclaim, pay-run lifecycle, performance review submission, recruitment pipeline, onboarding/offboarding checklists, goal progress tracking), and 12+ analytics report endpoints. All methods tenant-scoped, with domain events emitted for key state changes (employee onboarded, leave approved, payroll processed). ~3,700 LOC in the service file.
 
 **Key additions**:
+
 - **Employee**: Full CRUD with soft delete, bulk actions (delete, update-status), document upload, asset assignment
 - **Department**: CRUD with hierarchical tree builder
 - **Position**: CRUD with unique code constraint
@@ -74,6 +81,7 @@
 **Scope**: Multi-module deepening across 4 modules — Advanced Finance (5 new controllers/services for ASC606 revenue recognition, budget deep control, financial instruments, global tax, and netting), CRM (3 new services: contract lifecycle with auto-renew, guided selling with product bundles/recommendations, lead enrichment with data enhancement), Sales (5 new services: advanced pricing engine, CPQ extension, SPIFF campaigns, subscription billing, territory management), and Procurement (4 new UI pages for debit notes, payment schedules, RFQ auctions, vendor RMA). Total: 86 files changed, 11,276 lines added, 39 new permission entries.
 
 **New API services/controllers** (13 total):
+
 - **Advanced Finance** (5): `Asc606DeepService`/Controller (revenue recognition schedules, performance obligations, contract modifications), `BudgetDeepService`/Controller (budget control deep, multi-version planning, what-if scenarios), `FinancialInstrumentsService`/Controller (financial instruments classification, impairment, hedging), `GlobalTaxDeepService`/Controller (global tax compliance, cross-border tax engine, tax reporting), `NettingDeepService`/Controller (intercompany netting deep, multi-lateral netting, settlement)
 - **CRM** (3): `CrmContractLifecycleService`/Controller (contract auto-renew, amendment workflow, termination), `CrmGuidedSellingService`/Controller (product bundles, guided selling flows, recommendation rules), `CrmLeadEnrichmentService`/Controller (lead data enrichment, firmographic data, social insights)
 - **Sales** (5): `SalesAdvancedPricingService`/Controller (tiered pricing, contract pricing, floor/ceiling rules), `SalesCpqExtensionService`/Controller (CPQ configuration rules, quote optimization, guided selling), `SalesSpiffService`/Controller (SPIFF campaign management, team splits, commission incentives), `SalesSubscriptionService`/Controller (subscription plans, recurring billing, subscription lifecycle), `SalesTerritoryService`/Controller (territory assignment, revenue targets, territory analytics)
