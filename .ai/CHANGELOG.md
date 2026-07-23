@@ -2,6 +2,16 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-23] CRM — Fixed orphaned controllers never wired into CrmModule (Communication, Knowledge Base, Partner Deep, Win/Loss)
+
+**Scope**: Audited every `apps/api/src/modules/crm/*.controller.ts` / `*.service.ts` export against `crm.module.ts`'s `providers`/`controllers` arrays. Found that `CrmWinLossController`, `CrmKnowledgeBaseCategoryController`, `CrmKnowledgeBaseArticleController`, `CrmPartnerDealRegistrationController`, `CrmPartnerMdfController`, `CrmCommunicationChannelController`, `CrmCommunicationTemplateController`, and `CrmCommunicationLogController` (plus their backing services) existed as complete, real implementations — with matching `apps/web/app/(dashboard)/crm/win-loss`, `/knowledge-base`, `/partner-management`, `/communication-templates` UI pages already built and calling their REST routes — but were never registered in Nest's DI graph, so every one of those `/api/v1/crm/win-loss/*`, `/crm/knowledge-base/*`, `/crm/partner-deep/*`, `/crm/communication/*` routes 404'd in production despite CYCLE 37's registry entry claiming they shipped.
+
+**Fix**: Added the 4 services + 8 controllers to `CrmModule`'s `providers`/`controllers` arrays in `apps/api/src/modules/crm/crm.module.ts`. No schema, DTO, or business-logic changes — the code was already correct, tenant-scoped (`tenantId` filters), RBAC-guarded (`crm.communication.*`, `crm.knowledgebase.*`, `crm.partner.*`, `crm.winloss.*` permissions), and change-tracked; it just wasn't reachable. `apps/api` typecheck clean (no CRM errors), `pnpm architecture:check` module-boundary check passed.
+
+**Files**: `apps/api/src/modules/crm/crm.module.ts`.
+
+**Note for reconciliation**: `apps/api/src/modules/crm/settings.controller.ts` (`CrmSettingsController`, extends `SettingsControllerBase`) is *also* unregistered anywhere in the API, but the same pattern repeats across other modules (e.g. no per-module settings-controller registration mechanism was found) — that looks like a repo-wide issue, not CRM-specific, and was left untouched to keep this change scoped and low-risk. Flagged for a follow-up.
+
 ## [2026-07-23] Web TypeScript Fixes — 16+ compile errors resolved across Drive, CRM, Inventory, Procurement, Supply Chain, Manufacturing, Projects
 
 **Scope**: Fixed all `@unerp/web` typecheck errors: Button `icon`→`leftIcon` (6 files), DataTable `pagination`→Pagination component (4 files), TabItem `id`→`key` + `activeTab`/`onTabChange`→`value`/`onChange` (3 files), PageHeader `icon` removal (4 files), Badge `outline`→`default` variant (3 files), non-null assertions for nullable array accesses (4 files), missing `CRM_TABS` constant definition. Web typecheck now passes cleanly (0 errors). See commit <hash>.
