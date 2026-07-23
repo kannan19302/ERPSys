@@ -28,6 +28,9 @@ export type MarkDeliveryShippedDto = z.infer<typeof markDeliveryShippedSchema>;
 export const processReturnSchema = z.object({
   action: z.enum(["APPROVE", "REJECT", "RECEIVE", "REFUND"]),
   notes: z.string().optional(),
+  refundMethod: z
+    .enum(["CREDIT_NOTE", "CASH_REFUND", "STORE_CREDIT", "ORIGINAL_PAYMENT"])
+    .optional(),
 });
 export type ProcessReturnDto = z.infer<typeof processReturnSchema>;
 
@@ -187,17 +190,23 @@ export const createSubscriptionSchema = z.object({
   currency: z.string().optional(),
   unitAmount: z.number().positive(),
   quantity: z.number().int().positive().optional(),
-  billingPeriod: z.enum(["MONTHLY", "QUARTERLY", "SEMI_ANNUAL", "ANNUAL"]).optional(),
+  billingPeriod: z
+    .enum(["MONTHLY", "QUARTERLY", "SEMI_ANNUAL", "ANNUAL"])
+    .optional(),
   billingCycles: z.number().int().positive().optional(),
   startDate: z.string().min(1),
   trialEndDate: z.string().optional(),
-  lines: z.array(z.object({
-    productId: z.string().optional(),
-    description: z.string().min(1),
-    unitAmount: z.number().positive(),
-    quantity: z.number().int().positive().optional(),
-    taxRate: z.number().min(0).max(100).optional(),
-  })).optional(),
+  lines: z
+    .array(
+      z.object({
+        productId: z.string().optional(),
+        description: z.string().min(1),
+        unitAmount: z.number().positive(),
+        quantity: z.number().int().positive().optional(),
+        taxRate: z.number().min(0).max(100).optional(),
+      }),
+    )
+    .optional(),
 });
 export type CreateSubscriptionDto = z.infer<typeof createSubscriptionSchema>;
 
@@ -206,7 +215,9 @@ export const updateSubscriptionSchema = z.object({
   description: z.string().max(2000).optional(),
   unitAmount: z.number().positive().optional(),
   quantity: z.number().int().positive().optional(),
-  billingPeriod: z.enum(["MONTHLY", "QUARTERLY", "SEMI_ANNUAL", "ANNUAL"]).optional(),
+  billingPeriod: z
+    .enum(["MONTHLY", "QUARTERLY", "SEMI_ANNUAL", "ANNUAL"])
+    .optional(),
   billingCycles: z.number().int().positive().optional(),
   currentPeriodEnd: z.string().optional(),
 });
@@ -217,7 +228,9 @@ export const recordSubscriptionUsageSchema = z.object({
   quantity: z.number().int().positive(),
   unitAmount: z.number().positive().optional(),
 });
-export type RecordSubscriptionUsageDto = z.infer<typeof recordSubscriptionUsageSchema>;
+export type RecordSubscriptionUsageDto = z.infer<
+  typeof recordSubscriptionUsageSchema
+>;
 
 export const sendDunningSchema = z.object({
   invoiceIds: z.array(z.string()).optional(),
@@ -229,7 +242,12 @@ export type SendDunningDto = z.infer<typeof sendDunningSchema>;
 export const createSpiffCampaignSchema = z.object({
   planId: z.string().optional(),
   name: z.string().min(1).max(200),
-  criteriaType: z.enum(["DEAL_SIZE_ABOVE", "PRODUCT_LINE", "NEW_LOGO", "ATTAINMENT_ABOVE"]),
+  criteriaType: z.enum([
+    "DEAL_SIZE_ABOVE",
+    "PRODUCT_LINE",
+    "NEW_LOGO",
+    "ATTAINMENT_ABOVE",
+  ]),
   criteriaValue: z.any(),
   bonusType: z.enum(["FLAT", "PERCENTAGE"]),
   bonusAmount: z.number().positive(),
@@ -246,11 +264,15 @@ export const createTeamSplitSchema = z.object({
   name: z.string().min(1).max(200),
   description: z.string().max(1000).optional(),
   splitType: z.enum(["PERCENTAGE", "FIXED_AMOUNT", "EQUAL"]),
-  members: z.array(z.object({
-    userId: z.string().min(1),
-    share: z.number().min(0).max(100),
-    role: z.string().optional(),
-  })).min(1),
+  members: z
+    .array(
+      z.object({
+        userId: z.string().min(1),
+        share: z.number().min(0).max(100),
+        role: z.string().optional(),
+      }),
+    )
+    .min(1),
 });
 export type CreateTeamSplitDto = z.infer<typeof createTeamSplitSchema>;
 
@@ -273,13 +295,19 @@ export const createCustomerPriceListSchema = z.object({
   currency: z.string().optional(),
   validFrom: z.string().optional(),
   validTo: z.string().optional(),
-  items: z.array(z.object({
-    productId: z.string().min(1),
-    unitPrice: z.number().positive(),
-    minQuantity: z.number().positive().optional(),
-  })).optional(),
+  items: z
+    .array(
+      z.object({
+        productId: z.string().min(1),
+        unitPrice: z.number().positive(),
+        minQuantity: z.number().positive().optional(),
+      }),
+    )
+    .optional(),
 });
-export type CreateCustomerPriceListDto = z.infer<typeof createCustomerPriceListSchema>;
+export type CreateCustomerPriceListDto = z.infer<
+  typeof createCustomerPriceListSchema
+>;
 
 export const updateCustomerPriceListSchema = z.object({
   name: z.string().min(1).max(200).optional(),
@@ -288,7 +316,9 @@ export const updateCustomerPriceListSchema = z.object({
   validTo: z.string().optional(),
   isActive: z.boolean().optional(),
 });
-export type UpdateCustomerPriceListDto = z.infer<typeof updateCustomerPriceListSchema>;
+export type UpdateCustomerPriceListDto = z.infer<
+  typeof updateCustomerPriceListSchema
+>;
 
 export const addPriceListItemSchema = z.object({
   productId: z.string().min(1),
@@ -305,7 +335,9 @@ export const createContractPricingSchema = z.object({
   effectiveDate: z.string().min(1),
   expiryDate: z.string().optional(),
 });
-export type CreateContractPricingDto = z.infer<typeof createContractPricingSchema>;
+export type CreateContractPricingDto = z.infer<
+  typeof createContractPricingSchema
+>;
 
 export const updateContractPricingSchema = z.object({
   unitPrice: z.number().positive().optional(),
@@ -313,7 +345,9 @@ export const updateContractPricingSchema = z.object({
   expiryDate: z.string().optional(),
   isActive: z.boolean().optional(),
 });
-export type UpdateContractPricingDto = z.infer<typeof updateContractPricingSchema>;
+export type UpdateContractPricingDto = z.infer<
+  typeof updateContractPricingSchema
+>;
 
 export const createFloorPriceSchema = z.object({
   productId: z.string().min(1),
@@ -340,7 +374,9 @@ export const calculateTieredPriceSchema = z.object({
   customerId: z.string().optional(),
   priceListId: z.string().optional(),
 });
-export type CalculateTieredPriceDto = z.infer<typeof calculateTieredPriceSchema>;
+export type CalculateTieredPriceDto = z.infer<
+  typeof calculateTieredPriceSchema
+>;
 
 // ─── CPQ Bundle DTOs ────────────────────────────
 
@@ -352,10 +388,14 @@ export const createProductBundleSchema = z.object({
   savingsPct: z.number().min(0).max(100).optional(),
   validFrom: z.string().optional(),
   validTo: z.string().optional(),
-  items: z.array(z.object({
-    productId: z.string().min(1),
-    quantity: z.number().int().positive().optional(),
-  })).min(1),
+  items: z
+    .array(
+      z.object({
+        productId: z.string().min(1),
+        quantity: z.number().int().positive().optional(),
+      }),
+    )
+    .min(1),
 });
 export type CreateProductBundleDto = z.infer<typeof createProductBundleSchema>;
 
@@ -390,7 +430,9 @@ export const validateConfigurationSchema = z.object({
   selectedOptions: z.record(z.string(), z.any()).optional(),
   quantity: z.number().int().positive().optional(),
 });
-export type ValidateConfigurationDto = z.infer<typeof validateConfigurationSchema>;
+export type ValidateConfigurationDto = z.infer<
+  typeof validateConfigurationSchema
+>;
 
 // ─── Territory DTOs ─────────────────────────────
 
@@ -445,7 +487,9 @@ export const createTerritoryForecastSchema = z.object({
   confidence: z.number().min(0).max(100).optional(),
   notes: z.string().max(2000).optional(),
 });
-export type CreateTerritoryForecastDto = z.infer<typeof createTerritoryForecastSchema>;
+export type CreateTerritoryForecastDto = z.infer<
+  typeof createTerritoryForecastSchema
+>;
 
 export const updateTerritoryForecastSchema = z.object({
   pipelineValue: z.number().min(0).optional(),
@@ -454,7 +498,9 @@ export const updateTerritoryForecastSchema = z.object({
   confidence: z.number().min(0).max(100).optional(),
   notes: z.string().max(2000).optional(),
 });
-export type UpdateTerritoryForecastDto = z.infer<typeof updateTerritoryForecastSchema>;
+export type UpdateTerritoryForecastDto = z.infer<
+  typeof updateTerritoryForecastSchema
+>;
 
 export const realignTerritorySchema = z.object({
   territoryId: z.string().min(1),
@@ -476,7 +522,9 @@ export type AssignEntityDto = z.infer<typeof assignEntitySchema>;
 export const getTerritoryAnalyticsSchema = z.object({
   period: z.string().optional(),
 });
-export type GetTerritoryAnalyticsDto = z.infer<typeof getTerritoryAnalyticsSchema>;
+export type GetTerritoryAnalyticsDto = z.infer<
+  typeof getTerritoryAnalyticsSchema
+>;
 
 // ─── Coupon management DTOs (re-exports for clarity, already defined above) ──
 // (createCouponSchema and applyCouponSchema are already defined in the Coupon section)

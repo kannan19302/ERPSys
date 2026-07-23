@@ -1,8 +1,25 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { CreateQuotationInput, CreateSalesOrderInput, CreateDeliveryNoteInput, CreateSalesReturnInput } from '@unerp/shared';
-import { Quotation, QuotationItem, SalesOrder, SalesOrderItem, Invoice, SalesReturn, Prisma } from '@prisma/client';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import {
+  CreateQuotationInput,
+  CreateSalesOrderInput,
+  CreateDeliveryNoteInput,
+  CreateSalesReturnInput,
+} from "@unerp/shared";
+import {
+  Quotation,
+  QuotationItem,
+  SalesOrder,
+  SalesOrderItem,
+  Invoice,
+  SalesReturn,
+  Prisma,
+} from "@prisma/client";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 
 /**
  * Input shape for `createConfirmedOnlineOrder` — identical to
@@ -11,18 +28,20 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
  * choices in `createSalesOrderSchema`), and `paymentStatus`/`paymentMethod`
  * are required since a storefront checkout always pays up front.
  */
-export type CreateOnlineOrderInput = Omit<CreateSalesOrderInput, 'salesChannel' | 'paymentStatus' | 'paymentMethod'> & {
-  salesChannel: 'ONLINE';
-  paymentStatus: 'PAID';
+export type CreateOnlineOrderInput = Omit<
+  CreateSalesOrderInput,
+  "salesChannel" | "paymentStatus" | "paymentMethod"
+> & {
+  salesChannel: "ONLINE";
+  paymentStatus: "PAID";
   paymentMethod?: string;
 };
 
 @Injectable()
 export class SalesService {
-  constructor(private readonly eventEmitter?: EventEmitter2) { }
+  constructor(private readonly eventEmitter?: EventEmitter2) {}
 
   // ─── QUOTATION METHODS ─────────────────────────────
-
 
   /**
    * Fetch all quotations scoped to tenantId.
@@ -31,8 +50,10 @@ export class SalesService {
     const quotations = (await prisma.quotation.findMany({
       where: { tenantId, deletedAt: null },
       include: { customer: true, lineItems: true },
-      orderBy: { createdAt: 'desc' },
-    })) as unknown as Array<Quotation & { customer: { name: string }; lineItems: QuotationItem[] }>;
+      orderBy: { createdAt: "desc" },
+    })) as unknown as Array<
+      Quotation & { customer: { name: string }; lineItems: QuotationItem[] }
+    >;
 
     return quotations.map((q) => ({
       id: q.id,
@@ -52,21 +73,36 @@ export class SalesService {
   /**
    * Create new quotation.
    */
-  async createQuotation(tenantId: string, orgId: string, dto: CreateQuotationInput, createdBy: string) {
+  async createQuotation(
+    tenantId: string,
+    orgId: string,
+    dto: CreateQuotationInput,
+    createdBy: string,
+  ) {
     let resolvedOrgId = orgId;
-    if (!orgId || orgId === 'org-system-default') {
+    if (!orgId || orgId === "org-system-default") {
       const org = await prisma.organization.findFirst({ where: { tenantId } });
-      if (!org) throw new BadRequestException('No Organization found for this Tenant.');
+      if (!org)
+        throw new BadRequestException("No Organization found for this Tenant.");
       resolvedOrgId = org.id;
     }
 
     const existing = await prisma.quotation.findFirst({
-      where: { tenantId, orgId: resolvedOrgId, quotationNumber: dto.quotationNumber },
+      where: {
+        tenantId,
+        orgId: resolvedOrgId,
+        quotationNumber: dto.quotationNumber,
+      },
     });
-    if (existing) throw new BadRequestException(`Quotation number ${dto.quotationNumber} already exists.`);
+    if (existing)
+      throw new BadRequestException(
+        `Quotation number ${dto.quotationNumber} already exists.`,
+      );
 
-    const customer = await prisma.customer.findFirst({ where: { id: dto.customerId, tenantId } });
-    if (!customer) throw new NotFoundException('Customer not found');
+    const customer = await prisma.customer.findFirst({
+      where: { id: dto.customerId, tenantId },
+    });
+    if (!customer) throw new NotFoundException("Customer not found");
 
     return prisma.$transaction(async (tx) => {
       let subtotal = 0;
@@ -104,13 +140,15 @@ export class SalesService {
           totalAmount: new Prisma.Decimal(subtotal + totalTax),
           notes: dto.notes || null,
           termsConditions: dto.termsConditions || null,
-          status: 'DRAFT',
+          status: "DRAFT",
           createdBy,
         },
       });
 
       for (const line of linesData) {
-        await tx.quotationItem.create({ data: { ...line, quotationId: quotation.id } });
+        await tx.quotationItem.create({
+          data: { ...line, quotationId: quotation.id },
+        });
       }
 
       return quotation;
@@ -123,7 +161,10 @@ export class SalesService {
    * Fetch all sales orders scoped to tenantId. Supports optional filtering by channel and status.
    */
   async getSalesOrders(tenantId: string, channel?: string, status?: string) {
-    const whereClause: Prisma.SalesOrderWhereInput = { tenantId, deletedAt: null };
+    const whereClause: Prisma.SalesOrderWhereInput = {
+      tenantId,
+      deletedAt: null,
+    };
     if (channel) {
       whereClause.salesChannel = channel;
     }
@@ -134,9 +175,13 @@ export class SalesService {
     const orders = (await prisma.salesOrder.findMany({
       where: whereClause,
       include: { customer: true, lineItems: true, deliveryNotes: true },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     })) as unknown as Array<
-      SalesOrder & { customer: { name: string }; lineItems: SalesOrderItem[]; deliveryNotes: Array<{ id: string }> }
+      SalesOrder & {
+        customer: { name: string };
+        lineItems: SalesOrderItem[];
+        deliveryNotes: Array<{ id: string }>;
+      }
     >;
 
     return orders.map((so) => ({
@@ -166,36 +211,53 @@ export class SalesService {
       where: { id, tenantId, deletedAt: null },
       include: {
         customer: true,
-        lineItems: { include: { product: true }, orderBy: { sortOrder: 'asc' } },
-        deliveryNotes: { include: { lineItems: true }, orderBy: { createdAt: 'desc' } },
+        lineItems: {
+          include: { product: true },
+          orderBy: { sortOrder: "asc" },
+        },
+        deliveryNotes: {
+          include: { lineItems: true },
+          orderBy: { createdAt: "desc" },
+        },
       },
     });
-    if (!so) throw new NotFoundException('Sales order not found');
+    if (!so) throw new NotFoundException("Sales order not found");
     return so;
   }
 
   /**
    * Create new sales order with multi-channel and B2B credit validations.
    */
-  async createSalesOrder(tenantId: string, orgId: string, dto: CreateSalesOrderInput, createdBy: string) {
+  async createSalesOrder(
+    tenantId: string,
+    orgId: string,
+    dto: CreateSalesOrderInput,
+    createdBy: string,
+  ) {
     let resolvedOrgId = orgId;
-    if (!orgId || orgId === 'org-system-default') {
+    if (!orgId || orgId === "org-system-default") {
       const org = await prisma.organization.findFirst({ where: { tenantId } });
-      if (!org) throw new BadRequestException('No Organization found for this Tenant.');
+      if (!org)
+        throw new BadRequestException("No Organization found for this Tenant.");
       resolvedOrgId = org.id;
     }
 
     const existing = await prisma.salesOrder.findFirst({
       where: { tenantId, orgId: resolvedOrgId, orderNumber: dto.orderNumber },
     });
-    if (existing) throw new BadRequestException(`Order number ${dto.orderNumber} already exists.`);
+    if (existing)
+      throw new BadRequestException(
+        `Order number ${dto.orderNumber} already exists.`,
+      );
 
-    const customer = await prisma.customer.findFirst({ where: { id: dto.customerId, tenantId } });
-    if (!customer) throw new NotFoundException('Customer not found');
+    const customer = await prisma.customer.findFirst({
+      where: { id: dto.customerId, tenantId },
+    });
+    if (!customer) throw new NotFoundException("Customer not found");
 
-    const salesChannel = dto.salesChannel || 'B2B';
+    const salesChannel = dto.salesChannel || "B2B";
     const paymentMethod = dto.paymentMethod || null;
-    const paymentStatus = dto.paymentStatus || 'UNPAID';
+    const paymentStatus = dto.paymentStatus || "UNPAID";
 
     // Calculate total order amount
     let orderSubtotal = 0;
@@ -207,37 +269,57 @@ export class SalesService {
     });
     const orderTotal = orderSubtotal + orderTax;
 
-    let initialStatus = 'DRAFT';
+    let initialStatus = "DRAFT";
 
     // B2B Credit Limit Check
-    if (salesChannel === 'B2B' && customer.creditLimit !== undefined && customer.creditLimit !== null) {
+    if (
+      salesChannel === "B2B" &&
+      customer.creditLimit !== undefined &&
+      customer.creditLimit !== null
+    ) {
       const creditLimit = Number(customer.creditLimit);
 
       const unpaidInvoices = await prisma.invoice.findMany({
         where: {
           tenantId,
           customerId: dto.customerId,
-          status: { not: 'PAID' },
+          status: { not: "PAID" },
           deletedAt: null,
         },
       });
 
       const outstandingBalance = unpaidInvoices.reduce(
-        (sum: number, inv: Invoice) => sum + (Number(inv.totalAmount) - Number(inv.paidAmount)),
-        0
+        (sum: number, inv: Invoice) =>
+          sum + (Number(inv.totalAmount) - Number(inv.paidAmount)),
+        0,
       );
 
       if (outstandingBalance + orderTotal > creditLimit) {
-        initialStatus = 'CREDIT_HOLD';
+        initialStatus = "CREDIT_HOLD";
       }
     }
 
     // Auto-confirm B2C/D2C orders if fully paid
-    if ((salesChannel === 'B2C' || salesChannel === 'D2C') && paymentStatus === 'PAID') {
-      initialStatus = 'CONFIRMED';
+    if (
+      (salesChannel === "B2C" || salesChannel === "D2C") &&
+      paymentStatus === "PAID"
+    ) {
+      initialStatus = "CONFIRMED";
     }
 
-    return this.persistSalesOrderTransaction(tenantId, resolvedOrgId, dto, createdBy, initialStatus, salesChannel, paymentMethod, paymentStatus, orderSubtotal, orderTax, orderTotal);
+    return this.persistSalesOrderTransaction(
+      tenantId,
+      resolvedOrgId,
+      dto,
+      createdBy,
+      initialStatus,
+      salesChannel,
+      paymentMethod,
+      paymentStatus,
+      orderSubtotal,
+      orderTax,
+      orderTotal,
+    );
   }
 
   /**
@@ -249,7 +331,16 @@ export class SalesService {
   private async persistSalesOrderTransaction(
     tenantId: string,
     resolvedOrgId: string,
-    dto: Pick<CreateSalesOrderInput, 'customerId' | 'orderNumber' | 'deliveryDate' | 'shippingAddress' | 'notes' | 'quotationId' | 'lineItems'>,
+    dto: Pick<
+      CreateSalesOrderInput,
+      | "customerId"
+      | "orderNumber"
+      | "deliveryDate"
+      | "shippingAddress"
+      | "notes"
+      | "quotationId"
+      | "lineItems"
+    >,
     createdBy: string,
     initialStatus: string,
     salesChannel: string,
@@ -292,7 +383,9 @@ export class SalesService {
           salesChannel,
           paymentMethod,
           paymentStatus,
-          shippingAddress: dto.shippingAddress ? (dto.shippingAddress as Prisma.InputJsonObject) : Prisma.JsonNull,
+          shippingAddress: dto.shippingAddress
+            ? (dto.shippingAddress as Prisma.InputJsonObject)
+            : Prisma.JsonNull,
           notes: dto.notes || null,
           quotationId: dto.quotationId || null,
           status: initialStatus,
@@ -301,7 +394,9 @@ export class SalesService {
       });
 
       for (const line of linesData) {
-        await tx.salesOrderItem.create({ data: { ...line, salesOrderId: salesOrder.id } });
+        await tx.salesOrderItem.create({
+          data: { ...line, salesOrderId: salesOrder.id },
+        });
       }
 
       return salesOrder;
@@ -326,21 +421,32 @@ export class SalesService {
    * `createdBy` has no internal User id for a guest checkout; callers should
    * pass a sentinel (the ecommerce module uses `'storefront-guest'`).
    */
-  async createConfirmedOnlineOrder(tenantId: string, orgId: string, dto: CreateOnlineOrderInput, createdBy: string) {
+  async createConfirmedOnlineOrder(
+    tenantId: string,
+    orgId: string,
+    dto: CreateOnlineOrderInput,
+    createdBy: string,
+  ) {
     let resolvedOrgId = orgId;
-    if (!orgId || orgId === 'org-system-default') {
+    if (!orgId || orgId === "org-system-default") {
       const org = await prisma.organization.findFirst({ where: { tenantId } });
-      if (!org) throw new BadRequestException('No Organization found for this Tenant.');
+      if (!org)
+        throw new BadRequestException("No Organization found for this Tenant.");
       resolvedOrgId = org.id;
     }
 
     const existing = await prisma.salesOrder.findFirst({
       where: { tenantId, orgId: resolvedOrgId, orderNumber: dto.orderNumber },
     });
-    if (existing) throw new BadRequestException(`Order number ${dto.orderNumber} already exists.`);
+    if (existing)
+      throw new BadRequestException(
+        `Order number ${dto.orderNumber} already exists.`,
+      );
 
-    const customer = await prisma.customer.findFirst({ where: { id: dto.customerId, tenantId } });
-    if (!customer) throw new NotFoundException('Customer not found');
+    const customer = await prisma.customer.findFirst({
+      where: { id: dto.customerId, tenantId },
+    });
+    if (!customer) throw new NotFoundException("Customer not found");
 
     let orderSubtotal = 0;
     let orderTax = 0;
@@ -356,17 +462,17 @@ export class SalesService {
       resolvedOrgId,
       dto,
       createdBy,
-      'CONFIRMED',
-      'ONLINE',
-      dto.paymentMethod || 'CARD',
-      'PAID',
+      "CONFIRMED",
+      "ONLINE",
+      dto.paymentMethod || "CARD",
+      "PAID",
       orderSubtotal,
       orderTax,
       orderTotal,
     );
 
     if (this.eventEmitter) {
-      this.eventEmitter.emit('sales.order.confirmed', {
+      this.eventEmitter.emit("sales.order.confirmed", {
         tenantId,
         salesOrderId: salesOrder.id,
         orderNumber: salesOrder.orderNumber,
@@ -381,11 +487,14 @@ export class SalesService {
    */
   async updateSalesOrderStatus(tenantId: string, id: string, status: string) {
     const so = await prisma.salesOrder.findFirst({ where: { id, tenantId } });
-    if (!so) throw new NotFoundException('Sales order not found');
+    if (!so) throw new NotFoundException("Sales order not found");
 
-    const updated = await prisma.salesOrder.update({ where: { id }, data: { status } });
-    if (status === 'CONFIRMED' && this.eventEmitter) {
-      this.eventEmitter.emit('sales.order.confirmed', {
+    const updated = await prisma.salesOrder.update({
+      where: { id },
+      data: { status },
+    });
+    if (status === "CONFIRMED" && this.eventEmitter) {
+      this.eventEmitter.emit("sales.order.confirmed", {
         tenantId,
         salesOrderId: id,
         orderNumber: so.orderNumber,
@@ -398,19 +507,21 @@ export class SalesService {
    * Approve a credit hold on a B2B sales order.
    */
   async approveCreditHold(tenantId: string, orderId: string, _userId: string) {
-    const so = await prisma.salesOrder.findFirst({ where: { id: orderId, tenantId } });
-    if (!so) throw new NotFoundException('Sales order not found');
-    if (so.status !== 'CREDIT_HOLD') {
-      throw new BadRequestException('Sales order is not on credit hold');
+    const so = await prisma.salesOrder.findFirst({
+      where: { id: orderId, tenantId },
+    });
+    if (!so) throw new NotFoundException("Sales order not found");
+    if (so.status !== "CREDIT_HOLD") {
+      throw new BadRequestException("Sales order is not on credit hold");
     }
 
     const updated = await prisma.salesOrder.update({
       where: { id: orderId },
-      data: { status: 'CONFIRMED' },
+      data: { status: "CONFIRMED" },
     });
 
     if (this.eventEmitter) {
-      this.eventEmitter.emit('sales.order.confirmed', {
+      this.eventEmitter.emit("sales.order.confirmed", {
         tenantId,
         salesOrderId: orderId,
         orderNumber: so.orderNumber,
@@ -423,18 +534,27 @@ export class SalesService {
   /**
    * Record payment for B2C/D2C or general orders.
    */
-  async recordOrderPayment(tenantId: string, orderId: string, amount: number, method: string, _userId: string) {
-    const so = await prisma.salesOrder.findFirst({ where: { id: orderId, tenantId } });
-    if (!so) throw new NotFoundException('Sales order not found');
+  async recordOrderPayment(
+    tenantId: string,
+    orderId: string,
+    amount: number,
+    method: string,
+    _userId: string,
+  ) {
+    const so = await prisma.salesOrder.findFirst({
+      where: { id: orderId, tenantId },
+    });
+    if (!so) throw new NotFoundException("Sales order not found");
 
-    const newPaymentStatus = amount >= Number(so.totalAmount) ? 'PAID' : 'PARTIALLY_PAID';
+    const newPaymentStatus =
+      amount >= Number(so.totalAmount) ? "PAID" : "PARTIALLY_PAID";
 
     const updateData: Prisma.SalesOrderUpdateInput = {
       paymentStatus: newPaymentStatus,
       paymentMethod: method,
     };
-    if (so.status === 'DRAFT' && newPaymentStatus === 'PAID') {
-      updateData.status = 'CONFIRMED';
+    if (so.status === "DRAFT" && newPaymentStatus === "PAID") {
+      updateData.status = "CONFIRMED";
     }
 
     const updated = await prisma.salesOrder.update({
@@ -442,8 +562,8 @@ export class SalesService {
       data: updateData,
     });
 
-    if (updateData.status === 'CONFIRMED' && this.eventEmitter) {
-      this.eventEmitter.emit('sales.order.confirmed', {
+    if (updateData.status === "CONFIRMED" && this.eventEmitter) {
+      this.eventEmitter.emit("sales.order.confirmed", {
         tenantId,
         salesOrderId: orderId,
         orderNumber: so.orderNumber,
@@ -456,68 +576,76 @@ export class SalesService {
   /**
    * Convert customer quotation to Sales Order.
    */
-  async convertQuotationToOrder(tenantId: string, quotationId: string, createdBy: string) {
+  async convertQuotationToOrder(
+    tenantId: string,
+    quotationId: string,
+    createdBy: string,
+  ) {
     const quotation = await prisma.quotation.findFirst({
       where: { id: quotationId, tenantId, deletedAt: null },
       include: { lineItems: true, customer: true },
     });
-    if (!quotation) throw new NotFoundException('Quotation not found');
-    if (quotation.status === 'CONVERTED') {
-      throw new BadRequestException('Quotation has already been converted to an order');
+    if (!quotation) throw new NotFoundException("Quotation not found");
+    if (quotation.status === "CONVERTED") {
+      throw new BadRequestException(
+        "Quotation has already been converted to an order",
+      );
     }
 
-    const orderNumber = `SO-QT-${quotation.quotationNumber.replace('QT-', '')}-${Math.floor(Math.random() * 1000)}`;
+    const orderNumber = `SO-QT-${quotation.quotationNumber.replace("QT-", "")}-${Math.floor(Math.random() * 1000)}`;
 
-    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      const salesOrder = await tx.salesOrder.create({
-        data: {
-          tenantId,
-          orgId: quotation.orgId,
-          customerId: quotation.customerId,
-          orderNumber,
-          deliveryDate: quotation.validUntil,
-          subtotal: quotation.subtotal,
-          taxAmount: quotation.taxAmount,
-          totalAmount: quotation.totalAmount,
-          salesChannel: 'B2B',
-          paymentStatus: 'UNPAID',
-          quotationId: quotation.id,
-          status: 'CONFIRMED',
-          createdBy,
-        },
-      });
-
-      for (const line of quotation.lineItems) {
-        await tx.salesOrderItem.create({
+    const result = await prisma.$transaction(
+      async (tx: Prisma.TransactionClient) => {
+        const salesOrder = await tx.salesOrder.create({
           data: {
             tenantId,
-            salesOrderId: salesOrder.id,
-            productId: line.productId,
-            description: line.description,
-            quantity: line.quantity,
-            deliveredQty: new Prisma.Decimal(0),
-            unitPrice: line.unitPrice,
-            taxRate: line.taxRate,
-            taxAmount: line.taxAmount,
-            totalAmount: line.totalAmount,
-            sortOrder: line.sortOrder,
+            orgId: quotation.orgId,
+            customerId: quotation.customerId,
+            orderNumber,
+            deliveryDate: quotation.validUntil,
+            subtotal: quotation.subtotal,
+            taxAmount: quotation.taxAmount,
+            totalAmount: quotation.totalAmount,
+            salesChannel: "B2B",
+            paymentStatus: "UNPAID",
+            quotationId: quotation.id,
+            status: "CONFIRMED",
+            createdBy,
           },
         });
-      }
 
-      await tx.quotation.update({
-        where: { id: quotationId },
-        data: {
-          status: 'CONVERTED',
-          convertedToOrderId: salesOrder.id,
-        },
-      });
+        for (const line of quotation.lineItems) {
+          await tx.salesOrderItem.create({
+            data: {
+              tenantId,
+              salesOrderId: salesOrder.id,
+              productId: line.productId,
+              description: line.description,
+              quantity: line.quantity,
+              deliveredQty: new Prisma.Decimal(0),
+              unitPrice: line.unitPrice,
+              taxRate: line.taxRate,
+              taxAmount: line.taxAmount,
+              totalAmount: line.totalAmount,
+              sortOrder: line.sortOrder,
+            },
+          });
+        }
 
-      return salesOrder;
-    });
+        await tx.quotation.update({
+          where: { id: quotationId },
+          data: {
+            status: "CONVERTED",
+            convertedToOrderId: salesOrder.id,
+          },
+        });
+
+        return salesOrder;
+      },
+    );
 
     if (this.eventEmitter) {
-      this.eventEmitter.emit('sales.order.confirmed', {
+      this.eventEmitter.emit("sales.order.confirmed", {
         tenantId,
         salesOrderId: result.id,
         orderNumber: result.orderNumber,
@@ -532,64 +660,83 @@ export class SalesService {
   /**
    * Create delivery note against a sales order.
    */
-  async createDeliveryNote(tenantId: string, dto: CreateDeliveryNoteInput, createdBy: string) {
+  async createDeliveryNote(
+    tenantId: string,
+    dto: CreateDeliveryNoteInput,
+    createdBy: string,
+  ) {
     const so = await prisma.salesOrder.findFirst({
       where: { id: dto.salesOrderId, tenantId },
       include: { lineItems: true },
     });
-    if (!so) throw new NotFoundException('Sales order not found');
+    if (!so) throw new NotFoundException("Sales order not found");
 
     const existingDN = await prisma.deliveryNote.findFirst({
       where: { tenantId, deliveryNumber: dto.deliveryNumber },
     });
-    if (existingDN) throw new BadRequestException(`Delivery number ${dto.deliveryNumber} already exists.`);
+    if (existingDN)
+      throw new BadRequestException(
+        `Delivery number ${dto.deliveryNumber} already exists.`,
+      );
 
-    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      const dn = await tx.deliveryNote.create({
-        data: {
-          tenantId,
-          salesOrderId: dto.salesOrderId,
-          deliveryNumber: dto.deliveryNumber,
-          warehouseId: dto.warehouseId || null,
-          carrierName: dto.carrierName || null,
-          trackingNumber: dto.trackingNumber || null,
-          notes: dto.notes || null,
-          status: 'PENDING',
-          createdBy,
-        },
-      });
-
-      for (const item of dto.lineItems) {
-        await tx.deliveryNoteItem.create({
+    const result = await prisma.$transaction(
+      async (tx: Prisma.TransactionClient) => {
+        const dn = await tx.deliveryNote.create({
           data: {
             tenantId,
-            deliveryNoteId: dn.id,
-            productId: item.productId || null,
-            description: item.description,
-            deliveredQty: new Prisma.Decimal(item.deliveredQty),
+            salesOrderId: dto.salesOrderId,
+            deliveryNumber: dto.deliveryNumber,
+            warehouseId: dto.warehouseId || null,
+            carrierName: dto.carrierName || null,
+            trackingNumber: dto.trackingNumber || null,
+            notes: dto.notes || null,
+            status: "PENDING",
+            createdBy,
           },
         });
-      }
 
-      // Update SO status
-      const allSOItems = so.lineItems;
-      const totalOrdered = allSOItems.reduce((sum: number, li: SalesOrderItem) => sum + Number(li.quantity), 0);
-      const previouslyDelivered = allSOItems.reduce((sum: number, li: SalesOrderItem) => sum + Number(li.deliveredQty), 0);
-      const newlyDelivered = dto.lineItems.reduce((sum: number, li: { deliveredQty: number }) => sum + li.deliveredQty, 0);
-      const totalDelivered = previouslyDelivered + newlyDelivered;
+        for (const item of dto.lineItems) {
+          await tx.deliveryNoteItem.create({
+            data: {
+              tenantId,
+              deliveryNoteId: dn.id,
+              productId: item.productId || null,
+              description: item.description,
+              deliveredQty: new Prisma.Decimal(item.deliveredQty),
+            },
+          });
+        }
 
-      const newStatus = totalDelivered >= totalOrdered ? 'DELIVERED' : 'PARTIALLY_DELIVERED';
+        // Update SO status
+        const allSOItems = so.lineItems;
+        const totalOrdered = allSOItems.reduce(
+          (sum: number, li: SalesOrderItem) => sum + Number(li.quantity),
+          0,
+        );
+        const previouslyDelivered = allSOItems.reduce(
+          (sum: number, li: SalesOrderItem) => sum + Number(li.deliveredQty),
+          0,
+        );
+        const newlyDelivered = dto.lineItems.reduce(
+          (sum: number, li: { deliveredQty: number }) => sum + li.deliveredQty,
+          0,
+        );
+        const totalDelivered = previouslyDelivered + newlyDelivered;
 
-      await tx.salesOrder.update({
-        where: { id: dto.salesOrderId },
-        data: { status: newStatus },
-      });
+        const newStatus =
+          totalDelivered >= totalOrdered ? "DELIVERED" : "PARTIALLY_DELIVERED";
 
-      return dn;
-    });
+        await tx.salesOrder.update({
+          where: { id: dto.salesOrderId },
+          data: { status: newStatus },
+        });
+
+        return dn;
+      },
+    );
 
     if (this.eventEmitter) {
-      this.eventEmitter.emit('sales.delivery.created', {
+      this.eventEmitter.emit("sales.delivery.created", {
         tenantId,
         salesOrderId: dto.salesOrderId,
         deliveryNumber: dto.deliveryNumber,
@@ -609,37 +756,53 @@ export class SalesService {
     const returns = await prisma.salesReturn.findMany({
       where,
       include: { customer: true, salesOrder: true, lineItems: true },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
-    return returns.map((r: SalesReturn & { customer: { name: string }; salesOrder: { orderNumber: string }; lineItems: any[] }) => ({
-      id: r.id,
-      returnNumber: r.returnNumber,
-      status: r.status,
-      returnDate: r.returnDate,
-      totalAmount: Number(r.totalAmount),
-      customerName: r.customer.name,
-      orderNumber: r.salesOrder.orderNumber,
-      lineItemCount: r.lineItems.length,
-    }));
+    return returns.map(
+      (
+        r: SalesReturn & {
+          customer: { name: string };
+          salesOrder: { orderNumber: string };
+          lineItems: any[];
+        },
+      ) => ({
+        id: r.id,
+        returnNumber: r.returnNumber,
+        status: r.status,
+        returnDate: r.returnDate,
+        totalAmount: Number(r.totalAmount),
+        customerName: r.customer.name,
+        orderNumber: r.salesOrder.orderNumber,
+        lineItemCount: r.lineItems.length,
+      }),
+    );
   }
 
-  async createSalesReturn(tenantId: string, orgId: string, dto: CreateSalesReturnInput, createdBy: string) {
+  async createSalesReturn(
+    tenantId: string,
+    orgId: string,
+    dto: CreateSalesReturnInput,
+    createdBy: string,
+  ) {
     let resolvedOrgId = orgId;
-    if (!orgId || orgId === 'org-system-default') {
+    if (!orgId || orgId === "org-system-default") {
       const org = await prisma.organization.findFirst({ where: { tenantId } });
-      if (!org) throw new BadRequestException('No Organization found.');
+      if (!org) throw new BadRequestException("No Organization found.");
       resolvedOrgId = org.id;
     }
 
     const order = await prisma.salesOrder.findFirst({
       where: { id: dto.salesOrderId, tenantId },
     });
-    if (!order) throw new NotFoundException('Sales Order not found');
+    if (!order) throw new NotFoundException("Sales Order not found");
 
     const existing = await prisma.salesReturn.findFirst({
       where: { tenantId, returnNumber: dto.returnNumber },
     });
-    if (existing) throw new BadRequestException(`Return number ${dto.returnNumber} already exists.`);
+    if (existing)
+      throw new BadRequestException(
+        `Return number ${dto.returnNumber} already exists.`,
+      );
 
     let subtotal = 0;
     let taxAmount = 0;
@@ -652,7 +815,7 @@ export class SalesService {
 
     return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // 1. Create Credit Note
-      const creditNoteNumber = `CN-SR-${dto.returnNumber.replace('SR-', '')}-${Math.floor(Math.random() * 1000)}`;
+      const creditNoteNumber = `CN-SR-${dto.returnNumber.replace("SR-", "")}-${Math.floor(Math.random() * 1000)}`;
       const creditNote = await tx.creditNote.create({
         data: {
           tenantId,
@@ -661,8 +824,8 @@ export class SalesService {
           invoiceId: order.invoiceId || null,
           noteNumber: creditNoteNumber,
           amount: new Prisma.Decimal(totalAmount),
-          reason: dto.reason || 'Customer Return',
-          status: 'CONFIRMED',
+          reason: dto.reason || "Customer Return",
+          status: "CONFIRMED",
         },
       });
 
@@ -675,7 +838,7 @@ export class SalesService {
           salesOrderId: dto.salesOrderId,
           deliveryNoteId: dto.deliveryNoteId || null,
           returnNumber: dto.returnNumber,
-          status: 'COMPLETED',
+          status: "COMPLETED",
           returnDate: new Date(),
           subtotal: new Prisma.Decimal(subtotal),
           taxAmount: new Prisma.Decimal(taxAmount),
@@ -708,28 +871,39 @@ export class SalesService {
       // 4. Update Sales Order status
       await tx.salesOrder.update({
         where: { id: dto.salesOrderId },
-        data: { status: 'RETURNED' },
+        data: { status: "RETURNED" },
       });
 
       // 5. Emit stock restock event
       if (this.eventEmitter) {
-        let whId = 'WH-MAIN';
+        let whId = "WH-MAIN";
         // deliveryNoteId is optional on the return DTO
         const dnId = (dto as any).deliveryNoteId;
         if (dnId) {
-          const dnObj = await tx.deliveryNote.findFirst({ where: { id: dnId } });
+          const dnObj = await tx.deliveryNote.findFirst({
+            where: { id: dnId },
+          });
           if (dnObj && dnObj.warehouseId) {
             whId = dnObj.warehouseId;
           }
         }
-        this.eventEmitter.emit('sales.return.created', {
+        this.eventEmitter.emit("sales.return.created", {
           tenantId,
           salesReturnId: sr.id,
           warehouseId: whId,
-          lineItems: dto.lineItems.map((li: { productId?: string; description: string; quantity: number; unitPrice?: number; taxRate?: number; reason?: string }) => ({
-            productId: li.productId,
-            quantity: li.quantity,
-          })),
+          lineItems: dto.lineItems.map(
+            (li: {
+              productId?: string;
+              description: string;
+              quantity: number;
+              unitPrice?: number;
+              taxRate?: number;
+              reason?: string;
+            }) => ({
+              productId: li.productId,
+              quantity: li.quantity,
+            }),
+          ),
         });
       }
 
@@ -742,13 +916,13 @@ export class SalesService {
       where: { id, tenantId, deletedAt: null },
       include: { customer: true, lineItems: true },
     });
-    if (!q) throw new NotFoundException('Quotation not found');
+    if (!q) throw new NotFoundException("Quotation not found");
     return q;
   }
 
   async updateQuotationStatus(tenantId: string, id: string, status: string) {
     const q = await prisma.quotation.findFirst({ where: { id, tenantId } });
-    if (!q) throw new NotFoundException('Quotation not found');
+    if (!q) throw new NotFoundException("Quotation not found");
     return prisma.quotation.update({ where: { id }, data: { status } });
   }
 
@@ -758,7 +932,7 @@ export class SalesService {
     return prisma.deliveryNote.findMany({
       where,
       include: { salesOrder: true, lineItems: true },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -767,49 +941,170 @@ export class SalesService {
       where: { id, tenantId },
       include: { salesOrder: { include: { customer: true } }, lineItems: true },
     });
-    if (!dn) throw new NotFoundException('Delivery note not found');
+    if (!dn) throw new NotFoundException("Delivery note not found");
     return dn;
   }
 
-  async markDeliveryNoteShipped(tenantId: string, id: string, trackingNumber?: string, carrier?: string) {
+  async markDeliveryNoteShipped(
+    tenantId: string,
+    id: string,
+    trackingNumber?: string,
+    carrier?: string,
+  ) {
     const dn = await prisma.deliveryNote.findFirst({ where: { id, tenantId } });
-    if (!dn) throw new NotFoundException('Delivery note not found');
+    if (!dn) throw new NotFoundException("Delivery note not found");
     return prisma.deliveryNote.update({
       where: { id },
-      data: { status: 'IN_TRANSIT', trackingNumber, carrierName: carrier },
+      data: { status: "IN_TRANSIT", trackingNumber, carrierName: carrier },
     });
   }
 
   async getSalesReturnById(tenantId: string, id: string) {
     const sr = await prisma.salesReturn.findFirst({
       where: { id, tenantId },
-      include: { salesOrder: { include: { customer: true } }, lineItems: { include: { product: true } } },
+      include: {
+        salesOrder: { include: { customer: true } },
+        lineItems: { include: { product: true } },
+      },
     });
-    if (!sr) throw new NotFoundException('Sales return not found');
+    if (!sr) throw new NotFoundException("Sales return not found");
     return sr;
   }
 
-  async processReturn(tenantId: string, id: string, action: 'APPROVE' | 'REJECT' | 'RECEIVE' | 'REFUND', notes?: string, userId?: string) {
+  async processReturn(
+    tenantId: string,
+    id: string,
+    action: "APPROVE" | "REJECT" | "RECEIVE" | "REFUND",
+    notes?: string,
+    userId?: string,
+    refundMethod?:
+      | "CREDIT_NOTE"
+      | "CASH_REFUND"
+      | "STORE_CREDIT"
+      | "ORIGINAL_PAYMENT",
+  ) {
     const sr = await prisma.salesReturn.findFirst({ where: { id, tenantId } });
-    if (!sr) throw new NotFoundException('Sales return not found');
+    if (!sr) throw new NotFoundException("Sales return not found");
 
     const statusMap: Record<string, string> = {
-      APPROVE: 'APPROVED',
-      REJECT: 'REJECTED',
-      RECEIVE: 'RECEIVED',
-      REFUND: 'REFUNDED',
+      APPROVE: "APPROVED",
+      REJECT: "REJECTED",
+      RECEIVE: "RECEIVED",
+      REFUND: "REFUNDED",
     };
 
-    const updated = await prisma.salesReturn.update({
-      where: { id },
-      data: { status: statusMap[action] || action, reason: notes || (sr as any).reason },
-    });
-
-    if (this.eventEmitter) {
-      this.eventEmitter.emit('sales.return.processed', { tenantId, salesReturnId: id, action, userId });
+    // Real state-machine guard — a return progresses DRAFT/COMPLETED -> APPROVED -> RECEIVED -> REFUNDED,
+    // with REJECT allowed only before goods have been received back and money has moved.
+    const allowedFrom: Record<string, string[]> = {
+      APPROVE: ["DRAFT", "COMPLETED"],
+      REJECT: ["DRAFT", "COMPLETED", "APPROVED"],
+      RECEIVE: ["APPROVED"],
+      REFUND: ["RECEIVED"],
+    };
+    const currentStatus = sr.status;
+    if (!allowedFrom[action]?.includes(currentStatus)) {
+      throw new BadRequestException(
+        `Cannot ${action} a return in status ${currentStatus}. Allowed from: ${allowedFrom[action]?.join(", ") || "none"}.`,
+      );
     }
 
-    return updated;
+    if (action !== "REFUND") {
+      const updated = await prisma.salesReturn.update({
+        where: { id },
+        data: {
+          status: statusMap[action],
+          reason: notes || (sr as any).reason,
+        },
+      });
+      if (this.eventEmitter) {
+        this.eventEmitter.emit("sales.return.processed", {
+          tenantId,
+          salesReturnId: id,
+          action,
+          userId,
+        });
+      }
+      return updated;
+    }
+
+    // REFUND: move real money/credit, not just a status flag.
+    const method = refundMethod || "CREDIT_NOTE";
+    return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const refundAmount = Number(sr.totalAmount);
+
+      if (sr.creditNoteId) {
+        await tx.creditNote.update({
+          where: { id: sr.creditNoteId },
+          data: {
+            status:
+              method === "CREDIT_NOTE" || method === "STORE_CREDIT"
+                ? "APPLIED"
+                : "CONFIRMED",
+          },
+        });
+      }
+
+      // ORIGINAL_PAYMENT / CASH_REFUND: reverse against the originating invoice's paid amount
+      // via a negative Payment ledger row, so Finance's AR/collections views reconcile automatically.
+      const order = await tx.salesOrder.findFirst({
+        where: { id: sr.salesOrderId, tenantId },
+      });
+      if (
+        (method === "ORIGINAL_PAYMENT" || method === "CASH_REFUND") &&
+        order?.invoiceId
+      ) {
+        const invoice = await tx.invoice.findFirst({
+          where: { id: order.invoiceId, tenantId },
+        });
+        if (invoice) {
+          const newPaidAmount = Math.max(
+            0,
+            Number(invoice.paidAmount) - refundAmount,
+          );
+          await tx.payment.create({
+            data: {
+              tenantId,
+              invoiceId: invoice.id,
+              amount: new Prisma.Decimal(-refundAmount),
+              method,
+              reference: `REFUND-${sr.returnNumber}`,
+              notes: notes || `Refund for return ${sr.returnNumber}`,
+              createdBy: userId,
+            },
+          });
+          await tx.invoice.update({
+            where: { id: invoice.id },
+            data: {
+              paidAmount: new Prisma.Decimal(newPaidAmount),
+              status: newPaidAmount <= 0 ? invoice.status : "PARTIALLY_PAID",
+            },
+          });
+        }
+      }
+
+      const updated = await tx.salesReturn.update({
+        where: { id },
+        data: { status: "REFUNDED", reason: notes || (sr as any).reason },
+      });
+
+      if (this.eventEmitter) {
+        this.eventEmitter.emit("sales.return.refunded", {
+          tenantId,
+          salesReturnId: id,
+          amount: refundAmount,
+          method,
+          userId,
+        });
+        this.eventEmitter.emit("sales.return.processed", {
+          tenantId,
+          salesReturnId: id,
+          action,
+          userId,
+        });
+      }
+
+      return updated;
+    });
   }
 
   async convertToPurchaseOrders(tenantId: string, id: string, userId: string) {
@@ -819,25 +1114,29 @@ export class SalesService {
         lineItems: {
           include: {
             product: {
-              include: { reorderRules: true }
-            }
+              include: { reorderRules: true },
+            },
           },
         },
       },
     });
-    if (!so) throw new NotFoundException('Sales order not found');
+    if (!so) throw new NotFoundException("Sales order not found");
 
     const defaultVendor = await prisma.vendor.findFirst({
       where: { tenantId, deletedAt: null },
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: "asc" },
     });
 
     const vendorGroups = new Map<string, typeof so.lineItems>();
     for (const item of so.lineItems) {
-      const preferredVendorId = (item.product as any)?.reorderRules?.[0]?.preferredVendorId;
+      const preferredVendorId = (item.product as any)?.reorderRules?.[0]
+        ?.preferredVendorId;
       const vId = preferredVendorId || defaultVendor?.id;
       if (!vId) {
-        throw new BadRequestException('No vendor available for product ' + (item.product?.name || 'Line Item'));
+        throw new BadRequestException(
+          "No vendor available for product " +
+            (item.product?.name || "Line Item"),
+        );
       }
       if (!vendorGroups.has(vId)) {
         vendorGroups.set(vId, []);
@@ -846,16 +1145,19 @@ export class SalesService {
     }
 
     if (vendorGroups.size === 0) {
-      throw new BadRequestException('No items found in sales order');
+      throw new BadRequestException("No items found in sales order");
     }
 
     return prisma.$transaction(async (tx) => {
       const createdPOs = [];
       for (const [vendorId, items] of vendorGroups.entries()) {
         const poCount = await tx.purchaseOrder.count({ where: { tenantId } });
-        const poNumber = `PO-${String(poCount + 1).padStart(5, '0')}`;
+        const poNumber = `PO-${String(poCount + 1).padStart(5, "0")}`;
 
-        const subtotal = items.reduce((sum, item) => sum + Number(item.totalAmount), 0);
+        const subtotal = items.reduce(
+          (sum, item) => sum + Number(item.totalAmount),
+          0,
+        );
 
         const po = await tx.purchaseOrder.create({
           data: {
@@ -863,7 +1165,7 @@ export class SalesService {
             orgId: so.orgId,
             vendorId,
             poNumber,
-            status: 'DRAFT',
+            status: "DRAFT",
             orderDate: new Date(),
             subtotal,
             totalAmount: subtotal,
@@ -896,12 +1198,22 @@ export class SalesService {
   }
 
   async getSalesStats(tenantId: string) {
-    const [totalOrders, pendingOrders, totalRevenue, returnsCount] = await Promise.all([
-      prisma.salesOrder.count({ where: { tenantId, deletedAt: null } }),
-      prisma.salesOrder.count({ where: { tenantId, deletedAt: null, status: { in: ['DRAFT', 'CONFIRMED'] } } }),
-      prisma.salesOrder.aggregate({ where: { tenantId, deletedAt: null, status: { not: 'CANCELLED' } }, _sum: { totalAmount: true } }),
-      prisma.salesReturn.count({ where: { tenantId } }),
-    ]);
+    const [totalOrders, pendingOrders, totalRevenue, returnsCount] =
+      await Promise.all([
+        prisma.salesOrder.count({ where: { tenantId, deletedAt: null } }),
+        prisma.salesOrder.count({
+          where: {
+            tenantId,
+            deletedAt: null,
+            status: { in: ["DRAFT", "CONFIRMED"] },
+          },
+        }),
+        prisma.salesOrder.aggregate({
+          where: { tenantId, deletedAt: null, status: { not: "CANCELLED" } },
+          _sum: { totalAmount: true },
+        }),
+        prisma.salesReturn.count({ where: { tenantId } }),
+      ]);
 
     return {
       totalOrders,

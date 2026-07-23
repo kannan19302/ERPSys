@@ -10,7 +10,41 @@
 
 **Files**: `apps/api/src/modules/crm/crm.module.ts`.
 
-**Note for reconciliation**: `apps/api/src/modules/crm/settings.controller.ts` (`CrmSettingsController`, extends `SettingsControllerBase`) is *also* unregistered anywhere in the API, but the same pattern repeats across other modules (e.g. no per-module settings-controller registration mechanism was found) — that looks like a repo-wide issue, not CRM-specific, and was left untouched to keep this change scoped and low-risk. Flagged for a follow-up.
+**Note for reconciliation**: `apps/api/src/modules/crm/settings.controller.ts` (`CrmSettingsController`, extends `SettingsControllerBase`) is _also_ unregistered anywhere in the API, but the same pattern repeats across other modules (e.g. no per-module settings-controller registration mechanism was found) — that looks like a repo-wide issue, not CRM-specific, and was left untouched to keep this change scoped and low-risk. Flagged for a follow-up.
+
+## 2026-07-23 — Sales: real refund state machine for Sales Returns
+
+`SalesService.processReturn()` accepted any action for a `SalesReturn` in any
+status and, for `REFUND`, only flipped a status string — no transition
+validation and no actual money/credit movement. Replaced with:
+
+- A real state machine: `APPROVE`/`REJECT` only from `DRAFT`/`COMPLETED`
+  (`REJECT` also from `APPROVED`), `RECEIVE` only from `APPROVED`, `REFUND`
+  only from `RECEIVED`. Out-of-order calls now throw `BadRequestException`
+  instead of silently succeeding.
+- Genuine refund execution: new `refundMethod` on
+  `POST /sales/returns/:id/process` (`CREDIT_NOTE` / `STORE_CREDIT` /
+  `CASH_REFUND` / `ORIGINAL_PAYMENT`). Applies the linked `CreditNote`
+  (`APPLIED`) and, for the two cash-moving methods, reverses the paid balance
+  on the originating `SalesOrder.invoiceId` via a negative `Payment` row plus
+  an `Invoice.paidAmount`/`status` update — all inside one `$transaction`, no
+  schema migration needed.
+- New `sales.return.refunded` domain event, registered in
+  `AutomationRuleEngineService.SUPPORTED_TRIGGER_EVENTS` so automation rules
+  can react to it exactly like the existing `sales.return.processed`.
+
+Files: `apps/api/src/modules/sales/sales.service.ts`,
+`apps/api/src/modules/sales/sales.controller.ts`,
+`apps/api/src/modules/sales/dto/sales-extra.dto.ts`,
+`apps/api/src/modules/admin/automation-rule-engine.service.ts`. Tests updated
+in `apps/api/src/modules/sales/tests/sales.service.coverage.spec.ts` (per-state
+transition cases + a transaction-mocked refund case). Landed on
+`claude/sales-completion-push` (not `main`, per explicit instruction — this
+worktree has no `node_modules` installed so `vitest`/`tsc` could not be run;
+needs a green `pnpm --filter @unerp/api typecheck && test` before merge).
+Not addressed this pass: `sales-deep.controller.ts` is ~5,450 lines of
+`feat1..featN` stub endpoints inflating the module's feature count with no
+real logic — flagged in MODULE_REGISTRY rather than left implicit.
 
 ## [2026-07-23] Web TypeScript Fixes — 16+ compile errors resolved across Drive, CRM, Inventory, Procurement, Supply Chain, Manufacturing, Projects
 
