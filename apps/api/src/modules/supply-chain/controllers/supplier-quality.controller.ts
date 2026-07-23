@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Patch, Delete, Param, Query, Req, UseGuards, HttpCode, HttpStatus } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Query,
+  Req,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+} from "@nestjs/common";
 import { z } from "zod";
 import { ZodBody } from "../../../common/decorators/zod-body.decorator";
 import { Request } from "express";
@@ -9,7 +21,13 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import { SupplierQualityService } from "../services/supplier-quality.service";
 
 interface AuthRequest extends Request {
-  user: { tenantId: string; userId: string; email: string; roles: string[]; orgId?: string };
+  user: {
+    tenantId: string;
+    userId: string;
+    email: string;
+    roles: string[];
+    orgId?: string;
+  };
 }
 
 const createSchema = z.object({
@@ -46,8 +64,25 @@ export class SupplierQualityController {
   @Get()
   @Permissions("supply-chain.quality.read")
   @ApiOperation({ summary: "List supplier quality records" })
-  list(@Req() req: AuthRequest, @Query("page") page?: string, @Query("limit") limit?: string, @Query("vendorId") vendorId?: string, @Query("status") status?: string, @Query("severity") severity?: string, @Query("sortBy") sortBy?: string, @Query("sortOrder") sortOrder?: string) {
-    return this.svc.list(req.user.tenantId, { page: page ? Number(page) : undefined, limit: limit ? Number(limit) : undefined, vendorId, status, severity, sortBy, sortOrder });
+  list(
+    @Req() req: AuthRequest,
+    @Query("page") page?: string,
+    @Query("limit") limit?: string,
+    @Query("vendorId") vendorId?: string,
+    @Query("status") status?: string,
+    @Query("severity") severity?: string,
+    @Query("sortBy") sortBy?: string,
+    @Query("sortOrder") sortOrder?: string,
+  ) {
+    return this.svc.list(req.user.tenantId, {
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      vendorId,
+      status,
+      severity,
+      sortBy,
+      sortOrder: sortOrder as "asc" | "desc" | undefined,
+    });
   }
 
   @Get(":id")
@@ -61,15 +96,22 @@ export class SupplierQualityController {
   @Permissions("supply-chain.quality.create")
   @ApiOperation({ summary: "Create supplier quality record" })
   @HttpCode(HttpStatus.CREATED)
-  create(@Req() req: AuthRequest, @ZodBody(createSchema) body: z.infer<typeof createSchema>) {
-    return this.svc.create(req.user.tenantId, body, req.user.userId);
+  create(
+    @Req() req: AuthRequest,
+    @ZodBody(createSchema) body: z.infer<typeof createSchema>,
+  ) {
+    return this.svc.create(req.user.tenantId, body as any);
   }
 
   @Patch(":id")
   @Permissions("supply-chain.quality.update")
   @ApiOperation({ summary: "Update supplier quality record" })
-  update(@Req() req: AuthRequest, @Param("id") id: string, @ZodBody(updateSchema) body: z.infer<typeof updateSchema>) {
-    return this.svc.update(req.user.tenantId, id, body, req.user.userId);
+  update(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @ZodBody(updateSchema) body: z.infer<typeof updateSchema>,
+  ) {
+    return this.svc.update(req.user.tenantId, id, body as any);
   }
 
   @Delete(":id")
@@ -82,9 +124,15 @@ export class SupplierQualityController {
 
   @Post(":id/raise-car")
   @Permissions("supply-chain.quality.update")
-  @ApiOperation({ summary: "Raise corrective action request (CAR) for a quality record" })
+  @ApiOperation({
+    summary: "Raise corrective action request (CAR) for a quality record",
+  })
   @HttpCode(HttpStatus.CREATED)
-  raiseCar(@Req() req: AuthRequest, @Param("id") id: string, @ZodBody(raiseCarSchema) body: z.infer<typeof raiseCarSchema>) {
-    return this.svc.raiseCar(req.user.tenantId, id, body, req.user.userId);
+  raiseCar(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @ZodBody(raiseCarSchema) body: z.infer<typeof raiseCarSchema>,
+  ) {
+    return this.svc.raiseCar(req.user.tenantId, id, body);
   }
 }

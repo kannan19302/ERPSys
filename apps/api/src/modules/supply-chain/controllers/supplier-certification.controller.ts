@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Patch, Delete, Param, Query, Req, UseGuards, HttpCode, HttpStatus } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Query,
+  Req,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+} from "@nestjs/common";
 import { z } from "zod";
 import { ZodBody } from "../../../common/decorators/zod-body.decorator";
 import { Request } from "express";
@@ -9,7 +21,13 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import { SupplierCertificationService } from "../services/supplier-certification.service";
 
 interface AuthRequest extends Request {
-  user: { tenantId: string; userId: string; email: string; roles: string[]; orgId?: string };
+  user: {
+    tenantId: string;
+    userId: string;
+    email: string;
+    roles: string[];
+    orgId?: string;
+  };
 }
 
 const createSchema = z.object({
@@ -23,11 +41,15 @@ const createSchema = z.object({
   category: z.string().optional(),
   scope: z.string().optional(),
   notes: z.string().optional(),
-  attachments: z.array(z.object({
-    fileName: z.string(),
-    fileUrl: z.string().optional(),
-    notes: z.string().optional(),
-  })).optional(),
+  attachments: z
+    .array(
+      z.object({
+        fileName: z.string(),
+        fileUrl: z.string().optional(),
+        notes: z.string().optional(),
+      }),
+    )
+    .optional(),
 });
 
 const updateSchema = createSchema.partial();
@@ -48,15 +70,34 @@ export class SupplierCertificationController {
   @Get()
   @Permissions("supply-chain.certification.read")
   @ApiOperation({ summary: "List supplier certifications" })
-  list(@Req() req: AuthRequest, @Query("page") page?: string, @Query("limit") limit?: string, @Query("vendorId") vendorId?: string, @Query("status") status?: string, @Query("expiryBefore") expiryBefore?: string) {
-    return this.svc.list(req.user.tenantId, { page: page ? Number(page) : undefined, limit: limit ? Number(limit) : undefined, vendorId, status, expiryBefore });
+  list(
+    @Req() req: AuthRequest,
+    @Query("page") page?: string,
+    @Query("limit") limit?: string,
+    @Query("vendorId") vendorId?: string,
+    @Query("status") status?: string,
+    @Query("expiryBefore") expiryBefore?: string,
+  ) {
+    return this.svc.list(req.user.tenantId, {
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      vendorId,
+      status,
+      expiryBefore,
+    });
   }
 
   @Get("expiring")
   @Permissions("supply-chain.certification.read")
   @ApiOperation({ summary: "Get certifications expiring within N days" })
-  getExpiringCertifications(@Req() req: AuthRequest, @Query("days") days?: string) {
-    return this.svc.getExpiringCertifications(req.user.tenantId, days ? Number(days) : 30);
+  getExpiringCertifications(
+    @Req() req: AuthRequest,
+    @Query("days") days?: string,
+  ) {
+    return this.svc.getExpiringCertifications(
+      req.user.tenantId,
+      days ? Number(days) : 30,
+    );
   }
 
   @Get(":id")
@@ -70,15 +111,22 @@ export class SupplierCertificationController {
   @Permissions("supply-chain.certification.create")
   @ApiOperation({ summary: "Create supplier certification" })
   @HttpCode(HttpStatus.CREATED)
-  create(@Req() req: AuthRequest, @ZodBody(createSchema) body: z.infer<typeof createSchema>) {
-    return this.svc.create(req.user.tenantId, body, req.user.userId);
+  create(
+    @Req() req: AuthRequest,
+    @ZodBody(createSchema) body: z.infer<typeof createSchema>,
+  ) {
+    return this.svc.create(req.user.tenantId, body as any);
   }
 
   @Patch(":id")
   @Permissions("supply-chain.certification.update")
   @ApiOperation({ summary: "Update supplier certification" })
-  update(@Req() req: AuthRequest, @Param("id") id: string, @ZodBody(updateSchema) body: z.infer<typeof updateSchema>) {
-    return this.svc.update(req.user.tenantId, id, body, req.user.userId);
+  update(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @ZodBody(updateSchema) body: z.infer<typeof updateSchema>,
+  ) {
+    return this.svc.update(req.user.tenantId, id, body as any);
   }
 
   @Delete(":id")
@@ -92,7 +140,11 @@ export class SupplierCertificationController {
   @Post(":id/renew")
   @Permissions("supply-chain.certification.update")
   @ApiOperation({ summary: "Renew supplier certification" })
-  renewCertification(@Req() req: AuthRequest, @Param("id") id: string, @ZodBody(renewSchema) body: z.infer<typeof renewSchema>) {
-    return this.svc.renewCertification(req.user.tenantId, id, body, req.user.userId);
+  renewCertification(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @ZodBody(renewSchema) body: z.infer<typeof renewSchema>,
+  ) {
+    return this.svc.renewCertification(req.user.tenantId, id, body as any);
   }
 }

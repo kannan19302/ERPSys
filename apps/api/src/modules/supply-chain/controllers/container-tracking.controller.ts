@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Patch, Delete, Param, Query, Req, UseGuards, HttpCode, HttpStatus } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Query,
+  Req,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+} from "@nestjs/common";
 import { z } from "zod";
 import { ZodBody } from "../../../common/decorators/zod-body.decorator";
 import { Request } from "express";
@@ -9,7 +21,13 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import { ContainerTrackingService } from "../services/container-tracking.service";
 
 interface AuthRequest extends Request {
-  user: { tenantId: string; userId: string; email: string; roles: string[]; orgId?: string };
+  user: {
+    tenantId: string;
+    userId: string;
+    email: string;
+    roles: string[];
+    orgId?: string;
+  };
 }
 
 const createSchema = z.object({
@@ -56,8 +74,19 @@ export class ContainerTrackingController {
   @Get()
   @Permissions("supply-chain.container.read")
   @ApiOperation({ summary: "List shipping containers" })
-  list(@Req() req: AuthRequest, @Query("page") page?: string, @Query("limit") limit?: string, @Query("status") status?: string, @Query("carrierId") carrierId?: string) {
-    return this.svc.list(req.user.tenantId, { page: page ? Number(page) : undefined, limit: limit ? Number(limit) : undefined, status, carrierId });
+  list(
+    @Req() req: AuthRequest,
+    @Query("page") page?: string,
+    @Query("limit") limit?: string,
+    @Query("status") status?: string,
+    @Query("carrierId") carrierId?: string,
+  ) {
+    return this.svc.list(req.user.tenantId, {
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      status,
+      carrierId,
+    });
   }
 
   @Get("at-risk")
@@ -78,14 +107,21 @@ export class ContainerTrackingController {
   @Permissions("supply-chain.container.create")
   @ApiOperation({ summary: "Create shipping container record" })
   @HttpCode(HttpStatus.CREATED)
-  create(@Req() req: AuthRequest, @ZodBody(createSchema) body: z.infer<typeof createSchema>) {
-    return this.svc.create(req.user.tenantId, body);
+  create(
+    @Req() req: AuthRequest,
+    @ZodBody(createSchema) body: z.infer<typeof createSchema>,
+  ) {
+    return this.svc.create(req.user.tenantId, body as any);
   }
 
   @Patch(":id")
   @Permissions("supply-chain.container.update")
   @ApiOperation({ summary: "Update container record" })
-  update(@Req() req: AuthRequest, @Param("id") id: string, @ZodBody(updateSchema) body: z.infer<typeof updateSchema>) {
+  update(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @ZodBody(updateSchema) body: z.infer<typeof updateSchema>,
+  ) {
     return this.svc.update(req.user.tenantId, id, body);
   }
 
@@ -101,14 +137,27 @@ export class ContainerTrackingController {
   @Permissions("supply-chain.container.update")
   @ApiOperation({ summary: "Add tracking event to container" })
   @HttpCode(HttpStatus.CREATED)
-  addEvent(@Req() req: AuthRequest, @Param("id") id: string, @ZodBody(eventSchema) body: z.infer<typeof eventSchema>) {
-    return this.svc.addEvent(req.user.tenantId, id, body);
+  addEvent(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @ZodBody(eventSchema) body: z.infer<typeof eventSchema>,
+  ) {
+    return this.svc.addEvent(req.user.tenantId, id, body as any);
   }
 
   @Post(":id/link-shipment")
   @Permissions("supply-chain.container.update")
   @ApiOperation({ summary: "Link container to a shipment" })
-  linkToShipment(@Req() req: AuthRequest, @Param("id") id: string, @ZodBody(linkShipmentSchema) body: z.infer<typeof linkShipmentSchema>) {
-    return this.svc.linkToShipment(req.user.tenantId, id, body);
+  linkToShipment(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @ZodBody(linkShipmentSchema) body: z.infer<typeof linkShipmentSchema>,
+  ) {
+    return this.svc.linkToShipment(
+      req.user.tenantId,
+      id,
+      body.shipmentType,
+      body.shipmentId,
+    );
   }
 }

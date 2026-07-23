@@ -2,6 +2,32 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-23] CYCLE 35 — Supply Chain Module Deepening: Supplier Contracts, Performance KPIs, Budgets, Container Tracking, Customs, Supplier Quality, Lane Rates, Certifications
+
+**Scope**: Supply Chain module deepening toward Advanced tier with 9 new sub-domains spanning strategic procurement and logistics intelligence — supplier contract management with approval/renewal flows, performance KPI scorecards with weighted-dimension calculation, supplier assessments, supply chain budgeting with actuals comparison and variance analysis, container tracking with at-risk detection, customs document workflow, supplier quality NCR/CAR lifecycle management, lane rate management with best-rate finder, and supplier certification expiry tracking. Total: 12 new DB models + 9 services + 9 controllers + 7 UI pages.
+
+**New Prisma models** (12): `SupplierContract`, `SupplierContractLineItem`, `SupplierPerformanceKpi`, `SupplierAssessment`, `SupplyChainBudget`, `SupplyChainBudgetLine`, `ContainerTracking`, `ContainerTrackingEvent`, `CustomsDocument`, `SupplierNonConformance`, `LaneRate`, `SupplierCertification`
+
+**API layer** (9 new services + 9 controllers):
+
+- `SupplierContractService` — contract CRUD with status lifecycle (DRAFT→PENDING_APPROVAL→ACTIVE→EXPIRED→TERMINATED), approval workflow, auto-renewal with contract cloning, renewal reminders, clause management
+- `SupplierPerformanceKpiService` — KPI definition CRUD, target/actual tracking, scorecard calculation with weighted dimensions, trend analysis, KPI dashboard endpoints
+- `SupplierAssessmentService` — assessment CRUD with scoring criteria, evaluation results, assessment history, aggregate scores
+- `SupplyChainBudgetService` — budget CRUD with line-item breakdown, actuals comparison, variance analysis, budget utilization dashboard
+- `ContainerTrackingService` — container CRUD with milestone-based tracking events, at-risk detection (delayed/overweight/overdue), estimated arrival calculation, tracking timeline
+- `CustomsDocumentService` — customs document CRUD with status workflow (DRAFT→SUBMITTED→IN_REVIEW→APPROVED→REJECTED), document type classification, filing history
+- `SupplierNonConformanceService` — NCR lifecycle (OPEN→INVESTIGATING→ACTION_PLANNED→COMPLETED→CLOSED), root cause analysis fields, corrective/preventive action linking
+- `LaneRateService` — lane rate CRUD with origin/destination/effective-dates, best-rate finder with rate comparison, rate history
+- `SupplierCertificationService` — certification CRUD with expiry tracking, certification types, expiry alerting, certification status dashboard
+
+**Permissions** (36 new across 9 resource types): `supplychain.contract.*` (4), `supplychain.kpi.*` (4), `supplychain.assessment.*` (4), `supplychain.budget.*` (4), `supplychain.container.*` (4), `supplychain.customs.*` (4), `supplychain.ncr.*` (4), `supplychain.lanerate.*` (4), `supplychain.certification.*` (4)
+
+**UI pages** (7 new): `/supply-chain/supplier-contracts` (contract dashboard with lifecycle management, approval actions, renewal reminders), `/supply-chain/supplier-performance` (KPI scorecard with trend charts, target vs actual breakdown), `/supply-chain/supplier-assessments` (assessment list with scoring interface, history), `/supply-chain/budgets` (budget dashboard with actuals comparison, utilization rates), `/supply-chain/container-tracking` (container list with at-risk alerts, tracking events timeline), `/supply-chain/customs-documents` (customs document workflow with filing status), `/supply-chain/supplier-quality` (NCR list with lifecycle management, action tracking)
+
+**Nav entries**: Supplier Contracts, Supplier Performance, Assessments, Budgets, Container Tracking, Customs Documents, Supplier Quality added to Supply Chain navigation sidebar
+
+**Supply Chain module status**: ACTIVE. Feature count: 89→174. Tier: Functional→Advanced.
+
 ## [2026-07-22] CYCLE 37 — CRM Module Deepening: Knowledge Base, Win/Loss Analytics, PRM Deal Registration, Communication Templates
 
 **Scope**: CRM module deepening toward Complete tier (1500+ weighted features) with 4 new sub-domains: Knowledge Base (articles/categories with lifecycle and search), Win/Loss Analytics (reasons, competitors, analytics), Partner Relationship Management (deal registrations, MDF funds, partner performance), Multi-Channel Communication Templates (channels, templates, send logs). Total: 4 services + 4 controllers (~55 REST endpoints) + 4 UI pages.

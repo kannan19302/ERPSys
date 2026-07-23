@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Patch, Delete, Param, Query, Req, UseGuards, HttpCode, HttpStatus } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Query,
+  Req,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+} from "@nestjs/common";
 import { z } from "zod";
 import { ZodBody } from "../../../common/decorators/zod-body.decorator";
 import { Request } from "express";
@@ -9,7 +21,13 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import { SupplierAssessmentService } from "../services/supplier-assessment.service";
 
 interface AuthRequest extends Request {
-  user: { tenantId: string; userId: string; email: string; roles: string[]; orgId?: string };
+  user: {
+    tenantId: string;
+    userId: string;
+    email: string;
+    roles: string[];
+    orgId?: string;
+  };
 }
 
 const createSchema = z.object({
@@ -43,8 +61,23 @@ export class SupplierAssessmentController {
   @Get()
   @Permissions("supply-chain.assessment.read")
   @ApiOperation({ summary: "List supplier assessments" })
-  list(@Req() req: AuthRequest, @Query("page") page?: string, @Query("limit") limit?: string, @Query("vendorId") vendorId?: string, @Query("status") status?: string, @Query("sortBy") sortBy?: string, @Query("sortOrder") sortOrder?: string) {
-    return this.svc.list(req.user.tenantId, { page: page ? Number(page) : undefined, limit: limit ? Number(limit) : undefined, vendorId, status, sortBy, sortOrder });
+  list(
+    @Req() req: AuthRequest,
+    @Query("page") page?: string,
+    @Query("limit") limit?: string,
+    @Query("vendorId") vendorId?: string,
+    @Query("status") status?: string,
+    @Query("sortBy") sortBy?: string,
+    @Query("sortOrder") sortOrder?: string,
+  ) {
+    return this.svc.list(req.user.tenantId, {
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      vendorId,
+      status,
+      sortBy,
+      sortOrder: sortOrder as "asc" | "desc" | undefined,
+    });
   }
 
   @Get(":id")
@@ -58,15 +91,22 @@ export class SupplierAssessmentController {
   @Permissions("supply-chain.assessment.create")
   @ApiOperation({ summary: "Create supplier assessment" })
   @HttpCode(HttpStatus.CREATED)
-  create(@Req() req: AuthRequest, @ZodBody(createSchema) body: z.infer<typeof createSchema>) {
-    return this.svc.create(req.user.tenantId, body, req.user.userId);
+  create(
+    @Req() req: AuthRequest,
+    @ZodBody(createSchema) body: z.infer<typeof createSchema>,
+  ) {
+    return this.svc.create(req.user.tenantId, body as any);
   }
 
   @Patch(":id")
   @Permissions("supply-chain.assessment.update")
   @ApiOperation({ summary: "Update supplier assessment" })
-  update(@Req() req: AuthRequest, @Param("id") id: string, @ZodBody(updateSchema) body: z.infer<typeof updateSchema>) {
-    return this.svc.update(req.user.tenantId, id, body, req.user.userId);
+  update(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @ZodBody(updateSchema) body: z.infer<typeof updateSchema>,
+  ) {
+    return this.svc.update(req.user.tenantId, id, body as any);
   }
 
   @Delete(":id")
@@ -79,8 +119,14 @@ export class SupplierAssessmentController {
 
   @Post(":id/complete")
   @Permissions("supply-chain.assessment.update")
-  @ApiOperation({ summary: "Complete a supplier assessment with score and rating" })
-  complete(@Req() req: AuthRequest, @Param("id") id: string, @ZodBody(completeSchema) body: z.infer<typeof completeSchema>) {
-    return this.svc.complete(req.user.tenantId, id, body, req.user.userId);
+  @ApiOperation({
+    summary: "Complete a supplier assessment with score and rating",
+  })
+  complete(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @ZodBody(completeSchema) body: z.infer<typeof completeSchema>,
+  ) {
+    return this.svc.complete(req.user.tenantId, id, body);
   }
 }

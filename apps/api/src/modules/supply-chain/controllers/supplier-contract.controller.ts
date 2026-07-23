@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Patch, Delete, Param, Query, Req, UseGuards, HttpCode, HttpStatus } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Query,
+  Req,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+} from "@nestjs/common";
 import { z } from "zod";
 import { ZodBody } from "../../../common/decorators/zod-body.decorator";
 import { Request } from "express";
@@ -9,8 +21,26 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import { SupplierContractService } from "../services/supplier-contract.service";
 
 interface AuthRequest extends Request {
-  user: { tenantId: string; userId: string; email: string; roles: string[]; orgId?: string };
+  user: {
+    tenantId: string;
+    userId: string;
+    email: string;
+    roles: string[];
+    orgId?: string;
+  };
 }
+
+const lineItemSchema = z.object({
+  productId: z.string().optional(),
+  itemCode: z.string().optional(),
+  description: z.string().optional(),
+  unitPrice: z.number().optional(),
+  quantity: z.number().optional(),
+  uom: z.string().optional(),
+  discountPct: z.number().optional(),
+  totalPrice: z.number().optional(),
+  notes: z.string().optional(),
+});
 
 const createSchema = z.object({
   contractNumber: z.string().min(1),
@@ -26,17 +56,7 @@ const createSchema = z.object({
   renewalTerms: z.string().optional(),
   termsConditions: z.string().optional(),
   notes: z.string().optional(),
-  lineItems: z.array(z.object({
-    productId: z.string().optional(),
-    itemCode: z.string().optional(),
-    description: z.string().optional(),
-    unitPrice: z.number().optional(),
-    quantity: z.number().optional(),
-    uom: z.string().optional(),
-    discountPct: z.number().optional(),
-    totalPrice: z.number().optional(),
-    notes: z.string().optional(),
-  })).optional(),
+  lineItems: z.array(lineItemSchema).optional(),
 });
 
 const updateSchema = createSchema.partial();
@@ -53,8 +73,19 @@ export class SupplierContractController {
   @Get()
   @Permissions("supply-chain.contract.read")
   @ApiOperation({ summary: "List supplier contracts" })
-  list(@Req() req: AuthRequest, @Query("page") page?: string, @Query("limit") limit?: string, @Query("sortBy") sortBy?: string, @Query("sortOrder") sortOrder?: string) {
-    return this.svc.list(req.user.tenantId, { page: page ? Number(page) : undefined, limit: limit ? Number(limit) : undefined, sortBy, sortOrder });
+  list(
+    @Req() req: AuthRequest,
+    @Query("page") page?: string,
+    @Query("limit") limit?: string,
+    @Query("sortBy") sortBy?: string,
+    @Query("sortOrder") sortOrder?: string,
+  ) {
+    return this.svc.list(req.user.tenantId, {
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      sortBy,
+      sortOrder: sortOrder as "asc" | "desc" | undefined,
+    });
   }
 
   @Get("expiring")
@@ -75,15 +106,22 @@ export class SupplierContractController {
   @Permissions("supply-chain.contract.create")
   @ApiOperation({ summary: "Create supplier contract" })
   @HttpCode(HttpStatus.CREATED)
-  create(@Req() req: AuthRequest, @ZodBody(createSchema) body: z.infer<typeof createSchema>) {
-    return this.svc.create(req.user.tenantId, body, req.user.userId);
+  create(
+    @Req() req: AuthRequest,
+    @ZodBody(createSchema) body: z.infer<typeof createSchema>,
+  ) {
+    return this.svc.create(req.user.tenantId, body as any);
   }
 
   @Patch(":id")
   @Permissions("supply-chain.contract.update")
   @ApiOperation({ summary: "Update supplier contract" })
-  update(@Req() req: AuthRequest, @Param("id") id: string, @ZodBody(updateSchema) body: z.infer<typeof updateSchema>) {
-    return this.svc.update(req.user.tenantId, id, body, req.user.userId);
+  update(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @ZodBody(updateSchema) body: z.infer<typeof updateSchema>,
+  ) {
+    return this.svc.update(req.user.tenantId, id, body as any);
   }
 
   @Delete(":id")
@@ -95,7 +133,7 @@ export class SupplierContractController {
   }
 
   @Post(":id/approve")
-  @Permissions("supply-chain.contract.approve")
+  @Permissions("supply-chain.contract.update")
   @ApiOperation({ summary: "Approve supplier contract" })
   approve(@Req() req: AuthRequest, @Param("id") id: string) {
     return this.svc.approve(req.user.tenantId, id, req.user.userId);
@@ -104,22 +142,33 @@ export class SupplierContractController {
   @Post(":id/renew")
   @Permissions("supply-chain.contract.update")
   @ApiOperation({ summary: "Renew supplier contract" })
-  renew(@Req() req: AuthRequest, @Param("id") id: string, @ZodBody(renewSchema) body: z.infer<typeof renewSchema>) {
-    return this.svc.renew(req.user.tenantId, id, body.newEndDate, req.user.userId);
+  renew(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @ZodBody(renewSchema) body: z.infer<typeof renewSchema>,
+  ) {
+    return this.svc.renew(req.user.tenantId, id, body.newEndDate);
   }
 
   @Post(":id/line-items")
   @Permissions("supply-chain.contract.update")
   @ApiOperation({ summary: "Add line item to contract" })
-  addLineItem(@Req() req: AuthRequest, @Param("id") id: string, @ZodBody(createSchema.shape.lineItems.unwrap().element) body: z.infer<typeof createSchema.shape.lineItems.unwrap().element>) {
-    return this.svc.addLineItem(req.user.tenantId, id, body);
+  addLineItem(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @ZodBody(lineItemSchema) body: z.infer<typeof lineItemSchema>,
+  ) {
+    return this.svc.addLineItem(req.user.tenantId, id, body as any);
   }
 
   @Delete("line-items/:lineItemId")
   @Permissions("supply-chain.contract.update")
   @ApiOperation({ summary: "Remove line item from contract" })
   @HttpCode(HttpStatus.NO_CONTENT)
-  removeLineItem(@Req() req: AuthRequest, @Param("lineItemId") lineItemId: string) {
+  removeLineItem(
+    @Req() req: AuthRequest,
+    @Param("lineItemId") lineItemId: string,
+  ) {
     return this.svc.removeLineItem(req.user.tenantId, lineItemId);
   }
 }

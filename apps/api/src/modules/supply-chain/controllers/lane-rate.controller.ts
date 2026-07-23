@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Patch, Delete, Param, Query, Req, UseGuards, HttpCode, HttpStatus } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Query,
+  Req,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+} from "@nestjs/common";
 import { z } from "zod";
 import { ZodBody } from "../../../common/decorators/zod-body.decorator";
 import { Request } from "express";
@@ -9,7 +21,13 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import { LaneRateService } from "../services/lane-rate.service";
 
 interface AuthRequest extends Request {
-  user: { tenantId: string; userId: string; email: string; roles: string[]; orgId?: string };
+  user: {
+    tenantId: string;
+    userId: string;
+    email: string;
+    roles: string[];
+    orgId?: string;
+  };
 }
 
 const createSchema = z.object({
@@ -39,50 +57,84 @@ export class LaneRateController {
   constructor(private readonly svc: LaneRateService) {}
 
   @Get()
-  @Permissions("supply-chain.lanerate.read")
+  @Permissions("supply-chain.lane-rate.read")
   @ApiOperation({ summary: "List lane rates" })
-  list(@Req() req: AuthRequest, @Query("page") page?: string, @Query("limit") limit?: string, @Query("carrierId") carrierId?: string, @Query("origin") origin?: string, @Query("destination") destination?: string, @Query("transportMode") transportMode?: string) {
-    return this.svc.list(req.user.tenantId, { page: page ? Number(page) : undefined, limit: limit ? Number(limit) : undefined, carrierId, origin, destination, transportMode });
+  list(
+    @Req() req: AuthRequest,
+    @Query("page") page?: string,
+    @Query("limit") limit?: string,
+    @Query("carrierId") carrierId?: string,
+    @Query("origin") origin?: string,
+    @Query("destination") destination?: string,
+    @Query("transportMode") transportMode?: string,
+  ) {
+    return this.svc.list(req.user.tenantId, {
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      carrierId,
+      origin,
+      destination,
+      transportMode,
+    });
   }
 
   @Get("best-rate")
-  @Permissions("supply-chain.lanerate.read")
+  @Permissions("supply-chain.lane-rate.read")
   @ApiOperation({ summary: "Find best rate for a lane" })
-  findBestRate(@Req() req: AuthRequest, @Query("origin") origin?: string, @Query("destination") destination?: string, @Query("transportMode") transportMode?: string, @Query("weight") weight?: string) {
-    return this.svc.findBestRate(req.user.tenantId, { origin, destination, transportMode, weight: weight ? Number(weight) : undefined });
+  findBestRate(
+    @Req() req: AuthRequest,
+    @Query("origin") origin?: string,
+    @Query("destination") destination?: string,
+    @Query("transportMode") transportMode?: string,
+    @Query("weight") weight?: string,
+  ) {
+    return this.svc.findBestRate(
+      req.user.tenantId,
+      origin ?? "",
+      destination ?? "",
+      transportMode ?? "",
+      weight ? Number(weight) : undefined,
+    );
   }
 
   @Get("analytics")
-  @Permissions("supply-chain.lanerate.read")
+  @Permissions("supply-chain.lane-rate.read")
   @ApiOperation({ summary: "Get lane rate analytics" })
   getLaneAnalytics(@Req() req: AuthRequest) {
     return this.svc.getLaneAnalytics(req.user.tenantId);
   }
 
   @Get(":id")
-  @Permissions("supply-chain.lanerate.read")
+  @Permissions("supply-chain.lane-rate.read")
   @ApiOperation({ summary: "Get lane rate by id" })
   getById(@Req() req: AuthRequest, @Param("id") id: string) {
     return this.svc.getById(req.user.tenantId, id);
   }
 
   @Post()
-  @Permissions("supply-chain.lanerate.create")
+  @Permissions("supply-chain.lane-rate.create")
   @ApiOperation({ summary: "Create lane rate" })
   @HttpCode(HttpStatus.CREATED)
-  create(@Req() req: AuthRequest, @ZodBody(createSchema) body: z.infer<typeof createSchema>) {
-    return this.svc.create(req.user.tenantId, body, req.user.userId);
+  create(
+    @Req() req: AuthRequest,
+    @ZodBody(createSchema) body: z.infer<typeof createSchema>,
+  ) {
+    return this.svc.create(req.user.tenantId, body as any);
   }
 
   @Patch(":id")
-  @Permissions("supply-chain.lanerate.update")
+  @Permissions("supply-chain.lane-rate.update")
   @ApiOperation({ summary: "Update lane rate" })
-  update(@Req() req: AuthRequest, @Param("id") id: string, @ZodBody(updateSchema) body: z.infer<typeof updateSchema>) {
-    return this.svc.update(req.user.tenantId, id, body, req.user.userId);
+  update(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @ZodBody(updateSchema) body: z.infer<typeof updateSchema>,
+  ) {
+    return this.svc.update(req.user.tenantId, id, body as any);
   }
 
   @Delete(":id")
-  @Permissions("supply-chain.lanerate.delete")
+  @Permissions("supply-chain.lane-rate.delete")
   @ApiOperation({ summary: "Delete lane rate" })
   @HttpCode(HttpStatus.NO_CONTENT)
   delete(@Req() req: AuthRequest, @Param("id") id: string) {

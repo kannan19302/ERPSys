@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Patch, Delete, Param, Query, Req, UseGuards, HttpCode, HttpStatus } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Query,
+  Req,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+} from "@nestjs/common";
 import { z } from "zod";
 import { ZodBody } from "../../../common/decorators/zod-body.decorator";
 import { Request } from "express";
@@ -9,7 +21,13 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import { CustomsDocumentService } from "../services/customs-document.service";
 
 interface AuthRequest extends Request {
-  user: { tenantId: string; userId: string; email: string; roles: string[]; orgId?: string };
+  user: {
+    tenantId: string;
+    userId: string;
+    email: string;
+    roles: string[];
+    orgId?: string;
+  };
 }
 
 const createSchema = z.object({
@@ -28,12 +46,16 @@ const createSchema = z.object({
   portOfEntry: z.string().optional(),
   portOfExit: z.string().optional(),
   notes: z.string().optional(),
-  documents: z.array(z.object({
-    documentType: z.string(),
-    documentRef: z.string().optional(),
-    fileName: z.string().optional(),
-    notes: z.string().optional(),
-  })).optional(),
+  documents: z
+    .array(
+      z.object({
+        documentType: z.string(),
+        documentRef: z.string().optional(),
+        fileName: z.string().optional(),
+        notes: z.string().optional(),
+      }),
+    )
+    .optional(),
 });
 
 const updateSchema = createSchema.partial();
@@ -48,8 +70,23 @@ export class CustomsDocumentController {
   @Get()
   @Permissions("supply-chain.customs.read")
   @ApiOperation({ summary: "List customs documents" })
-  list(@Req() req: AuthRequest, @Query("page") page?: string, @Query("limit") limit?: string, @Query("status") status?: string, @Query("direction") direction?: string, @Query("shipmentType") shipmentType?: string, @Query("shipmentId") shipmentId?: string) {
-    return this.svc.list(req.user.tenantId, { page: page ? Number(page) : undefined, limit: limit ? Number(limit) : undefined, status, direction, shipmentType, shipmentId });
+  list(
+    @Req() req: AuthRequest,
+    @Query("page") page?: string,
+    @Query("limit") limit?: string,
+    @Query("status") status?: string,
+    @Query("direction") direction?: string,
+    @Query("shipmentType") shipmentType?: string,
+    @Query("shipmentId") shipmentId?: string,
+  ) {
+    return this.svc.list(req.user.tenantId, {
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      status,
+      direction,
+      shipmentType,
+      shipmentId,
+    });
   }
 
   @Get(":id")
@@ -63,15 +100,22 @@ export class CustomsDocumentController {
   @Permissions("supply-chain.customs.create")
   @ApiOperation({ summary: "Create customs document" })
   @HttpCode(HttpStatus.CREATED)
-  create(@Req() req: AuthRequest, @ZodBody(createSchema) body: z.infer<typeof createSchema>) {
-    return this.svc.create(req.user.tenantId, body, req.user.userId);
+  create(
+    @Req() req: AuthRequest,
+    @ZodBody(createSchema) body: z.infer<typeof createSchema>,
+  ) {
+    return this.svc.create(req.user.tenantId, body as any);
   }
 
   @Patch(":id")
   @Permissions("supply-chain.customs.update")
   @ApiOperation({ summary: "Update customs document" })
-  update(@Req() req: AuthRequest, @Param("id") id: string, @ZodBody(updateSchema) body: z.infer<typeof updateSchema>) {
-    return this.svc.update(req.user.tenantId, id, body, req.user.userId);
+  update(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @ZodBody(updateSchema) body: z.infer<typeof updateSchema>,
+  ) {
+    return this.svc.update(req.user.tenantId, id, body as any);
   }
 
   @Delete(":id")
@@ -86,13 +130,30 @@ export class CustomsDocumentController {
   @Permissions("supply-chain.customs.update")
   @ApiOperation({ summary: "Submit customs document for filing" })
   submit(@Req() req: AuthRequest, @Param("id") id: string) {
-    return this.svc.submit(req.user.tenantId, id, req.user.userId);
+    return this.svc.submit(req.user.tenantId, id);
   }
 
   @Post(":id/clear")
   @Permissions("supply-chain.customs.update")
   @ApiOperation({ summary: "Mark customs document as cleared" })
-  markCleared(@Req() req: AuthRequest, @Param("id") id: string) {
-    return this.svc.markCleared(req.user.tenantId, id, req.user.userId);
+  markCleared(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @ZodBody(
+      z.object({
+        clearedAt: z.string(),
+        dutyAmount: z.number(),
+        taxAmount: z.number(),
+        totalFees: z.number(),
+      }),
+    )
+    body: {
+      clearedAt: string;
+      dutyAmount: number;
+      taxAmount: number;
+      totalFees: number;
+    },
+  ) {
+    return this.svc.markCleared(req.user.tenantId, id, body);
   }
 }

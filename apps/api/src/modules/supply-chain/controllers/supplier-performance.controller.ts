@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Patch, Delete, Param, Query, Req, UseGuards, HttpCode, HttpStatus } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Query,
+  Req,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+} from "@nestjs/common";
 import { z } from "zod";
 import { ZodBody } from "../../../common/decorators/zod-body.decorator";
 import { Request } from "express";
@@ -9,7 +21,13 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import { SupplierPerformanceService } from "../services/supplier-performance.service";
 
 interface AuthRequest extends Request {
-  user: { tenantId: string; userId: string; email: string; roles: string[]; orgId?: string };
+  user: {
+    tenantId: string;
+    userId: string;
+    email: string;
+    roles: string[];
+    orgId?: string;
+  };
 }
 
 const createKpiSchema = z.object({
@@ -41,22 +59,29 @@ export class SupplierPerformanceController {
   @Get("kpis")
   @Permissions("supply-chain.performance.read")
   @ApiOperation({ summary: "List supplier KPI definitions" })
-  listKpis(@Req() req: AuthRequest, @Query("vendorId") vendorId?: string) {
-    return this.svc.listKpis(req.user.tenantId, vendorId);
+  listKpis(@Req() req: AuthRequest, @Query("vendorId") _vendorId?: string) {
+    return this.svc.listKpis(req.user.tenantId);
   }
 
   @Post("kpis")
   @Permissions("supply-chain.performance.create")
   @ApiOperation({ summary: "Create supplier KPI" })
   @HttpCode(HttpStatus.CREATED)
-  createKpi(@Req() req: AuthRequest, @ZodBody(createKpiSchema) body: z.infer<typeof createKpiSchema>) {
-    return this.svc.createKpi(req.user.tenantId, body);
+  createKpi(
+    @Req() req: AuthRequest,
+    @ZodBody(createKpiSchema) body: z.infer<typeof createKpiSchema>,
+  ) {
+    return this.svc.createKpi(req.user.tenantId, body as any);
   }
 
   @Patch("kpis/:id")
   @Permissions("supply-chain.performance.update")
   @ApiOperation({ summary: "Update supplier KPI" })
-  updateKpi(@Req() req: AuthRequest, @Param("id") id: string, @ZodBody(updateKpiSchema) body: z.infer<typeof updateKpiSchema>) {
+  updateKpi(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @ZodBody(updateKpiSchema) body: z.infer<typeof updateKpiSchema>,
+  ) {
     return this.svc.updateKpi(req.user.tenantId, id, body);
   }
 
@@ -71,16 +96,34 @@ export class SupplierPerformanceController {
   @Get("scorecards")
   @Permissions("supply-chain.performance.read")
   @ApiOperation({ summary: "Get supplier scorecards" })
-  getScorecards(@Req() req: AuthRequest, @Query("vendorId") vendorId?: string, @Query("periodStart") periodStart?: string, @Query("periodEnd") periodEnd?: string) {
-    return this.svc.getScorecards(req.user.tenantId, { vendorId, periodStart, periodEnd });
+  getScorecards(
+    @Req() req: AuthRequest,
+    @Query("vendorId") vendorId?: string,
+    @Query("periodStart") periodStart?: string,
+    @Query("periodEnd") periodEnd?: string,
+  ) {
+    return this.svc.getScorecards(req.user.tenantId, {
+      vendorId,
+      periodStart,
+      periodEnd,
+    });
   }
 
   @Post("scorecards/calculate")
   @Permissions("supply-chain.performance.create")
   @ApiOperation({ summary: "Calculate supplier scorecard for a period" })
   @HttpCode(HttpStatus.CREATED)
-  calculateScorecard(@Req() req: AuthRequest, @ZodBody(calculateScorecardSchema) body: z.infer<typeof calculateScorecardSchema>) {
-    return this.svc.calculateScorecard(req.user.tenantId, body);
+  calculateScorecard(
+    @Req() req: AuthRequest,
+    @ZodBody(calculateScorecardSchema)
+    body: z.infer<typeof calculateScorecardSchema>,
+  ) {
+    return this.svc.calculateScorecard(
+      req.user.tenantId,
+      body.vendorId,
+      body.periodStart,
+      body.periodEnd,
+    );
   }
 
   @Get("trend/:vendorId")
