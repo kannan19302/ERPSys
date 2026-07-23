@@ -186,80 +186,122 @@ export default function WebBuilderPage() {
             </div>
           </div>
         )}
+        {/* Stats */}
+        <div className={styles.s2}>
+          <div className={`ui-card ${styles.s3}`}>
+            <div style={{ background: "#7c3aed20" }} className={styles.s4}>
+              <Globe size={20} style={{ color: "#7c3aed" }} />
+            </div>
+            <div>
+              <p className={styles.s5}>{stats.publishedPages}</p>
+              <p className="ui-text-xs-muted m-0">Published Pages</p>
+            </div>
+          </div>
+          <div className={`ui-card ${styles.s3}`}>
+            <div
+              style={{ background: "var(--color-primary-bg)" }}
+              className={styles.s4}
+            >
+              <FileText size={20} style={{ color: "var(--color-primary)" }} />
+            </div>
+            <div>
+              <p className={styles.s5}>{stats.blogPosts}</p>
+              <p className="ui-text-xs-muted m-0">Blog Posts</p>
+            </div>
+          </div>
+          <div className={`ui-card ${styles.s3}`}>
+            <div style={{ background: "#05966920" }} className={styles.s4}>
+              <Image size={20} style={{ color: "#059669" }} />
+            </div>
+            <div>
+              <p className={styles.s5}>{stats.assets}</p>
+              <p className="ui-text-xs-muted m-0">Media Assets</p>
+            </div>
+          </div>
+          <div className={`ui-card ${styles.s3}`}>
+            <div style={{ background: "#d9770620" }} className={styles.s4}>
+              <Code2 size={20} style={{ color: "#d97706" }} />
+            </div>
+            <div>
+              <p className={styles.s5}>{stats.templates}</p>
+              <p className="ui-text-xs-muted m-0">Templates</p>
+            </div>
+          </div>
+        </div>
 
         {/* Quick Access Grid */}
         <div className={styles.s9}>
           {[
             {
+              id: "collections",
               title: "CMS Collections",
               description:
                 "Model dynamic content — products, projects, team, blog",
-              icon: Database,
               color: "#6366f1",
               href: "/builder/web/collections",
               count: "Dynamic content",
             },
             {
+              id: "pages",
               title: "Pages",
               description:
                 "Visual builder with 18+ blocks, CMS binding & publish",
-              icon: Monitor,
               color: "#7c3aed",
               href: "/builder/web/pages",
               count: `${stats.pages} pages`,
             },
             {
+              id: "orders",
               title: "Orders",
               description: "Storefront orders, revenue and fulfillment",
-              icon: ShoppingCart,
               color: "#10b981",
               href: "/builder/web/orders",
               count: "E-commerce",
             },
             {
+              id: "submissions",
               title: "Form Submissions",
               description: "Leads, contacts and newsletter sign-ups inbox",
-              icon: Inbox,
               color: "#0891b2",
               href: "/builder/web/submissions",
               count: "Inbox",
             },
             {
+              id: "blog",
               title: "Blog Posts",
               description: "Write, edit, and publish blog articles",
-              icon: FileText,
               color: "var(--color-primary)",
               href: "/builder/web/blog",
               count: `${stats.blogPosts} posts`,
             },
             {
+              id: "assets",
               title: "Asset Manager",
               description: "Upload and organize images, videos, documents",
-              icon: Image,
               color: "#059669",
               href: "/builder/web/assets",
               count: `${stats.assets} files`,
             },
             {
+              id: "templates",
               title: "Templates",
               description: "Manage reusable page and email templates",
-              icon: Code2,
               color: "#d97706",
               href: "/builder/web/templates",
               count: `${stats.templates} templates`,
             },
             {
+              id: "menus",
               title: "Navigation Menus",
               description: "Configure header, footer, and sidebar menus",
-              icon: Layers,
               color: "#0891b2",
               href: "/builder/web/menus",
               count: `${stats.menus} menus`,
             },
             {
+              id: "seo",
               title: "SEO Settings",
               description: "Manage page metadata and search visibility",
-              icon: SearchCheck,
               color: "#7c3aed",
               href: "/builder/web/seo",
               count: `${stats.seo} entries`,
@@ -268,23 +310,46 @@ export default function WebBuilderPage() {
             <div
               key={item.title}
               className={`ui-card ${styles.s10} ${styles.accessCard}`}
+              style={{ "--accent": item.color } as React.CSSProperties}
               onClick={() => router.push(item.href)}
-              style={{ "--hover-color": item.color } as React.CSSProperties}
             >
-              <div
-                style={{ background: `${item.color}20` }}
-                className={styles.s11}
-              >
-                <item.icon size={22} style={{ color: item.color }} />
+              <div className="ui-flex ui-items-center ui-justify-between mb-3">
+                <div
+                  style={{ background: `${item.color}20` }}
+                  className={styles.s4}
+                >
+                  {item.id === "collections" && (
+                    <Database size={22} style={{ color: item.color }} />
+                  )}
+                  {item.id === "pages" && (
+                    <Monitor size={22} style={{ color: item.color }} />
+                  )}
+                  {item.id === "orders" && (
+                    <ShoppingCart size={22} style={{ color: item.color }} />
+                  )}
+                  {item.id === "submissions" && (
+                    <Inbox size={22} style={{ color: item.color }} />
+                  )}
+                  {item.id === "blog" && (
+                    <FileText size={22} style={{ color: item.color }} />
+                  )}
+                  {item.id === "assets" && (
+                    <Image size={22} style={{ color: item.color }} />
+                  )}
+                  {item.id === "templates" && (
+                    <Code2 size={22} style={{ color: item.color }} />
+                  )}
+                  {item.id === "menus" && (
+                    <Layers size={22} style={{ color: item.color }} />
+                  )}
+                  {item.id === "seo" && (
+                    <SearchCheck size={22} style={{ color: item.color }} />
+                  )}
+                </div>
+                <span className={`ui-badge ${styles.s11}`}>{item.count}</span>
               </div>
-              <div className="flex-1">
-                <p className={styles.s12}>{item.title}</p>
-                <p className="ui-text-xs-muted m-0">{item.description}</p>
-                <span style={{ color: item.color }} className={styles.s13}>
-                  {item.count}
-                </span>
-              </div>
-              <ChevronRight size={16} className={styles.s14} />
+              <h3 className={styles.s12}>{item.title}</h3>
+              <p className={styles.s13}>{item.description}</p>
             </div>
           ))}
         </div>

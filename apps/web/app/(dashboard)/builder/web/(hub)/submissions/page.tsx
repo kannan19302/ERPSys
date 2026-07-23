@@ -14,13 +14,12 @@ import {
 } from "lucide-react";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
-const STATUS_META: Record<string, { label: string; color: string; icon: any }> =
-  {
-    NEW: { label: "New", color: "#3b82f6", icon: Mail },
-    READ: { label: "Read", color: "#6b7280", icon: MailOpen },
-    ARCHIVED: { label: "Archived", color: "#9ca3af", icon: Archive },
-    SPAM: { label: "Spam", color: "#dc2626", icon: AlertOctagon },
-  };
+const STATUS_META: Record<string, { label: string; color: string }> = {
+  NEW: { label: "New", color: "#3b82f6" },
+  READ: { label: "Read", color: "#6b7280" },
+  ARCHIVED: { label: "Archived", color: "#9ca3af" },
+  SPAM: { label: "Spam", color: "#dc2626" },
+};
 
 export default function WebSubmissionsPage() {
   const client = useApiClient();
@@ -156,10 +155,15 @@ export default function WebSubmissionsPage() {
                       }}
                       className={styles.s12}
                     >
-                      <meta.icon
-                        size={16}
-                        style={{ color: meta.color, flexShrink: 0 }}
-                      />
+                      {s.status === "NEW" ? (
+                        <Mail size={16} style={{ color: meta.color }} />
+                      ) : s.status === "READ" ? (
+                        <MailOpen size={16} style={{ color: meta.color }} />
+                      ) : s.status === "ARCHIVED" ? (
+                        <Archive size={16} style={{ color: meta.color }} />
+                      ) : (
+                        <AlertOctagon size={16} style={{ color: meta.color }} />
+                      )}
                       <div className="flex-1 overflow-hidden">
                         <div className={styles.s13}>
                           <span
