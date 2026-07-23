@@ -1,10 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { OnEvent, EventEmitter2 } from '@nestjs/event-emitter';
-import { InjectQueue } from '@nestjs/bullmq';
-import { Queue } from 'bullmq';
-import { prisma } from '@unerp/database';
-import { AutomationRulesService } from './automation-rules.service';
-import { enqueueTrackedJob } from '../../common/queues/job-tracking.util';
+import { Injectable, Logger } from "@nestjs/common";
+import { OnEvent, EventEmitter2 } from "@nestjs/event-emitter";
+import { InjectQueue } from "@nestjs/bullmq";
+import { Queue } from "bullmq";
+import { prisma } from "@unerp/database";
+import { AutomationRulesService } from "./automation-rules.service";
+import { enqueueTrackedJob } from "../../common/queues/job-tracking.util";
 
 /**
  * Domain events already emitted elsewhere in apps/api/src that this engine reacts to.
@@ -15,6 +15,7 @@ import { enqueueTrackedJob } from '../../common/queues/job-tracking.util';
  *   sales.delivery.created       (sales.service.ts)
  *   sales.return.created         (sales.service.ts)
  *   sales.return.processed       (sales.service.ts)
+ *   sales.return.refunded        (sales.service.ts)
  *   procurement.receipt.created  (procurement.service.ts)
  *   procurement.return.created   (procurement.service.ts)
  *   finance.invoice.created      (finance.service.ts)
@@ -26,16 +27,17 @@ import { enqueueTrackedJob } from '../../common/queues/job-tracking.util';
  * so a rule can only ever fire against events from its own tenant.
  */
 const SUPPORTED_TRIGGER_EVENTS = [
-  'sales.order.confirmed',
-  'sales.delivery.created',
-  'sales.return.created',
-  'sales.return.processed',
-  'procurement.receipt.created',
-  'procurement.return.created',
-  'finance.invoice.created',
-  'finance.invoice.sent',
-  'finance.payment.received',
-  'hr.employee.onboarded',
+  "sales.order.confirmed",
+  "sales.delivery.created",
+  "sales.return.created",
+  "sales.return.processed",
+  "sales.return.refunded",
+  "procurement.receipt.created",
+  "procurement.return.created",
+  "finance.invoice.created",
+  "finance.invoice.sent",
+  "finance.payment.received",
+  "hr.employee.onboarded",
 ] as const;
 
 type SupportedTriggerEvent = (typeof SUPPORTED_TRIGGER_EVENTS)[number];
@@ -68,73 +70,83 @@ export class AutomationRuleEngineService {
 
   constructor(
     private readonly eventEmitter: EventEmitter2,
-    @InjectQueue('email') private readonly emailQueue: Queue,
+    @InjectQueue("email") private readonly emailQueue: Queue,
   ) {}
 
-  @OnEvent('sales.order.confirmed')
+  @OnEvent("sales.order.confirmed")
   async onSalesOrderConfirmed(payload: DomainEventPayload) {
-    await this.runTriggersFor('sales.order.confirmed', payload);
+    await this.runTriggersFor("sales.order.confirmed", payload);
   }
 
-  @OnEvent('sales.delivery.created')
+  @OnEvent("sales.delivery.created")
   async onSalesDeliveryCreated(payload: DomainEventPayload) {
-    await this.runTriggersFor('sales.delivery.created', payload);
+    await this.runTriggersFor("sales.delivery.created", payload);
   }
 
-  @OnEvent('sales.return.created')
+  @OnEvent("sales.return.created")
   async onSalesReturnCreated(payload: DomainEventPayload) {
-    await this.runTriggersFor('sales.return.created', payload);
+    await this.runTriggersFor("sales.return.created", payload);
   }
 
-  @OnEvent('sales.return.processed')
+  @OnEvent("sales.return.processed")
   async onSalesReturnProcessed(payload: DomainEventPayload) {
-    await this.runTriggersFor('sales.return.processed', payload);
+    await this.runTriggersFor("sales.return.processed", payload);
   }
 
-  @OnEvent('procurement.receipt.created')
+  @OnEvent("sales.return.refunded")
+  async onSalesReturnRefunded(payload: DomainEventPayload) {
+    await this.runTriggersFor("sales.return.refunded", payload);
+  }
+
+  @OnEvent("procurement.receipt.created")
   async onProcurementReceiptCreated(payload: DomainEventPayload) {
-    await this.runTriggersFor('procurement.receipt.created', payload);
+    await this.runTriggersFor("procurement.receipt.created", payload);
   }
 
-  @OnEvent('procurement.return.created')
+  @OnEvent("procurement.return.created")
   async onProcurementReturnCreated(payload: DomainEventPayload) {
-    await this.runTriggersFor('procurement.return.created', payload);
+    await this.runTriggersFor("procurement.return.created", payload);
   }
 
-  @OnEvent('finance.invoice.created')
+  @OnEvent("finance.invoice.created")
   async onFinanceInvoiceCreated(payload: DomainEventPayload) {
-    await this.runTriggersFor('finance.invoice.created', payload);
+    await this.runTriggersFor("finance.invoice.created", payload);
   }
 
-  @OnEvent('finance.invoice.sent')
+  @OnEvent("finance.invoice.sent")
   async onFinanceInvoiceSent(payload: DomainEventPayload) {
-    await this.runTriggersFor('finance.invoice.sent', payload);
+    await this.runTriggersFor("finance.invoice.sent", payload);
   }
 
-  @OnEvent('finance.payment.received')
+  @OnEvent("finance.payment.received")
   async onFinancePaymentReceived(payload: DomainEventPayload) {
-    await this.runTriggersFor('finance.payment.received', payload);
+    await this.runTriggersFor("finance.payment.received", payload);
   }
 
-  @OnEvent('hr.employee.onboarded')
+  @OnEvent("hr.employee.onboarded")
   async onHrEmployeeOnboarded(payload: DomainEventPayload) {
-    await this.runTriggersFor('hr.employee.onboarded', payload);
+    await this.runTriggersFor("hr.employee.onboarded", payload);
   }
 
   /**
    * Core runtime: loads ACTIVE rules for this tenant matching the trigger, evaluates
    * conditions, executes actions for real, and records an execution row.
    */
-  private async runTriggersFor(trigger: SupportedTriggerEvent, payload: DomainEventPayload) {
+  private async runTriggersFor(
+    trigger: SupportedTriggerEvent,
+    payload: DomainEventPayload,
+  ) {
     const { tenantId } = payload;
     if (!tenantId) {
-      this.logger.warn(`Received "${trigger}" event with no tenantId — skipping automation dispatch`);
+      this.logger.warn(
+        `Received "${trigger}" event with no tenantId — skipping automation dispatch`,
+      );
       return;
     }
 
     // DRAFT (and any other non-ACTIVE status, e.g. PAUSED) rules are inert by design.
     const rules = await prisma.automationRule.findMany({
-      where: { tenantId, trigger, status: 'ACTIVE' },
+      where: { tenantId, trigger, status: "ACTIVE" },
     });
 
     for (const rule of rules) {
@@ -146,14 +158,16 @@ export class AutomationRuleEngineService {
         // trail (US-P0-2b) just because it failed before reaching its own execution
         // row write. Record the failure here and move on to the next rule.
         const errorMessage = err instanceof Error ? err.message : String(err);
-        this.logger.error(`Automation rule ${rule.id} failed before execution: ${errorMessage}`);
+        this.logger.error(
+          `Automation rule ${rule.id} failed before execution: ${errorMessage}`,
+        );
         await prisma.automationRuleExecution.create({
           data: {
             tenantId: rule.tenantId,
             ruleId: rule.id,
-            status: 'FAILED',
+            status: "FAILED",
             triggerData: payload as any,
-            result: { reason: 'rule_evaluation_error' },
+            result: { reason: "rule_evaluation_error" },
             error: errorMessage,
           },
         });
@@ -162,7 +176,12 @@ export class AutomationRuleEngineService {
   }
 
   private async executeRule(
-    rule: { id: string; tenantId: string; conditions: unknown; actions: unknown },
+    rule: {
+      id: string;
+      tenantId: string;
+      conditions: unknown;
+      actions: unknown;
+    },
     payload: DomainEventPayload,
   ) {
     const startTime = Date.now();
@@ -183,26 +202,32 @@ export class AutomationRuleEngineService {
     const conditions = (rule.conditions as any[]) ?? [];
     const actions = (rule.actions as any[]) ?? [];
 
-    const { matchedConditions, allConditionsMet } = AutomationRulesService.evaluateConditions(
-      conditions,
-      payload,
-    );
+    const { matchedConditions, allConditionsMet } =
+      AutomationRulesService.evaluateConditions(conditions, payload);
 
     if (!allConditionsMet) {
       await prisma.automationRuleExecution.create({
         data: {
           tenantId: rule.tenantId,
           ruleId: rule.id,
-          status: 'SKIPPED',
+          status: "SKIPPED",
           triggerData: payload as any,
-          result: { matchedConditions, allConditionsMet, reason: 'conditions_not_met' },
+          result: {
+            matchedConditions,
+            allConditionsMet,
+            reason: "conditions_not_met",
+          },
           durationMs: Date.now() - startTime,
         },
       });
       return;
     }
 
-    const actionResults: Array<{ type: string; executed: boolean; detail?: string }> = [];
+    const actionResults: Array<{
+      type: string;
+      executed: boolean;
+      detail?: string;
+    }> = [];
     let hadError = false;
     let errorMessage: string | undefined;
 
@@ -216,7 +241,11 @@ export class AutomationRuleEngineService {
         this.logger.error(
           `Automation rule ${rule.id} action "${action?.type}" failed: ${errorMessage}`,
         );
-        actionResults.push({ type: action?.type ?? 'unknown', executed: false, detail: errorMessage });
+        actionResults.push({
+          type: action?.type ?? "unknown",
+          executed: false,
+          detail: errorMessage,
+        });
       }
     }
 
@@ -232,7 +261,7 @@ export class AutomationRuleEngineService {
       data: {
         tenantId: rule.tenantId,
         ruleId: rule.id,
-        status: hadError ? 'FAILED' : 'SUCCESS',
+        status: hadError ? "FAILED" : "SUCCESS",
         triggerData: payload as any,
         result: { matchedConditions, allConditionsMet, actionResults },
         durationMs: Date.now() - startTime,
@@ -251,41 +280,56 @@ export class AutomationRuleEngineService {
     action: { type?: string; config?: Record<string, unknown> },
     payload: DomainEventPayload,
   ): Promise<{ type: string; executed: boolean; detail?: string }> {
-    const type = (action?.type ?? '').toLowerCase();
+    const type = (action?.type ?? "").toLowerCase();
     const config = action?.config ?? {};
 
     switch (type) {
-      case 'notify':
-      case 'notification':
-      case 'send_notification': {
-        const userId = (config.userId as string | undefined) ?? (payload.userId as string | undefined);
+      case "notify":
+      case "notification":
+      case "send_notification": {
+        const userId =
+          (config.userId as string | undefined) ??
+          (payload.userId as string | undefined);
         if (!userId) {
-          return { type, executed: false, detail: 'No target userId resolved for notification action' };
+          return {
+            type,
+            executed: false,
+            detail: "No target userId resolved for notification action",
+          };
         }
-        this.eventEmitter.emit('notification.send', {
+        this.eventEmitter.emit("notification.send", {
           tenantId,
           userId,
-          type: 'AUTOMATION_RULE',
-          title: (config.title as string | undefined) ?? 'Automation rule triggered',
-          body: (config.body as string | undefined) ?? '',
-          channel: (config.channel as string | undefined) ?? 'IN_APP',
+          type: "AUTOMATION_RULE",
+          title:
+            (config.title as string | undefined) ?? "Automation rule triggered",
+          body: (config.body as string | undefined) ?? "",
+          channel: (config.channel as string | undefined) ?? "IN_APP",
         });
         return { type, executed: true };
       }
 
-      case 'email':
-      case 'send_email': {
-        const to = (config.to as string | undefined) ?? (payload.email as string | undefined);
+      case "email":
+      case "send_email": {
+        const to =
+          (config.to as string | undefined) ??
+          (payload.email as string | undefined);
         if (!to) {
-          return { type, executed: false, detail: 'No recipient email resolved for email action' };
+          return {
+            type,
+            executed: false,
+            detail: "No recipient email resolved for email action",
+          };
         }
         const { bullJobId } = await enqueueTrackedJob(this.emailQueue, {
           tenantId,
-          jobType: 'automation-rule-email',
+          jobType: "automation-rule-email",
           payload: {
             to,
-            subject: (config.subject as string | undefined) ?? 'Automation rule notification',
-            body: (config.body as string | undefined) ?? '',
+            subject:
+              (config.subject as string | undefined) ??
+              "Automation rule notification",
+            body: (config.body as string | undefined) ?? "",
             tenantId,
           },
         });
@@ -293,7 +337,11 @@ export class AutomationRuleEngineService {
       }
 
       default:
-        return { type: type || 'unknown', executed: false, detail: 'Action type has no real downstream in this pass' };
+        return {
+          type: type || "unknown",
+          executed: false,
+          detail: "Action type has no real downstream in this pass",
+        };
     }
   }
 }
