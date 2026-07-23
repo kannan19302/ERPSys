@@ -1098,6 +1098,30 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
     level: "endpoint",
     description: "View communication module (legacy coarse permission)",
   },
+  // Sales — Subscription & recurring billing
+  p("sales", "subscription", "read", "endpoint", "View subscriptions"),
+  p("sales", "subscription", "create", "endpoint", "Create subscriptions"),
+  p("sales", "subscription", "update", "endpoint", "Update/cancel/pause/resume subscriptions"),
+  // Sales — SPIFF campaigns & team splits
+  p("sales", "spiff", "read", "endpoint", "View SPIFF campaigns"),
+  p("sales", "spiff", "create", "endpoint", "Create SPIFF campaigns"),
+  p("sales", "spiff", "update", "endpoint", "Update SPIFF campaigns"),
+  p("sales", "spiff", "delete", "endpoint", "Delete SPIFF campaigns"),
+  // Sales — Advanced pricing engine
+  p("sales", "pricing", "read", "endpoint", "View advanced pricing (price lists, floors, contracts)"),
+  p("sales", "pricing", "create", "endpoint", "Create customer price lists, floor prices, contract pricing"),
+  p("sales", "pricing", "update", "endpoint", "Update price lists and pricing rules"),
+  p("sales", "pricing", "delete", "endpoint", "Delete price lists and pricing rules"),
+  // Sales — CPQ (Configure-Price-Quote)
+  p("sales", "cpq", "read", "endpoint", "View CPQ configurations, bundles, rules, analytics"),
+  p("sales", "cpq", "create", "endpoint", "Create bundles, cross-sell/upsell rules"),
+  p("sales", "cpq", "update", "endpoint", "Update bundles and CPQ rules"),
+  p("sales", "cpq", "delete", "endpoint", "Delete bundles and CPQ rules"),
+  // Sales — Territory management
+  p("sales", "territory", "read", "endpoint", "View territories, hierarchy, forecasts"),
+  p("sales", "territory", "create", "endpoint", "Create territories, rules, forecasts"),
+  p("sales", "territory", "update", "endpoint", "Update territories and realign"),
+  p("sales", "territory", "delete", "endpoint", "Delete territories and rules"),
   {
     code: "communication.create",
     module: "communication",
@@ -2015,6 +2039,13 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
   p("system", "tenant", "read", "endpoint", "View all tenants (super-admin)"),
   p("system", "tenant", "manage", "endpoint", "Manage tenants (super-admin)"),
   // ── Auto-registered from permissions-drift check (2026-07-10) ──
+  // CRM — Lead Enrichment
+  p("crm", "enrichment", "read", "endpoint", "View enrichment sources, rules, mappings, logs"),
+  p("crm", "enrichment", "manage", "endpoint", "Create/update/delete enrichment sources, rules, and mappings"),
+  // CRM — Guided Selling & Next-Best-Action
+  p("crm", "guided-selling", "read", "endpoint", "View guided selling configs, playbooks, suggestions"),
+  p("crm", "guided-selling", "manage", "endpoint", "Create/update/delete guided selling configs and playbooks"),
+
   // These codes are actively used by @Permissions(...) decorators in controllers
   // across the codebase but were missing from the registry, which fails the
   // RBAC drift-check test gate. Descriptions are mechanically derived from the
@@ -5208,6 +5239,14 @@ export function getCategoriesForModule(module: string): string[] {
       seen.push(p.category);
   }
   return seen;
+  // ── ASC 606 Deep Revenue Recognition ──
+  p("finance", "revenue", "read", "endpoint", "Read revenue recognition data"),
+  p("finance", "revenue", "create", "endpoint", "Create revenue recognition data"),
+  p("finance", "revenue", "update", "endpoint", "Update revenue recognition data"),
+  p("finance", "revenue", "delete", "endpoint", "Delete revenue recognition data"),
+  // ── Global Transfer Pricing & Multi-Jurisdiction Tax ──
+  p("finance", "tax-nexus", "read", "endpoint", "Read global tax and transfer pricing data"),
+  p("finance", "tax-nexus", "manage", "endpoint", "Manage global tax and transfer pricing data"),
 }
 
 /** Permission definitions for a module scoped to one category. */

@@ -49,6 +49,24 @@ export class ProcurementIntelligenceController {
     return this.supplierScorecardService.getVendorTrend(req.user.tenantId, vendorId, lastN ? parseInt(lastN, 10) : 6);
   }
 
+  @Get('scorecards/by-vendor/:vendorId')
+  @Permissions('procurement.purchase-order.read')
+  async listScorecardsByVendor(@Req() req: AuthRequest, @Param('vendorId') vendorId: string, @Query() q: any) {
+    return this.supplierScorecardService.getScorecardsByVendor(req.user.tenantId, vendorId, q);
+  }
+
+  @Get('scorecards/by-date-range')
+  @Permissions('procurement.purchase-order.read')
+  async listScorecardsByDateRange(@Req() req: AuthRequest, @Query() q: any) {
+    return this.supplierScorecardService.getScorecardsByDateRange(req.user.tenantId, q.startDate, q.endDate, q);
+  }
+
+  @Post('scorecards/compare')
+  @Permissions('procurement.scorecard.compare')
+  async compareVendors(@Req() req: AuthRequest, @Body() dto: { vendorIds: string[] }) {
+    return this.supplierScorecardService.compareVendors(req.user.tenantId, dto.vendorIds);
+  }
+
   @Get('scorecards/stats/summary')
   @Permissions('procurement.purchase-order.read')
   async scorecardStats(@Req() req: AuthRequest) {
@@ -90,6 +108,12 @@ export class ProcurementIntelligenceController {
     return this.rfqAuctionsService.listBids(req.user.tenantId, id);
   }
 
+  @Get('auctions/:id/bid-history')
+  @Permissions('procurement.purchase-order.read')
+  async getBidHistory(@Req() req: AuthRequest, @Param('id') id: string, @Query() q: any) {
+    return this.rfqAuctionsService.getBidHistory(req.user.tenantId, id, q);
+  }
+
   @Post('auctions/:id/select-bid/:bidId')
   @Permissions('procurement.purchase-order.update')
   async selectWinningBid(@Req() req: AuthRequest, @Param('id') id: string, @Param('bidId') bidId: string) {
@@ -100,6 +124,34 @@ export class ProcurementIntelligenceController {
   @Permissions('procurement.purchase-order.update')
   async updateAuctionStatus(@Req() req: AuthRequest, @Param('id') id: string, @Body() dto: { status: string }) {
     return this.rfqAuctionsService.updateAuctionStatus(req.user.tenantId, id, dto.status);
+  }
+
+  @Patch('auctions/:id/extend')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('RFQAuction')
+  @Permissions('procurement.rfq-auction.extend')
+  async extendAuction(@Req() req: AuthRequest, @Param('id') id: string, @Body() dto: { newEndDate: string }) {
+    return this.rfqAuctionsService.extendAuction(req.user.tenantId, id, dto.newEndDate);
+  }
+
+  @Patch('auctions/:id/cancel')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('RFQAuction')
+  @Permissions('procurement.rfq-auction.cancel')
+  async cancelAuction(@Req() req: AuthRequest, @Param('id') id: string, @Body() dto: { reason?: string }) {
+    return this.rfqAuctionsService.cancelAuction(req.user.tenantId, id, dto.reason);
+  }
+
+  @Get('auctions/by-vendor/:vendorId')
+  @Permissions('procurement.purchase-order.read')
+  async listAuctionsByVendor(@Req() req: AuthRequest, @Param('vendorId') vendorId: string, @Query() q: any) {
+    return this.rfqAuctionsService.getAuctionsByVendor(req.user.tenantId, vendorId, q);
+  }
+
+  @Get('auctions/analytics/overview')
+  @Permissions('procurement.purchase-order.read')
+  async auctionAnalytics(@Req() req: AuthRequest) {
+    return this.rfqAuctionsService.getAuctionAnalytics(req.user.tenantId);
   }
 
   @Get('auctions/stats/summary')
@@ -144,6 +196,37 @@ export class ProcurementIntelligenceController {
   @Permissions('procurement.purchase-order.read')
   async vendorPerformance(@Req() req: AuthRequest) {
     return this.procurementAnalyticsService.getVendorPerformanceSummary(req.user.tenantId);
+  }
+
+  @Get('analytics/spend-forecast')
+  @Permissions('procurement.analytics.forecast')
+  async spendForecast(@Req() req: AuthRequest, @Query('months') months?: string) {
+    return this.procurementAnalyticsService.getSpendForecast(req.user.tenantId, months ? parseInt(months, 10) : 3);
+  }
+
+  @Get('analytics/vendor-comparison')
+  @Permissions('procurement.purchase-order.read')
+  async vendorComparison(@Req() req: AuthRequest, @Query('vendorIds') vendorIds?: string) {
+    const ids = vendorIds ? vendorIds.split(',') : undefined;
+    return this.procurementAnalyticsService.getVendorComparison(req.user.tenantId, ids);
+  }
+
+  @Get('analytics/category-breakdown')
+  @Permissions('procurement.purchase-order.read')
+  async categoryBreakdown(@Req() req: AuthRequest, @Query() q: { startDate?: string; endDate?: string }) {
+    return this.procurementAnalyticsService.getCategoryBreakdown(req.user.tenantId, q.startDate, q.endDate);
+  }
+
+  @Get('analytics/po-cycle-time')
+  @Permissions('procurement.analytics.cycle-time')
+  async poCycleTime(@Req() req: AuthRequest, @Query('vendorId') vendorId?: string) {
+    return this.procurementAnalyticsService.getPurchaseOrderCycleTime(req.user.tenantId, vendorId);
+  }
+
+  @Get('analytics/savings-opportunities')
+  @Permissions('procurement.analytics.savings')
+  async savingsOpportunities(@Req() req: AuthRequest) {
+    return this.procurementAnalyticsService.getSavingsOpportunities(req.user.tenantId);
   }
 
   @Get('analytics/dashboard')

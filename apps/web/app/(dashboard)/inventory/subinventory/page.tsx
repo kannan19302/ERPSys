@@ -242,14 +242,6 @@ export default function SubinventoryPage() {
     ? Object.entries(dashboard.byType).sort((a, b) => b[1] - a[1])
     : [];
 
-  const typeVariants: Record<string, "active" | "info" | "warning" | "default"> = {
-    STORAGE: "active",
-    RECEIVING: "info",
-    SHIPPING: "info",
-    QUARANTINE: "warning",
-    SCRAP: "default",
-  };
-
   const columns: Column<Subinventory>[] = [
     {
       key: "code",
@@ -272,10 +264,7 @@ export default function SubinventoryPage() {
       header: "Type",
       sortable: true,
       render: (s) => (
-        <StatusBadge
-          variant={typeVariants[s.type] || "default"}
-          label={s.type}
-        />
+        <StatusBadge status={s.type} />
       ),
     },
     {
@@ -290,10 +279,7 @@ export default function SubinventoryPage() {
       header: "Status",
       sortable: true,
       render: (s) => (
-        <StatusBadge
-          variant={s.status === "ACTIVE" ? "active" : "inactive"}
-          label={s.status}
-        />
+        <StatusBadge status={s.status} />
       ),
     },
     {

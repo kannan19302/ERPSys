@@ -239,8 +239,8 @@ export default function AtpCtpPage() {
           {totalPages > 1 && (
             <div style={{ marginTop: 16 }}>
               <Pagination
-                current={page}
-                total={totalPages}
+                page={page}
+                pageCount={totalPages}
                 onChange={setPage}
               />
             </div>

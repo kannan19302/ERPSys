@@ -136,7 +136,7 @@ export const PROCUREMENT_TABS: ModuleTab[] = [
   {
     id: "auctions",
     label: "RFQ Auctions",
-    href: "/procurement/auctions",
+    href: "/procurement/rfq-auctions",
     icon: Gavel,
     advanced: true,
     group: "Analytics",

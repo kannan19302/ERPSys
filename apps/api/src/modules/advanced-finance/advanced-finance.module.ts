@@ -8,6 +8,11 @@ import { EInvoiceController } from "./e-invoice.controller";
 import { TreasuryDeepController } from "./treasury-deep.controller";
 import { SubscriptionBillingController } from "./subscription-billing.controller";
 import { FixedAssetDeepController } from "./fixed-asset-deep.controller";
+import { Asc606DeepController } from "./asc606-deep.controller";
+import { GlobalTaxDeepController } from "./global-tax-deep.controller";
+import { FinancialInstrumentsController } from "./financial-instruments.controller";
+import { BudgetDeepController } from "./budget-deep.controller";
+import { NettingDeepController } from "./netting-deep.controller";
 import { AdvancedFinanceService } from "./advanced-finance.service";
 import { FinanceExpansionDeepService } from "./services/finance-expansion-deep.service";
 import {
@@ -41,6 +46,11 @@ import {
   TaxJurisdictionLookupService,
   TaxFilingCalendarService,
   RecurringJournalSchedulerService,
+  Asc606DeepService,
+  GlobalTaxDeepService,
+  FinancialInstrumentsService,
+  BudgetDeepService,
+  NettingDeepService,
 } from "./services";
 import { TaxEngineDeepService } from "./services/tax-engine-deep.service";
 import { TreasuryDeepService } from "./services/treasury-deep.service";
@@ -84,6 +94,12 @@ const domainServices = [
   FpaDeepService,
   RevenueBillingService,
   ComplianceControlsService,
+  // New Phase M services
+  Asc606DeepService,
+  GlobalTaxDeepService,
+  FinancialInstrumentsService,
+  BudgetDeepService,
+  NettingDeepService,
   // Hardening services
   IntercompanyLoansService,
   AssetLifecycleService,
@@ -108,6 +124,11 @@ const domainServices = [
     TreasuryDeepController,
     SubscriptionBillingController,
     FixedAssetDeepController,
+    Asc606DeepController,
+    GlobalTaxDeepController,
+    FinancialInstrumentsController,
+    BudgetDeepController,
+    NettingDeepController,
   ],
   providers: [AdvancedFinanceService, ...domainServices],
   exports: [AdvancedFinanceService, ...domainServices],

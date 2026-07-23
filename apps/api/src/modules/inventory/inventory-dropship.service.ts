@@ -139,7 +139,7 @@ export class InventoryDropShipService {
     return order;
   }
 
-  async createOrder(tenantId: string, dto: CreateDropShipOrderInput, items: CreateDropShipOrderItemInput[]) {
+  async createOrder(tenantId: string, dto: CreateDropShipOrderInput & { items?: CreateDropShipOrderItemInput[] }) {
     const provider = await prisma.dropShipProvider.findFirst({
       where: { id: dto.providerId, tenantId },
     });
@@ -152,13 +152,13 @@ export class InventoryDropShipService {
       throw new BadRequestException(`Order '${dto.orderNumber}' already exists`);
     }
 
-    const orderItems = items.map((item) => ({
+    const orderItems = (dto.items ?? []).map((item: any) => ({
       tenantId,
       productId: item.productId,
-      quantity: new Prisma.Decimal(item.quantity.toFixed(3)),
-      shippedQty: new Prisma.Decimal((item.shippedQty ?? 0).toFixed(3)),
-      unitPrice: new Prisma.Decimal(item.unitPrice.toFixed(2)),
-      totalPrice: new Prisma.Decimal((item.unitPrice * item.quantity).toFixed(2)),
+      quantity: new Prisma.Decimal(Number(item.quantity).toFixed(3)),
+      shippedQty: new Prisma.Decimal(Number(item.shippedQty ?? 0).toFixed(3)),
+      unitPrice: new Prisma.Decimal(Number(item.unitPrice).toFixed(2)),
+      totalPrice: new Prisma.Decimal((Number(item.unitPrice) * Number(item.quantity)).toFixed(2)),
     }));
 
     return prisma.dropShipOrder.create({

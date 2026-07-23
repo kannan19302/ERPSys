@@ -60,7 +60,7 @@ export class InventoryRfidService {
     }
     return prisma.rfidTag.createMany({
       data: tags.map((t) => ({
-        tenantId: t.tenantId,
+        tenantId,
         epc: t.epc,
         tagType: t.tagType,
         productId: t.productId ?? null,

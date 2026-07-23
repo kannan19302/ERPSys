@@ -10,11 +10,12 @@ import {
   FormField,
   Input,
   DataTable,
+  Pagination,
   type Column,
   StatCardRow,
 } from "@unerp/ui";
 import { RouteGuard } from "@unerp/framework";
-import { apiGet, apiPost, apiPatch } from "../../../src/lib/api";
+import { apiGet, apiPost, apiPatch } from "@/lib/api";
 import {
   Plus,
   Eye,
@@ -83,15 +84,6 @@ export default function CustomerConsignmentPage() {
     totalValue: 0,
     reference: "",
   });
-
-  const statusVariant = (s: string) => {
-    const map: Record<string, "success" | "warning" | "danger" | "info" | "default"> = {
-      ACTIVE: "success",
-      DEPLETED: "warning",
-      CLOSED: "default",
-    };
-    return map[s] || "default";
-  };
 
   const loadData = async () => {
     setLoading(true);
@@ -176,7 +168,6 @@ export default function CustomerConsignmentPage() {
       key: "customer",
       header: "Customer",
       render: (row) => row.customer?.name || row.customerId,
-      sortable: true,
     },
     {
       key: "product",
@@ -189,31 +180,28 @@ export default function CustomerConsignmentPage() {
           <div className="ui-text-xs-tertiary">{row.product?.sku}</div>
         </div>
       ),
-      sortable: true,
     },
     {
       key: "warehouse",
       header: "Warehouse",
       render: (row) => row.warehouse?.name || row.warehouseId,
     },
-    { key: "quantityOnHand", header: "On Hand", sortable: true },
+    { key: "quantityOnHand", header: "On Hand" },
     {
       key: "unitPrice",
       header: "Unit Price",
       render: (row) => `$${Number(row.unitPrice).toFixed(2)}`,
-      sortable: true,
     },
     {
       key: "totalValue",
       header: "Total Value",
       render: (row) => `$${Number(row.totalValue).toLocaleString()}`,
-      sortable: true,
     },
     {
       key: "status",
       header: "Status",
       render: (row) => (
-        <StatusBadge status={row.status} variant={statusVariant(row.status)} />
+        <StatusBadge status={row.status} />
       ),
     },
     {
@@ -350,15 +338,15 @@ export default function CustomerConsignmentPage() {
             columns={columns}
             data={consignments}
             rowKey={(r) => r.id}
-            sortable
             emptyTitle="No consignments found"
             emptyMessage="Create a new customer consignment to get started."
             emptyIcon={<Handshake size={48} />}
-            pagination
-            page={page}
-            totalPages={totalPages}
-            onPageChange={setPage}
           />
+          {totalPages > 1 && (
+            <div style={{ marginTop: 16 }}>
+              <Pagination page={page} pageCount={totalPages} onChange={setPage} />
+            </div>
+          )}
 
           <Modal
             open={createOpen}

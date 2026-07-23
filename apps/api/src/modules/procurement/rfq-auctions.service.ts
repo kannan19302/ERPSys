@@ -116,4 +116,83 @@ export class RfqAuctionsService {
       totalSavings: bids.filter(b => b.status === 'WINNING').reduce((sum, b) => sum + Number(b.bidAmount), 0),
     };
   }
+
+  async getAuctionsByVendor(tenantId: string, vendorId: string, params: PaginationParams = {}): Promise<PaginatedResult<any>> {
+    const where = { tenantId, isAuction: true, auctionBids: { some: { vendorId } } };
+    const { skip, take } = buildPaginationValues(params);
+    const orderBy = buildOrderBy(params.sort);
+
+    const [items, total] = await Promise.all([
+      prisma.rFQ.findMany({ where, skip, take, orderBy: orderBy as any, include: { _count: { select: { auctionBids: true } } } }),
+      prisma.rFQ.count({ where }),
+    ]);
+    return paginatedResult(items, total, params);
+  }
+
+  async extendAuction(tenantId: string, id: string, newEndDate: string) {
+    const rfq = await prisma.rFQ.findFirst({ where: { id, tenantId, isAuction: true } });
+    if (!rfq) throw new NotFoundException('Auction not found');
+    if (rfq.status !== 'SENT') throw new BadRequestException('Only open auctions can be extended');
+
+    return prisma.rFQ.update({
+      where: { id },
+      data: { auctionEndsAt: new Date(newEndDate) },
+    });
+  }
+
+  async cancelAuction(tenantId: string, id: string, reason?: string) {
+    const rfq = await prisma.rFQ.findFirst({ where: { id, tenantId, isAuction: true } });
+    if (!rfq) throw new NotFoundException('Auction not found');
+    if (rfq.status === 'COMPLETED' || rfq.status === 'CANCELLED') {
+      throw new BadRequestException('Auction is already completed or cancelled');
+    }
+
+    await prisma.rFQAuctionBid.updateMany({ where: { rfqId: id, status: 'SUBMITTED' }, data: { status: 'WITHDRAWN' } });
+
+    return prisma.rFQ.update({
+      where: { id },
+      data: { status: 'CANCELLED', notes: reason ? `${rfq.notes || ''}\nCancellation reason: ${reason}` : rfq.notes },
+    });
+  }
+
+  async getBidHistory(tenantId: string, rfqId: string, params: PaginationParams = {}): Promise<PaginatedResult<any>> {
+    const where = { tenantId, rfqId };
+    const { skip, take } = buildPaginationValues(params);
+    const orderBy = buildOrderBy(params.sort);
+
+    const [items, total] = await Promise.all([
+      prisma.rFQAuctionBid.findMany({
+        where, skip, take, orderBy: orderBy as any,
+        include: { vendor: { select: { name: true } } },
+      }),
+      prisma.rFQAuctionBid.count({ where }),
+    ]);
+    return paginatedResult(items, total, params);
+  }
+
+  async getAuctionAnalytics(tenantId: string) {
+    const auctions = await prisma.rFQ.findMany({
+      where: { tenantId, isAuction: true },
+      include: { _count: { select: { auctionBids: true } }, auctionBids: { where: { status: 'WINNING' } } },
+    });
+
+    const totalAuctions = auctions.length;
+    const completedAuctions = auctions.filter(a => a.status === 'COMPLETED').length;
+    const totalBids = auctions.reduce((s, a) => s + a._count.auctionBids, 0);
+    const avgBidsPerAuction = totalAuctions > 0 ? Math.round((totalBids / totalAuctions) * 10) / 10 : 0;
+    const completionRate = totalAuctions > 0 ? Math.round((completedAuctions / totalAuctions) * 10000) / 100 : 0;
+
+    const winningBids = auctions.flatMap(a => a.auctionBids);
+    const totalSavings = winningBids.reduce((s, b) => s + Number(b.bidAmount), 0);
+
+    return {
+      totalAuctions,
+      completedAuctions,
+      totalBids,
+      avgBidsPerAuction,
+      completionRate,
+      totalSavings,
+      byStatus: auctions.reduce((acc: Record<string, number>, a) => { acc[a.status] = (acc[a.status] || 0) + 1; return acc; }, {}),
+    };
+  }
 }

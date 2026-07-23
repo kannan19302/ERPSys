@@ -127,4 +127,61 @@ export class SupplierScorecardService {
       fillRateAvg: Math.round(latestScores.reduce((s, sc) => s + Number(sc.fillRateScore || 0), 0) / (latestScores.length || 1) * 100) / 100,
     };
   }
+
+  async getScorecardsByVendor(tenantId: string, vendorId: string, params: PaginationParams = {}): Promise<PaginatedResult<any>> {
+    const where = { tenantId, vendorId };
+    const { skip, take } = buildPaginationValues(params);
+    const orderBy = buildOrderBy(params.sort);
+
+    const [items, total] = await Promise.all([
+      prisma.supplierScorecard.findMany({ where, skip, take, orderBy: orderBy as any }),
+      prisma.supplierScorecard.count({ where }),
+    ]);
+    return paginatedResult(items, total, params);
+  }
+
+  async getScorecardsByDateRange(tenantId: string, startDate: string, endDate: string, params: PaginationParams = {}): Promise<PaginatedResult<any>> {
+    const where = { tenantId, periodStart: { gte: new Date(startDate) }, periodEnd: { lte: new Date(endDate) } };
+    const { skip, take } = buildPaginationValues(params);
+    const orderBy = buildOrderBy(params.sort);
+
+    const [items, total] = await Promise.all([
+      prisma.supplierScorecard.findMany({ where, skip, take, orderBy: orderBy as any, include: { vendor: { select: { name: true } } } }),
+      prisma.supplierScorecard.count({ where }),
+    ]);
+    return paginatedResult(items, total, params);
+  }
+
+  async compareVendors(tenantId: string, vendorIds: string[]) {
+    const scorecards = await prisma.supplierScorecard.findMany({
+      where: { tenantId, vendorId: { in: vendorIds } },
+      include: { vendor: { select: { name: true } } },
+      orderBy: { periodStart: 'desc' },
+    });
+
+    const latestByVendor = new Map<string, typeof scorecards[0]>();
+    for (const sc of scorecards) {
+      const existing = latestByVendor.get(sc.vendorId);
+      if (!existing || sc.periodStart > existing.periodStart) {
+        latestByVendor.set(sc.vendorId, sc);
+      }
+    }
+
+    return {
+      comparison: Array.from(latestByVendor.entries()).map(([vendorId, sc]) => ({
+        vendorId,
+        vendorName: sc.vendor.name,
+        overallScore: Number(sc.overallScore || 0),
+        qualityScore: Number(sc.qualityScore || 0),
+        deliveryScore: Number(sc.deliveryScore || 0),
+        fillRateScore: Number(sc.fillRateScore || 0),
+        onTimeDeliveries: sc.onTimeDeliveries,
+        lateDeliveries: sc.lateDeliveries,
+        defectiveUnits: sc.defectiveUnits,
+        periodStart: sc.periodStart.toISOString(),
+        periodEnd: sc.periodEnd.toISOString(),
+      })).sort((a, b) => b.overallScore - a.overallScore),
+      count: latestByVendor.size,
+    };
+  }
 }

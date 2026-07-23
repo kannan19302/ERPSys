@@ -101,4 +101,83 @@ export class SubcontractingService {
       totalCost: orders.reduce((sum, o) => sum + Number(o.totalCost), 0),
     };
   }
+
+  async updateOrder(tenantId: string, id: string, dto: { quantity?: number; unitCost?: number; deliveryDate?: string; notes?: string }) {
+    const order = await prisma.subcontractingOrder.findFirst({ where: { id, tenantId } });
+    if (!order) throw new NotFoundException('Subcontracting order not found');
+
+    const updateData: any = {};
+    if (dto.quantity !== undefined) { updateData.quantity = dto.quantity; updateData.totalCost = new Prisma.Decimal(dto.unitCost ?? order.unitCost).mul(dto.quantity); }
+    if (dto.unitCost !== undefined) { updateData.unitCost = dto.unitCost; updateData.totalCost = new Prisma.Decimal(dto.unitCost).mul(dto.quantity ?? order.quantity); }
+    if (dto.deliveryDate) updateData.deliveryDate = new Date(dto.deliveryDate);
+
+    return prisma.subcontractingOrder.update({
+      where: { id },
+      data: updateData,
+      include: { vendor: { select: { name: true } }, product: { select: { name: true } } },
+    });
+  }
+
+  async closeOrder(tenantId: string, id: string) {
+    const order = await prisma.subcontractingOrder.findFirst({ where: { id, tenantId } });
+    if (!order) throw new NotFoundException('Subcontracting order not found');
+    if (order.status === 'COMPLETED') throw new BadRequestException('Order is already completed');
+
+    return prisma.subcontractingOrder.update({
+      where: { id },
+      data: { status: 'COMPLETED' },
+      include: { vendor: { select: { name: true } }, product: { select: { name: true } } },
+    });
+  }
+
+  async getOrdersBySubcontractor(tenantId: string, vendorId: string, params: PaginationParams = {}): Promise<PaginatedResult<any>> {
+    const where = { tenantId, vendorId };
+    const { skip, take } = buildPaginationValues(params);
+    const orderBy = buildOrderBy(params.sort);
+
+    const [orders, total] = await Promise.all([
+      prisma.subcontractingOrder.findMany({
+        where, skip, take, orderBy: orderBy as any,
+        include: { product: { select: { name: true, sku: true } } },
+      }),
+      prisma.subcontractingOrder.count({ where }),
+    ]);
+    return paginatedResult(orders, total, params);
+  }
+
+  async getMaterialConsumptionReport(tenantId: string, vendorId?: string, startDate?: string, endDate?: string) {
+    const where: any = { tenantId };
+    if (vendorId) where.vendorId = vendorId;
+    if (startDate || endDate) where.createdAt = {};
+    if (startDate) where.createdAt.gte = new Date(startDate);
+    if (endDate) where.createdAt.lte = new Date(endDate);
+
+    const materials = await prisma.subcontractingMaterial.findMany({
+      where,
+      include: {
+        product: { select: { name: true, sku: true } },
+        subcontractingOrder: { select: { id: true, status: true, vendorId: true } },
+      },
+    });
+
+    const totalRequired = materials.reduce((s, m) => s + Number(m.requiredQty), 0);
+    const totalIssued = materials.reduce((s, m) => s + Number(m.issuedQty), 0);
+    const totalConsumed = materials.reduce((s, m) => s + Number(m.consumedQty), 0);
+
+    return {
+      totalMaterials: materials.length,
+      totalRequired,
+      totalIssued,
+      totalConsumed,
+      utilizationRate: totalIssued > 0 ? Math.round((totalConsumed / totalIssued) * 10000) / 100 : 0,
+      materials: materials.map(m => ({
+        productName: m.product.name,
+        productSku: m.product.sku,
+        requiredQty: Number(m.requiredQty),
+        issuedQty: Number(m.issuedQty),
+        consumedQty: Number(m.consumedQty),
+        wastageQty: Number(m.issuedQty) - Number(m.consumedQty),
+      })),
+    };
+  }
 }

@@ -65,6 +65,30 @@ export class ProcurementSchedulingController {
     return this.paymentSchedulesService.getUpcoming(req.user.tenantId, days ? parseInt(days, 10) : 30);
   }
 
+  @Get('payment-schedules/by-po/:purchaseOrderId')
+  @Permissions('procurement.purchase-order.read')
+  async getPaymentSchedulesByPo(@Req() req: AuthRequest, @Param('purchaseOrderId') poId: string) {
+    return this.paymentSchedulesService.getSchedulesByPurchaseOrder(req.user.tenantId, poId);
+  }
+
+  @Get('payment-schedules/by-date-range')
+  @Permissions('procurement.purchase-order.read')
+  async getPaymentSchedulesByDateRange(@Req() req: AuthRequest, @Query() q: any) {
+    return this.paymentSchedulesService.getSchedulesByDateRange(req.user.tenantId, q.startDate, q.endDate, q);
+  }
+
+  @Patch('payment-schedules/:id/mark-overdue')
+  @Permissions('procurement.payment-schedule.manage')
+  async markPaymentOverdue(@Req() req: AuthRequest, @Param('id') id: string) {
+    return this.paymentSchedulesService.markOverdue(req.user.tenantId, id);
+  }
+
+  @Get('payment-schedules/forecast')
+  @Permissions('procurement.payment-schedule.forecast')
+  async getPaymentForecast(@Req() req: AuthRequest, @Query('months') months?: string) {
+    return this.paymentSchedulesService.getPaymentForecast(req.user.tenantId, months ? parseInt(months, 10) : 6);
+  }
+
   @Get('payment-schedules/stats/summary')
   @Permissions('procurement.purchase-order.read')
   async paymentScheduleStats(@Req() req: AuthRequest) {
@@ -121,6 +145,30 @@ export class ProcurementSchedulingController {
   @Permissions('procurement.purchase-order.update')
   async setApprovalPolicy(@Req() req: AuthRequest, @Body() dto: any) {
     return this.procurementApprovalsService.setApprovalPolicy(req.user.tenantId, dto);
+  }
+
+  @Get('approvals/history')
+  @Permissions('procurement.approval.history')
+  async getApprovalHistory(@Req() req: AuthRequest, @Query() q: any) {
+    return this.procurementApprovalsService.getApprovalHistory(req.user.tenantId, q);
+  }
+
+  @Post('approvals/delegate')
+  @Permissions('procurement.approval.delegate')
+  async delegateApproval(@Req() req: AuthRequest, @Body() dto: any) {
+    return this.procurementApprovalsService.delegateApproval(req.user.tenantId, req.user.userId || 'system', dto);
+  }
+
+  @Get('approvals/my-pending')
+  @Permissions('procurement.purchase-order.read')
+  async getMyPendingApprovals(@Req() req: AuthRequest) {
+    return this.procurementApprovalsService.getMyPendingApprovals(req.user.tenantId, req.user.userId || 'system');
+  }
+
+  @Get('approvals/statistics')
+  @Permissions('procurement.purchase-order.read')
+  async getApprovalStatistics(@Req() req: AuthRequest) {
+    return this.procurementApprovalsService.getApprovalStatistics(req.user.tenantId);
   }
 
   @Get('approvals/stats/summary')

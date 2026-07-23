@@ -262,13 +262,6 @@ export default function RfidTagsPage() {
       ]
     : [];
 
-  const statusVariant: Record<string, "active" | "warning" | "inactive" | "info"> = {
-    ACTIVE: "active",
-    IN_TRANSIT: "info",
-    RETIRED: "inactive",
-    LOST: "warning",
-  };
-
   const columns: Column<RfidTag>[] = [
     {
       key: "epc",
@@ -290,10 +283,7 @@ export default function RfidTagsPage() {
       header: "Status",
       sortable: true,
       render: (t) => (
-        <StatusBadge
-          variant={statusVariant[t.status] || "default"}
-          label={t.status.replace(/_/g, " ")}
-        />
+        <StatusBadge status={t.status} />
       ),
     },
     {

@@ -10,11 +10,12 @@ import {
   FormField,
   Input,
   DataTable,
+  Pagination,
   type Column,
   Card,
 } from "@unerp/ui";
 import { RouteGuard } from "@unerp/framework";
-import { apiGet, apiPost } from "../../../src/lib/api";
+import { apiGet, apiPost } from "@/lib/api";
 import {
   Plus,
   Play,
@@ -138,36 +139,13 @@ export default function DrpPlanningPage() {
     }
   };
 
-  const statusVariant = (
-    s: string,
-  ): "success" | "warning" | "danger" | "info" | "default" => {
-    const map: Record<string, "success" | "warning" | "danger" | "info" | "default"> = {
-      DRAFT: "warning",
-      EXECUTING: "info",
-      COMPLETED: "success",
-      FAILED: "danger",
-    };
-    return map[s] || "default";
-  };
-
-  const priorityVariant = (
-    p: string,
-  ): "success" | "warning" | "danger" | "info" | "default" => {
-    const map: Record<string, "success" | "warning" | "danger" | "info" | "default"> = {
-      HIGH: "danger",
-      MEDIUM: "warning",
-      LOW: "default",
-    };
-    return map[p] || "default";
-  };
-
   const runColumns: Column<DrpRun>[] = [
-    { key: "runNumber", header: "Run Number", sortable: true },
+    { key: "runNumber", header: "Run Number" },
     {
       key: "status",
       header: "Status",
       render: (row) => (
-        <StatusBadge status={row.status} variant={statusVariant(row.status)} />
+        <StatusBadge status={row.status} />
       ),
     },
     {
@@ -231,7 +209,6 @@ export default function DrpPlanningPage() {
           <div className="ui-text-xs-tertiary">{row.product?.sku}</div>
         </div>
       ),
-      sortable: true,
     },
     {
       key: "sourceWarehouse",
@@ -243,22 +220,18 @@ export default function DrpPlanningPage() {
       header: "Dest Warehouse",
       render: (row) => row.destWarehouse?.name || row.destWarehouseId,
     },
-    { key: "forecastDemand", header: "Forecast Demand", sortable: true },
-    { key: "projectedStock", header: "Projected Stock", sortable: true },
+    { key: "forecastDemand", header: "Forecast Demand" },
+    { key: "projectedStock", header: "Projected Stock" },
     {
       key: "suggestedTransfer",
       header: "Suggested Transfer",
-      sortable: true,
     },
-    { key: "suggestedPO", header: "Suggested PO", sortable: true },
+    { key: "suggestedPO", header: "Suggested PO" },
     {
       key: "priority",
       header: "Priority",
       render: (row) => (
-        <StatusBadge
-          status={row.priority}
-          variant={priorityVariant(row.priority)}
-        />
+        <StatusBadge status={row.priority} />
       ),
     },
     {
@@ -333,15 +306,15 @@ export default function DrpPlanningPage() {
               columns={runColumns}
               data={runs}
               rowKey={(r) => r.id}
-              sortable
               emptyTitle="No runs"
               emptyMessage="Create a new DRP run to start planning."
               emptyIcon={<GitBranch size={48} />}
-              pagination
-              page={runsPage}
-              totalPages={runsTotalPages}
-              onPageChange={setRunsPage}
             />
+            {runsTotalPages > 1 && (
+              <div style={{ marginTop: 16, marginBottom: 8 }}>
+                <Pagination page={runsPage} pageCount={runsTotalPages} onChange={setRunsPage} />
+              </div>
+            )}
           </Card>
 
           <Card padding="none">
@@ -352,15 +325,15 @@ export default function DrpPlanningPage() {
               columns={planColumns}
               data={plans}
               rowKey={(r) => r.id}
-              sortable
               emptyTitle="No plans"
               emptyMessage="Execute a DRP run to generate plans."
               emptyIcon={<BarChart3 size={48} />}
-              pagination
-              page={plansPage}
-              totalPages={plansTotalPages}
-              onPageChange={setPlansPage}
             />
+            {plansTotalPages > 1 && (
+              <div style={{ marginTop: 16, marginBottom: 8 }}>
+                <Pagination page={plansPage} pageCount={plansTotalPages} onChange={setPlansPage} />
+              </div>
+            )}
           </Card>
 
           <Modal

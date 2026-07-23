@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 import { buildPaginationValues, buildOrderBy, paginatedResult, PaginatedResult, PaginationParams } from '../../common/utils/pagination.util';
 
@@ -77,6 +77,72 @@ export class PaymentSchedulesService {
       byStatus: schedules.reduce((acc: Record<string, number>, s) => { acc[s.status] = (acc[s.status] || 0) + 1; return acc; }, {}),
       overdueCount: overdue.length,
       overdueAmount: overdue.reduce((sum, s) => sum + Number(s.amount), 0),
+    };
+  }
+
+  async getSchedulesByPurchaseOrder(tenantId: string, purchaseOrderId: string): Promise<any[]> {
+    return prisma.paymentSchedule.findMany({
+      where: { tenantId, purchaseOrderId },
+      include: { vendor: { select: { name: true } } },
+      orderBy: { dueDate: 'asc' },
+    });
+  }
+
+  async getSchedulesByDateRange(tenantId: string, startDate: string, endDate: string, params: PaginationParams = {}): Promise<PaginatedResult<any>> {
+    const where = { tenantId, dueDate: { gte: new Date(startDate), lte: new Date(endDate) } };
+    const { skip, take } = buildPaginationValues(params);
+    const orderBy = buildOrderBy(params.sort);
+
+    const [items, total] = await Promise.all([
+      prisma.paymentSchedule.findMany({ where, skip, take, orderBy: orderBy as any, include: { vendor: { select: { name: true } }, purchaseOrder: { select: { poNumber: true } } } }),
+      prisma.paymentSchedule.count({ where }),
+    ]);
+    return paginatedResult(items, total, params);
+  }
+
+  async markOverdue(tenantId: string, id: string) {
+    const schedule = await prisma.paymentSchedule.findFirst({ where: { id, tenantId } });
+    if (!schedule) throw new NotFoundException('Payment schedule not found');
+    if (schedule.status !== 'PENDING') throw new BadRequestException('Only pending schedules can be marked overdue');
+
+    return prisma.paymentSchedule.update({
+      where: { id },
+      data: { status: 'OVERDUE' },
+      include: { vendor: { select: { name: true } }, purchaseOrder: { select: { poNumber: true } } },
+    });
+  }
+
+  async getPaymentForecast(tenantId: string, months: number = 6) {
+    const now = new Date();
+    const endDate = new Date(now.getFullYear(), now.getMonth() + months, 1);
+
+    const schedules = await prisma.paymentSchedule.findMany({
+      where: { tenantId, dueDate: { gte: now, lte: endDate } },
+      include: { vendor: { select: { name: true } } },
+      orderBy: { dueDate: 'asc' },
+    });
+
+    const monthlyForecast: Record<string, { total: number; count: number; schedules: Array<{ id: string; vendorName: string; amount: number; dueDate: string }> }> = {};
+    for (const s of schedules) {
+      const key = `${s.dueDate.getFullYear()}-${String(s.dueDate.getMonth() + 1).padStart(2, '0')}`;
+      if (!monthlyForecast[key]) monthlyForecast[key] = { total: 0, count: 0, schedules: [] };
+      monthlyForecast[key].total += Number(s.amount);
+      monthlyForecast[key].count += 1;
+      monthlyForecast[key].schedules.push({
+        id: s.id,
+        vendorName: s.vendor.name,
+        amount: Number(s.amount),
+        dueDate: s.dueDate.toISOString(),
+      });
+    }
+
+    const totalProjected = schedules.reduce((s, schedule) => s + Number(schedule.amount), 0);
+
+    return {
+      totalProjected,
+      totalSchedules: schedules.length,
+      monthlyForecast: Object.entries(monthlyForecast).map(([month, data]) => ({ month, ...data })),
+      currency: 'USD',
     };
   }
 }

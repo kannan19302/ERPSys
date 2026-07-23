@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
+import { buildPaginationValues, buildOrderBy, paginatedResult, PaginatedResult, PaginationParams } from '../../common/utils/pagination.util';
 
 @Injectable()
 export class ProcurementApprovalsService {
@@ -76,6 +77,116 @@ export class ProcurementApprovalsService {
         total: purchaseOrders.length,
         pending: purchaseOrders.filter(p => p.status === 'SUBMITTED' || p.status === 'PENDING_APPROVAL').length,
         approved: purchaseOrders.filter(p => p.status === 'APPROVED').length,
+      },
+    };
+  }
+
+  async getApprovalHistory(tenantId: string, params: PaginationParams & { type?: string } = {}): Promise<PaginatedResult<any>> {
+    const whereReqs: any = { tenantId };
+    const wherePos: any = { tenantId };
+    if (params.type === 'requisition') whereReqs.status = { in: ['APPROVED', 'REJECTED'] };
+    if (params.type === 'purchase-order') wherePos.status = { in: ['APPROVED', 'CANCELLED'] };
+
+    const { skip, take } = buildPaginationValues(params);
+    const orderBy = buildOrderBy(params.sort);
+
+    if (params.type === 'requisition' || !params.type) {
+      const [requisitions, total] = await Promise.all([
+        prisma.purchaseRequisition.findMany({
+          where: whereReqs,
+          skip, take, orderBy: orderBy as any,
+          include: { department: { select: { name: true } } },
+        }),
+        prisma.purchaseRequisition.count({ where: whereReqs }),
+      ]);
+
+      if (params.type === 'requisition') {
+        return paginatedResult(requisitions.map(r => ({ ...r, type: 'requisition' })), total, params);
+      }
+    }
+
+    const [purchaseOrders, totalPo] = await Promise.all([
+      prisma.purchaseOrder.findMany({
+        where: wherePos,
+        skip, take, orderBy: orderBy as any,
+        include: { vendor: { select: { name: true } } },
+      }),
+      prisma.purchaseOrder.count({ where: wherePos }),
+    ]);
+
+    return paginatedResult(purchaseOrders.map(po => ({ ...po, type: 'purchase-order' })), totalPo, params);
+  }
+
+  async delegateApproval(tenantId: string, userId: string, dto: { delegateToUserId: string; fromDate: string; toDate: string }) {
+    return {
+      tenantId,
+      delegatedBy: userId,
+      delegatedTo: dto.delegateToUserId,
+      fromDate: dto.fromDate,
+      toDate: dto.toDate,
+      status: 'ACTIVE',
+    };
+  }
+
+  async getMyPendingApprovals(tenantId: string, _userId: string) {
+    const whereReqs: any = { tenantId, status: 'PENDING_APPROVAL' };
+    const wherePos: any = { tenantId, status: 'SUBMITTED' };
+
+    const [requisitions, purchaseOrders] = await Promise.all([
+      prisma.purchaseRequisition.findMany({
+        where: whereReqs,
+        include: { department: { select: { name: true } }, _count: { select: { lineItems: true } } },
+        orderBy: { createdAt: 'desc' as const },
+        take: 50,
+      }),
+      prisma.purchaseOrder.findMany({
+        where: wherePos,
+        include: { vendor: { select: { name: true } } },
+        orderBy: { createdAt: 'desc' as const },
+        take: 50,
+      }),
+    ]);
+
+    return {
+      requisitions: requisitions.map(r => ({ ...r, type: 'requisition' })),
+      purchaseOrders: purchaseOrders.map(po => ({ ...po, type: 'purchase-order' })),
+      total: requisitions.length + purchaseOrders.length,
+      pendingSince: new Date().toISOString(),
+    };
+  }
+
+  async getApprovalStatistics(tenantId: string) {
+    const [requisitions, purchaseOrders] = await Promise.all([
+      prisma.purchaseRequisition.findMany({ where: { tenantId } }),
+      prisma.purchaseOrder.findMany({ where: { tenantId } }),
+    ]);
+
+    const approvedReqs = requisitions.filter(r => r.status === 'APPROVED');
+    const rejectedReqs = requisitions.filter(r => r.status === 'REJECTED');
+    const approvedPos = purchaseOrders.filter(p => p.status === 'APPROVED');
+
+    const avgRequisitionApprovalTime = approvedReqs
+      .filter(r => r.approvedAt)
+      .reduce((sum, r) => sum + (new Date(r.approvedAt!).getTime() - new Date(r.createdAt).getTime()), 0) / (1000 * 60 * 60 * 24);
+
+    return {
+      requisitions: {
+        total: requisitions.length,
+        pending: requisitions.filter(r => r.status === 'PENDING_APPROVAL').length,
+        approved: approvedReqs.length,
+        rejected: rejectedReqs.length,
+        approvalRate: requisitions.length > 0 && requisitions.filter(r => r.status !== 'DRAFT').length > 0
+          ? Math.round((approvedReqs.length / requisitions.filter(r => r.status !== 'DRAFT').length) * 10000) / 100
+          : 0,
+        avgApprovalDays: Math.round(avgRequisitionApprovalTime * 10) / 10 || 0,
+      },
+      purchaseOrders: {
+        total: purchaseOrders.length,
+        pending: purchaseOrders.filter(p => p.status === 'SUBMITTED' || p.status === 'PENDING_APPROVAL').length,
+        approved: approvedPos.length,
+        approvalRate: purchaseOrders.length > 0
+          ? Math.round((approvedPos.length / purchaseOrders.length) * 10000) / 100
+          : 0,
       },
     };
   }

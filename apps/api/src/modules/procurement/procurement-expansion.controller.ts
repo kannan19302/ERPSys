@@ -47,12 +47,28 @@ export class ProcurementExpansionController {
     return this.subcontractingService.create(req.user.tenantId, dto);
   }
 
+  @Patch('subcontracting/:id')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('SubcontractingOrder')
+  @Permissions('procurement.purchase-order.update')
+  async updateSubcontracting(@Req() req: AuthRequest, @Param('id') id: string, @Body() dto: any) {
+    return this.subcontractingService.updateOrder(req.user.tenantId, id, dto);
+  }
+
   @Patch('subcontracting/:id/status')
   @UseInterceptors(ChangeHistoryInterceptor)
   @TrackChanges('SubcontractingOrder')
   @Permissions('procurement.purchase-order.update')
   async updateSubcontractingStatus(@Req() req: AuthRequest, @Param('id') id: string, @Body() dto: { status: string }) {
     return this.subcontractingService.updateStatus(req.user.tenantId, id, dto.status);
+  }
+
+  @Patch('subcontracting/:id/close')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('SubcontractingOrder')
+  @Permissions('procurement.subcontracting.close')
+  async closeSubcontracting(@Req() req: AuthRequest, @Param('id') id: string) {
+    return this.subcontractingService.closeOrder(req.user.tenantId, id);
   }
 
   @Post('subcontracting/:id/issue-material/:materialId')
@@ -65,6 +81,18 @@ export class ProcurementExpansionController {
   @Permissions('procurement.purchase-order.update')
   async recordSubcontractingConsumption(@Req() req: AuthRequest, @Param('id') id: string, @Param('materialId') materialId: string, @Body() dto: { consumedQty: number }) {
     return this.subcontractingService.recordConsumption(req.user.tenantId, id, materialId, dto.consumedQty);
+  }
+
+  @Get('subcontracting/by-vendor/:vendorId')
+  @Permissions('procurement.purchase-order.read')
+  async listSubcontractingByVendor(@Req() req: AuthRequest, @Param('vendorId') vendorId: string, @Query() q: any) {
+    return this.subcontractingService.getOrdersBySubcontractor(req.user.tenantId, vendorId, q);
+  }
+
+  @Get('subcontracting/material-consumption')
+  @Permissions('procurement.subcontracting.material')
+  async subcontractingMaterialConsumption(@Req() req: AuthRequest, @Query() q: { vendorId?: string; startDate?: string; endDate?: string }) {
+    return this.subcontractingService.getMaterialConsumptionReport(req.user.tenantId, q.vendorId, q.startDate, q.endDate);
   }
 
   @Get('subcontracting/stats/summary')
@@ -110,6 +138,32 @@ export class ProcurementExpansionController {
     return this.debitNotesService.update(req.user.tenantId, id, dto);
   }
 
+  @Get('debit-notes/by-vendor/:vendorId')
+  @Permissions('procurement.purchase-order.read')
+  async listDebitNotesByVendor(@Req() req: AuthRequest, @Param('vendorId') vendorId: string, @Query() q: any) {
+    return this.debitNotesService.getDebitNotesByVendor(req.user.tenantId, vendorId, q);
+  }
+
+  @Get('debit-notes/by-date-range')
+  @Permissions('procurement.purchase-order.read')
+  async listDebitNotesByDateRange(@Req() req: AuthRequest, @Query() q: any) {
+    return this.debitNotesService.getDebitNotesByDateRange(req.user.tenantId, q.startDate, q.endDate, q);
+  }
+
+  @Get('debit-notes/stats/detailed')
+  @Permissions('procurement.purchase-order.read')
+  async debitNoteStatsDetailed(@Req() req: AuthRequest) {
+    return this.debitNotesService.getDebitNoteStatsDetailed(req.user.tenantId);
+  }
+
+  @Post('debit-notes/:id/refund')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('DebitNote')
+  @Permissions('procurement.debit-note.refund')
+  async processDebitNoteRefund(@Req() req: AuthRequest, @Param('id') id: string, @Body() dto: any) {
+    return this.debitNotesService.processDebitNoteRefund(req.user.tenantId, id, dto);
+  }
+
   @Get('debit-notes/stats/summary')
   @Permissions('procurement.purchase-order.read')
   async debitNoteStats(@Req() req: AuthRequest) {
@@ -147,6 +201,34 @@ export class ProcurementExpansionController {
     return this.vendorRmaService.updateRmaStatus(req.user.tenantId, id, dto.status, dto.rejectionReason);
   }
 
+  @Patch('vendor-rma/:id/resolve')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('VendorRmaRequest')
+  @Permissions('procurement.vendor-rma.resolve')
+  async resolveRma(@Req() req: AuthRequest, @Param('id') id: string, @Body() dto: any) {
+    return this.vendorRmaService.resolveRma(req.user.tenantId, id, dto);
+  }
+
+  @Patch('vendor-rma/:id/cancel')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('VendorRmaRequest')
+  @Permissions('procurement.vendor-rma.cancel')
+  async cancelRma(@Req() req: AuthRequest, @Param('id') id: string, @Body() dto: { reason?: string }) {
+    return this.vendorRmaService.cancelRma(req.user.tenantId, id, dto.reason);
+  }
+
+  @Get('vendor-rma/by-vendor/:vendorId')
+  @Permissions('procurement.purchase-order.read')
+  async listRmasByVendor(@Req() req: AuthRequest, @Param('vendorId') vendorId: string, @Query() q: any) {
+    return this.vendorRmaService.getRmasByVendor(req.user.tenantId, vendorId, q);
+  }
+
+  @Get('vendor-rma/by-date-range')
+  @Permissions('procurement.purchase-order.read')
+  async listRmasByDateRange(@Req() req: AuthRequest, @Query() q: any) {
+    return this.vendorRmaService.getRmasByDateRange(req.user.tenantId, q.startDate, q.endDate, q);
+  }
+
   @Get('vendor-rma/:rmaId/shipments')
   @Permissions('procurement.purchase-order.read')
   async listRmaShipments(@Req() req: AuthRequest, @Param('rmaId') rmaId: string, @Query() q: any) {
@@ -167,6 +249,12 @@ export class ProcurementExpansionController {
   @Permissions('procurement.purchase-order.update')
   async updateShipmentStatus(@Req() req: AuthRequest, @Param('id') id: string, @Body() dto: any) {
     return this.vendorRmaService.updateShipmentStatus(req.user.tenantId, id, dto.status, dto.creditMemoRef, dto.creditAmount);
+  }
+
+  @Get('vendor-rma/stats/detailed')
+  @Permissions('procurement.purchase-order.read')
+  async rmaStatsDetailed(@Req() req: AuthRequest) {
+    return this.vendorRmaService.getRmaStatsDetailed(req.user.tenantId);
   }
 
   @Get('vendor-rma/stats/summary')
@@ -205,6 +293,26 @@ export class ProcurementExpansionController {
     return this.supplierNcrCarService.updateNcrStatus(req.user.tenantId, id, dto.status, dto.resolution);
   }
 
+  @Patch('ncr/:id/escalate')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('SupplierNcr')
+  @Permissions('procurement.supplier-ncr.escalate')
+  async escalateNcr(@Req() req: AuthRequest, @Param('id') id: string, @Body() dto: any) {
+    return this.supplierNcrCarService.escalateNcr(req.user.tenantId, id, dto);
+  }
+
+  @Get('ncr/by-supplier/:vendorId')
+  @Permissions('procurement.purchase-order.read')
+  async listNcrsBySupplier(@Req() req: AuthRequest, @Param('vendorId') vendorId: string, @Query() q: any) {
+    return this.supplierNcrCarService.getNcrsBySupplier(req.user.tenantId, vendorId, q);
+  }
+
+  @Get('ncr/quality-metrics')
+  @Permissions('procurement.supplier-ncr.metrics')
+  async qualityMetrics(@Req() req: AuthRequest, @Query() q: { vendorId?: string; startDate?: string; endDate?: string }) {
+    return this.supplierNcrCarService.getQualityMetrics(req.user.tenantId, q.vendorId, q.startDate, q.endDate);
+  }
+
   @Get('car')
   @Permissions('procurement.purchase-order.read')
   async listCars(@Req() req: AuthRequest, @Query() q: any) {
@@ -231,6 +339,20 @@ export class ProcurementExpansionController {
   @Permissions('procurement.purchase-order.update')
   async updateCarStatus(@Req() req: AuthRequest, @Param('id') id: string, @Body() dto: { status: string; vendorResponse?: string }) {
     return this.supplierNcrCarService.updateCarStatus(req.user.tenantId, id, dto.status, dto.vendorResponse);
+  }
+
+  @Get('car/by-supplier/:vendorId')
+  @Permissions('procurement.purchase-order.read')
+  async listCarsBySupplier(@Req() req: AuthRequest, @Param('vendorId') vendorId: string, @Query() q: any) {
+    return this.supplierNcrCarService.getCarsBySupplier(req.user.tenantId, vendorId, q);
+  }
+
+  @Patch('car/:id/reopen')
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges('SupplierCarRequest')
+  @Permissions('procurement.supplier-car.reopen')
+  async reopenCar(@Req() req: AuthRequest, @Param('id') id: string, @Body() dto: { reason?: string }) {
+    return this.supplierNcrCarService.reopenCar(req.user.tenantId, id, dto.reason);
   }
 
   @Get('ncr/stats/summary')

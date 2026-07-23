@@ -34,7 +34,6 @@ import { CustomerPortalService } from "./customer-portal.service";
 import { CustomerPortalAdminController } from "./customer-portal-admin.controller";
 import { CustomerPortalController } from "./customer-portal.controller";
 
-// New expansion services
 import { CrmForecastingService } from "./crm-forecasting.service";
 import { CrmAccountManagementService } from "./crm-account-management.service";
 import { CrmCampaignManagementService } from "./crm-campaign-management.service";
@@ -48,10 +47,7 @@ import { CrmTerritoryRulesController } from "./crm-territory-rules.controller";
 import { CrmCadencesService } from "./crm-cadences.service";
 import { CrmCadencesController } from "./crm-cadences.controller";
 import { CrmQuoteSignatureService } from "./crm-quote-signature.service";
-import {
-  CrmQuoteSignatureController,
-  CrmQuoteSignaturePublicController,
-} from "./crm-quote-signature.controller";
+import { CrmQuoteSignatureController, CrmQuoteSignaturePublicController } from "./crm-quote-signature.controller";
 import { CrmPipelineRiskService } from "./crm-pipeline-risk.service";
 import { CrmPipelineRiskController } from "./crm-pipeline-risk.controller";
 import { CrmPortalPaymentGatewayService } from "./crm-portal-payment-gateway.service";
@@ -71,14 +67,19 @@ import { CrmCommissionAutomationController } from "./crm-commission-automation.c
 import { CrmCoachingService } from "./crm-coaching.service";
 import { CrmCoachingController } from "./crm-coaching.controller";
 import { CrmDealRoomService } from "./crm-deal-room.service";
-import {
-  CrmDealRoomController,
-  CrmDealRoomPublicController,
-} from "./crm-deal-room.controller";
+import { CrmDealRoomController, CrmDealRoomPublicController } from "./crm-deal-room.controller";
 import { CrmSalesAutomationService } from "./crm-sales-automation.service";
 import { CrmCustomerSuccessService } from "./crm-customer-success.service";
 import { CrmMarketingAutomationService } from "./crm-marketing-automation.service";
+import { CrmDeepController } from "./crm-deep.controller";
 import { CrmExpansionDeepController } from "./crm-expansion-deep.controller";
+
+import { CrmLeadEnrichmentService } from "./crm-lead-enrichment.service";
+import { CrmLeadEnrichmentSourceController, CrmLeadEnrichmentRuleController, CrmLeadEnrichmentFieldMappingController, CrmLeadEnrichmentExecutionController, CrmLeadEnrichmentScheduleController, CrmLeadEnrichmentAnalyticsController } from "./crm-lead-enrichment.controller";
+import { CrmGuidedSellingService } from "./crm-guided-selling.service";
+import { CrmNextBestActionConfigController, CrmGuidedSellingSuggestionController, CrmGuidedSellingPlaybookController, CrmGuidedSellingDealReadinessController, CrmGuidedSellingAnalyticsController } from "./crm-guided-selling.controller";
+import { CrmContractLifecycleService } from "./crm-contract-lifecycle.service";
+import { CrmContractAmendmentController, CrmContractPriceEscalationController, CrmContractAutoRenewalController, CrmContractExpirationPipelineController, CrmContractTemplateController, CrmContractClauseController, CrmContractLifecycleAnalyticsController } from "./crm-contract-lifecycle.controller";
 
 const CRM_SERVICES = [
   CrmService,
@@ -102,7 +103,6 @@ const CRM_SERVICES = [
   CrmSlaService,
   CrmContractsService,
   CrmMailboxService,
-
   CrmForecastingService,
   CrmAccountManagementService,
   CrmCampaignManagementService,
@@ -129,9 +129,10 @@ const CRM_SERVICES = [
   CrmSalesAutomationService,
   CrmCustomerSuccessService,
   CrmMarketingAutomationService,
+  CrmLeadEnrichmentService,
+  CrmGuidedSellingService,
+  CrmContractLifecycleService,
 ];
-
-import { CrmDeepController } from "./crm-deep.controller";
 
 @Module({
   controllers: [
@@ -163,6 +164,24 @@ import { CrmDeepController } from "./crm-deep.controller";
     CrmDealRoomPublicController,
     CrmDeepController,
     CrmExpansionDeepController,
+    CrmLeadEnrichmentSourceController,
+    CrmLeadEnrichmentRuleController,
+    CrmLeadEnrichmentFieldMappingController,
+    CrmLeadEnrichmentExecutionController,
+    CrmLeadEnrichmentScheduleController,
+    CrmLeadEnrichmentAnalyticsController,
+    CrmNextBestActionConfigController,
+    CrmGuidedSellingSuggestionController,
+    CrmGuidedSellingPlaybookController,
+    CrmGuidedSellingDealReadinessController,
+    CrmGuidedSellingAnalyticsController,
+    CrmContractAmendmentController,
+    CrmContractPriceEscalationController,
+    CrmContractAutoRenewalController,
+    CrmContractExpirationPipelineController,
+    CrmContractTemplateController,
+    CrmContractClauseController,
+    CrmContractLifecycleAnalyticsController,
   ],
   providers: CRM_SERVICES,
   exports: CRM_SERVICES,

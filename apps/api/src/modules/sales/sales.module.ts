@@ -23,6 +23,16 @@ import { SalesAnalyticsService } from "./sales-analytics.service";
 import { SalesAnalyticsController } from "./sales-analytics.controller";
 import { SalesForecastingService } from "./sales-forecasting.service";
 import { SalesForecastingController } from "./sales-forecasting.controller";
+import { SalesSubscriptionService } from "./sales-subscription.service";
+import { SalesSubscriptionController } from "./sales-subscription.controller";
+import { SalesSpiffService } from "./sales-spiff.service";
+import { SalesSpiffController } from "./sales-spiff.controller";
+import { SalesAdvancedPricingService } from "./sales-advanced-pricing.service";
+import { SalesAdvancedPricingController } from "./sales-advanced-pricing.controller";
+import { SalesCpqController } from "./sales-cpq.controller";
+import { SalesCpqExtensionService } from "./sales-cpq-extension.service";
+import { SalesTerritoryService } from "./sales-territory.service";
+import { SalesTerritoryController } from "./sales-territory.controller";
 
 @Module({
   imports: [OutboxModule],
@@ -37,6 +47,11 @@ import { SalesForecastingController } from "./sales-forecasting.controller";
     SalesCommissionsController,
     SalesAnalyticsController,
     SalesForecastingController,
+    SalesSubscriptionController,
+    SalesSpiffController,
+    SalesAdvancedPricingController,
+    SalesCpqController,
+    SalesTerritoryController,
   ],
   providers: [
     SalesService,
@@ -50,12 +65,22 @@ import { SalesForecastingController } from "./sales-forecasting.controller";
     SalesCommissionsService,
     SalesAnalyticsService,
     SalesForecastingService,
+    SalesSubscriptionService,
+    SalesSpiffService,
+    SalesAdvancedPricingService,
+    SalesCpqExtensionService,
+    SalesTerritoryService,
   ],
   exports: [
     SalesService,
     PricingService,
     SalesCpqService,
     SalesFulfillmentService,
+    SalesSubscriptionService,
+    SalesSpiffService,
+    SalesAdvancedPricingService,
+    SalesCpqExtensionService,
+    SalesTerritoryService,
   ],
 })
 export class SalesModule implements OnModuleInit {

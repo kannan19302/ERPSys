@@ -2,6 +2,30 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-23] CYCLE 38 — Inventory Module Deepening: Drop-Ship, ATP/CTP, RFID, Subinventory, Customer Consignment, DRP, EDI
+
+**Scope**: Inventory module deepening with 7 new sub-domains: drop-ship order management with provider linking and lifecycle, Available-to-Promise/Capable-to-Promise availability computation and reservation engine, RFID tag tracking with read events, subinventory zone management with stock transfers, customer consignment inventory with consumption recording, Distribution Requirements Planning (DRP) with run execution and plan generation, and EDI 846/856/850 inventory transaction management. Total: 10 new Prisma models + 7 services + 7 controllers + 7 UI pages + 18 new permissions. Feature count: 746→801 (+55).
+
+**New Prisma models** (10): `DropShipProvider`, `DropShipOrder`, `DropShipOrderItem`, `AvailableToPromise`, `AtpReservation`, `RfidTag`, `RfidReadEvent`, `Subinventory`, `CustomerConsignmentStock`, `CustomerConsignmentConsumption`, `DistributionPlanRun`, `DistributionPlan`, `EdiInventoryTransaction`
+
+**API layer** (7 new services + 7 controllers):
+
+- `InventoryDropshipService` — drop-ship order CRUD with provider linking, status lifecycle (PENDING→APPROVED→SHIPPED→DELIVERED→CANCELLED), order item management
+- `InventoryAtpCtpService` — ATP/CTP record CRUD, availability computation engine, reservation create/release, dashboard KPIs
+- `InventoryRfidService` — RFID tag registration, read event recording, tag location tracking, read statistics
+- `InventorySubinventoryService` — subinventory zone CRUD, zone-to-zone stock transfers, zone statistics
+- `InventoryCustomerConsignmentService` — consignment stock CRUD, consumption recording, dashboard KPIs
+- `InventoryDrpService` — DRP plan run CRUD, run execution with plan generation, plan list with prioritization
+- `InventoryEdiInventoryService` — EDI 846/856/850 transaction CRUD, status lifecycle, dashboard by type/status
+
+**Permissions** (18 new): `inventory.dropship.*`, `inventory.atp-ctp.*`, `inventory.rfid.*`, `inventory.subinventory.*`, `inventory.customer-consignment.*`, `inventory.drp.*`, `inventory.edi.*` (each with read/manage)
+
+**UI pages** (7 new): `/inventory/drop-ship` (drop-ship order list with provider product info, status lifecycle actions, create form), `/inventory/atp-ctp` (ATP availability table with compute trigger, reservation modal, stat cards), `/inventory/rfid` (RFID tag register with read event timeline, location tracking), `/inventory/subinventory` (subinventory zones list, zone detail drawer, transfer dialog), `/inventory/customer-consignment` (consignment list with consumption modal, close action, stat cards), `/inventory/drp` (DRP runs + plans dual-DataTable layout, execute run, create form), `/inventory/edi` (EDI transaction list with payload viewer, status update, create form)
+
+**Tab navigation**: 7 new tabs added to InventoryTabLayout in groups "Fulfillment & Availability", "Warehouse Technology", "Planning & Intelligence".
+
+**Verification**: API typecheck clean (0 new errors on inventory code); Web typecheck clean (0 new errors on inventory code).
+
 ## [2026-07-23] CYCLE 35 — Supply Chain Module Deepening: Supplier Contracts, Performance KPIs, Budgets, Container Tracking, Customs, Supplier Quality, Lane Rates, Certifications
 
 **Scope**: Supply Chain module deepening toward Advanced tier with 9 new sub-domains spanning strategic procurement and logistics intelligence — supplier contract management with approval/renewal flows, performance KPI scorecards with weighted-dimension calculation, supplier assessments, supply chain budgeting with actuals comparison and variance analysis, container tracking with at-risk detection, customs document workflow, supplier quality NCR/CAR lifecycle management, lane rate management with best-rate finder, and supplier certification expiry tracking. Total: 12 new DB models + 9 services + 9 controllers + 7 UI pages.

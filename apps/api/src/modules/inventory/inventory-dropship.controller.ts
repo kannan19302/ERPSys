@@ -10,7 +10,6 @@ import {
   InventoryDropShipService,
   createProviderSchema,
   createDropShipOrderSchema,
-  createDropShipOrderItemSchema,
   updateDropShipOrderStatusSchema,
 } from './inventory-dropship.service';
 
@@ -87,12 +86,8 @@ export class InventoryDropShipController {
   @Permissions('inventory.drop-ship.manage')
   @Post('orders')
   @ApiOperation({ summary: 'Create a drop-ship order with items' })
-  createOrder(
-    @Req() req: AuthReq,
-    @ZodBody(createDropShipOrderSchema) dto: any,
-    @ZodBody(createDropShipOrderItemSchema, { field: 'items', isArray: true }) items: any,
-  ) {
-    return this.service.createOrder(req.user.tenantId, dto, items);
+  createOrder(@Req() req: AuthReq, @ZodBody(createDropShipOrderSchema) dto: any) {
+    return this.service.createOrder(req.user.tenantId, dto);
   }
 
   @Permissions('inventory.drop-ship.manage')

@@ -95,11 +95,12 @@ export class InventoryDrpService {
 
       for (const wh of warehouses) {
         for (const product of products) {
-          const stockLevel = await prisma.warehouseStock.findFirst({
+          const stockLevel = await prisma.inventoryItem.findFirst({
             where: { tenantId, warehouseId: wh.id, productId: product.id },
           });
 
-          const projectedStock = new Prisma.Decimal(stockLevel?.actualQty ?? 0);
+          const onHand = Number(stockLevel?.quantity ?? 0);
+          const projectedStock = new Prisma.Decimal(onHand.toFixed(3));
           const forecastDemand = new Prisma.Decimal(0);
           const shortfall = forecastDemand.sub(projectedStock);
 
@@ -110,10 +111,10 @@ export class InventoryDrpService {
           if (shortfall.isPositive()) {
             const sourceWh = warehouses.find((w) => w.id !== wh.id);
             if (sourceWh) {
-              const sourceStock = await prisma.warehouseStock.findFirst({
+              const sourceStock = await prisma.inventoryItem.findFirst({
                 where: { tenantId, warehouseId: sourceWh.id, productId: product.id },
               });
-              const sourceQty = new Prisma.Decimal(sourceStock?.actualQty ?? 0);
+              const sourceQty = new Prisma.Decimal(Number(sourceStock?.quantity ?? 0).toFixed(3));
               if (sourceQty.gte(shortfall)) {
                 suggestedTransfer = shortfall;
                 sourceWarehouseId = sourceWh.id;

@@ -10,12 +10,13 @@ import {
   FormField,
   Input,
   DataTable,
+  Pagination,
   type Column,
   StatCardRow,
   Select,
 } from "@unerp/ui";
 import { RouteGuard } from "@unerp/framework";
-import { apiGet, apiPost, apiPatch } from "../../../src/lib/api";
+import { apiGet, apiPost, apiPatch } from "@/lib/api";
 import {
   Plus,
   FileJson,
@@ -78,29 +79,6 @@ export default function EdiTransactionsPage() {
   const [payloadOpen, setPayloadOpen] = useState(false);
   const [payloadContent, setPayloadContent] = useState("");
 
-  const statusVariant = (
-    s: string,
-  ): "success" | "warning" | "danger" | "info" | "default" => {
-    const map: Record<string, "success" | "warning" | "danger" | "info" | "default"> = {
-      RECEIVED: "info",
-      PROCESSED: "success",
-      ERROR: "danger",
-      PENDING: "warning",
-    };
-    return map[s] || "default";
-  };
-
-  const ediTypeVariant = (
-    t: string,
-  ): "success" | "warning" | "danger" | "info" | "default" => {
-    const map: Record<string, "success" | "warning" | "danger" | "info" | "default"> = {
-      "846": "success",
-      "856": "info",
-      "850": "warning",
-    };
-    return map[t] || "default";
-  };
-
   const loadData = async () => {
     setLoading(true);
     setError(null);
@@ -158,15 +136,12 @@ export default function EdiTransactionsPage() {
   };
 
   const columns: Column<EdiTransaction>[] = [
-    { key: "transactionId", header: "Transaction ID", sortable: true },
+    { key: "transactionId", header: "Transaction ID" },
     {
       key: "ediType",
       header: "EDI Type",
       render: (row) => (
-        <StatusBadge
-          status={row.ediType}
-          variant={ediTypeVariant(row.ediType)}
-        />
+        <StatusBadge status={row.ediType} />
       ),
     },
     {
@@ -197,7 +172,7 @@ export default function EdiTransactionsPage() {
       key: "status",
       header: "Status",
       render: (row) => (
-        <StatusBadge status={row.status} variant={statusVariant(row.status)} />
+        <StatusBadge status={row.status} />
       ),
     },
     {
@@ -326,15 +301,15 @@ export default function EdiTransactionsPage() {
             columns={columns}
             data={transactions}
             rowKey={(r) => r.id}
-            sortable
             emptyTitle="No EDI transactions"
             emptyMessage="Create a new EDI transaction to get started."
             emptyIcon={<FileJson size={48} />}
-            pagination
-            page={page}
-            totalPages={totalPages}
-            onPageChange={setPage}
           />
+          {totalPages > 1 && (
+            <div style={{ marginTop: 16 }}>
+              <Pagination page={page} pageCount={totalPages} onChange={setPage} />
+            </div>
+          )}
 
           <Modal
             open={createOpen}

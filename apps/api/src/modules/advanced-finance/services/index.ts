@@ -28,3 +28,8 @@ export { Form1099Service } from "./form-1099.service";
 export { TaxJurisdictionLookupService } from "./tax-jurisdiction-lookup.service";
 export { TaxFilingCalendarService } from "./tax-filing-calendar.service";
 export { RecurringJournalSchedulerService } from "./recurring-journal-scheduler.service";
+export { Asc606DeepService } from "./asc606-deep.service";
+export { GlobalTaxDeepService } from "./global-tax-deep.service";
+export { FinancialInstrumentsService } from "./financial-instruments.service";
+export { BudgetDeepService } from "./budget-deep.service";
+export { NettingDeepService } from "./netting-deep.service";
