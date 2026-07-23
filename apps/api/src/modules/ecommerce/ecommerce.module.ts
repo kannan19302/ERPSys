@@ -5,6 +5,8 @@ import { EcommerceAdminService } from "./ecommerce-admin.service";
 import { EcommercePublicController } from "./ecommerce-public.controller";
 import { EcommercePublicService } from "./ecommerce-public.service";
 import { EcommerceCheckoutService } from "./ecommerce-checkout.service";
+import { EcommerceExpansionController } from "./ecommerce-expansion.controller";
+import { EcommerceExpansionService } from "./ecommerce-expansion.service";
 import { MockPaymentGatewayService } from "./payments/mock-payment-gateway.service";
 import { StripePaymentGatewayService } from "./payments/stripe-payment-gateway.service";
 import { PlatformCredentialsModule } from "../../common/platform-credentials/platform-credentials.module";
@@ -20,11 +22,12 @@ import { PlatformCredentialsModule } from "../../common/platform-credentials/pla
  */
 @Module({
   imports: [OutboxModule, PlatformCredentialsModule],
-  controllers: [EcommerceAdminController, EcommercePublicController],
+  controllers: [EcommerceAdminController, EcommercePublicController, EcommerceExpansionController],
   providers: [
     EcommerceAdminService,
     EcommercePublicService,
     EcommerceCheckoutService,
+    EcommerceExpansionService,
     MockPaymentGatewayService,
     StripePaymentGatewayService,
     {
@@ -42,6 +45,6 @@ import { PlatformCredentialsModule } from "../../common/platform-credentials/pla
       inject: [StripePaymentGatewayService, MockPaymentGatewayService],
     },
   ],
-  exports: [EcommerceAdminService, EcommercePublicService, "PAYMENT_GATEWAY"],
+  exports: [EcommerceAdminService, EcommercePublicService, EcommerceExpansionService, "PAYMENT_GATEWAY"],
 })
 export class EcommerceModule {}

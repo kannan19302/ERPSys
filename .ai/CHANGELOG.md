@@ -2,6 +2,20 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-23] Industry Module Conversion (ext → first-party) — Education, Healthcare, Real Estate, Field Service (DB + API)
+
+**Scope**: Converted 4 previously-externalized industry modules from ExtGateway-proxied marketplace apps to first-party NestJS backend modules with Prisma database models, permissions, and full API surfaces. UI pages already existed (migrated in previous cycles) and continue working without changes.
+
+**Key additions**:
+- **Education Module** (`apps/api/src/modules/education/`): Prisma models (EducationStudent, EducationCourse, EducationFeeStructure, StudentFee, EducationBook, BookTransaction, AttendanceRecord, EducationTimetable, Grade). API endpoints for students, courses, fee-structures, student-fees, books, book-transactions, timetables, attendance, grades under `/api/v1/ext/education/*`.
+- **Healthcare Module** (`apps/api/src/modules/healthcare/`): Prisma models (HealthcarePatient, HealthcarePractitioner, HealthcareAppointment, HealthcarePrescription, HealthcareEncounter, HealthcareDrug, HealthcareVital, HealthcareFhirResource). API endpoints for patients, practitioners, appointments, prescriptions, encounters, drugs, vitals under `/api/v1/ext/healthcare/*`.
+- **Real Estate Module** (`apps/api/src/modules/real-estate/`): Prisma models (RealEstateProperty, RealEstateLease, RealEstateTenant, RealEstateMaintenanceWorkOrder, RealEstateCommission). API endpoints for properties, leases, tenants, maintenance, commissions under `/api/v1/ext/real-estate/*`.
+- **Field Service Module** (`apps/api/src/modules/field-service/`): Prisma models (FieldServiceTicket, FieldServiceDispatch, FieldServiceTechnician, FieldServicePreventiveMaintenance, FieldServiceChecklist). API endpoints for tickets, dispatches, technicians, preventive-maintenances, checklists under `/api/v1/ext/field-service/*`.
+
+**Permissions**: ~60 new permission entries added for all four modules (education.*, healthcare.*, real-estate.*, field-service.*).
+
+**Verification**: All controllers follow existing patterns (JwtAuthGuard, RbacGuard, Permissions decorators). Module registrations updated in app.module.ts. MODULE_REGISTRY.md updated from `🟢 ACTIVE (ext)` to `🟢 ACTIVE` with first-party package paths.
+
 ## [2026-07-23] CYCLE 41 — Inventory, Procurement & Supply Chain Module Deepening: RMA, Wave Planning, Sourcing, Global Trade, Supply Planning, Logistics, Supplier Risk, Control Tower (DB+API+UI)
 
 **Scope**: Built 8 new NestJS controllers/services, 3 module file updates, ~40 new permission entries, and 12 Next.js UI pages across Inventory (RMA, Wave Planning, Warehouse KPIs, Safety Stock, Global Inventory), Procurement (Sourcing, Contracts, Intelligence, Supplier Onboarding), and Supply Chain (Global Trade, Supply Planning, Logistics Execution, Supplier Risk, Control Tower Advanced). ~5,000+ net LOC.

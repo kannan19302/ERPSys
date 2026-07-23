@@ -6,12 +6,14 @@ import { AiConfigService } from './ai-config.service';
 import { OllamaProcessService } from './ollama-process.service';
 import { AiController } from './ai.controller';
 import { AiAdminController } from './ai-admin.controller';
+import { AiExpansionController } from './ai-expansion.controller';
+import { AiExpansionService } from './ai-expansion.service';
 import { ReportingQueryClientModule } from '../../common/integrations/reporting-query-client.module';
 
 @Module({
   imports: [ReportingQueryClientModule],
-  controllers: [AiController, AiAdminController],
-  providers: [AiService, AiCopilotService, AiAgentService, AiConfigService, OllamaProcessService],
-  exports: [AiService, AiCopilotService, AiAgentService, AiConfigService, OllamaProcessService],
+  controllers: [AiController, AiAdminController, AiExpansionController],
+  providers: [AiService, AiCopilotService, AiAgentService, AiConfigService, OllamaProcessService, AiExpansionService],
+  exports: [AiService, AiCopilotService, AiAgentService, AiConfigService, OllamaProcessService, AiExpansionService],
 })
 export class AiModule {}

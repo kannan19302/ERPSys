@@ -60,6 +60,7 @@ import { BuilderModule } from "./modules/builder/builder.module";
 import { CommonModule } from "./common/common.module";
 import { QueueModule } from "./common/queues/queue.module";
 import { AiModule } from "./modules/ai/ai.module";
+import { DriveModule } from "./modules/drive/drive.module";
 import { EcommerceModule } from "./modules/ecommerce/ecommerce.module";
 import { MarketplaceModule } from "./modules/marketplace/marketplace.module";
 import { PeopleModule } from "./modules/people/people.module";
@@ -92,6 +93,10 @@ import { PickWavesModule } from "./modules/inventory/pick-waves.module";
 import { AsnModule } from "./modules/inventory/asn.module";
 import { ShipmentTrackingModule } from "./modules/inventory/shipment-tracking.module";
 import { SavedViewsModule } from "./modules/saved-views/saved-views.module";
+import { EducationModule } from "./modules/education/education.module";
+import { HealthcareModule } from "./modules/healthcare/healthcare.module";
+import { RealEstateModule } from "./modules/real-estate/real-estate.module";
+import { FieldServiceModule } from "./modules/field-service/field-service.module";
 import { BlockchainModule } from "./modules/blockchain/blockchain.module";
 import { OutboxModule } from "./modules/outbox/outbox.module";
 import { IdempotencyInterceptor } from "./common/idempotency/idempotency.interceptor";
@@ -201,17 +206,17 @@ import {
     ReportingModule,
     SavedViewsModule,
 
-    // Phase 12 — Healthcare
-    // Healthcare: externalized to unierp-app-healthcare (marketplace + ExtGateway)
+    // Phase 12 — Healthcare (first-party NestJS module)
+    HealthcareModule,
 
-    // Phase 13 — Education
-    // Education: externalized to unierp-app-education (marketplace + ExtGateway)
+    // Phase 13 — Education (first-party NestJS module)
+    EducationModule,
 
-    // Phase 14 — Real Estate
-    // Real Estate: externalized to unierp-app-realestate (marketplace + ExtGateway)
+    // Phase 14 — Real Estate (first-party NestJS module)
+    RealEstateModule,
 
-    // Phase 15 — Field Service: externalized to unierp-app-fieldservice
-    // (installed via marketplace; served through ExtGatewayModule)
+    // Phase 15 — Field Service (first-party NestJS module)
+    FieldServiceModule,
 
     // Phase 16 — API Platform & Integrations
     ApiPlatformModule,
@@ -238,6 +243,9 @@ import {
 
     // AI Layer
     AiModule,
+
+    // Drive — File Storage & Management
+    DriveModule,
 
     // Module #33 — E-Commerce Storefront (depends on Sales for checkout order creation)
     EcommerceModule,

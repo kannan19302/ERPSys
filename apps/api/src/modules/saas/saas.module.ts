@@ -60,6 +60,8 @@ import { ActivityFeedController } from "./activity-feed.controller";
 import { HealthController } from "./health.controller";
 import { SaasGateway } from "./saas.gateway";
 import { RealtimeEmitterService } from "./realtime-emitter.service";
+import { SaasExpansionController } from "./saas-expansion.controller";
+import { SaasExpansionService } from "./saas-expansion.service";
 import { PlatformCredentialsModule } from "../../common/platform-credentials/platform-credentials.module";
 
 @Module({
@@ -108,9 +110,11 @@ import { PlatformCredentialsModule } from "../../common/platform-credentials/pla
     ProfileController,
     ActivityFeedController,
     HealthController,
+    SaasExpansionController,
   ],
   providers: [
     SaasService,
+    SaasExpansionService,
     BillingService,
     StorageMeteringService,
     PlanEngineService,
@@ -128,9 +132,11 @@ import { PlatformCredentialsModule } from "../../common/platform-credentials/pla
     TenantAnalyticsService,
     SaasGateway,
     RealtimeEmitterService,
+    SaasExpansionService,
   ],
   exports: [
     SaasService,
+    SaasExpansionService,
     BillingService,
     StorageMeteringService,
     PlanEngineService,

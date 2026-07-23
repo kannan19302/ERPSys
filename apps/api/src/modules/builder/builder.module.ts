@@ -18,10 +18,12 @@ import { BuilderStatsService } from './builder-stats.service';
 import { BuilderDashboardsService } from './builder-dashboards.service';
 import { BuilderDevOpsService } from './builder-devops.service';
 import { BuilderWebContentService } from './builder-web-content.service';
+import { BuilderExpansionController } from './builder-expansion.controller';
+import { BuilderExpansionService } from './builder-expansion.service';
 
 @Module({
   imports: [AiClientModule],
-  controllers: [BuilderController, WebPublicController, WebStudioController, GovernanceController],
+  controllers: [BuilderController, WebPublicController, WebStudioController, GovernanceController, BuilderExpansionController],
   providers: [
     BuilderService,
     WebCollectionsService,
@@ -35,6 +37,7 @@ import { BuilderWebContentService } from './builder-web-content.service';
     BuilderDashboardsService,
     BuilderDevOpsService,
     BuilderWebContentService,
+    BuilderExpansionService,
   ],
   exports: [
     BuilderService,
@@ -49,6 +52,7 @@ import { BuilderWebContentService } from './builder-web-content.service';
     BuilderDashboardsService,
     BuilderDevOpsService,
     BuilderWebContentService,
+    BuilderExpansionService,
   ],
 })
 export class BuilderModule {}

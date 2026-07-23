@@ -285,19 +285,6 @@ export type CreateWarehouseInput = z.infer<typeof createWarehouseSchema>;
 export const updateWarehouseSchema = createWarehouseSchema.partial();
 export type UpdateWarehouseInput = z.infer<typeof updateWarehouseSchema>;
 
-// ── Department Schemas ──
-
-export const createDepartmentSchema = z.object({
-  name: z.string().min(1, "Department name is required").max(200),
-  code: z.string().min(1, "Department code is required").max(20),
-  parentId: z.string().optional(),
-  managerId: z.string().optional(),
-});
-export type CreateDepartmentInput = z.infer<typeof createDepartmentSchema>;
-
-export const updateDepartmentSchema = createDepartmentSchema.partial();
-export type UpdateDepartmentInput = z.infer<typeof updateDepartmentSchema>;
-
 // ── User Schemas ──
 
 export const createUserSchema = z.object({
@@ -373,31 +360,6 @@ export type CreateRoleInput = z.infer<typeof createRoleSchema>;
 
 export const updateRoleSchema = createRoleSchema.partial();
 export type UpdateRoleInput = z.infer<typeof updateRoleSchema>;
-
-// ── HR Schemas ──
-
-export const createEmployeeSchema = z.object({
-  employeeCode: z.string().min(1, "Employee code is required").max(50),
-  firstName: z.string().min(1, "First name is required").max(100),
-  lastName: z.string().min(1, "Last name is required").max(100),
-  email: z.string().email("Invalid email address"),
-  phone: z.string().max(20).optional(),
-  designation: z.string().max(100).optional(),
-  departmentId: z.string().optional(),
-  dateOfJoining: z.string().optional(),
-  employmentType: z
-    .enum(["FULL_TIME", "PART_TIME", "CONTRACT", "INTERN"])
-    .default("FULL_TIME"),
-  status: z
-    .enum(["ACTIVE", "INVITED", "TERMINATED", "LEAVE"])
-    .default("ACTIVE"),
-});
-export type CreateEmployeeInput = z.infer<typeof createEmployeeSchema>;
-
-export const updateEmployeeSchema = createEmployeeSchema
-  .partial()
-  .omit({ employeeCode: true });
-export type UpdateEmployeeInput = z.infer<typeof updateEmployeeSchema>;
 
 // ── Vendor Schemas ──
 
@@ -1130,3 +1092,7 @@ export type CreateCustomerTagInput = z.infer<typeof createCustomerTagSchema>;
 
 // ── Builder Module Schemas ──
 export * from './builder.js';
+export * from './builder-expansion.js';
+export * from './ai.js';
+export * from './communication-expansion.js';
+export * from './drive.js';

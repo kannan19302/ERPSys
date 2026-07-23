@@ -709,10 +709,10 @@ Add new items here as they're identified (PM scoping, bug reports, user asks, an
 
 | #   | Module            | Repo                                                                                             | Status          | Phase | Dependencies              | Target Industries          |
 | :-- | :---------------- | :----------------------------------------------------------------------------------------------- | :-------------- | :---- | :------------------------ | :------------------------- |
-| 22  | **Healthcare**    | 📦 [unierp-app-healthcare](https://github.com/kannan19302/unierp-app-healthcare) (svc :4104)     | 🟢 ACTIVE (ext) | 12    | ext-gateway, ext-callback | Hospitals, Clinics, Pharma |
-| 23  | **Education**     | 📦 [unierp-app-education](https://github.com/kannan19302/unierp-app-education) (svc :4101)       | 🟢 ACTIVE (ext) | 13    | ext-gateway               | Schools, Universities      |
-| 24  | **Real Estate**   | 📦 [unierp-app-realestate](https://github.com/kannan19302/unierp-app-realestate) (svc :4102)     | 🟢 ACTIVE (ext) | 14    | ext-gateway               | Property, Construction     |
-| 25  | **Field Service** | 📦 [unierp-app-fieldservice](https://github.com/kannan19302/unierp-app-fieldservice) (svc :4103) | 🟢 ACTIVE (ext) | 15    | ext-gateway               | Maintenance, Utilities     |
+| 22  | **Healthcare**    | `apps/api/src/modules/healthcare` + Prisma models + UI pages                         | 🟢 ACTIVE | 12    | none (first-party)        | Hospitals, Clinics, Pharma |
+| 23  | **Education**     | `apps/api/src/modules/education` + Prisma models + UI pages                          | 🟢 ACTIVE | 13    | none (first-party)        | Schools, Universities      |
+| 24  | **Real Estate**   | `apps/api/src/modules/real-estate` + Prisma models + UI pages                        | 🟢 ACTIVE | 14    | none (first-party)        | Property, Construction     |
+| 25  | **Field Service** | `apps/api/src/modules/field-service` + Prisma models + UI pages                      | 🟢 ACTIVE | 15    | none (first-party)        | Maintenance, Utilities     |
 
 ---
 
