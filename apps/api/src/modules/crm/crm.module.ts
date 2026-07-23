@@ -81,6 +81,15 @@ import { CrmNextBestActionConfigController, CrmGuidedSellingSuggestionController
 import { CrmContractLifecycleService } from "./crm-contract-lifecycle.service";
 import { CrmContractAmendmentController, CrmContractPriceEscalationController, CrmContractAutoRenewalController, CrmContractExpirationPipelineController, CrmContractTemplateController, CrmContractClauseController, CrmContractLifecycleAnalyticsController } from "./crm-contract-lifecycle.controller";
 
+import { CrmCommunicationService } from "./crm-communication.service";
+import { CrmCommunicationChannelController, CrmCommunicationTemplateController, CrmCommunicationLogController } from "./crm-communication.controller";
+import { CrmKnowledgeBaseService } from "./crm-knowledge-base.service";
+import { CrmKnowledgeBaseCategoryController, CrmKnowledgeBaseArticleController } from "./crm-knowledge-base.controller";
+import { CrmPartnerDeepService } from "./crm-partner-deep.service";
+import { CrmPartnerDealRegistrationController, CrmPartnerMdfController } from "./crm-partner-deep.controller";
+import { CrmWinLossService } from "./crm-win-loss.service";
+import { CrmWinLossController } from "./crm-win-loss.controller";
+
 const CRM_SERVICES = [
   CrmService,
   CrmIntelligenceService,
@@ -132,6 +141,10 @@ const CRM_SERVICES = [
   CrmLeadEnrichmentService,
   CrmGuidedSellingService,
   CrmContractLifecycleService,
+  CrmCommunicationService,
+  CrmKnowledgeBaseService,
+  CrmPartnerDeepService,
+  CrmWinLossService,
 ];
 
 @Module({
@@ -182,6 +195,14 @@ const CRM_SERVICES = [
     CrmContractTemplateController,
     CrmContractClauseController,
     CrmContractLifecycleAnalyticsController,
+    CrmCommunicationChannelController,
+    CrmCommunicationTemplateController,
+    CrmCommunicationLogController,
+    CrmKnowledgeBaseCategoryController,
+    CrmKnowledgeBaseArticleController,
+    CrmPartnerDealRegistrationController,
+    CrmPartnerMdfController,
+    CrmWinLossController,
   ],
   providers: CRM_SERVICES,
   exports: CRM_SERVICES,
