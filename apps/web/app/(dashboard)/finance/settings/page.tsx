@@ -17,6 +17,7 @@ import { Card } from "@unerp/ui";
 
 import FinancialPeriodsPage from "../advanced/financial-periods/page";
 import ExchangeRatesPage from "../advanced/exchange-rates/page";
+import RecurringInvoicesPage from "../advanced/recurring/page";
 import FxRevaluationPage from "../advanced/fx-revaluation/page";
 import CurrencyRevaluationPage from "../advanced/currency-revaluation/page";
 import CloseTasksPage from "../advanced/close-tasks/page";
@@ -70,7 +71,7 @@ const SETTINGS_TABS = [
     label: "Automation",
     href: "/finance/settings?tab=automation",
     icon: Zap,
-    description: "Finance automation rules",
+    description: "Recurring invoice automation",
   },
   {
     id: "integrations",
@@ -219,7 +220,7 @@ export default function FinanceSettingsPage() {
       )}
       {activeTab === "automation" && (
         <div className="ui-stack-4 ui-animate-in">
-          <FinancialPeriodsPage />
+          <RecurringInvoicesPage />
         </div>
       )}
       {activeTab === "integrations" && (

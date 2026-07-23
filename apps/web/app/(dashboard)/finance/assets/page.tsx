@@ -1,13 +1,29 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Building2, FileText, TrendingDown, Trash2 } from "lucide-react";
 import { FinanceTabLayout } from "@/components/finance/FinanceTabLayout";
 import { RouteGuard } from "@unerp/framework";
 import { Card } from "@unerp/ui";
+import { apiGet } from "@/lib/api";
 
 import FixedAssetsPage from "../advanced/fixed-assets/page";
 import LeasesPage from "../advanced/leases/page";
+
+interface AssetsSummary {
+  totalValue: number;
+  assetCount: number;
+  monthlyDepreciation: number;
+  activeLeases: number;
+}
+
+const EMPTY_ASSETS_SUMMARY: AssetsSummary = {
+  totalValue: 0,
+  assetCount: 0,
+  monthlyDepreciation: 0,
+  activeLeases: 0,
+};
 
 const ASSETS_TABS = [
   {
@@ -50,6 +66,43 @@ const ASSETS_TABS = [
 export default function AssetsPage() {
   const searchParams = useSearchParams();
   const activeTab = searchParams.get("tab") || "overview";
+  const [summary, setSummary] = useState<AssetsSummary>(EMPTY_ASSETS_SUMMARY);
+
+  useEffect(() => {
+    if (activeTab !== "overview") return;
+    let cancelled = false;
+    Promise.all([
+      apiGet<
+        Array<{ currentValue: number; usefulLifeYears: number; status: string }>
+      >("/fixed-assets"),
+      apiGet<{ activeLeases: number }>("/finance/leases/summary").catch(() => ({
+        activeLeases: 0,
+      })),
+    ])
+      .then(([assets, leaseSummary]) => {
+        if (cancelled) return;
+        const activeAssets = assets.filter((a) => a.status === "ACTIVE");
+        const totalValue = assets.reduce(
+          (s, a) => s + Number(a.currentValue || 0),
+          0,
+        );
+        const monthlyDepreciation = activeAssets.reduce((s, a) => {
+          const value = Number(a.currentValue || 0);
+          const life = Number(a.usefulLifeYears || 0);
+          return s + (life > 0 ? value / life / 12 : 0);
+        }, 0);
+        setSummary({
+          totalValue,
+          assetCount: assets.length,
+          monthlyDepreciation,
+          activeLeases: leaseSummary?.activeLeases ?? 0,
+        });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab]);
 
   return (
     <RouteGuard permission="finance.assets.read">
@@ -70,9 +123,15 @@ export default function AssetsPage() {
                     className="ui-heading-sm"
                     style={{ color: "var(--color-primary)" }}
                   >
-                    $4.2M
+                    {summary.totalValue.toLocaleString(undefined, {
+                      style: "currency",
+                      currency: "USD",
+                      maximumFractionDigits: 0,
+                    })}
                   </p>
-                  <p className="ui-text-xs-muted">245 assets registered</p>
+                  <p className="ui-text-xs-muted">
+                    {summary.assetCount} assets registered
+                  </p>
                 </div>
               </Card>
               <Card padding="md">
@@ -82,7 +141,11 @@ export default function AssetsPage() {
                     className="ui-heading-sm"
                     style={{ color: "var(--color-warning)" }}
                   >
-                    $38,400
+                    {summary.monthlyDepreciation.toLocaleString(undefined, {
+                      style: "currency",
+                      currency: "USD",
+                      maximumFractionDigits: 0,
+                    })}
                   </p>
                   <p className="ui-text-xs-muted">Straight-line method</p>
                 </div>
@@ -94,9 +157,9 @@ export default function AssetsPage() {
                     className="ui-heading-sm"
                     style={{ color: "var(--color-success)" }}
                   >
-                    12
+                    {summary.activeLeases}
                   </p>
-                  <p className="ui-text-xs-muted">2 expiring this quarter</p>
+                  <p className="ui-text-xs-muted">ASC 842 / IFRS 16</p>
                 </div>
               </Card>
             </div>

@@ -9,6 +9,7 @@ interface CorporateCardItem {
   id: string;
   cardHolderName: string;
   lastFourDigits: string;
+  departmentId?: string | null;
   monthlyLimit: number | string;
   currentSpend: number | string;
   status: string;
@@ -26,36 +27,11 @@ export default function CorporateCardsPage() {
   const fetchCards = async () => {
     try {
       const res = await client.get<CorporateCardItem[]>(
-        "/api/v1/advanced-finance/corporate-cards",
+        "/advanced-finance/corporate-cards",
       );
       setCards(res || []);
     } catch {
-      setCards([
-        {
-          id: "1",
-          cardHolderName: "Executive Operations Card",
-          lastFourDigits: "4821",
-          monthlyLimit: 50000,
-          currentSpend: 12450,
-          status: "ACTIVE",
-        },
-        {
-          id: "2",
-          cardHolderName: "Marketing Campaign Card",
-          lastFourDigits: "9102",
-          monthlyLimit: 25000,
-          currentSpend: 8900,
-          status: "ACTIVE",
-        },
-        {
-          id: "3",
-          cardHolderName: "IT Infrastructure Subscriptions",
-          lastFourDigits: "3341",
-          monthlyLimit: 30000,
-          currentSpend: 18200,
-          status: "ACTIVE",
-        },
-      ]);
+      setCards([]);
     } finally {
       setLoading(false);
     }
@@ -116,7 +92,11 @@ export default function CorporateCardsPage() {
               >
                 {cards.length}
               </p>
-              <p className="ui-text-xs-muted">Across 3 departments</p>
+              <p className="ui-text-xs-muted">
+                Across{" "}
+                {new Set(cards.map((c) => c.departmentId).filter(Boolean)).size}{" "}
+                departments
+              </p>
             </div>
           </Card>
           <Card padding="md">

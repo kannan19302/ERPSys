@@ -13,6 +13,7 @@ import {
   HttpStatus,
 } from "@nestjs/common";
 import { ZodBody } from "../../common/decorators/zod-body.decorator";
+import { resolveOrgId } from "../../common/utils/pagination.util";
 import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { RbacGuard } from "../../common/guards/rbac.guard";
@@ -217,8 +218,8 @@ export class FinanceExpansionController {
   ) {
     return this.svc.getCreditNotes(
       req.user.tenantId,
-      page,
-      limit,
+      page ? Number(page) : undefined,
+      limit ? Number(limit) : undefined,
       sortBy,
       sortOrder,
     );
@@ -257,7 +258,7 @@ export class FinanceExpansionController {
   ) {
     return this.svc.createCreditNote(
       req.user.tenantId,
-      req.user.orgId || "org-default",
+      await resolveOrgId(req.user.tenantId, req.user.orgId),
       dto,
       req.user.userId || "system",
     );
@@ -328,8 +329,8 @@ export class FinanceExpansionController {
   ) {
     return this.svc.getDebitNotes(
       req.user.tenantId,
-      page,
-      limit,
+      page ? Number(page) : undefined,
+      limit ? Number(limit) : undefined,
       sortBy,
       sortOrder,
     );
@@ -368,7 +369,7 @@ export class FinanceExpansionController {
   ) {
     return this.svc.createDebitNote(
       req.user.tenantId,
-      req.user.orgId || "org-default",
+      await resolveOrgId(req.user.tenantId, req.user.orgId),
       dto,
       req.user.userId || "system",
     );
@@ -439,8 +440,8 @@ export class FinanceExpansionController {
   ) {
     return this.svc.getRecurringInvoices(
       req.user.tenantId,
-      page,
-      limit,
+      page ? Number(page) : undefined,
+      limit ? Number(limit) : undefined,
       sortBy,
       sortOrder,
     );
@@ -470,8 +471,8 @@ export class FinanceExpansionController {
     return this.svc.getGeneratedInvoices(
       req.user.tenantId,
       templateId || "",
-      page,
-      limit,
+      page ? Number(page) : undefined,
+      limit ? Number(limit) : undefined,
       sortBy,
       sortOrder,
     );
@@ -498,8 +499,8 @@ export class FinanceExpansionController {
   ) {
     return this.svc.getUpcomingInvoices(
       req.user.tenantId,
-      page,
-      limit,
+      page ? Number(page) : undefined,
+      limit ? Number(limit) : undefined,
       sortBy,
       sortOrder,
     );
@@ -527,7 +528,7 @@ export class FinanceExpansionController {
   ) {
     return this.svc.createRecurringInvoice(
       req.user.tenantId,
-      req.user.orgId || "org-default",
+      await resolveOrgId(req.user.tenantId, req.user.orgId),
       dto,
     );
   }
@@ -609,8 +610,8 @@ export class FinanceExpansionController {
   ) {
     return this.svc.getExpenseReports(
       req.user.tenantId,
-      page,
-      limit,
+      page ? Number(page) : undefined,
+      limit ? Number(limit) : undefined,
       sortBy,
       sortOrder,
     );
@@ -645,8 +646,8 @@ export class FinanceExpansionController {
   ) {
     return this.svc.getExpenseCategories(
       req.user.tenantId,
-      page,
-      limit,
+      page ? Number(page) : undefined,
+      limit ? Number(limit) : undefined,
       sortBy,
       sortOrder,
     );
@@ -664,8 +665,8 @@ export class FinanceExpansionController {
   ) {
     return this.svc.getPendingReimbursements(
       req.user.tenantId,
-      page,
-      limit,
+      page ? Number(page) : undefined,
+      limit ? Number(limit) : undefined,
       sortBy,
       sortOrder,
     );
@@ -693,7 +694,7 @@ export class FinanceExpansionController {
   ) {
     return this.svc.createExpenseReport(
       req.user.tenantId,
-      req.user.orgId || "org-default",
+      await resolveOrgId(req.user.tenantId, req.user.orgId),
       {
         ...dto,
         employeeId: req.user.userId || "system",
@@ -815,8 +816,8 @@ export class FinanceExpansionController {
   ) {
     return this.svc.getDunningRuns(
       req.user.tenantId,
-      page,
-      limit,
+      page ? Number(page) : undefined,
+      limit ? Number(limit) : undefined,
       sortBy,
       sortOrder,
     );
@@ -846,8 +847,8 @@ export class FinanceExpansionController {
   ) {
     return this.svc.getDunningLevels(
       req.user.tenantId,
-      page,
-      limit,
+      page ? Number(page) : undefined,
+      limit ? Number(limit) : undefined,
       sortBy,
       sortOrder,
     );
@@ -951,8 +952,8 @@ export class FinanceExpansionController {
     return this.svc.getStatements(
       req.user.tenantId,
       customerId,
-      page,
-      limit,
+      page ? Number(page) : undefined,
+      limit ? Number(limit) : undefined,
       sortBy,
       sortOrder,
     );
@@ -970,8 +971,8 @@ export class FinanceExpansionController {
   ) {
     return this.svc.getStatementTemplates(
       req.user.tenantId,
-      page,
-      limit,
+      page ? Number(page) : undefined,
+      limit ? Number(limit) : undefined,
       sortBy,
       sortOrder,
     );

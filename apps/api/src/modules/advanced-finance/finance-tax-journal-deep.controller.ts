@@ -17,6 +17,7 @@ import { RbacGuard } from "../../common/guards/rbac.guard";
 import { Permissions } from "../../common/decorators/permissions.decorator";
 import { ChangeHistoryInterceptor } from "../../common/interceptors/change-history.interceptor";
 import { TrackChanges } from "../../common/decorators/track-changes.decorator";
+import { resolveOrgId } from "../../common/utils/pagination.util";
 import {
   TaxJurisdictionLookupService,
   TaxFilingCalendarService,
@@ -219,7 +220,7 @@ export class FinanceTaxJournalDeepController {
     @ZodBody(createRecurringTemplateSchema)
     body: z.infer<typeof createRecurringTemplateSchema>,
   ) {
-    const orgId = req.user.orgId || "org-system-default";
+    const orgId = await resolveOrgId(req.user.tenantId, req.user.orgId);
     return this.recurringJournalService.createTemplate(
       req.user.tenantId,
       orgId,

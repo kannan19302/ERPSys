@@ -16,6 +16,7 @@ import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { RbacGuard } from "../../common/guards/rbac.guard";
 import { Permissions } from "../../common/decorators/permissions.decorator";
 import { FinanceService } from "./finance.service";
+import { resolveOrgId } from "../../common/utils/pagination.util";
 import { ChangeHistoryInterceptor } from "../../common/interceptors/change-history.interceptor";
 import { TrackChanges } from "../../common/decorators/track-changes.decorator";
 import {
@@ -137,7 +138,7 @@ export class FinanceController {
     @Req() req: AuthenticatedRequest,
     @ZodBody(createInvoiceSchema) dto: CreateInvoiceInput,
   ) {
-    const orgId = req.user.orgId || "org-system-default";
+    const orgId = await resolveOrgId(req.user.tenantId, req.user.orgId);
     return this.financeService.createInvoice(
       req.user.tenantId,
       orgId,
@@ -216,10 +217,32 @@ export class FinanceController {
     );
   }
 
-  @ApiOperation({ summary: "Get payments" })
+  @ApiOperation({ summary: "Get payments for an invoice" })
   @Get("invoices/:id/payments")
   @Permissions("finance.payment.read")
   async getPayments(@Req() req: AuthenticatedRequest, @Param("id") id: string) {
     return this.financeService.getPayments(req.user.tenantId, id);
+  }
+
+  @ApiOperation({ summary: "Get all payments (paginated, filterable)" })
+  @Get("payments")
+  @Permissions("finance.payment.read")
+  async getPaymentsList(
+    @Req() req: AuthenticatedRequest,
+    @Query("page") page?: string,
+    @Query("limit") limit?: string,
+    @Query("sort") sort?: string,
+    @Query("search") search?: string,
+    @Query("invoiceId") invoiceId?: string,
+    @Query("customerId") customerId?: string,
+  ) {
+    return this.financeService.getPaymentsList(req.user.tenantId, {
+      page: page ? parseInt(page) : undefined,
+      limit: limit ? parseInt(limit) : undefined,
+      sort,
+      search,
+      invoiceId,
+      customerId,
+    });
   }
 }

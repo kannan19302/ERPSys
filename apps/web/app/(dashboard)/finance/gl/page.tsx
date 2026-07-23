@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   BookOpen,
@@ -16,7 +17,7 @@ import {
 } from "lucide-react";
 import { FinanceTabLayout } from "@/components/finance/FinanceTabLayout";
 import { SubTabBar } from "@/components/finance/SubTabBar";
-import { ListView, RouteGuard } from "@unerp/framework";
+import { ListView, RouteGuard, useApiClient } from "@unerp/framework";
 import { accountResource, journalResource } from "@/modules/finance";
 import { Card, PageHeader } from "@unerp/ui";
 
@@ -126,10 +127,67 @@ const GL_TABS = [
   },
 ];
 
+interface GlSummary {
+  totalAccounts: number;
+  accountCategories: number;
+  journalCount: number;
+  pendingApproval: number;
+  openPeriods: number;
+  nextCloseDate: string | null;
+}
+
+const EMPTY_GL_SUMMARY: GlSummary = {
+  totalAccounts: 0,
+  accountCategories: 0,
+  journalCount: 0,
+  pendingApproval: 0,
+  openPeriods: 0,
+  nextCloseDate: null,
+};
+
 export default function GLPage() {
   const searchParams = useSearchParams();
   const activeTab = searchParams.get("tab") || "overview";
   const subTab = searchParams.get("subtab");
+  const client = useApiClient();
+  const [summary, setSummary] = useState<GlSummary>(EMPTY_GL_SUMMARY);
+
+  useEffect(() => {
+    if (activeTab !== "overview") return;
+    let cancelled = false;
+    Promise.all([
+      client.list<{ type: string }>("/advanced-finance/accounts", {
+        pageSize: 500,
+      }),
+      client.list<{ status: string }>("/advanced-finance/journals", {
+        pageSize: 500,
+      }),
+      client.get<{ data: Array<{ status: string; endDate: string }> }>(
+        "/finance/close/financial-periods",
+      ),
+    ])
+      .then(([accountsResult, journalsResult, periodsResult]) => {
+        if (cancelled) return;
+        const accounts = accountsResult.data ?? [];
+        const journals = journalsResult.data ?? [];
+        const periods = periodsResult?.data ?? [];
+        const openPeriodRows = periods.filter((p) => p.status === "OPEN");
+        const nextClose = openPeriodRows.map((p) => p.endDate).sort()[0];
+        setSummary({
+          totalAccounts: accountsResult.total ?? accounts.length,
+          accountCategories: new Set(accounts.map((a) => a.type)).size,
+          journalCount: journalsResult.total ?? journals.length,
+          pendingApproval: journals.filter((j) => j.status === "SUBMITTED")
+            .length,
+          openPeriods: openPeriodRows.length,
+          nextCloseDate: nextClose ?? null,
+        });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab, client]);
 
   return (
     <RouteGuard permission="finance.journal.read">
@@ -150,23 +208,25 @@ export default function GLPage() {
                     className="ui-heading-sm"
                     style={{ color: "var(--color-primary)" }}
                   >
-                    185
+                    {summary.totalAccounts}
                   </p>
-                  <p className="ui-text-xs-muted">Across 5 categories</p>
+                  <p className="ui-text-xs-muted">
+                    Across {summary.accountCategories} categories
+                  </p>
                 </div>
               </Card>
               <Card padding="md">
                 <div className="ui-stack-2">
-                  <p className="ui-text-xs-muted">
-                    Journal Entries (This Period)
-                  </p>
+                  <p className="ui-text-xs-muted">Journal Entries</p>
                   <p
                     className="ui-heading-sm"
                     style={{ color: "var(--color-success)" }}
                   >
-                    1,247
+                    {summary.journalCount}
                   </p>
-                  <p className="ui-text-xs-muted">12 pending approval</p>
+                  <p className="ui-text-xs-muted">
+                    {summary.pendingApproval} pending approval
+                  </p>
                 </div>
               </Card>
               <Card padding="md">
@@ -176,9 +236,13 @@ export default function GLPage() {
                     className="ui-heading-sm"
                     style={{ color: "var(--color-warning)" }}
                   >
-                    3
+                    {summary.openPeriods}
                   </p>
-                  <p className="ui-text-xs-muted">Next close: Jul 31, 2026</p>
+                  <p className="ui-text-xs-muted">
+                    {summary.nextCloseDate
+                      ? `Next close: ${new Date(summary.nextCloseDate).toLocaleDateString()}`
+                      : "No open periods"}
+                  </p>
                 </div>
               </Card>
             </div>

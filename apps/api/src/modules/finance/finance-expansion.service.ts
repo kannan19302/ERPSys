@@ -26,6 +26,7 @@ export interface CreditNote {
   tenantId: string;
   orgId: string;
   customerId: string;
+  customerName?: string;
   invoiceId?: string;
   creditNoteNumber: string;
   reason: string;
@@ -44,6 +45,7 @@ export interface DebitNote {
   tenantId: string;
   orgId: string;
   vendorId: string;
+  vendorName?: string;
   purchaseOrderId?: string;
   billId?: string;
   debitNoteNumber: string;
@@ -201,6 +203,7 @@ export class FinanceExpansionService {
       tenantId: row.tenantId,
       orgId: row.orgId,
       customerId: row.customerId,
+      customerName: row.customer?.name,
       invoiceId: row.invoiceId ?? undefined,
       creditNoteNumber: row.noteNumber,
       reason: row.reason ?? "",
@@ -222,6 +225,7 @@ export class FinanceExpansionService {
       tenantId: row.tenantId,
       orgId: row.orgId,
       vendorId: row.vendorId,
+      vendorName: row.vendor?.name,
       purchaseOrderId: row.purchaseOrderId ?? undefined,
       billId: row.billId ?? undefined,
       debitNoteNumber: row.noteNumber,
@@ -377,6 +381,7 @@ export class FinanceExpansionService {
       creditNoteNumber: string;
       reason: string;
       issueDate: string;
+      amount?: number;
       lineItems: Array<{
         description: string;
         quantity: number;
@@ -402,9 +407,24 @@ export class FinanceExpansionService {
       if (!invoice) throw new NotFoundException("Invoice not found");
     }
 
+    // A caller passing a flat `amount` (no line-item breakdown) gets a single
+    // synthesized line item for it — this is the common case for simple
+    // credit adjustments from the UI, which has no line-item editor.
+    const lineItemsInput =
+      dto.amount !== undefined
+        ? [
+            {
+              description: dto.reason || "Credit Adjustment",
+              quantity: 1,
+              unitPrice: dto.amount,
+              taxRate: 0,
+            },
+          ]
+        : dto.lineItems;
+
     let subtotal = 0;
     let totalTax = 0;
-    const lines: LineItem[] = dto.lineItems.map((item) => {
+    const lines: LineItem[] = lineItemsInput.map((item) => {
       const lineSubtotal = item.quantity * item.unitPrice;
       const lineTax = lineSubtotal * (item.taxRate / 100);
       const lineTotal = lineSubtotal + lineTax;
@@ -482,6 +502,7 @@ export class FinanceExpansionService {
       : { createdAt: "desc" as const };
     const rows = await prisma.creditNote.findMany({
       where: { tenantId },
+      include: { customer: { select: { name: true } } },
       skip,
       take,
       orderBy,
@@ -492,6 +513,7 @@ export class FinanceExpansionService {
   async getCreditNoteById(tenantId: string, id: string): Promise<CreditNote> {
     const row = await prisma.creditNote.findFirst({
       where: { id, tenantId },
+      include: { customer: { select: { name: true } } },
     });
     if (!row) {
       throw new NotFoundException("Credit note not found");
@@ -661,6 +683,7 @@ export class FinanceExpansionService {
       debitNoteNumber: string;
       reason: string;
       issueDate: string;
+      amount?: number;
       lineItems: Array<{
         description: string;
         quantity: number;
@@ -679,9 +702,21 @@ export class FinanceExpansionService {
       );
     }
 
+    const lineItemsInput =
+      dto.amount !== undefined
+        ? [
+            {
+              description: dto.reason || "Debit Adjustment",
+              quantity: 1,
+              unitPrice: dto.amount,
+              taxRate: 0,
+            },
+          ]
+        : dto.lineItems;
+
     let subtotal = 0;
     let totalTax = 0;
-    const lines: LineItem[] = dto.lineItems.map((item) => {
+    const lines: LineItem[] = lineItemsInput.map((item) => {
       const lineSubtotal = item.quantity * item.unitPrice;
       const lineTax = lineSubtotal * (item.taxRate / 100);
       const lineTotal = lineSubtotal + lineTax;
@@ -760,6 +795,7 @@ export class FinanceExpansionService {
       : { createdAt: "desc" as const };
     const rows = await prisma.debitNote.findMany({
       where: { tenantId },
+      include: { vendor: { select: { name: true } } },
       skip,
       take,
       orderBy,
@@ -770,6 +806,7 @@ export class FinanceExpansionService {
   async getDebitNoteById(tenantId: string, id: string): Promise<DebitNote> {
     const row = await prisma.debitNote.findFirst({
       where: { id, tenantId },
+      include: { vendor: { select: { name: true } } },
     });
     if (!row) {
       throw new NotFoundException("Debit note not found");

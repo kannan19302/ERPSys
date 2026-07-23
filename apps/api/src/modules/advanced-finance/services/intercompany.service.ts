@@ -1,12 +1,22 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
 
 @Injectable()
 export class InterCompanyService {
   async getTransactions(
     tenantId: string,
-    filters: { status?: string; fromOrgId?: string; toOrgId?: string; page?: number; limit?: number },
+    filters: {
+      status?: string;
+      fromOrgId?: string;
+      toOrgId?: string;
+      page?: number;
+      limit?: number;
+    },
   ) {
     const page = filters.page || 1;
     const limit = filters.limit || 50;
@@ -20,14 +30,31 @@ export class InterCompanyService {
     const [items, total] = await Promise.all([
       prisma.interCompanyTransaction.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         skip,
         take: limit,
       }),
       prisma.interCompanyTransaction.count({ where }),
     ]);
 
-    return { items, total, page, limit };
+    const orgIds = Array.from(
+      new Set(items.flatMap((t) => [t.fromOrgId, t.toOrgId])),
+    );
+    const orgs = orgIds.length
+      ? await prisma.organization.findMany({
+          where: { id: { in: orgIds } },
+          select: { id: true, name: true },
+        })
+      : [];
+    const orgName = new Map(orgs.map((o) => [o.id, o.name]));
+
+    const enriched = items.map((t) => ({
+      ...t,
+      sourceEntity: orgName.get(t.fromOrgId) || t.fromOrgId,
+      targetEntity: orgName.get(t.toOrgId) || t.toOrgId,
+    }));
+
+    return { items: enriched, total, page, limit };
   }
 
   async autoMatchTransactions(tenantId: string) {
@@ -35,7 +62,7 @@ export class InterCompanyService {
     const unpaidInvoices = await prisma.invoice.findMany({
       where: {
         tenantId,
-        status: { not: 'PAID' },
+        status: { not: "PAID" },
       },
     });
 
@@ -43,7 +70,7 @@ export class InterCompanyService {
     const unpaidSchedules = await prisma.paymentSchedule.findMany({
       where: {
         tenantId,
-        status: { not: 'PAID' },
+        status: { not: "PAID" },
       },
     });
 
@@ -53,11 +80,14 @@ export class InterCompanyService {
     // Invoice (Sale from Org A) matched to PaymentSchedule (Purchase in Org B)
     // If invoice.totalAmount === schedule.amount AND invoice.orgId !== schedule.orgId AND dates within 10 days
     for (const inv of unpaidInvoices) {
-      const matchedSchedule = unpaidSchedules.find(sched => {
+      const matchedSchedule = unpaidSchedules.find((sched) => {
         if (!inv.dueDate || !sched.dueDate) return false;
-        const amtMatch = Math.abs(Number(inv.totalAmount) - Number(sched.amount)) < 0.01;
+        const amtMatch =
+          Math.abs(Number(inv.totalAmount) - Number(sched.amount)) < 0.01;
         const orgMismatch = inv.orgId !== sched.orgId;
-        const dateDiff = Math.abs(inv.dueDate.getTime() - sched.dueDate.getTime()) <= 10 * 24 * 60 * 60 * 1000;
+        const dateDiff =
+          Math.abs(inv.dueDate.getTime() - sched.dueDate.getTime()) <=
+          10 * 24 * 60 * 60 * 1000;
         return amtMatch && orgMismatch && dateDiff;
       });
 
@@ -80,8 +110,8 @@ export class InterCompanyService {
               date: inv.dueDate || new Date(),
               description: `Auto-matched Intercompany Invoice ${inv.invoiceNumber} to Purchase Schedule`,
               amount: inv.totalAmount,
-              currency: inv.currency || 'USD',
-              status: 'MATCHED',
+              currency: inv.currency || "USD",
+              status: "MATCHED",
               fromInvoiceId: inv.id,
               toInvoiceId: matchedSchedule.id,
             },
@@ -107,10 +137,12 @@ export class InterCompanyService {
       }),
     ]);
 
-    if (!invoice) throw new NotFoundException('AR Invoice not found');
-    if (!schedule) throw new NotFoundException('AP Payment Schedule not found');
+    if (!invoice) throw new NotFoundException("AR Invoice not found");
+    if (!schedule) throw new NotFoundException("AP Payment Schedule not found");
     if (invoice.orgId === schedule.orgId) {
-      throw new BadRequestException('Intercompany transactions must be between different organizations');
+      throw new BadRequestException(
+        "Intercompany transactions must be between different organizations",
+      );
     }
 
     const existing = await prisma.interCompanyTransaction.findFirst({
@@ -120,7 +152,8 @@ export class InterCompanyService {
         toInvoiceId: schedule.id,
       },
     });
-    if (existing) throw new BadRequestException('These transactions are already matched');
+    if (existing)
+      throw new BadRequestException("These transactions are already matched");
 
     return prisma.interCompanyTransaction.create({
       data: {
@@ -128,10 +161,12 @@ export class InterCompanyService {
         fromOrgId: invoice.orgId,
         toOrgId: schedule.orgId,
         date: invoice.dueDate || new Date(),
-        description: dto.description || `Manually matched Intercompany Invoice ${invoice.invoiceNumber} to AP Schedule`,
+        description:
+          dto.description ||
+          `Manually matched Intercompany Invoice ${invoice.invoiceNumber} to AP Schedule`,
         amount: invoice.totalAmount,
-        currency: invoice.currency || 'USD',
-        status: 'MATCHED',
+        currency: invoice.currency || "USD",
+        status: "MATCHED",
         fromInvoiceId: invoice.id,
         toInvoiceId: schedule.id,
       },
@@ -142,27 +177,29 @@ export class InterCompanyService {
     const tx = await prisma.interCompanyTransaction.findFirst({
       where: { id, tenantId },
     });
-    if (!tx) throw new NotFoundException('Intercompany transaction not found');
-    if (tx.status === 'ELIMINATED') {
-      throw new BadRequestException('Transaction has already been eliminated');
+    if (!tx) throw new NotFoundException("Intercompany transaction not found");
+    if (tx.status === "ELIMINATED") {
+      throw new BadRequestException("Transaction has already been eliminated");
     }
-    if (tx.status !== 'MATCHED') {
-      throw new BadRequestException('Transaction must be MATCHED before elimination');
+    if (tx.status !== "MATCHED") {
+      throw new BadRequestException(
+        "Transaction must be MATCHED before elimination",
+      );
     }
 
     // 1. Find or create Account IDs for posting
     // In Org A (Seller):
     let arAccount = await prisma.account.findFirst({
-      where: { tenantId, orgId: tx.fromOrgId, type: 'ASSET', isActive: true },
+      where: { tenantId, orgId: tx.fromOrgId, type: "ASSET", isActive: true },
     });
     if (!arAccount) {
       arAccount = await prisma.account.create({
         data: {
           tenantId,
           orgId: tx.fromOrgId,
-          code: '1200-IC-AR',
-          name: 'Intercompany Receivables',
-          type: 'ASSET',
+          code: "1200-IC-AR",
+          name: "Intercompany Receivables",
+          type: "ASSET",
           isActive: true,
           balance: new Prisma.Decimal(0),
         },
@@ -171,16 +208,16 @@ export class InterCompanyService {
 
     // In Org B (Buyer):
     let apAccount = await prisma.account.findFirst({
-      where: { tenantId, orgId: tx.toOrgId, type: 'LIABILITY', isActive: true },
+      where: { tenantId, orgId: tx.toOrgId, type: "LIABILITY", isActive: true },
     });
     if (!apAccount) {
       apAccount = await prisma.account.create({
         data: {
           tenantId,
           orgId: tx.toOrgId,
-          code: '2100-IC-AP',
-          name: 'Intercompany Payables',
-          type: 'LIABILITY',
+          code: "2100-IC-AP",
+          name: "Intercompany Payables",
+          type: "LIABILITY",
           isActive: true,
           balance: new Prisma.Decimal(0),
         },
@@ -189,16 +226,21 @@ export class InterCompanyService {
 
     // Intercompany clearing accounts in both orgs
     let clearingA = await prisma.account.findFirst({
-      where: { tenantId, orgId: tx.fromOrgId, name: 'Intercompany Clearing', isActive: true },
+      where: {
+        tenantId,
+        orgId: tx.fromOrgId,
+        name: "Intercompany Clearing",
+        isActive: true,
+      },
     });
     if (!clearingA) {
       clearingA = await prisma.account.create({
         data: {
           tenantId,
           orgId: tx.fromOrgId,
-          code: '1999-IC-CLR',
-          name: 'Intercompany Clearing',
-          type: 'ASSET',
+          code: "1999-IC-CLR",
+          name: "Intercompany Clearing",
+          type: "ASSET",
           isActive: true,
           balance: new Prisma.Decimal(0),
         },
@@ -206,16 +248,21 @@ export class InterCompanyService {
     }
 
     let clearingB = await prisma.account.findFirst({
-      where: { tenantId, orgId: tx.toOrgId, name: 'Intercompany Clearing', isActive: true },
+      where: {
+        tenantId,
+        orgId: tx.toOrgId,
+        name: "Intercompany Clearing",
+        isActive: true,
+      },
     });
     if (!clearingB) {
       clearingB = await prisma.account.create({
         data: {
           tenantId,
           orgId: tx.toOrgId,
-          code: '1999-IC-CLR',
-          name: 'Intercompany Clearing',
-          type: 'ASSET',
+          code: "1999-IC-CLR",
+          name: "Intercompany Clearing",
+          type: "ASSET",
           isActive: true,
           balance: new Prisma.Decimal(0),
         },
@@ -231,7 +278,7 @@ export class InterCompanyService {
         orgId: tx.fromOrgId,
         entryNumber: `ELIM-${tx.id.substring(0, 8).toUpperCase()}`,
         date: new Date(),
-        status: 'POSTED',
+        status: "POSTED",
         notes: `Elimination entry for Intercompany Tx ${tx.id}. Description: ${tx.description}`,
         entries: {
           create: [
@@ -241,14 +288,15 @@ export class InterCompanyService {
               accountId: clearingA.id,
               debit: tx.amount,
               credit: new Prisma.Decimal(0),
-              description: 'Debit Intercompany Clearing to offset AP/AR',
+              description: "Debit Intercompany Clearing to offset AP/AR",
             },
             {
               tenantId,
               accountId: arAccount.id,
               debit: new Prisma.Decimal(0),
               credit: tx.amount,
-              description: 'Credit Accounts Receivable to eliminate intercompany sales',
+              description:
+                "Credit Accounts Receivable to eliminate intercompany sales",
             },
           ],
         },
@@ -259,13 +307,13 @@ export class InterCompanyService {
     if (tx.fromInvoiceId) {
       await prisma.invoice.update({
         where: { id: tx.fromInvoiceId },
-        data: { status: 'PAID', paidAmount: tx.amount, paidAt: new Date() },
+        data: { status: "PAID", paidAmount: tx.amount, paidAt: new Date() },
       });
     }
     if (tx.toInvoiceId) {
       await prisma.paymentSchedule.update({
         where: { id: tx.toInvoiceId },
-        data: { status: 'PAID' },
+        data: { status: "PAID" },
       });
     }
 
@@ -273,7 +321,7 @@ export class InterCompanyService {
     return prisma.interCompanyTransaction.update({
       where: { id },
       data: {
-        status: 'ELIMINATED',
+        status: "ELIMINATED",
         eliminationJournalId: journal.id,
       },
     });
@@ -285,22 +333,22 @@ export class InterCompanyService {
     });
 
     const totalNettedVolume = txs
-      .filter(t => t.status === 'ELIMINATED')
+      .filter((t) => t.status === "ELIMINATED")
       .reduce((sum, t) => sum + Number(t.amount), 0);
 
     const pendingNettingVolume = txs
-      .filter(t => t.status === 'MATCHED')
+      .filter((t) => t.status === "MATCHED")
       .reduce((sum, t) => sum + Number(t.amount), 0);
 
     const pendingMatchVolume = txs
-      .filter(t => t.status === 'PENDING')
+      .filter((t) => t.status === "PENDING")
       .reduce((sum, t) => sum + Number(t.amount), 0);
 
     return {
       totalTransactionsCount: txs.length,
-      eliminatedCount: txs.filter(t => t.status === 'ELIMINATED').length,
-      matchedCount: txs.filter(t => t.status === 'MATCHED').length,
-      pendingCount: txs.filter(t => t.status === 'PENDING').length,
+      eliminatedCount: txs.filter((t) => t.status === "ELIMINATED").length,
+      matchedCount: txs.filter((t) => t.status === "MATCHED").length,
+      pendingCount: txs.filter((t) => t.status === "PENDING").length,
       totalNettedVolume,
       pendingNettingVolume,
       pendingMatchVolume,
@@ -313,7 +361,7 @@ export class InterCompanyService {
     return prisma.eliminationRule.findMany({
       where: { tenantId },
       include: { sourceAccount: true, destinationAccount: true },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -322,7 +370,7 @@ export class InterCompanyService {
       where: { id, tenantId },
       include: { sourceAccount: true, destinationAccount: true },
     });
-    if (!rule) throw new NotFoundException('Elimination rule not found');
+    if (!rule) throw new NotFoundException("Elimination rule not found");
     return rule;
   }
 
@@ -335,32 +383,49 @@ export class InterCompanyService {
         isActive: dto.isActive !== false,
         sourceOrgId: dto.sourceOrgId || null,
         destinationOrgId: dto.destinationOrgId || null,
-        matchingCriteria: dto.matchingCriteria || 'AMOUNT_CURRENCY_DATE',
-        toleranceDays: dto.toleranceDays !== undefined ? Number(dto.toleranceDays) : 10,
+        matchingCriteria: dto.matchingCriteria || "AMOUNT_CURRENCY_DATE",
+        toleranceDays:
+          dto.toleranceDays !== undefined ? Number(dto.toleranceDays) : 10,
         sourceAccountId: dto.sourceAccountId,
         destinationAccountId: dto.destinationAccountId,
-        createdBy: userId || 'system',
-        updatedBy: userId || 'system',
+        createdBy: userId || "system",
+        updatedBy: userId || "system",
       },
     });
     return rule;
   }
 
-  async updateEliminationRule(tenantId: string, id: string, dto: any, userId?: string) {
+  async updateEliminationRule(
+    tenantId: string,
+    id: string,
+    dto: any,
+    userId?: string,
+  ) {
     const rule = await this.getEliminationRuleById(tenantId, id);
     return prisma.eliminationRule.update({
       where: { id: rule.id },
       data: {
         name: dto.name !== undefined ? dto.name : undefined,
-        description: dto.description !== undefined ? dto.description : undefined,
+        description:
+          dto.description !== undefined ? dto.description : undefined,
         isActive: dto.isActive !== undefined ? dto.isActive : undefined,
-        sourceOrgId: dto.sourceOrgId !== undefined ? dto.sourceOrgId : undefined,
-        destinationOrgId: dto.destinationOrgId !== undefined ? dto.destinationOrgId : undefined,
-        matchingCriteria: dto.matchingCriteria !== undefined ? dto.matchingCriteria : undefined,
-        toleranceDays: dto.toleranceDays !== undefined ? Number(dto.toleranceDays) : undefined,
-        sourceAccountId: dto.sourceAccountId !== undefined ? dto.sourceAccountId : undefined,
-        destinationAccountId: dto.destinationAccountId !== undefined ? dto.destinationAccountId : undefined,
-        updatedBy: userId || 'system',
+        sourceOrgId:
+          dto.sourceOrgId !== undefined ? dto.sourceOrgId : undefined,
+        destinationOrgId:
+          dto.destinationOrgId !== undefined ? dto.destinationOrgId : undefined,
+        matchingCriteria:
+          dto.matchingCriteria !== undefined ? dto.matchingCriteria : undefined,
+        toleranceDays:
+          dto.toleranceDays !== undefined
+            ? Number(dto.toleranceDays)
+            : undefined,
+        sourceAccountId:
+          dto.sourceAccountId !== undefined ? dto.sourceAccountId : undefined,
+        destinationAccountId:
+          dto.destinationAccountId !== undefined
+            ? dto.destinationAccountId
+            : undefined,
+        updatedBy: userId || "system",
       },
     });
   }
@@ -384,11 +449,16 @@ export class InterCompanyService {
           },
         },
       },
-      orderBy: { runDate: 'desc' },
+      orderBy: { runDate: "desc" },
     });
   }
 
-  async executeEliminationRun(tenantId: string, periodStart: string, periodEnd: string, userId?: string) {
+  async executeEliminationRun(
+    tenantId: string,
+    periodStart: string,
+    periodEnd: string,
+    userId?: string,
+  ) {
     const start = new Date(periodStart);
     const end = new Date(periodEnd);
 
@@ -397,7 +467,9 @@ export class InterCompanyService {
       where: { tenantId, isActive: true },
     });
     if (rules.length === 0) {
-      throw new BadRequestException('No active intercompany elimination rules found.');
+      throw new BadRequestException(
+        "No active intercompany elimination rules found.",
+      );
     }
 
     // 2. Perform auto match to match unmatched AR/AP pairs in database
@@ -407,21 +479,24 @@ export class InterCompanyService {
     const matchedTxs = await prisma.interCompanyTransaction.findMany({
       where: {
         tenantId,
-        status: 'MATCHED',
+        status: "MATCHED",
         date: { gte: start, lte: end },
       },
     });
 
     if (matchedTxs.length === 0) {
-      throw new BadRequestException('No matched intercompany transactions found for this period.');
+      throw new BadRequestException(
+        "No matched intercompany transactions found for this period.",
+      );
     }
 
     // 4. Apply rules to filter transactions that can be auto-eliminated
     const eligibleDetails: Array<{ ruleId: string; tx: any }> = [];
     for (const tx of matchedTxs) {
-      const matchingRule = rules.find(r => {
-        const orgMatch = (!r.sourceOrgId || r.sourceOrgId === tx.fromOrgId) &&
-                         (!r.destinationOrgId || r.destinationOrgId === tx.toOrgId);
+      const matchingRule = rules.find((r) => {
+        const orgMatch =
+          (!r.sourceOrgId || r.sourceOrgId === tx.fromOrgId) &&
+          (!r.destinationOrgId || r.destinationOrgId === tx.toOrgId);
         return orgMatch;
       });
 
@@ -431,15 +506,20 @@ export class InterCompanyService {
     }
 
     if (eligibleDetails.length === 0) {
-      throw new BadRequestException('No intercompany transactions matched the active elimination rules.');
+      throw new BadRequestException(
+        "No intercompany transactions matched the active elimination rules.",
+      );
     }
 
     // 5. Build consolidated draft elimination Journal entries
-    const totalEliminated = eligibleDetails.reduce((sum, item) => sum + Number(item.tx.amount), 0);
+    const totalEliminated = eligibleDetails.reduce(
+      (sum, item) => sum + Number(item.tx.amount),
+      0,
+    );
 
     const journalEntries: any[] = [];
     for (const item of eligibleDetails) {
-      const rule = rules.find(r => r.id === item.ruleId)!;
+      const rule = rules.find((r) => r.id === item.ruleId)!;
       journalEntries.push({
         tenantId,
         accountId: rule.destinationAccountId,
@@ -464,7 +544,7 @@ export class InterCompanyService {
         orgId: primaryOrgId,
         entryNumber: `AUTO-ELIM-${Date.now().toString().slice(-6)}`,
         date: new Date(),
-        status: 'DRAFT',
+        status: "DRAFT",
         notes: `Consolidated Intercompany Auto-Elimination Run from ${periodStart} to ${periodEnd}`,
         entries: {
           create: journalEntries,
@@ -477,13 +557,15 @@ export class InterCompanyService {
         tenantId,
         periodStart: start,
         periodEnd: end,
-        status: 'DRAFT',
+        status: "DRAFT",
         totalEliminated: new Prisma.Decimal(totalEliminated),
-        rulesAppliedCount: Array.from(new Set(eligibleDetails.map(d => d.ruleId))).length,
+        rulesAppliedCount: Array.from(
+          new Set(eligibleDetails.map((d) => d.ruleId)),
+        ).length,
         journalId: journal.id,
-        createdBy: userId || 'system',
+        createdBy: userId || "system",
         details: {
-          create: eligibleDetails.map(item => ({
+          create: eligibleDetails.map((item) => ({
             ruleId: item.ruleId,
             transactionId: item.tx.id,
             amount: item.tx.amount,
@@ -504,15 +586,15 @@ export class InterCompanyService {
       where: { id: runId, tenantId },
       include: { details: true },
     });
-    if (!run) throw new NotFoundException('Elimination run not found');
-    if (run.status === 'POSTED') {
-      throw new BadRequestException('Elimination run has already been posted');
+    if (!run) throw new NotFoundException("Elimination run not found");
+    if (run.status === "POSTED") {
+      throw new BadRequestException("Elimination run has already been posted");
     }
 
     if (run.journalId) {
       await prisma.journal.update({
         where: { id: run.journalId },
-        data: { status: 'POSTED' },
+        data: { status: "POSTED" },
       });
     }
 
@@ -525,26 +607,26 @@ export class InterCompanyService {
         if (tx.fromInvoiceId) {
           await prisma.invoice.update({
             where: { id: tx.fromInvoiceId },
-            data: { status: 'PAID', paidAmount: tx.amount, paidAt: new Date() },
+            data: { status: "PAID", paidAmount: tx.amount, paidAt: new Date() },
           });
         }
         if (tx.toInvoiceId) {
           await prisma.paymentSchedule.update({
             where: { id: tx.toInvoiceId },
-            data: { status: 'PAID' },
+            data: { status: "PAID" },
           });
         }
 
         await prisma.interCompanyTransaction.update({
           where: { id: tx.id },
-          data: { status: 'ELIMINATED', eliminationJournalId: run.journalId },
+          data: { status: "ELIMINATED", eliminationJournalId: run.journalId },
         });
       }
     }
 
     return prisma.eliminationRun.update({
       where: { id: runId },
-      data: { status: 'POSTED' },
+      data: { status: "POSTED" },
       include: { journal: true },
     });
   }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Wallet,
@@ -13,7 +14,7 @@ import {
 } from "lucide-react";
 import { FinanceTabLayout } from "@/components/finance/FinanceTabLayout";
 import { SubTabBar } from "@/components/finance/SubTabBar";
-import { ListView, RouteGuard } from "@unerp/framework";
+import { ListView, RouteGuard, useApiClient } from "@unerp/framework";
 import { bankAccountResource } from "@/modules/finance";
 import { Card, PageHeader } from "@unerp/ui";
 
@@ -116,10 +117,40 @@ const BANKING_TABS = [
   },
 ];
 
+interface BankingSummary {
+  totalCash: number;
+  accountCount: number;
+}
+
+const EMPTY_BANKING_SUMMARY: BankingSummary = { totalCash: 0, accountCount: 0 };
+
 export default function BankingPage() {
   const searchParams = useSearchParams();
   const activeTab = searchParams.get("tab") || "overview";
   const subTab = searchParams.get("subtab");
+  const client = useApiClient();
+  const [summary, setSummary] = useState<BankingSummary>(EMPTY_BANKING_SUMMARY);
+
+  useEffect(() => {
+    if (activeTab !== "overview") return;
+    let cancelled = false;
+    client
+      .list<{ balance: number }>("/advanced-finance/bank-accounts", {
+        pageSize: 500,
+      })
+      .then((res) => {
+        if (cancelled) return;
+        const accounts = res.data ?? [];
+        setSummary({
+          totalCash: accounts.reduce((s, a) => s + Number(a.balance || 0), 0),
+          accountCount: res.total ?? accounts.length,
+        });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab, client]);
 
   return (
     <RouteGuard permission="finance.bank-account.read">
@@ -132,7 +163,7 @@ export default function BankingPage() {
       >
         {activeTab === "overview" && (
           <div className="ui-stack-4 ui-animate-in">
-            <div className="ui-grid-3">
+            <div className="ui-grid-2">
               <Card padding="md">
                 <div className="ui-stack-2">
                   <p className="ui-text-xs-muted">Total Cash Balance</p>
@@ -140,33 +171,31 @@ export default function BankingPage() {
                     className="ui-heading-sm"
                     style={{ color: "var(--color-primary)" }}
                   >
-                    $1,847,200
+                    {summary.totalCash.toLocaleString(undefined, {
+                      style: "currency",
+                      currency: "USD",
+                      maximumFractionDigits: 0,
+                    })}
                   </p>
-                  <p className="ui-text-xs-muted">Across 4 accounts</p>
+                  <p className="ui-text-xs-muted">
+                    Across {summary.accountCount} accounts
+                  </p>
                 </div>
               </Card>
               <Card padding="md">
                 <div className="ui-stack-2">
-                  <p className="ui-text-xs-muted">Pending Reconciliation</p>
-                  <p
-                    className="ui-heading-sm"
-                    style={{ color: "var(--color-warning)" }}
-                  >
-                    23
+                  <p className="ui-text-xs-muted">
+                    Cash Flow Forecast &amp; Reconciliation
                   </p>
-                  <p className="ui-text-xs-muted">Transactions to match</p>
-                </div>
-              </Card>
-              <Card padding="md">
-                <div className="ui-stack-2">
-                  <p className="ui-text-xs-muted">Forecasted 30-day</p>
                   <p
                     className="ui-heading-sm"
                     style={{ color: "var(--color-success)" }}
                   >
-                    $2.1M
+                    View Detail
                   </p>
-                  <p className="ui-text-xs-muted">Inflow / $1.8M outflow</p>
+                  <p className="ui-text-xs-muted">
+                    See Cash Position and Bank Reconciliation tabs
+                  </p>
                 </div>
               </Card>
             </div>

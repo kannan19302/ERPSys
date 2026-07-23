@@ -9,59 +9,57 @@ interface IntercompanyTransaction {
   id: string;
   sourceEntity: string;
   targetEntity: string;
-  transactionType: string;
+  description: string;
   amount: number | string;
   currency: string;
   status: string;
 }
+
+interface IntercompanyStats {
+  totalTransactionsCount: number;
+  eliminatedCount: number;
+  matchedCount: number;
+  pendingCount: number;
+  totalNettedVolume: number;
+  pendingNettingVolume: number;
+  pendingMatchVolume: number;
+}
+
+const EMPTY_STATS: IntercompanyStats = {
+  totalTransactionsCount: 0,
+  eliminatedCount: 0,
+  matchedCount: 0,
+  pendingCount: 0,
+  totalNettedVolume: 0,
+  pendingNettingVolume: 0,
+  pendingMatchVolume: 0,
+};
 
 export default function IntercompanyPage() {
   const client = useApiClient();
   const [transactions, setTransactions] = useState<IntercompanyTransaction[]>(
     [],
   );
+  const [stats, setStats] = useState<IntercompanyStats>(EMPTY_STATS);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchTransactions();
+    fetchData();
   }, []);
 
-  const fetchTransactions = async () => {
+  const fetchData = async () => {
     try {
-      const res = await client.get<IntercompanyTransaction[]>(
-        "/api/v1/advanced-finance/intercompany-transactions",
-      );
-      setTransactions(res || []);
-    } catch {
-      setTransactions([
-        {
-          id: "1",
-          sourceEntity: "UniERP US Inc",
-          targetEntity: "UniERP Europe GmbH",
-          transactionType: "MANAGEMENT_FEE",
-          amount: 125000,
-          currency: "USD",
-          status: "SETTLED",
-        },
-        {
-          id: "2",
-          sourceEntity: "UniERP US Inc",
-          targetEntity: "UniERP Asia Pacific Pte",
-          transactionType: "IP_ROYALTY",
-          amount: 84000,
-          currency: "USD",
-          status: "MATCHED",
-        },
-        {
-          id: "3",
-          sourceEntity: "UniERP Europe GmbH",
-          targetEntity: "UniERP Asia Pacific Pte",
-          transactionType: "INVENTORY_TRANSFER",
-          amount: 45000,
-          currency: "EUR",
-          status: "PENDING_ELIMINATION",
-        },
+      const [txRes, statsRes] = await Promise.all([
+        client.get<{ items: IntercompanyTransaction[]; total: number }>(
+          "/advanced-finance/intercompany/transactions",
+        ),
+        client.get<IntercompanyStats>("/advanced-finance/intercompany/stats"),
       ]);
+      setTransactions(txRes?.items || []);
+      setStats(statsRes || EMPTY_STATS);
+    } catch {
+      setTransactions([]);
+      setStats(EMPTY_STATS);
     } finally {
       setLoading(false);
     }
@@ -70,7 +68,7 @@ export default function IntercompanyPage() {
   const columns: ListColumn<IntercompanyTransaction>[] = [
     { key: "sourceEntity", header: "Source Entity" },
     { key: "targetEntity", header: "Target Entity" },
-    { key: "transactionType", header: "Transaction Type" },
+    { key: "description", header: "Description" },
     {
       key: "amount",
       header: "Amount",
@@ -81,7 +79,7 @@ export default function IntercompanyPage() {
       header: "Status",
       render: (val) => (
         <span
-          className={`ui-badge ui-badge-${val === "SETTLED" || val === "MATCHED" ? "success" : "warning"}`}
+          className={`ui-badge ui-badge-${val === "ELIMINATED" || val === "MATCHED" ? "success" : "warning"}`}
         >
           {String(val)}
         </span>
@@ -107,40 +105,45 @@ export default function IntercompanyPage() {
         <div className="ui-grid-3">
           <Card padding="md">
             <div className="ui-stack-2">
-              <p className="ui-text-xs-muted">Total Intercompany Entities</p>
+              <p className="ui-text-xs-muted">Total IC Transactions</p>
               <p
                 className="ui-heading-sm"
                 style={{ color: "var(--color-primary)" }}
               >
-                3 Entities
+                {stats.totalTransactionsCount}
               </p>
-              <p className="ui-text-xs-muted">US, Europe, Asia Pacific</p>
+              <p className="ui-text-xs-muted">
+                {stats.eliminatedCount} eliminated, {stats.matchedCount} matched
+              </p>
             </div>
           </Card>
           <Card padding="md">
             <div className="ui-stack-2">
-              <p className="ui-text-xs-muted">
-                Intercompany Volume (This Period)
-              </p>
+              <p className="ui-text-xs-muted">Netted Volume (Eliminated)</p>
               <p
                 className="ui-heading-sm"
                 style={{ color: "var(--color-success)" }}
               >
-                $254,000
+                ${stats.totalNettedVolume.toLocaleString()}
               </p>
-              <p className="ui-text-xs-muted">Automated IC matching active</p>
+              <p className="ui-text-xs-muted">
+                ${stats.pendingNettingVolume.toLocaleString()} pending netting
+              </p>
             </div>
           </Card>
           <Card padding="md">
             <div className="ui-stack-2">
-              <p className="ui-text-xs-muted">Pending Eliminations</p>
+              <p className="ui-text-xs-muted">Pending Match</p>
               <p
                 className="ui-heading-sm"
                 style={{ color: "var(--color-warning)" }}
               >
-                1 Entry
+                {stats.pendingCount}{" "}
+                {stats.pendingCount === 1 ? "Entry" : "Entries"}
               </p>
-              <p className="ui-text-xs-muted">Consolidation run ready</p>
+              <p className="ui-text-xs-muted">
+                ${stats.pendingMatchVolume.toLocaleString()} unmatched
+              </p>
             </div>
           </Card>
         </div>
@@ -152,9 +155,16 @@ export default function IntercompanyPage() {
             columns={columns}
             data={transactions}
             actions={
-              <Button variant="primary">
-                <ArrowRightLeft size={14} style={{ marginRight: "6px" }} /> +
-                New IC Transaction
+              <Button
+                variant="primary"
+                onClick={() =>
+                  client
+                    .post("/advanced-finance/intercompany/auto-match", {})
+                    .then(fetchData)
+                }
+              >
+                <ArrowRightLeft size={14} style={{ marginRight: "6px" }} /> Run
+                Auto-Match
               </Button>
             }
           />

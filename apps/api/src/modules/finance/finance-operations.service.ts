@@ -129,6 +129,7 @@ export interface VendorBill {
   tenantId: string;
   orgId: string;
   vendorId: string;
+  vendorName?: string;
   billNumber: string;
   billDate: string;
   dueDate: string;
@@ -410,17 +411,25 @@ export class FinanceOperationsService {
     subtotal: { toNumber(): number } | number;
     taxAmount: { toNumber(): number } | number;
     totalAmount: { toNumber(): number } | number;
+    paidAmount: { toNumber(): number } | number;
     status: string;
     notes: string | null;
     createdBy: string | null;
     createdAt: Date;
   }): Promise<VendorBill> {
-    const lineItems = await this.getLineItemsForBill(db.id);
+    const [lineItems, vendor] = await Promise.all([
+      this.getLineItemsForBill(db.id),
+      prisma.vendor.findUnique({
+        where: { id: db.vendorId },
+        select: { name: true },
+      }),
+    ]);
     return {
       id: db.id,
       tenantId: db.tenantId,
       orgId: db.orgId,
       vendorId: db.vendorId,
+      vendorName: vendor?.name,
       billNumber: db.billNumber,
       billDate: db.billDate.toISOString(),
       dueDate: db.dueDate.toISOString(),
@@ -435,7 +444,10 @@ export class FinanceOperationsService {
         typeof db.totalAmount === "number"
           ? db.totalAmount
           : Number(db.totalAmount),
-      paidAmount: 0,
+      paidAmount:
+        typeof db.paidAmount === "number"
+          ? db.paidAmount
+          : Number(db.paidAmount),
       notes: db.notes || undefined,
       createdAt: db.createdAt.toISOString(),
       createdBy: db.createdBy || "",
@@ -1613,7 +1625,8 @@ export class FinanceOperationsService {
       billDate: string;
       dueDate: string;
       purchaseOrderId?: string;
-      lineItems: Array<{
+      totalAmount?: number;
+      lineItems?: Array<{
         description: string;
         quantity: number;
         unitPrice: number;
@@ -1630,9 +1643,24 @@ export class FinanceOperationsService {
         `Bill number ${data.billNumber} already exists`,
       );
 
+    // A caller passing a flat `totalAmount` (no line-item breakdown) gets a
+    // single synthesized line item for it — the common case for a UI with no
+    // line-item editor.
+    const lineItemsInput =
+      data.lineItems && data.lineItems.length > 0
+        ? data.lineItems
+        : [
+            {
+              description: data.notes || "Vendor Bill",
+              quantity: 1,
+              unitPrice: data.totalAmount ?? 0,
+              taxRate: 0,
+            },
+          ];
+
     let subtotal = 0;
     let totalTax = 0;
-    const lineItemsData = data.lineItems.map((li) => {
+    const lineItemsData = lineItemsInput.map((li) => {
       const lineSubtotal = li.quantity * li.unitPrice;
       const lineTax = lineSubtotal * (li.taxRate / 100);
       subtotal += lineSubtotal;
@@ -1870,6 +1898,73 @@ export class FinanceOperationsService {
       orderBy: { createdAt: "desc" },
     });
     return payments.map((p) => this.toVendorBillPayment(p));
+  }
+
+  /**
+   * All outgoing vendor-bill payments across the tenant (not scoped to one
+   * bill), enriched with the bill number and vendor name for display.
+   */
+  async listVendorBillPayments(
+    tenantId: string,
+    page = 1,
+    limit = 50,
+  ): Promise<{
+    data: unknown[];
+    total: number;
+    page: number;
+    pageSize: number;
+  }> {
+    const skip = (page - 1) * limit;
+    const where = {
+      tenantId,
+      type: "ONE_TIME",
+      metadata: { path: ["billId"], not: null },
+    } as any;
+    const [payments, total] = await Promise.all([
+      prisma.paymentTransaction.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      }),
+      prisma.paymentTransaction.count({ where }),
+    ]);
+
+    const billIds = [
+      ...new Set(
+        payments
+          .map(
+            (p) =>
+              (p.metadata as Record<string, unknown> | null)?.billId as
+                | string
+                | undefined,
+          )
+          .filter((id): id is string => !!id),
+      ),
+    ];
+    const bills = await prisma.vendorBill.findMany({
+      where: { id: { in: billIds } },
+      select: { id: true, billNumber: true, vendorId: true },
+    });
+    const billMap = new Map(bills.map((b) => [b.id, b]));
+    const vendorIds = [...new Set(bills.map((b) => b.vendorId))];
+    const vendors = await prisma.vendor.findMany({
+      where: { id: { in: vendorIds } },
+      select: { id: true, name: true },
+    });
+    const vendorMap = new Map(vendors.map((v) => [v.id, v.name]));
+
+    const data = payments.map((p) => {
+      const base = this.toVendorBillPayment(p);
+      const bill = billMap.get(base.billId);
+      return {
+        ...base,
+        billNumber: bill?.billNumber,
+        vendorName: bill ? vendorMap.get(bill.vendorId) : undefined,
+      };
+    });
+
+    return { data, total, page, pageSize: limit };
   }
 
   async bulkApproveVendorBills(
@@ -2136,6 +2231,116 @@ export class FinanceOperationsService {
     };
   }
 
+  async getCashPositionReport(tenantId: string) {
+    const accounts = await this.listBankAccounts(tenantId, 1, 1000);
+    const totalCash = accounts.reduce((s, a) => s + a.currentBalance, 0);
+    const operatingCash = accounts
+      .filter((a) => a.accountType === "CHECKING" || a.accountType === "CASH")
+      .reduce((s, a) => s + a.currentBalance, 0);
+    const reserves = accounts
+      .filter((a) => a.accountType === "SAVINGS")
+      .reduce((s, a) => s + a.currentBalance, 0);
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const sevenDaysAgo = new Date(todayStart);
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+
+    const transactions = await prisma.bankTransaction.findMany({
+      where: { tenantId, date: { gte: sevenDaysAgo } },
+      select: { amount: true, date: true },
+    });
+
+    const netChangeToday = transactions
+      .filter((t) => t.date >= todayStart)
+      .reduce((s, t) => s + Number(t.amount), 0);
+
+    const dailyFlows: Record<string, { inflows: number; outflows: number }> =
+      {};
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(sevenDaysAgo);
+      d.setDate(d.getDate() + i);
+      dailyFlows[d.toISOString().slice(0, 10)] = { inflows: 0, outflows: 0 };
+    }
+    for (const t of transactions) {
+      const key = t.date.toISOString().slice(0, 10);
+      if (!dailyFlows[key]) continue;
+      const amt = Number(t.amount);
+      if (amt >= 0) dailyFlows[key].inflows += amt;
+      else dailyFlows[key].outflows += Math.abs(amt);
+    }
+
+    const round2 = (n: number) => Math.round(n * 100) / 100;
+
+    return {
+      totalCash: round2(totalCash),
+      operatingCash: round2(operatingCash),
+      reserves: round2(reserves),
+      netChangeToday: round2(netChangeToday),
+      accounts: accounts.map((a) => ({
+        name: a.accountName,
+        bankName: a.bankName,
+        balance: a.currentBalance,
+        currency: a.currency,
+        type: a.accountType,
+      })),
+      dailyFlows: Object.entries(dailyFlows).map(([date, v]) => ({
+        date,
+        inflows: round2(v.inflows),
+        outflows: round2(v.outflows),
+      })),
+    };
+  }
+
+  async getFinancialRatios(tenantId: string, asOfDate: string) {
+    const asOf = new Date(asOfDate);
+    const yearStart = new Date(asOf.getFullYear(), 0, 1).toISOString();
+
+    const [balanceSheet, profitLoss, invoices] = await Promise.all([
+      this.getBalanceSheet(tenantId, asOfDate),
+      this.getProfitLoss(tenantId, yearStart, asOfDate),
+      prisma.invoice.findMany({
+        where: { tenantId, deletedAt: null },
+        select: { totalAmount: true, paidAmount: true, status: true },
+      }),
+    ]);
+
+    const totalAssets = balanceSheet.assets.total;
+    const totalLiabilities = balanceSheet.liabilities.total;
+    const totalEquity = balanceSheet.equity.total;
+    const { totalRevenue, netIncome } = profitLoss;
+
+    const totalReceivables = invoices.reduce(
+      (s, i) => s + Number(i.totalAmount) - Number(i.paidAmount || 0),
+      0,
+    );
+    const totalBilled = invoices.reduce((s, i) => s + Number(i.totalAmount), 0);
+    const dso = totalBilled
+      ? Math.round((totalReceivables / totalBilled) * 365)
+      : 0;
+
+    const round2 = (n: number) => Math.round(n * 100) / 100;
+
+    return {
+      asOfDate,
+      // No current/non-current account tagging exists yet, so this is
+      // Total Assets / Total Liabilities, not a textbook Current Ratio.
+      assetToLiabilityRatio: totalLiabilities
+        ? round2(totalAssets / totalLiabilities)
+        : 0,
+      debtToEquity: totalEquity ? round2(totalLiabilities / totalEquity) : 0,
+      returnOnEquity: totalEquity ? round2((netIncome / totalEquity) * 100) : 0,
+      returnOnAssets: totalAssets ? round2((netIncome / totalAssets) * 100) : 0,
+      netMargin: totalRevenue ? round2((netIncome / totalRevenue) * 100) : 0,
+      daysSalesOutstanding: dso,
+      totalAssets,
+      totalLiabilities,
+      totalEquity,
+      totalRevenue,
+      netIncome,
+    };
+  }
+
   async getCashFlow(tenantId: string, startDate: string, endDate: string) {
     const start = new Date(startDate);
     const end = new Date(endDate);
@@ -2251,6 +2456,65 @@ export class FinanceOperationsService {
         difference: Math.round((totalDebits - totalCredits) * 100) / 100,
       },
     };
+  }
+
+  /**
+   * Compares GL account balances against their independent sub-ledger totals.
+   * Only accounts with a real sub-ledger source (AR: open invoices, AP: open
+   * vendor bills) are included — accounts named "Receivable"/"Payable" is the
+   * matching convention this codebase's chart of accounts already follows.
+   * Other GL accounts have no independent sub-ledger in this system, so
+   * fabricating a "matched" row for them would be dishonest.
+   */
+  async getAccountReconciliation(tenantId: string, asOfDate: string) {
+    const trialBalance = await this.getTrialBalance(tenantId, asOfDate);
+    const asOf = new Date(asOfDate);
+
+    const [invoices, vendorBills] = await Promise.all([
+      prisma.invoice.findMany({
+        where: { tenantId, deletedAt: null, issueDate: { lte: asOf } },
+        select: { totalAmount: true, paidAmount: true },
+      }),
+      prisma.vendorBill.findMany({
+        where: { tenantId, deletedAt: null, billDate: { lte: asOf } },
+        select: { totalAmount: true, paidAmount: true },
+      }),
+    ]);
+
+    const arSubLedger = invoices.reduce(
+      (s, i) => s + Number(i.totalAmount) - Number(i.paidAmount || 0),
+      0,
+    );
+    const apSubLedger = vendorBills.reduce(
+      (s, b) => s + Number(b.totalAmount) - Number(b.paidAmount || 0),
+      0,
+    );
+
+    const round2 = (n: number) => Math.round(n * 100) / 100;
+
+    const items = trialBalance.accounts
+      .filter((a) => /receivable|payable/i.test(a.accountName))
+      .map((a) => {
+        const isReceivable = /receivable/i.test(a.accountName);
+        const subLedgerBalance = round2(
+          isReceivable ? arSubLedger : apSubLedger,
+        );
+        const glBalance = round2(isReceivable ? a.balance : -a.balance);
+        const difference = round2(glBalance - subLedgerBalance);
+        return {
+          id: a.accountId,
+          accountCode: a.accountCode,
+          accountName: a.accountName,
+          glBalance,
+          subLedgerBalance,
+          difference,
+          status: (Math.abs(difference) < 0.01 ? "MATCHED" : "VARIANCE") as
+            | "MATCHED"
+            | "VARIANCE",
+        };
+      });
+
+    return { asOfDate, items };
   }
 
   async getArAging(tenantId: string, asOfDate: string) {

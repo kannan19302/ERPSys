@@ -15,6 +15,10 @@ import { CloseOpsService } from "./close-ops.service";
 import { CloseOpsController } from "./close-ops.controller";
 import { ProjectAccountingService } from "./project-accounting.service";
 import { ProjectAccountingController } from "./project-accounting.controller";
+import { FinanceExpansionService } from "./finance-expansion.service";
+import { FinanceExpansionController } from "./finance-expansion.controller";
+import { FinanceOperationsService } from "./finance-operations.service";
+import { FinanceOperationsController } from "./finance-operations.controller";
 
 @Module({
   controllers: [
@@ -25,6 +29,8 @@ import { ProjectAccountingController } from "./project-accounting.controller";
     ApDeepController,
     CloseOpsController,
     ProjectAccountingController,
+    FinanceExpansionController,
+    FinanceOperationsController,
   ],
   providers: [
     FinanceService,
@@ -36,6 +42,8 @@ import { ProjectAccountingController } from "./project-accounting.controller";
     ApDeepService,
     CloseOpsService,
     ProjectAccountingService,
+    FinanceExpansionService,
+    FinanceOperationsService,
   ],
   exports: [FinanceService, LeaseAccountingService, FinanceDemoDataService],
 })

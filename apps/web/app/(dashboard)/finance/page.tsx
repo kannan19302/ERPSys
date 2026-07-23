@@ -57,6 +57,20 @@ interface DashboardData {
   charts: DashboardCharts;
 }
 
+interface ComplianceSummary {
+  periodName: string | null;
+  closePct: number | null;
+  bankAccountCount: number | null;
+  icEliminationsRun: boolean | null;
+}
+
+const EMPTY_COMPLIANCE: ComplianceSummary = {
+  periodName: null,
+  closePct: null,
+  bankAccountCount: null,
+  icEliminationsRun: null,
+};
+
 const EMPTY_KPIS: DashboardKPIs = {
   totalRevenueYtd: 0,
   totalRevenue: 0,
@@ -278,11 +292,13 @@ export default function FinanceDashboardPage() {
     kpis: EMPTY_KPIS,
     charts: EMPTY_CHARTS,
   });
+  const [compliance, setCompliance] =
+    useState<ComplianceSummary>(EMPTY_COMPLIANCE);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await client.get<DashboardData>("/api/v1/finance/dashboard");
+      const res = await client.get<DashboardData>("/finance/dashboard");
       if (res) setData(res);
     } catch {
       // Graceful fallback — charts will show empty-state placeholders
@@ -291,9 +307,53 @@ export default function FinanceDashboardPage() {
     }
   }, [client]);
 
+  const fetchCompliance = useCallback(async () => {
+    try {
+      const periodsRes = await client.get<{
+        data: Array<{ id: string; name: string; status: string }>;
+      }>("/finance/close/financial-periods");
+      const openPeriod = periodsRes?.data?.find((p) => p.status === "OPEN");
+
+      let closePct: number | null = null;
+      if (openPeriod) {
+        const dash = await client
+          .get<{
+            totalTasks: number;
+            completionPercent: number;
+          }>(`/advanced-finance/close-tasks/dashboard?periodId=${openPeriod.id}`)
+          .catch(() => null);
+        if (dash && dash.totalTasks > 0) {
+          closePct = Math.round(dash.completionPercent);
+        }
+      }
+
+      const bankAccounts = await client
+        .list<{
+          id: string;
+        }>("/advanced-finance/bank-accounts", { pageSize: 1 })
+        .catch(() => null);
+
+      const icRuns = await client
+        .get<
+          Array<{ status: string }>
+        >("/advanced-finance/intercompany/elimination-runs")
+        .catch(() => null);
+
+      setCompliance({
+        periodName: openPeriod?.name ?? null,
+        closePct,
+        bankAccountCount: bankAccounts?.total ?? null,
+        icEliminationsRun: Array.isArray(icRuns) ? icRuns.length > 0 : null,
+      });
+    } catch {
+      // Leave as empty/unknown — never show fabricated compliance status
+    }
+  }, [client]);
+
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+    fetchCompliance();
+  }, [fetchData, fetchCompliance]);
 
   const { kpis, charts } = data;
 
@@ -683,24 +743,46 @@ export default function FinanceDashboardPage() {
             </div>
             {[
               {
-                label: "Q2 Financial Period Close",
-                status: "In Progress (85%)",
-                variant: "warning",
+                label: compliance.periodName
+                  ? `${compliance.periodName} Period Close`
+                  : "Financial Period Close",
+                status:
+                  compliance.periodName === null
+                    ? "No open period"
+                    : compliance.closePct === null
+                      ? "No checklist yet"
+                      : compliance.closePct >= 100
+                        ? "Complete"
+                        : `In Progress (${compliance.closePct}%)`,
+                variant:
+                  compliance.closePct !== null && compliance.closePct >= 100
+                    ? "success"
+                    : "warning",
               },
               {
-                label: "Bank Account Reconciliation",
-                status: "Up to Date",
-                variant: "success",
+                label: "Bank Accounts",
+                status:
+                  compliance.bankAccountCount === null
+                    ? "Unknown"
+                    : compliance.bankAccountCount === 0
+                      ? "None configured"
+                      : `${compliance.bankAccountCount} configured`,
+                variant: compliance.bankAccountCount ? "success" : "info",
               },
               {
                 label: "Sales Tax & VAT Filing",
-                status: "Due Aug 15",
+                status: "Not yet tracked",
                 variant: "info",
               },
               {
                 label: "Intercompany Eliminations",
-                status: "Completed",
-                variant: "neutral",
+                status:
+                  compliance.icEliminationsRun === null
+                    ? "Unknown"
+                    : compliance.icEliminationsRun
+                      ? "Run this period"
+                      : "Not run",
+                variant: compliance.icEliminationsRun ? "success" : "neutral",
               },
             ].map((item) => (
               <div

@@ -91,7 +91,7 @@ export class FinanceDemoDataService {
           invoiceNumber: "INV-DEMO-003",
           amount: 8400,
           paidAmount: 2400,
-          status: "PARTIAL",
+          status: "PARTIALLY_PAID",
           daysAgo: 60,
         },
         {
@@ -142,7 +142,7 @@ export class FinanceDemoDataService {
               invoiceId: createdInv.id,
               amount: new Prisma.Decimal(inv.paidAmount),
               paidAt: new Date(issueDate.getTime() + 10 * 86400000),
-              method: "CREDIT_CARD",
+              method: "CARD",
               reference: `PAY-DEMO-${createdInv.id.slice(0, 6)}`,
             },
           });

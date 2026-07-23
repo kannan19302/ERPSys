@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   FileText,
@@ -13,10 +14,14 @@ import {
 } from "lucide-react";
 import { FinanceTabLayout } from "@/components/finance/FinanceTabLayout";
 import { SubTabBar } from "@/components/finance/SubTabBar";
-import { ListView, RouteGuard } from "@unerp/framework";
-import { invoiceResource, paymentResource } from "@/modules/finance";
+import { FormView, ListView, RouteGuard, useApiClient } from "@unerp/framework";
+import {
+  invoiceResource,
+  paymentResource,
+  creditNoteResource,
+} from "@/modules/finance";
 import { customerResource } from "@/modules/crm";
-import { Card, PageHeader } from "@unerp/ui";
+import { Button, Card, Modal, PageHeader, useToast } from "@unerp/ui";
 
 import ArAgingPage from "../advanced/ar-aging/page";
 import ArAutomationPage from "../advanced/ar-automation/page";
@@ -115,10 +120,107 @@ const AR_TABS = [
   },
 ];
 
+interface ArSummary {
+  outstandingAr: number;
+  totalInvoices: number;
+  overdueAmount: number;
+  overdueInvoices: number;
+  collectedThisMonth: number;
+  collectedLastMonth: number;
+}
+
+const EMPTY_AR_SUMMARY: ArSummary = {
+  outstandingAr: 0,
+  totalInvoices: 0,
+  overdueAmount: 0,
+  overdueInvoices: 0,
+  collectedThisMonth: 0,
+  collectedLastMonth: 0,
+};
+
+function CreditNotesPanel() {
+  const { success } = useToast();
+  const [showCreate, setShowCreate] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  return (
+    <div className="ui-stack-4">
+      <ListView
+        key={refreshKey}
+        resource={creditNoteResource}
+        onCreate={() => setShowCreate(true)}
+      />
+      <Modal
+        open={showCreate}
+        onClose={() => setShowCreate(false)}
+        title="Create Credit Note"
+        size="lg"
+      >
+        <FormView
+          resource={creditNoteResource}
+          onSuccess={() => {
+            setShowCreate(false);
+            success("Credit note created");
+            setRefreshKey((k) => k + 1);
+          }}
+          onCancel={() => setShowCreate(false)}
+        />
+      </Modal>
+    </div>
+  );
+}
+
 export default function ARPage() {
   const searchParams = useSearchParams();
   const activeTab = searchParams.get("tab") || "overview";
   const subTab = searchParams.get("subtab");
+  const client = useApiClient();
+  const [summary, setSummary] = useState<ArSummary>(EMPTY_AR_SUMMARY);
+
+  useEffect(() => {
+    if (activeTab !== "overview") return;
+    let cancelled = false;
+    client
+      .get<{
+        kpis: {
+          outstandingAr: number;
+          totalInvoices: number;
+          overdueInvoices: number;
+        };
+        charts: {
+          cashFlowTrend: Array<{ month: string; inflows: number }>;
+          arAgingChart: Array<{ bucket: string; amount: number }>;
+        };
+      }>("/finance/dashboard")
+      .then((res) => {
+        if (cancelled || !res) return;
+        const trend = res.charts?.cashFlowTrend ?? [];
+        const overdueAmount = (res.charts?.arAgingChart ?? [])
+          .filter((b) => b.bucket !== "Current")
+          .reduce((sum, b) => sum + (b.amount || 0), 0);
+        setSummary({
+          outstandingAr: res.kpis.outstandingAr ?? 0,
+          totalInvoices: res.kpis.totalInvoices ?? 0,
+          overdueAmount,
+          overdueInvoices: res.kpis.overdueInvoices ?? 0,
+          collectedThisMonth: trend[trend.length - 1]?.inflows ?? 0,
+          collectedLastMonth: trend[trend.length - 2]?.inflows ?? 0,
+        });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab, client]);
+
+  const momChange =
+    summary.collectedLastMonth > 0
+      ? Math.round(
+          ((summary.collectedThisMonth - summary.collectedLastMonth) /
+            summary.collectedLastMonth) *
+            100,
+        )
+      : null;
 
   return (
     <RouteGuard permission="finance.invoice.read">
@@ -139,9 +241,15 @@ export default function ARPage() {
                     className="ui-heading-sm"
                     style={{ color: "var(--color-primary)" }}
                   >
-                    $284,500
+                    {summary.outstandingAr.toLocaleString(undefined, {
+                      style: "currency",
+                      currency: "USD",
+                      maximumFractionDigits: 0,
+                    })}
                   </p>
-                  <p className="ui-text-xs-muted">Across 156 invoices</p>
+                  <p className="ui-text-xs-muted">
+                    Across {summary.totalInvoices} invoices
+                  </p>
                 </div>
               </Card>
               <Card padding="md">
@@ -151,9 +259,15 @@ export default function ARPage() {
                     className="ui-heading-sm"
                     style={{ color: "var(--color-danger)" }}
                   >
-                    $42,800
+                    {summary.overdueAmount.toLocaleString(undefined, {
+                      style: "currency",
+                      currency: "USD",
+                      maximumFractionDigits: 0,
+                    })}
                   </p>
-                  <p className="ui-text-xs-muted">12 invoices past due</p>
+                  <p className="ui-text-xs-muted">
+                    {summary.overdueInvoices} invoices past due
+                  </p>
                 </div>
               </Card>
               <Card padding="md">
@@ -163,9 +277,17 @@ export default function ARPage() {
                     className="ui-heading-sm"
                     style={{ color: "var(--color-success)" }}
                   >
-                    $187,200
+                    {summary.collectedThisMonth.toLocaleString(undefined, {
+                      style: "currency",
+                      currency: "USD",
+                      maximumFractionDigits: 0,
+                    })}
                   </p>
-                  <p className="ui-text-xs-muted">+12% vs last month</p>
+                  <p className="ui-text-xs-muted">
+                    {momChange === null
+                      ? "No data for last month"
+                      : `${momChange >= 0 ? "+" : ""}${momChange}% vs last month`}
+                  </p>
                 </div>
               </Card>
             </div>
@@ -212,6 +334,11 @@ export default function ARPage() {
             <SubTabBar
               tabs={[
                 {
+                  id: "notes",
+                  label: "Credit Notes",
+                  href: "/finance/ar?tab=credit-notes",
+                },
+                {
                   id: "statements",
                   label: "Customer Statements",
                   href: "/finance/ar?tab=credit-notes&subtab=statements",
@@ -234,14 +361,16 @@ export default function ARPage() {
               ]}
             />
             <div style={{ marginTop: "var(--space-3)" }}>
-              {subTab === "analytics" ? (
+              {subTab === "statements" ? (
+                <CustomerStatementPage />
+              ) : subTab === "analytics" ? (
                 <InvoiceAnalyticsPage />
               ) : subTab === "risk" ? (
                 <CreditRiskPage />
               ) : subTab === "reconciliation" ? (
                 <AccountReconciliationPage />
               ) : (
-                <CustomerStatementPage />
+                <CreditNotesPanel />
               )}
             </div>
           </div>

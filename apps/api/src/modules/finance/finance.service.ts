@@ -97,6 +97,66 @@ export class FinanceService {
   }
 
   /**
+   * Fetch all payments with pagination, sorting, and filtering.
+   */
+  async getPaymentsList(
+    tenantId: string,
+    params: PaginationParams & { invoiceId?: string; customerId?: string } = {},
+  ): Promise<PaginatedResult<any>> {
+    const where: any = { tenantId };
+    if (params.invoiceId) where.invoiceId = params.invoiceId;
+    if (params.customerId) where.invoice = { customerId: params.customerId };
+    if (params.search) {
+      where.OR = [
+        { reference: { contains: params.search, mode: "insensitive" } },
+        {
+          invoice: {
+            invoiceNumber: { contains: params.search, mode: "insensitive" },
+          },
+        },
+      ];
+    }
+
+    const { skip, take } = buildPaginationValues(params);
+    const orderBy = buildOrderBy(params.sort) ?? { paidAt: "desc" };
+
+    const [payments, total] = await Promise.all([
+      prisma.payment.findMany({
+        where,
+        include: {
+          invoice: {
+            select: {
+              invoiceNumber: true,
+              customerId: true,
+              customer: { select: { name: true } },
+            },
+          },
+        },
+        skip,
+        take,
+        orderBy: orderBy as any,
+      }),
+      prisma.payment.count({ where }),
+    ]);
+
+    const data = (payments as any[]).map((p) => ({
+      id: p.id,
+      invoiceId: p.invoiceId,
+      invoiceNumber: p.invoice?.invoiceNumber,
+      customerId: p.invoice?.customerId,
+      customerName: p.invoice?.customer?.name || "Unknown",
+      amount: Number(p.amount),
+      currency: p.currency,
+      method: p.method,
+      reference: p.reference,
+      notes: p.notes,
+      paidAt: p.paidAt,
+    }));
+
+    return paginatedResult(data, total, params);
+  }
+
+  /**
    * Get single invoice by ID.
    */
   async getInvoiceById(tenantId: string, id: string) {
@@ -144,11 +204,26 @@ export class FinanceService {
     });
     if (!customer) throw new NotFoundException("Customer not found");
 
+    // A caller passing a flat `totalAmount` (no line-item breakdown) gets a
+    // single synthesized line item for it — the common case for a UI with no
+    // line-item editor.
+    const lineItemsInput =
+      dto.lineItems && dto.lineItems.length > 0
+        ? dto.lineItems
+        : [
+            {
+              description: dto.notes || "Invoice",
+              quantity: 1,
+              unitPrice: dto.totalAmount ?? 0,
+              taxRate: 0,
+            },
+          ];
+
     return prisma.$transaction(async (tx) => {
       let subtotal = 0;
       let totalTax = 0;
 
-      const linesData = dto.lineItems.map((item, index) => {
+      const linesData = lineItemsInput.map((item, index) => {
         const lineSubtotal = item.quantity * item.unitPrice;
         const lineTax = lineSubtotal * (item.taxRate / 100);
         const lineTotal = lineSubtotal + lineTax;
@@ -200,8 +275,8 @@ export class FinanceService {
           customerId: dto.customerId,
           totalAmount,
           currency: "USD",
-          lineItems: dto.lineItems.map((li) => ({
-            productId: li.productId,
+          lineItems: lineItemsInput.map((li) => ({
+            productId: "productId" in li ? li.productId : undefined,
             quantity: li.quantity,
             unitPrice: li.unitPrice,
           })),
@@ -534,7 +609,7 @@ export class FinanceService {
           where: {
             tenantId,
             deletedAt: null,
-            status: { in: ["SENT", "OVERDUE", "PARTIAL"] },
+            status: { in: ["SENT", "OVERDUE", "PARTIALLY_PAID"] },
           },
           _sum: { totalAmount: true, paidAmount: true },
         }),
@@ -648,7 +723,7 @@ export class FinanceService {
     const today = new Date();
     const arAging = { current: 0, days30: 0, days60: 0, days90: 0, over90: 0 };
     for (const inv of allInvoices as any[]) {
-      if (!["SENT", "OVERDUE", "PARTIAL"].includes(inv.status)) continue;
+      if (!["SENT", "OVERDUE", "PARTIALLY_PAID"].includes(inv.status)) continue;
       const outstanding = Number(inv.totalAmount) - Number(inv.paidAmount);
       if (outstanding <= 0) continue;
       const daysOverdue = inv.dueDate

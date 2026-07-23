@@ -82,8 +82,22 @@ const updateBudgetSchema = z.object({
 });
 const createVendorBillSchema = z.object({
   vendorId: z.string(),
-  totalAmount: z.number().positive(),
-  dueDate: z.string().optional(),
+  billNumber: z.string().default(() => `BILL-${Date.now()}`),
+  billDate: z.string().default(() => new Date().toISOString().split("T")[0]!),
+  dueDate: z.string().default(() => new Date().toISOString().split("T")[0]!),
+  purchaseOrderId: z.string().optional(),
+  totalAmount: z.number().positive().optional(),
+  lineItems: z
+    .array(
+      z.object({
+        description: z.string(),
+        quantity: z.number(),
+        unitPrice: z.number(),
+        taxRate: z.number().default(0),
+      }),
+    )
+    .optional(),
+  notes: z.string().optional(),
 });
 const updateVendorBillSchema = z.object({
   totalAmount: z.number().positive().optional(),
@@ -91,6 +105,7 @@ const updateVendorBillSchema = z.object({
 });
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import { FinanceOperationsService } from "./finance-operations.service";
+import { resolveOrgId } from "../../common/utils/pagination.util";
 
 // ─── Inline Zod schemas for endpoints not covered by @unerp/shared schemas ─────
 // Fix for security issue #40: every POST/PATCH body must pass through Zod validation
@@ -138,6 +153,13 @@ const syncExchangeRatesSchema = z.object({
 
 const reconcileBankTransactionSchema = z.object({
   transactionId: z.string().min(1),
+});
+
+const addBankTransactionSchema = z.object({
+  amount: z.number().positive(),
+  type: z.enum(["CREDIT", "DEBIT"]),
+  description: z.string().min(1),
+  date: z.string().optional(),
 });
 
 const bulkVerifyBankAccountsSchema = z.object({
@@ -226,8 +248,8 @@ export class FinanceOperationsController {
   ) {
     return this.opsService.listPaymentTerms(
       req.user.tenantId,
-      page,
-      limit,
+      page ? Number(page) : undefined,
+      limit ? Number(limit) : undefined,
       sortBy,
       sortOrder,
     );
@@ -329,8 +351,8 @@ export class FinanceOperationsController {
   ) {
     return this.opsService.listPaymentMethods(
       req.user.tenantId,
-      page,
-      limit,
+      page ? Number(page) : undefined,
+      limit ? Number(limit) : undefined,
       sortBy,
       sortOrder,
     );
@@ -409,8 +431,8 @@ export class FinanceOperationsController {
   ) {
     return this.opsService.listTaxRates(
       req.user.tenantId,
-      page,
-      limit,
+      page ? Number(page) : undefined,
+      limit ? Number(limit) : undefined,
       sortBy,
       sortOrder,
     );
@@ -531,8 +553,8 @@ export class FinanceOperationsController {
   ) {
     return this.opsService.listTaxJurisdictions(
       req.user.tenantId,
-      page,
-      limit,
+      page ? Number(page) : undefined,
+      limit ? Number(limit) : undefined,
       sortBy,
       sortOrder,
     );
@@ -592,8 +614,8 @@ export class FinanceOperationsController {
   ) {
     return this.opsService.listCurrencies(
       req.user.tenantId,
-      page,
-      limit,
+      page ? Number(page) : undefined,
+      limit ? Number(limit) : undefined,
       sortBy,
       sortOrder,
     );
@@ -657,8 +679,8 @@ export class FinanceOperationsController {
   ) {
     return this.opsService.listExchangeRates(
       req.user.tenantId,
-      page,
-      limit,
+      page ? Number(page) : undefined,
+      limit ? Number(limit) : undefined,
       sortBy,
       sortOrder,
     );
@@ -747,8 +769,8 @@ export class FinanceOperationsController {
   ) {
     return this.opsService.listBankAccounts(
       req.user.tenantId,
-      page,
-      limit,
+      page ? Number(page) : undefined,
+      limit ? Number(limit) : undefined,
       sortBy,
       sortOrder,
     );
@@ -781,7 +803,7 @@ export class FinanceOperationsController {
     @Req() req: AuthenticatedRequest,
     @ZodBody(createBankAccountSchema) dto: Record<string, unknown>,
   ) {
-    const orgId = req.user.orgId || "org-system-default";
+    const orgId = await resolveOrgId(req.user.tenantId, req.user.orgId);
     return this.opsService.createBankAccount(req.user.tenantId, orgId, {
       accountName: dto.accountName as string,
       bankName: dto.bankName as string,
@@ -857,6 +879,20 @@ export class FinanceOperationsController {
     return this.opsService.getBankAccountTransactions(req.user.tenantId, id);
   }
 
+  @ApiOperation({ summary: "Add a bank transaction" })
+  @Post("bank-accounts/:id/transactions")
+  @Permissions("finance.bank-account.update")
+  @UseInterceptors(ChangeHistoryInterceptor)
+  @TrackChanges("BankTransaction")
+  async addBankTransaction(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+    @ZodBody(addBankTransactionSchema)
+    dto: z.infer<typeof addBankTransactionSchema>,
+  ) {
+    return this.opsService.addBankTransaction(req.user.tenantId, id, dto);
+  }
+
   @ApiOperation({ summary: "Reconcile a bank transaction" })
   @Post("bank-accounts/:id/reconcile")
   @Permissions("finance.bank-account.update")
@@ -912,8 +948,8 @@ export class FinanceOperationsController {
   ) {
     return this.opsService.listBudgets(
       req.user.tenantId,
-      page,
-      limit,
+      page ? Number(page) : undefined,
+      limit ? Number(limit) : undefined,
       sortBy,
       sortOrder,
     );
@@ -953,7 +989,7 @@ export class FinanceOperationsController {
     @Req() req: AuthenticatedRequest,
     @ZodBody(createBudgetSchema) dto: Record<string, unknown>,
   ) {
-    const orgId = req.user.orgId || "org-system-default";
+    const orgId = await resolveOrgId(req.user.tenantId, req.user.orgId);
     return this.opsService.createBudget(req.user.tenantId, orgId, {
       name: dto.name as string,
       fiscalYear: dto.fiscalYear as number,
@@ -1031,7 +1067,7 @@ export class FinanceOperationsController {
     @ZodBody(bulkCreateBudgetsSchema)
     dto: z.infer<typeof bulkCreateBudgetsSchema>,
   ) {
-    const orgId = req.user.orgId || "org-system-default";
+    const orgId = await resolveOrgId(req.user.tenantId, req.user.orgId);
     return this.opsService.bulkCreateBudgets(
       req.user.tenantId,
       orgId,
@@ -1066,8 +1102,8 @@ export class FinanceOperationsController {
   ) {
     return this.opsService.listVendorBills(
       req.user.tenantId,
-      page,
-      limit,
+      page ? Number(page) : undefined,
+      limit ? Number(limit) : undefined,
       sortBy,
       sortOrder,
     );
@@ -1111,7 +1147,7 @@ export class FinanceOperationsController {
     @Req() req: AuthenticatedRequest,
     @ZodBody(createVendorBillSchema) dto: Record<string, unknown>,
   ) {
-    const orgId = req.user.orgId || "org-system-default";
+    const orgId = await resolveOrgId(req.user.tenantId, req.user.orgId);
     return this.opsService.createVendorBill(
       req.user.tenantId,
       orgId,
@@ -1122,12 +1158,15 @@ export class FinanceOperationsController {
         billDate: dto.billDate as string,
         dueDate: dto.dueDate as string,
         purchaseOrderId: dto.purchaseOrderId as string | undefined,
-        lineItems: dto.lineItems as Array<{
-          description: string;
-          quantity: number;
-          unitPrice: number;
-          taxRate: number;
-        }>,
+        totalAmount: dto.totalAmount as number | undefined,
+        lineItems: dto.lineItems as
+          | Array<{
+              description: string;
+              quantity: number;
+              unitPrice: number;
+              taxRate: number;
+            }>
+          | undefined,
         notes: dto.notes as string | undefined,
       },
     );
@@ -1221,6 +1260,21 @@ export class FinanceOperationsController {
     return this.opsService.getVendorBillPaymentHistory(req.user.tenantId, id);
   }
 
+  @ApiOperation({ summary: "List all vendor bill payments (paginated)" })
+  @Get("vendor-bill-payments")
+  @Permissions("finance.payables.read")
+  async listVendorBillPayments(
+    @Req() req: AuthenticatedRequest,
+    @Query("page") page?: number,
+    @Query("limit") limit?: number,
+  ) {
+    return this.opsService.listVendorBillPayments(
+      req.user.tenantId,
+      page ? Number(page) : undefined,
+      limit ? Number(limit) : undefined,
+    );
+  }
+
   @ApiOperation({ summary: "Bulk approve vendor bills" })
   @Post("vendor-bills/bulk-approve")
   @Permissions("finance.payables.manage")
@@ -1263,8 +1317,8 @@ export class FinanceOperationsController {
   ) {
     return this.opsService.getPendingApprovalVendorBills(
       req.user.tenantId,
-      page,
-      limit,
+      page ? Number(page) : undefined,
+      limit ? Number(limit) : undefined,
       sortBy,
       sortOrder,
     );
@@ -1319,6 +1373,19 @@ export class FinanceOperationsController {
     @Query("asOfDate") asOfDate: string,
   ) {
     return this.opsService.getTrialBalance(req.user.tenantId, asOfDate);
+  }
+
+  @ApiOperation({ summary: "Get GL vs sub-ledger account reconciliation" })
+  @Get("reports/account-reconciliation")
+  @Permissions("finance.report.read")
+  async getAccountReconciliation(
+    @Req() req: AuthenticatedRequest,
+    @Query("asOfDate") asOfDate: string,
+  ) {
+    return this.opsService.getAccountReconciliation(
+      req.user.tenantId,
+      asOfDate || new Date().toISOString(),
+    );
   }
 
   @ApiOperation({ summary: "Get AR aging report" })
@@ -1424,8 +1491,8 @@ export class FinanceOperationsController {
   ) {
     return this.opsService.listSavedReportConfigs(
       req.user.tenantId,
-      page,
-      limit,
+      page ? Number(page) : undefined,
+      limit ? Number(limit) : undefined,
       sortBy,
       sortOrder,
     );
@@ -1818,11 +1885,11 @@ export class FinanceOperationsController {
   @ApiOperation({ summary: "Get cash position report" })
   @Get("reports/cash-position")
   @Permissions("finance.report.read")
-  async getCashPositionReport(
-    @Req() _req: AuthenticatedRequest,
-    @Query("asOfDate") _asOfDate?: string,
-  ) {
-    return { success: true, data: { cash: 0, bank: 0, total: 0 } };
+  async getCashPositionReport(@Req() req: AuthenticatedRequest) {
+    return {
+      success: true,
+      data: await this.opsService.getCashPositionReport(req.user.tenantId),
+    };
   }
 
   @ApiOperation({ summary: "Get working capital report" })
@@ -1864,17 +1931,15 @@ export class FinanceOperationsController {
   @Get("reports/financial-ratios")
   @Permissions("finance.report.read")
   async getFinancialRatios(
-    @Req() _req: AuthenticatedRequest,
-    @Query("asOfDate") _asOfDate?: string,
+    @Req() req: AuthenticatedRequest,
+    @Query("asOfDate") asOfDate?: string,
   ) {
     return {
       success: true,
-      data: {
-        currentRatio: 0,
-        quickRatio: 0,
-        debtToEquity: 0,
-        returnOnAssets: 0,
-      },
+      data: await this.opsService.getFinancialRatios(
+        req.user.tenantId,
+        asOfDate || new Date().toISOString(),
+      ),
     };
   }
 

@@ -1,10 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Calculator, FileText, Globe, ShieldCheck, Eye } from "lucide-react";
 import { FinanceTabLayout } from "@/components/finance/FinanceTabLayout";
 import { SubTabBar } from "@/components/finance/SubTabBar";
-import { RouteGuard } from "@unerp/framework";
+import { RouteGuard, useApiClient } from "@unerp/framework";
 import { Card } from "@unerp/ui";
 
 import TaxEnginePage from "../advanced/tax-engine/page";
@@ -86,10 +87,40 @@ const TAX_TABS = [
   },
 ];
 
+interface TaxSummary {
+  activeRates: number;
+  jurisdictionCount: number;
+}
+
+const EMPTY_TAX_SUMMARY: TaxSummary = { activeRates: 0, jurisdictionCount: 0 };
+
 export default function TaxPage() {
   const searchParams = useSearchParams();
   const activeTab = searchParams.get("tab") || "overview";
   const subTab = searchParams.get("subtab");
+  const client = useApiClient();
+  const [summary, setSummary] = useState<TaxSummary>(EMPTY_TAX_SUMMARY);
+
+  useEffect(() => {
+    if (activeTab !== "overview") return;
+    let cancelled = false;
+    client
+      .list<{ jurisdiction?: string }>("/finance/tax-rates", { pageSize: 500 })
+      .then((res) => {
+        if (cancelled) return;
+        const rates = res.data ?? [];
+        setSummary({
+          activeRates: res.total ?? rates.length,
+          jurisdictionCount: new Set(
+            rates.map((r) => r.jurisdiction).filter(Boolean),
+          ).size,
+        });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab, client]);
 
   return (
     <RouteGuard permission="finance.tax.read">
@@ -102,33 +133,7 @@ export default function TaxPage() {
       >
         {activeTab === "overview" && (
           <div className="ui-stack-4 ui-animate-in">
-            <div className="ui-grid-3">
-              <Card padding="md">
-                <div className="ui-stack-2">
-                  <p className="ui-text-xs-muted">
-                    Tax Liability (This Quarter)
-                  </p>
-                  <p
-                    className="ui-heading-sm"
-                    style={{ color: "var(--color-primary)" }}
-                  >
-                    $124,500
-                  </p>
-                  <p className="ui-text-xs-muted">GST/VAT + Income Tax</p>
-                </div>
-              </Card>
-              <Card padding="md">
-                <div className="ui-stack-2">
-                  <p className="ui-text-xs-muted">Upcoming Filings</p>
-                  <p
-                    className="ui-heading-sm"
-                    style={{ color: "var(--color-warning)" }}
-                  >
-                    3
-                  </p>
-                  <p className="ui-text-xs-muted">Next due: Aug 15, 2026</p>
-                </div>
-              </Card>
+            <div className="ui-grid-2">
               <Card padding="md">
                 <div className="ui-stack-2">
                   <p className="ui-text-xs-muted">Tax Rates Active</p>
@@ -136,9 +141,25 @@ export default function TaxPage() {
                     className="ui-heading-sm"
                     style={{ color: "var(--color-success)" }}
                   >
-                    24
+                    {summary.activeRates}
                   </p>
-                  <p className="ui-text-xs-muted">Across 6 jurisdictions</p>
+                  <p className="ui-text-xs-muted">
+                    Across {summary.jurisdictionCount} jurisdictions
+                  </p>
+                </div>
+              </Card>
+              <Card padding="md">
+                <div className="ui-stack-2">
+                  <p className="ui-text-xs-muted">Filing Calendar</p>
+                  <p
+                    className="ui-heading-sm"
+                    style={{ color: "var(--color-warning)" }}
+                  >
+                    View Detail
+                  </p>
+                  <p className="ui-text-xs-muted">
+                    See Filing Calendar and Tax Filing tabs
+                  </p>
                 </div>
               </Card>
             </div>

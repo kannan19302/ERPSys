@@ -1,7 +1,11 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
-import { GlAccountingService } from './gl-accounting.service';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
+import { GlAccountingService } from "./gl-accounting.service";
 
 @Injectable()
 export class RevenueRecognitionService {
@@ -10,20 +14,31 @@ export class RevenueRecognitionService {
   async getRevenueSchedules(tenantId: string) {
     return prisma.revenueSchedule.findMany({
       where: { tenantId },
-      orderBy: { startDate: 'desc' },
+      orderBy: { startDate: "desc" },
     });
   }
 
   async getRevenueScheduleById(tenantId: string, scheduleId: string) {
-    const schedule = await prisma.revenueSchedule.findFirst({ where: { id: scheduleId, tenantId } });
-    if (!schedule) throw new NotFoundException('Revenue schedule not found');
+    const schedule = await prisma.revenueSchedule.findFirst({
+      where: { id: scheduleId, tenantId },
+    });
+    if (!schedule) throw new NotFoundException("Revenue schedule not found");
     return schedule;
   }
 
-  async createRevenueSchedule(tenantId: string, orgId: string, dto: Record<string, unknown>) {
+  async createRevenueSchedule(
+    tenantId: string,
+    orgId: string,
+    dto: Record<string, unknown>,
+  ) {
     const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
     return prisma.revenueSchedule.create({
-      data: { ...dto, tenantId, orgId: resolvedOrgId } as never,
+      data: {
+        ...dto,
+        tenantId,
+        orgId: resolvedOrgId,
+        deferredAmount: dto.totalAmount as number,
+      } as never,
     });
   }
 
@@ -35,10 +50,15 @@ export class RevenueRecognitionService {
   async runAsc606Recognition(tenantId: string, asOfDate: string) {
     const asOf = new Date(asOfDate);
     const schedules = await prisma.revenueSchedule.findMany({
-      where: { tenantId, status: 'ACTIVE', startDate: { lte: asOf } },
+      where: { tenantId, status: "ACTIVE", startDate: { lte: asOf } },
     });
 
-    const results: Array<{ scheduleId: string; description: string; recognized: number; remaining: number }> = [];
+    const results: Array<{
+      scheduleId: string;
+      description: string;
+      recognized: number;
+      remaining: number;
+    }> = [];
 
     for (const schedule of schedules) {
       const total = Number(schedule.totalAmount);
@@ -46,25 +66,37 @@ export class RevenueRecognitionService {
       const end = new Date(schedule.endDate);
       const totalMonths = Math.max(
         1,
-        (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1,
+        (end.getFullYear() - start.getFullYear()) * 12 +
+          (end.getMonth() - start.getMonth()) +
+          1,
       );
       const elapsedMonths = Math.min(
         totalMonths,
-        Math.max(1, (asOf.getFullYear() - start.getFullYear()) * 12 + (asOf.getMonth() - start.getMonth()) + 1),
+        Math.max(
+          1,
+          (asOf.getFullYear() - start.getFullYear()) * 12 +
+            (asOf.getMonth() - start.getMonth()) +
+            1,
+        ),
       );
 
       let expectedRecognized: number;
-      const recType = (schedule.recognitionType || 'STRAIGHT_LINE').toUpperCase();
+      const recType = (
+        schedule.recognitionType || "STRAIGHT_LINE"
+      ).toUpperCase();
 
-      if (recType === 'POINT_IN_TIME') {
+      if (recType === "POINT_IN_TIME") {
         expectedRecognized = asOf >= end ? total : 0;
-      } else if (recType === 'PERCENTAGE_COMPLETION') {
+      } else if (recType === "PERCENTAGE_COMPLETION") {
         const pct = Math.min(1, elapsedMonths / totalMonths);
         expectedRecognized = Math.round(total * pct * 100) / 100;
       } else {
         // STRAIGHT_LINE (default ASC 606 over-time)
         const monthlyAmount = total / totalMonths;
-        expectedRecognized = Math.min(total, Math.round(monthlyAmount * elapsedMonths * 100) / 100);
+        expectedRecognized = Math.min(
+          total,
+          Math.round(monthlyAmount * elapsedMonths * 100) / 100,
+        );
       }
 
       const alreadyRecognized = Number(schedule.recognizedAmount);
@@ -79,7 +111,7 @@ export class RevenueRecognitionService {
           data: {
             recognizedAmount: new Prisma.Decimal(newRecognized),
             deferredAmount: new Prisma.Decimal(newDeferred),
-            status: newDeferred < 0.01 ? 'COMPLETED' : 'ACTIVE',
+            status: newDeferred < 0.01 ? "COMPLETED" : "ACTIVE",
           },
         });
 
@@ -102,17 +134,22 @@ export class RevenueRecognitionService {
   }
 
   async recognizeRevenue(tenantId: string, scheduleId: string, amount: number) {
-    const schedule = await prisma.revenueSchedule.findFirst({ where: { id: scheduleId, tenantId } });
-    if (!schedule) throw new NotFoundException('Revenue schedule not found');
+    const schedule = await prisma.revenueSchedule.findFirst({
+      where: { id: scheduleId, tenantId },
+    });
+    if (!schedule) throw new NotFoundException("Revenue schedule not found");
     const newRecognized = Number(schedule.recognizedAmount) + amount;
     const newDeferred = Number(schedule.deferredAmount) - amount;
-    if (newDeferred < 0) throw new BadRequestException('Cannot recognize more than deferred amount');
+    if (newDeferred < 0)
+      throw new BadRequestException(
+        "Cannot recognize more than deferred amount",
+      );
     return prisma.revenueSchedule.update({
       where: { id: scheduleId },
       data: {
         recognizedAmount: new Prisma.Decimal(newRecognized),
         deferredAmount: new Prisma.Decimal(newDeferred),
-        status: newDeferred === 0 ? 'COMPLETED' : 'ACTIVE',
+        status: newDeferred === 0 ? "COMPLETED" : "ACTIVE",
       },
     });
   }

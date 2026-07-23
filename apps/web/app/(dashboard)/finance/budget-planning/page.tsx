@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   PieChart,
@@ -11,7 +12,7 @@ import {
 } from "lucide-react";
 import { FinanceTabLayout } from "@/components/finance/FinanceTabLayout";
 import { SubTabBar } from "@/components/finance/SubTabBar";
-import { RouteGuard } from "@unerp/framework";
+import { RouteGuard, useApiClient } from "@unerp/framework";
 import { Card } from "@unerp/ui";
 
 import BudgetingPage from "../advanced/budgeting/page";
@@ -68,10 +69,59 @@ const BUDGET_TABS = [
   },
 ];
 
+interface BudgetSummary {
+  totalBudget: number;
+  totalSpent: number;
+  activeBudgets: number;
+}
+
+const EMPTY_BUDGET_SUMMARY: BudgetSummary = {
+  totalBudget: 0,
+  totalSpent: 0,
+  activeBudgets: 0,
+};
+
 export default function BudgetPlanningPage() {
   const searchParams = useSearchParams();
   const activeTab = searchParams.get("tab") || "overview";
   const subTab = searchParams.get("subtab");
+  const client = useApiClient();
+  const [summary, setSummary] = useState<BudgetSummary>(EMPTY_BUDGET_SUMMARY);
+
+  useEffect(() => {
+    if (activeTab !== "overview") return;
+    let cancelled = false;
+    client
+      .list<{ amount: number; spentAmount: number; status: string }>(
+        "/finance/budgets",
+        { pageSize: 500 },
+      )
+      .then((res) => {
+        if (cancelled) return;
+        const budgets = res.data ?? [];
+        const active = budgets.filter((b) => b.status === "ACTIVE");
+        setSummary({
+          totalBudget: budgets.reduce((s, b) => s + Number(b.amount || 0), 0),
+          totalSpent: budgets.reduce(
+            (s, b) => s + Number(b.spentAmount || 0),
+            0,
+          ),
+          activeBudgets: active.length,
+        });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab, client]);
+
+  const variancePct =
+    summary.totalBudget > 0
+      ? Math.round(
+          ((summary.totalSpent - summary.totalBudget) / summary.totalBudget) *
+            1000,
+        ) / 10
+      : 0;
 
   return (
     <RouteGuard permission="finance.fpa.read">
@@ -87,14 +137,20 @@ export default function BudgetPlanningPage() {
             <div className="ui-grid-3">
               <Card padding="md">
                 <div className="ui-stack-2">
-                  <p className="ui-text-xs-muted">Annual Budget</p>
+                  <p className="ui-text-xs-muted">Total Budget</p>
                   <p
                     className="ui-heading-sm"
                     style={{ color: "var(--color-primary)" }}
                   >
-                    $12.5M
+                    {summary.totalBudget.toLocaleString(undefined, {
+                      style: "currency",
+                      currency: "USD",
+                      maximumFractionDigits: 0,
+                    })}
                   </p>
-                  <p className="ui-text-xs-muted">FY 2026</p>
+                  <p className="ui-text-xs-muted">
+                    Across {summary.activeBudgets} active budgets
+                  </p>
                 </div>
               </Card>
               <Card padding="md">
@@ -102,23 +158,38 @@ export default function BudgetPlanningPage() {
                   <p className="ui-text-xs-muted">YTD Variance</p>
                   <p
                     className="ui-heading-sm"
-                    style={{ color: "var(--color-warning)" }}
+                    style={{
+                      color:
+                        variancePct > 0
+                          ? "var(--color-danger)"
+                          : "var(--color-success)",
+                    }}
                   >
-                    +3.2%
+                    {variancePct > 0 ? "+" : ""}
+                    {variancePct}%
                   </p>
-                  <p className="ui-text-xs-muted">Over budget by $124K</p>
+                  <p className="ui-text-xs-muted">
+                    {summary.totalSpent.toLocaleString(undefined, {
+                      style: "currency",
+                      currency: "USD",
+                      maximumFractionDigits: 0,
+                    })}{" "}
+                    spent
+                  </p>
                 </div>
               </Card>
               <Card padding="md">
                 <div className="ui-stack-2">
-                  <p className="ui-text-xs-muted">Active Forecasts</p>
+                  <p className="ui-text-xs-muted">Active Budgets</p>
                   <p
                     className="ui-heading-sm"
                     style={{ color: "var(--color-success)" }}
                   >
-                    4
+                    {summary.activeBudgets}
                   </p>
-                  <p className="ui-text-xs-muted">2 scenarios in progress</p>
+                  <p className="ui-text-xs-muted">
+                    See Scenario Planning tab for forecasts
+                  </p>
                 </div>
               </Card>
             </div>
