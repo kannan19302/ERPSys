@@ -62,8 +62,10 @@ the single source of truth; this is the operating summary:
     ledger (once per cycle, here); CHANGELOG + MODULE_REGISTRY + **§ Cycle
     Ledger update** (increment DEV counter; fill the `Net LOC` column; multiple
     of 10 → set `Next run: HARDEN (mandatory)`) in the SAME commit as the code;
-    release the lock; land on `main`. Phase F: mark closed tracks ✅ in the
-    roadmap with evidence.
+    invoke the **`sprint-sync` skill** (AUTOPILOT § Shared bindings #19) to
+    mirror this cycle onto the module's GitHub Epic/Story issues — best-effort,
+    never blocks the push; release the lock; land on `main`. Phase F: mark
+    closed tracks ✅ in the roadmap with evidence.
 11. **Report**: detected phase, what shipped, **net LOC vs the 5K floor**, why,
     gate results, cycle counter (+ cycles until mandatory harden), top 3 next
     items.

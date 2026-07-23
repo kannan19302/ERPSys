@@ -258,6 +258,17 @@ must be actively watched every cycle:
     update § 0's Current focus + Rotation history in the same commit
     as the code that closed it out. Never rotate mid-cycle and never rotate
     without all five criteria met.
+19. **GitHub tracking sync (binding, added for the agile/Projects program —
+    see [.ai/COMPETITIVE_ROADMAP.md](COMPETITIVE_ROADMAP.md)).** At Record+
+    Ship (DEV step 8, QA step 4), run the `sprint-sync` skill to mirror this
+    cycle's work onto GitHub Issues: update/close the focus module's Epic
+    issue, close or file-as-shipped the Story issues for features delivered
+    this cycle. This is bookkeeping, not a new flow — it does NOT add a third
+    trigger to the two-flow model in this file's header, and a failure to
+    reach GitHub (auth/rate-limit) must never block the push to `main`.
+    COMPETITIVE_ROADMAP.md § 6 tracks the one manual one-time step (creating
+    a Projects v2 board + sprint milestones) still outstanding on the GitHub
+    side; until that's done, sprint-sync uses labels only.
 
 ---
 
