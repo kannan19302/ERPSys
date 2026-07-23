@@ -18,6 +18,8 @@ import { PaymentSchedulesService } from './payment-schedules.service';
 import { SupplierScorecardService } from './supplier-scorecard.service';
 import { ProcurementAnalyticsService } from './procurement-analytics.service';
 import { ProcurementApprovalsService } from './procurement-approvals.service';
+import { ProcurementSourcingService } from './procurement-sourcing.service';
+import { ProcurementSourcingController } from './procurement-sourcing.controller';
 
 @Module({
   controllers: [
@@ -28,6 +30,7 @@ import { ProcurementApprovalsService } from './procurement-approvals.service';
     ProcurementExpansionController,
     ProcurementIntelligenceController,
     ProcurementSchedulingController,
+    ProcurementSourcingController,
   ],
   providers: [
     ProcurementService,
@@ -42,6 +45,7 @@ import { ProcurementApprovalsService } from './procurement-approvals.service';
     SupplierScorecardService,
     ProcurementAnalyticsService,
     ProcurementApprovalsService,
+    ProcurementSourcingService,
   ],
   exports: [
     ProcurementService,
@@ -56,6 +60,7 @@ import { ProcurementApprovalsService } from './procurement-approvals.service';
     SupplierScorecardService,
     ProcurementAnalyticsService,
     ProcurementApprovalsService,
+    ProcurementSourcingService,
   ],
 })
 export class ProcurementModule {}

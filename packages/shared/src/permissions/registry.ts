@@ -601,6 +601,8 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
   p("hr", "employee", "salary", "field", "View employee salary"),
   p("hr", "department", "read", "endpoint", "View departments"),
   p("hr", "department", "create", "endpoint", "Create departments"),
+  p("hr", "department", "update", "endpoint", "Update departments"),
+  p("hr", "department", "delete", "endpoint", "Delete departments"),
   p("hr", "payroll", "read", "endpoint", "View payroll"),
   p("hr", "payroll", "create", "endpoint", "Process payroll"),
   p("hr", "payroll", "approve", "endpoint", "Approve payroll"),
@@ -5221,6 +5223,57 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
     "endpoint",
     "Send communications via channels and templates",
   ),
+  // ── Inventory — RMA (Module Deepening) ──
+  p("inventory", "rma", "read", "endpoint", "View RMAs"),
+  p("inventory", "rma", "create", "endpoint", "Create RMAs"),
+  p("inventory", "rma", "update", "endpoint", "Update RMAs (receive, inspect, status)"),
+  // ── Inventory — Wave Planning ──
+  p("inventory", "wave-planning", "read", "endpoint", "View wave plans"),
+  p("inventory", "wave-planning", "create", "endpoint", "Create wave plans"),
+  p("inventory", "wave-planning", "update", "endpoint", "Release/complete wave plans and tasks"),
+  // ── Inventory — Warehouse KPIs ──
+  p("inventory", "warehouse-kpis", "read", "endpoint", "View warehouse KPIs"),
+  p("inventory", "warehouse-kpis", "create", "endpoint", "Record warehouse KPIs"),
+  // ── Inventory — Safety Stock Optimization ──
+  p("inventory", "safety-stock", "read", "endpoint", "View safety stock optimizations"),
+  p("inventory", "safety-stock", "create", "endpoint", "Run safety stock optimization"),
+  // ── Inventory — Global Inventory View ──
+  p("inventory", "global-inventory", "read", "endpoint", "View global inventory across warehouses"),
+  // ── Procurement — Sourcing Projects ──
+  p("procurement", "sourcing", "read", "endpoint", "View sourcing projects"),
+  p("procurement", "sourcing", "create", "endpoint", "Create sourcing projects"),
+  p("procurement", "sourcing", "update", "endpoint", "Update sourcing projects"),
+  p("procurement", "sourcing", "evaluate", "endpoint", "Evaluate supplier bids and scorecards"),
+  p("procurement", "sourcing", "manage", "endpoint", "Manage contract awards"),
+  // ── Procurement — Contracts ──
+  p("procurement", "contract", "read", "endpoint", "View procurement contracts"),
+  p("procurement", "contract", "create", "endpoint", "Create procurement contracts"),
+  p("procurement", "contract", "update", "endpoint", "Update/renew procurement contracts"),
+  // ── Procurement — Intelligence ──
+  p("procurement", "intelligence", "read", "endpoint", "View procurement intelligence reports"),
+  p("procurement", "intelligence", "create", "endpoint", "Generate procurement intelligence reports"),
+  // ── Procurement — Supplier Onboarding ──
+  p("procurement", "onboarding", "read", "endpoint", "View supplier onboarding workflows"),
+  p("procurement", "onboarding", "create", "endpoint", "Create supplier onboarding workflows"),
+  p("procurement", "onboarding", "update", "endpoint", "Advance onboarding workflow steps"),
+  // ── Supply Chain — Global Trade ──
+  p("supply-chain", "global-trade", "read", "endpoint", "View HS codes, import/export declarations, compliance"),
+  p("supply-chain", "global-trade", "create", "endpoint", "Create HS codes, declarations, compliance screenings"),
+  p("supply-chain", "global-trade", "update", "endpoint", "Update HS codes and declaration statuses"),
+  // ── Supply Chain — Supply Planning (Demand Sense, Supply Plans, S&OP) ──
+  p("supply-chain", "supply-planning", "read", "endpoint", "View demand sense runs, supply plans, S&OP"),
+  p("supply-chain", "supply-planning", "create", "endpoint", "Create demand sense runs, supply plans, S&OP"),
+  // ── Supply Chain — Logistics Execution ──
+  p("supply-chain", "logistics", "read", "endpoint", "View transport modes, carrier rates, load builds, appointments, PODs"),
+  p("supply-chain", "logistics", "create", "endpoint", "Create transport modes, carrier rates, load builds, appointments"),
+  p("supply-chain", "logistics", "manage", "endpoint", "Manage carrier rates and rate shopping"),
+  // ── Supply Chain — Supplier Risk Management ──
+  p("supply-chain", "supplier-risk", "read", "endpoint", "View supplier risk profiles, alerts, diversity, heatmap"),
+  p("supply-chain", "supplier-risk", "create", "endpoint", "Create risk profiles and alerts"),
+  p("supply-chain", "supplier-risk", "update", "endpoint", "Update risk profiles and resolve alerts"),
+  // ── Supply Chain — Advanced Control Tower ──
+  p("supply-chain", "control-tower", "read", "endpoint", "View control tower events, KPIs, alert configs, dashboard"),
+  p("supply-chain", "control-tower", "manage", "endpoint", "Create and manage control tower events, KPIs, alert configs"),
 ];
 
 // ── Query helpers (role editor / access-control UI) ──

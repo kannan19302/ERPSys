@@ -19,6 +19,10 @@ import { InventoryAutomationService } from './inventory-automation.service';
 import { InventoryAutomationController } from './inventory-automation.controller';
 import { InventoryAnalyticsService } from './inventory-analytics.service';
 import { InventoryAnalyticsController } from './inventory-analytics.controller';
+import { InventoryRmaService } from './inventory-rma.service';
+import { InventoryRmaController } from './inventory-rma.controller';
+import { InventoryWavePlanningService } from './inventory-wave-planning.service';
+import { InventoryWavePlanningController } from './inventory-wave-planning.controller';
 
 @Module({
   controllers: [
@@ -30,6 +34,8 @@ import { InventoryAnalyticsController } from './inventory-analytics.controller';
     SupplierQualityController,
     InventoryAutomationController,
     InventoryAnalyticsController,
+    InventoryRmaController,
+    InventoryWavePlanningController,
   ],
   providers: [
     InventoryService,
@@ -44,6 +50,8 @@ import { InventoryAnalyticsController } from './inventory-analytics.controller';
     SupplierQualityService,
     InventoryAutomationService,
     InventoryAnalyticsService,
+    InventoryRmaService,
+    InventoryWavePlanningService,
   ],
   exports: [
     InventoryService,
@@ -57,6 +65,8 @@ import { InventoryAnalyticsController } from './inventory-analytics.controller';
     SupplierQualityService,
     InventoryAutomationService,
     InventoryAnalyticsService,
+    InventoryRmaService,
+    InventoryWavePlanningService,
   ],
 })
 export class InventoryModule {}

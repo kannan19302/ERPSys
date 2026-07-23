@@ -2,6 +2,59 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-23] CYCLE 41 — Inventory, Procurement & Supply Chain Module Deepening: RMA, Wave Planning, Sourcing, Global Trade, Supply Planning, Logistics, Supplier Risk, Control Tower (DB+API+UI)
+
+**Scope**: Built 8 new NestJS controllers/services, 3 module file updates, ~40 new permission entries, and 12 Next.js UI pages across Inventory (RMA, Wave Planning, Warehouse KPIs, Safety Stock, Global Inventory), Procurement (Sourcing, Contracts, Intelligence, Supplier Onboarding), and Supply Chain (Global Trade, Supply Planning, Logistics Execution, Supplier Risk, Control Tower Advanced). ~5,000+ net LOC.
+
+**Key additions**:
+- **Inventory RMA**: `ReturnMerchandiseAuthorization`/`RMALine`/`RMAInspection` — CRUD, receive, inspect/accept/reject lifecycle
+- **Inventory Wave Planning**: `WavePlan`/`WavePlanTask` — plan creation, task assignment, completion tracking
+- **Inventory Warehouse KPIs**: `WarehouseKpi` — record and query warehouse performance metrics
+- **Inventory Safety Stock**: `SafetyStockOptimization` — optimize and manage safety stock levels
+- **Inventory Global Inventory**: `GlobalInventoryView` — multi-warehouse inventory visibility
+- **Procurement Sourcing**: `SourcingProject`/`SupplierEvaluation`/`BidAnalysis` — sourcing with evaluation and award workflow
+- **Procurement Contracts**: `ProcurementContract`/`ProcurementContractLineItem` — contract lifecycle management
+- **Procurement Intelligence**: `ProcurementIntelligenceReport` — spend analysis, concentration risk
+- **Procurement Supplier Onboarding**: `SupplierOnboardingWorkflow`/`SupplierOnboardingTask` — onboarding checklist workflows
+- **Supply Chain Global Trade**: `HsCode`/`CountryOfOrigin`/`ImportDeclaration`/`ExportDeclaration`/`TradeComplianceScreening` — HS code management, import/export declarations, compliance screening
+- **Supply Chain Supply Planning**: `DemandSenseRun`/`SupplyPlan`/`SupplyPlanScenario`/`SopPlan` — demand sensing, supply planning with scenarios, S&OP
+- **Supply Chain Logistics Execution**: `TransportMode`/`CarrierRate`/`LoadBuild`/`AppointmentSchedule`/`ProofOfDelivery` — carrier rates, load building, dock scheduling, POD capture
+- **Supply Chain Supplier Risk**: `SupplierRiskProfile`/`SupplierRiskAlert`/`SupplierRiskScenario`/`SupplierDiversity`/`AlternativeSourcing` — risk profiling, alerts, diversity tracking, alternate sourcing
+- **Supply Chain Control Tower Advanced**: `ControlTowerEvent`/`ControlTowerKpi`/`ControlTowerAlertConfig`/`ControlTowerDashboard` — supply chain event monitoring, KPI tracking, alert configuration
+
+**Permissions**: ~40 new permission entries added for all 14 resource types.
+
+**UI Pages** (12 new): `/inventory/rma`, `/inventory/wave-planning`, `/inventory/warehouse-kpis`, `/inventory/global-inventory`, `/procurement/sourcing`, `/procurement/contracts`, `/procurement/intelligence`, `/procurement/onboarding`, `/supply-chain/global-trade`, `/supply-chain/supply-planning`, `/supply-chain/logistics`, `/supply-chain/supplier-risk`
+
+**Verification**: All controllers follow existing patterns (JwtAuthGuard, RbacGuard, ZodBody, TrackChanges, Permissions decorators). UI pages use `@unerp/ui` components (PageHeader, Card, DataTable, Button, Modal, KPICard, Tabs). Supply Chain status promoted to ENHANCED.
+
+## [2026-07-23] CYCLE 40 — Comprehensive HR Service Implementation: 100+ endpoints across all HR entities
+
+**Scope**: Full implementation of `hr.service.ts` completing all 100+ controller endpoints with full CRUD, business logic workflows (leave approval/rejection/reclaim, pay-run lifecycle, performance review submission, recruitment pipeline, onboarding/offboarding checklists, goal progress tracking), and 12+ analytics report endpoints. All methods tenant-scoped, with domain events emitted for key state changes (employee onboarded, leave approved, payroll processed). ~3,700 LOC in the service file.
+
+**Key additions**:
+- **Employee**: Full CRUD with soft delete, bulk actions (delete, update-status), document upload, asset assignment
+- **Department**: CRUD with hierarchical tree builder
+- **Position**: CRUD with unique code constraint
+- **Attendance**: CRUD with bulk create, monthly summary per employee, department overview
+- **Shifts**: CRUD with multi-employee assignment
+- **Leave Management**: LeavePolicy CRUD, LeaveRequest with full approval workflow (approve/reject/cancel/reclaim), balance computation from policy allocation minus approved usage
+- **Payroll**: PayrollRun lifecycle (draft→submit→processed→paid), PayrollSlip items
+- **Performance**: Appraisal CRUD with submit/acknowledge lifecycle
+- **Training**: Course/session CRUD with enrollment management
+- **Goals/OKRs**: CRUD with progress tracker (0-100% with auto-complete at 100%)
+- **360 Feedback**: Multi-rater feedback with responses
+- **Onboarding/Offboarding**: Checklist with item-level tracking, auto-complete when all done
+- **Recruitment**: JobPosting, Applicant with stage advancement, Interview scheduling/completion, applicant-to-employee conversion
+- **HR Tickets**: Service desk CRUD with resolution tracking
+- **Succession Plans**: Key position readiness planning
+- **Asset Assignments**: IT asset lifecycle with return tracking
+- **Reports**: Headcount by department/status/type, attendance by date/status, leave analytics by type/status, payroll summary last 12 runs, turnover rate (months configurable), upcoming birthdays (N-day window), upcoming work anniversaries (with years-of-service)
+
+**Permissions**: Added `hr.department.update`, `hr.department.delete` to registry.
+
+**Verification**: All controller methods now have corresponding service implementations. Service follows existing patterns (`buildPaginationValues`, `paginatedResult`, `resolveOrgId`, tenant-scoped queries, EventEmitter2 for domain events).
+
 ## [2026-07-23] CYCLE 39 — Multi-Module Deepening: Finance Deep (ASC606, Budget, Instruments, Tax, Netting) + CRM Deep (Contract Lifecycle, Guided Selling, Lead Enrichment) + Sales Deep (Pricing, CPQ, SPIF, Subscription, Territory) + Procurement UI (Debit Notes, Payment Schedules, RFQ Auctions, Vendor RMA)
 
 **Scope**: Multi-module deepening across 4 modules — Advanced Finance (5 new controllers/services for ASC606 revenue recognition, budget deep control, financial instruments, global tax, and netting), CRM (3 new services: contract lifecycle with auto-renew, guided selling with product bundles/recommendations, lead enrichment with data enhancement), Sales (5 new services: advanced pricing engine, CPQ extension, SPIFF campaigns, subscription billing, territory management), and Procurement (4 new UI pages for debit notes, payment schedules, RFQ auctions, vendor RMA). Total: 86 files changed, 11,276 lines added, 39 new permission entries.

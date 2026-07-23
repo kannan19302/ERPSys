@@ -11,3 +11,4 @@ export * from './numbering/index.js';
 export * from './outbox/index.js';
 export * from './module-registry/index.js';
 export * from './inventory/index.js';
+export * from './hr/index.js';
