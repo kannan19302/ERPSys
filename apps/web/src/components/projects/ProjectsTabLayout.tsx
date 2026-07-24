@@ -78,4 +78,13 @@ export const PROJECTS_TABS: ModuleTab[] = [
     group: "Analytics",
     description: "Project reports and dashboards",
   },
+  {
+    id: "wip-reports",
+    label: "WIP & Job Costing",
+    href: "/projects/wip-reports",
+    icon: DollarSign,
+    advanced: true,
+    group: "Analytics",
+    description: "Work-in-progress and job costing reports",
+  },
 ];

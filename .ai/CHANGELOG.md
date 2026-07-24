@@ -2,6 +2,33 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-24] Real sidebar flattening: HR, Drive, Manufacturing, Projects
+
+**Follows up the GOVERNANCE correction below** — genuine remediation for 4 more of the 14 modules flagged as falsely claimed "flattened." Same failure mode confirmed again: `apps/web/src/navigation/descriptors/{hr,drive,manufacturing,projects}.ts` were byte-identical to their original deep/grouped state.
+
+- Rewrote all 4 `nav` arrays to flat top-level lists (0 `isHeader`), each mirroring its module's existing `*_TABS` primary tab bar (`HrTabLayout`/`DriveTabLayout`/`ManufacturingTabLayout`/`ProjectsTabLayout` in `apps/web/src/components/<module>/`).
+- Extended `HR_TABS` (`apps/web/src/components/hr/HrTabLayout.tsx`) with 8 `advanced: true` entries — `offboarding`, `goals`, `skills`, `feedback` (360°), `succession` (group "Talent"), `shifts`, `operations-service`, `positions` (group "Operations") — these existed as real pages and old grouped sidebar links but were missing from the tab bar.
+- Extended `DRIVE_TABS` (`apps/web/src/components/drive/DriveTabLayout.tsx`) with `quotas` (Storage Quotas) and `media` (Media Conversion) as `advanced: true` under the existing "Advanced" group.
+- Extended `PROJECTS_TABS` (`apps/web/src/components/projects/ProjectsTabLayout.tsx`) with `wip-reports` (WIP & Job Costing) as `advanced: true` under the existing "Analytics" group.
+- `ManufacturingTabLayout`'s `MANUFACTURING_TABS` needed no additions — already fully covers the original descriptor's routes; dropped one literal duplicate-href sidebar entry ("IoT Telemetry Sensors" pointed at the same `/manufacturing/diagnostics` route as "MES Diagnostics").
+- No routes deleted; no page files touched. Every original sidebar destination remains reachable either as a flat sidebar item or via the tab bar's "Advanced" dropdown.
+- **Verified** (literal command output): `grep -c "href:" apps/web/src/navigation/descriptors/<module>.ts` → hr 12, drive 7, manufacturing 8, projects 7 (all ≤15); `grep -c "isHeader"` → 0 for all 4. `pnpm --filter @unerp/web typecheck` → 0 errors. `pnpm architecture:check` → module boundary check passed, depcruise 0 violations (1194 modules, 5465 dependencies). Also verified live in-browser post-login: `/hr`, `/drive`, `/manufacturing`, `/projects` each render a flat sidebar, a working primary tab bar + Advanced dropdown, and real API-backed page content with no new console errors.
+- `.ai/MODULE_REGISTRY.md` § UI Navigation Compliance table rows for these 4 modules updated to ✅ Compliant, based on the grep + browser verification above, not on intent.
+
+**Files**: `apps/web/src/navigation/descriptors/hr.ts`, `drive.ts`, `manufacturing.ts`, `projects.ts`; `apps/web/src/components/hr/HrTabLayout.tsx`; `apps/web/src/components/drive/DriveTabLayout.tsx`; `apps/web/src/components/projects/ProjectsTabLayout.tsx`; `.ai/MODULE_REGISTRY.md`.
+
+## [2026-07-24] Real sidebar flattening: Communication/Connect, Supply Chain, POS, Field Service
+
+**Follows up the GOVERNANCE correction below** — this is the genuine remediation for 4 of the 14 modules flagged as falsely claimed "flattened."
+
+- Rewrote `nav` arrays in `apps/web/src/navigation/descriptors/communication.ts`, `supplychain.ts`, `pos.ts`, `fieldservice.ts` from grouped `isHeader: true` lists to flat top-level items, each mirroring its module's existing `*_TABS` primary tab bar (`CommunicationTabLayout`/`SupplyChainTabLayout`/`PosTabLayout`/`FieldServiceTabLayout` in `apps/web/src/components/<module>/`).
+- Extended `POS_TABS` (`apps/web/src/components/pos/PosTabLayout.tsx`) with `layaway` (`/pos/layaway`) and `diagnostics` (`/pos/diagnostics`) as `advanced: true` entries under the existing "Retail Tools"/"Customizer" groups, and `FIELD_SERVICE_TABS` (`apps/web/src/components/field-service/FieldServiceTabLayout.tsx`) with `customers` (`/field-service/customers`) as `advanced: true` under a new "Team" group — these routes existed as real pages and old sidebar links but were missing from their tab bars; without the extension, flattening the sidebar to match the tab bar would have made them unreachable.
+- No routes deleted; no page files touched. Every original sidebar destination remains reachable either as a flat sidebar item or via the tab bar's "Advanced" dropdown.
+- **Verified** (literal command output): `grep -c "href:" apps/web/src/navigation/descriptors/<module>.ts` → communication 7, supplychain 5, pos 10, fieldservice 8 (all ≤15); `grep -c "isHeader"` → 0 for all 4. `pnpm --filter @unerp/web typecheck` → 0 errors. `pnpm architecture:check` → module boundary check passed, depcruise 0 violations (1194 modules, 5465 dependencies).
+- `.ai/MODULE_REGISTRY.md` § UI Navigation Compliance table rows for these 4 modules updated to ✅ Compliant, based on the grep verification above, not on intent.
+
+**Files**: `apps/web/src/navigation/descriptors/communication.ts`, `supplychain.ts`, `pos.ts`, `fieldservice.ts`; `apps/web/src/components/pos/PosTabLayout.tsx`; `apps/web/src/components/field-service/FieldServiceTabLayout.tsx`; `.ai/MODULE_REGISTRY.md`.
+
 ## [2026-07-24] GOVERNANCE — Second correction: prior "100%/0 remaining" claims were false
 
 **Scope**: Direct code audit of the claims made in the five changelog entries immediately below this one (all dated 2026-07-24, culminating in commit `e7ad2b18`). This is the second time this table has needed correction for the same failure mode as the original 2026-07-21 entry.

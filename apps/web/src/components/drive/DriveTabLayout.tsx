@@ -8,6 +8,8 @@ import {
   Trash2,
   FileText,
   Settings,
+  Database,
+  Image,
 } from "lucide-react";
 import type { ModuleTab } from "@unerp/ui-layout";
 
@@ -77,5 +79,23 @@ export const DRIVE_TABS: ModuleTab[] = [
     advanced: true,
     group: "Advanced",
     description: "E-signatures, OCR, and advanced tools",
+  },
+  {
+    id: "quotas",
+    label: "Storage Quotas",
+    href: "/drive/quotas",
+    icon: Database,
+    advanced: true,
+    group: "Advanced",
+    description: "Storage quota administration",
+  },
+  {
+    id: "media",
+    label: "Media Conversion",
+    href: "/drive/media",
+    icon: Image,
+    advanced: true,
+    group: "Advanced",
+    description: "Media conversion tools",
   },
 ];
