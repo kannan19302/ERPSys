@@ -169,9 +169,9 @@ must be actively watched every cycle:
    [CHANGELOG.md](CHANGELOG.md) (append-only history, newest first),
    [HANDBOOK.md](HANDBOOK.md) (how we build). Update REGISTRY + CHANGELOG in the
    **same commit** as the code — committing without them is forbidden.
-4. **Always push directly to `main`.** Do NOT create feature branches. Gates
-   green → `git pull --rebase origin main` → re-run scoped typecheck if code
-   moved → `git push origin main`. Never end a run with shipped work stranded
+4. **Always push directly to `v1.0`.** Do NOT create feature branches. Gates
+   green → `git pull --rebase origin v1.0` → re-run scoped typecheck if code
+   moved → `git push origin v1.0`. Never end a run with shipped work stranded
    on a branch. Never force-push. A red build is never pushed.
 5. **Multi-collaborator claims.** Before selecting scope: `node scripts/claim.mjs list`.
    Acquire an atomic lock for your sub-domain (`claim.mjs acquire <slug> --agent
@@ -406,7 +406,7 @@ typecheck` + `--filter @unerp/web typecheck`) and vitest for the touched modules
    (binding #18); **update MODULE_REGISTRY § Cycle Ledger** (binding #17):
    increment `DEV cycles completed`, append the cycle row **including its Net
    LOC column value**, and if the counter is now a multiple of 10 set
-   `Next run: HARDEN (mandatory)`; push to `main`
+   `Next run: HARDEN (mandatory)`; push to `v1.0`
    (binding #4). Delete all temp files/scripts created during the cycle.
    Report: detected phase (F/M/X), items/features shipped (count + delta +
    maturity levels), **net LOC vs the 5K floor**, why selected, gate results,
@@ -435,7 +435,7 @@ typecheck` + `--filter @unerp/web typecheck`) and vitest for the touched modules
    3. Claim `issue-<n>`, **fix inline at root cause** (never weaken a test, never
       skip, never suppress the check that caught it).
    4. Verify FAST-tier + the finding's own reproduction.
-   5. Commit `fix(<module>): <summary> (fixes #<n>)`; push to `main` directly;
+   5. Commit `fix(<module>): <summary> (fixes #<n>)`; push to `v1.0` directly;
       confirm the issue closed — close it explicitly if not.
    6. Genuinely blocked (needs credentials / business decision / large refactor)?
       Label `blocked`, comment why, leave open, move on. Never close a blocked issue.
@@ -445,7 +445,7 @@ typecheck` + `--filter @unerp/web typecheck`) and vitest for the touched modules
    with a brief description, competitor reference, and RICE score estimate.
 4. **Settle once**: MILESTONE gates if ≥5 fixes or any risky surface touched; one
    CHANGELOG entry (found N / fixed M / blocked K + N feature suggestions logged);
-   push to `main`; re-query every fixed issue and close stragglers.
+   push to `v1.0`; re-query every fixed issue and close stragglers.
    Delete all temp files/scripts created during the cycle.
 5. **Report**: table found → fixed+closed → blocked (why), security first; gate
    results; remaining open `security`/critical count (the launch gate);
@@ -534,7 +534,7 @@ stays on `MODULE_REGISTRY.md` § 0's Current focus module until its completion
 criteria are met (binding #18), only auto-picking a new weakest-unclaimed module
 the run after one completes; QA flow scans the whole repo security-first (not
 focus-filtered — bugs anywhere are P0/P1). All end with everything
-committed, pushed to `origin/main` (never a branch), temp files cleaned, feature
+committed, pushed to `origin/v1.0` (target release branch), temp files cleaned, feature
 ledger regenerated, health scores computed, cycle report generated, and CHANGELOG +
 MODULE_REGISTRY updated — the next run bootstraps from a clean, production-grade state.
 

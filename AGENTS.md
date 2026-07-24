@@ -40,7 +40,7 @@ two flows; all other flows are retired:
   items] > unfinished work > module deepening > new capability) → claim →
   **mandatory plan written to `.ai/IMPLEMENTATION_PLAN.md`** (no approvals; one
   overwrite per cycle) → build end-to-end (DB → API → UI → tests) → verify gates →
-  review → record in the 3-file system + Cycle Ledger → land on `main` → report.
+  review → record in the 3-file system + Cycle Ledger → land on `v1.0` → report.
 - **"harden"** (or "/harden", "find and fix") → the **QA flow**: scan security-first,
   file each verified flaw as a GitHub issue BEFORE fixing, fix at root cause, verify,
   close — a closed find→file→fix→close loop.
