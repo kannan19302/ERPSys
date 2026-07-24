@@ -214,7 +214,7 @@ export class FinanceService {
             {
               description: dto.notes || "Invoice",
               quantity: 1,
-              unitPrice: dto.totalAmount ?? 0,
+              unitPrice: (dto as any).totalAmount ?? 0,
               taxRate: 0,
             },
           ];
@@ -232,7 +232,7 @@ export class FinanceService {
         return {
           tenantId,
           description: item.description,
-          productId: item.productId || null,
+          productId: (item as any).productId || null,
           quantity: new Prisma.Decimal(item.quantity),
           unitPrice: new Prisma.Decimal(item.unitPrice),
           taxRate: new Prisma.Decimal(item.taxRate),

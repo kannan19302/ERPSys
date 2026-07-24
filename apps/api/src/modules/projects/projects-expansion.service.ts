@@ -1,7 +1,13 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
-import type { PortfolioMemberDto, RiskMitigationDto, ResourceAllocationDto, BudgetLineDto, ProjectDocumentDto } from './dto/projects-expansion.dto';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
+import type {
+  PortfolioMemberDto,
+  RiskMitigationDto,
+  ResourceAllocationDto,
+  BudgetLineDto,
+  ProjectDocumentDto,
+} from "./dto/projects-expansion.dto";
 
 @Injectable()
 export class ProjectsExpansionService {
@@ -9,21 +15,29 @@ export class ProjectsExpansionService {
   async getPortfolioMembers(tenantId: string, portfolioId: string) {
     return prisma.projectPortfolioMember.findMany({
       where: { tenantId, portfolioId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
-  async addPortfolioMember(tenantId: string, portfolioId: string, dto: PortfolioMemberDto) {
-    const portfolio = await prisma.projectPortfolio.findFirst({ where: { id: portfolioId, tenantId } });
-    if (!portfolio) throw new NotFoundException('Portfolio not found');
+  async addPortfolioMember(
+    tenantId: string,
+    portfolioId: string,
+    dto: PortfolioMemberDto,
+  ) {
+    const portfolio = await prisma.projectPortfolio.findFirst({
+      where: { id: portfolioId, tenantId },
+    });
+    if (!portfolio) throw new NotFoundException("Portfolio not found");
     return prisma.projectPortfolioMember.create({
       data: { tenantId, portfolioId, userId: dto.userId, role: dto.role },
     });
   }
 
   async removePortfolioMember(tenantId: string, memberId: string) {
-    const member = await prisma.projectPortfolioMember.findFirst({ where: { id: memberId, tenantId } });
-    if (!member) throw new NotFoundException('Portfolio member not found');
+    const member = await prisma.projectPortfolioMember.findFirst({
+      where: { id: memberId, tenantId },
+    });
+    if (!member) throw new NotFoundException("Portfolio member not found");
     return prisma.projectPortfolioMember.delete({ where: { id: memberId } });
   }
 
@@ -31,13 +45,15 @@ export class ProjectsExpansionService {
   async getRiskMitigations(tenantId: string, riskId: string) {
     return prisma.projectRiskMitigation.findMany({
       where: { tenantId, riskId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
   async createRiskMitigation(tenantId: string, dto: RiskMitigationDto) {
-    const risk = await prisma.projectRisk.findFirst({ where: { id: dto.riskId, tenantId } });
-    if (!risk) throw new NotFoundException('Project risk not found');
+    const risk = await prisma.projectRisk.findFirst({
+      where: { id: dto.riskId, tenantId },
+    });
+    if (!risk) throw new NotFoundException("Project risk not found");
     return prisma.projectRiskMitigation.create({
       data: {
         tenantId,
@@ -50,9 +66,15 @@ export class ProjectsExpansionService {
     });
   }
 
-  async updateRiskMitigation(tenantId: string, id: string, dto: { status?: string; notes?: string }) {
-    const existing = await prisma.projectRiskMitigation.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Risk mitigation not found');
+  async updateRiskMitigation(
+    tenantId: string,
+    id: string,
+    dto: { status?: string; notes?: string },
+  ) {
+    const existing = await prisma.projectRiskMitigation.findFirst({
+      where: { id, tenantId },
+    });
+    if (!existing) throw new NotFoundException("Risk mitigation not found");
     return prisma.projectRiskMitigation.update({
       where: { id },
       data: {
@@ -66,13 +88,15 @@ export class ProjectsExpansionService {
   async getResourceAllocations(tenantId: string, projectId: string) {
     return prisma.projectResourceAllocation.findMany({
       where: { tenantId, projectId },
-      orderBy: { startDate: 'asc' },
+      orderBy: { startDate: "asc" },
     });
   }
 
   async createResourceAllocation(tenantId: string, dto: ResourceAllocationDto) {
-    const project = await prisma.project.findFirst({ where: { id: dto.projectId, tenantId, deletedAt: null } });
-    if (!project) throw new NotFoundException('Project not found');
+    const project = await prisma.project.findFirst({
+      where: { id: dto.projectId, tenantId, deletedAt: null },
+    });
+    if (!project) throw new NotFoundException("Project not found");
     return prisma.projectResourceAllocation.create({
       data: {
         tenantId,
@@ -87,14 +111,24 @@ export class ProjectsExpansionService {
     });
   }
 
-  async updateResourceAllocation(tenantId: string, id: string, dto: Partial<ResourceAllocationDto>) {
-    const existing = await prisma.projectResourceAllocation.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Resource allocation not found');
+  async updateResourceAllocation(
+    tenantId: string,
+    id: string,
+    dto: Partial<ResourceAllocationDto>,
+  ) {
+    const existing = await prisma.projectResourceAllocation.findFirst({
+      where: { id, tenantId },
+    });
+    if (!existing) throw new NotFoundException("Resource allocation not found");
     return prisma.projectResourceAllocation.update({
       where: { id },
       data: {
-        allocatedHours: dto.allocatedHours !== undefined ? new Prisma.Decimal(dto.allocatedHours) : undefined,
-        startDate: dto.startDate !== undefined ? new Date(dto.startDate) : undefined,
+        allocatedHours:
+          dto.allocatedHours !== undefined
+            ? new Prisma.Decimal(dto.allocatedHours)
+            : undefined,
+        startDate:
+          dto.startDate !== undefined ? new Date(dto.startDate) : undefined,
         endDate: dto.endDate !== undefined ? new Date(dto.endDate) : undefined,
         notes: dto.notes !== undefined ? dto.notes : undefined,
       },
@@ -102,8 +136,10 @@ export class ProjectsExpansionService {
   }
 
   async deleteResourceAllocation(tenantId: string, id: string) {
-    const existing = await prisma.projectResourceAllocation.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Resource allocation not found');
+    const existing = await prisma.projectResourceAllocation.findFirst({
+      where: { id, tenantId },
+    });
+    if (!existing) throw new NotFoundException("Resource allocation not found");
     return prisma.projectResourceAllocation.delete({ where: { id } });
   }
 
@@ -111,13 +147,15 @@ export class ProjectsExpansionService {
   async getBudgetLines(tenantId: string, projectId: string) {
     return prisma.projectBudget.findMany({
       where: { tenantId, projectId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
   async createBudgetLine(tenantId: string, dto: BudgetLineDto) {
-    const project = await prisma.project.findFirst({ where: { id: dto.projectId, tenantId, deletedAt: null } });
-    if (!project) throw new NotFoundException('Project not found');
+    const project = await prisma.project.findFirst({
+      where: { id: dto.projectId, tenantId, deletedAt: null },
+    });
+    if (!project) throw new NotFoundException("Project not found");
     return prisma.projectBudget.create({
       data: {
         tenantId,
@@ -131,14 +169,26 @@ export class ProjectsExpansionService {
     });
   }
 
-  async updateBudgetLine(tenantId: string, id: string, dto: { allocated?: number; committed?: number; notes?: string }) {
-    const existing = await prisma.projectBudget.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Budget line not found');
+  async updateBudgetLine(
+    tenantId: string,
+    id: string,
+    dto: { allocated?: number; committed?: number; notes?: string },
+  ) {
+    const existing = await prisma.projectBudget.findFirst({
+      where: { id, tenantId },
+    });
+    if (!existing) throw new NotFoundException("Budget line not found");
     return prisma.projectBudget.update({
       where: { id },
       data: {
-        allocated: dto.allocated !== undefined ? new Prisma.Decimal(dto.allocated) : undefined,
-        committed: dto.committed !== undefined ? new Prisma.Decimal(dto.committed) : undefined,
+        allocated:
+          dto.allocated !== undefined
+            ? new Prisma.Decimal(dto.allocated)
+            : undefined,
+        committed:
+          dto.committed !== undefined
+            ? new Prisma.Decimal(dto.committed)
+            : undefined,
         notes: dto.notes !== undefined ? dto.notes : undefined,
       },
     });
@@ -148,13 +198,19 @@ export class ProjectsExpansionService {
   async getDocuments(tenantId: string, projectId: string) {
     return prisma.projectDocument.findMany({
       where: { tenantId, projectId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
-  async createDocument(tenantId: string, dto: ProjectDocumentDto, userId?: string) {
-    const project = await prisma.project.findFirst({ where: { id: dto.projectId, tenantId, deletedAt: null } });
-    if (!project) throw new NotFoundException('Project not found');
+  async createDocument(
+    tenantId: string,
+    dto: ProjectDocumentDto,
+    userId?: string,
+  ) {
+    const project = await prisma.project.findFirst({
+      where: { id: dto.projectId, tenantId, deletedAt: null },
+    });
+    if (!project) throw new NotFoundException("Project not found");
     return prisma.projectDocument.create({
       data: {
         tenantId,
@@ -171,8 +227,10 @@ export class ProjectsExpansionService {
   }
 
   async deleteDocument(tenantId: string, id: string) {
-    const existing = await prisma.projectDocument.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Document not found');
+    const existing = await prisma.projectDocument.findFirst({
+      where: { id, tenantId },
+    });
+    if (!existing) throw new NotFoundException("Document not found");
     return prisma.projectDocument.delete({ where: { id } });
   }
 
@@ -180,14 +238,28 @@ export class ProjectsExpansionService {
   async getActivityLog(tenantId: string, projectId: string) {
     return prisma.projectActivity.findMany({
       where: { tenantId, projectId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take: 100,
     });
   }
 
-  async logActivity(tenantId: string, projectId: string, action: string, description?: string, metadata?: unknown, userId?: string) {
+  async logActivity(
+    tenantId: string,
+    projectId: string,
+    action: string,
+    description?: string,
+    metadata?: unknown,
+    userId?: string,
+  ) {
     return prisma.projectActivity.create({
-      data: { tenantId, projectId, userId: userId || 'system', action, description: description || null, metadata: metadata || undefined },
+      data: {
+        tenantId,
+        projectId,
+        userId: userId || "system",
+        action,
+        description: description || null,
+        metadata: metadata || undefined,
+      },
     });
   }
 }
