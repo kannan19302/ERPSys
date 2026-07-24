@@ -1,20 +1,18 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { FabricGatewayProvider } from '../providers/fabric-gateway.provider';
+import { Injectable, Logger } from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { FabricGatewayProvider } from "../providers/fabric-gateway.provider";
 import {
   DocumentRegistryContract,
   VerificationResult,
   BlockchainEntityType,
   FABRIC_CHAINCODES,
-} from '@unerp/blockchain';
+} from "@unerp/blockchain";
 
 @Injectable()
 export class DocumentBlockchainService {
   private readonly logger = new Logger(DocumentBlockchainService.name);
 
-  constructor(
-    private readonly fabricGateway: FabricGatewayProvider,
-  ) {}
+  constructor(private readonly fabricGateway: FabricGatewayProvider) {}
 
   async verifyDocument(params: {
     tenantId: string;
@@ -27,7 +25,9 @@ export class DocumentBlockchainService {
     transactionId: string | null;
     committedAt: string | null;
   }> {
-    const rawContract = this.fabricGateway.getContract(FABRIC_CHAINCODES.DOCUMENT_REGISTRY);
+    const rawContract = this.fabricGateway.getContract(
+      FABRIC_CHAINCODES.DOCUMENT_REGISTRY,
+    );
 
     if (!rawContract) {
       return {
@@ -41,7 +41,10 @@ export class DocumentBlockchainService {
 
     try {
       const contract = new DocumentRegistryContract(rawContract);
-      const onChainRecord = await contract.verifyDocument(params.tenantId, params.documentId);
+      const onChainRecord = await contract.verifyDocument(
+        params.tenantId,
+        params.documentId,
+      );
 
       if (!onChainRecord) {
         await prisma.blockchainVerification.create({
@@ -84,19 +87,23 @@ export class DocumentBlockchainService {
       if (result === VerificationResult.TAMPERED) {
         this.logger.warn(
           `TAMPER DETECTED: Document ${params.documentId} — ` +
-          `on-chain hash: ${onChainRecord.dataHash}, local hash: ${params.currentHash}`,
+            `on-chain hash: ${onChainRecord.dataHash}, local hash: ${params.currentHash}`,
         );
       }
 
       return {
         result,
         onChainHash: onChainRecord.dataHash,
-        blockNumber: onChainRecord.blockNumber ? BigInt(onChainRecord.blockNumber) : null,
+        blockNumber: onChainRecord.blockNumber
+          ? BigInt(onChainRecord.blockNumber)
+          : null,
         transactionId: onChainRecord.transactionId,
         committedAt: onChainRecord.committedAt,
       };
     } catch (err) {
-      this.logger.error(`Verification error for document ${params.documentId}: ${(err as Error).message}`);
+      this.logger.error(
+        `Verification error for document ${params.documentId}: ${(err as Error).message}`,
+      );
       return {
         result: VerificationResult.NETWORK_ERROR,
         onChainHash: null,
@@ -113,9 +120,63 @@ export class DocumentBlockchainService {
         tenantId,
         entityType: BlockchainEntityType.DOCUMENT,
         entityId: documentId,
-        status: 'CONFIRMED',
+        status: "CONFIRMED",
       },
-      orderBy: { confirmedAt: 'desc' },
+      orderBy: { confirmedAt: "desc" },
     });
+  }
+
+  async listTransactions(params: {
+    tenantId: string;
+    entityType?: string;
+    status?: string;
+    page?: string;
+    limit?: string;
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
+  }) {
+    const pageNum = parseInt(params.page || "1", 10);
+    const limitNum = parseInt(params.limit || "20", 10);
+    const skip = (pageNum - 1) * limitNum;
+
+    const where: any = { tenantId: params.tenantId };
+    if (params.entityType) where.entityType = params.entityType;
+    if (params.status) where.status = params.status;
+
+    const [items, total] = await Promise.all([
+      prisma.blockchainTransaction.findMany({
+        where,
+        skip,
+        take: limitNum,
+        orderBy: { [params.sortBy || "createdAt"]: params.sortOrder || "desc" },
+      }),
+      prisma.blockchainTransaction.count({ where }),
+    ]);
+
+    return {
+      items,
+      total,
+      page: pageNum,
+      limit: limitNum,
+      totalPages: Math.ceil(total / limitNum),
+    };
+  }
+
+  async getStats(tenantId: string, isFabricConnected: boolean) {
+    const [totalTx, confirmedTx, verifications] = await Promise.all([
+      prisma.blockchainTransaction.count({ where: { tenantId } }),
+      prisma.blockchainTransaction.count({
+        where: { tenantId, status: "CONFIRMED" },
+      }),
+      prisma.blockchainVerification.count({ where: { tenantId } }),
+    ]);
+
+    return {
+      tenantId,
+      fabricStatus: isFabricConnected ? "ONLINE" : "OFFLINE",
+      totalTransactions: totalTx,
+      confirmedTransactions: confirmedTx,
+      totalVerifications: verifications,
+    };
   }
 }

@@ -21,6 +21,7 @@ registerModule({
       icon: "PieChart",
     },
     { label: "Reports", href: "/finance/reports", icon: "BarChart3" },
+    { label: "Advanced Finance", href: "/finance/advanced", icon: "Sliders" },
     { label: "Settings", href: "/finance/settings", icon: "Settings" },
   ],
 });

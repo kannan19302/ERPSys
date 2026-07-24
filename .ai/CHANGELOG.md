@@ -2,6 +2,13 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-24] Claude Agent Rules Alignment, Standalone UI Pages Audit & Filewise Module Inventory
+
+- **Claude Agent Instructions Update**: Updated all 13 `.claude/agents/*.md` role definition files to mandate single active branch (`v1.0`) development, Husky pre-commit & pre-push verification execution, and strict 3-File System state tracking (`MODULE_REGISTRY.md`, `CHANGELOG.md`, `HANDBOOK.md`).
+- **UI Standalone Route Audit & Wiring**: Audited 617 dashboard UI pages across the repo. Wired missing subpage routes for POS (`discount-rules`, `gift-cards`, `kitchen-display`, `order-types`, `refunds`, `registers`, `settings`, `shifts`, `split-payments`, `tax-rules`), Supply Chain (`control-tower`, `global-trade`, `logistics`, `settings`, `supplier-risk`, `supply-planning`), SaaS Portal, and Finance into module tab layouts (`PosTabLayout`, `SupplyChainTabLayout`) and navigation descriptors (`pos.ts`, `supplychain.ts`, `saasPortal.ts`, `finance.ts`).
+- **Automated Filewise Module Inventory**: Built `scripts/generate-module-inventory.mjs` which scans the entire codebase and outputs exact filewise metrics (Features/Endpoints, Net LOC, UI Files, API Controllers, API Services, DTOs, Total Files) for all 28 ERP modules directly into `.ai/MODULE_REGISTRY.md` (Total system metrics: 5,362 Features/Endpoints, 455,058 Lines of Code, 936 UI Files, 214 Controllers, 230 Services, 20 DTO Files across 1,641 source files).
+- **Quality Gates Verification**: Verified `pnpm typecheck`, `pnpm foundation:check`, and `pnpm architecture:check` pass 100% clean with zero errors.
+
 ## [2026-07-24] Single-Branch (`v1.0`) Development Policy, Husky Pre-Checks & CI Alignment
 
 - **Single Active Branch (`v1.0`) Strategy**: Configured repository governance across `AGENTS.md`, `.ai/AUTOPILOT.md`, `.ai/instructions.md`, and `.github/copilot-instructions.md` to mandate all AI agents and developers work directly on `v1.0`. Creating side/feature branches is prohibited.

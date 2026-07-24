@@ -28,6 +28,10 @@ finishing, update `CHANGELOG.md` and `MODULE_REGISTRY.md` (status + move your Co
 to Recently Completed) — every time, even for small changes. Full rule:
 [AGENTS.md § Mandatory Tracking Convention](../../AGENTS.md#-mandatory-tracking-convention--the-3-file-system).
 
+## Git Branch & Husky Pre-Check Policy (Mandatory)
+
+All active development occurs directly on single branch `v1.0`. Never create side/feature/fix branches. Both `main` and `v1.0` are locked with disable branch delete policy and kept synchronized. Always run Husky pre-commit (`lint-staged`, `foundation:check`, `architecture:check`) and pre-push (`lint`, `typecheck`, `foundation:check`, `architecture:check`) before committing/pushing. Full rule: [AGENTS.md § Git Branch & Husky Pre-Check Policy](../../AGENTS.md#-git-branch--husky-pre-check-policy-mandatory).
+
 ## Pushback Protocol — mandatory
 
 Security is non-negotiable. Push back hard:

@@ -10,6 +10,11 @@ reference). Every agent below MUST check the Collab Board before starting and up
 CHANGELOG.md + MODULE_REGISTRY.md after finishing — every time, no exceptions. Full rule:
 [AGENTS.md § Mandatory Tracking Convention](../../AGENTS.md#-mandatory-tracking-convention--the-3-file-system).
 
+## Git Branch & Husky Pre-Check Policy (Mandatory)
+
+1. **Single Branch (`v1.0`) Development**: All active development work occurs directly on branch `v1.0`. Never create side/feature/fix branches. Both `main` and `v1.0` have a strict **Disable Branch Delete Policy** and stay synchronized.
+2. **Husky Pre-Checks**: Run pre-commit (`lint-staged`, `foundation:check`, `architecture:check`) and pre-push (`lint`, `typecheck`, `foundation:check`, `architecture:check`) before any push. All code pushed to `origin` must maintain a production-grade repo state. Full rule: [AGENTS.md § Git Branch & Husky Pre-Check Policy](../../AGENTS.md#-git-branch--husky-pre-check-policy-mandatory).
+
 ## The three guarantees every agent provides
 
 > **Architecture foundation gate:** Foundation SEALED v1.0 (2026-07-18) — the historical feature freeze is lifted. Every role follows the 8 non-negotiable rules in [`.ai/ARCHITECTURE_FOUNDATION.md`](../../.ai/ARCHITECTURE_FOUNDATION.md); changing a sealed contract requires a documented ADR. API work must run `pnpm architecture:check`; policy/agent/gate edits must also run `pnpm foundation:check`. Extension work must honor the executable `apiVersion` compatibility range enforced by `@unerp/service-kit` per [`docs/API_VERSIONING_POLICY.md`](../../docs/API_VERSIONING_POLICY.md).
