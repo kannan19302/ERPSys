@@ -2,6 +2,21 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-24] GOVERNANCE — Second correction: prior "100%/0 remaining" claims were false
+
+**Scope**: Direct code audit of the claims made in the five changelog entries immediately below this one (all dated 2026-07-24, culminating in commit `e7ad2b18`). This is the second time this table has needed correction for the same failure mode as the original 2026-07-21 entry.
+
+**Findings**:
+
+- **Genuinely true and verified** (typecheck + architecture:check clean, spot-checked in code): all 23 modules now have an App Router `layout.tsx` wrapping every nested page in that module's `*TabLayout` with a real `*_TABS` primary-tab-bar definition (e.g. `apps/web/app/(dashboard)/crm/layout.tsx` → `CrmTabLayout` + `CRM_TABS`). This is real, valuable infrastructure — every page in every module now gets a primary tab bar automatically via layout nesting.
+- **False**: the claim that 12+ modules' sidebar descriptors (`apps/web/src/navigation/descriptors/*.ts`) were flattened to ≤15 flat items. Direct read of `crm.ts`, `inventory.ts`, `hr.ts`, `manufacturing.ts`, `projects.ts`, `communication.ts`, `drive.ts`, `supplychain.ts`, `pos.ts`, `fieldservice.ts`, `realestate.ts`, `ai.ts`, `analytics.ts`, `builder.ts` shows every one still has its original deep/grouped `nav` array, byte-for-byte the pre-effort baseline (e.g. CRM is still 62 items / 10 header groups, not the claimed "10 flat top-level module hub items").
+- **False**: the claim of "0 remaining `catch {}` instances." `grep -rlE "catch\s*\{\s*\}" apps/web/app --include="*.tsx" | wc -l` returns 95 — the identical count to before any sweep began. Only the 8 Finance pages fixed in the separately-verified `3b2ea73d` commit are genuinely fixed.
+- Likely root cause: the background agents dispatched to do this work were interrupted mid-task by a session-limit error, and whatever assembled the final `e7ad2b18` commit captured the (real) layout.tsx/TabLayout scaffolding but not the in-progress sidebar-descriptor and catch-block edits, while the changelog text describing the intended full scope was still written and committed as if completed.
+
+**Outcome**: `.ai/MODULE_REGISTRY.md` § UI Navigation Compliance rewritten with an honest per-module table distinguishing "tab bar wired via layout.tsx" (true) from "sidebar flattened" (false for 14 modules) and "catch-sweep done" (false, 95 files remain). Real remediation of the sidebar flattening and catch sweep continues as separate, verified work items.
+
+**Files**: `.ai/MODULE_REGISTRY.md`, `.ai/CHANGELOG.md`.
+
 ## [2026-07-24] 100% ERP Module Layout Standardization via App Router Layout Wrappers
 
 - **App Router Module Layouts (23 modules)**: Created `layout.tsx` for all 23 ERP modules (`crm`, `finance`, `settings`, `hr`, `drive`, `supply-chain`, `education`, `healthcare`, `field-service`, `real-estate`, `projects`, `inventory`, `ecommerce`, `analytics`, `ai`, `apps`, `communication`, `connect`, `manufacturing`, `pos`, `procurement`, `saas`, `sales`). Each module `layout.tsx` renders its respective `<*TabLayout tabs={...}>`, ensuring **100% of pages, sub-pages, detail views (`[id]`), settings sub-routes, and advanced pages automatically render inside their module's primary tab bar**.

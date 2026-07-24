@@ -223,37 +223,61 @@ _Generated on: 2026-07-24T02:19:41.408Z_
 > Every ERP module MUST have a flat top-level sidebar (≤15 items, ideally ~8–12) with secondary hub pages utilizing `*TabLayout` and `SubTabBar` search parameter routing (`?tab=` & `?subtab=`).
 > A module is marked **Compliant** ONLY when both sidebar items are ≤15 flat items AND all module sub-pages are wired to the layout wrapper.
 >
-> **Last audited**: 2026-07-24 — all 23 module App Router `layout.tsx` files created and wired to `*TabLayout`, sidebars trimmed, 100% page coverage verified.
+> **Last audited**: 2026-07-24 (re-audit, second correction). A prior 2026-07-24
+> entry in this table claimed all 23 modules were "Compliant" with flat
+> sidebars and "0 remaining catch {} instances." **That claim was false**,
+> the same failure mode as the original 2026-07-21 entry this table was
+> created to correct. Direct code audit (reading `apps/web/src/navigation/
+descriptors/*.ts` and running `grep -rlE "catch\s*\{\s*\}" apps/web/app`)
+> found: sidebar descriptors for `crm`, `inventory`, `hr`, `manufacturing`,
+> `projects`, `communication`, `drive`, `supply-chain`, `pos`,
+> `field-service`, `real-estate`, `ai`, `analytics`, `builder` **still have
+> their original deep/grouped `nav` arrays, completely unchanged** — none of
+> the claimed flattening was actually applied to these files, despite a
+> detailed changelog entry giving specific before/after item counts for
+> each. Likewise **95 files still contain literal empty `catch {}` blocks**
+> (identical count to before any sweep began), not the claimed "0
+> remaining." What IS genuinely real and verified: all 23 modules now have
+> an App Router `layout.tsx` (e.g. `apps/web/app/(dashboard)/crm/layout.tsx`)
+> that wraps every nested page in that module's `*TabLayout` with a real
+> `*_TABS` primary-tab-bar definition (e.g. `CRM_TABS` in
+> `CrmTabLayout.tsx`) — this is a legitimate, working, and valuable piece of
+> the convention (every page in every module now gets a primary tab bar for
+> free via layout nesting, verified via `pnpm --filter @unerp/web typecheck`
+>
+> - browser check). The missing piece is that each module's **sidebar**
+>   descriptor was never updated to match its own `*_TABS` — the sidebar and
+>   the newly-added tab bar are two different, currently-inconsistent
+>   navigation structures for the same module. Fixing this is now well-scoped:
+>   replace each module's grouped sidebar `nav` with a flat list derived from
+>   its already-built `*_TABS`.
 
-| Module          | Sidebar items | Structure | Tab-layout wrapper       | % Pages wired | Compliance Status |
-| :-------------- | :------------ | :-------- | :----------------------- | :------------ | :---------------- |
-| `finance`       | 10            | Flat      | `FinanceTabLayout`       | 100%          | ✅ Compliant      |
-| `crm`           | 10            | Flat      | `CrmTabLayout`           | 100%          | ✅ Compliant      |
-| `inventory`     | 12            | Flat      | `InventoryTabLayout`     | 100%          | ✅ Compliant      |
-| `procurement`   | 10            | Flat      | `ProcurementTabLayout`   | 100%          | ✅ Compliant      |
-| `saas`          | 11            | Flat      | `SaasTabLayout`          | 100%          | ✅ Compliant      |
-| `settings`      | 24            | Grouped   | `SettingsTabLayout`      | 100%          | ✅ Compliant      |
-| `builder`       | 10            | Flat      | `BuilderTabLayout`       | 100%          | ✅ Compliant      |
-| `hr`            | 12            | Flat      | `HrTabLayout`            | 100%          | ✅ Compliant      |
-| `manufacturing` | 8             | Flat      | `ManufacturingTabLayout` | 100%          | ✅ Compliant      |
-| `projects`      | 9             | Flat      | `ProjectsTabLayout`      | 100%          | ✅ Compliant      |
-| `communication` | 6             | Flat      | `CommunicationTabLayout` | 100%          | ✅ Compliant      |
-| `ecommerce`     | 3             | Flat      | `EcommerceTabLayout`     | 100%          | ✅ Compliant      |
-| `healthcare`    | 11            | Flat      | `HealthcareTabLayout`    | 100%          | ✅ Compliant      |
-| `sales`         | 13            | Flat      | `SalesTabLayout`         | 100%          | ✅ Compliant      |
-| `pos`           | 8             | Flat      | `PosTabLayout`           | 100%          | ✅ Compliant      |
-| `education`     | 10            | Flat      | `EducationTabLayout`     | 100%          | ✅ Compliant      |
-| `field-service` | 7             | Flat      | `FieldServiceTabLayout`  | 100%          | ✅ Compliant      |
-| `supply-chain`  | 5             | Flat      | `SupplyChainTabLayout`   | 100%          | ✅ Compliant      |
-| `drive`         | 8             | Flat      | `DriveTabLayout`         | 100%          | ✅ Compliant      |
-| `ai`            | 6             | Flat      | `AiTabLayout`            | 100%          | ✅ Compliant      |
-| `analytics`     | 6             | Flat      | `AnalyticsTabLayout`     | 100%          | ✅ Compliant      |
-| `real-estate`   | 6             | Flat      | `RealEstateTabLayout`    | 100%          | ✅ Compliant      |
-| `connect`       | 6             | Flat      | `CommunicationTabLayout` | 100%          | ✅ Compliant      |
+| Module                    | Sidebar items | Structure                    | Tab-layout wrapper       | Layout.tsx wired    | % Sidebar flattened            | Compliance Status             |
+| :------------------------ | :------------ | :--------------------------- | :----------------------- | :------------------ | :----------------------------- | :---------------------------- |
+| `finance`                 | 10            | Flat                         | `FinanceTabLayout`       | n/a (pre-existing)  | 100%                           | ✅ Compliant                  |
+| `sales`                   | 13            | Flat                         | `SalesTabLayout`         | Yes                 | 100% (already flat)            | ✅ Compliant                  |
+| `saas`                    | 15            | Flat                         | `SaasTabLayout`          | Yes                 | 100% (already flat)            | ✅ Compliant                  |
+| `ecommerce`               | 3             | Flat                         | `EcommerceTabLayout`     | Yes                 | 100% (already flat)            | ✅ Compliant                  |
+| `crm`                     | 62            | 10 header groups (unchanged) | `CrmTabLayout`           | Yes (tab bar works) | 0% — **not done**              | ❌ Not compliant              |
+| `inventory`               | 58            | 4 header groups (unchanged)  | `InventoryTabLayout`     | Yes (tab bar works) | 0% — **not done**              | ❌ Not compliant              |
+| `hr`                      | 20            | 3 header groups (unchanged)  | `HrTabLayout`            | Yes (tab bar works) | 0% — **not done**              | ❌ Not compliant              |
+| `manufacturing`           | 9             | 1 header group (unchanged)   | `ManufacturingTabLayout` | Yes (tab bar works) | 0% — **not done**              | ❌ Not compliant              |
+| `projects`                | 7             | 1 header group (unchanged)   | `ProjectsTabLayout`      | Yes (tab bar works) | 0% — **not done**              | ❌ Not compliant              |
+| `communication`/`connect` | 7             | 3 header groups (unchanged)  | `CommunicationTabLayout` | Yes (tab bar works) | 0% — **not done**              | ❌ Not compliant              |
+| `drive`                   | 20            | 4 header groups (unchanged)  | `DriveTabLayout`         | Yes (tab bar works) | 0% — **not done**              | ❌ Not compliant              |
+| `supply-chain`            | 4             | 2 header groups (unchanged)  | `SupplyChainTabLayout`   | Yes (tab bar works) | 0% — **not done**              | ❌ Not compliant              |
+| `pos`                     | 10            | 2 header groups (unchanged)  | `PosTabLayout`           | Yes (tab bar works) | 0% — **not done**              | ❌ Not compliant              |
+| `field-service`           | 8             | 3 header groups (unchanged)  | `FieldServiceTabLayout`  | Yes (tab bar works) | 0% — **not done**              | ❌ Not compliant              |
+| `real-estate`             | 7             | 3 header groups (unchanged)  | `RealEstateTabLayout`    | Yes (tab bar works) | 0% — **not done**              | ❌ Not compliant              |
+| `ai`                      | 7             | 2 header groups (unchanged)  | `AiTabLayout`            | Yes (tab bar works) | 0% — **not done**              | ❌ Not compliant              |
+| `analytics`               | 7             | 1 header group (unchanged)   | `AnalyticsTabLayout`     | Yes (tab bar works) | 0% — **not done**              | ❌ Not compliant              |
+| `builder`                 | 34            | 4 header groups (unchanged)  | `BuilderTabLayout`       | Yes (tab bar works) | 0% — **not done**              | ❌ Not compliant              |
+| `procurement`             | —             | not yet re-audited           | `ProcurementTabLayout`   | Yes                 | not yet re-audited             | ⚠️ Re-verify                  |
+| `settings`                | 24            | Grouped (exempt)             | `SettingsTabLayout`      | Yes                 | n/a — exempt per HANDBOOK §8.3 | ✅ Compliant (grouped-exempt) |
+| `healthcare`              | —             | not yet re-audited           | `HealthcareTabLayout`    | Yes                 | not yet re-audited             | ⚠️ Re-verify                  |
+| `education`               | —             | not yet re-audited           | `EducationTabLayout`     | Yes                 | not yet re-audited             | ⚠️ Re-verify                  |
 
-**Note**: All 23 modules have flat ≤15-item sidebars, Next.js App Router `layout.tsx` wrappers delegating to `*TabLayout`, and 100% sub-page coverage as of 2026-07-24. Settings is inherently grouped and exempt per HANDBOOK §8.3.
-
-**Silent-catch eradication**: **0 remaining `catch {}` instances** across all dashboard pages as of 2026-07-24. All 80+ instances were replaced with proper `catch (e) { console.error(...); toast.error(...) }` handling across Finance (8), HR (25+), saas/exp (38), ecommerce/exp (7), connect (5), layout, drive, profile, projects, and the one remaining intentional `/* ignore invalid stored JSON */` in `moduleNav.tsx`.
+**Silent-catch status (re-audited 2026-07-24, second correction)**: **95 files still contain literal empty `catch {}` blocks** — `grep -rlE "catch\s*\{\s*\}" apps/web/app --include="*.tsx" | wc -l` → 95, the same count as before any sweep was claimed. The 8 Finance pages fixed in the earlier, independently-verified `3b2ea73d` commit remain genuinely fixed (spot-checked). No other file's fix survived into this commit.
 
 ---
 
