@@ -77,7 +77,6 @@ const PILLARS = [
     title: "Build",
     subtitle: "App Studio",
     desc: "Create custom ERP modules, forms, workflows, dashboards and business logic — no code required.",
-    icon: Cpu,
     color: "var(--color-primary)",
     href: "/builder/erp",
   },
@@ -86,7 +85,6 @@ const PILLARS = [
     title: "Web Studio",
     subtitle: "Sites & CMS",
     desc: "Design multi-site websites, manage collections, blog, assets, SEO and commerce.",
-    icon: Globe,
     color: "#7c3aed",
     href: "/builder/web",
   },
@@ -95,7 +93,6 @@ const PILLARS = [
     title: "Marketplace",
     subtitle: "Apps & vendors",
     desc: "Browse and install apps from the store, or publish your own through the developer portal.",
-    icon: Store,
     color: "#059669",
     href: "/apps/store",
   },
@@ -104,7 +101,6 @@ const PILLARS = [
     title: "Manage",
     subtitle: "Governance & ops",
     desc: "Releases, environments, run logs and access control across everything you build.",
-    icon: Server,
     color: "#d97706",
     href: "/builder/manage",
   },
@@ -112,64 +108,64 @@ const PILLARS = [
 
 const QUICK_ACTIONS = [
   {
+    id: "app",
     label: "New App",
-    icon: Cpu,
     href: "/builder/erp/modules?new=1",
     color: "var(--color-primary)",
   },
   {
+    id: "form",
     label: "New Form",
-    icon: FileCode2,
     href: "/builder/erp/forms?new=1",
     color: "var(--color-primary)",
   },
   {
+    id: "workflow",
     label: "New Workflow",
-    icon: Workflow,
     href: "/builder/erp/workflows/new",
     color: "#7c3aed",
   },
   {
+    id: "dashboard",
     label: "New Dashboard",
-    icon: BarChart3,
     href: "/builder/erp/dashboards/new",
     color: "#059669",
   },
   {
+    id: "site",
     label: "New Site",
-    icon: Globe,
     href: "/builder/web/sites?new=1",
     color: "#7c3aed",
   },
   {
+    id: "collection",
     label: "New Collection",
-    icon: Database,
     href: "/builder/web/collections?new=1",
     color: "#7c3aed",
   },
   {
+    id: "asset",
     label: "Upload Asset",
-    icon: ImageIcon,
     href: "/builder/web/assets?new=1",
     color: "#d97706",
   },
   {
+    id: "template",
     label: "New Template",
-    icon: FileText,
     href: "/builder/web/templates?new=1",
     color: "#d97706",
   },
 ];
 
 const MANAGE_SHORTCUTS = [
-  { label: "Releases", icon: History, href: "/builder/manage/releases" },
+  { id: "releases", label: "Releases", href: "/builder/manage/releases" },
   {
+    id: "environments",
     label: "Environments",
-    icon: GitFork,
     href: "/builder/manage/environments",
   },
-  { label: "Run Logs", icon: Activity, href: "/builder/manage/logs" },
-  { label: "Access Control", icon: Shield, href: "/builder/manage/access" },
+  { id: "logs", label: "Run Logs", href: "/builder/manage/logs" },
+  { id: "access", label: "Access Control", href: "/builder/manage/access" },
 ];
 
 function StudioHomeContent() {
@@ -514,9 +510,14 @@ function StudioHomeContent() {
             >
               <div className="ui-card-body">
                 <div className={styles.s3}>
-                  <div style={{ background: p.color }} className={styles.s14}>
-                    <p.icon size={22} className={styles.s5} />
-                  </div>
+                  {p.id === "build" && <Cpu size={22} className={styles.s5} />}
+                  {p.id === "web" && <Globe size={22} className={styles.s5} />}
+                  {p.id === "marketplace" && (
+                    <Store size={22} className={styles.s5} />
+                  )}
+                  {p.id === "manage" && (
+                    <Server size={22} className={styles.s5} />
+                  )}
                   <div>
                     <h3 className={styles.s15}>{p.title}</h3>
                     <p className="ui-text-xs-muted m-0">{p.subtitle}</p>
@@ -620,7 +621,18 @@ function StudioHomeContent() {
                     className={`ui-btn ui-btn-secondary ${styles.s19}`}
                     onClick={() => router.push(s.href)}
                   >
-                    <s.icon size={14} className="ui-text-muted" />
+                    {s.id === "releases" && (
+                      <History size={14} className="ui-text-muted" />
+                    )}
+                    {s.id === "environments" && (
+                      <GitFork size={14} className="ui-text-muted" />
+                    )}
+                    {s.id === "logs" && (
+                      <Activity size={14} className="ui-text-muted" />
+                    )}
+                    {s.id === "access" && (
+                      <Shield size={14} className="ui-text-muted" />
+                    )}
                     <span>{s.label}</span>
                     <ChevronRight size={14} className={styles.s16} />
                   </button>

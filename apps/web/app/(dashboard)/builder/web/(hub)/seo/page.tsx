@@ -28,19 +28,16 @@ const SEO_SUB_TABS = [
     id: "pages",
     label: "Page SEO",
     href: "/builder/web/seo?subtab=pages",
-    icon: FileText,
   },
   {
     id: "technical",
     label: "Technical SEO",
     href: "/builder/web/seo?subtab=technical",
-    icon: Zap,
   },
   {
     id: "structured",
     label: "Structured Data",
     href: "/builder/web/seo?subtab=structured",
-    icon: BarChart3,
   },
 ];
 

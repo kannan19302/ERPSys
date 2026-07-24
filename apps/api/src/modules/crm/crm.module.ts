@@ -34,6 +34,7 @@ import { CustomerPortalService } from "./customer-portal.service";
 import { CustomerPortalAdminController } from "./customer-portal-admin.controller";
 import { CustomerPortalController } from "./customer-portal.controller";
 import { CrmSettingsController } from "./settings.controller";
+import { AppSettingsService } from "../../common/settings/settings.service";
 
 import { CrmForecastingService } from "./crm-forecasting.service";
 import { CrmAccountManagementService } from "./crm-account-management.service";
@@ -183,6 +184,7 @@ const CRM_SERVICES = [
   CrmKnowledgeBaseService,
   CrmPartnerDeepService,
   CrmWinLossService,
+  AppSettingsService,
 ];
 
 @Module({

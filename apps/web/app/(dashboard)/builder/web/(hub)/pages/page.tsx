@@ -29,25 +29,55 @@ import {
 } from "lucide-react";
 
 const SECTIONS_PALETTE = [
-  { type: "navbar", label: "Navbar", icon: Layers },
-  { type: "hero", label: "Hero Banner", icon: Monitor },
-  { type: "collection", label: "Collection List", icon: Database },
-  { type: "features", label: "Features Grid", icon: LayoutGrid },
-  { type: "columns", label: "Columns", icon: LayoutGrid },
-  { type: "image", label: "Image", icon: Image },
-  { type: "gallery", label: "Gallery", icon: Image },
-  { type: "logos", label: "Logo Cloud", icon: Layers },
-  { type: "trust", label: "Trust Bar", icon: Layers },
-  { type: "social", label: "Social Proof", icon: Type },
-  { type: "steps", label: "How It Works", icon: LayoutTemplate },
-  { type: "pricing", label: "Pricing Table", icon: Tag },
-  { type: "faq", label: "FAQ Accordion", icon: FileText },
-  { type: "text", label: "Rich Text", icon: FileText },
-  { type: "cta", label: "CTA Banner", icon: Zap },
-  { type: "contact", label: "Contact Form", icon: FileText },
-  { type: "cart", label: "Cart & Checkout", icon: Tag },
-  { type: "footer", label: "Footer", icon: Layers },
+  { type: "navbar", label: "Navbar" },
+  { type: "hero", label: "Hero Banner" },
+  { type: "collection", label: "Collection List" },
+  { type: "features", label: "Features Grid" },
+  { type: "columns", label: "Columns" },
+  { type: "image", label: "Image" },
+  { type: "gallery", label: "Gallery" },
+  { type: "logos", label: "Logo Cloud" },
+  { type: "trust", label: "Trust Bar" },
+  { type: "social", label: "Social Proof" },
+  { type: "steps", label: "How It Works" },
+  { type: "pricing", label: "Pricing Table" },
+  { type: "faq", label: "FAQ Accordion" },
+  { type: "text", label: "Rich Text" },
+  { type: "cta", label: "CTA Banner" },
+  { type: "contact", label: "Contact Form" },
+  { type: "cart", label: "Cart & Checkout" },
+  { type: "footer", label: "Footer" },
 ];
+
+function renderBlockIcon(type: string, size = 20, className = "ui-text-muted") {
+  switch (type) {
+    case "hero":
+      return <Monitor size={size} className={className} />;
+    case "collection":
+      return <Database size={size} className={className} />;
+    case "features":
+    case "columns":
+      return <LayoutGrid size={size} className={className} />;
+    case "image":
+    case "gallery":
+      return <Image size={size} className={className} />;
+    case "social":
+      return <Type size={size} className={className} />;
+    case "steps":
+      return <LayoutTemplate size={size} className={className} />;
+    case "pricing":
+    case "cart":
+      return <Tag size={size} className={className} />;
+    case "faq":
+    case "text":
+    case "contact":
+      return <FileText size={size} className={className} />;
+    case "cta":
+      return <Zap size={size} className={className} />;
+    default:
+      return <Layers size={size} className={className} />;
+  }
+}
 
 // Inspector schema per block type — drives the right-hand property editor.
 const BLOCK_INSPECTOR: Record<
@@ -549,7 +579,7 @@ function WebBuilderPagesPageContent() {
                     onClick={() => handleAddBlock(block.type, block.label)}
                     className={`${styles.s16} ${styles.blockOption}`}
                   >
-                    <block.icon size={20} className="ui-text-muted" />
+                    {renderBlockIcon(block.type, 20, "ui-text-muted")}
                     <span className={styles.s17}>{block.label}</span>
                   </button>
                 ))}

@@ -8,14 +8,34 @@ const nextConfig = {
   // which doesn't fire reliably on Docker Desktop bind mounts (Windows).
   // Polling is already set via WATCHPACK_POLLING=1000 in the Docker env,
   // but this explicit config ensures it works even if that env var is absent.
-  webpack: (config, { isServer }) => ({
-    ...config,
-    watchOptions: {
+  webpack: (config, { isServer }) => {
+    config.watchOptions = {
       ...(config.watchOptions || {}),
       poll: 1000,
       aggregateTimeout: 300,
-    },
-  }),
+    };
+    config.resolve = config.resolve || {};
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      '@unerp/ui-tokens': path.resolve(process.cwd(), '../../packages/ui-tokens/src/index.ts'),
+      '@unerp/ui-theme': path.resolve(process.cwd(), '../../packages/ui-theme/src/index.ts'),
+      '@unerp/ui-components': path.resolve(process.cwd(), '../../packages/ui-components/src/index.ts'),
+      '@unerp/ui-layout': path.resolve(process.cwd(), '../../packages/ui-layout/src/index.ts'),
+      '@unerp/ui-charts': path.resolve(process.cwd(), '../../packages/ui-charts/src/index.ts'),
+      '@unerp/ui-data-grid': path.resolve(process.cwd(), '../../packages/ui-data-grid/src/index.ts'),
+      '@unerp/ui-dashboard': path.resolve(process.cwd(), '../../packages/ui-dashboard/src/index.ts'),
+      '@unerp/ui-notifications': path.resolve(process.cwd(), '../../packages/ui-notifications/src/index.ts'),
+      '@unerp/ui-hooks': path.resolve(process.cwd(), '../../packages/ui-hooks/src/index.ts'),
+      '@unerp/ui-utils': path.resolve(process.cwd(), '../../packages/ui-utils/src/index.ts'),
+      '@unerp/ui-icons': path.resolve(process.cwd(), '../../packages/ui-icons/src/index.ts'),
+      '@unerp/ui-form-engine': path.resolve(process.cwd(), '../../packages/ui-form-engine/src/index.ts'),
+      '@unerp/ui-workflow': path.resolve(process.cwd(), '../../packages/ui-workflow/src/index.ts'),
+      '@unerp/ui/styles': path.resolve(process.cwd(), '../../packages/ui/src/styles/globals.css'),
+      '@unerp/ui/tokens': path.resolve(process.cwd(), '../../packages/ui/src/tokens/design-tokens.css'),
+      '@unerp/ui': path.resolve(process.cwd(), '../../packages/ui/src/index.ts'),
+    };
+    return config;
+  },
   reactStrictMode: true,
   transpilePackages: [
     '@unerp/ui',

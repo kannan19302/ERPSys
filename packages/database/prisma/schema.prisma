@@ -77,6 +77,23 @@ model Tenant {
   webhookDeliveries       TenantWebhookDelivery[]
   announcements           TenantAnnouncement[]
 
+  formTemplates           FormTemplate[]
+  pageTemplates           PageTemplate[]
+  workflowDefinitions     WorkflowDefinition[]
+  aiModels                AiModel[]
+  aiModelDeployments      AiModelDeployment[]
+  aiPrompts               AiPrompt[]
+  aiConversations         AiConversation[]
+  aiDocuments             AiDocument[]
+  aiAgents                AiAgent[]
+  aiTrainingJobs          AiTrainingJob[]
+  chatRooms               ChatRoom[]
+  videoCallRooms          VideoCallRoom[]
+  communicationFileShares CommunicationFileShare[]
+  genericAnnouncements    Announcement[]
+  driveFolders            DriveFolder[]
+  driveFiles              DriveFile[]
+
   @@map("tenants")
 }
 
@@ -94,24 +111,7 @@ model TenantLifecycleEvent {
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
-  formTemplates          FormTemplate[]
-  pageTemplates          PageTemplate[]
-  workflowDefinitions    WorkflowDefinition[]
-  aiModels               AiModel[]
-  aiModelDeployments     AiModelDeployment[]
-  aiPrompts              AiPrompt[]
-  aiConversations        AiConversation[]
-  aiDocuments            AiDocument[]
-  aiAgents               AiAgent[]
-  aiTrainingJobs         AiTrainingJob[]
-  chatRooms              ChatRoom[]
-  videoCallRooms         VideoCallRoom[]
-  communicationFileShares CommunicationFileShare[]
-  announcements          Announcement[]
-  driveFolders           DriveFolder[]
-  driveFiles             DriveFile[]
-
-    @@index([tenantId])
+  @@index([tenantId])
   @@map("tenant_lifecycle_events")
 }
 
@@ -2971,8 +2971,10 @@ model POSShift {
   notes        String?
   status       String    @default("OPEN") // OPEN, CLOSED
 
-  register POSRegister @relation(fields: [registerId], references: [id], onDelete: Cascade)
-  orders   POSOrder[]
+  register     POSRegister @relation(fields: [registerId], references: [id], onDelete: Cascade)
+  orders       POSOrder[]
+  cashDrawers  PosShiftCashDrawer[]
+  transactions PosShiftTransaction[]
 
   @@index([tenantId])
   @@map("pos_shifts")
@@ -10513,6 +10515,10 @@ model CustomerPortalUser {
 
   customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
   contact  Contact? @relation(fields: [contactId], references: [id])
+
+  messages      CustomerPortalMessage[]
+  documentAccess PortalDocumentAccess[]
+  activityLogs  PortalActivityLog[]
 
   @@unique([tenantId, email])
   @@index([tenantId])
@@ -18920,6 +18926,7 @@ model FieldSalesCheckin {
   createdAt   DateTime  @default(now()) @map("created_at")
 
   customer Customer? @relation(fields: [customerId], references: [id])
+  route    FieldSalesRoute? @relation(fields: [routeId], references: [id])
 
   @@index([tenantId])
   @@index([userId])
@@ -19086,7 +19093,8 @@ model RebateAgreement {
   createdAt        DateTime  @default(now()) @map("created_at")
   updatedAt        DateTime  @updatedAt @map("updated_at")
 
-  claims RebateClaim[]
+  claims   RebateClaim[]
+  accruals RebateAccrual[]
 
   @@index([tenantId])
   @@index([customerId])
@@ -19720,6 +19728,8 @@ model RMALine {
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
+  rma ReturnMerchandiseAuthorization @relation(fields: [rmaId], references: [id], onDelete: Cascade)
+
   @@index([tenantId])
   @@index([rmaId])
   @@map("rma_lines")
@@ -19739,8 +19749,11 @@ model RMAInspection {
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
+  rma ReturnMerchandiseAuthorization @relation(fields: [rmaId], references: [id], onDelete: Cascade)
+
   @@index([tenantId])
   @@index([rmaId])
+  @@unique([rmaId])
   @@map("rma_inspections")
 }
 
@@ -19966,8 +19979,10 @@ model SourcingProject {
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
-  participants SourcingParticipant[]
-  evaluations  SupplierEvaluation[]
+  participants   SourcingParticipant[]
+  evaluations    SupplierEvaluation[]
+  bidAnalyses    BidAnalysis[]
+  contractAwards ContractAward[]
 
   @@index([tenantId])
   @@index([projectNumber])
@@ -20372,10 +20387,12 @@ model ImportDeclaration {
   updatedAt       DateTime @updatedAt @map("updated_at")
 
   lines ImportDeclarationLine[]
+  hsCodeRef HsCode? @relation(fields: [hsCodeId], references: [id])
 
   @@index([tenantId])
   @@index([declarationNumber])
   @@index([tenantId, status])
+  @@index([hsCodeId])
   @@map("import_declarations")
 }
 
@@ -20441,10 +20458,12 @@ model ExportDeclaration {
   updatedAt       DateTime @updatedAt @map("updated_at")
 
   lines ExportDeclarationLine[]
+  hsCodeRef HsCode? @relation(fields: [hsCodeId], references: [id])
 
   @@index([tenantId])
   @@index([declarationNumber])
   @@index([tenantId, status])
+  @@index([hsCodeId])
   @@map("export_declarations")
 }
 
@@ -22207,6 +22226,7 @@ model EcommerceStore {
   themes      EcommerceStoreTheme[]
   abandonedCarts EcommerceAbandonedCart[]
   wishlists   EcommerceWishlist[]
+  carts       EcommerceCart[]
 
   @@index([tenantId])
   @@index([slug])
@@ -22827,6 +22847,7 @@ model SaasAppVersion {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   app SaasApp @relation(fields: [appId], references: [id], onDelete: Cascade)
+  installations SaasAppInstallation[]
 
   @@index([tenantId])
   @@index([appId])
@@ -22927,6 +22948,7 @@ model SaasSubscription {
   lineItems SaasSubscriptionLineItem[]
   invoices  SaasInvoice2[]
   usage     SaasUsageRecord[]
+  coupon2Redemptions SaasCoupon2Redemption[]
 
   @@index([tenantId])
   @@index([subscribingTenantId])
@@ -23300,7 +23322,6 @@ model SaasSupportTicket {
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   messages    SaasSupportTicketMessage[]
-  attachments SaasSupportTicketAttachment[]
 
   @@index([tenantId])
   @@index([status])
@@ -23320,6 +23341,7 @@ model SaasSupportTicketMessage {
   createdAt  DateTime @default(now()) @map("created_at")
 
   ticket SaasSupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  attachments SaasSupportTicketAttachment[]
 
   @@index([tenantId])
   @@index([ticketId])
@@ -23741,6 +23763,7 @@ model FormTemplate {
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   submissions  FormSubmission[]
+  fieldDefs    FormField[]
 
   @@index([tenantId])
   @@index([tenantId, slug])
@@ -23828,6 +23851,7 @@ model PageTemplate {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  pageSections PageSection[]
 
   @@index([tenantId])
   @@index([tenantId, slug])

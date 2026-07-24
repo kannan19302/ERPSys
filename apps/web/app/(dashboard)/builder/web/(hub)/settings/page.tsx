@@ -20,19 +20,16 @@ const SETTINGS_SUB_TABS = [
     id: "theme",
     label: "Theme & Templates",
     href: "/builder/web/settings?subtab=theme",
-    icon: Palette,
   },
   {
     id: "general",
     label: "General Info",
     href: "/builder/web/settings?subtab=general",
-    icon: Globe,
   },
   {
     id: "code",
     label: "Custom Code",
     href: "/builder/web/settings?subtab=code",
-    icon: Code,
   },
 ];
 
