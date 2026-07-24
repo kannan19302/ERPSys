@@ -1,6 +1,6 @@
 {
   "name": "@unerp/ui-layout",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "UniERP Design System — page scaffolding: PageHeader, ViewSwitcher, page templates",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
