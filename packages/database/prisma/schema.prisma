@@ -24600,3 +24600,438 @@ model DriveActivity {
   @@index([tenantId, createdAt])
   @@map("drive_activities")
 }
+
+// ════════════════════════════════════════════════
+// CRM EXPANSION 1,500+ FEATURES DEEPENING MODELS
+// Added 2026-07-24
+// ════════════════════════════════════════════════
+
+model CrmSalesPlaybook {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  code        String
+  methodology String   @default("MEDDPICC") // MEDDPICC, BANT, SPIN, CHALLENGER
+  description String?  @db.Text
+  isActive    Boolean  @default(true) @map("is_active")
+  version     Int      @default(1)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  stages  CrmPlaybookStage[]
+  actions CrmPlaybookAction[]
+
+  @@index([tenantId])
+  @@map("crm_sales_playbooks")
+}
+
+model CrmPlaybookStage {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  playbookId     String   @map("playbook_id")
+  stageName      String   @map("stage_name")
+  sortOrder      Int      @default(0) @map("sort_order")
+  requiredFields Json     @default("[]") @map("required_fields")
+  exitCriteria   Json     @default("[]") @map("exit_criteria")
+  guidance       String?  @db.Text
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  playbook CrmSalesPlaybook    @relation(fields: [playbookId], references: [id], onDelete: Cascade)
+  actions  CrmPlaybookAction[]
+
+  @@index([tenantId, playbookId])
+  @@map("crm_playbook_stages")
+}
+
+model CrmPlaybookAction {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  playbookId  String   @map("playbook_id")
+  stageId     String   @map("stage_id")
+  actionName  String   @map("action_name")
+  actionType  String   @default("TASK") @map("action_type") // EMAIL, CALL, MEETING, DOCUMENT, TASK
+  isMandatory Boolean  @default(false) @map("is_mandatory")
+  sortOrder   Int      @default(0) @map("sort_order")
+  templateId  String?  @map("template_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  playbook CrmSalesPlaybook @relation(fields: [playbookId], references: [id], onDelete: Cascade)
+  stage    CrmPlaybookStage  @relation(fields: [stageId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, playbookId])
+  @@index([tenantId, stageId])
+  @@map("crm_playbook_actions")
+}
+
+model CrmDealGuidance {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  dealId          String   @map("deal_id")
+  playbookId      String?  @map("playbook_id")
+  currentStageId  String?  @map("current_stage_id")
+  healthScore     Int      @default(50) @map("health_score")
+  riskFactors     Json     @default("[]") @map("risk_factors")
+  nextBestAction  String?  @map("next_best_action") @db.Text
+  winProbability  Decimal  @default(0.5) @map("win_probability") @db.Decimal(5, 2)
+  aiSummary       String?  @map("ai_summary") @db.Text
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId, dealId])
+  @@map("crm_deal_guidances")
+}
+
+model CrmCompetitorBattlecard {
+  id                 String   @id @default(cuid())
+  tenantId           String   @map("tenant_id")
+  competitorName     String   @map("competitor_name")
+  category           String?
+  strengths          Json     @default("[]")
+  weaknesses         Json     @default("[]")
+  landmines          Json     @default("[]")
+  pricingInfo        String?  @map("pricing_info") @db.Text
+  keyDifferentiators String?  @map("key_differentiators") @db.Text
+  isActive           Boolean  @default(true) @map("is_active")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  objections CrmObjectionHandler[]
+
+  @@index([tenantId])
+  @@map("crm_competitor_battlecards")
+}
+
+model CrmObjectionHandler {
+  id                String   @id @default(cuid())
+  tenantId          String   @map("tenant_id")
+  battlecardId      String?  @map("battlecard_id")
+  objection         String   @db.Text
+  category          String?
+  suggestedResponse String   @map("suggested_response") @db.Text
+  successRate       Decimal  @default(0.8) @map("success_rate") @db.Decimal(5, 2)
+  tags              Json     @default("[]")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  battlecard CrmCompetitorBattlecard? @relation(fields: [battlecardId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@map("crm_objection_handlers")
+}
+
+model CrmOmnichannelCampaign {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  name           String
+  code           String
+  campaignType   String    @default("EMAIL") @map("campaign_type") // EMAIL, SMS, WHATSAPP, AD_RETARGETING, WEBINAR
+  status         String    @default("DRAFT") // DRAFT, ACTIVE, PAUSED, COMPLETED
+  budget         Decimal   @default(0) @db.Decimal(15, 2)
+  spend          Decimal   @default(0) @db.Decimal(15, 2)
+  startDate      DateTime? @map("start_date")
+  endDate        DateTime? @map("end_date")
+  targetAudience Json      @default("{}") @map("target_audience")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  nodes CrmCampaignNode[]
+
+  @@index([tenantId])
+  @@map("crm_omnichannel_campaigns")
+}
+
+model CrmCampaignNode {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  campaignId String   @map("campaign_id")
+  nodeType   String   @default("ACTION") @map("node_type") // TRIGGER, ACTION, DELAY, CONDITION, SPLIT
+  name       String
+  config     Json     @default("{}")
+  sortOrder  Int      @default(0) @map("sort_order")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  campaign CrmOmnichannelCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, campaignId])
+  @@map("crm_campaign_nodes")
+}
+
+model CrmAudienceSegmentRule {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  segmentId String   @map("segment_id")
+  field     String
+  operator  String   @default("EQUALS") // EQUALS, CONTAINS, GREATER_THAN, IN_LIST
+  value     String
+  logicalOp String   @default("AND") @map("logical_op") // AND, OR
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId, segmentId])
+  @@map("crm_audience_segment_rules")
+}
+
+model CrmAttributionModel {
+  id                 String   @id @default(cuid())
+  tenantId           String   @map("tenant_id")
+  dealId             String   @map("deal_id")
+  campaignId         String   @map("campaign_id")
+  attributionType    String   @default("LINEAR") @map("attribution_type") // FIRST_TOUCH, LAST_TOUCH, LINEAR, TIME_DECAY, W_SHAPED
+  attributedRevenue Decimal  @default(0) @map("attributed_revenue") @db.Decimal(15, 2)
+  weightPercentage   Decimal  @default(1.0) @map("weight_percentage") @db.Decimal(5, 4)
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, dealId])
+  @@index([tenantId, campaignId])
+  @@map("crm_attribution_models")
+}
+
+model CrmMarketingAsset {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  title         String
+  assetType     String   @default("EBOOK") @map("asset_type") // EBOOK, WHITE_PAPER, DEMO_VIDEO, INFOGRAPHIC, TEMPLATE
+  fileUrl       String?  @map("file_url")
+  downloadCount Int      @default(0) @map("download_count")
+  leadGenCount  Int      @default(0) @map("lead_gen_count")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("crm_marketing_assets")
+}
+
+model CrmEventWebinar {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  title           String
+  eventDate       DateTime @map("event_date")
+  durationMins    Int      @default(60) @map("duration_mins")
+  platform        String   @default("ZOOM") // ZOOM, TEAMS, WEBEX
+  joinUrl         String?  @map("join_url")
+  registrantCount Int      @default(0) @map("registrant_count")
+  attendeeCount   Int      @default(0) @map("attendee_count")
+  recordingUrl    String?  @map("recording_url")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("crm_event_webinars")
+}
+
+model CrmAbmAccountGroup {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  name           String
+  tier           String   @default("TIER_1") // TIER_1, TIER_2, TIER_3
+  targetRevenue  Decimal  @default(0) @map("target_revenue") @db.Decimal(15, 2)
+  dedicatedRepId String?  @map("dedicated_rep_id")
+  description    String?  @db.Text
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("crm_abm_account_groups")
+}
+
+model CrmIntentSignal {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  customerId  String   @map("customer_id")
+  source      String   @default("G2") // G2, BOMBORA, WEBSITE_VISIT, CONTENT_DOWNLOAD
+  topic       String
+  score       Int      @default(50)
+  signalDate  DateTime @default(now()) @map("signal_date")
+  rawMetadata Json     @default("{}") @map("raw_metadata")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, customerId])
+  @@map("crm_intent_signals")
+}
+
+model CrmBuyingCommitteeMember {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  customerId     String   @map("customer_id")
+  contactId      String   @map("contact_id")
+  role           String   @default("DECISION_MAKER") // ECONOMIC_BUYER, CHAMPION, DECISION_MAKER, INFLUENCER, RATIFIER, BLOCKER
+  influenceLevel String   @default("HIGH") @map("influence_level") // HIGH, MEDIUM, LOW
+  sentiment      String   @default("POSITIVE") // POSITIVE, NEUTRAL, NEGATIVE
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId, customerId])
+  @@index([tenantId, contactId])
+  @@map("crm_buying_committee_members")
+}
+
+model CrmAccountEngagementLog {
+  id               String   @id @default(cuid())
+  tenantId         String   @map("tenant_id")
+  customerId       String   @map("customer_id")
+  activityType     String   @map("activity_type")
+  engagementPoints Int      @default(10) @map("engagement_points")
+  details          Json     @default("{}")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, customerId])
+  @@map("crm_account_engagement_logs")
+}
+
+model CrmHealthScoreConfig {
+  id                String   @id @default(cuid())
+  tenantId          String   @map("tenant_id")
+  metricName        String   @map("metric_name")
+  weight            Decimal  @default(0.25) @db.Decimal(5, 2)
+  thresholdWarning  Decimal  @default(60) @map("threshold_warning") @db.Decimal(5, 2)
+  thresholdCritical Decimal  @default(40) @map("threshold_critical") @db.Decimal(5, 2)
+  calculationLogic  Json     @default("{}") @map("calculation_logic")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("crm_health_score_configs")
+}
+
+model CrmAccountHealthRecord {
+  id               String   @id @default(cuid())
+  tenantId         String   @map("tenant_id")
+  customerId       String   @map("customer_id")
+  overallHealth    String   @default("HEALTHY") @map("overall_health") // HEALTHY, AT_RISK, CRITICAL
+  usageScore       Int      @default(80) @map("usage_score")
+  supportScore     Int      @default(90) @map("support_score")
+  npsScore         Int      @default(85) @map("nps_score")
+  paymentScore     Int      @default(95) @map("payment_score")
+  churnProbability Decimal  @default(0.05) @map("churn_probability") @db.Decimal(5, 4)
+  evaluatedAt      DateTime @default(now()) @map("evaluated_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, customerId])
+  @@map("crm_account_health_records")
+}
+
+model CrmRenewalPipeline {
+  id               String    @id @default(cuid())
+  tenantId         String    @map("tenant_id")
+  contractId       String?   @map("contract_id")
+  customerId       String    @map("customer_id")
+  renewalDate      DateTime  @map("renewal_date")
+  arrAmount        Decimal   @default(0) @map("arr_amount") @db.Decimal(15, 2)
+  expansionAmount  Decimal   @default(0) @map("expansion_amount") @db.Decimal(15, 2)
+  stage            String    @default("UPCOMING") // UPCOMING, IN_NEGOTIATION, RENEWED, CHURNED
+  ownerId          String?   @map("owner_id")
+  riskReason       String?   @map("risk_reason") @db.Text
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId, customerId])
+  @@map("crm_renewal_pipelines")
+}
+
+model CrmCustomerFeedbackSurvey {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  title         String
+  surveyType    String   @default("NPS") @map("survey_type") // NPS, CSAT, CES, ONBOARDING
+  questions     Json     @default("[]")
+  isActive      Boolean  @default(true) @map("is_active")
+  responseCount Int      @default(0) @map("response_count")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  responses CrmNpsResponse[]
+
+  @@index([tenantId])
+  @@map("crm_customer_feedback_surveys")
+}
+
+model CrmNpsResponse {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  surveyId    String   @map("survey_id")
+  customerId  String   @map("customer_id")
+  contactId   String?  @map("contact_id")
+  score       Int      @default(10)
+  feedback    String?  @db.Text
+  category    String   @default("PROMOTER") // PROMOTER, PASSIVE, DETRACTOR
+  submittedAt DateTime @default(now()) @map("submitted_at")
+
+  survey CrmCustomerFeedbackSurvey @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, surveyId])
+  @@index([tenantId, customerId])
+  @@map("crm_nps_responses")
+}
+
+model CrmFieldVisitSchedule {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  repId         String    @map("rep_id")
+  customerId    String    @map("customer_id")
+  scheduledDate DateTime  @map("scheduled_date")
+  purpose       String
+  status        String    @default("PLANNED") // PLANNED, IN_PROGRESS, COMPLETED, CANCELLED
+  checkInTime   DateTime? @map("check_in_time")
+  checkOutTime  DateTime? @map("check_out_time")
+  checkInLat    Decimal?  @map("check_in_lat") @db.Decimal(10, 7)
+  checkInLng    Decimal?  @map("check_in_lng") @db.Decimal(10, 7)
+  notes         String?   @db.Text
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId, repId])
+  @@index([tenantId, customerId])
+  @@map("crm_field_visit_schedules")
+}
+
+model CrmSalesRoutePlan {
+  id                    String   @id @default(cuid())
+  tenantId              String   @map("tenant_id")
+  repId                 String   @map("rep_id")
+  planDate              DateTime @map("plan_date")
+  stops                 Json     @default("[]")
+  totalDistanceKm       Decimal  @default(0) @map("total_distance_km") @db.Decimal(10, 2)
+  estimatedDurationMins Int      @default(0) @map("estimated_duration_mins")
+  status                String   @default("DRAFT") // DRAFT, APPROVED, IN_PROGRESS, COMPLETED
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId, repId])
+  @@map("crm_sales_route_plans")
+}
+
+model CrmPartnerTierBenefit {
+  id                    String   @id @default(cuid())
+  tenantId              String   @map("tenant_id")
+  tierName              String   @map("tier_name") // SILVER, GOLD, PLATINUM, DIAMOND
+  mdfBudget             Decimal  @default(0) @map("mdf_budget") @db.Decimal(15, 2)
+  commissionRate        Decimal  @default(0.1) @map("commission_rate") @db.Decimal(5, 4)
+  discountPercentage    Decimal  @default(15) @map("discount_percentage") @db.Decimal(5, 2)
+  requiredCertifications Int     @default(1) @map("required_certifications")
+  perks                 Json     @default("[]")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("crm_partner_tier_benefits")
+}
+
+model CrmPartnerCertification {
+  id                String   @id @default(cuid())
+  tenantId          String   @map("tenant_id")
+  partnerId         String   @map("partner_id")
+  contactId         String?  @map("contact_id")
+  certificationName String   @map("certification_name")
+  issuedDate        DateTime @default(now()) @map("issued_date")
+  expiryDate        DateTime @map("expiry_date")
+  status            String   @default("ACTIVE") // ACTIVE, EXPIRED, PENDING
+  credentialUrl     String?  @map("credential_url")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId, partnerId])
+  @@map("crm_partner_certifications")
+}

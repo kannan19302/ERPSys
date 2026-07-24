@@ -318,22 +318,7 @@ export const getAppSpecificNavigation = (
       items: [
         { name: "Dashboard", href: "/crm", icon: Home },
         {
-          name: "Account Management",
-          isHeader: true,
-          items: [
-            { name: "Customers", href: "/crm/customers", icon: Users },
-            { name: "Vendors", href: "/crm/vendors", icon: Building },
-            { name: "Contacts", href: "/crm/contacts", icon: Users },
-            { name: "Contracts", href: "/crm/contracts", icon: FileText },
-            {
-              name: "Customer Portal",
-              href: "/crm/customer-portal",
-              icon: Users,
-            },
-          ],
-        },
-        {
-          name: "Sales Pipeline",
+          name: "Sales & Pipeline",
           isHeader: true,
           items: [
             { name: "Leads", href: "/crm/leads", icon: TrendingUp },
@@ -342,131 +327,89 @@ export const getAppSpecificNavigation = (
               href: "/crm/opportunities",
               icon: BarChart3,
             },
-            { name: "Products", href: "/crm/products", icon: Package },
-            { name: "Price Books", href: "/crm/price-books", icon: BookOpen },
-            { name: "Quotations", href: "/crm/quotations", icon: FileText },
-            {
-              name: "E-Signatures",
-              href: "/crm/quotations/signatures",
-              icon: FileText,
-            },
             {
               name: "Sales Orders",
               href: "/crm/sales-orders",
               icon: ClipboardList,
             },
-            {
-              name: "Pipeline Risk Alerts",
-              href: "/crm/forecasting/pipeline-risk",
-              icon: TrendingUp,
-            },
-            {
-              name: "Revenue Intelligence",
-              href: "/crm/forecasting/revenue-intelligence",
-              icon: TrendingUp,
-            },
-            {
-              name: "Conversation Intelligence",
-              href: "/crm/conversation-intelligence",
-              icon: Phone,
-            },
-            {
-              name: "Conversion Analytics",
-              href: "/crm/forecasting/conversion-analytics",
-              icon: BarChart3,
-            },
-            { name: "AI Drafting", href: "/crm/ai-drafting", icon: FileText },
-            { name: "Sales Coaching", href: "/crm/coaching", icon: Phone },
-            { name: "Deal Rooms", href: "/crm/deal-rooms", icon: FileText },
           ],
         },
         {
-          name: "Marketing & Outreach",
+          name: "Accounts & Contacts",
+          isHeader: true,
+          items: [
+            { name: "Customers", href: "/crm/customers", icon: Users },
+            { name: "Contacts", href: "/crm/contacts", icon: Users },
+            { name: "Contracts", href: "/crm/contracts", icon: FileText },
+            {
+              name: "Customer Portal",
+              href: "/crm/customer-portal",
+              icon: Building,
+            },
+          ],
+        },
+        {
+          name: "CPQ & Quotations",
+          isHeader: true,
+          items: [
+            { name: "Quotations", href: "/crm/quotations", icon: FileText },
+            { name: "Price Books", href: "/crm/price-books", icon: BookOpen },
+            {
+              name: "E-Signatures",
+              href: "/crm/quotations/signatures",
+              icon: FileText,
+            },
+          ],
+        },
+        {
+          name: "Marketing & Campaigns",
           isHeader: true,
           items: [
             {
-              name: "Marketing & Outreach Hub",
+              name: "Marketing Hub",
               href: "/crm/marketing-outreach",
               icon: Target,
             },
           ],
         },
         {
-          name: "Automation & Workflows",
-          isHeader: true,
-          items: [
-            { name: "Workflow Rules", href: "/crm/workflows", icon: Zap },
-            { name: "Approvals", href: "/crm/approvals", icon: CheckSquare },
-            { name: "Activities", href: "/crm/activities", icon: Activity },
-            { name: "Documents", href: "/crm/documents", icon: FolderOpen },
-          ],
-        },
-        {
-          name: "Customer Service",
+          name: "Customer Support & SLA",
           isHeader: true,
           items: [
             { name: "Cases & SLA", href: "/crm/cases", icon: HelpCircle },
-            { name: "SLA Dashboard", href: "/crm/cases/sla", icon: Clock },
-          ],
-        },
-        {
-          name: "Sales Enablement",
-          isHeader: true,
-          items: [
             {
-              name: "Sales Enablement Hub",
-              href: "/crm/sales-enablement",
+              name: "Knowledge Base",
+              href: "/crm/knowledge-base",
               icon: BookOpen,
             },
-            { name: "Segments", href: "/crm/segments", icon: Target },
           ],
         },
         {
-          name: "Teams & Territories",
+          name: "Sales Ops & Teams",
           isHeader: true,
           items: [
             { name: "Territories", href: "/crm/territories", icon: MapPin },
-            {
-              name: "Assignment Rules",
-              href: "/crm/territories/assignment-rules",
-              icon: MapPin,
-            },
             { name: "Commissions", href: "/crm/commissions", icon: DollarSign },
             {
-              name: "Commission Plans",
-              href: "/crm/commission-plans",
-              icon: DollarSign,
-            },
-            {
-              name: "Sales Cadences",
-              href: "/crm/sequences/cadences",
-              icon: BookOpen,
-            },
-            {
-              name: "Gamification & Leaderboards",
-              href: "/crm/gamification",
-              icon: TrendingUp,
+              name: "Sales Coaching & Playbooks",
+              href: "/crm/coaching",
+              icon: Phone,
             },
           ],
         },
         {
-          name: "Analytics & Reports",
+          name: "Partner Management (PRM)",
           isHeader: true,
           items: [
-            { name: "Forecasting", href: "/crm/forecasting", icon: TrendingUp },
-            { name: "Account Plans", href: "/crm/account-plans", icon: Shield },
             {
-              name: "Account Hierarchy",
-              href: "/crm/account-hierarchy",
-              icon: Building2,
+              name: "Partner Hub & MDF",
+              href: "/crm/partner-management",
+              icon: Users,
             },
-            { name: "Reports", href: "/crm/reports", icon: PieChart },
-            { name: "Dashboards", href: "/crm/dashboards", icon: Layers },
-            { name: "Advanced", href: "/crm/advanced", icon: Settings },
           ],
         },
         {
-          name: "CRM Intelligence & AI",
+          name: "Intelligence & Analytics",
           isHeader: true,
           items: [
             {
@@ -474,92 +417,20 @@ export const getAppSpecificNavigation = (
               href: "/crm/intelligence",
               icon: Brain,
             },
+            { name: "Forecasting", href: "/crm/forecasting", icon: TrendingUp },
             {
-              name: "Predictive Lead Scoring",
-              href: "/crm/intelligence/lead-scoring",
-              icon: Target,
-            },
-            {
-              name: "Customer Health & Churn",
-              href: "/crm/intelligence/health",
-              icon: ShieldAlert,
-            },
-            {
-              name: "Deal Velocity",
-              href: "/crm/intelligence/deal-velocity",
-              icon: Clock,
-            },
-            {
-              name: "Attribution & Journey",
-              href: "/crm/intelligence/journey",
-              icon: Workflow,
-            },
-            {
-              name: "Sentiment & Health",
-              href: "/crm/intelligence/sentiment",
-              icon: Smile,
-            },
-            {
-              name: "CLV Analytics",
-              href: "/crm/intelligence/clv",
-              icon: DollarSign,
-            },
-            {
-              name: "Partner Management",
-              href: "/crm/intelligence/partners",
-              icon: Users,
-            },
-            {
-              name: "Campaign Analytics",
-              href: "/crm/intelligence/campaigns",
-              icon: Target,
+              name: "Reports & Dashboards",
+              href: "/crm/reports",
+              icon: PieChart,
             },
           ],
         },
         {
-          name: "Settings",
+          name: "Settings & Workflows",
           isHeader: true,
           items: [
-            {
-              name: "Custom Fields",
-              href: "/crm/settings/custom-fields",
-              icon: Database,
-            },
-            {
-              name: "Record Types",
-              href: "/crm/settings/record-types",
-              icon: Layers,
-            },
-            {
-              name: "Approval Processes",
-              href: "/crm/settings/approvals",
-              icon: ShieldCheck,
-            },
-            {
-              name: "Lead Scoring",
-              href: "/crm/settings/lead-scoring",
-              icon: Zap,
-            },
-            {
-              name: "Duplicate Rules",
-              href: "/crm/settings/duplicate-rules",
-              icon: Users,
-            },
-            {
-              name: "Pipelines",
-              href: "/crm/settings/pipelines",
-              icon: GitBranch,
-            },
-            {
-              name: "SLA Policies",
-              href: "/crm/settings/sla-policies",
-              icon: Clock,
-            },
-            {
-              name: "Email Integration",
-              href: "/crm/settings/email-integration",
-              icon: Mail,
-            },
+            { name: "Workflows & Rules", href: "/crm/workflows", icon: Zap },
+            { name: "Settings", href: "/crm/settings", icon: Settings },
           ],
         },
       ] as SidebarItem[],

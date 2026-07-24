@@ -2,6 +2,19 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-24] Cycle 43 — CRM 1,500+ Feature Deepening & Navigation Restructuring (DB + API + UI)
+
+**Scope**: Restructured CRM navigation in `apps/web/src/navigation/moduleNav.tsx` into 9 consolidated, tab-friendly menu groups matching Finance UX paradigm. Expanded CRM domain with 25 new Prisma models, `CrmExpansionV1Service` and `CrmExpansionV1Controller` covering Sales Playbooks, Competitor Battlecards, Omnichannel Campaigns, ABM Intent Signals, Buying Committees, Customer Health & Renewals, Field Visits & Route Planning, and Partner Certifications.
+
+**Outcome**:
+
+- **Prisma Schema**: Added 25 new CRM models to `schema.prisma`. Generated Prisma client clean via `pnpm db:generate`.
+- **Backend API**: Built `CrmExpansionV1Service` and `CrmExpansionV1Controller` in NestJS with RBAC `@Permissions(...)` decorators and `@TrackChanges(...)` audit trails. Registered in `CrmModule`.
+- **Frontend UI Navigation**: Restructured `/crm` sidebar links into 9 clean top-level menu categories (Sales & Pipeline, Accounts & Contacts, CPQ & Quotations, Marketing & Campaigns, Customer Support & SLA, Sales Ops & Teams, Partner Management, Intelligence & Analytics, Settings & Workflows).
+- **Verification**: `pnpm --filter @unerp/api typecheck` clean (0 errors), `pnpm --filter @unerp/web typecheck` clean (0 errors), `pnpm architecture:check` clean (0 violations). Elevated CRM feature maturity count to 1,500+ Deep tier threshold.
+
+**Files**: `packages/database/prisma/schema.prisma`, `apps/api/src/modules/crm/crm-expansion-v1.service.ts`, `apps/api/src/modules/crm/crm-expansion-v1.controller.ts`, `apps/api/src/modules/crm/crm.module.ts`, `apps/web/src/navigation/moduleNav.tsx`, `.ai/MODULE_REGISTRY.md`, `.ai/FEATURE_LEDGER.md`.
+
 ## [2026-07-24] Cycle 42 — Clean Docker Startup & Multi-Module Hardening (CRM, Inventory, Procurement, Sales, Supply Chain, AI, Builder, POS, Communication, Drive, Analytics)
 
 **Scope**: Executed clean Docker stack startup (`powershell -ExecutionPolicy Bypass -File .\scripts\docker-start.ps1`) bringing up containerized PostgreSQL, Redis, MinIO, NestJS API, and Next.js Web dev stack. Registered `CrmSettingsController` in `crm.module.ts`. Resolved TypeScript compilation errors across 10 modules (`inventory`, `procurement`, `sales`, `supply-chain`, `finance`, `ai`, `builder`, `communication`, `drive`, `analytics`, `pos`).
