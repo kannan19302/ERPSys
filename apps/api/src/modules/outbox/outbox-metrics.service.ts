@@ -58,4 +58,31 @@ export class OutboxMetricsService {
   incrementTerminalFailure(): void {
     this.terminalFailureCount++;
   }
+
+  async replayDeadLetter(outboxDeliveryId: string) {
+    const delivery = await prisma.outboxDelivery.findUnique({
+      where: { id: outboxDeliveryId },
+    });
+
+    if (!delivery) {
+      return { found: false, dead: false };
+    }
+
+    if (delivery.status !== 'DEAD') {
+      return { found: true, dead: false, currentStatus: delivery.status };
+    }
+
+    await prisma.outboxDelivery.update({
+      where: { id: outboxDeliveryId },
+      data: {
+        status: 'PENDING',
+        attempts: 0,
+        lastError: null,
+        availableAt: new Date(),
+        failedAt: null,
+      },
+    });
+
+    return { found: true, dead: true };
+  }
 }

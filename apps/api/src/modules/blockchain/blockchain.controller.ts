@@ -34,7 +34,6 @@ import { FinanceLedgerBlockchainService } from './services/finance-ledger-blockc
 import { SupplyChainBlockchainService } from './services/supply-chain-blockchain.service';
 import { ProcurementBlockchainService } from './services/procurement-blockchain.service';
 import { FabricGatewayProvider } from './providers/fabric-gateway.provider';
-import { prisma } from '@unerp/database';
 import { BlockchainTxStatus } from '@unerp/blockchain';
 import { VerifyDocumentDto } from './dto/verify-document.dto';
 import { VerifyJournalDto } from './dto/verify-journal.dto';
@@ -227,6 +226,9 @@ export class BlockchainController {
   @Get('transactions')
   @Permissions('blockchain.transactions.read')
   @ApiOperation({ summary: 'List blockchain transaction records (paginated)' })
+  @Get('transactions')
+  @Permissions('blockchain.network.read')
+  @ApiOperation({ summary: 'List blockchain transactions for the tenant' })
   async listTransactions(
     @Req() req: AuthenticatedRequest,
     @Query('entityType') entityType?: string,
@@ -236,56 +238,24 @@ export class BlockchainController {
     @Query('sortBy') sortBy = 'createdAt',
     @Query('sortOrder') sortOrder: 'asc' | 'desc' = 'desc',
   ) {
-    const pageNum = Math.max(1, parseInt(page, 10));
-    const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10)));
-    const skip = (pageNum - 1) * limitNum;
-
-    const where = {
+    return this.documentBlockchainService.listTransactions({
       tenantId: req.user.tenantId,
-      ...(entityType && { entityType }),
-      ...(status && { status: status as BlockchainTxStatus }),
-    };
-
-    const [data, total] = await Promise.all([
-      prisma.blockchainTransaction.findMany({
-        where,
-        orderBy: { [sortBy]: sortOrder },
-        skip,
-        take: limitNum,
-      }),
-      prisma.blockchainTransaction.count({ where }),
-    ]);
-
-    return {
-      data,
-      total,
-      page: pageNum,
-      limit: limitNum,
-      totalPages: Math.ceil(total / limitNum),
-    };
+      entityType,
+      status,
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+    });
   }
 
   @Get('stats')
   @Permissions('blockchain.network.read')
   @ApiOperation({ summary: 'Get blockchain statistics for the tenant' })
   async getStats(@Req() req: AuthenticatedRequest) {
-    const [byStatus, byEntityType] = await Promise.all([
-      prisma.blockchainTransaction.groupBy({
-        by: ['status'],
-        where: { tenantId: req.user.tenantId },
-        _count: { _all: true },
-      }),
-      prisma.blockchainTransaction.groupBy({
-        by: ['entityType'],
-        where: { tenantId: req.user.tenantId },
-        _count: { _all: true },
-      }),
-    ]);
-
-    return {
-      byStatus: byStatus.map((s) => ({ status: s.status, count: s._count._all })),
-      byEntityType: byEntityType.map((e) => ({ entityType: e.entityType, count: e._count._all })),
-      networkConnected: this.fabricGateway.isConnected(),
-    };
+    return this.documentBlockchainService.getStats(
+      req.user.tenantId,
+      this.fabricGateway.isConnected(),
+    );
   }
 }

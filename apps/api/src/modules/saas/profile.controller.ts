@@ -11,8 +11,8 @@ import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { RbacGuard } from "../../common/guards/rbac.guard";
 import { Permissions } from "../../common/decorators/permissions.decorator";
+import { SaasService } from "./saas.service";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
-import { prisma } from "@unerp/database";
 
 interface AuthReq extends Request {
   user: { tenantId: string; userId: string; email: string; roles: string[] };
@@ -67,12 +67,13 @@ const updateRetentionSchema = z.object({
 @Controller("saas/profile")
 @UseGuards(JwtAuthGuard, RbacGuard)
 export class ProfileController {
+  constructor(private readonly saasService: SaasService) {}
 
   @ApiOperation({ summary: "Get tenant profile" })
   @Permissions("saas.portal.read")
   @Get()
   async getTenantProfile(@Req() req: AuthReq) {
-    const tenant = await prisma.tenant.findUnique({
+    const tenant = await this.saasService.db.tenant.findUnique({
       where: { id: req.user.tenantId },
     });
     return tenant;
@@ -86,17 +87,17 @@ export class ProfileController {
     if (body.name) data.name = body.name;
     if (body.slug) data.slug = body.slug;
     if (body.settings) {
-      const existing = await prisma.tenant.findUnique({ where: { id: req.user.tenantId }, select: { settings: true } });
+      const existing = await this.saasService.db.tenant.findUnique({ where: { id: req.user.tenantId }, select: { settings: true } });
       data.settings = { ...(existing?.settings as Record<string, unknown> ?? {}), ...body.settings };
     }
-    return prisma.tenant.update({ where: { id: req.user.tenantId }, data: data as any });
+    return this.saasService.db.tenant.update({ where: { id: req.user.tenantId }, data: data as any });
   }
 
   @ApiOperation({ summary: "Get company details" })
   @Permissions("saas.portal.read")
   @Get("company")
   async getCompanyDetails(@Req() req: AuthReq) {
-    const tenant = await prisma.tenant.findUnique({
+    const tenant = await this.saasService.db.tenant.findUnique({
       where: { id: req.user.tenantId },
       select: { name: true, settings: true },
     });
@@ -120,17 +121,17 @@ export class ProfileController {
   @Permissions("saas.portal.create")
   @Put("company")
   async updateCompanyDetails(@Req() req: AuthReq, @ZodBody(updateCompanySchema) body: z.infer<typeof updateCompanySchema>) {
-    const tenant = await prisma.tenant.findUnique({ where: { id: req.user.tenantId }, select: { settings: true } });
+    const tenant = await this.saasService.db.tenant.findUnique({ where: { id: req.user.tenantId }, select: { settings: true } });
     const settings = (tenant?.settings as Record<string, unknown>) ?? {};
     const updated = { ...settings, ...body };
-    return prisma.tenant.update({ where: { id: req.user.tenantId }, data: { settings: updated as any } });
+    return this.saasService.db.tenant.update({ where: { id: req.user.tenantId }, data: { settings: updated as any } });
   }
 
   @ApiOperation({ summary: "Get industry information" })
   @Permissions("saas.portal.read")
   @Get("industry")
   async getIndustryInfo(@Req() req: AuthReq) {
-    const tenant = await prisma.tenant.findUnique({
+    const tenant = await this.saasService.db.tenant.findUnique({
       where: { id: req.user.tenantId },
       select: { settings: true },
     });
@@ -147,16 +148,16 @@ export class ProfileController {
   @Permissions("saas.portal.create")
   @Put("industry")
   async updateIndustryInfo(@Req() req: AuthReq, @ZodBody(updateIndustrySchema) body: z.infer<typeof updateIndustrySchema>) {
-    const tenant = await prisma.tenant.findUnique({ where: { id: req.user.tenantId }, select: { settings: true } });
+    const tenant = await this.saasService.db.tenant.findUnique({ where: { id: req.user.tenantId }, select: { settings: true } });
     const settings = (tenant?.settings as Record<string, unknown>) ?? {};
-    return prisma.tenant.update({ where: { id: req.user.tenantId }, data: { settings: { ...settings, ...body } as any } });
+    return this.saasService.db.tenant.update({ where: { id: req.user.tenantId }, data: { settings: { ...settings, ...body } as any } });
   }
 
   @ApiOperation({ summary: "Get timezone settings" })
   @Permissions("saas.portal.read")
   @Get("timezone")
   async getTimezoneSettings(@Req() req: AuthReq) {
-    const tenant = await prisma.tenant.findUnique({
+    const tenant = await this.saasService.db.tenant.findUnique({
       where: { id: req.user.tenantId },
       select: { settings: true },
     });
@@ -168,16 +169,16 @@ export class ProfileController {
   @Permissions("saas.portal.create")
   @Put("timezone")
   async updateTimezoneSettings(@Req() req: AuthReq, @ZodBody(updateTimezoneSchema) body: z.infer<typeof updateTimezoneSchema>) {
-    const tenant = await prisma.tenant.findUnique({ where: { id: req.user.tenantId }, select: { settings: true } });
+    const tenant = await this.saasService.db.tenant.findUnique({ where: { id: req.user.tenantId }, select: { settings: true } });
     const settings = (tenant?.settings as Record<string, unknown>) ?? {};
-    return prisma.tenant.update({ where: { id: req.user.tenantId }, data: { settings: { ...settings, timezone: body.timezone } as any } });
+    return this.saasService.db.tenant.update({ where: { id: req.user.tenantId }, data: { settings: { ...settings, timezone: body.timezone } as any } });
   }
 
   @ApiOperation({ summary: "Get locale settings" })
   @Permissions("saas.portal.read")
   @Get("locale")
   async getLocaleSettings(@Req() req: AuthReq) {
-    const tenant = await prisma.tenant.findUnique({
+    const tenant = await this.saasService.db.tenant.findUnique({
       where: { id: req.user.tenantId },
       select: { settings: true },
     });
@@ -194,16 +195,16 @@ export class ProfileController {
   @Permissions("saas.portal.create")
   @Put("locale")
   async updateLocaleSettings(@Req() req: AuthReq, @ZodBody(updateLocaleSchema) body: z.infer<typeof updateLocaleSchema>) {
-    const tenant = await prisma.tenant.findUnique({ where: { id: req.user.tenantId }, select: { settings: true } });
+    const tenant = await this.saasService.db.tenant.findUnique({ where: { id: req.user.tenantId }, select: { settings: true } });
     const settings = (tenant?.settings as Record<string, unknown>) ?? {};
-    return prisma.tenant.update({ where: { id: req.user.tenantId }, data: { settings: { ...settings, ...body } as any } });
+    return this.saasService.db.tenant.update({ where: { id: req.user.tenantId }, data: { settings: { ...settings, ...body } as any } });
   }
 
   @ApiOperation({ summary: "Get data retention policy" })
   @Permissions("saas.portal.read")
   @Get("data-retention")
   async getDataRetentionPolicy(@Req() req: AuthReq) {
-    const tenant = await prisma.tenant.findUnique({
+    const tenant = await this.saasService.db.tenant.findUnique({
       where: { id: req.user.tenantId },
       select: { settings: true },
     });
@@ -219,8 +220,8 @@ export class ProfileController {
   @Permissions("saas.portal.create")
   @Put("data-retention")
   async updateDataRetentionPolicy(@Req() req: AuthReq, @ZodBody(updateRetentionSchema) body: z.infer<typeof updateRetentionSchema>) {
-    const tenant = await prisma.tenant.findUnique({ where: { id: req.user.tenantId }, select: { settings: true } });
+    const tenant = await this.saasService.db.tenant.findUnique({ where: { id: req.user.tenantId }, select: { settings: true } });
     const settings = (tenant?.settings as Record<string, unknown>) ?? {};
-    return prisma.tenant.update({ where: { id: req.user.tenantId }, data: { settings: { ...settings, ...body } as any } });
+    return this.saasService.db.tenant.update({ where: { id: req.user.tenantId }, data: { settings: { ...settings, ...body } as any } });
   }
 }

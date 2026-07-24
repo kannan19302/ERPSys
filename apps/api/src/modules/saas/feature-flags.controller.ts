@@ -17,7 +17,6 @@ import { RbacGuard } from "../../common/guards/rbac.guard";
 import { Permissions } from "../../common/decorators/permissions.decorator";
 import { PlanEngineService } from "./plan-engine.service";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
-import { prisma } from "@unerp/database";
 
 interface AuthReq extends Request {
   user: { tenantId: string; userId: string; email: string; roles: string[] };
@@ -79,7 +78,7 @@ export class FeatureFlagsController {
   @Permissions("saas.plan.read")
   @Get(":key")
   async getFeatureFlag(@Req() req: AuthReq, @Param("key") key: string) {
-    const feature = await prisma.saaSPlanFeature.findFirst({
+    const feature = await this.planEngineService.db.saaSPlanFeature.findFirst({
       where: { featureKey: key, plan: { subscriptions: { some: { tenantId: req.user.tenantId } } } },
     });
     return feature ?? { featureKey: key, notFound: true };
@@ -89,7 +88,7 @@ export class FeatureFlagsController {
   @Permissions("saas.plan.create")
   @Post()
   async createFeatureFlag(@Req() req: AuthReq, @ZodBody(createFeatureFlagSchema) body: z.infer<typeof createFeatureFlagSchema>) {
-    const plan = await prisma.saaSPlan.findFirst({
+    const plan = await this.planEngineService.db.saaSPlan.findFirst({
       where: { subscriptions: { some: { tenantId: req.user.tenantId } } },
     });
     if (!plan) return { error: "No plan found for tenant" };
@@ -127,7 +126,7 @@ export class FeatureFlagsController {
   @Permissions("saas.plan.read")
   @Post("evaluate")
   async evaluateFeatureAccess(@ZodBody(evaluateAccessSchema) body: z.infer<typeof evaluateAccessSchema>) {
-    const features = await prisma.saaSPlanFeature.findMany({
+    const features = await this.planEngineService.db.saaSPlanFeature.findMany({
       where: {
         featureKey: { in: body.featureKeys },
         planId: body.planId,
@@ -146,7 +145,7 @@ export class FeatureFlagsController {
   @Permissions("saas.plan.read")
   @Get("entitlements")
   async getMyEntitlements(@Req() req: AuthReq) {
-    const sub = await prisma.tenantSubscription.findFirst({
+    const sub = await this.planEngineService.db.tenantSubscription.findFirst({
       where: { tenantId: req.user.tenantId },
       include: { plan: { include: { featureEntitlements: true } } },
     });
@@ -185,7 +184,7 @@ export class FeatureFlagsController {
   @Permissions("saas.plan.read")
   @Get("gates")
   async listFeatureGates(@Req() req: AuthReq) {
-    const features = await prisma.saaSPlanFeature.findMany({
+    const features = await this.planEngineService.db.saaSPlanFeature.findMany({
       where: { plan: { subscriptions: { some: { tenantId: req.user.tenantId } } } },
     });
     return features.map((f) => ({
@@ -201,7 +200,7 @@ export class FeatureFlagsController {
   @Permissions("saas.plan.create")
   @Post("gates")
   async createFeatureGate(@Req() req: AuthReq, @ZodBody(createGateSchema) body: z.infer<typeof createGateSchema>) {
-    const plan = await prisma.saaSPlan.findFirst({
+    const plan = await this.planEngineService.db.saaSPlan.findFirst({
       where: { subscriptions: { some: { tenantId: req.user.tenantId } } },
     });
     if (!plan) return { error: "No plan found" };

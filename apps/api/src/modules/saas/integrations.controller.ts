@@ -16,7 +16,6 @@ import { RbacGuard } from "../../common/guards/rbac.guard";
 import { Permissions } from "../../common/decorators/permissions.decorator";
 import { SaasService } from "./saas.service";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
-import { prisma } from "@unerp/database";
 
 interface AuthReq extends Request {
   user: { tenantId: string; userId: string; email: string; roles: string[] };
@@ -60,7 +59,7 @@ export class IntegrationsController {
   @Permissions("saas.marketplace.read")
   @Get()
   async listIntegrations(@Req() req: AuthReq) {
-    return prisma.installedApp.findMany({
+    return this.saasService.db.installedApp.findMany({
       where: { tenantId: req.user.tenantId },
       orderBy: { installedAt: "desc" },
     });
@@ -77,14 +76,14 @@ export class IntegrationsController {
   @Permissions("saas.marketplace.read")
   @Get(":id")
   async getIntegration(@Req() req: AuthReq, @Param("id") id: string) {
-    return prisma.installedApp.findFirst({ where: { id, tenantId: req.user.tenantId } });
+    return this.saasService.db.installedApp.findFirst({ where: { id, tenantId: req.user.tenantId } });
   }
 
   @ApiOperation({ summary: "Update integration configuration" })
   @Permissions("saas.marketplace.create")
   @Patch(":id")
   async updateIntegration(@Req() req: AuthReq, @Param("id") id: string, @ZodBody(updateIntegrationSchema) body: z.infer<typeof updateIntegrationSchema>) {
-    return prisma.installedApp.updateMany({
+    return this.saasService.db.installedApp.updateMany({
       where: { id, tenantId: req.user.tenantId },
       data: { config: body.config as any, status: body.status, ...(body.name ? { appName: body.name } : {}) },
     });
@@ -101,7 +100,7 @@ export class IntegrationsController {
   @Permissions("saas.marketplace.read")
   @Get(":id/status")
   async getIntegrationStatus(@Req() req: AuthReq, @Param("id") id: string) {
-    const app = await prisma.installedApp.findFirst({ where: { id, tenantId: req.user.tenantId } });
+    const app = await this.saasService.db.installedApp.findFirst({ where: { id, tenantId: req.user.tenantId } });
     return { id, status: app?.status ?? "NOT_FOUND", lastChecked: new Date() };
   }
 
@@ -109,7 +108,7 @@ export class IntegrationsController {
   @Permissions("saas.marketplace.create")
   @Post(":id/connect")
   async connectIntegration(@Req() req: AuthReq, @Param("id") id: string) {
-    await prisma.installedApp.updateMany({
+    await this.saasService.db.installedApp.updateMany({
       where: { id, tenantId: req.user.tenantId },
       data: { status: "ACTIVE" },
     });
@@ -120,7 +119,7 @@ export class IntegrationsController {
   @Permissions("saas.marketplace.create")
   @Post(":id/disconnect")
   async disconnectIntegration(@Req() req: AuthReq, @Param("id") id: string) {
-    await prisma.installedApp.updateMany({
+    await this.saasService.db.installedApp.updateMany({
       where: { id, tenantId: req.user.tenantId },
       data: { status: "DISABLED" },
     });
@@ -145,7 +144,7 @@ export class IntegrationsController {
   @Permissions("saas.marketplace.read")
   @Get("available")
   async listAvailableIntegrations(@Req() req: AuthReq) {
-    const installed = await prisma.installedApp.findMany({
+    const installed = await this.saasService.db.installedApp.findMany({
       where: { tenantId: req.user.tenantId },
       select: { appSlug: true, appId: true },
     });

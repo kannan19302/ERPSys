@@ -3,6 +3,7 @@ import { prisma } from "@unerp/database";
 
 @Injectable()
 export class AuditLogService {
+  public get db(): any { return prisma; }
   async logAction(
     tenantId: string,
     action: string,

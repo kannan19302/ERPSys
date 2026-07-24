@@ -15,7 +15,6 @@ import { Permissions } from "../../common/decorators/permissions.decorator";
 import { TenantAnalyticsService } from "./tenant-analytics.service";
 import { PaymentMethodsService } from "./payment-methods.service";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
-import { prisma } from "@unerp/database";
 
 interface AuthReq extends Request {
   user: { tenantId: string; userId: string; email: string; roles: string[] };
@@ -110,7 +109,7 @@ export class BillingAdminController {
   @Permissions("saas.analytics.read")
   @Get("subscriptions")
   async listAllSubscriptions(@Req() _req: AuthReq) {
-    return prisma.tenantSubscription.findMany({
+    return this.tenantAnalyticsService.db.tenantSubscription.findMany({
       include: { plan: { select: { name: true } }, tenant: { select: { name: true } } },
       orderBy: { createdAt: "desc" },
       take: 100,
@@ -121,7 +120,7 @@ export class BillingAdminController {
   @Permissions("saas.analytics.read")
   @Get("subscriptions/active")
   async getActiveSubscriptions(@Req() _req: AuthReq) {
-    return prisma.tenantSubscription.findMany({
+    return this.tenantAnalyticsService.db.tenantSubscription.findMany({
       where: { status: "ACTIVE" },
       include: { plan: { select: { name: true } }, tenant: { select: { name: true } } },
       orderBy: { createdAt: "desc" },
@@ -133,7 +132,7 @@ export class BillingAdminController {
   @Get("subscriptions/expiring")
   async getExpiringSubscriptions(@Req() _req: AuthReq) {
     const weekFromNow = new Date(Date.now() + 7 * 86400000);
-    return prisma.tenantSubscription.findMany({
+    return this.tenantAnalyticsService.db.tenantSubscription.findMany({
       where: { endDate: { lte: weekFromNow, gte: new Date() }, status: { in: ["ACTIVE", "TRIAL"] } },
       include: { plan: { select: { name: true } }, tenant: { select: { name: true } } },
     }).catch(() => []);
@@ -143,7 +142,7 @@ export class BillingAdminController {
   @Permissions("saas.analytics.read")
   @Get("invoices")
   async listAllInvoices(@Req() _req: AuthReq) {
-    return prisma.saaSInvoice.findMany({
+    return this.tenantAnalyticsService.db.saaSInvoice.findMany({
       orderBy: { createdAt: "desc" },
       take: 100,
     }).catch(() => []);
@@ -153,7 +152,7 @@ export class BillingAdminController {
   @Permissions("saas.analytics.create")
   @Post("invoices/adjust")
   async adjustInvoice(@Req() _req: AuthReq, @ZodBody(adjustInvoiceSchema) body: z.infer<typeof adjustInvoiceSchema>) {
-    return prisma.saaSInvoice.update({
+    return this.tenantAnalyticsService.db.saaSInvoice.update({
       where: { id: body.invoiceId },
       data: { totalAmount: { increment: body.adjustmentAmount } },
     }).catch(() => ({ success: false }));
@@ -163,7 +162,7 @@ export class BillingAdminController {
   @Permissions("saas.analytics.read")
   @Get("payments")
   async listAllPayments(@Req() _req: AuthReq) {
-    return prisma.paymentTransaction.findMany({
+    return this.tenantAnalyticsService.db.paymentTransaction.findMany({
       orderBy: { createdAt: "desc" },
       take: 100,
     }).catch(() => []);

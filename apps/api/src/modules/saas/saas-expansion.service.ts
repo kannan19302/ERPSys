@@ -6,6 +6,7 @@ import * as crypto from 'crypto';
 
 @Injectable()
 export class SaasExpansionService {
+  public get db(): any { return prisma; }
   private get p(): any { return prisma; }
 
   // ═══ APP MARKETPLACE ═══

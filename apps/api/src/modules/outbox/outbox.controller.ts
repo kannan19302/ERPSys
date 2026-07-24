@@ -1,6 +1,5 @@
 import { Controller, Post, Body, UseGuards, NotFoundException, ConflictException, InternalServerErrorException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { prisma } from '@unerp/database';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
@@ -20,38 +19,18 @@ export class OutboxController {
   async replayDeadLetter(
     @Body() dto: ReplayDeadLetterDto,
   ): Promise<ReplayDeadLetterResponseDto> {
-    const delivery = await prisma.outboxDelivery.findUnique({
-      where: { id: dto.outboxDeliveryId },
-    });
-
-    if (!delivery) {
+    const res = await this.metrics.replayDeadLetter(dto.outboxDeliveryId);
+    if (!res.found) {
       throw new NotFoundException(`Delivery ${dto.outboxDeliveryId} not found`);
     }
-
-    if (delivery.status !== 'DEAD') {
-      throw new ConflictException(`Delivery ${dto.outboxDeliveryId} is not in DEAD status (current: ${delivery.status})`);
+    if (!res.dead) {
+      throw new ConflictException(`Delivery ${dto.outboxDeliveryId} is not in DEAD status (current: ${res.currentStatus})`);
     }
 
-    try {
-      await prisma.outboxDelivery.update({
-        where: { id: dto.outboxDeliveryId },
-        data: {
-          status: 'PENDING',
-          attempts: 0,
-          lastError: null,
-          availableAt: new Date(),
-          failedAt: null,
-        },
-      });
-
-      return {
-        success: true,
-        deliveryId: dto.outboxDeliveryId,
-      };
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
-      throw new InternalServerErrorException(`Failed to replay delivery: ${message}`);
-    }
+    return {
+      success: true,
+      deliveryId: dto.outboxDeliveryId,
+    };
   }
 
   @ApiOperation({ summary: 'Get outbox metrics' })

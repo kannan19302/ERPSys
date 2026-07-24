@@ -11,7 +11,7 @@ import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { RbacGuard } from "../../common/guards/rbac.guard";
 import { Permissions } from "../../common/decorators/permissions.decorator";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
-import { prisma } from "@unerp/database";
+import { SaasService } from "./saas.service";
 
 interface AuthReq extends Request {
   user: { tenantId: string; userId: string; email: string; roles: string[] };
@@ -80,12 +80,13 @@ const resources = [
 @Controller("saas/onboarding")
 @UseGuards(JwtAuthGuard, RbacGuard)
 export class OnboardingController {
+  constructor(private readonly saasService: SaasService) {}
 
   @ApiOperation({ summary: "Get current onboarding status" })
   @Permissions("saas.portal.read")
   @Get("status")
   async getOnboardingStatus(@Req() req: AuthReq) {
-    const tenant = await prisma.tenant.findUnique({
+    const tenant = await this.saasService.db.tenant.findUnique({
       where: { id: req.user.tenantId },
       select: { demoDataLoaded: true, settings: true, createdAt: true },
     });
@@ -106,7 +107,7 @@ export class OnboardingController {
   @Permissions("saas.portal.read")
   @Get("steps")
   async listOnboardingSteps(@Req() req: AuthReq) {
-    const tenant = await prisma.tenant.findUnique({
+    const tenant = await this.saasService.db.tenant.findUnique({
       where: { id: req.user.tenantId },
       select: { settings: true },
     });
@@ -122,14 +123,14 @@ export class OnboardingController {
   @Permissions("saas.portal.create")
   @Post("steps/:step/complete")
   async completeStep(@Req() req: AuthReq, @Param("step") step: string) {
-    const tenant = await prisma.tenant.findUnique({
+    const tenant = await this.saasService.db.tenant.findUnique({
       where: { id: req.user.tenantId },
       select: { settings: true },
     });
     const settings = (tenant?.settings as Record<string, unknown>) ?? {};
     const completedSteps = new Set((settings.onboardingSteps as string[]) ?? []);
     completedSteps.add(step);
-    await prisma.tenant.update({
+    await this.saasService.db.tenant.update({
       where: { id: req.user.tenantId },
       data: { settings: { ...settings, onboardingSteps: [...completedSteps] } },
     });
@@ -147,7 +148,7 @@ export class OnboardingController {
   @Permissions("saas.portal.read")
   @Get("progress")
   async getOnboardingProgress(@Req() req: AuthReq) {
-    const tenant = await prisma.tenant.findUnique({
+    const tenant = await this.saasService.db.tenant.findUnique({
       where: { id: req.user.tenantId },
       select: { settings: true },
     });
@@ -176,7 +177,7 @@ export class OnboardingController {
   @Permissions("saas.portal.create")
   @Post("demo-data")
   async seedDemoData(@Req() req: AuthReq) {
-    await prisma.tenant.update({
+    await this.saasService.db.tenant.update({
       where: { id: req.user.tenantId },
       data: { demoDataLoaded: true, demoLoadedAt: new Date() },
     });
@@ -215,12 +216,12 @@ export class OnboardingController {
   @Permissions("saas.portal.create")
   @Post("dismiss")
   async dismissOnboarding(@Req() req: AuthReq) {
-    const tenant = await prisma.tenant.findUnique({
+    const tenant = await this.saasService.db.tenant.findUnique({
       where: { id: req.user.tenantId },
       select: { settings: true },
     });
     const settings = (tenant?.settings as Record<string, unknown>) ?? {};
-    await prisma.tenant.update({
+    await this.saasService.db.tenant.update({
       where: { id: req.user.tenantId },
       data: { settings: { ...settings, onboardingCompleted: true, onboardingCompletedAt: new Date().toISOString() } },
     });
@@ -242,7 +243,7 @@ export class OnboardingController {
   @Permissions("saas.portal.create")
   @Post("reset")
   async resetOnboarding(@Req() req: AuthReq) {
-    await prisma.tenant.update({
+    await this.saasService.db.tenant.update({
       where: { id: req.user.tenantId },
       data: { settings: { onboardingCompleted: false, onboardingSteps: [] } },
     });

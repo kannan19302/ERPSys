@@ -46,6 +46,7 @@ const PAID_PLAN_CATALOG = [
 
 @Injectable()
 export class SaasService {
+  public get db(): typeof prisma { return prisma; }
   /**
    * Self-heals the public paid-plan catalog (Starter/Growth/Enterprise) if
    * it's missing, same pattern as marketplace.service.ts's app-catalog

@@ -16,7 +16,6 @@ import { RbacGuard } from "../../common/guards/rbac.guard";
 import { Permissions } from "../../common/decorators/permissions.decorator";
 import { AuditLogService } from "./audit-log.service";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
-import { prisma } from "@unerp/database";
 
 interface AuthReq extends Request {
   user: { tenantId: string; userId: string; email: string; roles: string[] };
@@ -72,7 +71,7 @@ export class ActivityFeedController {
   @Permissions("saas.audit.read")
   @Get("user/:userId")
   async getUserActivity(@Req() req: AuthReq, @Param("userId") userId: string) {
-    const items = await prisma.tenantAuditLog.findMany({
+    const items = await this.auditLogService.db.tenantAuditLog.findMany({
       where: { tenantId: req.user.tenantId, userId },
       orderBy: { createdAt: "desc" },
       take: 50,
@@ -88,7 +87,7 @@ export class ActivityFeedController {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - numDays);
 
-    const logs = await prisma.tenantAuditLog.findMany({
+    const logs = await this.auditLogService.db.tenantAuditLog.findMany({
       where: { tenantId: req.user.tenantId, createdAt: { gte: startDate } },
       orderBy: { createdAt: "desc" },
     });
@@ -115,7 +114,7 @@ export class ActivityFeedController {
   @Permissions("saas.audit.create")
   @Delete("clear")
   async clearActivityLog(@Req() req: AuthReq) {
-    const result = await prisma.tenantAuditLog.deleteMany({
+    const result = await this.auditLogService.db.tenantAuditLog.deleteMany({
       where: { tenantId: req.user.tenantId },
     });
     return { deletedCount: result.count, clearedAt: new Date() };
@@ -137,7 +136,7 @@ export class ActivityFeedController {
   @Permissions("saas.audit.read")
   @Get("feed")
   async getLiveFeed(@Req() req: AuthReq) {
-    const items = await prisma.tenantAuditLog.findMany({
+    const items = await this.auditLogService.db.tenantAuditLog.findMany({
       where: { tenantId: req.user.tenantId },
       orderBy: { createdAt: "desc" },
       take: 25,

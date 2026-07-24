@@ -14,7 +14,6 @@ import { RbacGuard } from "../../common/guards/rbac.guard";
 import { Permissions } from "../../common/decorators/permissions.decorator";
 import { TenantAnalyticsService } from "./tenant-analytics.service";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
-import { prisma } from "@unerp/database";
 
 interface AuthReq extends Request {
   user: { tenantId: string; userId: string; email: string; roles: string[] };
@@ -76,7 +75,7 @@ export class TenantProvisioningController {
   @Permissions("saas.tenant.create")
   @Post("tenant")
   async provisionTenant(@Req() _req: AuthReq, @ZodBody(provisionTenantSchema) body: z.infer<typeof provisionTenantSchema>) {
-    const tenant = await prisma.tenant.create({
+    const tenant = await this.tenantAnalyticsService.db.tenant.create({
       data: {
         name: body.name,
         slug: body.slug,
@@ -85,7 +84,7 @@ export class TenantProvisioningController {
       },
     }).catch(() => null);
     if (tenant) {
-      await prisma.tenantSubscription.create({
+      await this.tenantAnalyticsService.db.tenantSubscription.create({
         data: {
           tenantId: tenant.id,
           planId: body.planId,
@@ -102,9 +101,9 @@ export class TenantProvisioningController {
   @Permissions("saas.tenant.update")
   @Post("tenant/:id/upgrade")
   async upgradeTenantPlan(@Req() _req: AuthReq, @Param("id") id: string, @ZodBody(upgradeTenantPlanSchema) body: z.infer<typeof upgradeTenantPlanSchema>) {
-    const sub = await prisma.tenantSubscription.findFirst({ where: { tenantId: id } });
+    const sub = await this.tenantAnalyticsService.db.tenantSubscription.findFirst({ where: { tenantId: id } });
     if (!sub) return { success: false };
-    return prisma.tenantSubscription.update({
+    return this.tenantAnalyticsService.db.tenantSubscription.update({
       where: { id: sub.id },
       data: { planId: body.planId },
     }).catch(() => ({ success: false }));
@@ -114,9 +113,9 @@ export class TenantProvisioningController {
   @Permissions("saas.tenant.update")
   @Post("tenant/:id/downgrade")
   async downgradeTenantPlan(@Req() _req: AuthReq, @Param("id") id: string, @ZodBody(downgradeTenantPlanSchema) body: z.infer<typeof downgradeTenantPlanSchema>) {
-    const sub = await prisma.tenantSubscription.findFirst({ where: { tenantId: id } });
+    const sub = await this.tenantAnalyticsService.db.tenantSubscription.findFirst({ where: { tenantId: id } });
     if (!sub) return { success: false };
-    return prisma.tenantSubscription.update({
+    return this.tenantAnalyticsService.db.tenantSubscription.update({
       where: { id: sub.id },
       data: { planId: body.planId },
     }).catch(() => ({ success: false }));
@@ -126,11 +125,11 @@ export class TenantProvisioningController {
   @Permissions("saas.tenant.update")
   @Post("tenant/:id/extend-trial")
   async extendTrial(@Req() _req: AuthReq, @Param("id") id: string, @ZodBody(z.object({ days: z.number().int().min(1).max(90) })) body: { days: number }) {
-    const sub = await prisma.tenantSubscription.findFirst({ where: { tenantId: id } });
+    const sub = await this.tenantAnalyticsService.db.tenantSubscription.findFirst({ where: { tenantId: id } });
     if (!sub) return { success: false };
     const newEnd = new Date(sub.endDate || Date.now());
     newEnd.setDate(newEnd.getDate() + body.days);
-    return prisma.tenantSubscription.update({
+    return this.tenantAnalyticsService.db.tenantSubscription.update({
       where: { id: sub.id },
       data: { endDate: newEnd, status: "TRIAL" },
     }).catch(() => ({ success: false }));
@@ -147,7 +146,7 @@ export class TenantProvisioningController {
   @Permissions("saas.tenant.update")
   @Post("tenant/:id/reset")
   async resetTenant(@Req() _req: AuthReq, @Param("id") id: string) {
-    return prisma.tenant.update({ where: { id }, data: { status: "ACTIVE" } }).catch(() => ({ success: false }));
+    return this.tenantAnalyticsService.db.tenant.update({ where: { id }, data: { status: "ACTIVE" } }).catch(() => ({ success: false }));
   }
 
   @ApiOperation({ summary: "List provisioning templates [Admin]" })
@@ -182,8 +181,8 @@ export class TenantProvisioningController {
   @Permissions("saas.tenant.read")
   @Get("stats")
   async getProvisioningStats(@Req() _req: AuthReq) {
-    const total = await prisma.tenant.count().catch(() => 0);
-    const active = await prisma.tenant.count({ where: { status: "ACTIVE" } }).catch(() => 0);
+    const total = await this.tenantAnalyticsService.db.tenant.count().catch(() => 0);
+    const active = await this.tenantAnalyticsService.db.tenant.count({ where: { status: "ACTIVE" } }).catch(() => 0);
     return { totalTenants: total, activeTenants: active, pendingProvisioning: 0, failedProvisioning: 0 };
   }
 
@@ -194,8 +193,8 @@ export class TenantProvisioningController {
     const results = [];
     for (const t of body.tenants) {
       try {
-        const tenant = await prisma.tenant.create({ data: { name: t.name, slug: t.slug, status: "ACTIVE" } });
-        await prisma.tenantSubscription.create({
+        const tenant = await this.tenantAnalyticsService.db.tenant.create({ data: { name: t.name, slug: t.slug, status: "ACTIVE" } });
+        await this.tenantAnalyticsService.db.tenantSubscription.create({
           data: {
             tenantId: tenant.id,
             planId: body.planId,

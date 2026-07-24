@@ -5,7 +5,7 @@ import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { RbacGuard } from "../../common/guards/rbac.guard";
 import { Permissions } from "../../common/decorators/permissions.decorator";
-import { prisma } from "@unerp/database";
+import { SaasService } from "./saas.service";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 
 interface AuthReq extends Request {
@@ -26,12 +26,14 @@ const createAnnouncementSchema = z.object({
 @Controller("saas/announcements")
 @UseGuards(JwtAuthGuard, RbacGuard)
 export class AnnouncementsController {
+  constructor(private readonly saasService: SaasService) {}
+
   @ApiOperation({ summary: "List announcements" })
   @Permissions("saas.announcement.read")
   @Get()
   async listAnnouncements(@Req() req: AuthReq) {
     const now = new Date();
-    return prisma.tenantAnnouncement.findMany({
+    return this.saasService.db.tenantAnnouncement.findMany({
       where: {
         OR: [{ tenantId: req.user.tenantId }, { tenantId: null }],
         startsAt: { lte: now },
@@ -45,7 +47,7 @@ export class AnnouncementsController {
   @Permissions("saas.announcement.create")
   @Post()
   async createAnnouncement(@Req() req: AuthReq, @ZodBody(createAnnouncementSchema) body: z.infer<typeof createAnnouncementSchema>) {
-    return prisma.tenantAnnouncement.create({
+    return this.saasService.db.tenantAnnouncement.create({
       data: {
         tenantId: req.user.tenantId,
         title: body.title,
@@ -58,10 +60,21 @@ export class AnnouncementsController {
     });
   }
 
+  @ApiOperation({ summary: "Dismiss announcement" })
+  @Permissions("saas.announcement.read")
+  @Post(":id/dismiss")
+  async dismissAnnouncement(@Req() req: AuthReq, @Param("id") id: string) {
+    return this.saasService.db.tenantAnnouncementDismissal.create({
+      data: { tenantId: req.user.tenantId, announcementId: id, userId: req.user.userId },
+    }).catch(() => ({ success: true }));
+  }
+
   @ApiOperation({ summary: "Delete announcement" })
-  @Permissions("saas.announcement.create")
+  @Permissions("saas.announcement.delete")
   @Delete(":id")
-  async deleteAnnouncement(@Param("id") id: string) {
-    return prisma.tenantAnnouncement.delete({ where: { id } });
+  async deleteAnnouncement(@Req() req: AuthReq, @Param("id") id: string) {
+    return this.saasService.db.tenantAnnouncement.deleteMany({
+      where: { id, tenantId: req.user.tenantId },
+    });
   }
 }

@@ -16,7 +16,6 @@ import { Permissions } from "../../common/decorators/permissions.decorator";
 import { TenantAnalyticsService } from "./tenant-analytics.service";
 import { AuditLogService } from "./audit-log.service";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
-import { prisma } from "@unerp/database";
 
 interface AuthReq extends Request {
   user: { tenantId: string; userId: string; email: string; roles: string[] };
@@ -54,7 +53,7 @@ export class SystemAdminController {
   @Get("health/database")
   async databaseHealth(@Req() _req: AuthReq) {
     try {
-      await prisma.$queryRaw`SELECT 1`;
+      await this.tenantAnalyticsService.db.$queryRaw`SELECT 1`;
       return { status: "healthy", latency: "1ms" };
     } catch {
       return { status: "unhealthy" };
@@ -99,8 +98,8 @@ export class SystemAdminController {
   @Permissions("saas.analytics.read")
   @Get("metrics")
   async systemMetrics(@Req() _req: AuthReq) {
-    const tenantCount = await prisma.tenant.count().catch(() => 0);
-    const userCount = await prisma.user.count().catch(() => 0);
+    const tenantCount = await this.tenantAnalyticsService.db.tenant.count().catch(() => 0);
+    const userCount = await this.tenantAnalyticsService.db.user.count().catch(() => 0);
     return { tenants: tenantCount, users: userCount, uptime: "99.9%", version: "1.0.0" };
   }
 

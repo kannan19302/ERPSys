@@ -17,7 +17,6 @@ import { RbacGuard } from "../../common/guards/rbac.guard";
 import { Permissions } from "../../common/decorators/permissions.decorator";
 import { SaasService } from "./saas.service";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
-import { prisma } from "@unerp/database";
 
 interface AuthReq extends Request {
   user: { tenantId: string; userId: string; email: string; roles: string[] };
@@ -77,28 +76,28 @@ export class CouponsAdminController {
   @Permissions("saas.coupon.update")
   @Patch(":id")
   async updateCoupon(@Req() _req: AuthReq, @Param("id") id: string, @ZodBody(updateCouponSchema) body: z.infer<typeof updateCouponSchema>) {
-    return prisma.saaSCoupon.update({ where: { id }, data: body as any }).catch(() => ({ success: false }));
+    return this.saasService.db.saaSCoupon.update({ where: { id }, data: body as any }).catch(() => ({ success: false }));
   }
 
   @ApiOperation({ summary: "Delete coupon [Admin]" })
   @Permissions("saas.coupon.delete")
   @Delete(":id")
   async deleteCoupon(@Req() _req: AuthReq, @Param("id") id: string) {
-    return prisma.saaSCoupon.delete({ where: { id } }).catch(() => ({ success: false }));
+    return this.saasService.db.saaSCoupon.delete({ where: { id } }).catch(() => ({ success: false }));
   }
 
   @ApiOperation({ summary: "Disable coupon [Admin]" })
   @Permissions("saas.coupon.update")
   @Post(":id/disable")
   async disableCoupon(@Req() _req: AuthReq, @Param("id") id: string) {
-    return prisma.saaSCoupon.update({ where: { id }, data: { status: "DISABLED" } }).catch(() => ({ success: false }));
+    return this.saasService.db.saaSCoupon.update({ where: { id }, data: { status: "DISABLED" } }).catch(() => ({ success: false }));
   }
 
   @ApiOperation({ summary: "Enable coupon [Admin]" })
   @Permissions("saas.coupon.update")
   @Post(":id/enable")
   async enableCoupon(@Req() _req: AuthReq, @Param("id") id: string) {
-    return prisma.saaSCoupon.update({ where: { id }, data: { status: "ACTIVE" } }).catch(() => ({ success: false }));
+    return this.saasService.db.saaSCoupon.update({ where: { id }, data: { status: "ACTIVE" } }).catch(() => ({ success: false }));
   }
 
   @ApiOperation({ summary: "Get coupon stats [Admin]" })

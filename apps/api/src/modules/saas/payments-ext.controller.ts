@@ -17,7 +17,6 @@ import { RbacGuard } from "../../common/guards/rbac.guard";
 import { Permissions } from "../../common/decorators/permissions.decorator";
 import { PaymentMethodsService } from "./payment-methods.service";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
-import { prisma } from "@unerp/database";
 
 interface AuthReq extends Request {
   user: { tenantId: string; userId: string; email: string; roles: string[] };
@@ -94,7 +93,7 @@ export class PaymentsExtController {
   @Permissions("saas.payment.read")
   @Get("methods/:id")
   async getPaymentMethod(@Req() req: AuthReq, @Param("id") id: string) {
-    return prisma.paymentMethod.findFirst({ where: { id, tenantId: req.user.tenantId } });
+    return this.paymentMethodsService.db.paymentMethod.findFirst({ where: { id, tenantId: req.user.tenantId } });
   }
 
   @ApiOperation({ summary: "Get payment history" })
@@ -119,14 +118,14 @@ export class PaymentsExtController {
     if (status) where.status = status;
 
     const [items, total] = await Promise.all([
-      prisma.paymentTransaction.findMany({
+      this.paymentMethodsService.db.paymentTransaction.findMany({
         where: where as any,
         include: { invoice: true, paymentMethod: true },
         orderBy: { createdAt: "desc" },
         skip: (p - 1) * l,
         take: l,
       }),
-      prisma.paymentTransaction.count({ where: where as any }),
+      this.paymentMethodsService.db.paymentTransaction.count({ where: where as any }),
     ]);
     return { items, total, page: p, limit: l, totalPages: Math.ceil(total / l) };
   }
@@ -143,10 +142,10 @@ export class PaymentsExtController {
   @Post("pay")
   async makeOneTimePayment(@Req() req: AuthReq, @ZodBody(makePaymentSchema) body: z.infer<typeof makePaymentSchema>) {
     const pm = body.paymentMethodId
-      ? await prisma.paymentMethod.findFirst({ where: { id: body.paymentMethodId, tenantId: req.user.tenantId } })
-      : await prisma.paymentMethod.findFirst({ where: { tenantId: req.user.tenantId, isDefault: true } });
+      ? await this.paymentMethodsService.db.paymentMethod.findFirst({ where: { id: body.paymentMethodId, tenantId: req.user.tenantId } })
+      : await this.paymentMethodsService.db.paymentMethod.findFirst({ where: { tenantId: req.user.tenantId, isDefault: true } });
 
-    return prisma.paymentTransaction.create({
+    return this.paymentMethodsService.db.paymentTransaction.create({
       data: {
         tenantId: req.user.tenantId,
         invoiceId: body.invoiceId ?? undefined,
@@ -165,7 +164,7 @@ export class PaymentsExtController {
   @Permissions("saas.payment.read")
   @Get("upcoming")
   async getUpcomingPayments(@Req() req: AuthReq) {
-    const invoices = await prisma.saaSInvoice.findMany({
+    const invoices = await this.paymentMethodsService.db.saaSInvoice.findMany({
       where: { tenantId: req.user.tenantId, status: "PENDING", dueDate: { gte: new Date() } },
       orderBy: { dueDate: "asc" },
       take: 10,
@@ -178,17 +177,17 @@ export class PaymentsExtController {
   @Get("status")
   async getPaymentStatus(@Req() req: AuthReq) {
     const [totalPaid, totalPending, totalOverdue, methods] = await Promise.all([
-      prisma.paymentTransaction.aggregate({ where: { tenantId: req.user.tenantId, status: "SUCCEEDED" }, _sum: { amount: true } }),
-      prisma.saaSInvoice.aggregate({ where: { tenantId: req.user.tenantId, status: "PENDING" }, _sum: { amountDue: true } }),
-      prisma.saaSInvoice.aggregate({ where: { tenantId: req.user.tenantId, status: "OVERDUE" }, _sum: { amountDue: true } }),
-      prisma.paymentMethod.count({ where: { tenantId: req.user.tenantId } }),
+      this.paymentMethodsService.db.paymentTransaction.aggregate({ where: { tenantId: req.user.tenantId, status: "SUCCEEDED" }, _sum: { amount: true } }),
+      this.paymentMethodsService.db.saaSInvoice.aggregate({ where: { tenantId: req.user.tenantId, status: "PENDING" }, _sum: { amountDue: true } }),
+      this.paymentMethodsService.db.saaSInvoice.aggregate({ where: { tenantId: req.user.tenantId, status: "OVERDUE" }, _sum: { amountDue: true } }),
+      this.paymentMethodsService.db.paymentMethod.count({ where: { tenantId: req.user.tenantId } }),
     ]);
     return {
       totalPaid: Number(totalPaid._sum.amount ?? 0),
       pendingAmount: Number(totalPending._sum.amountDue ?? 0),
       overdueAmount: Number(totalOverdue._sum.amountDue ?? 0),
       savedMethods: methods,
-      hasDefaultMethod: await prisma.paymentMethod.count({ where: { tenantId: req.user.tenantId, isDefault: true } }).then((c) => c > 0),
+      hasDefaultMethod: await this.paymentMethodsService.db.paymentMethod.count({ where: { tenantId: req.user.tenantId, isDefault: true } }).then((c) => c > 0),
     };
   }
 

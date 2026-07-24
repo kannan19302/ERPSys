@@ -12,7 +12,6 @@ import { RbacGuard } from "../../common/guards/rbac.guard";
 import { Permissions } from "../../common/decorators/permissions.decorator";
 import { TenantAnalyticsService } from "./tenant-analytics.service";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
-import { prisma } from "@unerp/database";
 
 const customAnalyticsSchema = z.object({
   metric: z.string().min(1),
@@ -190,7 +189,7 @@ export class AnalyticsExtController {
   @Permissions("saas.analytics.read")
   @Get("users/cohorts")
   async getUserCohorts() {
-    const users = await prisma.user.findMany({
+    const users = await this.tenantAnalyticsService.db.user.findMany({
       select: { createdAt: true, lastLoginAt: true },
       orderBy: { createdAt: "asc" },
     });
@@ -218,7 +217,7 @@ export class AnalyticsExtController {
   @Get("engagement")
   async getEngagementMetrics() {
     const [apiUsage, featureAdoption] = await Promise.all([
-      prisma.usageRecord.findMany(),
+      this.tenantAnalyticsService.db.usageRecord.findMany(),
       this.tenantAnalyticsService.getFeatureAdoption(),
     ]);
     return {

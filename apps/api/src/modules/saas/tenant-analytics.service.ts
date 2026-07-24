@@ -3,6 +3,7 @@ import { prisma } from "@unerp/database";
 
 @Injectable()
 export class TenantAnalyticsService {
+  public get db(): typeof prisma { return prisma; }
   async getPlatformOverview() {
     const [totalTenants, activeTenants, totalSubscriptions, totalRevenue, mrr, arr] = await Promise.all([
       prisma.tenant.count(),

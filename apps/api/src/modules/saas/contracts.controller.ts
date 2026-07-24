@@ -15,8 +15,8 @@ import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { RbacGuard } from "../../common/guards/rbac.guard";
 import { Permissions } from "../../common/decorators/permissions.decorator";
+import { SaasExpansionService } from "./saas-expansion.service";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
-import { prisma } from "@unerp/database";
 
 interface AuthReq extends Request {
   user: { tenantId: string; userId: string; email: string; roles: string[] };
@@ -57,6 +57,7 @@ const contractTemplates = [
 @Controller("saas/contracts")
 @UseGuards(JwtAuthGuard, RbacGuard)
 export class ContractsController {
+  constructor(private readonly expansionService: SaasExpansionService) {}
 
   @ApiOperation({ summary: "List all SaaS contracts" })
   @Permissions("saas.subscription.read")
@@ -73,13 +74,13 @@ export class ContractsController {
     if (status) where.status = status;
 
     const [items, total] = await Promise.all([
-      prisma.contract.findMany({
+      this.expansionService.db.contract.findMany({
         where: where as any,
         orderBy: { createdAt: "desc" },
         skip: (p - 1) * l,
         take: l,
       }),
-      prisma.contract.count({ where: where as any }),
+      this.expansionService.db.contract.count({ where: where as any }),
     ]);
     return { items, total, page: p, limit: l, totalPages: Math.ceil(total / l) };
   }
@@ -88,9 +89,9 @@ export class ContractsController {
   @Permissions("saas.subscription.create")
   @Post()
   async createContract(@Req() req: AuthReq, @ZodBody(createContractSchema) body: z.infer<typeof createContractSchema>) {
-    const org = await prisma.organization.findFirst({ where: { tenantId: req.user.tenantId } });
-    const count = await prisma.contract.count({ where: { tenantId: req.user.tenantId } });
-    return prisma.contract.create({
+    const org = await this.expansionService.db.organization.findFirst({ where: { tenantId: req.user.tenantId } });
+    const count = await this.expansionService.db.contract.count({ where: { tenantId: req.user.tenantId } });
+    return this.expansionService.db.contract.create({
       data: {
         tenantId: req.user.tenantId,
         orgId: org?.id ?? req.user.tenantId,
@@ -117,7 +118,7 @@ export class ContractsController {
   @Permissions("saas.subscription.read")
   @Get(":id")
   async getContract(@Req() req: AuthReq, @Param("id") id: string) {
-    return prisma.contract.findFirst({ where: { id, tenantId: req.user.tenantId } });
+    return this.expansionService.db.contract.findFirst({ where: { id, tenantId: req.user.tenantId } });
   }
 
   @ApiOperation({ summary: "Update a contract" })
@@ -136,7 +137,7 @@ export class ContractsController {
     if (body.signerName) data.signerName = body.signerName;
     if (body.signerEmail) data.signerEmail = body.signerEmail;
 
-    return prisma.contract.updateMany({
+    return this.expansionService.db.contract.updateMany({
       where: { id, tenantId: req.user.tenantId },
       data,
     });
@@ -146,14 +147,14 @@ export class ContractsController {
   @Permissions("saas.subscription.delete")
   @Delete(":id")
   async deleteContract(@Req() req: AuthReq, @Param("id") id: string) {
-    return prisma.contract.deleteMany({ where: { id, tenantId: req.user.tenantId } });
+    return this.expansionService.db.contract.deleteMany({ where: { id, tenantId: req.user.tenantId } });
   }
 
   @ApiOperation({ summary: "Sign a contract" })
   @Permissions("saas.subscription.update")
   @Post(":id/sign")
   async signContract(@Req() req: AuthReq, @Param("id") id: string) {
-    await prisma.contract.updateMany({
+    await this.expansionService.db.contract.updateMany({
       where: { id, tenantId: req.user.tenantId },
       data: { signatureStatus: "SIGNED", signedAt: new Date(), status: "ACTIVE" },
     });
@@ -164,16 +165,16 @@ export class ContractsController {
   @Permissions("saas.subscription.update")
   @Post(":id/renew")
   async renewContract(@Req() req: AuthReq, @Param("id") id: string) {
-    const contract = await prisma.contract.findFirst({ where: { id, tenantId: req.user.tenantId } });
+    const contract = await this.expansionService.db.contract.findFirst({ where: { id, tenantId: req.user.tenantId } });
     if (!contract) return { error: "Contract not found" };
     const newEnd = new Date(contract.endDate);
     newEnd.setMonth(newEnd.getMonth() + (contract.renewalTermMonths ?? 12));
-    await prisma.contract.updateMany({
+    await this.expansionService.db.contract.updateMany({
       where: { id, tenantId: req.user.tenantId },
       data: { status: "RENEWED", renewalDate: newEnd, autoRenew: true },
     });
-    const count = await prisma.contract.count({ where: { tenantId: req.user.tenantId } });
-    return prisma.contract.create({
+    const count = await this.expansionService.db.contract.count({ where: { tenantId: req.user.tenantId } });
+    return this.expansionService.db.contract.create({
       data: {
         tenantId: req.user.tenantId,
         orgId: contract.orgId,
@@ -197,7 +198,7 @@ export class ContractsController {
   @Permissions("saas.subscription.update")
   @Post(":id/terminate")
   async terminateContract(@Req() req: AuthReq, @Param("id") id: string) {
-    await prisma.contract.updateMany({
+    await this.expansionService.db.contract.updateMany({
       where: { id, tenantId: req.user.tenantId },
       data: { status: "TERMINATED" },
     });
@@ -208,7 +209,7 @@ export class ContractsController {
   @Permissions("saas.subscription.read")
   @Get(":id/download")
   async downloadContractPdf(@Req() req: AuthReq, @Param("id") id: string) {
-    const contract = await prisma.contract.findFirst({ where: { id, tenantId: req.user.tenantId } });
+    const contract = await this.expansionService.db.contract.findFirst({ where: { id, tenantId: req.user.tenantId } });
     if (!contract) return { error: "Contract not found" };
     return {
       id,
@@ -239,7 +240,7 @@ export class ContractsController {
   async getExpiringContracts(@Req() req: AuthReq) {
     const now = new Date();
     const thirtyDays = new Date(now.getTime() + 30 * 86400000);
-    const items = await prisma.contract.findMany({
+    const items = await this.expansionService.db.contract.findMany({
       where: {
         tenantId: req.user.tenantId,
         status: "ACTIVE",

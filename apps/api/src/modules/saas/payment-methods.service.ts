@@ -7,6 +7,7 @@ import { prisma } from "@unerp/database";
 
 @Injectable()
 export class PaymentMethodsService {
+  public get db(): typeof prisma { return prisma; }
   async listPaymentMethods(tenantId: string) {
     return prisma.paymentMethod.findMany({
       where: { tenantId },

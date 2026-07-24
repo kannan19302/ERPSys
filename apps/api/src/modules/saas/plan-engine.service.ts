@@ -7,6 +7,7 @@ import { prisma } from "@unerp/database";
 
 @Injectable()
 export class PlanEngineService {
+  public get db(): typeof prisma { return prisma; }
   async listPlans(_tenantId?: string) {
     return prisma.saaSPlan.findMany({
       where: { status: { not: "ARCHIVED" } },
