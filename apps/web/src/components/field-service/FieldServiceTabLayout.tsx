@@ -63,6 +63,15 @@ export const FIELD_SERVICE_TABS: ModuleTab[] = [
     description: "Technician directory",
   },
   {
+    id: "customers",
+    label: "Customer Directory",
+    href: "/field-service/customers",
+    icon: Users,
+    advanced: true,
+    group: "Team",
+    description: "Customer directory",
+  },
+  {
     id: "reports",
     label: "Reports",
     href: "/field-service/reports",

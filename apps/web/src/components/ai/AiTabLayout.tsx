@@ -7,6 +7,7 @@ import {
   Mail,
   LayoutGrid,
   GitBranch,
+  Settings,
 } from "lucide-react";
 import type { ModuleTab } from "@unerp/ui-layout";
 
@@ -60,5 +61,12 @@ export const AI_TABS: ModuleTab[] = [
     href: "/ai?tab=workflow-generator",
     icon: GitBranch,
     description: "AI workflow generation",
+  },
+  {
+    id: "settings",
+    label: "Settings",
+    href: "/ai/settings",
+    icon: Settings,
+    description: "AI module settings",
   },
 ];

@@ -1,5 +1,6 @@
 import {
   Package,
+  LayoutGrid,
   FileCode2,
   Workflow,
   BarChart3,
@@ -19,6 +20,12 @@ import type { SubTab } from "@unerp/ui-layout";
  */
 export const ERP_SUB_TABS: SubTab[] = [
   { id: "apps", label: "Apps", href: "/builder/erp", icon: Package },
+  {
+    id: "modules",
+    label: "Custom Apps",
+    href: "/builder/erp/modules",
+    icon: LayoutGrid,
+  },
   { id: "forms", label: "Forms", href: "/builder/erp/forms", icon: FileCode2 },
   {
     id: "workflows",

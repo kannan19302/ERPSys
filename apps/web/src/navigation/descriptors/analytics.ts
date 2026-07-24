@@ -1,25 +1,56 @@
-import { registerModule } from '@unerp/shared/module-registry';
+import { registerModule } from "@unerp/shared/module-registry";
 
 registerModule({
-  slug: 'analytics',
-  title: 'Business Intelligence',
-  icon: 'PieChart',
-  routeSegment: 'analytics',
-  dashboardRoute: '/analytics',
-  settingsRoute: undefined,
+  slug: "analytics",
+  title: "Business Intelligence",
+  icon: "PieChart",
+  routeSegment: "analytics",
+  dashboardRoute: "/analytics",
+  settingsRoute: "/analytics/settings",
   nav: [
-    { label: 'BI Analytics Dashboard', href: '/analytics', icon: 'PieChart' },
-    { label: 'Dashboard Builder', href: '/analytics/builder', icon: 'LayoutDashboard' },
-    { label: 'Smart Insights', href: '/analytics/insights', icon: 'ShieldAlert' },
+    { label: "BI Analytics Dashboard", href: "/analytics", icon: "PieChart" },
     {
-      label: 'Data Tools',
-      isHeader: true,
-      items: [
-        { label: 'Visual Query Builder', href: '/analytics/query', icon: 'GitFork' },
-        { label: 'Pivot Matrix Aggregator', href: '/analytics/pivot', icon: 'Layers' },
-        { label: 'Predictive Analytics', href: '/analytics/predictive', icon: 'TrendingUp' },
-        { label: 'Advanced BI Analytics', href: '/analytics/advanced', icon: 'BarChart3' },
-      ],
+      label: "Dashboard Builder",
+      href: "/analytics/builder",
+      icon: "LayoutDashboard",
     },
+    {
+      label: "Saved Dashboards",
+      href: "/analytics/dashboards",
+      icon: "LayoutGrid",
+    },
+    {
+      label: "Smart Insights",
+      href: "/analytics/insights",
+      icon: "ShieldAlert",
+    },
+    {
+      label: "Visual Query Builder",
+      href: "/analytics/query",
+      icon: "GitFork",
+    },
+    {
+      label: "Pivot Matrix Aggregator",
+      href: "/analytics/pivot",
+      icon: "Layers",
+    },
+    {
+      label: "Predictive Analytics",
+      href: "/analytics/predictive",
+      icon: "TrendingUp",
+    },
+    {
+      label: "Advanced BI Analytics",
+      href: "/analytics/advanced",
+      icon: "BarChart3",
+    },
+    { label: "Saved Reports", href: "/analytics/reports", icon: "FileText" },
+    { label: "KPI Dashboard", href: "/analytics/kpis", icon: "Activity" },
+    {
+      label: "Scheduled Exports",
+      href: "/analytics/exports",
+      icon: "FileDown",
+    },
+    { label: "Settings", href: "/analytics/settings", icon: "Settings" },
   ],
 });

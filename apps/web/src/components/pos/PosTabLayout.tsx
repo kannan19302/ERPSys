@@ -9,6 +9,7 @@ import {
   Clock,
   Percent,
   Settings,
+  DollarSign,
 } from "lucide-react";
 import type { ModuleTab } from "@unerp/ui-layout";
 
@@ -75,6 +76,15 @@ export const POS_TABS: ModuleTab[] = [
     description: "Promotions engine",
   },
   {
+    id: "layaway",
+    label: "Layaway Plans",
+    href: "/pos/layaway",
+    icon: DollarSign,
+    advanced: true,
+    group: "Retail Tools",
+    description: "Layaway plan management",
+  },
+  {
     id: "designer",
     label: "Receipt Designer",
     href: "/pos/designer",
@@ -82,5 +92,14 @@ export const POS_TABS: ModuleTab[] = [
     advanced: true,
     group: "Customizer",
     description: "Receipt layout designer",
+  },
+  {
+    id: "diagnostics",
+    label: "Printer Diagnostics",
+    href: "/pos/diagnostics",
+    icon: Activity,
+    advanced: true,
+    group: "Customizer",
+    description: "Printer and hardware diagnostics",
   },
 ];

@@ -1,70 +1,24 @@
-import { registerModule } from '@unerp/shared/module-registry';
+import { registerModule } from "@unerp/shared/module-registry";
 
 registerModule({
-  slug: 'builder',
-  title: 'Studio',
-  icon: 'Cpu',
-  routeSegment: 'builder',
-  dashboardRoute: '/builder',
+  slug: "builder",
+  title: "Studio",
+  icon: "Cpu",
+  routeSegment: "builder",
+  dashboardRoute: "/builder",
   settingsRoute: undefined,
+  // Flat sidebar mirrors BUILDER_TABS (the Level-1 Studio-pillar tab bar in
+  // BuilderTabLayout.tsx) exactly. Each pillar's ~7-12 sub-routes are reached
+  // via its own Level-2 SubTabBar (erp-sub-tabs.ts / web-sub-tabs.ts /
+  // manage-sub-tabs.ts, rendered from each pillar's layout.tsx) rather than
+  // being enumerated here — that is the "already-built tab bar" for Studio's
+  // hub-of-hubs architecture (see BuilderTabLayout.tsx header comment).
+  // Marketplace (App Store / Installed / Developer Portal) is intentionally
+  // excluded — it is already its own top-level nav module, see appStore.ts.
   nav: [
-    { label: 'Studio Home', href: '/builder', icon: 'Home' },
-    {
-      label: 'Build',
-      isHeader: true,
-      items: [
-        { label: 'App Studio Overview', href: '/builder/erp', icon: 'Cpu' },
-        { label: 'Custom Apps', href: '/builder/erp/modules', icon: 'Database' },
-        { label: 'Form Builder', href: '/builder/erp/forms', icon: 'FileCode2' },
-        { label: 'Workflow Builder', href: '/builder/erp/workflows', icon: 'Workflow' },
-        { label: 'Dashboard Builder', href: '/builder/erp/dashboards', icon: 'BarChart3' },
-        { label: 'Business Logic', href: '/builder/erp/logic', icon: 'Play' },
-        { label: 'Data & Import', href: '/builder/erp/data', icon: 'Layers' },
-        { label: 'Customize an App', href: '/builder/erp/customize', icon: 'Settings' },
-      ],
-    },
-    {
-      label: 'Web Studio',
-      isHeader: true,
-      items: [
-        { label: 'Web Studio Overview', href: '/builder/web', icon: 'Globe' },
-        { label: 'Sites', href: '/builder/web/sites', icon: 'Globe' },
-        { label: 'CMS Collections', href: '/builder/web/collections', icon: 'Database' },
-        { label: 'Blog Posts', href: '/builder/web/blog', icon: 'FileText' },
-        { label: 'Asset Manager', href: '/builder/web/assets', icon: 'Image' },
-        { label: 'Templates', href: '/builder/web/templates', icon: 'Code2' },
-        { label: 'Navigation Menus', href: '/builder/web/menus', icon: 'Layers' },
-        { label: 'SEO Manager', href: '/builder/web/seo', icon: 'BarChart3' },
-        { label: 'Orders', href: '/builder/web/orders', icon: 'ShoppingCart' },
-        { label: 'Form Submissions', href: '/builder/web/submissions', icon: 'Inbox' },
-        { label: 'Pages (legacy)', href: '/builder/web/pages', icon: 'FileText' },
-      ],
-    },
-    {
-      label: 'Marketplace',
-      isHeader: true,
-      items: [
-        { label: 'App Store', href: '/apps/store', icon: 'Store' },
-        { label: 'Installed Apps', href: '/apps', icon: 'LayoutGrid' },
-        { label: 'Developer Portal', href: '/apps/developer', icon: 'Code2' },
-      ],
-    },
-    {
-      label: 'Manage',
-      isHeader: true,
-      items: [
-        { label: 'Manage Overview', href: '/builder/manage', icon: 'Server' },
-        { label: 'Releases', href: '/builder/manage/releases', icon: 'History' },
-        { label: 'Environments', href: '/builder/manage/environments', icon: 'GitFork' },
-        { label: 'Run Logs', href: '/builder/manage/logs', icon: 'Activity' },
-        { label: 'Access Control', href: '/builder/manage/access', icon: 'Shield' },
-        { label: 'Connectors', href: '/builder/manage/connectors', icon: 'Link' },
-        { label: 'Marketplace', href: '/builder/manage/marketplace', icon: 'Store' },
-        { label: 'Query Builder', href: '/builder/manage/query-builder', icon: 'Database' },
-        { label: 'Widget SDK', href: '/builder/manage/widgets', icon: 'Settings' },
-        { label: 'Git Control', href: '/builder/manage/git', icon: 'GitBranch' },
-        { label: 'Export & Mobile', href: '/builder/manage/mobile-export', icon: 'Smartphone' },
-      ],
-    },
+    { label: "Studio Home", href: "/builder", icon: "Home" },
+    { label: "App Studio", href: "/builder/erp", icon: "Cpu" },
+    { label: "Web Studio", href: "/builder/web", icon: "Globe" },
+    { label: "Manage", href: "/builder/manage", icon: "Server" },
   ],
 });

@@ -1,28 +1,29 @@
-import { registerModule } from '@unerp/shared/module-registry';
+import { registerModule } from "@unerp/shared/module-registry";
 
 registerModule({
-  slug: 'supply-chain',
-  title: 'Supply Chain',
-  icon: 'Truck',
-  routeSegment: 'supply-chain',
-  dashboardRoute: '/supply-chain',
+  slug: "supply-chain",
+  title: "Supply Chain",
+  icon: "Truck",
+  routeSegment: "supply-chain",
+  dashboardRoute: "/supply-chain",
   settingsRoute: undefined,
   nav: [
-    { label: 'Dashboard', href: '/supply-chain', icon: 'Home' },
+    { label: "Dashboard", href: "/supply-chain", icon: "Home" },
     {
-      label: 'Operations',
-      isHeader: true,
-      items: [
-        { label: 'Operations Hub', href: '/supply-chain/operations', icon: 'Package' },
-      ],
+      label: "Operations Hub",
+      href: "/supply-chain/operations",
+      icon: "Package",
     },
     {
-      label: 'Planning & Analytics',
-      isHeader: true,
-      items: [
-        { label: 'Demand Forecast', href: '/supply-chain/demand-forecast', icon: 'TrendingUp' },
-        { label: 'Analytics', href: '/supply-chain/analytics', icon: 'BarChart3' },
-      ],
+      label: "Demand Forecast",
+      href: "/supply-chain/demand-forecast",
+      icon: "TrendingUp",
+    },
+    { label: "Analytics", href: "/supply-chain/analytics", icon: "BarChart3" },
+    {
+      label: "Shipment Tracking",
+      href: "/supply-chain/shipments",
+      icon: "Truck",
     },
   ],
 });

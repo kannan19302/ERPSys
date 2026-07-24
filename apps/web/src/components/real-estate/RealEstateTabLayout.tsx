@@ -7,6 +7,8 @@ import {
   Users,
   Wrench,
   BarChart3,
+  DollarSign,
+  Settings,
 } from "lucide-react";
 import type { ModuleTab } from "@unerp/ui-layout";
 
@@ -55,10 +57,24 @@ export const REAL_ESTATE_TABS: ModuleTab[] = [
     description: "Maintenance work orders",
   },
   {
+    id: "commissions",
+    label: "Commissions",
+    href: "/real-estate/commissions",
+    icon: DollarSign,
+    description: "Agent commission tracking",
+  },
+  {
     id: "reports",
     label: "Reports",
     href: "/real-estate/reports",
     icon: BarChart3,
     description: "Real estate reports",
+  },
+  {
+    id: "settings",
+    label: "Settings",
+    href: "/real-estate/settings",
+    icon: Settings,
+    description: "Real estate module settings",
   },
 ];
