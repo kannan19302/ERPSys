@@ -79,6 +79,15 @@ export const HEALTHCARE_TABS: ModuleTab[] = [
     description: "FHIR integration",
   },
   {
+    id: "vitals",
+    label: "Vitals Dashboard",
+    href: "/healthcare/vitals",
+    icon: Activity,
+    description: "Patient vitals monitoring",
+    advanced: true,
+    group: "Clinical",
+  },
+  {
     id: "reports",
     label: "Reports",
     href: "/healthcare/reports",
@@ -91,5 +100,7 @@ export const HEALTHCARE_TABS: ModuleTab[] = [
     href: "/healthcare/settings",
     icon: Settings,
     description: "Healthcare settings",
+    advanced: true,
+    group: "Admin",
   },
 ];

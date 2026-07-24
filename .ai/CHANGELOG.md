@@ -2,6 +2,15 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-24] Real sidebar flattening: Healthcare, Education
+
+Last 2 of 19 modules to be flattened — `apps/web/src/navigation/descriptors/healthcare.ts` (10 items, 3 `isHeader` groups) and `education.ts` (10 items, 3 `isHeader` groups) were the last remaining grouped descriptors. Both modules' pages were checked and found to be real, built pages (not thin/mocked placeholders) wired to `HealthcareTabLayout`/`EducationTabLayout` via `apps/web/app/(dashboard)/{healthcare,education}/layout.tsx`.
+
+- **Healthcare** (11 items: Dashboard, Patient Registry, Appointments, Clinical Notes, Prescriptions, Lab Results, Practitioners, Vitals Dashboard, FHIR / SMART, Reports, Settings): `HEALTHCARE_TABS` (`apps/web/src/components/healthcare/HealthcareTabLayout.tsx`) already covered 8 of 10 sidebar routes as primary tabs; added `vitals` (`/healthcare/vitals`, existing page not previously in any tab list) as an `advanced: true` tab in a new "Clinical" group, and moved `settings` to `advanced: true` under "Admin". Also set `settingsRoute: '/healthcare/settings'` in the descriptor (was `undefined` despite the page existing).
+- **Education** (11 items: Dashboard, Student Registry, Course Catalog, Timetable, Grade Book, Attendance, Fee Management, Fee Payments, Library, Reports & Analytics, Settings): `EDUCATION_TABS` was missing `/education/fees/pay` (existing page, was a flat sidebar item in the old grouped nav but never wired into the tab bar) — added it as an `advanced: true` tab (`fees-pay`) grouped under "Administration" alongside `settings` (also switched to `advanced: true`). Set `settingsRoute: '/education/settings'` in the descriptor.
+- No routes deleted; no page files removed. Every original sidebar destination remains reachable as a flat sidebar item or via the tab bar's Advanced dropdown.
+- **Verified** (literal command output): `grep -c "href:" apps/web/src/navigation/descriptors/healthcare.ts` → 11, `grep -c "isHeader"` → 0. Same for `education.ts` → 11 / 0. `pnpm --filter @unerp/web typecheck` → clean, 0 errors. `pnpm architecture:check` → module boundary check passed, depcruise "no dependency violations found (1194 modules, 5465 dependencies cruised)". Live browser verification on `web-alt` (port 3010): `/healthcare` renders the 11-item flat sidebar and 9-tab bar + Advanced dropdown (Vitals Dashboard, Settings); `/education` renders the 11-item flat sidebar and 9-tab bar + Advanced dropdown (Fee Payments, Settings).
+
 ## [2026-07-24] Real sidebar flattening: CRM, Inventory
 
 **Same failure mode as the Real Estate/AI/Analytics/Builder entry below, confirmed again**: `apps/web/src/navigation/descriptors/crm.ts` (62 items, 10 `isHeader` groups) and `inventory.ts` (58 items, 4 `isHeader` groups) were byte-identical to their original deep/grouped state despite an earlier changelog entry (2026-07-21, "Global ERP Tab-Based UI Migration") claiming all 20 modules were flattened.

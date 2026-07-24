@@ -73,6 +73,15 @@ export const EDUCATION_TABS: ModuleTab[] = [
     description: "Fee collection and management",
   },
   {
+    id: "fees-pay",
+    label: "Fee Payments",
+    href: "/education/fees/pay",
+    icon: DollarSign,
+    description: "Record and process fee payments",
+    advanced: true,
+    group: "Administration",
+  },
+  {
     id: "library",
     label: "Library",
     href: "/education/library",
@@ -92,5 +101,7 @@ export const EDUCATION_TABS: ModuleTab[] = [
     href: "/education/settings",
     icon: Settings,
     description: "Education module settings",
+    advanced: true,
+    group: "Administration",
   },
 ];
