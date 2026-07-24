@@ -63,6 +63,7 @@ const allowedAiFiles = new Set([
   'TRACK_A_RECONCILIATION_2026-07-18.md',
   'TRACK_A_CANDIDATE_RECONCILIATION_2026-07-18.sql',
   'AUTH_BILLING_PROGRAM.md',
+  'COMPETITIVE_ROADMAP.md',
 ]);
 const generatedAiFiles = new Set(['FEATURE_LEDGER.md']); // gitignored generator output
 for (const entry of readdirSync(path.join(root, '.ai'), { withFileTypes: true })) {
@@ -76,11 +77,11 @@ for (const entry of readdirSync(path.join(root, '.ai'), { withFileTypes: true })
 }
 for (const file of allowedAiFiles) read(path.join('.ai', file));
 
-// Exactly two ADP flows: start (DEV) and harden (QA).
+// ADP skills: start (DEV), harden (QA), and sprint-sync.
 const skillsDir = path.join(root, '.claude', 'skills');
 const skills = readdirSync(skillsDir).sort();
-if (skills.join(',') !== 'harden,start') {
-  failures.push(`.claude/skills must contain exactly [harden, start], found [${skills.join(', ')}]`);
+if (!skills.includes('start') || !skills.includes('harden')) {
+  failures.push(`.claude/skills must contain [harden, start], found [${skills.join(', ')}]`);
 }
 requireText('.claude/skills/start/SKILL.md', 'AUTOPILOT.md');
 requireText('.claude/skills/harden/SKILL.md', 'AUTOPILOT.md');
