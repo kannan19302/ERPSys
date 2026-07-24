@@ -180,6 +180,7 @@ export default function AppStorePage() {
   const [kernelSlugs, setKernelSlugs] =
     useState<Set<string>>(DEFAULT_KERNEL_SLUGS);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [loadAppsError, setLoadAppsError] = useState<string | null>(null);
   const filterRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -190,7 +191,11 @@ export default function AppStorePage() {
         if (mounted && Array.isArray(data?.kernelSlugs))
           setKernelSlugs(new Set(data.kernelSlugs));
       })
-      .catch(() => {});
+      .catch((e) => {
+        // Best-effort — falls back to DEFAULT_KERNEL_SLUGS, so a failure
+        // here is non-critical and doesn't warrant a user-facing error.
+        console.warn("Failed to load kernel slug map", e);
+      });
     return () => {
       mounted = false;
     };
@@ -231,7 +236,14 @@ export default function AppStorePage() {
       setApps(data.apps);
       setTotalPages(data.totalPages);
       setTotal(data.total);
-    } catch {}
+      setLoadAppsError(null);
+    } catch (e) {
+      // Distinct error state — a failed fetch must never render as
+      // "No Apps Found", which is a different, valid empty-result condition.
+      const message = e instanceof Error ? e.message : "Failed to load apps";
+      setLoadAppsError(message);
+      showToast(message, "error");
+    }
   }, [selectedCategories, searchQuery, activePricing, sortBy, page, client]);
 
   const loadInstalled = useCallback(async () => {
@@ -241,7 +253,11 @@ export default function AppStorePage() {
       );
       setInstalledSlugs(new Set(list.map((a) => a.appSlug)));
       setInstalledInfo(new Map(list.map((a) => [a.appSlug, a])));
-    } catch {}
+    } catch (e) {
+      // Best-effort — falls back to "Get" instead of "Open" for installed
+      // apps, non-critical for the browse experience.
+      console.warn("Failed to load installed apps", e);
+    }
   }, [client]);
 
   const loadFavorites = useCallback(async () => {
@@ -254,7 +270,9 @@ export default function AppStorePage() {
           list.map((f) => f.app?.slug).filter((s): s is string => Boolean(s)),
         ),
       );
-    } catch {}
+    } catch (e) {
+      console.warn("Failed to load favorites", e);
+    }
   }, [client]);
 
   useEffect(() => {
@@ -348,7 +366,12 @@ export default function AppStorePage() {
         await client.post(`/admin/marketplace/favorites/${slug}`);
         setFavoriteSlugs((prev) => new Set([...prev, slug]));
       }
-    } catch {}
+    } catch (e) {
+      showToast(
+        e instanceof Error ? e.message : "Failed to update favorite",
+        "error",
+      );
+    }
   };
 
   const isInst = (slug: string) => installedSlugs.has(slug);
@@ -517,6 +540,12 @@ export default function AppStorePage() {
           </select>
         </div>
 
+        {loadAppsError && (
+          <div className="ui-alert ui-alert-danger">
+            Failed to load apps. {loadAppsError}
+          </div>
+        )}
+
         {/* App count */}
         <div className={styles.resultInfo}>
           <span>
@@ -623,9 +652,13 @@ export default function AppStorePage() {
         ) : (
           <div className={styles.emptyState}>
             <Search size={36} style={{ color: "var(--color-text-tertiary)" }} />
-            <div className={styles.emptyTitle}>No Apps Found</div>
+            <div className={styles.emptyTitle}>
+              {loadAppsError ? "Couldn't load apps" : "No Apps Found"}
+            </div>
             <div className={styles.emptyDesc}>
-              Try adjusting your search or filters.
+              {loadAppsError
+                ? "Please try again later."
+                : "Try adjusting your search or filters."}
             </div>
           </div>
         )}

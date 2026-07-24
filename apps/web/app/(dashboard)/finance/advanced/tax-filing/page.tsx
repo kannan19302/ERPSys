@@ -7,8 +7,15 @@ import {
   FileText,
   Send,
   Loader2,
+  AlertTriangle,
 } from "lucide-react";
-import { Card, Button, ListPageTemplate, type ListColumn } from "@unerp/ui";
+import {
+  Card,
+  Button,
+  ListPageTemplate,
+  type ListColumn,
+  useToast,
+} from "@unerp/ui";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
 interface TaxFiling {
@@ -21,8 +28,10 @@ interface TaxFiling {
 
 export default function TaxFilingPage() {
   const client = useApiClient();
+  const { error: notifyError } = useToast();
   const [filings, setFilings] = useState<TaxFiling[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const [showFilingForm, setShowFilingForm] = useState(false);
   const [filingData, setFilingData] = useState({
@@ -40,7 +49,12 @@ export default function TaxFilingPage() {
       setFilings(
         await client.get<TaxFiling[]>("/advanced-finance/tax-filings"),
       );
-    } catch {
+      setLoadError(null);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load tax filings";
+      setLoadError(message);
+      notifyError("Failed to load tax filings", message);
     } finally {
       setLoading(false);
     }
@@ -60,7 +74,12 @@ export default function TaxFilingPage() {
         setFilingData({ filingType: "", periodStart: "", periodEnd: "" });
         fetchData();
       }
-    } catch {}
+    } catch (err) {
+      notifyError(
+        "Failed to prepare tax filing",
+        err instanceof Error ? err.message : undefined,
+      );
+    }
   };
 
   if (loading)
@@ -85,6 +104,14 @@ export default function TaxFilingPage() {
             Prepare New Return
           </Button>
         </div>
+
+        {loadError && (
+          <div className="ui-alert ui-alert-danger">
+            <AlertTriangle size={16} />
+            Failed to load tax filings — the register below may be stale or
+            empty. {loadError}
+          </div>
+        )}
 
         {showFilingForm && (
           <Card className="border-primary/20">

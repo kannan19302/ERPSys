@@ -1,3 +1,4 @@
-npx lint-staged
+pnpm lint
+pnpm typecheck
 pnpm foundation:check
 pnpm architecture:check

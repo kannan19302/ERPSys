@@ -32,6 +32,7 @@ export default function SiteDetailPage({
     "pages",
   );
   const [msg, setMsg] = useState("");
+  const [loadError, setLoadError] = useState("");
 
   // New page form
   const [np, setNp] = useState({
@@ -59,8 +60,11 @@ export default function SiteDetailPage({
       setSite(s);
       setPages(p);
       setChatbot(c);
-    } catch {
-      /* */
+      setLoadError("");
+    } catch (e) {
+      // Distinct error state — a failed fetch must never render as
+      // "Site not found", which is a different, valid condition.
+      setLoadError(e instanceof Error ? e.message : "Failed to load site");
     } finally {
       setLoading(false);
     }
@@ -125,7 +129,19 @@ export default function SiteDetailPage({
   };
 
   if (loading) return <div className="p-6">Loading…</div>;
-  if (!site) return <div className="p-6">Site not found</div>;
+  if (!site) {
+    return (
+      <div className="p-6">
+        {loadError ? (
+          <div className="ui-alert ui-alert-danger">
+            Failed to load site. {loadError}
+          </div>
+        ) : (
+          "Site not found"
+        )}
+      </div>
+    );
+  }
 
   const tabStyle = (t: string) => ({
     padding: "var(--space-2) var(--space-3)",
@@ -342,7 +358,11 @@ export default function SiteDetailPage({
             onChange={(e) => {
               try {
                 setSite({ ...site, theme: JSON.parse(e.target.value) });
-              } catch {}
+              } catch {
+                // Deliberate no-op: fires on every keystroke while the user
+                // is mid-edit typing JSON, so partial/invalid text is
+                // expected and must not surface as an error.
+              }
             }}
             rows={8}
             style={{ ...inp }}
@@ -354,7 +374,11 @@ export default function SiteDetailPage({
             onChange={(e) => {
               try {
                 setSite({ ...site, settings: JSON.parse(e.target.value) });
-              } catch {}
+              } catch {
+                // Deliberate no-op: fires on every keystroke while the user
+                // is mid-edit typing JSON, so partial/invalid text is
+                // expected and must not surface as an error.
+              }
             }}
             rows={6}
             style={{ ...inp }}

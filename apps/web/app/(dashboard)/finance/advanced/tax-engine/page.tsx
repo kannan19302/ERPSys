@@ -8,8 +8,15 @@ import {
   Settings,
   CheckCircle2,
   Loader2,
+  AlertTriangle,
 } from "lucide-react";
-import { Card, Button, ListPageTemplate, type ListColumn } from "@unerp/ui";
+import {
+  Card,
+  Button,
+  ListPageTemplate,
+  type ListColumn,
+  useToast,
+} from "@unerp/ui";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
 interface TaxRule {
@@ -28,9 +35,11 @@ interface WithholdingTax {
 
 export default function TaxEnginePage() {
   const client = useApiClient();
+  const { error: notifyError } = useToast();
   const [rules, setRules] = useState<TaxRule[]>([]);
   const [withholding, setWithholding] = useState<WithholdingTax[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const [showRuleForm, setShowRuleForm] = useState(false);
   const [showWithholdingForm, setShowWithholdingForm] = useState(false);
@@ -53,7 +62,12 @@ export default function TaxEnginePage() {
       ]);
       setRules(rulesRes);
       setWithholding(wTaxesRes);
-    } catch {
+      setLoadError(null);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load tax engine data";
+      setLoadError(message);
+      notifyError("Failed to load tax engine data", message);
     } finally {
       setLoading(false);
     }
@@ -73,7 +87,12 @@ export default function TaxEnginePage() {
         setRuleData({ name: "", rate: "", type: "GST" });
         fetchData();
       }
-    } catch {}
+    } catch (err) {
+      notifyError(
+        "Failed to create tax rule",
+        err instanceof Error ? err.message : undefined,
+      );
+    }
   };
 
   const handleCreateWithholding = async (e: React.FormEvent) => {
@@ -89,7 +108,12 @@ export default function TaxEnginePage() {
         setWithholdingData({ name: "", rate: "", threshold: "" });
         fetchData();
       }
-    } catch {}
+    } catch (err) {
+      notifyError(
+        "Failed to add withholding tax",
+        err instanceof Error ? err.message : undefined,
+      );
+    }
   };
 
   if (loading)
@@ -114,6 +138,14 @@ export default function TaxEnginePage() {
             Refresh Data
           </Button>
         </div>
+
+        {loadError && (
+          <div className="ui-alert ui-alert-danger">
+            <AlertTriangle size={16} />
+            Failed to load tax engine data — the lists below may be stale or
+            empty. {loadError}
+          </div>
+        )}
 
         {showRuleForm && (
           <Card className="border-primary/20">

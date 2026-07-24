@@ -1,21 +1,42 @@
-'use client';
-import styles from './page.module.css';
-import React, { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { Card, Badge, Button } from '@unerp/ui';
-import { ArrowLeft, Download, Star, Heart, Shield, Loader2 } from 'lucide-react';
-import { RouteGuard, useApiClient } from '@unerp/framework';
+"use client";
+import styles from "./page.module.css";
+import React, { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { Card, Badge, Button, useToast } from "@unerp/ui";
+import {
+  ArrowLeft,
+  Download,
+  Star,
+  Heart,
+  Shield,
+  Loader2,
+} from "lucide-react";
+import { RouteGuard, useApiClient } from "@unerp/framework";
 
 interface CollectionApp {
-  id: string; slug: string; name: string; description: string; category: string;
-  icon: string | null; publisher: string; version: string; pricing: string;
-  price: number | null; rating: number; reviewCount: number; installs: number;
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  category: string;
+  icon: string | null;
+  publisher: string;
+  version: string;
+  pricing: string;
+  price: number | null;
+  rating: number;
+  reviewCount: number;
+  installs: number;
   verified: boolean;
 }
 
 interface CollectionDetail {
-  id: string; slug: string; name: string; description: string | null; icon: string | null;
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  icon: string | null;
   items: { app: CollectionApp }[];
 }
 
@@ -27,30 +48,53 @@ export default function CollectionDetailPage() {
   const [installedSlugs, setInstalledSlugs] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [installingSlug, setInstallingSlug] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const { error: notifyError } = useToast();
 
   useEffect(() => {
     (async () => {
       try {
         const [colRes, instRes] = await Promise.all([
-          client.get<CollectionDetail>(`/admin/marketplace/collections/${slug}`),
-          client.get<Array<{ appSlug: string }>>('/admin/marketplace/installed'),
+          client.get<CollectionDetail>(
+            `/admin/marketplace/collections/${slug}`,
+          ),
+          client.get<Array<{ appSlug: string }>>(
+            "/admin/marketplace/installed",
+          ),
         ]);
         setCollection(colRes);
-        setInstalledSlugs(new Set(instRes.map(a => a.appSlug)));
-      } catch {}
+        setInstalledSlugs(new Set(instRes.map((a) => a.appSlug)));
+        setLoadError(null);
+      } catch (e) {
+        // Distinct error state — a failed fetch must never render as
+        // "Collection not found", which is a different, valid condition.
+        const message =
+          e instanceof Error ? e.message : "Failed to load collection";
+        setLoadError(message);
+        notifyError("Failed to load collection", message);
+      }
       setLoading(false);
     })();
-  }, [slug, client]);
+  }, [slug, client, notifyError]);
 
   const handleInstall = async (appSlug: string) => {
     setInstallingSlug(appSlug);
     try {
       await client.post(`/admin/marketplace/install/${appSlug}`);
-      setInstalledSlugs(prev => new Set([...prev, appSlug]));
-      setToast({ message: 'App installed!', type: 'success' });
-    } catch {}
-    finally { setInstallingSlug(null); }
+      setInstalledSlugs((prev) => new Set([...prev, appSlug]));
+      setToast({ message: "App installed!", type: "success" });
+    } catch (e) {
+      setToast({
+        message: e instanceof Error ? e.message : "Failed to install app",
+        type: "error",
+      });
+    } finally {
+      setInstallingSlug(null);
+    }
   };
 
   useEffect(() => {
@@ -60,86 +104,150 @@ export default function CollectionDetailPage() {
   }, [toast]);
 
   if (loading) {
-    return <div className={styles.loadingContainer}><Loader2 size={32} className="animate-spin ui-text-primary" /></div>;
+    return (
+      <div className={styles.loadingContainer}>
+        <Loader2 size={32} className="animate-spin ui-text-primary" />
+      </div>
+    );
   }
 
   if (!collection) {
-    return <div className={styles.notFound}><h3>Collection not found</h3><Link href="/apps/store/collections" className="ui-text-primary">Back to Collections</Link></div>;
+    return (
+      <div className={styles.notFound}>
+        {loadError && (
+          <div
+            className="ui-alert ui-alert-danger"
+            style={{ marginBottom: "var(--space-4)" }}
+          >
+            Failed to load collection. {loadError}
+          </div>
+        )}
+        <h3>
+          {loadError ? "Couldn't load this collection" : "Collection not found"}
+        </h3>
+        <Link href="/apps/store/collections" className="ui-text-primary">
+          Back to Collections
+        </Link>
+      </div>
+    );
   }
 
   return (
     <RouteGuard permission="apps.store.collections.read">
-    <div className="ui-stack-5 ui-animate-in">
-      {toast && (
-        <div className={`ui-alert ${toast.type === 'success' ? 'ui-alert-success' : 'ui-alert-danger'}`}>
-          {toast.message}
+      <div className="ui-stack-5 ui-animate-in">
+        {toast && (
+          <div
+            className={`ui-alert ${toast.type === "success" ? "ui-alert-success" : "ui-alert-danger"}`}
+          >
+            {toast.message}
+          </div>
+        )}
+
+        <nav className="ui-breadcrumb">
+          <Link href="/apps/store" className="ui-breadcrumb-link">
+            App Store
+          </Link>
+          <span className="ui-breadcrumb-separator">/</span>
+          <Link href="/apps/store/collections" className="ui-breadcrumb-link">
+            Collections
+          </Link>
+          <span className="ui-breadcrumb-separator">/</span>
+          <span className="ui-breadcrumb-active">{collection.name}</span>
+        </nav>
+
+        <div className="ui-hstack-4">
+          <span className={styles.colIconLarge}>{collection.icon || "📦"}</span>
+          <div>
+            <h1 className={`ui-heading-lg ${styles.pageTitle}`}>
+              {collection.name}
+            </h1>
+            <p className={`ui-text-sm-muted ${styles.pageSubtitle}`}>
+              {collection.description} · {collection.items.length} apps
+            </p>
+          </div>
         </div>
-      )}
 
-      <nav className="ui-breadcrumb">
-        <Link href="/apps/store" className="ui-breadcrumb-link">App Store</Link>
-        <span className="ui-breadcrumb-separator">/</span>
-        <Link href="/apps/store/collections" className="ui-breadcrumb-link">Collections</Link>
-        <span className="ui-breadcrumb-separator">/</span>
-        <span className="ui-breadcrumb-active">{collection.name}</span>
-      </nav>
-
-      <div className="ui-hstack-4">
-        <span className={styles.colIconLarge}>{collection.icon || '📦'}</span>
-        <div>
-          <h1 className={`ui-heading-lg ${styles.pageTitle}`}>{collection.name}</h1>
-          <p className={`ui-text-sm-muted ${styles.pageSubtitle}`}>
-            {collection.description} · {collection.items.length} apps
-          </p>
-        </div>
-      </div>
-
-      <div className={styles.appGrid}>
-        {collection.items.map(({ app }) => {
-          const isInstalled = installedSlugs.has(app.slug);
-          const isBusy = installingSlug === app.slug;
-          return (
-            <Card key={app.slug} padding="lg" className={styles.appCard}>
-              <Link href={`/apps/store/${app.slug}`} className={styles.cardLink}>
-                <div className="ui-hstack-3">
-                  <div className={styles.iconBox}>{app.icon || '📦'}</div>
-                  <div>
-                    <div className="ui-flex ui-items-center ui-gap-1">
-                      <span className="ui-heading-sm">{app.name}</span>
-                      {app.verified && <Shield size={12} className="ui-text-success" />}
+        <div className={styles.appGrid}>
+          {collection.items.map(({ app }) => {
+            const isInstalled = installedSlugs.has(app.slug);
+            const isBusy = installingSlug === app.slug;
+            return (
+              <Card key={app.slug} padding="lg" className={styles.appCard}>
+                <Link
+                  href={`/apps/store/${app.slug}`}
+                  className={styles.cardLink}
+                >
+                  <div className="ui-hstack-3">
+                    <div className={styles.iconBox}>{app.icon || "📦"}</div>
+                    <div>
+                      <div className="ui-flex ui-items-center ui-gap-1">
+                        <span className="ui-heading-sm">{app.name}</span>
+                        {app.verified && (
+                          <Shield size={12} className="ui-text-success" />
+                        )}
+                      </div>
+                      <div className="ui-text-caption ui-text-tertiary">
+                        {app.publisher} · v{app.version}
+                      </div>
                     </div>
-                    <div className="ui-text-caption ui-text-tertiary">{app.publisher} · v{app.version}</div>
                   </div>
-                </div>
-                <p className={styles.description}>{app.description}</p>
-                <div className="ui-hstack-2">
-                  <div className={styles.starRow}>
-                    {[1,2,3,4,5].map(s => (
-                      <Star key={s} size={10} className={s <= Math.floor(Number(app.rating)) ? 'ui-text-warning' : 'ui-text-muted'} fill={s <= Math.floor(Number(app.rating)) ? 'var(--color-warning)' : 'none'} />
-                    ))}
+                  <p className={styles.description}>{app.description}</p>
+                  <div className="ui-hstack-2">
+                    <div className={styles.starRow}>
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Star
+                          key={s}
+                          size={10}
+                          className={
+                            s <= Math.floor(Number(app.rating))
+                              ? "ui-text-warning"
+                              : "ui-text-muted"
+                          }
+                          fill={
+                            s <= Math.floor(Number(app.rating))
+                              ? "var(--color-warning)"
+                              : "none"
+                          }
+                        />
+                      ))}
+                    </div>
+                    <span className="ui-text-caption">
+                      {Number(app.rating).toFixed(1)} ({app.reviewCount})
+                    </span>
+                    <span className={styles.priceBadge}>
+                      <Badge
+                        variant={app.pricing === "FREE" ? "success" : "warning"}
+                      >
+                        {app.pricing === "FREE" ? "Free" : `$${app.price}/mo`}
+                      </Badge>
+                    </span>
                   </div>
-                  <span className="ui-text-caption">{Number(app.rating).toFixed(1)} ({app.reviewCount})</span>
-                  <span className={styles.priceBadge}>
-                    <Badge variant={app.pricing === 'FREE' ? 'success' : 'warning'}>
-                      {app.pricing === 'FREE' ? 'Free' : `$${app.price}/mo`}
-                    </Badge>
-                  </span>
+                </Link>
+                <div>
+                  {isInstalled ? (
+                    <div
+                      className={`ui-text-success text-xs font-semibold text-center ${styles.installedLabel}`}
+                    >
+                      Installed
+                    </div>
+                  ) : (
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      leftIcon={<Download size={13} />}
+                      onClick={() => handleInstall(app.slug)}
+                      disabled={isBusy}
+                      className="w-full"
+                    >
+                      {isBusy ? "Installing..." : "Install"}
+                    </Button>
+                  )}
                 </div>
-              </Link>
-              <div>
-                {isInstalled ? (
-                  <div className={`ui-text-success text-xs font-semibold text-center ${styles.installedLabel}`}>Installed</div>
-                ) : (
-                  <Button variant="primary" size="sm" leftIcon={<Download size={13} />} onClick={() => handleInstall(app.slug)} disabled={isBusy} className="w-full">
-                    {isBusy ? 'Installing...' : 'Install'}
-                  </Button>
-                )}
-              </div>
-            </Card>
-          );
-        })}
+              </Card>
+            );
+          })}
+        </div>
       </div>
-    </div>
     </RouteGuard>
   );
 }

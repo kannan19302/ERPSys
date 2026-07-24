@@ -24,6 +24,7 @@ import {
   FormField,
   Select,
   StatCardRow,
+  useToast,
 } from "@unerp/ui";
 import { SubTabBar, type SubTab } from "@unerp/ui-layout";
 import { useApiClient } from "@unerp/framework";
@@ -101,10 +102,17 @@ interface ChangeRequest {
 
 export default function ProjectsPage() {
   const client = useApiClient();
+  const { error: notifyError } = useToast();
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [detailError, setDetailError] = useState<string | null>(null);
+  const [evmError, setEvmError] = useState<string | null>(null);
+  const [risksError, setRisksError] = useState<string | null>(null);
+  const [changesError, setChangesError] = useState<string | null>(null);
+  const [wipError, setWipError] = useState<string | null>(null);
+  const [costEntriesError, setCostEntriesError] = useState<string | null>(null);
 
   // Tab state from URL
   const searchParams = useSearchParams();
@@ -242,21 +250,31 @@ export default function ProjectsPage() {
       }
       setProjectHealth(data.overallHealth || "HEALTHY");
 
+      setDetailError(null);
       // Fetch EVM, Risks, Changes
       void fetchEVMData(projectId);
       void fetchRisksData(projectId);
       void fetchChangesData(projectId);
       void fetchWipData(projectId);
       void fetchCostEntries(projectId);
-    } catch {
-      // Ignored
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load project details.";
+      setDetailError(message);
+      notifyError("Failed to load project details", message);
     }
   };
 
   const fetchEVMData = async (projectId: string) => {
     try {
       setEvmMetrics(await client.get<EVMMetrics>(`/projects/${projectId}/evm`));
-    } catch {}
+      setEvmError(null);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load EVM metrics.";
+      setEvmError(message);
+      notifyError("Failed to load EVM metrics", message);
+    }
   };
 
   const fetchRisksData = async (projectId: string) => {
@@ -265,7 +283,13 @@ export default function ProjectsPage() {
         `/projects/${projectId}/risks`,
       );
       setRisks(Array.isArray(data) ? data : data.data || []);
-    } catch {}
+      setRisksError(null);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load risk register.";
+      setRisksError(message);
+      notifyError("Failed to load risk register", message);
+    }
   };
 
   const fetchChangesData = async (projectId: string) => {
@@ -274,13 +298,25 @@ export default function ProjectsPage() {
         ChangeRequest[] | { data?: ChangeRequest[] }
       >(`/projects/${projectId}/change-requests`);
       setChangeRequests(Array.isArray(data) ? data : data.data || []);
-    } catch {}
+      setChangesError(null);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load change requests.";
+      setChangesError(message);
+      notifyError("Failed to load change requests", message);
+    }
   };
 
   const fetchWipData = async (projectId: string) => {
     try {
       setWipData(await client.get<WipData>(`/projects/${projectId}/wip`));
-    } catch {}
+      setWipError(null);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load WIP data.";
+      setWipError(message);
+      notifyError("Failed to load job costing / WIP data", message);
+    }
   };
 
   const fetchCostEntries = async (projectId: string) => {
@@ -288,7 +324,13 @@ export default function ProjectsPage() {
       setCostEntries(
         await client.get<ProjectCostEntry[]>(`/projects/${projectId}/costs`),
       );
-    } catch {}
+      setCostEntriesError(null);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load cost entries.";
+      setCostEntriesError(message);
+      notifyError("Failed to load cost entries", message);
+    }
   };
 
   const handleCalculateCriticalPath = async () => {
@@ -626,6 +668,9 @@ export default function ProjectsPage() {
         {/* Project Details Right Panel */}
         {selectedProject ? (
           <div className={styles.p7}>
+            {detailError && (
+              <div className="ui-alert ui-alert-danger">{detailError}</div>
+            )}
             {/* Project Header Metrics */}
             <div className={styles.p8}>
               <div className="ui-flex-between ui-items-start">
@@ -712,6 +757,11 @@ export default function ProjectsPage() {
             {/* TAB 0: DASHBOARD */}
             {activeTab === "dashboard" && (
               <div className={styles.p16}>
+                {(evmError || risksError) && (
+                  <div className="ui-alert ui-alert-danger">
+                    {evmError || risksError}
+                  </div>
+                )}
                 <StatCardRow
                   stats={[
                     {
@@ -948,6 +998,10 @@ export default function ProjectsPage() {
                   </button>
                 </div>
 
+                {evmError && (
+                  <div className="ui-alert ui-alert-danger">{evmError}</div>
+                )}
+
                 {evmMetrics ? (
                   <>
                     {/* Gauges */}
@@ -1101,6 +1155,10 @@ export default function ProjectsPage() {
                   </button>
                 </div>
 
+                {risksError && (
+                  <div className="ui-alert ui-alert-danger">{risksError}</div>
+                )}
+
                 <div className="ui-stack-3">
                   {risks.length > 0 ? (
                     risks.map((risk) => (
@@ -1187,6 +1245,10 @@ export default function ProjectsPage() {
                   </button>
                 </div>
 
+                {changesError && (
+                  <div className="ui-alert ui-alert-danger">{changesError}</div>
+                )}
+
                 <div className="ui-stack-3">
                   {changeRequests.length > 0 ? (
                     changeRequests.map((cr) => (
@@ -1257,6 +1319,12 @@ export default function ProjectsPage() {
                     </button>
                   </div>
                 </div>
+
+                {(wipError || costEntriesError) && (
+                  <div className="ui-alert ui-alert-danger">
+                    {wipError || costEntriesError}
+                  </div>
+                )}
 
                 {wipData && (
                   <div className="ui-grid-auto">

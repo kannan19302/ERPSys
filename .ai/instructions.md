@@ -700,18 +700,20 @@ At cycle end, the feature ledger totals MUST be consistent with MODULE_REGISTRY 
 
 ## 10. Git & Branch Policy
 
-### 10.1 Push-to-Main (Mandatory)
+### 10.1 Push-to-v1.0 (Single Active Branch Policy)
 
-**Always push directly to `main`.** Do not create feature branches unless the user explicitly requests one.
+**Always push directly to `v1.0`.** Do not create feature, fix, or worktree side branches.
 
-| Rule                  | Detail                                                                                       |
-| :-------------------- | :------------------------------------------------------------------------------------------- |
-| **Default target**    | `origin/main` — always                                                                       |
-| **Before push**       | `git pull --rebase origin main` → resolve conflicts → re-run typecheck                       |
-| **Commit style**      | Conventional Commits: `<type>(<scope>): <description>`                                       |
-| **No force push**     | NEVER `git push --force`                                                                     |
-| **No stale branches** | If a branch exists from a prior session, note it on Collab Board — don't silently abandon it |
-| **Red build**         | A failing build is NEVER pushed to main                                                      |
+| Rule                      | Detail                                                                                                                                                    |
+| :------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Default target**        | `origin/v1.0` — keep `main` and `v1.0` in sync until product launch                                                                                       |
+| **Disable branch delete** | Strict disable-branch-delete policy on both `v1.0` and `main` — neither may ever be deleted                                                               |
+| **Husky pre-checks**      | Pre-commit (`lint-staged`, `foundation:check`, `architecture:check`) & Pre-push (`lint`, `typecheck`, `foundation:check`, `architecture:check`) must pass |
+| **Before push**           | `git pull --rebase origin v1.0` → resolve conflicts → run Husky pre-checks                                                                                |
+| **Commit style**          | Conventional Commits: `<type>(<scope>): <description>`                                                                                                    |
+| **No force push**         | NEVER `git push --force`                                                                                                                                  |
+| **No side branches**      | Work directly on `v1.0`; purge all other branches                                                                                                         |
+| **Red build / CI fail**   | Failing tests, lint, or typecheck is NEVER pushed                                                                                                         |
 
 ### 10.2 Commit Convention
 

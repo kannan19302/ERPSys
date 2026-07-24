@@ -1,10 +1,19 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { Card, Button, Spinner, Modal, FormField, Input, Select, useToast } from '@unerp/ui';
-import { Plus, Calendar, Globe } from 'lucide-react';
-import { useApiClient } from '@unerp/framework';
-import styles from './HolidaysTab.module.css';
+import React, { useState, useEffect } from "react";
+import {
+  Card,
+  Button,
+  Spinner,
+  Modal,
+  FormField,
+  Input,
+  Select,
+  useToast,
+} from "@unerp/ui";
+import { Plus, Calendar, Globe, AlertTriangle } from "lucide-react";
+import { useApiClient } from "@unerp/framework";
+import styles from "./HolidaysTab.module.css";
 
 interface Holiday {
   id: string;
@@ -17,17 +26,26 @@ export default function HolidaysTab() {
   const client = useApiClient();
   const [holidays, setHolidays] = useState<Holiday[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const toast = useToast();
 
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: '', date: '', region: 'GLOBAL' });
+  const [form, setForm] = useState({ name: "", date: "", region: "GLOBAL" });
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const data = await client.get<Holiday[] | { data?: Holiday[] }>('/advanced-hr/holidays');
-      setHolidays(Array.isArray(data) ? data : (data.data || []));
-    } catch {} finally {
+      const data = await client.get<Holiday[] | { data?: Holiday[] }>(
+        "/advanced-hr/holidays",
+      );
+      setHolidays(Array.isArray(data) ? data : data.data || []);
+      setLoadError(null);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load holidays";
+      setLoadError(message);
+      toast.error("Failed to load holidays", message);
+    } finally {
       setLoading(false);
     }
   };
@@ -39,21 +57,36 @@ export default function HolidaysTab() {
   const handleCreateHoliday = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await client.post('/advanced-hr/holidays', form);
-      toast.success('Holiday added successfully.');
+      await client.post("/advanced-hr/holidays", form);
+      toast.success("Holiday added successfully.");
       setShowForm(false);
-      setForm({ name: '', date: '', region: 'GLOBAL' });
+      setForm({ name: "", date: "", region: "GLOBAL" });
       fetchData();
-    } catch {}
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to add holiday";
+      toast.error("Failed to add holiday", message);
+    }
   };
 
   return (
     <div className="ui-stack-6">
       <div className="ui-flex-end">
-        <Button variant="primary" onClick={() => setShowForm(true)} className="ui-flex ui-items-center ui-gap-1">
+        <Button
+          variant="primary"
+          onClick={() => setShowForm(true)}
+          className="ui-flex ui-items-center ui-gap-1"
+        >
           <Plus size={14} /> Add Public Holiday
         </Button>
       </div>
+
+      {loadError && (
+        <div className="ui-alert ui-alert-danger">
+          <AlertTriangle size={16} />
+          {loadError}
+        </div>
+      )}
 
       {loading ? (
         <div className="ui-center-pad">
@@ -73,17 +106,23 @@ export default function HolidaysTab() {
               {holidays.length === 0 ? (
                 <tr>
                   <td colSpan={3} className={styles.s3}>
-                    No public holidays registered. Set holidays to exclude them from leave calculations.
+                    No public holidays registered. Set holidays to exclude them
+                    from leave calculations.
                   </td>
                 </tr>
               ) : (
-                holidays.map(h => (
+                holidays.map((h) => (
                   <tr key={h.id} className="border-b">
                     <td className={styles.s4}>{h.name}</td>
                     <td className="p-4">
                       <div className={styles.s5}>
                         <Calendar size={14} className="text-muted-foreground" />
-                        {new Date(h.date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                        {new Date(h.date).toLocaleDateString(undefined, {
+                          weekday: "long",
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
                       </div>
                     </td>
                     <td className={styles.s6}>
@@ -100,18 +139,44 @@ export default function HolidaysTab() {
         </Card>
       )}
 
-      <Modal open={showForm} onClose={() => setShowForm(false)} title="Add Public Holiday"
-        footer={<><Button variant="secondary" onClick={() => setShowForm(false)}>Cancel</Button><Button variant="primary" onClick={handleCreateHoliday as any}>Save Holiday</Button></>}
+      <Modal
+        open={showForm}
+        onClose={() => setShowForm(false)}
+        title="Add Public Holiday"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setShowForm(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={handleCreateHoliday as any}>
+              Save Holiday
+            </Button>
+          </>
+        }
       >
         <form onSubmit={handleCreateHoliday} className="ui-stack-3">
           <FormField label="Holiday Name" required>
-            <Input placeholder="e.g. New Year's Day" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required />
+            <Input
+              placeholder="e.g. New Year's Day"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              required
+            />
           </FormField>
           <FormField label="Date" required>
-            <Input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} required />
+            <Input
+              type="date"
+              value={form.date}
+              onChange={(e) => setForm({ ...form, date: e.target.value })}
+              required
+            />
           </FormField>
           <FormField label="Region" required>
-            <Select value={form.region} onChange={e => setForm({ ...form, region: e.target.value })} required>
+            <Select
+              value={form.region}
+              onChange={(e) => setForm({ ...form, region: e.target.value })}
+              required
+            >
               <option value="GLOBAL">Global</option>
               <option value="US">United States (US)</option>
               <option value="CA">Canada (CA)</option>
@@ -123,4 +188,3 @@ export default function HolidaysTab() {
     </div>
   );
 }
-

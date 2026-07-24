@@ -14,6 +14,7 @@ import {
   FormField,
   Select,
   KPICard,
+  useToast,
 } from "@unerp/ui";
 import {
   Receipt,
@@ -24,6 +25,7 @@ import {
   ShieldAlert,
   Trash2,
   ListFilter,
+  AlertTriangle,
 } from "lucide-react";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 import { SubTabBar, type SubTab } from "@unerp/ui-layout";
@@ -70,8 +72,10 @@ const statusVariant = (
 
 export default function ExpenseManagementPage() {
   const client = useApiClient();
+  const { error: notifyError } = useToast();
   const [reports, setReports] = useState<ExpenseReport[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [detailReport, setDetailReport] = useState<ExpenseReport | null>(null);
   const searchParams = useSearchParams();
@@ -101,11 +105,16 @@ export default function ExpenseManagementPage() {
         ExpenseReport[] | { data?: ExpenseReport[] }
       >("/advanced-finance/expense-reports");
       setReports(Array.isArray(data) ? data : data.data || []);
-    } catch {
+      setLoadError(null);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load expense reports";
+      setLoadError(message);
+      notifyError("Failed to load expense reports", message);
     } finally {
       setLoading(false);
     }
-  }, [client]);
+  }, [client, notifyError]);
 
   useEffect(() => {
     load();
@@ -151,7 +160,11 @@ export default function ExpenseManagementPage() {
       setNewDescription("");
       setNewEmployeeId("");
       await load();
-    } catch {
+    } catch (err) {
+      notifyError(
+        "Failed to create expense report",
+        err instanceof Error ? err.message : undefined,
+      );
     } finally {
       setSubmitting(false);
     }
@@ -178,7 +191,11 @@ export default function ExpenseManagementPage() {
         if (data.extracted.suggestedCategory)
           setItemCategory(data.extracted.suggestedCategory);
       }
-    } catch {
+    } catch (err) {
+      notifyError(
+        "OCR scan failed",
+        err instanceof Error ? err.message : undefined,
+      );
     } finally {
       setOcrScanning(false);
     }
@@ -205,7 +222,12 @@ export default function ExpenseManagementPage() {
       setOcrText("");
       await refreshDetail(detailReport.id);
       await load();
-    } catch {}
+    } catch (err) {
+      notifyError(
+        "Failed to add expense item",
+        err instanceof Error ? err.message : undefined,
+      );
+    }
   };
 
   const deleteItem = async (itemId: string) => {
@@ -214,7 +236,12 @@ export default function ExpenseManagementPage() {
       await client.delete(`/advanced-finance/expense-items/${itemId}`);
       await refreshDetail(detailReport.id);
       await load();
-    } catch {}
+    } catch (err) {
+      notifyError(
+        "Failed to delete expense item",
+        err instanceof Error ? err.message : undefined,
+      );
+    }
   };
 
   const doAction = async (
@@ -225,7 +252,12 @@ export default function ExpenseManagementPage() {
       await client.post(`/advanced-finance/expense-reports/${id}/${action}`);
       await load();
       if (detailReport?.id === id) await refreshDetail(id);
-    } catch {}
+    } catch (err) {
+      notifyError(
+        "Action failed",
+        err instanceof Error ? err.message : undefined,
+      );
+    }
   };
 
   const columns: Column<ExpenseReport>[] = [
@@ -397,6 +429,14 @@ export default function ExpenseManagementPage() {
             ] as SubTab[]
           }
         />
+
+        {loadError && (
+          <div className="ui-alert ui-alert-danger">
+            <AlertTriangle size={16} />
+            Failed to load expense reports — data below may be stale.{" "}
+            {loadError}
+          </div>
+        )}
 
         <Card padding="none">
           <DataTable

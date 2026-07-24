@@ -9,6 +9,7 @@ All registered modules (see .ai/MODULE_REGISTRY.md dashboard) across phases 0–
 2. Read `AGENTS.md` for all critical project rules.
 3. Read `.ai/HANDBOOK.md#coding-conventions` for naming, UI, and TypeScript patterns.
 4. Read `.ai/ARCHITECTURE_FOUNDATION.md`. Foundation SEALED v1.0 (2026-07-18): the freeze is lifted, and its 8 non-negotiable rules are permanent sealed contracts (changing one requires an ADR).
+5. Work directly on `v1.0` (single active branch policy). Keep `v1.0` and `main` in sync and protected from deletion. Verify Husky pre-checks (`pre-commit` and `pre-push`) pass cleanly before pushing.
 
 ## Mandatory Tracking Convention — The 3-File System
 

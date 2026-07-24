@@ -1,10 +1,21 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { Card, StatusBadge, Button, Spinner, Modal, FormField, Input, Select, Textarea, useToast } from '@unerp/ui';
-import { HelpCircle, Plus, Check } from 'lucide-react';
-import { useApiClient } from '@unerp/framework';
-import styles from './HelpdeskTab.module.css';
+import React, { useState, useEffect } from "react";
+import {
+  Card,
+  StatusBadge,
+  Button,
+  Spinner,
+  Modal,
+  FormField,
+  Input,
+  Select,
+  Textarea,
+  useToast,
+} from "@unerp/ui";
+import { HelpCircle, Plus, Check, AlertTriangle } from "lucide-react";
+import { useApiClient } from "@unerp/framework";
+import styles from "./HelpdeskTab.module.css";
 
 interface HRTicket {
   id: string;
@@ -30,14 +41,21 @@ export default function HelpdeskTab() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const toast = useToast();
 
   // Form states
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ employeeId: '', category: 'PAYROLL', title: '', description: '', priority: 'MEDIUM' });
+  const [form, setForm] = useState({
+    employeeId: "",
+    category: "PAYROLL",
+    title: "",
+    description: "",
+    priority: "MEDIUM",
+  });
 
-  const [selectedTicketId, setSelectedTicketId] = useState('');
-  const [resolution, setResolution] = useState('');
+  const [selectedTicketId, setSelectedTicketId] = useState("");
+  const [resolution, setResolution] = useState("");
 
   useEffect(() => {
     fetchData();
@@ -47,12 +65,22 @@ export default function HelpdeskTab() {
     setLoading(true);
     try {
       const [ticketsData, employeesData] = await Promise.all([
-        client.get<HRTicket[] | { data?: HRTicket[] }>('/advanced-hr/tickets'),
-        client.get<Employee[] | { data?: Employee[] }>('/hr/employees'),
+        client.get<HRTicket[] | { data?: HRTicket[] }>("/advanced-hr/tickets"),
+        client.get<Employee[] | { data?: Employee[] }>("/hr/employees"),
       ]);
-      setTickets(Array.isArray(ticketsData) ? ticketsData : (ticketsData.data || []));
-      setEmployees(Array.isArray(employeesData) ? employeesData : (employeesData.data || []));
-    } catch {} finally {
+      setTickets(
+        Array.isArray(ticketsData) ? ticketsData : ticketsData.data || [],
+      );
+      setEmployees(
+        Array.isArray(employeesData) ? employeesData : employeesData.data || [],
+      );
+      setLoadError(null);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load helpdesk tickets";
+      setLoadError(message);
+      toast.error("Failed to load helpdesk tickets", message);
+    } finally {
       setLoading(false);
     }
   };
@@ -61,13 +89,19 @@ export default function HelpdeskTab() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      await client.post('/advanced-hr/tickets', form);
-      toast.success('Ticket registered successfully.');
+      await client.post("/advanced-hr/tickets", form);
+      toast.success("Ticket registered successfully.");
       setShowForm(false);
-      setForm({ employeeId: '', category: 'PAYROLL', title: '', description: '', priority: 'MEDIUM' });
+      setForm({
+        employeeId: "",
+        category: "PAYROLL",
+        title: "",
+        description: "",
+        priority: "MEDIUM",
+      });
       fetchData();
     } catch {
-      toast.error('Error submitting ticket.');
+      toast.error("Error submitting ticket.");
     } finally {
       setSubmitting(false);
     }
@@ -79,22 +113,22 @@ export default function HelpdeskTab() {
     setSubmitting(true);
     try {
       await client.request(`/advanced-hr/tickets/${selectedTicketId}/resolve`, {
-        method: 'PUT',
+        method: "PUT",
         body: JSON.stringify({ resolution }),
       });
-      toast.success('Ticket marked as resolved.');
-      setSelectedTicketId('');
-      setResolution('');
+      toast.success("Ticket marked as resolved.");
+      setSelectedTicketId("");
+      setResolution("");
       fetchData();
     } catch {
-      toast.error('Error resolving ticket.');
+      toast.error("Error resolving ticket.");
     } finally {
       setSubmitting(false);
     }
   };
 
   const getEmpName = (id: string) => {
-    const emp = employees.find(e => e.id === id);
+    const emp = employees.find((e) => e.id === id);
     return emp ? `${emp.firstName} ${emp.lastName}` : id;
   };
 
@@ -106,21 +140,38 @@ export default function HelpdeskTab() {
         </Button>
       </div>
 
+      {loadError && (
+        <div className="ui-alert ui-alert-danger">
+          <AlertTriangle size={16} />
+          {loadError}
+        </div>
+      )}
+
       {selectedTicketId && (
         <Card padding="md">
-          <h4 className={styles.s0}>Resolve Ticket #{selectedTicketId.substring(0, 8)}</h4>
+          <h4 className={styles.s0}>
+            Resolve Ticket #{selectedTicketId.substring(0, 8)}
+          </h4>
           <form onSubmit={resolveTicket} className="ui-stack-3">
             <textarea
               className="ui-input"
               placeholder="Resolution details notes..."
               value={resolution}
-              onChange={e => setResolution(e.target.value)}
+              onChange={(e) => setResolution(e.target.value)}
               rows={3}
               required
             />
             <div className="ui-flex-end ui-gap-2">
-              <Button variant="outline" type="button" onClick={() => setSelectedTicketId('')}>Cancel</Button>
-              <Button variant="primary" type="submit" disabled={submitting}>Resolve</Button>
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => setSelectedTicketId("")}
+              >
+                Cancel
+              </Button>
+              <Button variant="primary" type="submit" disabled={submitting}>
+                Resolve
+              </Button>
             </div>
           </form>
         </Card>
@@ -140,23 +191,38 @@ export default function HelpdeskTab() {
               </div>
             </Card>
           ) : (
-            tickets.map(t => (
+            tickets.map((t) => (
               <Card key={t.id} padding="md">
                 <div className={styles.s3}>
                   <div>
                     <h4 className="m-0">{t.title}</h4>
                     <span className="ui-text-caption">
-                      Filer: {getEmpName(t.employeeId)} • Category: {t.category} • Created: {new Date(t.createdAt).toLocaleDateString()}
+                      Filer: {getEmpName(t.employeeId)} • Category: {t.category}{" "}
+                      • Created: {new Date(t.createdAt).toLocaleDateString()}
                     </span>
                   </div>
                   <div className={styles.s4}>
-                    <span className={styles.dyn0} style={{ background: t.priority === 'HIGH' ? 'var(--color-danger-light)' : 'var(--color-bg-sunken)', color: t.priority === 'HIGH' ? 'var(--color-danger-text)' : 'inherit' }}>{t.priority}</span>
+                    <span
+                      className={styles.dyn0}
+                      style={{
+                        background:
+                          t.priority === "HIGH"
+                            ? "var(--color-danger-light)"
+                            : "var(--color-bg-sunken)",
+                        color:
+                          t.priority === "HIGH"
+                            ? "var(--color-danger-text)"
+                            : "inherit",
+                      }}
+                    >
+                      {t.priority}
+                    </span>
                     <StatusBadge status={t.status} />
                   </div>
                 </div>
 
                 <p className={styles.s5}>
-                  {t.description || 'No description summary provided.'}
+                  {t.description || "No description summary provided."}
                 </p>
 
                 {t.resolution && (
@@ -166,9 +232,13 @@ export default function HelpdeskTab() {
                   </div>
                 )}
 
-                {t.status === 'OPEN' && (
+                {t.status === "OPEN" && (
                   <div className={styles.s9}>
-                    <Button variant="outline" size="sm" onClick={() => setSelectedTicketId(t.id)}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedTicketId(t.id)}
+                    >
                       <Check size={12} /> Mark Resolved
                     </Button>
                   </div>
@@ -179,22 +249,47 @@ export default function HelpdeskTab() {
         </div>
       )}
 
-      <Modal open={showForm} onClose={() => setShowForm(false)} title="Record Employee Query Ticket"
-        footer={<><Button variant="outline" onClick={() => setShowForm(false)}>Cancel</Button><Button variant="primary" onClick={createTicket as any} disabled={submitting}>File Ticket</Button></>}
+      <Modal
+        open={showForm}
+        onClose={() => setShowForm(false)}
+        title="Record Employee Query Ticket"
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setShowForm(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={createTicket as any}
+              disabled={submitting}
+            >
+              File Ticket
+            </Button>
+          </>
+        }
       >
         <form onSubmit={createTicket} className="ui-stack-3">
           <FormField label="Employee" required>
-            <Select value={form.employeeId} onChange={e => setForm({ ...form, employeeId: e.target.value })} required>
+            <Select
+              value={form.employeeId}
+              onChange={(e) => setForm({ ...form, employeeId: e.target.value })}
+              required
+            >
               <option value="">Select Employee</option>
-              {employees.map(e => (
-                <option key={e.id} value={e.id}>{e.firstName} {e.lastName}</option>
+              {employees.map((e) => (
+                <option key={e.id} value={e.id}>
+                  {e.firstName} {e.lastName}
+                </option>
               ))}
             </Select>
           </FormField>
 
           <div className="ui-grid-2 ui-gap-3">
             <FormField label="Category">
-              <Select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>
+              <Select
+                value={form.category}
+                onChange={(e) => setForm({ ...form, category: e.target.value })}
+              >
                 <option value="PAYROLL">Payroll / Salaries</option>
                 <option value="BENEFITS">Benefits & Perks</option>
                 <option value="RELATIONS">Workplace Relations</option>
@@ -203,7 +298,10 @@ export default function HelpdeskTab() {
               </Select>
             </FormField>
             <FormField label="Priority">
-              <Select value={form.priority} onChange={e => setForm({ ...form, priority: e.target.value })}>
+              <Select
+                value={form.priority}
+                onChange={(e) => setForm({ ...form, priority: e.target.value })}
+              >
                 <option value="LOW">Low Priority</option>
                 <option value="MEDIUM">Medium Priority</option>
                 <option value="HIGH">High Priority</option>
@@ -211,16 +309,26 @@ export default function HelpdeskTab() {
             </FormField>
           </div>
           <FormField label="Subject" required>
-            <Input placeholder="Brief summary subject" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} required />
+            <Input
+              placeholder="Brief summary subject"
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              required
+            />
           </FormField>
 
           <FormField label="Details">
-            <Textarea placeholder="Provide exact details for the request..." value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} />
+            <Textarea
+              placeholder="Provide exact details for the request..."
+              value={form.description}
+              onChange={(e) =>
+                setForm({ ...form, description: e.target.value })
+              }
+              rows={3}
+            />
           </FormField>
         </form>
       </Modal>
     </div>
   );
 }
-
-

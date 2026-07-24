@@ -22,6 +22,7 @@ import {
   PageHeader,
   ListPageTemplate,
   type ListColumn,
+  useToast,
 } from "@unerp/ui";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
@@ -83,6 +84,7 @@ const reportMeta: Record<
 
 export default function AdvancedReportsPage() {
   const client = useApiClient();
+  const { error: notifyError } = useToast();
   const [activeReport, setActiveReport] = useState<ReportType>("pnl");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -97,6 +99,7 @@ export default function AdvancedReportsPage() {
   const [agingType, setAgingType] = useState<"AR" | "AP">("AR");
   const [bookId, setBookId] = useState("");
   const [books, setBooks] = useState<AccountingBook[]>([]);
+  const [booksError, setBooksError] = useState<string | null>(null);
 
   // Fetch accounting books for filtering
   React.useEffect(() => {
@@ -107,10 +110,18 @@ export default function AdvancedReportsPage() {
             "/advanced-finance/accounting-books",
           ),
         );
-      } catch {}
+        setBooksError(null);
+      } catch (err) {
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Failed to load accounting books";
+        setBooksError(message);
+        notifyError("Failed to load accounting books", message);
+      }
     };
     fetchBooks();
-  }, [client]);
+  }, [client, notifyError]);
 
   const buildUrl = useCallback(() => {
     const base = "/advanced-finance/reports";
@@ -777,6 +788,14 @@ export default function AdvancedReportsPage() {
             </div>
           }
         />
+
+        {booksError && (
+          <div className="ui-alert ui-alert-danger">
+            <AlertCircle className="h-4 w-4" />
+            Failed to load accounting books — only the primary book is
+            available. {booksError}
+          </div>
+        )}
 
         <div className={styles.s22}>
           {/* Left Sidebar — Report Selector */}

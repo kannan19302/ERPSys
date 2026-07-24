@@ -1,10 +1,16 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { Card, Button, Spinner, useToast } from '@unerp/ui';
-import { Play, ShieldAlert, CheckCircle, AlertTriangle, RefreshCw } from 'lucide-react';
-import { useApiClient } from '@unerp/framework';
-import styles from './ComplianceTab.module.css';
+import React, { useState, useEffect } from "react";
+import { Card, Button, Spinner, useToast } from "@unerp/ui";
+import {
+  Play,
+  ShieldAlert,
+  CheckCircle,
+  AlertTriangle,
+  RefreshCw,
+} from "lucide-react";
+import { useApiClient } from "@unerp/framework";
+import styles from "./ComplianceTab.module.css";
 
 interface ComplianceCheck {
   id: string;
@@ -19,14 +25,23 @@ export default function ComplianceTab() {
   const [checks, setChecks] = useState<ComplianceCheck[]>([]);
   const [loading, setLoading] = useState(false);
   const [scanning, setScanning] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const toast = useToast();
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const data = await client.get<ComplianceCheck[] | { data?: ComplianceCheck[] }>('/advanced-hr/compliance/checks');
-      setChecks(Array.isArray(data) ? data : (data.data || []));
-    } catch {} finally {
+      const data = await client.get<
+        ComplianceCheck[] | { data?: ComplianceCheck[] }
+      >("/advanced-hr/compliance/checks");
+      setChecks(Array.isArray(data) ? data : data.data || []);
+      setLoadError(null);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load compliance checks";
+      setLoadError(message);
+      toast.error("Failed to load compliance checks", message);
+    } finally {
       setLoading(false);
     }
   };
@@ -38,26 +53,38 @@ export default function ComplianceTab() {
   const handleRunAudit = async () => {
     setScanning(true);
     try {
-      const data = await client.post<ComplianceCheck[] | { data?: ComplianceCheck[] }>('/advanced-hr/compliance/run-checks');
-      toast.success('Compliance audit executed successfully.');
-      setChecks(Array.isArray(data) ? data : (data.data || []));
+      const data = await client.post<
+        ComplianceCheck[] | { data?: ComplianceCheck[] }
+      >("/advanced-hr/compliance/run-checks");
+      toast.success("Compliance audit executed successfully.");
+      setChecks(Array.isArray(data) ? data : data.data || []);
     } catch {
-      toast.error('Audit execution error.');
+      toast.error("Audit execution error.");
     } finally {
       setScanning(false);
     }
   };
 
   // Status counters
-  const failures = checks.filter(c => c.status === 'FAILED').length;
-  const warnings = checks.filter(c => c.status === 'WARNING').length;
-  const passed = checks.filter(c => c.status === 'PASSED').length;
+  const failures = checks.filter((c) => c.status === "FAILED").length;
+  const warnings = checks.filter((c) => c.status === "WARNING").length;
+  const passed = checks.filter((c) => c.status === "PASSED").length;
 
   return (
     <div className="ui-stack-6">
       <div className="ui-flex-end">
-        <Button variant="primary" onClick={handleRunAudit} disabled={scanning} className={styles.s0}>
-          {scanning ? <RefreshCw className="animate-spin" size={14} /> : <Play size={14} />} Run Compliance Scanner
+        <Button
+          variant="primary"
+          onClick={handleRunAudit}
+          disabled={scanning}
+          className={styles.s0}
+        >
+          {scanning ? (
+            <RefreshCw className="animate-spin" size={14} />
+          ) : (
+            <Play size={14} />
+          )}{" "}
+          Run Compliance Scanner
         </Button>
       </div>
 
@@ -86,6 +113,13 @@ export default function ComplianceTab() {
         </Card>
       </div>
 
+      {loadError && (
+        <div className="ui-alert ui-alert-danger">
+          <AlertTriangle size={16} />
+          {loadError}
+        </div>
+      )}
+
       {loading ? (
         <div className="ui-center-pad">
           <Spinner size="lg" />
@@ -105,20 +139,41 @@ export default function ComplianceTab() {
               {checks.length === 0 ? (
                 <tr>
                   <td colSpan={4} className={styles.s10}>
-                    No compliance records logged. Trigger a scan above to audit employee profiles.
+                    No compliance records logged. Trigger a scan above to audit
+                    employee profiles.
                   </td>
                 </tr>
               ) : (
-                checks.map(c => (
+                checks.map((c) => (
                   <tr key={c.id} className="border-b">
-                    <td className={styles.s11}>{c.checkType.replace('_', ' ')}</td>
+                    <td className={styles.s11}>
+                      {c.checkType.replace("_", " ")}
+                    </td>
                     <td className="p-4">{c.message}</td>
                     <td className="p-4">
-                      <span className={styles.dyn0} style={{ background: c.status === 'PASSED' ? 'var(--color-success-light)' : c.status === 'WARNING' ? 'var(--color-warning-light)' : 'var(--color-danger-light)', color: c.status === 'PASSED' ? 'var(--color-success-text)' : c.status === 'WARNING' ? 'var(--color-warning-text)' : 'var(--color-danger-text)' }}>
+                      <span
+                        className={styles.dyn0}
+                        style={{
+                          background:
+                            c.status === "PASSED"
+                              ? "var(--color-success-light)"
+                              : c.status === "WARNING"
+                                ? "var(--color-warning-light)"
+                                : "var(--color-danger-light)",
+                          color:
+                            c.status === "PASSED"
+                              ? "var(--color-success-text)"
+                              : c.status === "WARNING"
+                                ? "var(--color-warning-text)"
+                                : "var(--color-danger-text)",
+                        }}
+                      >
                         {c.status}
                       </span>
                     </td>
-                    <td className={styles.s12}>{new Date(c.checkedAt).toLocaleString()}</td>
+                    <td className={styles.s12}>
+                      {new Date(c.checkedAt).toLocaleString()}
+                    </td>
                   </tr>
                 ))
               )}
@@ -129,6 +184,3 @@ export default function ComplianceTab() {
     </div>
   );
 }
-
-
-

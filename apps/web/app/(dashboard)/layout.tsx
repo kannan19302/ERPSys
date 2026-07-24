@@ -491,7 +491,12 @@ export default function DashboardLayout({
   const handleLogout = async () => {
     try {
       await client.post("/auth/logout");
-    } catch {}
+    } catch (e) {
+      // Non-blocking: the user is leaving the app either way, so we still
+      // navigate to /login below. Logged so a server-side session-revoke
+      // failure isn't invisible to developers.
+      console.warn("Server-side logout call failed", e);
+    }
     router.push("/login");
   };
 

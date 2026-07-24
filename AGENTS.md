@@ -242,6 +242,26 @@ another agent's in-flight work.
 
 ---
 
+## 🌿 Git Branch & Husky Pre-Check Policy (Mandatory)
+
+1. **Single Branch (`v1.0`) Development**:
+   - All active development work across all AI agents and contributors MUST occur directly on branch `v1.0`.
+   - Do NOT create side branches, fix branches, or worktree feature branches.
+   - All work is committed and pushed directly to `v1.0` (`git pull --rebase origin v1.0` → `git push origin v1.0`).
+   - Once all development is finished, `v1.0` will be merged/pushed to `main`.
+
+2. **Disable Branch Delete & Branch Synchronization**:
+   - Both `main` and `v1.0` have a strict **DISABLE BRANCH DELETE** policy. Neither `main` nor `v1.0` may ever be deleted.
+   - Keep `main` and `v1.0` synchronized at all times.
+   - Only `main` and `v1.0` are permitted to exist in the repository; all other branches are purged.
+
+3. **Mandatory Husky Pre-Checks & Production-Grade CI Standard**:
+   - Every commit triggers Husky pre-commit hooks (`lint-staged`, `pnpm foundation:check`, `pnpm architecture:check`).
+   - Every push triggers Husky pre-push hooks (`pnpm lint`, `pnpm typecheck`, `pnpm foundation:check`, `pnpm architecture:check`).
+   - AI agents MUST strictly verify all Husky pre-checks pass cleanly before pushing to guarantee CI never fails and the repository remains production-grade.
+
+---
+
 ## 🤖 Role-Based Subagent Team
 
 This project ships a team of specialized subagents in [`.claude/agents/`](.claude/agents/). Each acts as a domain expert and is expected to **read this `AGENTS.md` and the relevant `.ai/` files first** (subagents do not auto-inherit this context). Delegate to the right role instead of doing everything in one thread:

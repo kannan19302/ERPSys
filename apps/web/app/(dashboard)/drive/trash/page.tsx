@@ -7,6 +7,7 @@ import {
   type Column,
   Button,
   Spinner,
+  useToast,
 } from "@unerp/ui";
 import { useApiClient } from "@unerp/framework";
 import {
@@ -29,6 +30,8 @@ export default function TrashPage() {
   const client = useApiClient();
   const [items, setItems] = useState<TrashItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const { error: notifyError } = useToast();
 
   useEffect(() => {
     Promise.all([
@@ -45,16 +48,28 @@ export default function TrashPage() {
           type: "folder",
         }));
         setItems([...folders, ...files]);
+        setLoadError(null);
       })
-      .catch(() => {})
+      .catch((e) => {
+        // Distinct error state — a failed fetch must never render as
+        // "Trash is empty", which is a different, valid condition.
+        const message = e instanceof Error ? e.message : "Failed to load trash";
+        setLoadError(message);
+        notifyError("Failed to load trash", message);
+      })
       .finally(() => setLoading(false));
-  }, [client]);
+  }, [client, notifyError]);
 
   const handleRestore = async (id: string, type: string) => {
     try {
       await client.request(`/drive/${type}s/${id}/restore`, { method: "POST" });
       setItems((prev) => prev.filter((i) => i.id !== id));
-    } catch {}
+    } catch (e) {
+      notifyError(
+        "Failed to restore item",
+        e instanceof Error ? e.message : undefined,
+      );
+    }
   };
 
   const columns: Column<TrashItem>[] = [
@@ -128,6 +143,7 @@ export default function TrashPage() {
           Items in trash are automatically deleted after 30 days.
         </span>
       </div>
+      {loadError && <div className="ui-alert ui-alert-danger">{loadError}</div>}
       <Card padding="none">
         <DataTable
           columns={columns}

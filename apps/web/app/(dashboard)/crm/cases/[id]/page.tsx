@@ -1,14 +1,31 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import styles from './page.module.css';
-import { useParams, useRouter } from 'next/navigation';
-import { Card, Button, Modal, Badge, ChangeHistory, useToast } from '@unerp/ui';
-import { Clock, AlertTriangle, CheckCircle2, ArrowLeft, RefreshCw } from 'lucide-react';
-import { DetailView, FormView, RouteGuard, useApiClient } from '@unerp/framework';
-import { caseResource } from '@/modules/crm';
+import { useState, useEffect, useCallback } from "react";
+import styles from "./page.module.css";
+import { useParams, useRouter } from "next/navigation";
+import { Card, Button, Modal, Badge, ChangeHistory, useToast } from "@unerp/ui";
+import {
+  Clock,
+  AlertTriangle,
+  CheckCircle2,
+  ArrowLeft,
+  RefreshCw,
+} from "lucide-react";
+import {
+  DetailView,
+  FormView,
+  RouteGuard,
+  useApiClient,
+} from "@unerp/framework";
+import { caseResource } from "@/modules/crm";
 
-function TimeLeft({ deadline, label }: { deadline?: string | null; label: string }) {
+function TimeLeft({
+  deadline,
+  label,
+}: {
+  deadline?: string | null;
+  label: string;
+}) {
   if (!deadline) {
     return (
       <div className={styles.p20}>
@@ -20,15 +37,27 @@ function TimeLeft({ deadline, label }: { deadline?: string | null; label: string
   const remainingMs = new Date(deadline).getTime() - Date.now();
   const overdue = remainingMs < 0;
   const hoursLeft = remainingMs / (1000 * 60 * 60);
-  const color = overdue ? 'var(--color-danger)' : hoursLeft <= 4 ? 'var(--color-warning)' : 'var(--color-success)';
+  const color = overdue
+    ? "var(--color-danger)"
+    : hoursLeft <= 4
+      ? "var(--color-warning)"
+      : "var(--color-success)";
   const text = overdue
     ? `Overdue by ${Math.abs(Math.round(hoursLeft))}h`
-    : hoursLeft >= 24 ? `${Math.round(hoursLeft / 24)}d left` : `${Math.max(0, Math.round(hoursLeft))}h left`;
+    : hoursLeft >= 24
+      ? `${Math.round(hoursLeft / 24)}d left`
+      : `${Math.max(0, Math.round(hoursLeft))}h left`;
   return (
     <div className={styles.p21}>
       <span className="ui-text-muted">{label}</span>
       <span className={styles.p22}>
-        {new Date(deadline).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })} · {text}
+        {new Date(deadline).toLocaleString(undefined, {
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })}{" "}
+        · {text}
       </span>
     </div>
   );
@@ -44,13 +73,20 @@ export default function CaseDetailPage() {
   const [ticket, setTicket] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showEdit, setShowEdit] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const fetchTicket = useCallback(async () => {
     try {
       const data = await client.get(`/crm/cases/${id}`);
       setTicket(data);
-    } catch {}
-  }, [id, client]);
+      setFetchError(null);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load case.";
+      setFetchError(message);
+      error("Failed to load case.");
+    }
+  }, [id, client, error]);
 
   useEffect(() => {
     const init = async () => {
@@ -67,11 +103,11 @@ export default function CaseDetailPage() {
       success(`Ticket status set to: ${newStatus}`);
       fetchTicket();
     } catch {
-      error('Failed to change ticket status.');
+      error("Failed to change ticket status.");
     }
   };
 
-  if (loading || !ticket) {
+  if (loading) {
     return (
       <div className="ui-center-pad">
         <RefreshCw size={24} className="animate-spin" />
@@ -79,8 +115,25 @@ export default function CaseDetailPage() {
     );
   }
 
-  const isBreached = ticket.slaBreached
-    || (ticket.slaResolveBy && new Date(ticket.slaResolveBy) < new Date() && ticket.status !== 'RESOLVED' && ticket.status !== 'CLOSED');
+  if (!ticket) {
+    return (
+      <div className="ui-stack-4">
+        <div className="ui-alert ui-alert-danger">
+          <AlertTriangle size={16} />
+          {fetchError
+            ? `Failed to load case: ${fetchError}`
+            : "Case not found."}
+        </div>
+      </div>
+    );
+  }
+
+  const isBreached =
+    ticket.slaBreached ||
+    (ticket.slaResolveBy &&
+      new Date(ticket.slaResolveBy) < new Date() &&
+      ticket.status !== "RESOLVED" &&
+      ticket.status !== "CLOSED");
 
   return (
     <RouteGuard permission="crm.cases.read">
@@ -91,17 +144,29 @@ export default function CaseDetailPage() {
           onEdit={() => setShowEdit(true)}
           actions={
             <div className="ui-flex ui-gap-2">
-              {ticket.status === 'OPEN' && (
-                <Button variant="primary" size="sm" onClick={() => handleStatusChange('WORKING')}>
+              {ticket.status === "OPEN" && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => handleStatusChange("WORKING")}
+                >
                   Assign to Me
                 </Button>
               )}
-              {ticket.status !== 'RESOLVED' && ticket.status !== 'CLOSED' && (
-                <Button variant="outline" size="sm" onClick={() => handleStatusChange('RESOLVED')}>
+              {ticket.status !== "RESOLVED" && ticket.status !== "CLOSED" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleStatusChange("RESOLVED")}
+                >
                   Resolve Ticket
                 </Button>
               )}
-              <Button variant="outline" size="sm" onClick={() => router.push('/crm/cases')}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push("/crm/cases")}
+              >
                 <ArrowLeft size={14} className="mr-2" /> Back
               </Button>
             </div>
@@ -125,23 +190,35 @@ export default function CaseDetailPage() {
                     <Clock size={14} /> SLA Compliance
                   </h4>
                   {isBreached ? (
-                    <Badge variant="danger"><AlertTriangle size={10} className={styles.p27} /> Breached</Badge>
+                    <Badge variant="danger">
+                      <AlertTriangle size={10} className={styles.p27} />{" "}
+                      Breached
+                    </Badge>
                   ) : (
-                    <Badge variant="success"><CheckCircle2 size={10} className={styles.p28} /> On Track</Badge>
+                    <Badge variant="success">
+                      <CheckCircle2 size={10} className={styles.p28} /> On Track
+                    </Badge>
                   )}
                 </div>
                 <div className="ui-stack-3">
-                  <TimeLeft label="First Response by" deadline={ticket.slaFirstResponseBy} />
+                  <TimeLeft
+                    label="First Response by"
+                    deadline={ticket.slaFirstResponseBy}
+                  />
                   <TimeLeft label="Resolve by" deadline={ticket.slaResolveBy} />
                   {ticket.firstRespondedAt && (
                     <div className={styles.p29}>
                       <span className="ui-text-muted">Responded at</span>
-                      <span className="font-semibold">{new Date(ticket.firstRespondedAt).toLocaleString()}</span>
+                      <span className="font-semibold">
+                        {new Date(ticket.firstRespondedAt).toLocaleString()}
+                      </span>
                     </div>
                   )}
                   <div className={styles.p210}>
                     <span className="ui-text-muted">Opened at</span>
-                    <span className="font-semibold">{new Date(ticket.createdAt).toLocaleString()}</span>
+                    <span className="font-semibold">
+                      {new Date(ticket.createdAt).toLocaleString()}
+                    </span>
                   </div>
                 </div>
               </Card>
@@ -152,7 +229,11 @@ export default function CaseDetailPage() {
         </DetailView>
 
         {/* Edit Modal */}
-        <Modal open={showEdit} onClose={() => setShowEdit(false)} title="Edit Case">
+        <Modal
+          open={showEdit}
+          onClose={() => setShowEdit(false)}
+          title="Edit Case"
+        >
           <FormView
             resource={caseResource}
             id={id}

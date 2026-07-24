@@ -466,7 +466,12 @@ export default function ConnectPage() {
       const bms = await api.getBookmarks();
       setSavedMessages(bms);
       setBookmarks(new Set(bms.map((b) => b.id)));
-    } catch {}
+    } catch (e) {
+      toast.error(
+        "Failed to load saved messages",
+        e instanceof Error ? e.message : undefined,
+      );
+    }
   }, []);
 
   const loadMessages = useCallback(async (id: string) => {
@@ -2134,7 +2139,9 @@ export default function ConnectPage() {
                             ) : (
                               <span>
                                 {searchResults?.length ?? 0} result
-                                {(searchResults?.length ?? 0) === 1 ? "" : "s"}{" "}
+                                {(searchResults?.length ?? 0) === 1
+                                  ? ""
+                                  : "s"}{" "}
                                 in{" "}
                                 {activeConv.kind === "CHANNEL"
                                   ? `#${activeConv.name}`
@@ -3700,7 +3707,12 @@ export default function ConnectPage() {
               try {
                 await api.deleteEvent(id);
                 setCalendar(await api.events());
-              } catch {}
+              } catch (e) {
+                toast.error(
+                  "Failed to delete event",
+                  e instanceof Error ? e.message : undefined,
+                );
+              }
             }}
             onJoin={(ev) => {
               if (ev.meetingCode)
@@ -5799,20 +5811,35 @@ function RemindersPanel({ onClose }: { onClose: () => void }) {
     api
       .getReminders()
       .then(setReminders)
-      .catch(() => {});
+      .catch((e) => {
+        toast.error(
+          "Failed to load reminders",
+          e instanceof Error ? e.message : undefined,
+        );
+      });
   }, []);
   const del = async (id: string) => {
     try {
       await api.deleteReminder(id);
       setReminders((r) => r.filter((x) => x.id !== id));
-    } catch {}
+    } catch (e) {
+      toast.error(
+        "Failed to delete reminder",
+        e instanceof Error ? e.message : undefined,
+      );
+    }
   };
   const snooze = async (id: string) => {
     try {
       await api.snoozeReminder(id, 5);
       toast.success("Snoozed 5 min");
       api.getReminders().then(setReminders);
-    } catch {}
+    } catch (e) {
+      toast.error(
+        "Failed to snooze reminder",
+        e instanceof Error ? e.message : undefined,
+      );
+    }
   };
   return (
     <div
@@ -5954,7 +5981,12 @@ function EmojiManager({ onClose }: { onClose: () => void }) {
     try {
       await api.deleteCustomEmoji(id);
       setEmojis((e) => e.filter((x) => x.id !== id));
-    } catch {}
+    } catch (e) {
+      toast.error(
+        "Failed to delete emoji",
+        e instanceof Error ? e.message : undefined,
+      );
+    }
   };
   return (
     <div
@@ -6373,7 +6405,11 @@ function EphemeralBadge({
           try {
             await api.markMessageViewed(message.id);
             setViewed(true);
-          } catch {}
+          } catch (e) {
+            // Best-effort — the button just stays clickable so the user can
+            // retry; not worth an intrusive toast for a view-once reveal.
+            console.warn("Failed to mark view-once message as viewed", e);
+          }
         }}
         style={{
           marginLeft: "auto",

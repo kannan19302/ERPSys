@@ -182,10 +182,14 @@ must be actively watched every cycle:
    [CHANGELOG.md](CHANGELOG.md) (append-only history, newest first),
    [HANDBOOK.md](HANDBOOK.md) (how we build). Update REGISTRY + CHANGELOG in the
    **same commit** as the code — committing without them is forbidden.
-4. **Always push directly to `v1.0`.** Do NOT create feature branches. Gates
-   green → `git pull --rebase origin v1.0` → re-run scoped typecheck if code
-   moved → `git push origin v1.0`. Never end a run with shipped work stranded
-   on a branch. Never force-push. A red build is never pushed.
+4. **Always push directly to `v1.0` (Single Active Branch).** Do NOT create feature,
+   fix, or worktree side branches. `v1.0` and `main` have a strict **disable branch
+   delete policy** — neither may ever be deleted, and both must be kept in sync.
+   Run Husky pre-commit (`npx lint-staged`, `pnpm foundation:check`, `pnpm architecture:check`)
+   and pre-push (`pnpm lint`, `pnpm typecheck`, `pnpm foundation:check`, `pnpm architecture:check`)
+   checks. Gates green → `git pull --rebase origin v1.0` → `git push origin v1.0`.
+   Never end a run with shipped work stranded on a side branch. Never force-push.
+   A red build or failing Husky check is NEVER pushed. Keep repo production-grade at all times.
 5. **Multi-collaborator claims.** Before selecting scope: `node scripts/claim.mjs list`.
    Acquire an atomic lock for your sub-domain (`claim.mjs acquire <slug> --agent
 <name+session> --scope "<desc>"`), heartbeat it, release on ship. Never touch

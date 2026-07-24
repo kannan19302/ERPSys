@@ -2,6 +2,14 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-24] Single-Branch (`v1.0`) Development Policy, Husky Pre-Checks & CI Alignment
+
+- **Single Active Branch (`v1.0`) Strategy**: Configured repository governance across `AGENTS.md`, `.ai/AUTOPILOT.md`, `.ai/instructions.md`, and `.github/copilot-instructions.md` to mandate all AI agents and developers work directly on `v1.0`. Creating side/feature branches is prohibited.
+- **Disable Branch Delete Policy**: Established a strict non-deletion policy for both `v1.0` and `main` release branches, keeping them synchronized.
+- **Husky Pre-Check Integration**: Configured `.husky/pre-commit` (`lint-staged`, `foundation:check`, `architecture:check`) and `.husky/pre-push` (`lint`, `typecheck`, `foundation:check`, `architecture:check`) to gate all commits and pushes to guarantee production-grade repo quality.
+- **GitHub CI Alignment**: Updated `.github/workflows/ci.yml`, `codeql.yml`, and `release.yml` triggers to target both `main` and `v1.0`.
+- **Branch Clean-Up**: Consolidated git state so `v1.0` and `main` are synchronized, and purged temporary branch `v1` locally and on origin.
+
 ## [2026-07-24] Real sidebar flattening: Healthcare, Education
 
 Last 2 of 19 modules to be flattened — `apps/web/src/navigation/descriptors/healthcare.ts` (10 items, 3 `isHeader` groups) and `education.ts` (10 items, 3 `isHeader` groups) were the last remaining grouped descriptors. Both modules' pages were checked and found to be real, built pages (not thin/mocked placeholders) wired to `HealthcareTabLayout`/`EducationTabLayout` via `apps/web/app/(dashboard)/{healthcare,education}/layout.tsx`.

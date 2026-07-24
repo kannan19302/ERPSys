@@ -4,7 +4,7 @@ import { GenericBuilderModal } from "@/components/builder/GenericBuilderModal";
 
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { PageHeader, ConfirmDialog } from "@unerp/ui";
+import { PageHeader, ConfirmDialog, useToast } from "@unerp/ui";
 import { SubTabBar } from "@unerp/ui-layout";
 import { useApiClient } from "@unerp/framework";
 import {
@@ -133,6 +133,8 @@ function ERPLogicPageContent() {
   const [rules, setRules] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const { error: notifyError } = useToast();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
@@ -145,8 +147,11 @@ function ERPLogicPageContent() {
         await client.post("/builder/automation-rules", data);
       }
       fetchRules();
-    } catch {
-      /* ignore */
+    } catch (e) {
+      notifyError(
+        "Failed to save automation rule",
+        e instanceof Error ? e.message : undefined,
+      );
     }
     setIsModalOpen(false);
     setEditingItem(null);
@@ -164,8 +169,12 @@ function ERPLogicPageContent() {
     setLoading(true);
     try {
       setRules(await client.get("/builder/automation-rules"));
-    } catch {
-      /* ignore */
+      setLoadError(null);
+    } catch (e) {
+      const message =
+        e instanceof Error ? e.message : "Failed to load automation rules";
+      setLoadError(message);
+      notifyError("Failed to load automation rules", message);
     } finally {
       setLoading(false);
     }
@@ -182,7 +191,12 @@ function ERPLogicPageContent() {
         status: newStatus,
       });
       fetchRules();
-    } catch {}
+    } catch (e) {
+      notifyError(
+        "Failed to update rule status",
+        e instanceof Error ? e.message : undefined,
+      );
+    }
   };
 
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
@@ -191,7 +205,12 @@ function ERPLogicPageContent() {
     try {
       await client.delete(`/builder/automation-rules/${id}`);
       fetchRules();
-    } catch {}
+    } catch (e) {
+      notifyError(
+        "Failed to delete automation rule",
+        e instanceof Error ? e.message : undefined,
+      );
+    }
   };
 
   const handleSaveAndActivate = async () => {
@@ -205,14 +224,24 @@ function ERPLogicPageContent() {
       });
       fetchRules();
       router.push("/builder/erp/logic?subtab=rules");
-    } catch {}
+    } catch (e) {
+      notifyError(
+        "Failed to save and activate rule",
+        e instanceof Error ? e.message : undefined,
+      );
+    }
   };
 
   const handleTestRun = async (id: string) => {
     try {
       await client.post(`/builder/automation-rules/${id}/test`);
       alert("Test run triggered successfully");
-    } catch {}
+    } catch (e) {
+      notifyError(
+        "Test run failed",
+        e instanceof Error ? e.message : undefined,
+      );
+    }
   };
 
   const filtered = rules.filter(
@@ -277,6 +306,13 @@ function ERPLogicPageContent() {
           </div>
         ))}
       </div>
+
+      {loadError && (
+        <div className="ui-alert ui-alert-danger">
+          Failed to load automation rules — figures above may be stale.{" "}
+          {loadError}
+        </div>
+      )}
 
       {/* Tabs */}
       <SubTabBar tabs={LOGIC_SUB_TABS} />

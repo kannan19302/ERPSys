@@ -81,6 +81,7 @@ export default function AppDetailPage() {
 
   const [app, setApp] = useState<AppDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadAppError, setLoadAppError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<
     "overview" | "reviews" | "changelog" | "support"
   >("overview");
@@ -123,7 +124,14 @@ export default function AppDetailPage() {
       setApp(data);
       setAllReviews(data.reviews || []);
       setAllChangelogs(data.changelogs || []);
-    } catch {}
+      setLoadAppError(null);
+    } catch (e) {
+      // Distinct error state — a failed fetch must never render as the
+      // "App not found" empty state, which is a different, valid condition.
+      setLoadAppError(
+        e instanceof Error ? e.message : "Failed to load app details",
+      );
+    }
   }, [slug, client]);
 
   const loadInstallStatus = useCallback(async () => {
@@ -132,7 +140,11 @@ export default function AppDetailPage() {
         "/admin/marketplace/installed",
       );
       setIsInstalled(list.some((a) => a.appSlug === slug));
-    } catch {}
+    } catch (e) {
+      // Best-effort background flag — install button falls back to "Get"
+      // rather than misrepresenting install state as an error banner.
+      console.warn("Failed to load install status", e);
+    }
   }, [slug, client]);
 
   const loadFavStatus = useCallback(async () => {
@@ -141,7 +153,9 @@ export default function AppDetailPage() {
         "/admin/marketplace/favorites",
       );
       setIsFavorite(list.some((f) => f.app?.slug === slug));
-    } catch {}
+    } catch (e) {
+      console.warn("Failed to load favorite status", e);
+    }
   }, [slug, client]);
 
   useEffect(() => {
@@ -159,7 +173,12 @@ export default function AppDetailPage() {
         setAllReviews(data.reviews);
         setReviewTotal(data.total);
         setReviewPage(p);
-      } catch {}
+      } catch (e) {
+        showToast(
+          e instanceof Error ? e.message : "Failed to load reviews",
+          "error",
+        );
+      }
     },
     [slug, client],
   );
@@ -171,7 +190,12 @@ export default function AppDetailPage() {
           `/admin/marketplace/apps/${slug}/changelog`,
         ),
       );
-    } catch {}
+    } catch (e) {
+      showToast(
+        e instanceof Error ? e.message : "Failed to load changelog",
+        "error",
+      );
+    }
   }, [slug, client]);
 
   useEffect(() => {
@@ -218,7 +242,12 @@ export default function AppDetailPage() {
         await client.post(`/admin/marketplace/favorites/${slug}`);
         setIsFavorite(true);
       }
-    } catch {}
+    } catch (e) {
+      showToast(
+        e instanceof Error ? e.message : "Failed to update favorite",
+        "error",
+      );
+    }
   };
 
   const submitReview = async () => {
@@ -251,7 +280,9 @@ export default function AppDetailPage() {
           r.id === reviewId ? { ...r, helpfulCount: r.helpfulCount + 1 } : r,
         ),
       );
-    } catch {}
+    } catch (e) {
+      console.warn("Failed to mark review helpful", e);
+    }
   };
 
   const renderStars = (rating: number, size = 14) => {
@@ -294,6 +325,14 @@ export default function AppDetailPage() {
             <ArrowLeft size={20} /> App Store
           </Link>
         </div>
+        {loadAppError && (
+          <div
+            className="ui-alert ui-alert-danger"
+            style={{ margin: "var(--space-4)" }}
+          >
+            Failed to load app details. {loadAppError}
+          </div>
+        )}
         <div
           style={{
             textAlign: "center",
@@ -304,7 +343,7 @@ export default function AppDetailPage() {
           <h3
             style={{ margin: "0 0 var(--space-2)", color: "var(--color-text)" }}
           >
-            App not found
+            {loadAppError ? "Couldn't load this app" : "App not found"}
           </h3>
           <Link href="/apps/store" style={{ color: "var(--color-text-link)" }}>
             Back to App Store

@@ -7,8 +7,15 @@ import {
   TrendingUp,
   ShieldCheck,
   Loader2,
+  AlertTriangle,
 } from "lucide-react";
-import { Card, Button, ListPageTemplate, type ListColumn } from "@unerp/ui";
+import {
+  Card,
+  Button,
+  ListPageTemplate,
+  type ListColumn,
+  useToast,
+} from "@unerp/ui";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
 interface BankAccount {
@@ -36,10 +43,12 @@ interface TreasuryTransaction {
 
 export default function TreasuryPage() {
   const client = useApiClient();
+  const { error: notifyError } = useToast();
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [transactions, setTransactions] = useState<TreasuryTransaction[]>([]);
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const [showInvestmentForm, setShowInvestmentForm] = useState(false);
   const [showTransferForm, setShowTransferForm] = useState(false);
@@ -72,7 +81,12 @@ export default function TreasuryPage() {
       setPortfolios(portRes);
       setTransactions(transRes);
       setBankAccounts(bankRes);
-    } catch {
+      setLoadError(null);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load treasury data";
+      setLoadError(message);
+      notifyError("Failed to load treasury data", message);
     } finally {
       setLoading(false);
     }
@@ -97,7 +111,12 @@ export default function TreasuryPage() {
         });
         fetchData();
       }
-    } catch {}
+    } catch (err) {
+      notifyError(
+        "Failed to create investment",
+        err instanceof Error ? err.message : undefined,
+      );
+    }
   };
 
   const handleCreateTransfer = async (e: React.FormEvent) => {
@@ -121,7 +140,12 @@ export default function TreasuryPage() {
         });
         fetchData();
       }
-    } catch {}
+    } catch (err) {
+      notifyError(
+        "Failed to record treasury transaction",
+        err instanceof Error ? err.message : undefined,
+      );
+    }
   };
 
   if (loading)
@@ -154,6 +178,14 @@ export default function TreasuryPage() {
             </Button>
           </div>
         </div>
+
+        {loadError && (
+          <div className="ui-alert ui-alert-danger">
+            <AlertTriangle size={16} />
+            Failed to load treasury data — portfolios and transactions below may
+            be stale or empty. {loadError}
+          </div>
+        )}
 
         {showInvestmentForm && (
           <Card className="border-primary/20">

@@ -398,7 +398,11 @@ export function ProfileDirectorySection({
         const data = await client.get<any>(`/communication/presence/${uid}`);
         setPresence(data.presence);
         setVisibility(data.visibility);
-      } catch {}
+      } catch (e) {
+        // Best-effort — only feeds the presence dot on this card, so a
+        // failure here degrades gracefully rather than blocking the page.
+        console.warn("Failed to load presence", e);
+      }
     },
     [client],
   );

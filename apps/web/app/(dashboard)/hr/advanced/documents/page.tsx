@@ -1,10 +1,24 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, Button, Spinner, ListPageTemplate, type ListColumn } from '@unerp/ui';
-import { FileText, Plus, Calendar, Download } from 'lucide-react';
-import { useApiClient } from '@unerp/framework';
-import styles from './page.module.css';
+import React, { useState, useEffect } from "react";
+import {
+  Card,
+  PageHeader,
+  Button,
+  Spinner,
+  ListPageTemplate,
+  useToast,
+  type ListColumn,
+} from "@unerp/ui";
+import {
+  FileText,
+  Plus,
+  Calendar,
+  Download,
+  AlertTriangle,
+} from "lucide-react";
+import { useApiClient } from "@unerp/framework";
+import styles from "./page.module.css";
 
 interface EmployeeDocument {
   id: string;
@@ -23,24 +37,32 @@ interface Employee {
 
 export default function DocumentsPage() {
   const client = useApiClient();
+  const { error: notifyError } = useToast();
   const [docs, setDocs] = useState<EmployeeDocument[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [selectedEmpId, setSelectedEmpId] = useState('');
+  const [selectedEmpId, setSelectedEmpId] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [msg, setMsg] = useState('');
+  const [msg, setMsg] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: '', docType: 'CONTRACT', fileUrl: '', fileName: '', expiryDate: '' });
+  const [form, setForm] = useState({
+    name: "",
+    docType: "CONTRACT",
+    fileUrl: "",
+    fileName: "",
+    expiryDate: "",
+  });
 
   const handleLocalFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setForm(prev => ({
+        setForm((prev) => ({
           ...prev,
           fileUrl: reader.result as string,
-          fileName: file.name
+          fileName: file.name,
         }));
       };
       reader.readAsDataURL(file);
@@ -49,17 +71,17 @@ export default function DocumentsPage() {
 
   const downloadFile = (dataUrl: string, fileName: string) => {
     try {
-      const parts = dataUrl.split(',');
+      const parts = dataUrl.split(",");
       if (parts.length < 2) {
-        window.open(dataUrl, '_blank');
+        window.open(dataUrl, "_blank");
         return;
       }
       const part0 = parts[0];
       const part1 = parts[1];
       if (!part0 || !part1) return;
-      
+
       const mimeMatch = part0.match(/:(.*?);/);
-      const mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
+      const mime = mimeMatch ? mimeMatch[1] : "application/octet-stream";
       const bstr = atob(part1);
       let n = bstr.length;
       const u8arr = new Uint8Array(n);
@@ -68,8 +90,8 @@ export default function DocumentsPage() {
       }
       const blob = new Blob([u8arr], { type: mime });
       const url = URL.createObjectURL(blob);
-      
-      const a = document.createElement('a');
+
+      const a = document.createElement("a");
       a.href = url;
       a.download = fileName;
       document.body.appendChild(a);
@@ -77,7 +99,7 @@ export default function DocumentsPage() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch {
-      window.open(dataUrl, '_blank');
+      window.open(dataUrl, "_blank");
     }
   };
 
@@ -95,17 +117,33 @@ export default function DocumentsPage() {
 
   const fetchEmployees = async () => {
     try {
-      const data = await client.get<Employee[] | { data?: Employee[] }>('/hr/employees');
-      setEmployees(Array.isArray(data) ? data : (data.data || []));
-    } catch {}
+      const data = await client.get<Employee[] | { data?: Employee[] }>(
+        "/hr/employees",
+      );
+      setEmployees(Array.isArray(data) ? data : data.data || []);
+      setLoadError(null);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load employees";
+      setLoadError(message);
+      notifyError("Failed to load employees", message);
+    }
   };
 
   const fetchDocuments = async (empId: string) => {
     setLoading(true);
     try {
-      const data = await client.get<EmployeeDocument[] | { data?: EmployeeDocument[] }>(`/advanced-hr/documents/${empId}`);
-      setDocs(Array.isArray(data) ? data : (data.data || []));
-    } catch {} finally {
+      const data = await client.get<
+        EmployeeDocument[] | { data?: EmployeeDocument[] }
+      >(`/advanced-hr/documents/${empId}`);
+      setDocs(Array.isArray(data) ? data : data.data || []);
+      setLoadError(null);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load documents";
+      setLoadError(message);
+      notifyError("Failed to load documents", message);
+    } finally {
       setLoading(false);
     }
   };
@@ -116,12 +154,18 @@ export default function DocumentsPage() {
     setSubmitting(true);
     try {
       await client.post(`/advanced-hr/documents/${selectedEmpId}`, form);
-      setMsg('Document uploaded/registered successfully.');
+      setMsg("Document uploaded/registered successfully.");
       setShowForm(false);
-      setForm({ name: '', docType: 'CONTRACT', fileUrl: '', fileName: '', expiryDate: '' });
+      setForm({
+        name: "",
+        docType: "CONTRACT",
+        fileUrl: "",
+        fileName: "",
+        expiryDate: "",
+      });
       fetchDocuments(selectedEmpId);
     } catch {
-      setMsg('Error saving document.');
+      setMsg("Error saving document.");
     } finally {
       setSubmitting(false);
     }
@@ -132,7 +176,12 @@ export default function DocumentsPage() {
       <PageHeader
         title="Documents Manager"
         description="Verify and track employee contract signatures, background clearance certificates, and tax compliance forms."
-        breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'HR', href: '/hr' }, { label: 'Advanced', href: '/hr/advanced' }, { label: 'Documents' }]}
+        breadcrumbs={[
+          { label: "Home", href: "/dashboard" },
+          { label: "HR", href: "/hr" },
+          { label: "Advanced", href: "/hr/advanced" },
+          { label: "Documents" },
+        ]}
         actions={
           selectedEmpId && (
             <Button variant="primary" onClick={() => setShowForm(!showForm)}>
@@ -142,9 +191,12 @@ export default function DocumentsPage() {
         }
       />
 
-      {msg && (
-        <div className={styles.message}>
-          {msg}
+      {msg && <div className={styles.message}>{msg}</div>}
+
+      {loadError && (
+        <div className="ui-alert ui-alert-danger">
+          <AlertTriangle size={16} />
+          {loadError}
         </div>
       )}
 
@@ -155,11 +207,13 @@ export default function DocumentsPage() {
         <select
           className="ui-input"
           value={selectedEmpId}
-          onChange={e => setSelectedEmpId(e.target.value)}
+          onChange={(e) => setSelectedEmpId(e.target.value)}
         >
           <option value="">-- Select Employee --</option>
-          {employees.map(e => (
-            <option key={e.id} value={e.id}>{e.firstName} {e.lastName}</option>
+          {employees.map((e) => (
+            <option key={e.id} value={e.id}>
+              {e.firstName} {e.lastName}
+            </option>
           ))}
         </select>
       </Card>
@@ -172,14 +226,14 @@ export default function DocumentsPage() {
               className="ui-input"
               placeholder="Document Title (e.g. NDA Signature, IRS W-4)"
               value={form.name}
-              onChange={e => setForm({ ...form, name: e.target.value })}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
               required
             />
             <div className="ui-grid-2 ui-gap-3">
               <select
                 className="ui-input"
                 value={form.docType}
-                onChange={e => setForm({ ...form, docType: e.target.value })}
+                onChange={(e) => setForm({ ...form, docType: e.target.value })}
               >
                 <option value="CONTRACT">Employment Contract</option>
                 <option value="ID_PROOF">Government ID</option>
@@ -192,7 +246,9 @@ export default function DocumentsPage() {
                 className="ui-input"
                 placeholder="Expiration Date (if applicable)"
                 value={form.expiryDate}
-                onChange={e => setForm({ ...form, expiryDate: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, expiryDate: e.target.value })
+                }
               />
             </div>
             <div className="ui-stack-1">
@@ -210,12 +266,22 @@ export default function DocumentsPage() {
               type="text"
               className="ui-input"
               placeholder="Or enter Document URL / Cloud Link (optional)"
-              value={form.fileUrl.startsWith('data:') ? '' : form.fileUrl}
-              onChange={e => setForm({ ...form, fileUrl: e.target.value, fileName: '' })}
+              value={form.fileUrl.startsWith("data:") ? "" : form.fileUrl}
+              onChange={(e) =>
+                setForm({ ...form, fileUrl: e.target.value, fileName: "" })
+              }
             />
             <div className="ui-flex-end ui-gap-2">
-              <Button variant="outline" type="button" onClick={() => setShowForm(false)}>Cancel</Button>
-              <Button variant="primary" type="submit" disabled={submitting}>Register Doc</Button>
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => setShowForm(false)}
+              >
+                Cancel
+              </Button>
+              <Button variant="primary" type="submit" disabled={submitting}>
+                Register Doc
+              </Button>
             </div>
           </form>
         </Card>
@@ -228,24 +294,41 @@ export default function DocumentsPage() {
       ) : selectedEmpId ? (
         (() => {
           const docColumns: ListColumn[] = [
-            { key: 'name', header: 'Document Name' },
-            { key: 'docType', header: 'Category' },
-            { key: 'expiryDate', header: 'Expires', render: (v) => v ? (
-              <div className={styles.expiryDate}>
-                <Calendar size={12} className="text-muted-foreground" />
-                <span>{new Date(String(v)).toLocaleDateString()}</span>
-              </div>
-            ) : 'Never' },
-            { key: 'fileUrl', header: 'Action', render: (v, row) => {
-              const doc = row as unknown as EmployeeDocument;
-              return v ? (
-                <Button variant="outline" size="sm" onClick={() => downloadFile(doc.fileUrl!, doc.fileName || doc.name)}>
-                  <Download size={12} /> View / Download
-                </Button>
-              ) : (
-                <span className="ui-text-caption">No file attached</span>
-              );
-            }},
+            { key: "name", header: "Document Name" },
+            { key: "docType", header: "Category" },
+            {
+              key: "expiryDate",
+              header: "Expires",
+              render: (v) =>
+                v ? (
+                  <div className={styles.expiryDate}>
+                    <Calendar size={12} className="text-muted-foreground" />
+                    <span>{new Date(String(v)).toLocaleDateString()}</span>
+                  </div>
+                ) : (
+                  "Never"
+                ),
+            },
+            {
+              key: "fileUrl",
+              header: "Action",
+              render: (v, row) => {
+                const doc = row as unknown as EmployeeDocument;
+                return v ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      downloadFile(doc.fileUrl!, doc.fileName || doc.name)
+                    }
+                  >
+                    <Download size={12} /> View / Download
+                  </Button>
+                ) : (
+                  <span className="ui-text-caption">No file attached</span>
+                );
+              },
+            },
           ];
           return (
             <ListPageTemplate
@@ -261,7 +344,10 @@ export default function DocumentsPage() {
         <Card>
           <div className={styles.emptyState}>
             <FileText size={32} className={styles.emptyIcon} />
-            <p className="m-0">Select an employee above to access their compliance cabinet folder.</p>
+            <p className="m-0">
+              Select an employee above to access their compliance cabinet
+              folder.
+            </p>
           </div>
         </Card>
       )}

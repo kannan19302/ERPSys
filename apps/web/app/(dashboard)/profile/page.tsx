@@ -517,7 +517,11 @@ export default function ProfilePage() {
         }
       });
       setPresences(map);
-    } catch {}
+    } catch (e) {
+      // Best-effort — only feeds the sidebar presence dots, so a failure
+      // here degrades gracefully rather than blocking the directory.
+      console.warn("Failed to load presences", e);
+    }
   };
 
   useEffect(() => {
