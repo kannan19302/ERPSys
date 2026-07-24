@@ -4,7 +4,7 @@
   "private": true,
   "description": "UniERP Backend API — NestJS",
   "scripts": {
-    "dev": "pnpm exec nest start --watch --transpile-only",
+    "dev": "pnpm exec nest start --watch",
     "build": "pnpm exec nest build",
     "start": "node dist/main",
     "start:prod": "node dist/main",
