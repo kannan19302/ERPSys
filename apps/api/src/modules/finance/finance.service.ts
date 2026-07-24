@@ -660,13 +660,16 @@ export class FinanceService {
         })
         .catch(() => [] as Array<{ type: string }>),
 
-      // Bank accounts count for cash position (no balance field in schema)
+      // Bank accounts for cash position — balance is derived from the GL below
       prisma.bankAccount
         .findMany({
           where: { tenantId },
-          select: { id: true, currency: true },
+          select: { id: true, currency: true, accountId: true },
         })
-        .catch(() => [] as Array<{ id: string; currency: string }>),
+        .catch(
+          () =>
+            [] as Array<{ id: string; currency: string; accountId: string }>,
+        ),
     ]);
 
     const [totalInvoices, paidCount, overdueCount, totalAgg, arAgg] =
@@ -679,7 +682,43 @@ export class FinanceService {
       Number(arAgg?._sum?.totalAmount || 0) -
         Number(arAgg?._sum?.paidAmount || 0),
     );
-    const netCashBalance = 0; // BankAccount schema has no balance field; extend via GL account balances later
+    // Net cash balance is derived live from the GL: sum posted journal-line
+    // debit/credit activity on each bank account's linked GL cash account.
+    // Never a hardcoded/stored value — GL postings are the source of truth.
+    const bankGlAccountIds = [
+      ...new Set(
+        (bankAccounts as Array<{ accountId: string }>)
+          .map((b) => b.accountId)
+          .filter(Boolean),
+      ),
+    ];
+    let netCashBalance = 0;
+    if (bankGlAccountIds.length > 0) {
+      const [glEntries, glAccounts] = await Promise.all([
+        prisma.journalEntry.groupBy({
+          by: ["accountId"],
+          where: {
+            tenantId,
+            accountId: { in: bankGlAccountIds },
+            journal: { status: "POSTED" },
+          },
+          _sum: { debit: true, credit: true },
+        }),
+        prisma.account.findMany({
+          where: { id: { in: bankGlAccountIds }, tenantId },
+          select: { id: true, type: true },
+        }),
+      ]);
+      const glTypeMap = new Map(glAccounts.map((a) => [a.id, a.type]));
+      for (const e of glEntries) {
+        const debit = Number(e._sum.debit || 0);
+        const credit = Number(e._sum.credit || 0);
+        const type = glTypeMap.get(e.accountId) ?? "ASSET";
+        netCashBalance += ["ASSET", "EXPENSE"].includes(type)
+          ? debit - credit
+          : credit - debit;
+      }
+    }
     const ytdRevenue = (allInvoices as any[])
       .filter(
         (inv: any) =>

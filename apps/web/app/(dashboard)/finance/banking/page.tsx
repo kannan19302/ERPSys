@@ -11,12 +11,13 @@ import {
   TrendingUp,
   CreditCard,
   Download,
+  AlertTriangle,
 } from "lucide-react";
 import { FinanceTabLayout } from "@/components/finance/FinanceTabLayout";
 import { SubTabBar } from "@/components/finance/SubTabBar";
 import { ListView, RouteGuard, useApiClient } from "@unerp/framework";
 import { bankAccountResource } from "@/modules/finance";
-import { Card, PageHeader } from "@unerp/ui";
+import { Card, PageHeader, useToast } from "@unerp/ui";
 
 import ReconciliationsPage from "../advanced/reconciliations/page";
 import BankFeedsPage from "../advanced/bank-feeds/page";
@@ -129,7 +130,9 @@ export default function BankingPage() {
   const activeTab = searchParams.get("tab") || "overview";
   const subTab = searchParams.get("subtab");
   const client = useApiClient();
+  const { error: notifyError } = useToast();
   const [summary, setSummary] = useState<BankingSummary>(EMPTY_BANKING_SUMMARY);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
 
   useEffect(() => {
     if (activeTab !== "overview") return;
@@ -145,12 +148,19 @@ export default function BankingPage() {
           totalCash: accounts.reduce((s, a) => s + Number(a.balance || 0), 0),
           accountCount: res.total ?? accounts.length,
         });
+        setSummaryError(null);
       })
-      .catch(() => {});
+      .catch((err) => {
+        if (cancelled) return;
+        const message =
+          err instanceof Error ? err.message : "Failed to load banking summary";
+        setSummaryError(message);
+        notifyError("Failed to load Banking summary", message);
+      });
     return () => {
       cancelled = true;
     };
-  }, [activeTab, client]);
+  }, [activeTab, client, notifyError]);
 
   return (
     <RouteGuard permission="finance.bank-account.read">
@@ -163,6 +173,13 @@ export default function BankingPage() {
       >
         {activeTab === "overview" && (
           <div className="ui-stack-4 ui-animate-in">
+            {summaryError && (
+              <div className="ui-alert ui-alert-danger">
+                <AlertTriangle size={16} />
+                Failed to load banking summary — figures below may be stale.{" "}
+                {summaryError}
+              </div>
+            )}
             <div className="ui-grid-2">
               <Card padding="md">
                 <div className="ui-stack-2">

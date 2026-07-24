@@ -14,12 +14,13 @@ import {
   PieChart,
   GitBranch,
   Building2,
+  AlertTriangle,
 } from "lucide-react";
 import { FinanceTabLayout } from "@/components/finance/FinanceTabLayout";
 import { SubTabBar } from "@/components/finance/SubTabBar";
 import { ListView, RouteGuard, useApiClient } from "@unerp/framework";
 import { accountResource, journalResource } from "@/modules/finance";
-import { Card, PageHeader } from "@unerp/ui";
+import { Card, PageHeader, useToast } from "@unerp/ui";
 
 import FinancialPeriodsPage from "../advanced/financial-periods/page";
 import CloseTasksPage from "../advanced/close-tasks/page";
@@ -150,7 +151,9 @@ export default function GLPage() {
   const activeTab = searchParams.get("tab") || "overview";
   const subTab = searchParams.get("subtab");
   const client = useApiClient();
+  const { error: notifyError } = useToast();
   const [summary, setSummary] = useState<GlSummary>(EMPTY_GL_SUMMARY);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
 
   useEffect(() => {
     if (activeTab !== "overview") return;
@@ -182,12 +185,21 @@ export default function GLPage() {
           openPeriods: openPeriodRows.length,
           nextCloseDate: nextClose ?? null,
         });
+        setSummaryError(null);
       })
-      .catch(() => {});
+      .catch((err) => {
+        if (cancelled) return;
+        // Distinct error state — a failed fetch must never render as "0
+        // accounts / 0 journals", which is indistinguishable from real data.
+        const message =
+          err instanceof Error ? err.message : "Failed to load GL summary";
+        setSummaryError(message);
+        notifyError("Failed to load General Ledger summary", message);
+      });
     return () => {
       cancelled = true;
     };
-  }, [activeTab, client]);
+  }, [activeTab, client, notifyError]);
 
   return (
     <RouteGuard permission="finance.journal.read">
@@ -200,6 +212,13 @@ export default function GLPage() {
       >
         {activeTab === "overview" && (
           <div className="ui-stack-6 ui-animate-in">
+            {summaryError && (
+              <div className="ui-alert ui-alert-danger">
+                <AlertTriangle size={16} />
+                Failed to load GL summary — figures below may be stale.{" "}
+                {summaryError}
+              </div>
+            )}
             <div className="ui-grid-3">
               <Card padding="md">
                 <div className="ui-stack-2">

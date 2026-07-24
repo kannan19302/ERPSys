@@ -26,6 +26,7 @@ import {
   ArrowDownRight,
   RefreshCw,
   CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
@@ -119,87 +120,40 @@ function KpiCard({
 }) {
   return (
     <Card padding="md">
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "var(--space-1)",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <span
-            style={{
-              fontSize: "var(--text-xs)",
-              color: "var(--color-text-secondary)",
-              fontWeight: "var(--weight-medium)",
-              whiteSpace: "nowrap",
-            }}
-          >
+      <div className="ui-stack-1">
+        <div className="ui-flex-between">
+          <span className="ui-text-xs-muted font-medium ui-truncate">
             {label}
           </span>
           <div
+            className="ui-flex-center"
             style={{
               width: 28,
               height: 28,
               borderRadius: "var(--radius-md)",
               background: `${color}18`,
               color,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
               flexShrink: 0,
             }}
           >
             <Icon size={15} />
           </div>
         </div>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "baseline",
-            gap: "var(--space-1)",
-          }}
-        >
+        <div className="flex items-baseline gap-1">
           <span
-            style={{
-              fontSize: "var(--text-2xl)",
-              fontWeight: "var(--weight-bold)",
-              color: "var(--color-text)",
-              letterSpacing: "-0.02em",
-            }}
+            className="text-2xl font-bold ui-truncate"
+            style={{ color: "var(--color-text)", letterSpacing: "-0.02em" }}
           >
             {value}
           </span>
           {trend === "up" && (
-            <ArrowUpRight size={14} style={{ color: "var(--color-success)" }} />
+            <ArrowUpRight size={14} className="ui-text-success" />
           )}
           {trend === "down" && (
-            <ArrowDownRight
-              size={14}
-              style={{ color: "var(--color-danger)" }}
-            />
+            <ArrowDownRight size={14} className="ui-text-danger" />
           )}
         </div>
-        {sub && (
-          <p
-            style={{
-              fontSize: "var(--text-xs)",
-              color: "var(--color-text-tertiary)",
-              margin: 0,
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {sub}
-          </p>
-        )}
+        {sub && <p className="ui-text-xs-tertiary ui-truncate m-0">{sub}</p>}
       </div>
     </Card>
   );
@@ -223,57 +177,30 @@ function NavCard({
     <Card
       padding="sm"
       className="cursor-pointer transition-all"
-      style={{ cursor: "pointer" }}
       onClick={onClick}
     >
-      <div
-        style={{ display: "flex", alignItems: "center", gap: "var(--space-2)" }}
-      >
+      <div className="ui-hstack-2">
         <div
+          className="ui-flex-center"
           style={{
             width: 30,
             height: 30,
             borderRadius: "var(--radius-md)",
             background: `${color}15`,
             color,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
             flexShrink: 0,
           }}
         >
           <Icon size={16} />
         </div>
         <div style={{ minWidth: 0, flex: 1 }}>
-          <h4
-            style={{
-              fontSize: "var(--text-xs)",
-              fontWeight: "var(--weight-semibold)",
-              margin: 0,
-              color: "var(--color-text)",
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {title}
-          </h4>
-          <p
-            style={{
-              fontSize: "10px",
-              color: "var(--color-text-tertiary)",
-              margin: 0,
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {desc}
-          </p>
+          <h4 className="text-xs font-semibold ui-truncate m-0">{title}</h4>
+          <p className="ui-text-micro ui-truncate m-0">{desc}</p>
         </div>
         <ArrowRight
           size={13}
-          style={{ color: "var(--color-text-tertiary)", flexShrink: 0 }}
+          className="ui-text-tertiary"
+          style={{ flexShrink: 0 }}
         />
       </div>
     </Card>
@@ -284,10 +211,11 @@ function NavCard({
 export default function FinanceDashboardPage() {
   const router = useRouter();
   const client = useApiClient();
-  const { success } = useToast();
+  const { success, error: notifyError } = useToast();
 
   const [showCreate, setShowCreate] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [dataError, setDataError] = useState<string | null>(null);
   const [data, setData] = useState<DashboardData>({
     kpis: EMPTY_KPIS,
     charts: EMPTY_CHARTS,
@@ -299,13 +227,21 @@ export default function FinanceDashboardPage() {
     setLoading(true);
     try {
       const res = await client.get<DashboardData>("/finance/dashboard");
-      if (res) setData(res);
-    } catch {
-      // Graceful fallback — charts will show empty-state placeholders
+      if (res) {
+        setData(res);
+        setDataError(null);
+      }
+    } catch (err) {
+      // Distinct error state — never let a fetch failure render as "$0 / no
+      // activity". Previously-loaded KPIs/charts are preserved (not blanked).
+      const message =
+        err instanceof Error ? err.message : "Failed to load dashboard data";
+      setDataError(message);
+      notifyError("Failed to load Finance dashboard", message);
     } finally {
       setLoading(false);
     }
-  }, [client]);
+  }, [client, notifyError]);
 
   const fetchCompliance = useCallback(async () => {
     try {
@@ -320,7 +256,9 @@ export default function FinanceDashboardPage() {
           .get<{
             totalTasks: number;
             completionPercent: number;
-          }>(`/advanced-finance/close-tasks/dashboard?periodId=${openPeriod.id}`)
+          }>(
+            `/advanced-finance/close-tasks/dashboard?periodId=${openPeriod.id}`,
+          )
           .catch(() => null);
         if (dash && dash.totalTasks > 0) {
           closePct = Math.round(dash.completionPercent);
@@ -418,21 +356,9 @@ export default function FinanceDashboardPage() {
 
   // ── Page 1: Executive Overview (Prominent Charts height=185px, 100% Fit) ───
   const Page1 = (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "var(--space-3)",
-      }}
-    >
+    <div className="ui-stack-3">
       {/* 4 KPI Cards */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
-          gap: "var(--space-3)",
-        }}
-      >
+      <div className="ui-grid-4 gap-3">
         <KpiCard
           label="Revenue YTD"
           value={fmt(kpis.totalRevenueYtd)}
@@ -468,13 +394,7 @@ export default function FinanceDashboardPage() {
       </div>
 
       {/* 2 Prominent Charts side by side (Height 185px) */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "2fr 1fr",
-          gap: "var(--space-3)",
-        }}
-      >
+      <div className="grid gap-3" style={{ gridTemplateColumns: "2fr 1fr" }}>
         <DashboardChart
           title="Monthly Revenue Trend"
           subtitle="Invoice value issued per month over 12 months"
@@ -514,21 +434,9 @@ export default function FinanceDashboardPage() {
 
   // ── Page 2: Receivables & Customer Analytics (Height 175px, 100% Fit) ──────
   const Page2 = (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "var(--space-3)",
-      }}
-    >
+    <div className="ui-stack-3">
       {/* 2 Charts side by side */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "var(--space-3)",
-        }}
-      >
+      <div className="ui-grid-2 gap-3">
         <DashboardChart
           title="AR Aging Analysis"
           subtitle="Outstanding receivable amounts by aging bucket"
@@ -596,13 +504,7 @@ export default function FinanceDashboardPage() {
 
   // ── Page 3: Cash Flow & Budget Analytics (Height 175px, 100% Fit) ──────────
   const Page3 = (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "var(--space-3)",
-      }}
-    >
+    <div className="ui-stack-3">
       {/* Cash Flow Chart */}
       <DashboardChart
         title="Monthly Cash Flow"
@@ -632,13 +534,7 @@ export default function FinanceDashboardPage() {
       />
 
       {/* 2 Charts side by side */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 2fr",
-          gap: "var(--space-3)",
-        }}
-      >
+      <div className="grid gap-3" style={{ gridTemplateColumns: "1fr 2fr" }}>
         <DashboardChart
           title="GL Account Distribution"
           subtitle="Active accounts by type"
@@ -685,61 +581,17 @@ export default function FinanceDashboardPage() {
 
   // ── Page 4: Operations & Compliance (100% Fit) ───────────────────────────
   const Page4 = (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "var(--space-3)",
-      }}
-    >
+    <div className="ui-stack-3">
       {/* Compliance & Health Ratios */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "var(--space-3)",
-        }}
-      >
+      <div className="ui-grid-2 gap-3">
         <Card padding="md">
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "var(--space-2)",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <h3
-                style={{
-                  fontSize: "var(--text-xs)",
-                  fontWeight: "var(--weight-semibold)",
-                  margin: 0,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "var(--space-1)",
-                  color: "var(--color-text)",
-                }}
-              >
-                <ShieldCheck
-                  size={15}
-                  style={{ color: "var(--color-success)" }}
-                />
+          <div className="ui-stack-2">
+            <div className="ui-flex-between">
+              <h3 className="text-xs font-semibold m-0 flex items-center gap-1">
+                <ShieldCheck size={15} className="ui-text-success" />
                 Period Close & Compliance
               </h3>
-              <span
-                style={{
-                  fontSize: "11px",
-                  color: "var(--color-text-tertiary)",
-                }}
-              >
-                FY 2026
-              </span>
+              <span className="ui-text-xs-tertiary">FY 2026</span>
             </div>
             {[
               {
@@ -787,22 +639,10 @@ export default function FinanceDashboardPage() {
             ].map((item) => (
               <div
                 key={item.label}
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  padding: "3px 0",
-                  borderBottom: "1px solid var(--color-border)",
-                }}
+                className="ui-flex-between border-b"
+                style={{ padding: "3px 0" }}
               >
-                <span
-                  style={{
-                    fontSize: "var(--text-xs)",
-                    color: "var(--color-text)",
-                  }}
-                >
-                  {item.label}
-                </span>
+                <span className="text-xs">{item.label}</span>
                 <span
                   className={`ui-badge ui-badge-${item.variant}`}
                   style={{ fontSize: "10px", padding: "1px 6px" }}
@@ -815,25 +655,9 @@ export default function FinanceDashboardPage() {
         </Card>
 
         <Card padding="md">
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "var(--space-2)",
-            }}
-          >
-            <h3
-              style={{
-                fontSize: "var(--text-xs)",
-                fontWeight: "var(--weight-semibold)",
-                margin: 0,
-                display: "flex",
-                alignItems: "center",
-                gap: "var(--space-1)",
-                color: "var(--color-text)",
-              }}
-            >
-              <Activity size={15} style={{ color: "var(--color-primary)" }} />
+          <div className="ui-stack-2">
+            <h3 className="text-xs font-semibold m-0 flex items-center gap-1">
+              <Activity size={15} className="ui-text-primary" />
               Financial Health Ratios
             </h3>
             {[
@@ -876,24 +700,9 @@ export default function FinanceDashboardPage() {
                 key={item.label}
                 style={{ display: "flex", flexDirection: "column", gap: "2px" }}
               >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    fontSize: "var(--text-xs)",
-                  }}
-                >
-                  <span style={{ color: "var(--color-text-secondary)" }}>
-                    {item.label}
-                  </span>
-                  <span
-                    style={{
-                      fontWeight: "var(--weight-semibold)",
-                      color: "var(--color-text)",
-                    }}
-                  >
-                    {item.value}
-                  </span>
+                <div className="ui-flex-between text-xs">
+                  <span className="ui-text-muted">{item.label}</span>
+                  <span className="font-semibold">{item.value}</span>
                 </div>
                 <div
                   style={{
@@ -919,30 +728,9 @@ export default function FinanceDashboardPage() {
       </div>
 
       {/* Workspaces Hub */}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "var(--space-1)",
-        }}
-      >
-        <h3
-          style={{
-            fontSize: "var(--text-xs)",
-            fontWeight: "var(--weight-semibold)",
-            color: "var(--color-text)",
-            margin: 0,
-          }}
-        >
-          Finance Workspaces
-        </h3>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: "var(--space-2)",
-          }}
-        >
+      <div className="ui-stack-1">
+        <h3 className="text-xs font-semibold m-0">Finance Workspaces</h3>
+        <div className="ui-grid-4 gap-2">
           {QUICK_LINKS.map((link) => (
             <NavCard
               key={link.title}
@@ -961,29 +749,10 @@ export default function FinanceDashboardPage() {
   // ── Page 5: Active Invoices Ledger (100% Fit) ─────────────────────────────
   const Page5 = (
     <Card padding="md">
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "var(--space-2)",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
+      <div className="ui-stack-2">
+        <div className="ui-flex-between">
           <div>
-            <h3
-              style={{
-                fontSize: "var(--text-xs)",
-                fontWeight: "var(--weight-semibold)",
-                margin: 0,
-                color: "var(--color-text)",
-              }}
-            >
+            <h3 className="text-xs font-semibold m-0">
               Active Invoices & Receivables
             </h3>
           </div>
@@ -1076,14 +845,16 @@ export default function FinanceDashboardPage() {
           }
         />
 
+        {dataError && (
+          <div className="ui-alert ui-alert-danger">
+            <AlertCircle size={16} />
+            Failed to refresh dashboard KPIs — showing last known values.{" "}
+            {dataError}
+          </div>
+        )}
+
         {loading && (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              padding: "var(--space-6)",
-            }}
-          >
+          <div className="flex justify-center p-6">
             <Spinner size="md" />
           </div>
         )}
@@ -1094,12 +865,7 @@ export default function FinanceDashboardPage() {
             pages={pages}
             defaultPageId="overview"
             navActions={
-              <span
-                style={{
-                  fontSize: "11px",
-                  color: "var(--color-text-tertiary)",
-                }}
-              >
+              <span className="ui-text-xs-tertiary">
                 Use ← → keys to navigate
               </span>
             }

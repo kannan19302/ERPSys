@@ -2,6 +2,138 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-24] Finance — Fixed silent-catch anti-pattern on 8 pages + de-drifted Dashboard styling + converted 3 raw tables to DataTable
+
+**Root cause (Part A)**: Finance Dashboard (`finance/page.tsx`) and 7 module
+overview pages (`gl`, `ap`, `banking`, `assets`, `tax`, `budget-planning`,
+`ar`) fetched their summary KPIs in a `useEffect` and swallowed fetch errors
+with an empty `.catch(() => {})`/`catch {}`, leaving the `EMPTY_*` zeroed
+defaults on screen with no indication anything had failed — indistinguishable
+from "no data". This produced the reported symptom: Dashboard showed "$0
+Outstanding AR / 0 overdue" while AR's own page correctly showed the real
+$820 outstanding balance (INV-2026-001, Wayne Enterprises, PARTIALLY_PAID
+$1,320/$500) — confirmed the API data was fine and the bug was purely a
+frontend error-handling gap.
+
+**Fix (Part A)** — same pattern across all 8 files, matching the
+`ui-alert`/`error`-state convention already used elsewhere in Finance (e.g.
+`advanced/budget-scenarios`, `advanced/close-tasks`, `advanced/tax-nexus`):
+added a distinct `<field>Error: string | null` state set only in the
+`catch`, an inline `.ui-alert.ui-alert-danger` banner rendered above the KPI
+cards when set (note: fixed a latent typo — several pre-existing pages in
+this module use the non-existent class `ui-alert-error`, which silently
+renders unstyled; the correct design-system token is `ui-alert-danger`), and
+a `useToast().error(...)` call. Previously-loaded data is never blanked to
+zero on a transient failure since state is only overwritten on success.
+
+**Fix (Part B)** — `finance/page.tsx` had ~50 inline `style={{...}}` blocks
+vs. 3-6 on sibling Finance pages. Replaced `KpiCard`/`NavCard` and the
+Page1-5 dashboard sections with `@unerp/ui` `.ui-stack-*`/`.ui-grid-*`/
+`.ui-heading-*`/`.ui-text-*-muted`/Tailwind-compatible utility classes
+(`text-2xl`, `font-bold`, `ui-flex-between`, etc.), per `ar/page.tsx`'s
+pattern. Down to 12 residual inline styles — all either dynamic per-item
+colors (`${color}18` icon badges), asymmetric chart-grid ratios (`2fr 1fr`)
+with no utility equivalent, or sub-pixel one-off tweaks. Visual layout/
+spacing preserved exactly; typecheck and eslint clean.
+
+**Fix (Part C)** — converted 3 hand-rolled `<table>`/`<thead>`/`<tbody>`
+blocks to `DataTable`/`Column` from `@unerp/ui` (`@unerp/ui-data-grid`),
+matching the pattern already used by `advanced/expense-reports`,
+`advanced/payment-batches`, etc.: `ar/dunning-page.tsx` (2 static tables),
+`advanced/budgeting/page.tsx` (3 tables: allocated budgets, reallocations,
+budget-vs-actuals variance — all columns/actions/badges preserved),
+`advanced/budget-scenarios/page.tsx` (the 12-month editable budget grid,
+rebuilt as 14 dynamically-generated `Column`s with per-cell `<input>`
+renders, preserving the exact edit/save/locked-state behavior).
+
+**Files**: `apps/web/app/(dashboard)/finance/page.tsx`,
+`finance/gl/page.tsx`, `finance/ap/page.tsx`, `finance/banking/page.tsx`,
+`finance/assets/page.tsx`, `finance/tax/page.tsx`,
+`finance/budget-planning/page.tsx`, `finance/ar/page.tsx`,
+`finance/ar/dunning-page.tsx`, `finance/advanced/budgeting/page.tsx`,
+`finance/advanced/budget-scenarios/page.tsx`.
+
+**Verified**: `pnpm --filter @unerp/web typecheck` clean; eslint clean on
+all changed files; live in-browser check confirms Dashboard's Outstanding AR
+now matches AR page's $820 exactly, both DataTable conversions render with
+correct columns/empty-states, no new console errors. Did not touch
+`apps/api/src/modules/finance/finance.service.ts` (concurrent
+backend-developer fix for Net Cash Position, entry below).
+
+## [2026-07-24] Finance — Fixed hardcoded $0 Net Cash Position / Total Cash KPIs (GL-derived bank balances)
+
+**Root cause**: `finance.service.ts`'s `getDashboardData()` had
+`const netCashBalance = 0;` (structural constant), and the Banking page's
+Total Cash KPI (`apps/web/app/(dashboard)/finance/banking/page.tsx`) summed a
+`balance` field that the `/advanced-finance/bank-accounts` endpoint
+(`BankingService.getBankAccounts` in
+`apps/api/src/modules/advanced-finance/services/banking.service.ts`) never
+returned. `BankAccount.accountId` (GL account link) existed as a plain string
+with no FK relation and was even hardcoded to `""` in the unrelated legacy
+`/finance/bank-accounts` path (`finance-operations.service.ts`).
+
+**Fix — GL is the source of truth, no new manually-editable balance field**:
+
+- `packages/database/prisma/schema.prisma`: added a real
+  `BankAccount.accountId → Account.id` foreign key relation (`account`
+  relation + `@@index([accountId])`), via migration
+  `20260724000000_add_bank_account_gl_link` (`pnpm db:deploy`, no
+  `db:push`). No existing `bank_accounts` rows in dev DB, so no data
+  backfill was required.
+- `GlAccountingService.getAccountBalances`/`getAccountBalance`
+  (`apps/api/src/modules/advanced-finance/services/gl-accounting.service.ts`):
+  new reusable helper — sums posted `JournalEntry` debit/credit per account,
+  tenant-scoped, same debit/credit sign convention already used by
+  `reconcileAccount`.
+- `BankingService.getBankAccounts`/`getBankAccountById`: now return a
+  top-level computed `balance` (what the Banking page FE actually reads).
+  `createBankAccount` resolves/creates a default GL "Cash and Cash
+  Equivalents" ASSET account when the caller doesn't supply `accountId`
+  (still validated by the new DB-level FK, not a redundant app-level check —
+  keeps the existing generic create-method test harness in
+  `advanced-finance.service.spec.ts` working).
+- `FinanceService.getDashboardData()`: `netCashBalance` now sums live
+  GL-derived balances for every bank account's linked GL account instead of
+  the hardcoded `0`.
+- `finance-operations.service.ts` (the separate, mostly-unused
+  `/finance/bank-accounts` duplicate path — flagged as duplicate
+  functionality worth consolidating in a follow-up, out of scope here): fixed
+  the same `accountId: ""` bug with the same default-cash-account resolution
+  - GL-balance computation, so its `currentBalance` field is also real.
+
+**Verification**: `pnpm --filter @unerp/api typecheck` — clean.
+`pnpm architecture:check` — module boundaries + dependency-cruiser pass, no
+new violations. `pnpm --filter @unerp/api test` finance-related suites: 654
+passing / 5 pre-existing unrelated failures (confirmed identical on a clean
+`git stash` baseline before this change — `vendor.findUnique` mock gaps in
+`finance-operations.service.spec.ts`'s vendor-bill tests, and a
+`DATABASE_URL`/`organization.findFirst` gap in
+`finance.controller.spec.ts`'s `createInvoice` test — neither touches
+bank-account or GL-balance code). Manually confirmed the FK constraint is
+live in the dev Postgres database (`\d bank_accounts`). A zero balance for a
+fresh/demo tenant with no journal activity is now a correct computed answer,
+not a bug.
+
+**Files**: `packages/database/prisma/schema.prisma`,
+`packages/database/prisma/migrations/20260724000000_add_bank_account_gl_link/migration.sql`,
+`apps/api/src/modules/advanced-finance/services/gl-accounting.service.ts`,
+`apps/api/src/modules/advanced-finance/services/banking.service.ts`,
+`apps/api/src/modules/finance/finance.service.ts`,
+`apps/api/src/modules/finance/finance-operations.service.ts`,
+`apps/api/src/modules/finance/tests/finance-operations.service.spec.ts`.
+
+## [2026-07-24] GOVERNANCE — UI Navigation Compliance correction & binding-exception log
+
+**Scope**: Corrected a false claim in `.ai/MODULE_REGISTRY.md`'s Codebase Growth Tracker (2026-07-21 entry: "Global ERP Tab-Based UI Migration: Completed... across ALL 20 ERP modules"). A code audit (frontend page-by-page + sidebar-descriptor review) found only the Finance module actually meets the tab-based UI convention end-to-end. Also confirmed Cycle 43 below ("CRM... Navigation Restructuring") only edited an unreachable legacy fallback branch in `apps/web/src/navigation/moduleNav.tsx` — CRM's live sidebar is still served by `apps/web/src/navigation/descriptors/crm.ts` (62 items / 10 header groups, unchanged), so that cycle did not change what users see, despite its title.
+
+**Outcome**:
+
+- `.ai/MODULE_REGISTRY.md`: appended a 2026-07-24 correction row to the Codebase Growth Tracker (append-only, prior rows untouched); added a new `## UI Navigation Compliance` table (one row per module: sidebar item count/structure, tab-layout wrapper existence, % pages wired, status) seeded with audited counts — this table is now the per-cycle source of truth, replacing reliance on the inaccurate 2026-07-21 log entry.
+- `.ai/AUTOPILOT.md` § "UI navigation discipline": added an explicit "done means both conditions" clause — a module's UI-layer step only counts as complete when its sidebar is ≤15 flat items **and** its pages are wired to `ModuleTabLayout`/`SubTabBar`, not merely when a `*TabLayout` wrapper file exists. Closes the loophole that let CRM/Inventory be marked done while only scaffolded.
+- No product code changed in this entry — pure documentation/governance correction, logged per `AGENTS.md` Critical Rule 16 (binding exceptions require a logged, documented entry before merge).
+
+**Files**: `.ai/MODULE_REGISTRY.md`, `.ai/AUTOPILOT.md`, `.ai/CHANGELOG.md`.
+
 ## [2026-07-24] Cycle 43 — CRM 1,500+ Feature Deepening & Navigation Restructuring (DB + API + UI)
 
 **Scope**: Restructured CRM navigation in `apps/web/src/navigation/moduleNav.tsx` into 9 consolidated, tab-friendly menu groups matching Finance UX paradigm. Expanded CRM domain with 25 new Prisma models, `CrmExpansionV1Service` and `CrmExpansionV1Controller` covering Sales Playbooks, Competitor Battlecards, Omnichannel Campaigns, ABM Intent Signals, Buying Committees, Customer Health & Renewals, Field Visits & Route Planning, and Partner Certifications.

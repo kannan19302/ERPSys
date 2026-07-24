@@ -176,7 +176,9 @@ export default function APPage() {
   const activeTab = searchParams.get("tab") || "overview";
   const subTab = searchParams.get("subtab");
   const client = useApiClient();
+  const { success, error: notifySummaryError } = useToast();
   const [summary, setSummary] = useState<ApSummary>(EMPTY_AP_SUMMARY);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
 
   useEffect(() => {
     if (activeTab !== "overview") return;
@@ -234,14 +236,20 @@ export default function APPage() {
           processedThisMonthAmount,
           processedThisMonthCount,
         });
+        setSummaryError(null);
       })
-      .catch(() => {});
+      .catch((err) => {
+        if (cancelled) return;
+        const message =
+          err instanceof Error ? err.message : "Failed to load AP summary";
+        setSummaryError(message);
+        notifySummaryError("Failed to load Accounts Payable summary", message);
+      });
     return () => {
       cancelled = true;
     };
-  }, [activeTab, client]);
+  }, [activeTab, client, notifySummaryError]);
 
-  const { success } = useToast();
   const [showCreateBill, setShowCreateBill] = useState(false);
   const [billsKey, setBillsKey] = useState(0);
 
@@ -256,6 +264,13 @@ export default function APPage() {
       >
         {activeTab === "overview" && (
           <div className="ui-stack-4 ui-animate-in">
+            {summaryError && (
+              <div className="ui-alert ui-alert-danger">
+                <AlertTriangle size={16} />
+                Failed to load AP summary — figures below may be stale.{" "}
+                {summaryError}
+              </div>
+            )}
             <div className="ui-grid-3">
               <Card padding="md">
                 <div className="ui-stack-2">

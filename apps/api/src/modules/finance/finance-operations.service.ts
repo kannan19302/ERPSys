@@ -300,17 +300,20 @@ export class FinanceOperationsService {
     };
   }
 
-  private toBankAccount(db: {
-    id: string;
-    tenantId: string;
-    orgId: string;
-    accountId: string;
-    bankName: string;
-    accountNumber: string;
-    currency: string;
-    status: string;
-    createdAt: Date;
-  }): BankAccount {
+  private toBankAccount(
+    db: {
+      id: string;
+      tenantId: string;
+      orgId: string;
+      accountId: string;
+      bankName: string;
+      accountNumber: string;
+      currency: string;
+      status: string;
+      createdAt: Date;
+    },
+    balance = 0,
+  ): BankAccount {
     return {
       id: db.id,
       tenantId: db.tenantId,
@@ -321,12 +324,94 @@ export class FinanceOperationsService {
       accountType: "CHECKING",
       currency: db.currency,
       openingBalance: 0,
-      currentBalance: 0,
+      currentBalance: balance,
       isActive: db.status === "ACTIVE",
       notes: undefined,
       verifiedAt: undefined,
       createdAt: db.createdAt.toISOString(),
     };
+  }
+
+  /**
+   * Computes real GL-derived balances for a set of accounts by summing
+   * posted journal-line debits/credits. GL is the source of truth for cash
+   * balances — never a manually-editable stored field.
+   */
+  private async getGlAccountBalances(
+    tenantId: string,
+    accountIds: string[],
+  ): Promise<Map<string, number>> {
+    const balances = new Map<string, number>();
+    const uniqueIds = [...new Set(accountIds.filter(Boolean))];
+    if (uniqueIds.length === 0) return balances;
+
+    const [entries, accounts] = await Promise.all([
+      prisma.journalEntry.groupBy({
+        by: ["accountId"],
+        where: {
+          tenantId,
+          accountId: { in: uniqueIds },
+          journal: { status: "POSTED" },
+        },
+        _sum: { debit: true, credit: true },
+      }),
+      prisma.account.findMany({
+        where: { id: { in: uniqueIds }, tenantId },
+        select: { id: true, type: true },
+      }),
+    ]);
+    const typeMap = new Map(accounts.map((a) => [a.id, a.type]));
+
+    for (const e of entries) {
+      const debit = Number(e._sum.debit || 0);
+      const credit = Number(e._sum.credit || 0);
+      const type = typeMap.get(e.accountId) ?? "ASSET";
+      const balance = ["ASSET", "EXPENSE"].includes(type)
+        ? debit - credit
+        : credit - debit;
+      balances.set(e.accountId, balance);
+    }
+    return balances;
+  }
+
+  /**
+   * Resolves the GL cash account a new bank account should post against.
+   * Reuses an existing ASSET "Cash" account for the org when present,
+   * otherwise creates one — bank accounts always link to a real GL
+   * account so balances stay derived from the ledger, never hardcoded.
+   */
+  private async resolveDefaultCashAccount(
+    tenantId: string,
+    orgId: string,
+  ): Promise<string> {
+    const existing = await prisma.account.findFirst({
+      where: {
+        tenantId,
+        orgId,
+        type: "ASSET",
+        OR: [{ code: "1000" }, { name: { contains: "Cash" } }],
+      },
+    });
+    if (existing) return existing.id;
+
+    let code = "1000";
+    for (let i = 0; i < 50; i++) {
+      const clash = await prisma.account.findFirst({
+        where: { tenantId, orgId, code },
+      });
+      if (!clash) break;
+      code = `1000-${i + 1}`;
+    }
+    const created = await prisma.account.create({
+      data: {
+        tenantId,
+        orgId,
+        code,
+        name: "Cash and Cash Equivalents",
+        type: "ASSET",
+      },
+    });
+    return created.id;
   }
 
   private toBankTransaction(db: {
@@ -1188,11 +1273,12 @@ export class FinanceOperationsService {
       notes?: string;
     },
   ): Promise<BankAccount> {
+    const glAccountId = await this.resolveDefaultCashAccount(tenantId, orgId);
     const account = await prisma.bankAccount.create({
       data: {
         tenantId,
         orgId,
-        accountId: "",
+        accountId: glAccountId,
         bankName: data.bankName,
         accountNumber: data.accountNumber,
         currency: data.currency ?? "USD",
@@ -1220,7 +1306,13 @@ export class FinanceOperationsService {
       take,
       orderBy,
     });
-    return accounts.map((a) => this.toBankAccount(a));
+    const balances = await this.getGlAccountBalances(
+      tenantId,
+      accounts.map((a) => a.accountId),
+    );
+    return accounts.map((a) =>
+      this.toBankAccount(a, balances.get(a.accountId) ?? 0),
+    );
   }
 
   async getBankAccount(tenantId: string, id: string): Promise<BankAccount> {
@@ -1228,7 +1320,10 @@ export class FinanceOperationsService {
       where: { id, tenantId },
     });
     if (!account) throw new NotFoundException("Bank account not found");
-    return this.toBankAccount(account);
+    const balances = await this.getGlAccountBalances(tenantId, [
+      account.accountId,
+    ]);
+    return this.toBankAccount(account, balances.get(account.accountId) ?? 0);
   }
 
   async updateBankAccount(
@@ -1251,7 +1346,10 @@ export class FinanceOperationsService {
       where: { id },
       data: updateData,
     });
-    return this.toBankAccount(account);
+    const balances = await this.getGlAccountBalances(tenantId, [
+      account.accountId,
+    ]);
+    return this.toBankAccount(account, balances.get(account.accountId) ?? 0);
   }
 
   async deleteBankAccount(

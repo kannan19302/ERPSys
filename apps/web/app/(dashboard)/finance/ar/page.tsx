@@ -11,6 +11,7 @@ import {
   BarChart3,
   FileSpreadsheet,
   Receipt,
+  AlertTriangle,
 } from "lucide-react";
 import { FinanceTabLayout } from "@/components/finance/FinanceTabLayout";
 import { SubTabBar } from "@/components/finance/SubTabBar";
@@ -175,7 +176,9 @@ export default function ARPage() {
   const activeTab = searchParams.get("tab") || "overview";
   const subTab = searchParams.get("subtab");
   const client = useApiClient();
+  const { error: notifyError } = useToast();
   const [summary, setSummary] = useState<ArSummary>(EMPTY_AR_SUMMARY);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
 
   useEffect(() => {
     if (activeTab !== "overview") return;
@@ -206,12 +209,21 @@ export default function ARPage() {
           collectedThisMonth: trend[trend.length - 1]?.inflows ?? 0,
           collectedLastMonth: trend[trend.length - 2]?.inflows ?? 0,
         });
+        setSummaryError(null);
       })
-      .catch(() => {});
+      .catch((err) => {
+        if (cancelled) return;
+        // Distinct error state — a failed fetch must never render as "$0
+        // Outstanding AR", indistinguishable from a genuinely clean book.
+        const message =
+          err instanceof Error ? err.message : "Failed to load AR summary";
+        setSummaryError(message);
+        notifyError("Failed to load Accounts Receivable summary", message);
+      });
     return () => {
       cancelled = true;
     };
-  }, [activeTab, client]);
+  }, [activeTab, client, notifyError]);
 
   const momChange =
     summary.collectedLastMonth > 0
@@ -233,6 +245,13 @@ export default function ARPage() {
       >
         {activeTab === "overview" && (
           <div className="ui-stack-4 ui-animate-in">
+            {summaryError && (
+              <div className="ui-alert ui-alert-danger">
+                <AlertTriangle size={16} />
+                Failed to load AR summary — figures below may be stale.{" "}
+                {summaryError}
+              </div>
+            )}
             <div className="ui-grid-3">
               <Card padding="md">
                 <div className="ui-stack-2">

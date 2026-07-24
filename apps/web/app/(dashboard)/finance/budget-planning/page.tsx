@@ -9,11 +9,12 @@ import {
   BarChart3,
   Activity,
   GitCompare,
+  AlertTriangle,
 } from "lucide-react";
 import { FinanceTabLayout } from "@/components/finance/FinanceTabLayout";
 import { SubTabBar } from "@/components/finance/SubTabBar";
 import { RouteGuard, useApiClient } from "@unerp/framework";
-import { Card } from "@unerp/ui";
+import { Card, useToast } from "@unerp/ui";
 
 import BudgetingPage from "../advanced/budgeting/page";
 import BudgetScenariosPage from "../advanced/budget-scenarios/page";
@@ -86,7 +87,9 @@ export default function BudgetPlanningPage() {
   const activeTab = searchParams.get("tab") || "overview";
   const subTab = searchParams.get("subtab");
   const client = useApiClient();
+  const { error: notifyError } = useToast();
   const [summary, setSummary] = useState<BudgetSummary>(EMPTY_BUDGET_SUMMARY);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
 
   useEffect(() => {
     if (activeTab !== "overview") return;
@@ -108,12 +111,19 @@ export default function BudgetPlanningPage() {
           ),
           activeBudgets: active.length,
         });
+        setSummaryError(null);
       })
-      .catch(() => {});
+      .catch((err) => {
+        if (cancelled) return;
+        const message =
+          err instanceof Error ? err.message : "Failed to load budget summary";
+        setSummaryError(message);
+        notifyError("Failed to load Budget & Planning summary", message);
+      });
     return () => {
       cancelled = true;
     };
-  }, [activeTab, client]);
+  }, [activeTab, client, notifyError]);
 
   const variancePct =
     summary.totalBudget > 0
@@ -134,6 +144,13 @@ export default function BudgetPlanningPage() {
       >
         {activeTab === "overview" && (
           <div className="ui-stack-4 ui-animate-in">
+            {summaryError && (
+              <div className="ui-alert ui-alert-danger">
+                <AlertTriangle size={16} />
+                Failed to load budget summary — figures below may be stale.{" "}
+                {summaryError}
+              </div>
+            )}
             <div className="ui-grid-3">
               <Card padding="md">
                 <div className="ui-stack-2">

@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, PageHeader } from "@unerp/ui";
+import { Card, PageHeader, DataTable, type Column } from "@unerp/ui";
 import {
   Bell,
   Layers,
@@ -9,6 +9,22 @@ import {
   CheckCircle,
   Clock,
 } from "lucide-react";
+
+interface DunningLevel {
+  level: string;
+  daysOverdue: string;
+  template: string;
+  action: string;
+}
+
+interface DunningRun {
+  id: string;
+  date: string;
+  level: string;
+  sent: number;
+  opened: number;
+  amount: number;
+}
 
 const DUNNING_LEVELS = [
   {
@@ -83,6 +99,31 @@ const RECENT_RUNS = [
     sent: 3,
     opened: 1,
     amount: 67200,
+  },
+];
+
+const LEVEL_COLUMNS: Column<DunningLevel>[] = [
+  { key: "level", header: "Level", render: (row) => row.level },
+  {
+    key: "daysOverdue",
+    header: "Days Overdue",
+    render: (row) => row.daysOverdue,
+  },
+  { key: "template", header: "Template", render: (row) => row.template },
+  { key: "action", header: "Action", render: (row) => row.action },
+];
+
+const RUN_COLUMNS: Column<DunningRun>[] = [
+  { key: "id", header: "Run ID", render: (row) => row.id },
+  { key: "date", header: "Date", render: (row) => row.date },
+  { key: "level", header: "Level", render: (row) => row.level },
+  { key: "sent", header: "Sent", render: (row) => row.sent },
+  { key: "opened", header: "Opened", render: (row) => row.opened },
+  {
+    key: "amount",
+    header: "Amount",
+    align: "right" as const,
+    render: (row) => `$${row.amount.toLocaleString()}`,
   },
 ];
 
@@ -169,113 +210,26 @@ export default function DunningPage() {
         </Card>
       </div>
 
-      <Card padding="lg">
+      <Card padding="none">
         <h3
           className="ui-heading-sm"
-          style={{ marginBottom: "var(--space-3)" }}
+          style={{ padding: "var(--space-4) var(--space-4) 0" }}
         >
           Dunning Levels
         </h3>
-        <div style={{ overflowX: "auto" }}>
-          <table
-            className="ui-table"
-            style={{ width: "100%", borderCollapse: "collapse" }}
-          >
-            <thead>
-              <tr
-                style={{
-                  borderBottom: "1px solid var(--color-border)",
-                  textAlign: "left",
-                }}
-              >
-                <th
-                  style={{
-                    padding: "var(--space-2) var(--space-3)",
-                    fontWeight: 600,
-                    fontSize: "var(--font-sm)",
-                  }}
-                >
-                  Level
-                </th>
-                <th
-                  style={{
-                    padding: "var(--space-2) var(--space-3)",
-                    fontWeight: 600,
-                    fontSize: "var(--font-sm)",
-                  }}
-                >
-                  Days Overdue
-                </th>
-                <th
-                  style={{
-                    padding: "var(--space-2) var(--space-3)",
-                    fontWeight: 600,
-                    fontSize: "var(--font-sm)",
-                  }}
-                >
-                  Template
-                </th>
-                <th
-                  style={{
-                    padding: "var(--space-2) var(--space-3)",
-                    fontWeight: 600,
-                    fontSize: "var(--font-sm)",
-                  }}
-                >
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {DUNNING_LEVELS.map((dl) => (
-                <tr
-                  key={dl.level}
-                  style={{ borderBottom: "1px solid var(--color-border)" }}
-                >
-                  <td
-                    style={{
-                      padding: "var(--space-2) var(--space-3)",
-                      fontSize: "var(--font-sm)",
-                      fontWeight: 600,
-                    }}
-                  >
-                    {dl.level}
-                  </td>
-                  <td
-                    style={{
-                      padding: "var(--space-2) var(--space-3)",
-                      fontSize: "var(--font-sm)",
-                    }}
-                  >
-                    {dl.daysOverdue}
-                  </td>
-                  <td
-                    style={{
-                      padding: "var(--space-2) var(--space-3)",
-                      fontSize: "var(--font-sm)",
-                    }}
-                  >
-                    {dl.template}
-                  </td>
-                  <td
-                    style={{
-                      padding: "var(--space-2) var(--space-3)",
-                      fontSize: "var(--font-sm)",
-                    }}
-                  >
-                    {dl.action}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          columns={LEVEL_COLUMNS}
+          data={DUNNING_LEVELS}
+          rowKey={(row) => row.level}
+          emptyTitle="No dunning levels configured"
+          emptyMessage="Set up escalation levels to begin automated collections."
+        />
       </Card>
 
-      <Card padding="lg">
+      <Card padding="none">
         <h3
           className="ui-heading-sm"
-          style={{ marginBottom: "var(--space-3)" }}
+          style={{ padding: "var(--space-4) var(--space-4) 0" }}
         >
           <Clock
             size={16}
@@ -283,147 +237,13 @@ export default function DunningPage() {
           />
           Recent Dunning Runs
         </h3>
-        <div style={{ overflowX: "auto" }}>
-          <table
-            className="ui-table"
-            style={{ width: "100%", borderCollapse: "collapse" }}
-          >
-            <thead>
-              <tr
-                style={{
-                  borderBottom: "1px solid var(--color-border)",
-                  textAlign: "left",
-                }}
-              >
-                <th
-                  style={{
-                    padding: "var(--space-2) var(--space-3)",
-                    fontWeight: 600,
-                    fontSize: "var(--font-sm)",
-                  }}
-                >
-                  Run ID
-                </th>
-                <th
-                  style={{
-                    padding: "var(--space-2) var(--space-3)",
-                    fontWeight: 600,
-                    fontSize: "var(--font-sm)",
-                  }}
-                >
-                  Date
-                </th>
-                <th
-                  style={{
-                    padding: "var(--space-2) var(--space-3)",
-                    fontWeight: 600,
-                    fontSize: "var(--font-sm)",
-                  }}
-                >
-                  Level
-                </th>
-                <th
-                  style={{
-                    padding: "var(--space-2) var(--space-3)",
-                    fontWeight: 600,
-                    fontSize: "var(--font-sm)",
-                  }}
-                >
-                  Sent
-                </th>
-                <th
-                  style={{
-                    padding: "var(--space-2) var(--space-3)",
-                    fontWeight: 600,
-                    fontSize: "var(--font-sm)",
-                  }}
-                >
-                  Opened
-                </th>
-                <th
-                  style={{
-                    padding: "var(--space-2) var(--space-3)",
-                    fontWeight: 600,
-                    fontSize: "var(--font-sm)",
-                    textAlign: "right",
-                  }}
-                >
-                  Amount
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {RECENT_RUNS.map((run) => (
-                <tr
-                  key={run.id}
-                  style={{
-                    borderBottom: "1px solid var(--color-border)",
-                    cursor: "pointer",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.background =
-                      "var(--color-surface-2)")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.background = "transparent")
-                  }
-                >
-                  <td
-                    style={{
-                      padding: "var(--space-2) var(--space-3)",
-                      fontSize: "var(--font-sm)",
-                      fontWeight: 600,
-                    }}
-                  >
-                    {run.id}
-                  </td>
-                  <td
-                    style={{
-                      padding: "var(--space-2) var(--space-3)",
-                      fontSize: "var(--font-sm)",
-                    }}
-                  >
-                    {run.date}
-                  </td>
-                  <td
-                    style={{
-                      padding: "var(--space-2) var(--space-3)",
-                      fontSize: "var(--font-sm)",
-                    }}
-                  >
-                    {run.level}
-                  </td>
-                  <td
-                    style={{
-                      padding: "var(--space-2) var(--space-3)",
-                      fontSize: "var(--font-sm)",
-                    }}
-                  >
-                    {run.sent}
-                  </td>
-                  <td
-                    style={{
-                      padding: "var(--space-2) var(--space-3)",
-                      fontSize: "var(--font-sm)",
-                    }}
-                  >
-                    {run.opened}
-                  </td>
-                  <td
-                    style={{
-                      padding: "var(--space-2) var(--space-3)",
-                      fontSize: "var(--font-sm)",
-                      textAlign: "right",
-                      fontWeight: 600,
-                    }}
-                  >
-                    ${run.amount.toLocaleString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          columns={RUN_COLUMNS}
+          data={RECENT_RUNS}
+          rowKey={(row) => row.id}
+          emptyTitle="No dunning runs yet"
+          emptyMessage="Runs will appear here once a dunning campaign executes."
+        />
       </Card>
     </div>
   );

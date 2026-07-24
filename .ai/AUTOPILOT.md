@@ -134,6 +134,19 @@ must be actively watched every cycle:
 - 1500+ features per module MUST fit under this tab hierarchy — plan the
   tab/sub-tab taxonomy as part of the module's UI-layer work (§ Horizontal
   build order step 3), not ad hoc per feature.
+- **"Done" means both conditions, not just a wrapper file** (corrected
+  2026-07-24 after a 2026-07-21 entry falsely claimed all 20 modules were
+  migrated — see `.ai/MODULE_REGISTRY.md` § UI Navigation Compliance for the
+  audited per-module status and the correction entry): a module's UI-layer
+  step is only complete when **(a)** its sidebar descriptor
+  (`apps/web/src/navigation/descriptors/<module>.ts`) is trimmed to ≤15 flat
+  top-level items, **and** **(b)** its pages actually render through
+  `ModuleTabLayout`/`SubTabBar` reading `?tab=`/`?subtab=`. Creating a
+  `<Module>TabLayout` wrapper component while leaving the deep/grouped
+  sidebar unchanged and wiring only a handful of pages (the state CRM and
+  Inventory were left in) does **not** count as compliant — check the
+  MODULE_REGISTRY compliance table before marking a cycle's UI-layer work
+  done, and update that table's row when it lands.
 
 ---
 

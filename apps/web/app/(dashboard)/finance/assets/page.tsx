@@ -2,10 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Building2, FileText, TrendingDown, Trash2 } from "lucide-react";
+import {
+  Building2,
+  FileText,
+  TrendingDown,
+  Trash2,
+  AlertTriangle,
+} from "lucide-react";
 import { FinanceTabLayout } from "@/components/finance/FinanceTabLayout";
 import { RouteGuard } from "@unerp/framework";
-import { Card } from "@unerp/ui";
+import { Card, useToast } from "@unerp/ui";
 import { apiGet } from "@/lib/api";
 
 import FixedAssetsPage from "../advanced/fixed-assets/page";
@@ -66,7 +72,9 @@ const ASSETS_TABS = [
 export default function AssetsPage() {
   const searchParams = useSearchParams();
   const activeTab = searchParams.get("tab") || "overview";
+  const { error: notifyError } = useToast();
   const [summary, setSummary] = useState<AssetsSummary>(EMPTY_ASSETS_SUMMARY);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
 
   useEffect(() => {
     if (activeTab !== "overview") return;
@@ -97,12 +105,19 @@ export default function AssetsPage() {
           monthlyDepreciation,
           activeLeases: leaseSummary?.activeLeases ?? 0,
         });
+        setSummaryError(null);
       })
-      .catch(() => {});
+      .catch((err) => {
+        if (cancelled) return;
+        const message =
+          err instanceof Error ? err.message : "Failed to load assets summary";
+        setSummaryError(message);
+        notifyError("Failed to load Assets summary", message);
+      });
     return () => {
       cancelled = true;
     };
-  }, [activeTab]);
+  }, [activeTab, notifyError]);
 
   return (
     <RouteGuard permission="finance.assets.read">
@@ -115,6 +130,13 @@ export default function AssetsPage() {
       >
         {activeTab === "overview" && (
           <div className="ui-stack-4 ui-animate-in">
+            {summaryError && (
+              <div className="ui-alert ui-alert-danger">
+                <AlertTriangle size={16} />
+                Failed to load assets summary — figures below may be stale.{" "}
+                {summaryError}
+              </div>
+            )}
             <div className="ui-grid-3">
               <Card padding="md">
                 <div className="ui-stack-2">

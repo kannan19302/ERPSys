@@ -16,7 +16,14 @@ import {
   ArrowRight,
   Check,
 } from "lucide-react";
-import { Card, Button, ListPageTemplate, type ListColumn } from "@unerp/ui";
+import {
+  Card,
+  Button,
+  ListPageTemplate,
+  type ListColumn,
+  DataTable,
+  type Column,
+} from "@unerp/ui";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
 interface BudgetScenario {
@@ -300,6 +307,74 @@ export default function BudgetScenariosPage() {
     return map;
   }, [lines]);
 
+  const monthColumns: Column<GLAccount>[] = Array.from(
+    { length: 12 },
+    (_, i) => {
+      const month = i + 1;
+      return {
+        key: `month-${month}`,
+        header: `Month ${month}`,
+        align: "right" as const,
+        render: (acc: GLAccount) => {
+          const cellKey = `${acc.id}-${month}`;
+          const val = lineMap.get(cellKey) || 0;
+          const isEdited = editedCells[cellKey] !== undefined;
+          const displayVal = isEdited ? editedCells[cellKey] : val.toString();
+          return (
+            <input
+              type="number"
+              className={`w-full text-right p-1 text-sm border rounded focus:ring-1 focus:outline-none ${
+                selectedScenario?.isLocked
+                  ? "bg-gray-50 border-transparent cursor-not-allowed"
+                  : isEdited
+                    ? "border-amber-400 bg-amber-50 focus:ring-amber-500"
+                    : "border-gray-200 focus:ring-blue-500"
+              }`}
+              value={displayVal}
+              onChange={(e) => handleCellChange(acc.id, month, e.target.value)}
+              onBlur={() => handleSaveCell(acc.id, month)}
+              disabled={selectedScenario?.isLocked}
+            />
+          );
+        },
+      };
+    },
+  );
+
+  const monthlyGridColumns: Column<GLAccount>[] = [
+    {
+      key: "account",
+      header: "GL Account",
+      render: (acc) => (
+        <div>
+          <div className="text-xs text-gray-400">{acc.code}</div>
+          <div className="truncate font-semibold text-gray-700">{acc.name}</div>
+        </div>
+      ),
+    },
+    ...monthColumns,
+    {
+      key: "rowTotal",
+      header: "Row Total",
+      align: "right" as const,
+      render: (acc) => {
+        let rowTotal = 0;
+        for (let m = 1; m <= 12; m++) {
+          rowTotal += lineMap.get(`${acc.id}-${m}`) || 0;
+        }
+        return (
+          <span className="font-bold text-gray-800">
+            $
+            {rowTotal.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </span>
+        );
+      },
+    },
+  ];
+
   return (
     <RouteGuard permission="finance.budget-scenarios.read">
       <div className="ui-page-container">
@@ -495,90 +570,14 @@ export default function BudgetScenariosPage() {
               <h3 className="font-semibold text-sm p-4 border-b border-gray-100">
                 Monthly Budget Grid
               </h3>
-              {linesLoading ? (
-                <div className="ui-loading">
-                  <Loader2 className="animate-spin mr-2" size={20} /> Loading
-                  grid...
-                </div>
-              ) : (
-                <table className="ui-table min-w-[1200px]">
-                  <thead>
-                    <tr>
-                      <th className="ui-th sticky left-0 bg-white z-10 w-[200px]">
-                        GL Account
-                      </th>
-                      {Array.from({ length: 12 }, (_, i) => (
-                        <th key={i + 1} className="ui-th text-right w-[90px]">
-                          Month {i + 1}
-                        </th>
-                      ))}
-                      <th className="ui-th text-right w-[110px]">Row Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {accounts.map((acc) => {
-                      let rowTotal = 0;
-                      return (
-                        <tr key={acc.id} className="ui-tr">
-                          <td className="ui-td sticky left-0 bg-white z-10 font-medium">
-                            <div className="text-xs text-gray-400">
-                              {acc.code}
-                            </div>
-                            <div className="truncate font-semibold text-gray-700">
-                              {acc.name}
-                            </div>
-                          </td>
-
-                          {Array.from({ length: 12 }, (_, i) => {
-                            const month = i + 1;
-                            const cellKey = `${acc.id}-${month}`;
-                            const val = lineMap.get(cellKey) || 0;
-                            rowTotal += val;
-
-                            const isEdited = editedCells[cellKey] !== undefined;
-                            const displayVal = isEdited
-                              ? editedCells[cellKey]
-                              : val.toString();
-
-                            return (
-                              <td key={month} className="ui-td text-right p-1">
-                                <input
-                                  type="number"
-                                  className={`w-full text-right p-1 text-sm border rounded focus:ring-1 focus:outline-none ${
-                                    selectedScenario.isLocked
-                                      ? "bg-gray-50 border-transparent cursor-not-allowed"
-                                      : isEdited
-                                        ? "border-amber-400 bg-amber-50 focus:ring-amber-500"
-                                        : "border-gray-200 focus:ring-blue-500"
-                                  }`}
-                                  value={displayVal}
-                                  onChange={(e) =>
-                                    handleCellChange(
-                                      acc.id,
-                                      month,
-                                      e.target.value,
-                                    )
-                                  }
-                                  onBlur={() => handleSaveCell(acc.id, month)}
-                                  disabled={selectedScenario.isLocked}
-                                />
-                              </td>
-                            );
-                          })}
-
-                          <td className="ui-td text-right font-bold text-gray-800">
-                            $
-                            {rowTotal.toLocaleString(undefined, {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              )}
+              <DataTable
+                columns={monthlyGridColumns}
+                data={accounts}
+                rowKey={(acc) => acc.id}
+                loading={linesLoading}
+                emptyTitle="No GL accounts found"
+                emptyMessage="No accounts are available to budget for this scenario."
+              />
             </Card>
           </div>
         )}

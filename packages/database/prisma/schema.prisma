@@ -4541,6 +4541,7 @@ model Account {
   eliminationDestinationRules EliminationRule[]     @relation("EliminationDestinationAccount")
   ruleSourceAccounts          AccountingBookRule[]  @relation("RuleSourceAccount")
   ruleDestinationAccounts     AccountingBookRule[]  @relation("RuleDestinationAccount")
+  bankAccounts                BankAccount[]
 
   @@unique([tenantId, orgId, code])
   @@index([tenantId])
@@ -6822,12 +6823,14 @@ model BankAccount {
   status               String                @default("ACTIVE")
   createdAt            DateTime              @default(now()) @map("created_at")
   updatedAt            DateTime              @updatedAt @map("updated_at")
+  account              Account               @relation(fields: [accountId], references: [id])
   paymentRuns          PaymentRun[]
   treasuryTransactions TreasuryTransaction[]
   connections          BankConnection[]
   paymentBatches       PaymentBatch[]
 
   @@index([tenantId])
+  @@index([accountId])
   @@map("bank_accounts")
 }
 

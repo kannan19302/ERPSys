@@ -2,11 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Calculator, FileText, Globe, ShieldCheck, Eye } from "lucide-react";
+import {
+  Calculator,
+  FileText,
+  Globe,
+  ShieldCheck,
+  Eye,
+  AlertTriangle,
+} from "lucide-react";
 import { FinanceTabLayout } from "@/components/finance/FinanceTabLayout";
 import { SubTabBar } from "@/components/finance/SubTabBar";
 import { RouteGuard, useApiClient } from "@unerp/framework";
-import { Card } from "@unerp/ui";
+import { Card, useToast } from "@unerp/ui";
 
 import TaxEnginePage from "../advanced/tax-engine/page";
 import TaxFilingPage from "../advanced/tax-filing/page";
@@ -99,7 +106,9 @@ export default function TaxPage() {
   const activeTab = searchParams.get("tab") || "overview";
   const subTab = searchParams.get("subtab");
   const client = useApiClient();
+  const { error: notifyError } = useToast();
   const [summary, setSummary] = useState<TaxSummary>(EMPTY_TAX_SUMMARY);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
 
   useEffect(() => {
     if (activeTab !== "overview") return;
@@ -115,12 +124,19 @@ export default function TaxPage() {
             rates.map((r) => r.jurisdiction).filter(Boolean),
           ).size,
         });
+        setSummaryError(null);
       })
-      .catch(() => {});
+      .catch((err) => {
+        if (cancelled) return;
+        const message =
+          err instanceof Error ? err.message : "Failed to load tax summary";
+        setSummaryError(message);
+        notifyError("Failed to load Tax summary", message);
+      });
     return () => {
       cancelled = true;
     };
-  }, [activeTab, client]);
+  }, [activeTab, client, notifyError]);
 
   return (
     <RouteGuard permission="finance.tax.read">
@@ -133,6 +149,13 @@ export default function TaxPage() {
       >
         {activeTab === "overview" && (
           <div className="ui-stack-4 ui-animate-in">
+            {summaryError && (
+              <div className="ui-alert ui-alert-danger">
+                <AlertTriangle size={16} />
+                Failed to load tax summary — figures below may be stale.{" "}
+                {summaryError}
+              </div>
+            )}
             <div className="ui-grid-2">
               <Card padding="md">
                 <div className="ui-stack-2">

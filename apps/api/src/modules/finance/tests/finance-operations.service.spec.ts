@@ -116,10 +116,13 @@ const mockPrisma = vi.hoisted(() => ({
   },
   account: {
     findMany: vi.fn(),
+    findFirst: vi.fn(),
+    create: vi.fn(),
   },
   journalEntry: {
     findMany: vi.fn(),
     aggregate: vi.fn(),
+    groupBy: vi.fn(),
   },
   journal: {
     findMany: vi.fn(),
@@ -267,6 +270,19 @@ describe("FinanceOperationsService", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     service = new FinanceOperationsService();
+    // Default GL-linkage plumbing used by bank-account balance derivation.
+    mockPrisma.account.findFirst.mockResolvedValue({
+      id: "gl-cash-1",
+      type: "ASSET",
+    });
+    mockPrisma.account.create.mockResolvedValue({
+      id: "gl-cash-1",
+      type: "ASSET",
+    });
+    mockPrisma.account.findMany.mockResolvedValue([
+      { id: "gl-cash-1", type: "ASSET" },
+    ]);
+    mockPrisma.journalEntry.groupBy.mockResolvedValue([]);
   });
 
   // ── Payment Terms ──

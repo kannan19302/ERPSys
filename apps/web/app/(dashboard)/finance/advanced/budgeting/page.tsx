@@ -14,6 +14,8 @@ import {
   FormField,
   Select,
   KPICard,
+  DataTable,
+  type Column,
 } from "@unerp/ui";
 import {
   Target,
@@ -447,6 +449,210 @@ export default function BudgetingPage() {
     );
   }
 
+  const budgetColumns: Column<BudgetAllocation>[] = [
+    {
+      key: "account",
+      header: "Account",
+      render: (b) =>
+        b.account ? `${b.account.code} - ${b.account.name}` : b.accountId,
+    },
+    {
+      key: "dimension",
+      header: "Dimension",
+      render: (b) =>
+        b.costCenter ? (
+          <span className="ui-hstack-2">
+            <Layers size={12} /> {b.costCenter.name}
+          </span>
+        ) : b.project ? (
+          <span className="ui-hstack-2">
+            <PieChart size={12} /> {b.project.name}
+          </span>
+        ) : (
+          "Company-wide"
+        ),
+    },
+    {
+      key: "period",
+      header: "Period",
+      render: (b) =>
+        `${new Date(b.startDate).toLocaleDateString()} - ${new Date(
+          b.endDate,
+        ).toLocaleDateString()}`,
+    },
+    {
+      key: "amount",
+      header: "Amount",
+      align: "right" as const,
+      render: (b) => fmtBalance(b.amount),
+    },
+    {
+      key: "actions",
+      header: "",
+      align: "right" as const,
+      render: (b) => (
+        <div className="ui-hstack-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => loadVsActuals(b)}
+            title="View Budget vs Actuals"
+          >
+            <BarChart2 size={12} />
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => handleOpenEdit(b)}
+            title="Edit Budget"
+          >
+            <Edit2 size={12} />
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => confirmDelete(b)}
+            title="Delete Budget"
+            className="ui-text-danger"
+          >
+            <Trash2 size={12} />
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
+  const reallocationColumns: Column<BudgetReallocation>[] = [
+    { key: "number", header: "Req Number", render: (r) => r.number },
+    {
+      key: "description",
+      header: "Description",
+      render: (r) => r.description || "N/A",
+    },
+    {
+      key: "transfer",
+      header: "Transfer Detail",
+      render: (r) => {
+        const sourceLine = r.lines.find((l) => l.type === "SOURCE");
+        const destLine = r.lines.find((l) => l.type === "DESTINATION");
+        if (!sourceLine || !destLine) return "Invalid Lines";
+        return (
+          <span className="ui-hstack-2">
+            <span>{sourceLine.budget?.account?.name || "Source"}</span>
+            <ArrowRight size={14} />
+            <span>{destLine.budget?.account?.name || "Destination"}</span>
+            <span>({fmtBalance(sourceLine.amount)})</span>
+          </span>
+        );
+      },
+    },
+    {
+      key: "status",
+      header: "Status",
+      render: (r) => (
+        <Badge
+          variant={
+            r.status === "APPROVED"
+              ? "success"
+              : r.status === "REJECTED"
+                ? "danger"
+                : r.status === "SUBMITTED"
+                  ? "info"
+                  : "warning"
+          }
+        >
+          {r.status}
+        </Badge>
+      ),
+    },
+    {
+      key: "requestedBy",
+      header: "Requested By",
+      render: (r) => r.requestedBy,
+    },
+    {
+      key: "actions",
+      header: "Actions",
+      render: (r) => (
+        <div className="ui-hstack-2">
+          {r.status === "DRAFT" && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => executeReallocAction(r.id, "submit")}
+            >
+              Submit
+            </Button>
+          )}
+          {r.status === "SUBMITTED" && (
+            <>
+              <Button
+                size="sm"
+                variant="outline"
+                className="ui-text-success"
+                onClick={() => executeReallocAction(r.id, "approve")}
+              >
+                <Check size={14} className="mr-1" /> Approve
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="ui-text-danger"
+                onClick={() => executeReallocAction(r.id, "reject")}
+              >
+                <Ban size={14} className="mr-1" /> Reject
+              </Button>
+            </>
+          )}
+        </div>
+      ),
+    },
+  ];
+
+  const vsActualColumns: Column<BudgetVsActualData["items"][number]>[] = [
+    {
+      key: "account",
+      header: "Account Code / Name",
+      render: (item) => `${item.accountCode} - ${item.accountName}`,
+    },
+    {
+      key: "budgetAmount",
+      header: "Budget Amount",
+      align: "right" as const,
+      render: (item) => fmtBalance(item.budgetAmount),
+    },
+    {
+      key: "actualAmount",
+      header: "Actual Amount",
+      align: "right" as const,
+      render: (item) => fmtBalance(item.actualAmount),
+    },
+    {
+      key: "variance",
+      header: "Variance",
+      align: "right" as const,
+      render: (item) => (
+        <span
+          className={item.variance >= 0 ? "ui-text-success" : "ui-text-danger"}
+        >
+          {fmtBalance(item.variance)}
+        </span>
+      ),
+    },
+    {
+      key: "variancePercent",
+      header: "% Diff",
+      align: "right" as const,
+      render: (item) => (
+        <span
+          className={item.variance >= 0 ? "ui-text-success" : "ui-text-danger"}
+        >
+          {item.variancePercent.toFixed(1)}%
+        </span>
+      ),
+    },
+  ];
+
   return (
     <RouteGuard permission="finance.budget-scenarios.read">
       <div className="ui-stack-6">
@@ -829,85 +1035,13 @@ export default function BudgetingPage() {
                 <Target size={20} />
                 <h3 className={styles.s24}>Allocated Budgets</h3>
               </div>
-              <div className="builder-table-wrapper">
-                <table className={styles.s25}>
-                  <thead>
-                    <tr className={styles.s26}>
-                      <th className={styles.s27}>Account</th>
-                      <th className={styles.s28}>Dimension</th>
-                      <th className={styles.s29}>Period</th>
-                      <th className={styles.s30}>Amount</th>
-                      <th className={styles.s31}></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {budgets.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className={styles.s32}>
-                          No budget allocations found.
-                        </td>
-                      </tr>
-                    ) : (
-                      budgets.map((b) => (
-                        <tr key={b.id} className="border-b">
-                          <td className={styles.s33}>
-                            {b.account
-                              ? `${b.account.code} - ${b.account.name}`
-                              : b.accountId}
-                          </td>
-                          <td className={styles.s34}>
-                            {b.costCenter ? (
-                              <span className={styles.s35}>
-                                <Layers size={12} /> {b.costCenter.name}
-                              </span>
-                            ) : b.project ? (
-                              <span className={styles.s36}>
-                                <PieChart size={12} /> {b.project.name}
-                              </span>
-                            ) : (
-                              "Company-wide"
-                            )}
-                          </td>
-                          <td className={styles.s37}>
-                            {new Date(b.startDate).toLocaleDateString()} -{" "}
-                            {new Date(b.endDate).toLocaleDateString()}
-                          </td>
-                          <td className={styles.s38}>{fmtBalance(b.amount)}</td>
-                          <td className={styles.s39}>
-                            <div className={styles.s40}>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => loadVsActuals(b)}
-                                title="View Budget vs Actuals"
-                              >
-                                <BarChart2 size={12} />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleOpenEdit(b)}
-                                title="Edit Budget"
-                              >
-                                <Edit2 size={12} />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => confirmDelete(b)}
-                                title="Delete Budget"
-                                className="ui-text-danger"
-                              >
-                                <Trash2 size={12} />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+              <DataTable
+                columns={budgetColumns}
+                data={budgets}
+                rowKey={(b) => b.id}
+                emptyTitle="No budget allocations found"
+                emptyMessage="Create a budget allocation to start tracking spend against it."
+              />
             </Card>
           </div>
         )}
@@ -918,118 +1052,13 @@ export default function BudgetingPage() {
               <RefreshCw size={20} />
               <h3 className={styles.s42}>Budget Reallocations</h3>
             </div>
-            <div className="builder-table-wrapper">
-              <table className={styles.s43}>
-                <thead>
-                  <tr className={styles.s44}>
-                    <th className={styles.s45}>Req Number</th>
-                    <th className={styles.s46}>Description</th>
-                    <th className={styles.s47}>Transfer Detail</th>
-                    <th className={styles.s48}>Status</th>
-                    <th className={styles.s49}>Requested By</th>
-                    <th className={styles.s50}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {reallocations.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className={styles.s51}>
-                        No budget reallocations found.
-                      </td>
-                    </tr>
-                  ) : (
-                    reallocations.map((r) => {
-                      const sourceLine = r.lines.find(
-                        (l) => l.type === "SOURCE",
-                      );
-                      const destLine = r.lines.find(
-                        (l) => l.type === "DESTINATION",
-                      );
-                      return (
-                        <tr key={r.id} className="border-b">
-                          <td className={styles.s52}>{r.number}</td>
-                          <td className={styles.s53}>
-                            {r.description || "N/A"}
-                          </td>
-                          <td className={styles.s54}>
-                            {sourceLine && destLine ? (
-                              <div className={styles.s55}>
-                                <span className={styles.s56}>
-                                  {sourceLine.budget?.account?.name || "Source"}
-                                </span>
-                                <ArrowRight size={14} />
-                                <span className={styles.s57}>
-                                  {destLine.budget?.account?.name ||
-                                    "Destination"}
-                                </span>
-                                <span>({fmtBalance(sourceLine.amount)})</span>
-                              </div>
-                            ) : (
-                              "Invalid Lines"
-                            )}
-                          </td>
-                          <td className={styles.s58}>
-                            <Badge
-                              variant={
-                                r.status === "APPROVED"
-                                  ? "success"
-                                  : r.status === "REJECTED"
-                                    ? "danger"
-                                    : r.status === "SUBMITTED"
-                                      ? "info"
-                                      : "warning"
-                              }
-                            >
-                              {r.status}
-                            </Badge>
-                          </td>
-                          <td className={styles.s59}>{r.requestedBy}</td>
-                          <td className={styles.s60}>
-                            <div className={styles.s61}>
-                              {r.status === "DRAFT" && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() =>
-                                    executeReallocAction(r.id, "submit")
-                                  }
-                                >
-                                  Submit
-                                </Button>
-                              )}
-                              {r.status === "SUBMITTED" && (
-                                <>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="ui-text-success"
-                                    onClick={() =>
-                                      executeReallocAction(r.id, "approve")
-                                    }
-                                  >
-                                    <Check size={14} className="mr-1" /> Approve
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="ui-text-danger"
-                                    onClick={() =>
-                                      executeReallocAction(r.id, "reject")
-                                    }
-                                  >
-                                    <Ban size={14} className="mr-1" /> Reject
-                                  </Button>
-                                </>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
+            <DataTable
+              columns={reallocationColumns}
+              data={reallocations}
+              rowKey={(r) => r.id}
+              emptyTitle="No budget reallocations found"
+              emptyMessage="Submit a reallocation request to transfer budget between accounts."
+            />
           </Card>
         )}
 
@@ -1239,44 +1268,13 @@ export default function BudgetingPage() {
               )}
 
               {/* Variance Table */}
-              <div className={styles.s78}>
-                <table className={styles.s79}>
-                  <thead>
-                    <tr className={styles.s80}>
-                      <th className={styles.s81}>Account Code / Name</th>
-                      <th className={styles.s82}>Budget Amount</th>
-                      <th className={styles.s83}>Actual Amount</th>
-                      <th className={styles.s84}>Variance</th>
-                      <th className={styles.s85}>% Diff</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {vsActualData.items.map((item, idx) => (
-                      <tr key={idx} className="border-b">
-                        <td className={styles.s86}>
-                          {item.accountCode} - {item.accountName}
-                        </td>
-                        <td className={styles.s87}>
-                          {fmtBalance(item.budgetAmount)}
-                        </td>
-                        <td className={styles.s88}>
-                          {fmtBalance(item.actualAmount)}
-                        </td>
-                        <td
-                          className={`${styles.varianceCell} ${item.variance >= 0 ? styles.variancePositive : styles.varianceNegative}`}
-                        >
-                          {fmtBalance(item.variance)}
-                        </td>
-                        <td
-                          className={`${styles.varianceCell} ${item.variance >= 0 ? styles.variancePositive : styles.varianceNegative}`}
-                        >
-                          {item.variancePercent.toFixed(1)}%
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <DataTable
+                columns={vsActualColumns}
+                data={vsActualData.items}
+                rowKey={(item, idx) => `${item.accountId}-${idx}`}
+                emptyTitle="No variance data"
+                emptyMessage="No account activity for this budget period."
+              />
             </div>
           ) : (
             <div className={styles.s89}>No budget analysis loaded.</div>
