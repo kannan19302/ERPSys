@@ -11,7 +11,6 @@ import {
   GitCompare,
   AlertTriangle,
 } from "lucide-react";
-import { FinanceTabLayout } from "@/components/finance/FinanceTabLayout";
 import { SubTabBar } from "@/components/finance/SubTabBar";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 import { Card, useToast } from "@unerp/ui";
@@ -135,157 +134,149 @@ export default function BudgetPlanningPage() {
 
   return (
     <RouteGuard permission="finance.fpa.read">
-      <FinanceTabLayout
-        tabs={BUDGET_TABS}
-        moduleId="budget-planning"
-        moduleLabel="Budget & Planning"
-        moduleIcon={PieChart}
-        moduleDescription="Budgets, forecasts, scenario planning, and financial KPIs"
-      >
-        {activeTab === "overview" && (
-          <div className="ui-stack-4 ui-animate-in">
-            {summaryError && (
-              <div className="ui-alert ui-alert-danger">
-                <AlertTriangle size={16} />
-                Failed to load budget summary — figures below may be stale.{" "}
-                {summaryError}
+      {activeTab === "overview" && (
+        <div className="ui-stack-4 ui-animate-in">
+          {summaryError && (
+            <div className="ui-alert ui-alert-danger">
+              <AlertTriangle size={16} />
+              Failed to load budget summary — figures below may be stale.{" "}
+              {summaryError}
+            </div>
+          )}
+          <div className="ui-grid-3">
+            <Card padding="md">
+              <div className="ui-stack-2">
+                <p className="ui-text-xs-muted">Total Budget</p>
+                <p
+                  className="ui-heading-sm"
+                  style={{ color: "var(--color-primary)" }}
+                >
+                  {summary.totalBudget.toLocaleString(undefined, {
+                    style: "currency",
+                    currency: "USD",
+                    maximumFractionDigits: 0,
+                  })}
+                </p>
+                <p className="ui-text-xs-muted">
+                  Across {summary.activeBudgets} active budgets
+                </p>
               </div>
+            </Card>
+            <Card padding="md">
+              <div className="ui-stack-2">
+                <p className="ui-text-xs-muted">YTD Variance</p>
+                <p
+                  className="ui-heading-sm"
+                  style={{
+                    color:
+                      variancePct > 0
+                        ? "var(--color-danger)"
+                        : "var(--color-success)",
+                  }}
+                >
+                  {variancePct > 0 ? "+" : ""}
+                  {variancePct}%
+                </p>
+                <p className="ui-text-xs-muted">
+                  {summary.totalSpent.toLocaleString(undefined, {
+                    style: "currency",
+                    currency: "USD",
+                    maximumFractionDigits: 0,
+                  })}{" "}
+                  spent
+                </p>
+              </div>
+            </Card>
+            <Card padding="md">
+              <div className="ui-stack-2">
+                <p className="ui-text-xs-muted">Active Budgets</p>
+                <p
+                  className="ui-heading-sm"
+                  style={{ color: "var(--color-success)" }}
+                >
+                  {summary.activeBudgets}
+                </p>
+                <p className="ui-text-xs-muted">
+                  See Scenario Planning tab for forecasts
+                </p>
+              </div>
+            </Card>
+          </div>
+          <BudgetingPage />
+        </div>
+      )}
+      {activeTab === "budgets" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <SubTabBar
+            tabs={[
+              {
+                id: "budgeting",
+                label: "Budgeting & Planning",
+                href: "/finance/budget-planning?tab=budgets&subtab=budgeting",
+              },
+              {
+                id: "scenarios",
+                label: "Budget Scenarios",
+                href: "/finance/budget-planning?tab=budgets&subtab=scenarios",
+              },
+            ]}
+          />
+          <div style={{ marginTop: "var(--space-3)" }}>
+            {subTab === "scenarios" ? (
+              <BudgetScenariosPage />
+            ) : (
+              <BudgetingPage />
             )}
-            <div className="ui-grid-3">
-              <Card padding="md">
-                <div className="ui-stack-2">
-                  <p className="ui-text-xs-muted">Total Budget</p>
-                  <p
-                    className="ui-heading-sm"
-                    style={{ color: "var(--color-primary)" }}
-                  >
-                    {summary.totalBudget.toLocaleString(undefined, {
-                      style: "currency",
-                      currency: "USD",
-                      maximumFractionDigits: 0,
-                    })}
-                  </p>
-                  <p className="ui-text-xs-muted">
-                    Across {summary.activeBudgets} active budgets
-                  </p>
-                </div>
-              </Card>
-              <Card padding="md">
-                <div className="ui-stack-2">
-                  <p className="ui-text-xs-muted">YTD Variance</p>
-                  <p
-                    className="ui-heading-sm"
-                    style={{
-                      color:
-                        variancePct > 0
-                          ? "var(--color-danger)"
-                          : "var(--color-success)",
-                    }}
-                  >
-                    {variancePct > 0 ? "+" : ""}
-                    {variancePct}%
-                  </p>
-                  <p className="ui-text-xs-muted">
-                    {summary.totalSpent.toLocaleString(undefined, {
-                      style: "currency",
-                      currency: "USD",
-                      maximumFractionDigits: 0,
-                    })}{" "}
-                    spent
-                  </p>
-                </div>
-              </Card>
-              <Card padding="md">
-                <div className="ui-stack-2">
-                  <p className="ui-text-xs-muted">Active Budgets</p>
-                  <p
-                    className="ui-heading-sm"
-                    style={{ color: "var(--color-success)" }}
-                  >
-                    {summary.activeBudgets}
-                  </p>
-                  <p className="ui-text-xs-muted">
-                    See Scenario Planning tab for forecasts
-                  </p>
-                </div>
-              </Card>
-            </div>
-            <BudgetingPage />
           </div>
-        )}
-        {activeTab === "budgets" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <SubTabBar
-              tabs={[
-                {
-                  id: "budgeting",
-                  label: "Budgeting & Planning",
-                  href: "/finance/budget-planning?tab=budgets&subtab=budgeting",
-                },
-                {
-                  id: "scenarios",
-                  label: "Budget Scenarios",
-                  href: "/finance/budget-planning?tab=budgets&subtab=scenarios",
-                },
-              ]}
-            />
-            <div style={{ marginTop: "var(--space-3)" }}>
-              {subTab === "scenarios" ? (
-                <BudgetScenariosPage />
-              ) : (
-                <BudgetingPage />
-              )}
-            </div>
+        </div>
+      )}
+      {activeTab === "forecasts" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <ForecastScenariosPage />
+        </div>
+      )}
+      {activeTab === "scenario-planning" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <SubTabBar
+            tabs={[
+              {
+                id: "scenarios",
+                label: "Budget Scenarios",
+                href: "/finance/budget-planning?tab=scenario-planning&subtab=scenarios",
+              },
+              {
+                id: "forecast",
+                label: "Forecast Scenarios",
+                href: "/finance/budget-planning?tab=scenario-planning&subtab=forecast",
+              },
+              {
+                id: "compare",
+                label: "Scenario Comparison",
+                href: "/finance/budget-planning?tab=scenario-planning&subtab=compare",
+              },
+            ]}
+          />
+          <div style={{ marginTop: "var(--space-3)" }}>
+            {subTab === "forecast" ? (
+              <ForecastScenariosPage />
+            ) : subTab === "compare" ? (
+              <ScenarioComparisonPage />
+            ) : (
+              <BudgetScenariosPage />
+            )}
           </div>
-        )}
-        {activeTab === "forecasts" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <ForecastScenariosPage />
-          </div>
-        )}
-        {activeTab === "scenario-planning" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <SubTabBar
-              tabs={[
-                {
-                  id: "scenarios",
-                  label: "Budget Scenarios",
-                  href: "/finance/budget-planning?tab=scenario-planning&subtab=scenarios",
-                },
-                {
-                  id: "forecast",
-                  label: "Forecast Scenarios",
-                  href: "/finance/budget-planning?tab=scenario-planning&subtab=forecast",
-                },
-                {
-                  id: "compare",
-                  label: "Scenario Comparison",
-                  href: "/finance/budget-planning?tab=scenario-planning&subtab=compare",
-                },
-              ]}
-            />
-            <div style={{ marginTop: "var(--space-3)" }}>
-              {subTab === "forecast" ? (
-                <ForecastScenariosPage />
-              ) : subTab === "compare" ? (
-                <ScenarioComparisonPage />
-              ) : (
-                <BudgetScenariosPage />
-              )}
-            </div>
-          </div>
-        )}
-        {activeTab === "rolling-forecast" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <ForecastScenariosPage />
-          </div>
-        )}
-        {activeTab === "variance-analysis" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <BudgetingPage />
-          </div>
-        )}
-      </FinanceTabLayout>
+        </div>
+      )}
+      {activeTab === "rolling-forecast" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <ForecastScenariosPage />
+        </div>
+      )}
+      {activeTab === "variance-analysis" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <BudgetingPage />
+        </div>
+      )}
     </RouteGuard>
   );
 }

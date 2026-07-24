@@ -17,13 +17,9 @@ import {
   TrendingDown,
 } from "lucide-react";
 import { RouteGuard, useApiClient } from "@unerp/framework";
+import { SubTabBar } from "@unerp/ui-layout";
 import { useSearchParams } from "next/navigation";
 
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-  SubTabBar,
-} from "@/components/inventory/InventoryTabLayout";
 import { Package as InventoryModuleIcon } from "lucide-react";
 interface RmaRequest {
   id: string;
@@ -373,173 +369,165 @@ export default function RtvPage() {
 
   return (
     <RouteGuard permission="inventory.rtv.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={InventoryModuleIcon}
-        moduleDescription="Manage vendor RMA requests, outbound return shipments, and credit memo tracking for supplier returns."
-      >
-        <div className="ui-stack-6 ui-animate-in">
-          <PageHeader
-            title="Returns to Vendor (RTV)"
-            description="Manage vendor RMA requests, outbound return shipments, and credit memo tracking for supplier returns."
-            breadcrumbs={[
-              { label: "Home", href: "/dashboard" },
-              { label: "Inventory", href: "/inventory" },
-              { label: "Returns to Vendor" },
-            ]}
-            actions={
-              <Button
-                variant="primary"
-                onClick={() => setIsCreateRmaOpen(true)}
-                className="ui-hstack-2"
-              >
-                <Plus size={14} /> New RMA Request
-              </Button>
-            }
-          />
+      <div className="ui-stack-6 ui-animate-in">
+        <PageHeader
+          title="Returns to Vendor (RTV)"
+          description="Manage vendor RMA requests, outbound return shipments, and credit memo tracking for supplier returns."
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "Inventory", href: "/inventory" },
+            { label: "Returns to Vendor" },
+          ]}
+          actions={
+            <Button
+              variant="primary"
+              onClick={() => setIsCreateRmaOpen(true)}
+              className="ui-hstack-2"
+            >
+              <Plus size={14} /> New RMA Request
+            </Button>
+          }
+        />
 
-          {error && (
-            <div className={styles.s4}>
-              <AlertCircle size={16} /> <span>{error}</span>
-            </div>
-          )}
+        {error && (
+          <div className={styles.s4}>
+            <AlertCircle size={16} /> <span>{error}</span>
+          </div>
+        )}
 
-          {dashboard && (
-            <StatCardRow
-              stats={[
-                {
-                  label: "Total RMAs",
-                  value: dashboard.totalRmas,
-                  icon: <RotateCcw size={16} />,
-                },
-                {
-                  label: "Authorized",
-                  value: dashboard.byStatus.AUTHORIZED ?? 0,
-                  icon: <Package size={16} />,
-                  color: "success",
-                },
-                {
-                  label: "Pending Shipments",
-                  value: dashboard.pendingShipments,
-                  icon: <Package size={16} />,
-                  color: "warning",
-                },
-                {
-                  label: "Credit Received",
-                  value: `$${Number(dashboard.totalCreditReceived).toFixed(2)}`,
-                  icon: <TrendingDown size={16} />,
-                  color: "info",
-                },
-              ]}
-            />
-          )}
-
-          <SubTabBar
-            tabs={[
+        {dashboard && (
+          <StatCardRow
+            stats={[
               {
-                id: "rma",
-                label: "RMA Requests",
-                href: "/inventory/rtv?subtab=rma",
-                icon: RotateCcw,
+                label: "Total RMAs",
+                value: dashboard.totalRmas,
+                icon: <RotateCcw size={16} />,
               },
               {
-                id: "shipments",
-                label: "Return Shipments",
-                href: "/inventory/rtv?subtab=shipments",
-                icon: Package,
+                label: "Authorized",
+                value: dashboard.byStatus.AUTHORIZED ?? 0,
+                icon: <Package size={16} />,
+                color: "success",
+              },
+              {
+                label: "Pending Shipments",
+                value: dashboard.pendingShipments,
+                icon: <Package size={16} />,
+                color: "warning",
+              },
+              {
+                label: "Credit Received",
+                value: `$${Number(dashboard.totalCreditReceived).toFixed(2)}`,
+                icon: <TrendingDown size={16} />,
+                color: "info",
               },
             ]}
           />
+        )}
 
-          {activeTab === "rma" && (
-            <ListPageTemplate
-              columns={rmaColumns}
-              data={rmaRequests as unknown as Record<string, unknown>[]}
-              loading={loading}
-              searchable
-            />
-          )}
+        <SubTabBar
+          tabs={[
+            {
+              id: "rma",
+              label: "RMA Requests",
+              href: "/inventory/rtv?subtab=rma",
+              icon: RotateCcw,
+            },
+            {
+              id: "shipments",
+              label: "Return Shipments",
+              href: "/inventory/rtv?subtab=shipments",
+              icon: Package,
+            },
+          ]}
+        />
 
-          {activeTab === "shipments" && (
-            <ListPageTemplate
-              columns={shipmentColumns}
-              data={shipments as unknown as Record<string, unknown>[]}
-              loading={loading}
-              searchable
-            />
-          )}
+        {activeTab === "rma" && (
+          <ListPageTemplate
+            columns={rmaColumns}
+            data={rmaRequests as unknown as Record<string, unknown>[]}
+            loading={loading}
+            searchable
+          />
+        )}
 
-          {isCreateRmaOpen && (
-            <div className={styles.s6}>
-              <div className={`ui-card modal-card ${styles.s7}`}>
-                <div className={styles.s8}>
-                  <span className="ui-heading-base">New RMA Request</span>
-                  <button
-                    onClick={() => setIsCreateRmaOpen(false)}
-                    className="ui-btn-icon ui-text-muted"
-                  >
-                    Close
-                  </button>
-                </div>
-                <div className="ui-card-body p-5">
-                  <form onSubmit={handleCreateRma} className="ui-stack-4">
-                    <div className="ui-form-group">
-                      <label className="ui-label">Purchase Return ID *</label>
-                      <input
-                        type="text"
-                        className="ui-input"
-                        value={purchaseReturnId}
-                        onChange={(e) => setPurchaseReturnId(e.target.value)}
-                        required
-                        placeholder="PR-xxx"
-                      />
-                    </div>
-                    <div className="ui-form-group">
-                      <label className="ui-label">Vendor *</label>
-                      <select
-                        className="ui-input"
-                        value={vendorId}
-                        onChange={(e) => setVendorId(e.target.value)}
-                        required
-                      >
-                        <option value="">Select vendor...</option>
-                        {vendors.map((v) => (
-                          <option key={v.id} value={v.id}>
-                            {v.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="ui-form-group">
-                      <label className="ui-label">Notes</label>
-                      <textarea
-                        className={`ui-input ${styles.s9}`}
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                        rows={3}
-                      />
-                    </div>
-                    <div className={styles.s10}>
-                      <Button
-                        variant="outline"
-                        type="button"
-                        onClick={() => setIsCreateRmaOpen(false)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button variant="primary" type="submit">
-                        Create RMA
-                      </Button>
-                    </div>
-                  </form>
-                </div>
+        {activeTab === "shipments" && (
+          <ListPageTemplate
+            columns={shipmentColumns}
+            data={shipments as unknown as Record<string, unknown>[]}
+            loading={loading}
+            searchable
+          />
+        )}
+
+        {isCreateRmaOpen && (
+          <div className={styles.s6}>
+            <div className={`ui-card modal-card ${styles.s7}`}>
+              <div className={styles.s8}>
+                <span className="ui-heading-base">New RMA Request</span>
+                <button
+                  onClick={() => setIsCreateRmaOpen(false)}
+                  className="ui-btn-icon ui-text-muted"
+                >
+                  Close
+                </button>
+              </div>
+              <div className="ui-card-body p-5">
+                <form onSubmit={handleCreateRma} className="ui-stack-4">
+                  <div className="ui-form-group">
+                    <label className="ui-label">Purchase Return ID *</label>
+                    <input
+                      type="text"
+                      className="ui-input"
+                      value={purchaseReturnId}
+                      onChange={(e) => setPurchaseReturnId(e.target.value)}
+                      required
+                      placeholder="PR-xxx"
+                    />
+                  </div>
+                  <div className="ui-form-group">
+                    <label className="ui-label">Vendor *</label>
+                    <select
+                      className="ui-input"
+                      value={vendorId}
+                      onChange={(e) => setVendorId(e.target.value)}
+                      required
+                    >
+                      <option value="">Select vendor...</option>
+                      {vendors.map((v) => (
+                        <option key={v.id} value={v.id}>
+                          {v.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="ui-form-group">
+                    <label className="ui-label">Notes</label>
+                    <textarea
+                      className={`ui-input ${styles.s9}`}
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      rows={3}
+                    />
+                  </div>
+                  <div className={styles.s10}>
+                    <Button
+                      variant="outline"
+                      type="button"
+                      onClick={() => setIsCreateRmaOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button variant="primary" type="submit">
+                      Create RMA
+                    </Button>
+                  </div>
+                </form>
               </div>
             </div>
-          )}
-        </div>
-      </InventoryTabLayout>
+          </div>
+        )}
+      </div>
     </RouteGuard>
   );
 }

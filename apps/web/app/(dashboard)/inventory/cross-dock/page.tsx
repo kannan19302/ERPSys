@@ -11,10 +11,6 @@ import {
 import { AlertCircle, ArrowRightLeft } from "lucide-react";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
 import { Package as InventoryModuleIcon } from "lucide-react";
 interface Opportunity {
   putawayTaskId: string;
@@ -109,44 +105,36 @@ export default function CrossDockPage() {
 
   return (
     <RouteGuard permission="inventory.cross-dock.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={InventoryModuleIcon}
-        moduleDescription="Inbound receipts matched to open pick-wave demand for the same product/warehouse — bypass storage and route straight to shipping."
-      >
-        <div className="ui-stack-6 ui-animate-in">
-          <PageHeader
-            title="Cross-Docking"
-            description="Inbound receipts matched to open pick-wave demand for the same product/warehouse — bypass storage and route straight to shipping."
-            breadcrumbs={[
-              { label: "Home", href: "/dashboard" },
-              { label: "Inventory", href: "/inventory" },
-              { label: "Cross-Docking" },
-            ]}
+      <div className="ui-stack-6 ui-animate-in">
+        <PageHeader
+          title="Cross-Docking"
+          description="Inbound receipts matched to open pick-wave demand for the same product/warehouse — bypass storage and route straight to shipping."
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "Inventory", href: "/inventory" },
+            { label: "Cross-Docking" },
+          ]}
+        />
+
+        {error && (
+          <div className={styles.s2}>
+            <AlertCircle size={16} />
+            <span>Note: {error}</span>
+          </div>
+        )}
+
+        <Card padding="none" className="builder-table-wrapper">
+          <div className={styles.s3}>
+            <ArrowRightLeft size={16} /> Cross-Dock Opportunities
+          </div>
+          <ListPageTemplate
+            columns={columns}
+            data={opportunities as unknown as Record<string, unknown>[]}
+            loading={loading}
+            searchable
           />
-
-          {error && (
-            <div className={styles.s2}>
-              <AlertCircle size={16} />
-              <span>Note: {error}</span>
-            </div>
-          )}
-
-          <Card padding="none" className="builder-table-wrapper">
-            <div className={styles.s3}>
-              <ArrowRightLeft size={16} /> Cross-Dock Opportunities
-            </div>
-            <ListPageTemplate
-              columns={columns}
-              data={opportunities as unknown as Record<string, unknown>[]}
-              loading={loading}
-              searchable
-            />
-          </Card>
-        </div>
-      </InventoryTabLayout>
+        </Card>
+      </div>
     </RouteGuard>
   );
 }

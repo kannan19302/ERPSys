@@ -4,10 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { ListPageTemplate, type ListColumn } from "@unerp/ui";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
 import { Package as InventoryModuleIcon } from "lucide-react";
 type Tab =
   | "dashboard"
@@ -293,642 +289,633 @@ export default function StockValuationPage() {
 
   return (
     <RouteGuard permission="inventory.stock-valuation.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={InventoryModuleIcon}
-        moduleDescription="Manage inventory operations for this workspace."
-      >
-        <div className="ui-page-shell">
-          <h1 className="text-2xl font-semibold mb-4">Stock Valuation</h1>
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
-              {error}
-              <button className="ml-2 underline" onClick={() => setError("")}>
-                dismiss
-              </button>
-            </div>
-          )}
-
-          <div className="flex gap-2 border-b mb-6 flex-wrap">
-            {tabs.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
-                className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${tab === t.id ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
-              >
-                {t.label}
-              </button>
-            ))}
+      <div className="ui-page-shell">
+        <h1 className="text-2xl font-semibold mb-4">Stock Valuation</h1>
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+            {error}
+            <button className="ml-2 underline" onClick={() => setError("")}>
+              dismiss
+            </button>
           </div>
+        )}
 
-          {/* Dashboard */}
-          {tab === "dashboard" && dashboard && (
-            <div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                {[
-                  {
-                    label: "Active Policies",
-                    value: `${dashboard.activePolicies}/${dashboard.totalPolicies}`,
-                  },
-                  {
-                    label: "Pending Adjustments",
-                    value: dashboard.pendingAdjustments,
-                  },
-                  {
-                    label: "Total Revaluations",
-                    value: dashboard.totalRevaluations,
-                  },
-                  {
-                    label: "Revaluation Impact",
-                    value: `$${dashboard.totalRevaluationImpact.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
-                  },
-                ].map((c) => (
-                  <div key={c.label} className="bg-white border rounded-lg p-4">
-                    <div className="text-2xl font-bold">{c.value}</div>
-                    <div className="text-sm text-gray-500 mt-1">{c.label}</div>
-                  </div>
-                ))}
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="border rounded-lg p-4">
-                  <h3 className="font-medium mb-2">Adjustments</h3>
-                  <div className="text-sm text-gray-600">
-                    Total: {dashboard.totalAdjustments} | Pending:{" "}
-                    {dashboard.pendingAdjustments}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    Posted Impact: $
-                    {dashboard.totalAdjustmentImpact.toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                    })}
-                  </div>
+        <div className="flex gap-2 border-b mb-6 flex-wrap">
+          {tabs.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${tab === t.id ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Dashboard */}
+        {tab === "dashboard" && dashboard && (
+          <div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              {[
+                {
+                  label: "Active Policies",
+                  value: `${dashboard.activePolicies}/${dashboard.totalPolicies}`,
+                },
+                {
+                  label: "Pending Adjustments",
+                  value: dashboard.pendingAdjustments,
+                },
+                {
+                  label: "Total Revaluations",
+                  value: dashboard.totalRevaluations,
+                },
+                {
+                  label: "Revaluation Impact",
+                  value: `$${dashboard.totalRevaluationImpact.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+                },
+              ].map((c) => (
+                <div key={c.label} className="bg-white border rounded-lg p-4">
+                  <div className="text-2xl font-bold">{c.value}</div>
+                  <div className="text-sm text-gray-500 mt-1">{c.label}</div>
                 </div>
-                <div className="border rounded-lg p-4">
-                  <h3 className="font-medium mb-2">Revaluations</h3>
-                  <div className="text-sm text-gray-600">
-                    Total: {dashboard.totalRevaluations} | Posted:{" "}
-                    {dashboard.postedRevaluations}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    Total Impact: $
-                    {dashboard.totalRevaluationImpact.toLocaleString(
-                      undefined,
-                      { minimumFractionDigits: 2 },
-                    )}
-                  </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="border rounded-lg p-4">
+                <h3 className="font-medium mb-2">Adjustments</h3>
+                <div className="text-sm text-gray-600">
+                  Total: {dashboard.totalAdjustments} | Pending:{" "}
+                  {dashboard.pendingAdjustments}
                 </div>
-              </div>
-            </div>
-          )}
-
-          {/* Policies */}
-          {tab === "policies" && (
-            <div>
-              <div className="flex justify-between mb-4">
-                <h2 className="text-lg font-medium">Valuation Policies</h2>
-                <button
-                  onClick={() => setShowPolicyForm(true)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded text-sm"
-                >
-                  + New Policy
-                </button>
-              </div>
-              {showPolicyForm && (
-                <div className="mb-4 p-4 border rounded-lg bg-gray-50">
-                  <h3 className="font-medium mb-3 text-sm">Set Policy</h3>
-                  <div className="grid grid-cols-3 gap-3">
-                    <input
-                      placeholder="Product ID (optional)"
-                      value={policyForm.productId}
-                      onChange={(e) =>
-                        setPolicyForm((f) => ({
-                          ...f,
-                          productId: e.target.value,
-                        }))
-                      }
-                      className="border rounded px-3 py-2 text-sm"
-                    />
-                    <input
-                      placeholder="Warehouse ID (optional)"
-                      value={policyForm.warehouseId}
-                      onChange={(e) =>
-                        setPolicyForm((f) => ({
-                          ...f,
-                          warehouseId: e.target.value,
-                        }))
-                      }
-                      className="border rounded px-3 py-2 text-sm"
-                    />
-                    <select
-                      value={policyForm.method}
-                      onChange={(e) =>
-                        setPolicyForm((f) => ({ ...f, method: e.target.value }))
-                      }
-                      className="border rounded px-3 py-2 text-sm"
-                    >
-                      {METHODS.map((m) => (
-                        <option key={m}>{m}</option>
-                      ))}
-                    </select>
-                    <input
-                      placeholder="Standard Cost (if STANDARD_COST)"
-                      value={policyForm.standardCost}
-                      onChange={(e) =>
-                        setPolicyForm((f) => ({
-                          ...f,
-                          standardCost: e.target.value,
-                        }))
-                      }
-                      className="border rounded px-3 py-2 text-sm"
-                      type="number"
-                    />
-                    <input
-                      placeholder="Currency"
-                      value={policyForm.currency}
-                      onChange={(e) =>
-                        setPolicyForm((f) => ({
-                          ...f,
-                          currency: e.target.value,
-                        }))
-                      }
-                      className="border rounded px-3 py-2 text-sm"
-                    />
-                    <input
-                      placeholder="Notes"
-                      value={policyForm.notes}
-                      onChange={(e) =>
-                        setPolicyForm((f) => ({ ...f, notes: e.target.value }))
-                      }
-                      className="border rounded px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <div className="flex gap-2 mt-3">
-                    <button
-                      onClick={savePolicy}
-                      className="px-4 py-2 bg-blue-600 text-white rounded text-sm"
-                    >
-                      Save
-                    </button>
-                    <button
-                      onClick={() => setShowPolicyForm(false)}
-                      className="px-4 py-2 border rounded text-sm"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              )}
-              <ListPageTemplate
-                columns={
-                  [
-                    {
-                      key: "productId",
-                      header: "Product",
-                      render: (v) => String(v ?? "All"),
-                    },
-                    {
-                      key: "warehouseId",
-                      header: "Warehouse",
-                      render: (v) => String(v ?? "All"),
-                    },
-                    {
-                      key: "method",
-                      header: "Method",
-                      render: (v) => (
-                        <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs">
-                          {String(v)}
-                        </span>
-                      ),
-                    },
-                    {
-                      key: "standardCost",
-                      header: "Standard Cost",
-                      render: (v) => (v ? Number(v).toFixed(4) : "-"),
-                    },
-                    { key: "currency", header: "Currency" },
-                    {
-                      key: "isActive",
-                      header: "Active",
-                      render: (v) =>
-                        v ? (
-                          <span className="text-green-600">✓</span>
-                        ) : (
-                          <span className="text-red-500">✗</span>
-                        ),
-                    },
-                    {
-                      key: "effectiveFrom",
-                      header: "Effective From",
-                      render: (v) => new Date(String(v)).toLocaleDateString(),
-                    },
-                  ] as ListColumn[]
-                }
-                data={policies as unknown as Record<string, unknown>[]}
-                loading={loading}
-                emptyTitle="No policies defined"
-                emptyDescription="No costing policies have been configured."
-              />
-            </div>
-          )}
-
-          {/* Cost Adjustments */}
-          {tab === "adjustments" && (
-            <div>
-              <div className="flex justify-between mb-4">
-                <h2 className="text-lg font-medium">Cost Adjustments</h2>
-                <button
-                  onClick={() => setShowAdjForm(true)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded text-sm"
-                >
-                  + New Adjustment
-                </button>
-              </div>
-              {showAdjForm && (
-                <div className="mb-4 p-4 border rounded-lg bg-gray-50">
-                  <h3 className="font-medium mb-3 text-sm">
-                    New Cost Adjustment
-                  </h3>
-                  <div className="grid grid-cols-3 gap-3">
-                    <input
-                      placeholder="Product ID*"
-                      value={adjForm.productId}
-                      onChange={(e) =>
-                        setAdjForm((f) => ({ ...f, productId: e.target.value }))
-                      }
-                      className="border rounded px-3 py-2 text-sm"
-                    />
-                    <input
-                      placeholder="Warehouse ID (optional)"
-                      value={adjForm.warehouseId}
-                      onChange={(e) =>
-                        setAdjForm((f) => ({
-                          ...f,
-                          warehouseId: e.target.value,
-                        }))
-                      }
-                      className="border rounded px-3 py-2 text-sm"
-                    />
-                    <input
-                      type="number"
-                      placeholder="Old Unit Cost*"
-                      value={adjForm.oldUnitCost}
-                      onChange={(e) =>
-                        setAdjForm((f) => ({
-                          ...f,
-                          oldUnitCost: e.target.value,
-                        }))
-                      }
-                      className="border rounded px-3 py-2 text-sm"
-                    />
-                    <input
-                      type="number"
-                      placeholder="New Unit Cost*"
-                      value={adjForm.newUnitCost}
-                      onChange={(e) =>
-                        setAdjForm((f) => ({
-                          ...f,
-                          newUnitCost: e.target.value,
-                        }))
-                      }
-                      className="border rounded px-3 py-2 text-sm"
-                    />
-                    <input
-                      type="number"
-                      placeholder="Qty*"
-                      value={adjForm.qty}
-                      onChange={(e) =>
-                        setAdjForm((f) => ({ ...f, qty: e.target.value }))
-                      }
-                      className="border rounded px-3 py-2 text-sm"
-                    />
-                    <input
-                      placeholder="Reason*"
-                      value={adjForm.reason}
-                      onChange={(e) =>
-                        setAdjForm((f) => ({ ...f, reason: e.target.value }))
-                      }
-                      className="border rounded px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <div className="flex gap-2 mt-3">
-                    <button
-                      onClick={saveAdj}
-                      className="px-4 py-2 bg-blue-600 text-white rounded text-sm"
-                    >
-                      Submit
-                    </button>
-                    <button
-                      onClick={() => setShowAdjForm(false)}
-                      className="px-4 py-2 border rounded text-sm"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              )}
-              <ListPageTemplate
-                columns={
-                  [
-                    {
-                      key: "adjustmentNumber",
-                      header: "Adj #",
-                      render: (v) => (
-                        <span className="font-mono">{String(v)}</span>
-                      ),
-                    },
-                    { key: "productId", header: "Product" },
-                    {
-                      key: "oldUnitCost",
-                      header: "Old Cost",
-                      render: (v) => Number(v).toFixed(4),
-                    },
-                    {
-                      key: "newUnitCost",
-                      header: "New Cost",
-                      render: (v) => Number(v).toFixed(4),
-                    },
-                    {
-                      key: "qty",
-                      header: "Qty",
-                      render: (v) => Number(v).toFixed(2),
-                    },
-                    {
-                      key: "impactAmount",
-                      header: "Impact",
-                      render: (v) => (
-                        <span
-                          className={
-                            Number(v) >= 0 ? "text-green-600" : "text-red-600"
-                          }
-                        >
-                          {Number(v) >= 0 ? "+" : ""}
-                          {Number(v).toFixed(2)}
-                        </span>
-                      ),
-                    },
-                    {
-                      key: "status",
-                      header: "Status",
-                      render: (v) => (
-                        <span
-                          className={`px-2 py-1 rounded text-xs ${STATUS_COLORS[String(v)] ?? ""}`}
-                        >
-                          {String(v)}
-                        </span>
-                      ),
-                    },
-                    {
-                      key: "id",
-                      header: "Actions",
-                      render: (v, row) => (
-                        <div className={styles.s1}>
-                          {row.status === "PENDING" && (
-                            <button
-                              onClick={() => adjAction(String(v), "approve")}
-                              className="text-blue-600 underline text-xs"
-                            >
-                              Approve
-                            </button>
-                          )}
-                          {row.status === "APPROVED" && (
-                            <button
-                              onClick={() => adjAction(String(v), "post")}
-                              className="text-green-600 underline text-xs"
-                            >
-                              Post
-                            </button>
-                          )}
-                          {row.status === "PENDING" && (
-                            <button
-                              onClick={() => adjAction(String(v), "reject")}
-                              className="text-red-600 underline text-xs"
-                            >
-                              Reject
-                            </button>
-                          )}
-                        </div>
-                      ),
-                    },
-                  ] as ListColumn[]
-                }
-                data={adjustments as unknown as Record<string, unknown>[]}
-                loading={loading}
-                emptyTitle="No adjustments"
-                emptyDescription="No cost adjustments found."
-              />
-            </div>
-          )}
-
-          {/* Revaluations */}
-          {tab === "revaluations" && (
-            <div>
-              <h2 className="text-lg font-medium mb-4">Stock Revaluations</h2>
-              {loading ? (
-                <div className="text-gray-500">Loading...</div>
-              ) : (
-                <div className="space-y-4">
-                  {revaluations.map((r) => (
-                    <div key={r.id} className="border rounded-lg p-4">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <span className="font-mono font-medium">
-                            {r.revaluationNumber}
-                          </span>
-                          {r.description && (
-                            <span className="ml-2 text-gray-600">
-                              {r.description}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`px-2 py-1 rounded text-xs ${STATUS_COLORS[r.status] ?? ""}`}
-                          >
-                            {r.status}
-                          </span>
-                          {r.status === "DRAFT" && (
-                            <button
-                              onClick={() => postRevaluation(r.id)}
-                              className="px-3 py-1 bg-green-600 text-white rounded text-xs"
-                            >
-                              Post
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                      <div className="text-sm text-gray-500 mt-1">
-                        Date: {new Date(r.revaluationDate).toLocaleDateString()}{" "}
-                        | Total Impact: {Number(r.totalImpact) >= 0 ? "+" : ""}
-                        {Number(r.totalImpact).toFixed(2)}
-                      </div>
-                      {r.lines.length > 0 && (
-                        <ListPageTemplate
-                          columns={
-                            [
-                              { key: "productId", header: "Product" },
-                              {
-                                key: "currentUnitCost",
-                                header: "Current Cost",
-                                render: (v) => Number(v).toFixed(4),
-                              },
-                              {
-                                key: "newUnitCost",
-                                header: "New Cost",
-                                render: (v) => Number(v).toFixed(4),
-                              },
-                              {
-                                key: "impactAmount",
-                                header: "Impact",
-                                render: (v) => (
-                                  <span
-                                    className={
-                                      Number(v) >= 0
-                                        ? "text-green-600"
-                                        : "text-red-600"
-                                    }
-                                  >
-                                    {Number(v) >= 0 ? "+" : ""}
-                                    {Number(v).toFixed(2)}
-                                  </span>
-                                ),
-                              },
-                            ] as ListColumn[]
-                          }
-                          data={r.lines as unknown as Record<string, unknown>[]}
-                          loading={false}
-                          emptyTitle="No lines"
-                          emptyDescription=""
-                        />
-                      )}
-                    </div>
-                  ))}
-                  {revaluations.length === 0 && (
-                    <div className="text-center text-gray-400 py-8">
-                      No revaluations
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Ledger */}
-          {tab === "ledger" && (
-            <div>
-              <h2 className="text-lg font-medium mb-4">
-                Valuation Ledger (last 50)
-              </h2>
-              <ListPageTemplate
-                columns={
-                  [
-                    { key: "productId", header: "Product" },
-                    { key: "method", header: "Method" },
-                    { key: "transactionType", header: "Txn Type" },
-                    {
-                      key: "transactionRef",
-                      header: "Ref",
-                      render: (v) => (
-                        <span className="font-mono text-xs">
-                          {String(v ?? "")}
-                        </span>
-                      ),
-                    },
-                    {
-                      key: "qty",
-                      header: "Qty",
-                      render: (v) => Number(v).toFixed(2),
-                    },
-                    {
-                      key: "unitCost",
-                      header: "Unit Cost",
-                      render: (v) => Number(v).toFixed(4),
-                    },
-                    {
-                      key: "totalCost",
-                      header: "Total Cost",
-                      render: (v) => Number(v).toFixed(2),
-                    },
-                    {
-                      key: "runningQty",
-                      header: "Running Qty",
-                      render: (v) => Number(v).toFixed(2),
-                    },
-                    {
-                      key: "runningValue",
-                      header: "Running Value",
-                      render: (v) => Number(v).toFixed(2),
-                    },
-                    {
-                      key: "runningAvgCost",
-                      header: "Avg Cost",
-                      render: (v) => Number(v ?? 0).toFixed(4),
-                    },
-                  ] as ListColumn[]
-                }
-                data={ledger as unknown as Record<string, unknown>[]}
-                loading={loading}
-                emptyTitle="No ledger entries"
-                emptyDescription="No valuation ledger entries found."
-              />
-            </div>
-          )}
-
-          {/* Summary */}
-          {tab === "summary" && summary && (
-            <div>
-              <div className="flex justify-between mb-4">
-                <h2 className="text-lg font-medium">
-                  Inventory Valuation Summary
-                </h2>
-                <div className="text-lg font-bold">
-                  Total: $
-                  {summary.totalValue.toLocaleString(undefined, {
+                <div className="text-sm text-gray-600">
+                  Posted Impact: $
+                  {dashboard.totalAdjustmentImpact.toLocaleString(undefined, {
                     minimumFractionDigits: 2,
                   })}
                 </div>
               </div>
-              <ListPageTemplate
-                columns={
-                  [
-                    { key: "productId", header: "Product" },
-                    {
-                      key: "method",
-                      header: "Method",
-                      render: (v) => (
-                        <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs">
-                          {String(v ?? "")}
-                        </span>
-                      ),
-                    },
-                    {
-                      key: "qty",
-                      header: "Qty",
-                      render: (v) => Number(v).toFixed(2),
-                    },
-                    {
-                      key: "value",
-                      header: "Value",
-                      render: (v) =>
-                        `$${Number(v).toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
-                    },
-                    {
-                      key: "avgCost",
-                      header: "Avg Cost",
-                      render: (v) => Number(v).toFixed(4),
-                    },
-                  ] as ListColumn[]
-                }
-                data={summary.products as unknown as Record<string, unknown>[]}
-                loading={false}
-                emptyTitle="No valuations"
-                emptyDescription="No inventory valuations found."
-              />
+              <div className="border rounded-lg p-4">
+                <h3 className="font-medium mb-2">Revaluations</h3>
+                <div className="text-sm text-gray-600">
+                  Total: {dashboard.totalRevaluations} | Posted:{" "}
+                  {dashboard.postedRevaluations}
+                </div>
+                <div className="text-sm text-gray-600">
+                  Total Impact: $
+                  {dashboard.totalRevaluationImpact.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                  })}
+                </div>
+              </div>
             </div>
-          )}
-        </div>
-      </InventoryTabLayout>
+          </div>
+        )}
+
+        {/* Policies */}
+        {tab === "policies" && (
+          <div>
+            <div className="flex justify-between mb-4">
+              <h2 className="text-lg font-medium">Valuation Policies</h2>
+              <button
+                onClick={() => setShowPolicyForm(true)}
+                className="px-4 py-2 bg-blue-600 text-white rounded text-sm"
+              >
+                + New Policy
+              </button>
+            </div>
+            {showPolicyForm && (
+              <div className="mb-4 p-4 border rounded-lg bg-gray-50">
+                <h3 className="font-medium mb-3 text-sm">Set Policy</h3>
+                <div className="grid grid-cols-3 gap-3">
+                  <input
+                    placeholder="Product ID (optional)"
+                    value={policyForm.productId}
+                    onChange={(e) =>
+                      setPolicyForm((f) => ({
+                        ...f,
+                        productId: e.target.value,
+                      }))
+                    }
+                    className="border rounded px-3 py-2 text-sm"
+                  />
+                  <input
+                    placeholder="Warehouse ID (optional)"
+                    value={policyForm.warehouseId}
+                    onChange={(e) =>
+                      setPolicyForm((f) => ({
+                        ...f,
+                        warehouseId: e.target.value,
+                      }))
+                    }
+                    className="border rounded px-3 py-2 text-sm"
+                  />
+                  <select
+                    value={policyForm.method}
+                    onChange={(e) =>
+                      setPolicyForm((f) => ({ ...f, method: e.target.value }))
+                    }
+                    className="border rounded px-3 py-2 text-sm"
+                  >
+                    {METHODS.map((m) => (
+                      <option key={m}>{m}</option>
+                    ))}
+                  </select>
+                  <input
+                    placeholder="Standard Cost (if STANDARD_COST)"
+                    value={policyForm.standardCost}
+                    onChange={(e) =>
+                      setPolicyForm((f) => ({
+                        ...f,
+                        standardCost: e.target.value,
+                      }))
+                    }
+                    className="border rounded px-3 py-2 text-sm"
+                    type="number"
+                  />
+                  <input
+                    placeholder="Currency"
+                    value={policyForm.currency}
+                    onChange={(e) =>
+                      setPolicyForm((f) => ({
+                        ...f,
+                        currency: e.target.value,
+                      }))
+                    }
+                    className="border rounded px-3 py-2 text-sm"
+                  />
+                  <input
+                    placeholder="Notes"
+                    value={policyForm.notes}
+                    onChange={(e) =>
+                      setPolicyForm((f) => ({ ...f, notes: e.target.value }))
+                    }
+                    className="border rounded px-3 py-2 text-sm"
+                  />
+                </div>
+                <div className="flex gap-2 mt-3">
+                  <button
+                    onClick={savePolicy}
+                    className="px-4 py-2 bg-blue-600 text-white rounded text-sm"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={() => setShowPolicyForm(false)}
+                    className="px-4 py-2 border rounded text-sm"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+            <ListPageTemplate
+              columns={
+                [
+                  {
+                    key: "productId",
+                    header: "Product",
+                    render: (v) => String(v ?? "All"),
+                  },
+                  {
+                    key: "warehouseId",
+                    header: "Warehouse",
+                    render: (v) => String(v ?? "All"),
+                  },
+                  {
+                    key: "method",
+                    header: "Method",
+                    render: (v) => (
+                      <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs">
+                        {String(v)}
+                      </span>
+                    ),
+                  },
+                  {
+                    key: "standardCost",
+                    header: "Standard Cost",
+                    render: (v) => (v ? Number(v).toFixed(4) : "-"),
+                  },
+                  { key: "currency", header: "Currency" },
+                  {
+                    key: "isActive",
+                    header: "Active",
+                    render: (v) =>
+                      v ? (
+                        <span className="text-green-600">✓</span>
+                      ) : (
+                        <span className="text-red-500">✗</span>
+                      ),
+                  },
+                  {
+                    key: "effectiveFrom",
+                    header: "Effective From",
+                    render: (v) => new Date(String(v)).toLocaleDateString(),
+                  },
+                ] as ListColumn[]
+              }
+              data={policies as unknown as Record<string, unknown>[]}
+              loading={loading}
+              emptyTitle="No policies defined"
+              emptyDescription="No costing policies have been configured."
+            />
+          </div>
+        )}
+
+        {/* Cost Adjustments */}
+        {tab === "adjustments" && (
+          <div>
+            <div className="flex justify-between mb-4">
+              <h2 className="text-lg font-medium">Cost Adjustments</h2>
+              <button
+                onClick={() => setShowAdjForm(true)}
+                className="px-4 py-2 bg-blue-600 text-white rounded text-sm"
+              >
+                + New Adjustment
+              </button>
+            </div>
+            {showAdjForm && (
+              <div className="mb-4 p-4 border rounded-lg bg-gray-50">
+                <h3 className="font-medium mb-3 text-sm">
+                  New Cost Adjustment
+                </h3>
+                <div className="grid grid-cols-3 gap-3">
+                  <input
+                    placeholder="Product ID*"
+                    value={adjForm.productId}
+                    onChange={(e) =>
+                      setAdjForm((f) => ({ ...f, productId: e.target.value }))
+                    }
+                    className="border rounded px-3 py-2 text-sm"
+                  />
+                  <input
+                    placeholder="Warehouse ID (optional)"
+                    value={adjForm.warehouseId}
+                    onChange={(e) =>
+                      setAdjForm((f) => ({
+                        ...f,
+                        warehouseId: e.target.value,
+                      }))
+                    }
+                    className="border rounded px-3 py-2 text-sm"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Old Unit Cost*"
+                    value={adjForm.oldUnitCost}
+                    onChange={(e) =>
+                      setAdjForm((f) => ({
+                        ...f,
+                        oldUnitCost: e.target.value,
+                      }))
+                    }
+                    className="border rounded px-3 py-2 text-sm"
+                  />
+                  <input
+                    type="number"
+                    placeholder="New Unit Cost*"
+                    value={adjForm.newUnitCost}
+                    onChange={(e) =>
+                      setAdjForm((f) => ({
+                        ...f,
+                        newUnitCost: e.target.value,
+                      }))
+                    }
+                    className="border rounded px-3 py-2 text-sm"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Qty*"
+                    value={adjForm.qty}
+                    onChange={(e) =>
+                      setAdjForm((f) => ({ ...f, qty: e.target.value }))
+                    }
+                    className="border rounded px-3 py-2 text-sm"
+                  />
+                  <input
+                    placeholder="Reason*"
+                    value={adjForm.reason}
+                    onChange={(e) =>
+                      setAdjForm((f) => ({ ...f, reason: e.target.value }))
+                    }
+                    className="border rounded px-3 py-2 text-sm"
+                  />
+                </div>
+                <div className="flex gap-2 mt-3">
+                  <button
+                    onClick={saveAdj}
+                    className="px-4 py-2 bg-blue-600 text-white rounded text-sm"
+                  >
+                    Submit
+                  </button>
+                  <button
+                    onClick={() => setShowAdjForm(false)}
+                    className="px-4 py-2 border rounded text-sm"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+            <ListPageTemplate
+              columns={
+                [
+                  {
+                    key: "adjustmentNumber",
+                    header: "Adj #",
+                    render: (v) => (
+                      <span className="font-mono">{String(v)}</span>
+                    ),
+                  },
+                  { key: "productId", header: "Product" },
+                  {
+                    key: "oldUnitCost",
+                    header: "Old Cost",
+                    render: (v) => Number(v).toFixed(4),
+                  },
+                  {
+                    key: "newUnitCost",
+                    header: "New Cost",
+                    render: (v) => Number(v).toFixed(4),
+                  },
+                  {
+                    key: "qty",
+                    header: "Qty",
+                    render: (v) => Number(v).toFixed(2),
+                  },
+                  {
+                    key: "impactAmount",
+                    header: "Impact",
+                    render: (v) => (
+                      <span
+                        className={
+                          Number(v) >= 0 ? "text-green-600" : "text-red-600"
+                        }
+                      >
+                        {Number(v) >= 0 ? "+" : ""}
+                        {Number(v).toFixed(2)}
+                      </span>
+                    ),
+                  },
+                  {
+                    key: "status",
+                    header: "Status",
+                    render: (v) => (
+                      <span
+                        className={`px-2 py-1 rounded text-xs ${STATUS_COLORS[String(v)] ?? ""}`}
+                      >
+                        {String(v)}
+                      </span>
+                    ),
+                  },
+                  {
+                    key: "id",
+                    header: "Actions",
+                    render: (v, row) => (
+                      <div className={styles.s1}>
+                        {row.status === "PENDING" && (
+                          <button
+                            onClick={() => adjAction(String(v), "approve")}
+                            className="text-blue-600 underline text-xs"
+                          >
+                            Approve
+                          </button>
+                        )}
+                        {row.status === "APPROVED" && (
+                          <button
+                            onClick={() => adjAction(String(v), "post")}
+                            className="text-green-600 underline text-xs"
+                          >
+                            Post
+                          </button>
+                        )}
+                        {row.status === "PENDING" && (
+                          <button
+                            onClick={() => adjAction(String(v), "reject")}
+                            className="text-red-600 underline text-xs"
+                          >
+                            Reject
+                          </button>
+                        )}
+                      </div>
+                    ),
+                  },
+                ] as ListColumn[]
+              }
+              data={adjustments as unknown as Record<string, unknown>[]}
+              loading={loading}
+              emptyTitle="No adjustments"
+              emptyDescription="No cost adjustments found."
+            />
+          </div>
+        )}
+
+        {/* Revaluations */}
+        {tab === "revaluations" && (
+          <div>
+            <h2 className="text-lg font-medium mb-4">Stock Revaluations</h2>
+            {loading ? (
+              <div className="text-gray-500">Loading...</div>
+            ) : (
+              <div className="space-y-4">
+                {revaluations.map((r) => (
+                  <div key={r.id} className="border rounded-lg p-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="font-mono font-medium">
+                          {r.revaluationNumber}
+                        </span>
+                        {r.description && (
+                          <span className="ml-2 text-gray-600">
+                            {r.description}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`px-2 py-1 rounded text-xs ${STATUS_COLORS[r.status] ?? ""}`}
+                        >
+                          {r.status}
+                        </span>
+                        {r.status === "DRAFT" && (
+                          <button
+                            onClick={() => postRevaluation(r.id)}
+                            className="px-3 py-1 bg-green-600 text-white rounded text-xs"
+                          >
+                            Post
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-sm text-gray-500 mt-1">
+                      Date: {new Date(r.revaluationDate).toLocaleDateString()} |
+                      Total Impact: {Number(r.totalImpact) >= 0 ? "+" : ""}
+                      {Number(r.totalImpact).toFixed(2)}
+                    </div>
+                    {r.lines.length > 0 && (
+                      <ListPageTemplate
+                        columns={
+                          [
+                            { key: "productId", header: "Product" },
+                            {
+                              key: "currentUnitCost",
+                              header: "Current Cost",
+                              render: (v) => Number(v).toFixed(4),
+                            },
+                            {
+                              key: "newUnitCost",
+                              header: "New Cost",
+                              render: (v) => Number(v).toFixed(4),
+                            },
+                            {
+                              key: "impactAmount",
+                              header: "Impact",
+                              render: (v) => (
+                                <span
+                                  className={
+                                    Number(v) >= 0
+                                      ? "text-green-600"
+                                      : "text-red-600"
+                                  }
+                                >
+                                  {Number(v) >= 0 ? "+" : ""}
+                                  {Number(v).toFixed(2)}
+                                </span>
+                              ),
+                            },
+                          ] as ListColumn[]
+                        }
+                        data={r.lines as unknown as Record<string, unknown>[]}
+                        loading={false}
+                        emptyTitle="No lines"
+                        emptyDescription=""
+                      />
+                    )}
+                  </div>
+                ))}
+                {revaluations.length === 0 && (
+                  <div className="text-center text-gray-400 py-8">
+                    No revaluations
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Ledger */}
+        {tab === "ledger" && (
+          <div>
+            <h2 className="text-lg font-medium mb-4">
+              Valuation Ledger (last 50)
+            </h2>
+            <ListPageTemplate
+              columns={
+                [
+                  { key: "productId", header: "Product" },
+                  { key: "method", header: "Method" },
+                  { key: "transactionType", header: "Txn Type" },
+                  {
+                    key: "transactionRef",
+                    header: "Ref",
+                    render: (v) => (
+                      <span className="font-mono text-xs">
+                        {String(v ?? "")}
+                      </span>
+                    ),
+                  },
+                  {
+                    key: "qty",
+                    header: "Qty",
+                    render: (v) => Number(v).toFixed(2),
+                  },
+                  {
+                    key: "unitCost",
+                    header: "Unit Cost",
+                    render: (v) => Number(v).toFixed(4),
+                  },
+                  {
+                    key: "totalCost",
+                    header: "Total Cost",
+                    render: (v) => Number(v).toFixed(2),
+                  },
+                  {
+                    key: "runningQty",
+                    header: "Running Qty",
+                    render: (v) => Number(v).toFixed(2),
+                  },
+                  {
+                    key: "runningValue",
+                    header: "Running Value",
+                    render: (v) => Number(v).toFixed(2),
+                  },
+                  {
+                    key: "runningAvgCost",
+                    header: "Avg Cost",
+                    render: (v) => Number(v ?? 0).toFixed(4),
+                  },
+                ] as ListColumn[]
+              }
+              data={ledger as unknown as Record<string, unknown>[]}
+              loading={loading}
+              emptyTitle="No ledger entries"
+              emptyDescription="No valuation ledger entries found."
+            />
+          </div>
+        )}
+
+        {/* Summary */}
+        {tab === "summary" && summary && (
+          <div>
+            <div className="flex justify-between mb-4">
+              <h2 className="text-lg font-medium">
+                Inventory Valuation Summary
+              </h2>
+              <div className="text-lg font-bold">
+                Total: $
+                {summary.totalValue.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                })}
+              </div>
+            </div>
+            <ListPageTemplate
+              columns={
+                [
+                  { key: "productId", header: "Product" },
+                  {
+                    key: "method",
+                    header: "Method",
+                    render: (v) => (
+                      <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs">
+                        {String(v ?? "")}
+                      </span>
+                    ),
+                  },
+                  {
+                    key: "qty",
+                    header: "Qty",
+                    render: (v) => Number(v).toFixed(2),
+                  },
+                  {
+                    key: "value",
+                    header: "Value",
+                    render: (v) =>
+                      `$${Number(v).toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+                  },
+                  {
+                    key: "avgCost",
+                    header: "Avg Cost",
+                    render: (v) => Number(v).toFixed(4),
+                  },
+                ] as ListColumn[]
+              }
+              data={summary.products as unknown as Record<string, unknown>[]}
+              loading={false}
+              emptyTitle="No valuations"
+              emptyDescription="No inventory valuations found."
+            />
+          </div>
+        )}
+      </div>
     </RouteGuard>
   );
 }

@@ -3,10 +3,6 @@ import { useState, useEffect, useCallback } from "react";
 import { ListPageTemplate, type ListColumn } from "@unerp/ui";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
 import { Package as InventoryModuleIcon } from "lucide-react";
 type Tab = "dashboard" | "asns" | "inbound" | "outbound" | "carriers";
 
@@ -457,48 +453,40 @@ export default function LogisticsPage() {
 
   return (
     <RouteGuard permission="inventory.logistics.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={InventoryModuleIcon}
-        moduleDescription="Manage inventory operations for this workspace."
-      >
-        <div className="ui-page-shell">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Logistics & Shipping
-            </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Manage ASNs, inbound/outbound shipments, and carriers
-            </p>
-          </div>
-          <div className="border-b border-gray-200 dark:border-gray-700">
-            <nav className="flex gap-1 -mb-px">
-              {TABS.map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => setTab(t.id)}
-                  className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-                    tab === t.id
-                      ? "border-blue-500 text-blue-600 dark:text-blue-400"
-                      : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                  }`}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </nav>
-          </div>
-          <div>
-            {tab === "dashboard" && <DashboardTab />}
-            {tab === "asns" && <AsnsTab />}
-            {tab === "inbound" && <InboundTab />}
-            {tab === "outbound" && <OutboundTab />}
-            {tab === "carriers" && <CarriersTab />}
-          </div>
+      <div className="ui-page-shell">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Logistics & Shipping
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Manage ASNs, inbound/outbound shipments, and carriers
+          </p>
         </div>
-      </InventoryTabLayout>
+        <div className="border-b border-gray-200 dark:border-gray-700">
+          <nav className="flex gap-1 -mb-px">
+            {TABS.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTab(t.id)}
+                className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                  tab === t.id
+                    ? "border-blue-500 text-blue-600 dark:text-blue-400"
+                    : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+        <div>
+          {tab === "dashboard" && <DashboardTab />}
+          {tab === "asns" && <AsnsTab />}
+          {tab === "inbound" && <InboundTab />}
+          {tab === "outbound" && <OutboundTab />}
+          {tab === "carriers" && <CarriersTab />}
+        </div>
+      </div>
     </RouteGuard>
   );
 }

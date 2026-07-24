@@ -1,13 +1,24 @@
 // @ts-nocheck
-'use client';
-import styles from './page.module.css';
-import React, { useEffect, useMemo, useState } from 'react';
-import { allApplications, getAppSpecificNavigation } from '@/navigation';
-import { PageHeader } from '@unerp/ui';
-import { useApiClient } from '@unerp/framework';
+"use client";
+export const dynamic = "force-dynamic";
+import styles from "./page.module.css";
+import React, { useEffect, useMemo, useState } from "react";
+import { allApplications, getAppSpecificNavigation } from "@/navigation";
+import { PageHeader } from "@unerp/ui";
+import { useApiClient } from "@unerp/framework";
 import {
-  Layers, Eye, EyeOff, ArrowUp, ArrowDown, RotateCcw, Save, Plus, Trash2, Settings2, FolderPlus,
-} from 'lucide-react';
+  Layers,
+  Eye,
+  EyeOff,
+  ArrowUp,
+  ArrowDown,
+  RotateCcw,
+  Save,
+  Plus,
+  Trash2,
+  Settings2,
+  FolderPlus,
+} from "lucide-react";
 
 interface NavConfig {
   order: string[];
@@ -22,28 +33,54 @@ export default function CustomizeAppPage() {
   const client = useApiClient();
   // Customizable targets = installed core apps (exclude kernel/dev tooling).
   const apps = useMemo(
-    () => allApplications.filter((a) => a.installed && !['builder', 'app-store', 'api-keys', 'saas', 'admin', 'dashboard'].includes(a.id)),
+    () =>
+      allApplications.filter(
+        (a) =>
+          a.installed &&
+          ![
+            "builder",
+            "app-store",
+            "api-keys",
+            "saas",
+            "admin",
+            "dashboard",
+          ].includes(a.id),
+      ),
     [],
   );
-  const [moduleId, setModuleId] = useState(apps[0]?.id || 'finance');
+  const [moduleId, setModuleId] = useState(apps[0]?.id || "finance");
   const app = apps.find((a) => a.id === moduleId);
 
-  const staticItems = useMemo(() => getAppSpecificNavigation(app?.href || `/${moduleId}`).items || [], [moduleId, app]);
+  const staticItems = useMemo(
+    () => getAppSpecificNavigation(app?.href || `/${moduleId}`).items || [],
+    [moduleId, app],
+  );
 
-  const [config, setConfig] = useState<NavConfig>({ order: [], hidden: [], renames: {}, submodules: [] });
+  const [config, setConfig] = useState<NavConfig>({
+    order: [],
+    hidden: [],
+    renames: {},
+    submodules: [],
+  });
   const [submodules, setSubmodules] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [savedMsg, setSavedMsg] = useState('');
+  const [savedMsg, setSavedMsg] = useState("");
 
   // New-submodule form
-  const [subName, setSubName] = useState('');
-  const [subFields, setSubFields] = useState('name, status, notes');
+  const [subName, setSubName] = useState("");
+  const [subFields, setSubFields] = useState("name, status, notes");
 
   const load = async () => {
     setLoading(true);
     try {
       const data = await client.get(`/builder/nav-overlay/${moduleId}`);
-      setConfig({ order: [], hidden: [], renames: {}, submodules: [], ...(data?.config || {}) });
+      setConfig({
+        order: [],
+        hidden: [],
+        renames: {},
+        submodules: [],
+        ...(data?.config || {}),
+      });
       setSubmodules(data?.submodules || []);
     } catch {
       setConfig({ order: [], hidden: [], renames: {}, submodules: [] });
@@ -52,7 +89,9 @@ export default function CustomizeAppPage() {
       setLoading(false);
     }
   };
-  useEffect(() => { load(); }, [moduleId]);
+  useEffect(() => {
+    load();
+  }, [moduleId]);
 
   // Ordered, editable view of the top-level nav items.
   const ordered = useMemo(() => {
@@ -87,35 +126,54 @@ export default function CustomizeAppPage() {
   };
 
   const save = async () => {
-    await client.request(`/builder/nav-overlay/${moduleId}`, { method: 'PUT', body: JSON.stringify({ config }) });
-    setSavedMsg('Saved — reload any page in this app to see the changes.');
-    window.dispatchEvent(new Event('unerp_nav_overlay_updated'));
-    setTimeout(() => setSavedMsg(''), 4000);
+    await client.request(`/builder/nav-overlay/${moduleId}`, {
+      method: "PUT",
+      body: JSON.stringify({ config }),
+    });
+    setSavedMsg("Saved — reload any page in this app to see the changes.");
+    window.dispatchEvent(new Event("unerp_nav_overlay_updated"));
+    setTimeout(() => setSavedMsg(""), 4000);
   };
   const reset = async () => {
     await client.delete(`/builder/nav-overlay/${moduleId}`);
-    window.dispatchEvent(new Event('unerp_nav_overlay_updated'));
-    setSavedMsg('Reset to defaults.');
-    setTimeout(() => setSavedMsg(''), 4000);
+    window.dispatchEvent(new Event("unerp_nav_overlay_updated"));
+    setSavedMsg("Reset to defaults.");
+    setTimeout(() => setSavedMsg(""), 4000);
     load();
   };
 
   const addSubmodule = async () => {
     if (!subName.trim()) return;
-    const slug = subName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-    const fields = subFields.split(',').map((f) => f.trim()).filter(Boolean);
+    const slug = subName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+    const fields = subFields
+      .split(",")
+      .map((f) => f.trim())
+      .filter(Boolean);
     try {
-      await client.post(`/builder/nav-overlay/${moduleId}/submodules`, { name: subName, slug, fields });
-      setSubName('');
-      setSubFields('name, status, notes');
+      await client.post(`/builder/nav-overlay/${moduleId}/submodules`, {
+        name: subName,
+        slug,
+        fields,
+      });
+      setSubName("");
+      setSubFields("name, status, notes");
       load();
-    } catch { /* */ }
+    } catch {
+      /* */
+    }
   };
   const removeSubmodule = async (slug: string) => {
     try {
-      await client.delete(`/builder/nav-overlay/${moduleId}/submodules/${slug}`);
+      await client.delete(
+        `/builder/nav-overlay/${moduleId}/submodules/${slug}`,
+      );
       load();
-    } catch { /* */ }
+    } catch {
+      /* */
+    }
   };
 
   return (
@@ -134,7 +192,14 @@ export default function CustomizeAppPage() {
             <button
               key={a.id}
               onClick={() => setModuleId(a.id)}
-              style={{ border: `1px solid ${active ? 'var(--color-primary)' : 'var(--color-border)'}`, background: active ? 'var(--color-primary)' : 'var(--color-bg-elevated)', color: active ? '#fff' : 'var(--color-text)' }} className={styles.s3}
+              style={{
+                border: `1px solid ${active ? "var(--color-primary)" : "var(--color-border)"}`,
+                background: active
+                  ? "var(--color-primary)"
+                  : "var(--color-bg-elevated)",
+                color: active ? "#fff" : "var(--color-text)",
+              }}
+              className={styles.s3}
             >
               {Icon && <Icon size={16} />} {a.name}
             </button>
@@ -142,11 +207,7 @@ export default function CustomizeAppPage() {
         })}
       </div>
 
-      {savedMsg && (
-        <div className={styles.s4}>
-          {savedMsg}
-        </div>
-      )}
+      {savedMsg && <div className={styles.s4}>{savedMsg}</div>}
 
       <div className={styles.s5}>
         {/* Nav editor */}
@@ -156,8 +217,12 @@ export default function CustomizeAppPage() {
               <Layers size={18} /> Navigation
             </h2>
             <div className="ui-flex ui-gap-2">
-              <button onClick={reset} className="ui-btn ui-btn-secondary"><RotateCcw size={15} /> Reset</button>
-              <button onClick={save} className="ui-btn ui-btn-primary"><Save size={15} /> Save Changes</button>
+              <button onClick={reset} className="ui-btn ui-btn-secondary">
+                <RotateCcw size={15} /> Reset
+              </button>
+              <button onClick={save} className="ui-btn ui-btn-primary">
+                <Save size={15} /> Save Changes
+              </button>
             </div>
           </div>
 
@@ -166,18 +231,40 @@ export default function CustomizeAppPage() {
           ) : (
             <div className="ui-stack-2">
               {ordered.map((it: any, idx: number) => (
-                <div key={itemKey(it)} style={{ opacity: isHidden(it) ? 0.5 : 1 }} className={styles.s8}>
+                <div
+                  key={itemKey(it)}
+                  style={{ opacity: isHidden(it) ? 0.5 : 1 }}
+                  className={styles.s8}
+                >
                   <div className="ui-flex-col">
-                    <button onClick={() => move(idx, -1)} style={iconBtn} title="Move up"><ArrowUp size={14} /></button>
-                    <button onClick={() => move(idx, 1)} style={iconBtn} title="Move down"><ArrowDown size={14} /></button>
+                    <button
+                      onClick={() => move(idx, -1)}
+                      style={iconBtn}
+                      title="Move up"
+                    >
+                      <ArrowUp size={14} />
+                    </button>
+                    <button
+                      onClick={() => move(idx, 1)}
+                      style={iconBtn}
+                      title="Move down"
+                    >
+                      <ArrowDown size={14} />
+                    </button>
                   </div>
                   <input
                     value={nameOf(it)}
                     onChange={(e) => rename(it, e.target.value)}
                     className={styles.s9}
                   />
-                  {it.isHeader && <span className="ui-text-xs-tertiary">section</span>}
-                  <button onClick={() => toggleHidden(it)} style={iconBtn} title={isHidden(it) ? 'Show' : 'Hide'}>
+                  {it.isHeader && (
+                    <span className="ui-text-xs-tertiary">section</span>
+                  )}
+                  <button
+                    onClick={() => toggleHidden(it)}
+                    style={iconBtn}
+                    title={isHidden(it) ? "Show" : "Hide"}
+                  >
                     {isHidden(it) ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
@@ -200,9 +287,18 @@ export default function CustomizeAppPage() {
                 <div key={sm.slug} className={styles.s12}>
                   <div>
                     <div className={styles.s13}>{sm.name}</div>
-                    <div className="ui-text-xs-tertiary">{sm.pages?.length || 0} page(s) · /app/{moduleId}/{sm.slug}</div>
+                    <div className="ui-text-xs-tertiary">
+                      {sm.pages?.length || 0} page(s) · /app/{moduleId}/
+                      {sm.slug}
+                    </div>
                   </div>
-                  <button onClick={() => removeSubmodule(sm.slug)} style={iconBtn} title="Delete submodule"><Trash2 size={16} /></button>
+                  <button
+                    onClick={() => removeSubmodule(sm.slug)}
+                    style={iconBtn}
+                    title="Delete submodule"
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </div>
               ))}
             </div>
@@ -210,9 +306,25 @@ export default function CustomizeAppPage() {
 
           <div className={styles.s14}>
             <label className="ui-heading-sm">Add a submodule</label>
-            <input placeholder="Submodule name (e.g. Site Visits)" value={subName} onChange={(e) => setSubName(e.target.value)} style={inputStyle} />
-            <input placeholder="Fields (comma separated)" value={subFields} onChange={(e) => setSubFields(e.target.value)} style={inputStyle} />
-            <button onClick={addSubmodule} style={{ ...btn('primary') }} className={styles.s15}><Plus size={15} /> Create submodule</button>
+            <input
+              placeholder="Submodule name (e.g. Site Visits)"
+              value={subName}
+              onChange={(e) => setSubName(e.target.value)}
+              style={inputStyle}
+            />
+            <input
+              placeholder="Fields (comma separated)"
+              value={subFields}
+              onChange={(e) => setSubFields(e.target.value)}
+              style={inputStyle}
+            />
+            <button
+              onClick={addSubmodule}
+              style={{ ...btn("primary") }}
+              className={styles.s15}
+            >
+              <Plus size={15} /> Create submodule
+            </button>
           </div>
         </section>
       </div>
@@ -221,17 +333,34 @@ export default function CustomizeAppPage() {
 }
 
 const inputStyle = {
-  padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)',
-  background: 'var(--color-bg)', color: 'var(--color-text)', fontSize: 'var(--text-sm)',
+  padding: "var(--space-2) var(--space-3)",
+  borderRadius: "var(--radius-md)",
+  border: "1px solid var(--color-border)",
+  background: "var(--color-bg)",
+  color: "var(--color-text)",
+  fontSize: "var(--text-sm)",
 };
 const iconBtn = {
-  display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: 'var(--space-1)',
-  background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)', borderRadius: 'var(--radius-sm)',
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: "var(--space-1)",
+  background: "transparent",
+  border: "none",
+  cursor: "pointer",
+  color: "var(--color-text-secondary)",
+  borderRadius: "var(--radius-sm)",
 };
 const btn = (variant: string) => ({
-  display: 'inline-flex', alignItems: 'center', gap: 'var(--space-1)', padding: 'var(--space-2) var(--space-3)',
-  borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)',
-  border: variant === 'ghost' ? '1px solid var(--color-border)' : 'none',
-  background: variant === 'primary' ? 'var(--color-primary)' : 'transparent',
-  color: variant === 'primary' ? '#fff' : 'var(--color-text)',
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "var(--space-1)",
+  padding: "var(--space-2) var(--space-3)",
+  borderRadius: "var(--radius-md)",
+  cursor: "pointer",
+  fontSize: "var(--text-sm)",
+  fontWeight: "var(--weight-medium)",
+  border: variant === "ghost" ? "1px solid var(--color-border)" : "none",
+  background: variant === "primary" ? "var(--color-primary)" : "transparent",
+  color: variant === "primary" ? "#fff" : "var(--color-text)",
 });

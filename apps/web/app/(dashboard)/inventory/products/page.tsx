@@ -11,10 +11,7 @@ import {
   type FieldValues,
 } from "@unerp/framework";
 import { categoryResource, productResource } from "@/modules/inventory";
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
+
 import { Package } from "lucide-react";
 
 export default function InventoryProductsPage() {
@@ -33,58 +30,50 @@ export default function InventoryProductsPage() {
 
   return (
     <RouteGuard permission="inventory.product.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={Package}
-        moduleDescription="Catalog product SKUs, manage storable assets, and review multi-warehouse variants"
-      >
-        <div className="ui-stack-6">
-          <PageHeader
-            title="Products Catalog"
-            description="Catalog product SKUs, manage storable assets, and review multi-warehouse variants."
-            breadcrumbs={[
-              { label: "Home", href: "/dashboard" },
-              { label: "Inventory", href: "/inventory" },
-              { label: "Products" },
-            ]}
-          />
+      <div className="ui-stack-6">
+        <PageHeader
+          title="Products Catalog"
+          description="Catalog product SKUs, manage storable assets, and review multi-warehouse variants."
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "Inventory", href: "/inventory" },
+            { label: "Products" },
+          ]}
+        />
 
-          <ListView
+        <ListView
+          resource={productResource}
+          filters={{ category: category || undefined }}
+          onRowClick={(row) => router.push(`/inventory/products/${row.id}`)}
+          onCreate={() => setIsCreateOpen(true)}
+          toolbar={
+            <Select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className={styles.s1}
+            >
+              <option value="">All categories</option>
+              {categories.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </Select>
+          }
+        />
+
+        <Modal
+          open={isCreateOpen}
+          onClose={() => setIsCreateOpen(false)}
+          title="Catalog Product SKU"
+        >
+          <FormView
             resource={productResource}
-            filters={{ category: category || undefined }}
-            onRowClick={(row) => router.push(`/inventory/products/${row.id}`)}
-            onCreate={() => setIsCreateOpen(true)}
-            toolbar={
-              <Select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className={styles.s1}
-              >
-                <option value="">All categories</option>
-                {categories.map((name) => (
-                  <option key={name} value={name}>
-                    {name}
-                  </option>
-                ))}
-              </Select>
-            }
+            onSuccess={() => setIsCreateOpen(false)}
+            onCancel={() => setIsCreateOpen(false)}
           />
-
-          <Modal
-            open={isCreateOpen}
-            onClose={() => setIsCreateOpen(false)}
-            title="Catalog Product SKU"
-          >
-            <FormView
-              resource={productResource}
-              onSuccess={() => setIsCreateOpen(false)}
-              onCancel={() => setIsCreateOpen(false)}
-            />
-          </Modal>
-        </div>
-      </InventoryTabLayout>
+        </Modal>
+      </div>
     </RouteGuard>
   );
 }

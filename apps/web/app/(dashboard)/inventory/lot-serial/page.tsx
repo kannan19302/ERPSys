@@ -3,10 +3,6 @@ import { useState, useEffect, useCallback } from "react";
 import { ListPageTemplate, type ListColumn } from "@unerp/ui";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
 import { Package as InventoryModuleIcon } from "lucide-react";
 function useFrameworkFetch() {
   const client = useApiClient();
@@ -582,50 +578,42 @@ export default function LotSerialPage() {
 
   return (
     <RouteGuard permission="inventory.lot-serial.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={InventoryModuleIcon}
-        moduleDescription="Manage inventory operations for this workspace."
-      >
-        <div className="ui-page-shell">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Lot & Serial Tracking
-            </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Batch/lot management, serial numbers, FEFO/FIFO picking, expiry
-              alerts, and quarantine
-            </p>
-          </div>
-
-          <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
-            <nav className="flex gap-0 -mb-px overflow-x-auto">
-              {TABS.map((t) => (
-                <button
-                  key={t.key}
-                  onClick={() => setTab(t.key)}
-                  className={`px-4 py-2 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${
-                    tab === t.key
-                      ? "border-blue-600 text-blue-600 dark:text-blue-400"
-                      : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                  }`}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </nav>
-          </div>
-
-          {tab === "dashboard" && <DashboardTab />}
-          {tab === "batches" && <BatchesTab />}
-          {tab === "serials" && <SerialsTab />}
-          {tab === "picks" && <PickSuggestionsTab />}
-          {tab === "expiry" && <ExpiryAlertsTab />}
-          {tab === "quarantine" && <QuarantineTab />}
+      <div className="ui-page-shell">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Lot & Serial Tracking
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Batch/lot management, serial numbers, FEFO/FIFO picking, expiry
+            alerts, and quarantine
+          </p>
         </div>
-      </InventoryTabLayout>
+
+        <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
+          <nav className="flex gap-0 -mb-px overflow-x-auto">
+            {TABS.map((t) => (
+              <button
+                key={t.key}
+                onClick={() => setTab(t.key)}
+                className={`px-4 py-2 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${
+                  tab === t.key
+                    ? "border-blue-600 text-blue-600 dark:text-blue-400"
+                    : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        {tab === "dashboard" && <DashboardTab />}
+        {tab === "batches" && <BatchesTab />}
+        {tab === "serials" && <SerialsTab />}
+        {tab === "picks" && <PickSuggestionsTab />}
+        {tab === "expiry" && <ExpiryAlertsTab />}
+        {tab === "quarantine" && <QuarantineTab />}
+      </div>
     </RouteGuard>
   );
 }

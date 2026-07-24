@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { Card, Spinner, Badge } from "@unerp/ui";
 import { RouteGuard, useApiClient } from "@unerp/framework";
-import { SaasTabLayout, type SaasTab } from "@/components/saas/SaasTabLayout";
+import type { SaasTab } from "@/components/saas/SaasTabLayout";
 
 const SAAS_TABS: SaasTab[] = [
   {
@@ -280,15 +280,7 @@ function SaasOverview() {
 export default function SaasHubPage() {
   return (
     <RouteGuard permission="saas.portal.read">
-      <SaasTabLayout
-        tabs={SAAS_TABS}
-        moduleId="saas"
-        moduleLabel="SaaS Platform"
-        moduleIcon={Cloud}
-        moduleDescription="Subscription, team, billing, security, compliance, and platform administration"
-      >
-        <SaasOverview />
-      </SaasTabLayout>
+      <SaasOverview />
     </RouteGuard>
   );
 }

@@ -25,10 +25,6 @@ import {
   Edit,
   Trash2,
 } from "lucide-react";
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
 
 interface Subinventory {
   id: string;
@@ -95,14 +91,12 @@ export default function SubinventoryPage() {
     try {
       const [subRes, dashRes, whRes] = await Promise.all([
         apiGet<PaginatedResponse<Subinventory>>(
-          `/inventory/subinventory?page=${page}&sortBy=${sortBy}&sortOrder=${sortOrder}`
+          `/inventory/subinventory?page=${page}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
         ),
         apiGet<DashboardSummary>("/inventory/subinventory/dashboard"),
         apiGet<WarehouseOption[]>("/inventory/warehouses?select=id,name"),
       ]);
-      setSubinventories(
-        Array.isArray(subRes) ? subRes : subRes?.data || []
-      );
+      setSubinventories(Array.isArray(subRes) ? subRes : subRes?.data || []);
       setTotalPages(subRes?.totalPages || 1);
       setDashboard(dashRes);
       setWarehouses(Array.isArray(whRes) ? whRes : whRes || []);
@@ -110,7 +104,7 @@ export default function SubinventoryPage() {
       setError("Could not load subinventory data. Please try again.");
       toast.error(
         "Could not load subinventory data",
-        err instanceof Error ? err.message : undefined
+        err instanceof Error ? err.message : undefined,
       );
       setSubinventories([]);
       setDashboard({ totalSubinventories: 0, byType: {} });
@@ -144,7 +138,7 @@ export default function SubinventoryPage() {
     } catch (err) {
       toast.error(
         "Could not create subinventory",
-        err instanceof Error ? err.message : undefined
+        err instanceof Error ? err.message : undefined,
       );
     } finally {
       setSubmitting(false);
@@ -171,7 +165,7 @@ export default function SubinventoryPage() {
     } catch (err) {
       toast.error(
         "Could not transfer stock",
-        err instanceof Error ? err.message : undefined
+        err instanceof Error ? err.message : undefined,
       );
     } finally {
       setSubmitting(false);
@@ -181,7 +175,7 @@ export default function SubinventoryPage() {
   const handleDeactivate = async (sub: Subinventory) => {
     if (
       !window.confirm(
-        `Deactivate subinventory "${sub.name}"? It can be re-enabled later.`
+        `Deactivate subinventory "${sub.name}"? It can be re-enabled later.`,
       )
     )
       return;
@@ -194,7 +188,7 @@ export default function SubinventoryPage() {
     } catch (err) {
       toast.error(
         "Could not deactivate subinventory",
-        err instanceof Error ? err.message : undefined
+        err instanceof Error ? err.message : undefined,
       );
     }
   };
@@ -210,7 +204,7 @@ export default function SubinventoryPage() {
     } catch (err) {
       toast.error(
         "Could not update subinventory",
-        err instanceof Error ? err.message : undefined
+        err instanceof Error ? err.message : undefined,
       );
     }
   };
@@ -263,24 +257,19 @@ export default function SubinventoryPage() {
       key: "type",
       header: "Type",
       sortable: true,
-      render: (s) => (
-        <StatusBadge status={s.type} />
-      ),
+      render: (s) => <StatusBadge status={s.type} />,
     },
     {
       key: "description",
       header: "Description",
       sortable: false,
-      render: (s) =>
-        s.description || <span className="ui-text-muted">—</span>,
+      render: (s) => s.description || <span className="ui-text-muted">—</span>,
     },
     {
       key: "status",
       header: "Status",
       sortable: true,
-      render: (s) => (
-        <StatusBadge status={s.status} />
-      ),
+      render: (s) => <StatusBadge status={s.status} />,
     },
     {
       key: "actions",
@@ -318,346 +307,333 @@ export default function SubinventoryPage() {
 
   return (
     <RouteGuard permission="inventory.subinventory.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={Layers}
-        moduleDescription="Manage subinventories, storage zones, and inter-zone stock transfers."
-      >
-        <div className="ui-stack-6 ui-animate-in">
-          <PageHeader
-            title="Subinventories"
-            description="Manage subinventory zones within warehouses and transfer stock between them."
-            breadcrumbs={[
-              { label: "Home", href: "/dashboard" },
-              { label: "Inventory", href: "/inventory" },
-              { label: "Subinventories" },
-            ]}
-            actions={
-              <div className="ui-hstack-2">
-                <Button
-                  variant="secondary"
-                  onClick={() => {
-                    resetTransferForm();
-                    setShowTransferModal(true);
-                  }}
-                  className="ui-hstack-2"
-                >
-                  <ArrowLeftRight size={16} />
-                  <span>Transfer Stock</span>
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={() => {
-                    resetForm();
-                    setShowCreateModal(true);
-                  }}
-                  className="ui-hstack-2"
-                >
-                  <Plus size={16} />
-                  <span>New Subinventory</span>
-                </Button>
-              </div>
-            }
-          />
-
-          {error && (
-            <div className="subinv-error-banner">
-              <Warehouse size={16} /> {error}
+      <div className="ui-stack-6 ui-animate-in">
+        <PageHeader
+          title="Subinventories"
+          description="Manage subinventory zones within warehouses and transfer stock between them."
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "Inventory", href: "/inventory" },
+            { label: "Subinventories" },
+          ]}
+          actions={
+            <div className="ui-hstack-2">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  resetTransferForm();
+                  setShowTransferModal(true);
+                }}
+                className="ui-hstack-2"
+              >
+                <ArrowLeftRight size={16} />
+                <span>Transfer Stock</span>
+              </Button>
+              <Button
+                variant="primary"
+                onClick={() => {
+                  resetForm();
+                  setShowCreateModal(true);
+                }}
+                className="ui-hstack-2"
+              >
+                <Plus size={16} />
+                <span>New Subinventory</span>
+              </Button>
             </div>
-          )}
+          }
+        />
 
-          <div className="subinv-kpi-grid">
-            <Card>
+        {error && (
+          <div className="subinv-error-banner">
+            <Warehouse size={16} /> {error}
+          </div>
+        )}
+
+        <div className="subinv-kpi-grid">
+          <Card>
+            <div className="subinv-kpi-card-inner">
+              <div className="subinv-kpi-icon-wrapper">
+                <Layers size={20} />
+              </div>
+              <div>
+                <div className="subinv-kpi-label">Total Subinventories</div>
+                <div className="subinv-kpi-value">
+                  {dashboard?.totalSubinventories ?? 0}
+                </div>
+              </div>
+            </div>
+          </Card>
+          {byTypeEntries.slice(0, 3).map(([type, count]) => (
+            <Card key={type}>
               <div className="subinv-kpi-card-inner">
                 <div className="subinv-kpi-icon-wrapper">
-                  <Layers size={20} />
+                  <Warehouse size={20} />
                 </div>
                 <div>
-                  <div className="subinv-kpi-label">Total Subinventories</div>
-                  <div className="subinv-kpi-value">
-                    {dashboard?.totalSubinventories ?? 0}
-                  </div>
+                  <div className="subinv-kpi-label">{type}</div>
+                  <div className="subinv-kpi-value">{count}</div>
                 </div>
               </div>
             </Card>
-            {byTypeEntries.slice(0, 3).map(([type, count]) => (
-              <Card key={type}>
-                <div className="subinv-kpi-card-inner">
-                  <div className="subinv-kpi-icon-wrapper">
-                    <Warehouse size={20} />
-                  </div>
-                  <div>
-                    <div className="subinv-kpi-label">{type}</div>
-                    <div className="subinv-kpi-value">{count}</div>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-
-          <Card>
-            {loading ? (
-              <div className="ui-center-pad">
-                <Spinner size="lg" />
-              </div>
-            ) : subinventories.length === 0 ? (
-              <div className="ui-empty-state">
-                <Layers size={48} className="ui-hr-faded" />
-                <div className="font-semibold">No Subinventories Found</div>
-                <div className="text-sm">
-                  Create a subinventory to organize warehouse zones.
-                </div>
-              </div>
-            ) : (
-              <>
-                <DataTable<Subinventory>
-                  columns={columns}
-                  data={subinventories}
-                  rowKey={(s) => s.id}
-                  sortBy={sortBy}
-                  sortOrder={sortOrder}
-                  onSortChange={handleSortChange}
-                />
-                {totalPages > 1 && (
-                  <div className="subinv-pagination">
-                    <span className="text-sm ui-text-muted">
-                      Page {page} of {totalPages}
-                    </span>
-                    <div className="ui-hstack-2">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        disabled={page <= 1}
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      >
-                        Previous
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        disabled={page >= totalPages}
-                        onClick={() => setPage((p) => p + 1)}
-                      >
-                        Next
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-          </Card>
+          ))}
         </div>
 
-        <Modal
-          open={showCreateModal}
-          onClose={() => {
-            setShowCreateModal(false);
-            resetForm();
-          }}
-          title="New Subinventory"
-        >
-          {modalSuccess ? (
-            <div className="subinv-modal-success">
-              <Layers size={48} className="subinv-modal-success-icon" />
-              <div className="ui-heading-base">
-                Subinventory Created Successfully
+        <Card>
+          {loading ? (
+            <div className="ui-center-pad">
+              <Spinner size="lg" />
+            </div>
+          ) : subinventories.length === 0 ? (
+            <div className="ui-empty-state">
+              <Layers size={48} className="ui-hr-faded" />
+              <div className="font-semibold">No Subinventories Found</div>
+              <div className="text-sm">
+                Create a subinventory to organize warehouse zones.
               </div>
             </div>
           ) : (
-            <form onSubmit={handleCreate} className="subinv-form">
-              <FormField label="Warehouse" required>
-                <select
-                  required
-                  value={formWarehouseId}
-                  onChange={(e) => setFormWarehouseId(e.target.value)}
-                  className="ui-input"
-                  style={{
-                    width: "100%",
-                    height: "38px",
-                    border: "1px solid var(--color-border)",
-                    borderRadius: "var(--radius-md)",
-                    padding: "0 var(--space-3)",
-                  }}
-                >
-                  <option value="">Select a warehouse</option>
-                  {warehouses.map((wh) => (
-                    <option key={wh.id} value={wh.id}>
-                      {wh.name}
-                    </option>
-                  ))}
-                </select>
-              </FormField>
-              <div className="ui-grid-2">
-                <FormField label="Code" required>
-                  <Input
-                    required
-                    placeholder="e.g. WH01-RECV"
-                    value={formCode}
-                    onChange={(e) => setFormCode(e.target.value)}
-                  />
-                </FormField>
-                <FormField label="Name" required>
-                  <Input
-                    required
-                    placeholder="e.g. Receiving Zone"
-                    value={formName}
-                    onChange={(e) => setFormName(e.target.value)}
-                  />
-                </FormField>
-              </div>
-              <FormField label="Type" required>
-                <select
-                  value={formType}
-                  onChange={(e) => setFormType(e.target.value)}
-                  className="ui-input"
-                  style={{
-                    width: "100%",
-                    height: "38px",
-                    border: "1px solid var(--color-border)",
-                    borderRadius: "var(--radius-md)",
-                    padding: "0 var(--space-3)",
-                  }}
-                >
-                  <option value="STORAGE">Storage</option>
-                  <option value="RECEIVING">Receiving</option>
-                  <option value="SHIPPING">Shipping</option>
-                  <option value="QUARANTINE">Quarantine</option>
-                  <option value="SCRAP">Scrap</option>
-                </select>
-              </FormField>
-              <FormField label="Description (optional)">
+            <>
+              <DataTable<Subinventory>
+                columns={columns}
+                data={subinventories}
+                rowKey={(s) => s.id}
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSortChange={handleSortChange}
+              />
+              {totalPages > 1 && (
+                <div className="subinv-pagination">
+                  <span className="text-sm ui-text-muted">
+                    Page {page} of {totalPages}
+                  </span>
+                  <div className="ui-hstack-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={page <= 1}
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    >
+                      Previous
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={page >= totalPages}
+                      onClick={() => setPage((p) => p + 1)}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </Card>
+      </div>
+
+      <Modal
+        open={showCreateModal}
+        onClose={() => {
+          setShowCreateModal(false);
+          resetForm();
+        }}
+        title="New Subinventory"
+      >
+        {modalSuccess ? (
+          <div className="subinv-modal-success">
+            <Layers size={48} className="subinv-modal-success-icon" />
+            <div className="ui-heading-base">
+              Subinventory Created Successfully
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleCreate} className="subinv-form">
+            <FormField label="Warehouse" required>
+              <select
+                required
+                value={formWarehouseId}
+                onChange={(e) => setFormWarehouseId(e.target.value)}
+                className="ui-input"
+                style={{
+                  width: "100%",
+                  height: "38px",
+                  border: "1px solid var(--color-border)",
+                  borderRadius: "var(--radius-md)",
+                  padding: "0 var(--space-3)",
+                }}
+              >
+                <option value="">Select a warehouse</option>
+                {warehouses.map((wh) => (
+                  <option key={wh.id} value={wh.id}>
+                    {wh.name}
+                  </option>
+                ))}
+              </select>
+            </FormField>
+            <div className="ui-grid-2">
+              <FormField label="Code" required>
                 <Input
-                  placeholder="Purpose of this subinventory zone"
-                  value={formDescription}
-                  onChange={(e) => setFormDescription(e.target.value)}
+                  required
+                  placeholder="e.g. WH01-RECV"
+                  value={formCode}
+                  onChange={(e) => setFormCode(e.target.value)}
                 />
               </FormField>
-              <div className="subinv-form-actions">
-                <Button
-                  variant="secondary"
-                  onClick={() => {
-                    setShowCreateModal(false);
-                    resetForm();
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button variant="primary" type="submit" disabled={submitting}>
-                  {submitting ? "Creating..." : "Create Subinventory"}
-                </Button>
-              </div>
-            </form>
-          )}
-        </Modal>
-
-        <Modal
-          open={showTransferModal}
-          onClose={() => {
-            setShowTransferModal(false);
-            resetTransferForm();
-          }}
-          title="Transfer Stock"
-        >
-          {modalSuccess ? (
-            <div className="subinv-modal-success">
-              <ArrowLeftRight
-                size={48}
-                className="subinv-modal-success-icon"
-              />
-              <div className="ui-heading-base">
-                Stock Transfer Initiated
-              </div>
+              <FormField label="Name" required>
+                <Input
+                  required
+                  placeholder="e.g. Receiving Zone"
+                  value={formName}
+                  onChange={(e) => setFormName(e.target.value)}
+                />
+              </FormField>
             </div>
-          ) : (
-            <form onSubmit={handleTransfer} className="subinv-form">
-              <FormField label="From Subinventory" required>
-                <select
+            <FormField label="Type" required>
+              <select
+                value={formType}
+                onChange={(e) => setFormType(e.target.value)}
+                className="ui-input"
+                style={{
+                  width: "100%",
+                  height: "38px",
+                  border: "1px solid var(--color-border)",
+                  borderRadius: "var(--radius-md)",
+                  padding: "0 var(--space-3)",
+                }}
+              >
+                <option value="STORAGE">Storage</option>
+                <option value="RECEIVING">Receiving</option>
+                <option value="SHIPPING">Shipping</option>
+                <option value="QUARANTINE">Quarantine</option>
+                <option value="SCRAP">Scrap</option>
+              </select>
+            </FormField>
+            <FormField label="Description (optional)">
+              <Input
+                placeholder="Purpose of this subinventory zone"
+                value={formDescription}
+                onChange={(e) => setFormDescription(e.target.value)}
+              />
+            </FormField>
+            <div className="subinv-form-actions">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setShowCreateModal(false);
+                  resetForm();
+                }}
+              >
+                Cancel
+              </Button>
+              <Button variant="primary" type="submit" disabled={submitting}>
+                {submitting ? "Creating..." : "Create Subinventory"}
+              </Button>
+            </div>
+          </form>
+        )}
+      </Modal>
+
+      <Modal
+        open={showTransferModal}
+        onClose={() => {
+          setShowTransferModal(false);
+          resetTransferForm();
+        }}
+        title="Transfer Stock"
+      >
+        {modalSuccess ? (
+          <div className="subinv-modal-success">
+            <ArrowLeftRight size={48} className="subinv-modal-success-icon" />
+            <div className="ui-heading-base">Stock Transfer Initiated</div>
+          </div>
+        ) : (
+          <form onSubmit={handleTransfer} className="subinv-form">
+            <FormField label="From Subinventory" required>
+              <select
+                required
+                value={fromSubinventoryId}
+                onChange={(e) => setFromSubinventoryId(e.target.value)}
+                className="ui-input"
+                style={{
+                  width: "100%",
+                  height: "38px",
+                  border: "1px solid var(--color-border)",
+                  borderRadius: "var(--radius-md)",
+                  padding: "0 var(--space-3)",
+                }}
+              >
+                <option value="">Select source</option>
+                {subinventories
+                  .filter((s) => s.status === "ACTIVE")
+                  .map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name} ({s.code})
+                    </option>
+                  ))}
+              </select>
+            </FormField>
+            <FormField label="To Subinventory" required>
+              <select
+                required
+                value={toSubinventoryId}
+                onChange={(e) => setToSubinventoryId(e.target.value)}
+                className="ui-input"
+                style={{
+                  width: "100%",
+                  height: "38px",
+                  border: "1px solid var(--color-border)",
+                  borderRadius: "var(--radius-md)",
+                  padding: "0 var(--space-3)",
+                }}
+              >
+                <option value="">Select destination</option>
+                {subinventories
+                  .filter((s) => s.status === "ACTIVE")
+                  .map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name} ({s.code})
+                    </option>
+                  ))}
+              </select>
+            </FormField>
+            <div className="ui-grid-2">
+              <FormField label="Product ID" required>
+                <Input
                   required
-                  value={fromSubinventoryId}
-                  onChange={(e) => setFromSubinventoryId(e.target.value)}
-                  className="ui-input"
-                  style={{
-                    width: "100%",
-                    height: "38px",
-                    border: "1px solid var(--color-border)",
-                    borderRadius: "var(--radius-md)",
-                    padding: "0 var(--space-3)",
-                  }}
-                >
-                  <option value="">Select source</option>
-                  {subinventories
-                    .filter((s) => s.status === "ACTIVE")
-                    .map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name} ({s.code})
-                      </option>
-                    ))}
-                </select>
+                  placeholder="Product SKU or ID"
+                  value={transferProductId}
+                  onChange={(e) => setTransferProductId(e.target.value)}
+                />
               </FormField>
-              <FormField label="To Subinventory" required>
-                <select
+              <FormField label="Quantity" required>
+                <Input
                   required
-                  value={toSubinventoryId}
-                  onChange={(e) => setToSubinventoryId(e.target.value)}
-                  className="ui-input"
-                  style={{
-                    width: "100%",
-                    height: "38px",
-                    border: "1px solid var(--color-border)",
-                    borderRadius: "var(--radius-md)",
-                    padding: "0 var(--space-3)",
-                  }}
-                >
-                  <option value="">Select destination</option>
-                  {subinventories
-                    .filter((s) => s.status === "ACTIVE")
-                    .map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name} ({s.code})
-                      </option>
-                    ))}
-                </select>
+                  type="number"
+                  min="1"
+                  placeholder="1"
+                  value={transferQuantity}
+                  onChange={(e) => setTransferQuantity(e.target.value)}
+                />
               </FormField>
-              <div className="ui-grid-2">
-                <FormField label="Product ID" required>
-                  <Input
-                    required
-                    placeholder="Product SKU or ID"
-                    value={transferProductId}
-                    onChange={(e) => setTransferProductId(e.target.value)}
-                  />
-                </FormField>
-                <FormField label="Quantity" required>
-                  <Input
-                    required
-                    type="number"
-                    min="1"
-                    placeholder="1"
-                    value={transferQuantity}
-                    onChange={(e) => setTransferQuantity(e.target.value)}
-                  />
-                </FormField>
-              </div>
-              <div className="subinv-form-actions">
-                <Button
-                  variant="secondary"
-                  onClick={() => {
-                    setShowTransferModal(false);
-                    resetTransferForm();
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button variant="primary" type="submit" disabled={submitting}>
-                  {submitting ? "Transferring..." : "Transfer Stock"}
-                </Button>
-              </div>
-            </form>
-          )}
-        </Modal>
-      </InventoryTabLayout>
+            </div>
+            <div className="subinv-form-actions">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setShowTransferModal(false);
+                  resetTransferForm();
+                }}
+              >
+                Cancel
+              </Button>
+              <Button variant="primary" type="submit" disabled={submitting}>
+                {submitting ? "Transferring..." : "Transfer Stock"}
+              </Button>
+            </div>
+          </form>
+        )}
+      </Modal>
     </RouteGuard>
   );
 }

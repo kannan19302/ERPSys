@@ -3,10 +3,6 @@ import { useState, useEffect, useCallback } from "react";
 import { ListPageTemplate, type ListColumn, StatCardRow } from "@unerp/ui";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
 import { Package as InventoryModuleIcon } from "lucide-react";
 function useFrameworkFetch() {
   const client = useApiClient();
@@ -34,33 +30,25 @@ export default function FreightClaimsPage() {
 
   return (
     <RouteGuard permission="inventory.freight-claims.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={InventoryModuleIcon}
-        moduleDescription="Manage inventory operations for this workspace."
-      >
-        <div className="ui-page-shell">
-          <h1 className="text-2xl font-bold">Freight Claims & Cargo Damage</h1>
-          <div className="flex gap-2 border-b">
-            {TABS.map((t) => (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                className={`px-4 py-2 text-sm font-medium border-b-2 ${tab === t ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-          {tab === "Dashboard" && <DashboardTab />}
-          {tab === "Damage Reports" && <DamageReportsTab />}
-          {tab === "File Claim" && <FileClaimTab />}
-          {tab === "Claims" && <ClaimsTab />}
-          {tab === "Events" && <EventsTab />}
+      <div className="ui-page-shell">
+        <h1 className="text-2xl font-bold">Freight Claims & Cargo Damage</h1>
+        <div className="flex gap-2 border-b">
+          {TABS.map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`px-4 py-2 text-sm font-medium border-b-2 ${tab === t ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
+            >
+              {t}
+            </button>
+          ))}
         </div>
-      </InventoryTabLayout>
+        {tab === "Dashboard" && <DashboardTab />}
+        {tab === "Damage Reports" && <DamageReportsTab />}
+        {tab === "File Claim" && <FileClaimTab />}
+        {tab === "Claims" && <ClaimsTab />}
+        {tab === "Events" && <EventsTab />}
+      </div>
     </RouteGuard>
   );
 }

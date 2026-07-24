@@ -27,10 +27,6 @@ import {
   CheckCircle,
   FileText,
 } from "lucide-react";
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
 
 interface EdiTransaction {
   id: string;
@@ -140,9 +136,7 @@ export default function EdiTransactionsPage() {
     {
       key: "ediType",
       header: "EDI Type",
-      render: (row) => (
-        <StatusBadge status={row.ediType} />
-      ),
+      render: (row) => <StatusBadge status={row.ediType} />,
     },
     {
       key: "direction",
@@ -171,9 +165,7 @@ export default function EdiTransactionsPage() {
     {
       key: "status",
       header: "Status",
-      render: (row) => (
-        <StatusBadge status={row.status} />
-      ),
+      render: (row) => <StatusBadge status={row.status} />,
     },
     {
       key: "createdAt",
@@ -216,231 +208,208 @@ export default function EdiTransactionsPage() {
   if (loading && transactions.length === 0) {
     return (
       <RouteGuard permission="inventory.edi.read">
-        <InventoryTabLayout
-          tabs={INVENTORY_TABS}
-          moduleId="inventory"
-          moduleLabel="Inventory & Stock"
-          moduleIcon={Package}
-          moduleDescription="EDI 846/856/850 inventory transactions"
-        >
-          <div className="ui-center-pad">
-            <Spinner size="lg" />
-          </div>
-        </InventoryTabLayout>
+        <div className="ui-center-pad">
+          <Spinner size="lg" />
+        </div>
       </RouteGuard>
     );
   }
 
   return (
     <RouteGuard permission="inventory.edi.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={Package}
-        moduleDescription="EDI 846/856/850 inventory transactions"
-      >
-        <div className="ui-stack-6 ui-animate-in">
-          <PageHeader
-            title="EDI Transactions"
-            description="Electronic Data Interchange — inventory transaction types 846, 856, 850."
-            breadcrumbs={[
-              { label: "Home", href: "/dashboard" },
-              { label: "Inventory", href: "/inventory" },
-              { label: "EDI Transactions" },
+      <div className="ui-stack-6 ui-animate-in">
+        <PageHeader
+          title="EDI Transactions"
+          description="Electronic Data Interchange — inventory transaction types 846, 856, 850."
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "Inventory", href: "/inventory" },
+            { label: "EDI Transactions" },
+          ]}
+          actions={
+            <Button
+              variant="primary"
+              onClick={() => setCreateOpen(true)}
+              className="ui-hstack-2"
+            >
+              <Plus size={14} /> New Transaction
+            </Button>
+          }
+        />
+
+        {error && <div className={styles.errorBox}>{error}</div>}
+
+        {dashboard && (
+          <StatCardRow
+            stats={[
+              {
+                label: "Total Transactions",
+                value: dashboard.total,
+                icon: <FileJson size={16} />,
+                color: "var(--chart-1)",
+                loading: false,
+              },
+              ...EDI_TYPES.map((type) => ({
+                label: `Type ${type}`,
+                value: dashboard.byType[type] || 0,
+                icon: <FileText size={16} />,
+                color: "var(--chart-2)",
+                loading: false,
+              })),
+              ...Object.entries(dashboard.byStatus).map(
+                ([status, count], idx) => ({
+                  label: `${status}`,
+                  value: count,
+                  icon: <CheckCircle size={16} />,
+                  color:
+                    idx === 0
+                      ? "var(--chart-4)"
+                      : idx === 1
+                        ? "var(--chart-5)"
+                        : "var(--chart-3)",
+                  loading: false,
+                }),
+              ),
             ]}
-            actions={
+          />
+        )}
+
+        <DataTable
+          columns={columns}
+          data={transactions}
+          rowKey={(r) => r.id}
+          emptyTitle="No EDI transactions"
+          emptyMessage="Create a new EDI transaction to get started."
+          emptyIcon={<FileJson size={48} />}
+        />
+        {totalPages > 1 && (
+          <div style={{ marginTop: 16 }}>
+            <Pagination page={page} pageCount={totalPages} onChange={setPage} />
+          </div>
+        )}
+
+        <Modal
+          open={createOpen}
+          onClose={() => setCreateOpen(false)}
+          title="New EDI Transaction"
+          size="lg"
+          footer={
+            <>
+              <Button variant="secondary" onClick={() => setCreateOpen(false)}>
+                Cancel
+              </Button>
               <Button
                 variant="primary"
-                onClick={() => setCreateOpen(true)}
-                className="ui-hstack-2"
+                onClick={handleCreate}
+                disabled={creating}
               >
-                <Plus size={14} /> New Transaction
+                {creating ? <Spinner size="sm" /> : "Create"}
               </Button>
-            }
-          />
-
-          {error && <div className={styles.errorBox}>{error}</div>}
-
-          {dashboard && (
-            <StatCardRow
-              stats={[
-                {
-                  label: "Total Transactions",
-                  value: dashboard.total,
-                  icon: <FileJson size={16} />,
-                  color: "var(--chart-1)",
-                  loading: false,
-                },
-                ...EDI_TYPES.map((type) => ({
-                  label: `Type ${type}`,
-                  value: dashboard.byType[type] || 0,
-                  icon: <FileText size={16} />,
-                  color: "var(--chart-2)",
-                  loading: false,
-                })),
-                ...Object.entries(dashboard.byStatus).map(
-                  ([status, count], idx) => ({
-                    label: `${status}`,
-                    value: count,
-                    icon: <CheckCircle size={16} />,
-                    color:
-                      idx === 0
-                        ? "var(--chart-4)"
-                        : idx === 1
-                          ? "var(--chart-5)"
-                          : "var(--chart-3)",
-                    loading: false,
-                  }),
-                ),
-              ]}
-            />
-          )}
-
-          <DataTable
-            columns={columns}
-            data={transactions}
-            rowKey={(r) => r.id}
-            emptyTitle="No EDI transactions"
-            emptyMessage="Create a new EDI transaction to get started."
-            emptyIcon={<FileJson size={48} />}
-          />
-          {totalPages > 1 && (
-            <div style={{ marginTop: 16 }}>
-              <Pagination page={page} pageCount={totalPages} onChange={setPage} />
-            </div>
-          )}
-
-          <Modal
-            open={createOpen}
-            onClose={() => setCreateOpen(false)}
-            title="New EDI Transaction"
-            size="lg"
-            footer={
-              <>
-                <Button
-                  variant="secondary"
-                  onClick={() => setCreateOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={handleCreate}
-                  disabled={creating}
-                >
-                  {creating ? <Spinner size="sm" /> : "Create"}
-                </Button>
-              </>
-            }
-          >
-            <form onSubmit={handleCreate} className="ui-stack-4">
-              <div className="ui-grid-2 ui-gap-3">
-                <FormField label="Transaction ID" required>
-                  <Input
-                    value={form.transactionId}
-                    onChange={(e) =>
-                      setForm({ ...form, transactionId: e.target.value })
-                    }
-                    placeholder="EDI-2026-001"
-                  />
-                </FormField>
-                <FormField label="EDI Type" required>
-                  <select
-                    className="ui-input"
-                    value={form.ediType}
-                    onChange={(e) =>
-                      setForm({ ...form, ediType: e.target.value })
-                    }
-                  >
-                    {EDI_TYPES.map((t) => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
-                    ))}
-                  </select>
-                </FormField>
-              </div>
-              <div className="ui-grid-2 ui-gap-3">
-                <FormField label="Direction" required>
-                  <select
-                    className="ui-input"
-                    value={form.direction}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        direction: e.target.value as "INBOUND" | "OUTBOUND",
-                      })
-                    }
-                  >
-                    {DIRECTIONS.map((d) => (
-                      <option key={d} value={d}>
-                        {d}
-                      </option>
-                    ))}
-                  </select>
-                </FormField>
-                <FormField label="Status">
-                  <select
-                    className="ui-input"
-                    value={form.status}
-                    onChange={(e) =>
-                      setForm({ ...form, status: e.target.value })
-                    }
-                  >
-                    <option value="RECEIVED">RECEIVED</option>
-                    <option value="PENDING">PENDING</option>
-                    <option value="PROCESSED">PROCESSED</option>
-                  </select>
-                </FormField>
-              </div>
-              <div className="ui-grid-2 ui-gap-3">
-                <FormField label="Sender ID" required>
-                  <Input
-                    value={form.senderId}
-                    onChange={(e) =>
-                      setForm({ ...form, senderId: e.target.value })
-                    }
-                    placeholder="QUALCOMM"
-                  />
-                </FormField>
-                <FormField label="Receiver ID" required>
-                  <Input
-                    value={form.receiverId}
-                    onChange={(e) =>
-                      setForm({ ...form, receiverId: e.target.value })
-                    }
-                    placeholder="ACME"
-                  />
-                </FormField>
-              </div>
-              <FormField label="Payload (EDI content)">
-                <textarea
-                  className="ui-input"
-                  rows={6}
-                  value={form.payload}
+            </>
+          }
+        >
+          <form onSubmit={handleCreate} className="ui-stack-4">
+            <div className="ui-grid-2 ui-gap-3">
+              <FormField label="Transaction ID" required>
+                <Input
+                  value={form.transactionId}
                   onChange={(e) =>
-                    setForm({ ...form, payload: e.target.value })
+                    setForm({ ...form, transactionId: e.target.value })
                   }
-                  placeholder="ISA*00*...*GS*...*ST*846*..."
+                  placeholder="EDI-2026-001"
                 />
               </FormField>
-            </form>
-          </Modal>
+              <FormField label="EDI Type" required>
+                <select
+                  className="ui-input"
+                  value={form.ediType}
+                  onChange={(e) =>
+                    setForm({ ...form, ediType: e.target.value })
+                  }
+                >
+                  {EDI_TYPES.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </FormField>
+            </div>
+            <div className="ui-grid-2 ui-gap-3">
+              <FormField label="Direction" required>
+                <select
+                  className="ui-input"
+                  value={form.direction}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      direction: e.target.value as "INBOUND" | "OUTBOUND",
+                    })
+                  }
+                >
+                  {DIRECTIONS.map((d) => (
+                    <option key={d} value={d}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+              </FormField>
+              <FormField label="Status">
+                <select
+                  className="ui-input"
+                  value={form.status}
+                  onChange={(e) => setForm({ ...form, status: e.target.value })}
+                >
+                  <option value="RECEIVED">RECEIVED</option>
+                  <option value="PENDING">PENDING</option>
+                  <option value="PROCESSED">PROCESSED</option>
+                </select>
+              </FormField>
+            </div>
+            <div className="ui-grid-2 ui-gap-3">
+              <FormField label="Sender ID" required>
+                <Input
+                  value={form.senderId}
+                  onChange={(e) =>
+                    setForm({ ...form, senderId: e.target.value })
+                  }
+                  placeholder="QUALCOMM"
+                />
+              </FormField>
+              <FormField label="Receiver ID" required>
+                <Input
+                  value={form.receiverId}
+                  onChange={(e) =>
+                    setForm({ ...form, receiverId: e.target.value })
+                  }
+                  placeholder="ACME"
+                />
+              </FormField>
+            </div>
+            <FormField label="Payload (EDI content)">
+              <textarea
+                className="ui-input"
+                rows={6}
+                value={form.payload}
+                onChange={(e) => setForm({ ...form, payload: e.target.value })}
+                placeholder="ISA*00*...*GS*...*ST*846*..."
+              />
+            </FormField>
+          </form>
+        </Modal>
 
-          <Modal
-            open={payloadOpen}
-            onClose={() => {
-              setPayloadOpen(false);
-              setPayloadContent("");
-            }}
-            title="EDI Payload"
-            size="lg"
-          >
-            <pre className={styles.payloadPre}>{payloadContent}</pre>
-          </Modal>
-        </div>
-      </InventoryTabLayout>
+        <Modal
+          open={payloadOpen}
+          onClose={() => {
+            setPayloadOpen(false);
+            setPayloadContent("");
+          }}
+          title="EDI Payload"
+          size="lg"
+        >
+          <pre className={styles.payloadPre}>{payloadContent}</pre>
+        </Modal>
+      </div>
     </RouteGuard>
   );
 }

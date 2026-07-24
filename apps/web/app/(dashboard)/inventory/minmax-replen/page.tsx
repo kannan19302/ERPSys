@@ -4,10 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { ListPageTemplate, type ListColumn, StatCardRow } from "@unerp/ui";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
 import { Package as InventoryModuleIcon } from "lucide-react";
 const BASE = "/api/inventory/minmax-replen";
 function useFrameworkFetch() {
@@ -640,43 +636,33 @@ export default function MinMaxReplenPage() {
   const [tab, setTab] = useState("Dashboard");
   return (
     <RouteGuard permission="inventory.minmax-replen.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={InventoryModuleIcon}
-        moduleDescription="Manage inventory operations for this workspace."
-      >
-        <div className="ui-page-shell">
-          <div>
-            <h1 className="text-2xl font-bold">
-              Min-Max Replenishment Planning
-            </h1>
-            <p className="text-sm text-gray-500 mt-1">
-              Configure min/max stock thresholds per product-warehouse pair,
-              trigger automated replenishment scans, and manage order
-              suggestions through their lifecycle.
-            </p>
-          </div>
-          <div className="border-b flex gap-1">
-            {TABS.map((t) => (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === t ? "border-blue-600 text-blue-600" : "border-transparent text-gray-600 hover:text-gray-900"}`}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-          <div>
-            {tab === "Dashboard" && <DashboardTab />}
-            {tab === "Min-Max Levels" && <LevelsTab />}
-            {tab === "Run Replenishment" && <RunTab />}
-            {tab === "Suggestions" && <SuggestionsTab />}
-          </div>
+      <div className="ui-page-shell">
+        <div>
+          <h1 className="text-2xl font-bold">Min-Max Replenishment Planning</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Configure min/max stock thresholds per product-warehouse pair,
+            trigger automated replenishment scans, and manage order suggestions
+            through their lifecycle.
+          </p>
         </div>
-      </InventoryTabLayout>
+        <div className="border-b flex gap-1">
+          {TABS.map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === t ? "border-blue-600 text-blue-600" : "border-transparent text-gray-600 hover:text-gray-900"}`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+        <div>
+          {tab === "Dashboard" && <DashboardTab />}
+          {tab === "Min-Max Levels" && <LevelsTab />}
+          {tab === "Run Replenishment" && <RunTab />}
+          {tab === "Suggestions" && <SuggestionsTab />}
+        </div>
+      </div>
     </RouteGuard>
   );
 }

@@ -26,10 +26,6 @@ import {
   DollarSign,
   ArrowDown,
 } from "lucide-react";
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
 
 interface Consignment {
   id: string;
@@ -200,15 +196,15 @@ export default function CustomerConsignmentPage() {
     {
       key: "status",
       header: "Status",
-      render: (row) => (
-        <StatusBadge status={row.status} />
-      ),
+      render: (row) => <StatusBadge status={row.status} />,
     },
     {
       key: "lastConsumed",
       header: "Last Consumed",
       render: (row) =>
-        row.lastConsumed ? new Date(row.lastConsumed).toLocaleDateString() : "—",
+        row.lastConsumed
+          ? new Date(row.lastConsumed).toLocaleDateString()
+          : "—",
     },
     {
       key: "actions",
@@ -260,281 +256,263 @@ export default function CustomerConsignmentPage() {
   if (loading && consignments.length === 0) {
     return (
       <RouteGuard permission="inventory.customer-consignment.read">
-        <InventoryTabLayout
-          tabs={INVENTORY_TABS}
-          moduleId="inventory"
-          moduleLabel="Inventory & Stock"
-          moduleIcon={Package}
-          moduleDescription="Stock on customer premises"
-        >
-          <div className="ui-center-pad">
-            <Spinner size="lg" />
-          </div>
-        </InventoryTabLayout>
+        <div className="ui-center-pad">
+          <Spinner size="lg" />
+        </div>
       </RouteGuard>
     );
   }
 
   return (
     <RouteGuard permission="inventory.customer-consignment.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={Package}
-        moduleDescription="Stock on customer premises"
-      >
-        <div className="ui-stack-6 ui-animate-in">
-          <PageHeader
-            title="Customer Consignment"
-            description="Stock on customer premises with consumption tracking."
-            breadcrumbs={[
-              { label: "Home", href: "/dashboard" },
-              { label: "Inventory", href: "/inventory" },
-              { label: "Customer Consignment" },
+      <div className="ui-stack-6 ui-animate-in">
+        <PageHeader
+          title="Customer Consignment"
+          description="Stock on customer premises with consumption tracking."
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "Inventory", href: "/inventory" },
+            { label: "Customer Consignment" },
+          ]}
+          actions={
+            <Button
+              variant="primary"
+              onClick={() => setCreateOpen(true)}
+              className="ui-hstack-2"
+            >
+              <Plus size={14} /> New Consignment
+            </Button>
+          }
+        />
+
+        {error && <div className={styles.errorBox}>{error}</div>}
+
+        {dashboard && (
+          <StatCardRow
+            stats={[
+              {
+                label: "Active Consignments",
+                value: dashboard.activeConsignments,
+                icon: <Handshake size={16} />,
+                color: "var(--chart-1)",
+                loading: false,
+              },
+              {
+                label: "Total Value",
+                value: `$${Number(dashboard.totalValue).toLocaleString()}`,
+                icon: <DollarSign size={16} />,
+                color: "var(--chart-2)",
+                loading: false,
+              },
+              {
+                label: "Total Consumed",
+                value: Number(dashboard.totalConsumed).toLocaleString(),
+                icon: <ArrowDown size={16} />,
+                color: "var(--chart-3)",
+                loading: false,
+              },
             ]}
-            actions={
+          />
+        )}
+
+        <DataTable
+          columns={columns}
+          data={consignments}
+          rowKey={(r) => r.id}
+          emptyTitle="No consignments found"
+          emptyMessage="Create a new customer consignment to get started."
+          emptyIcon={<Handshake size={48} />}
+        />
+        {totalPages > 1 && (
+          <div style={{ marginTop: 16 }}>
+            <Pagination page={page} pageCount={totalPages} onChange={setPage} />
+          </div>
+        )}
+
+        <Modal
+          open={createOpen}
+          onClose={() => setCreateOpen(false)}
+          title="New Customer Consignment"
+          size="md"
+          footer={
+            <>
+              <Button variant="secondary" onClick={() => setCreateOpen(false)}>
+                Cancel
+              </Button>
               <Button
                 variant="primary"
-                onClick={() => setCreateOpen(true)}
-                className="ui-hstack-2"
+                onClick={handleCreate}
+                disabled={creating}
               >
-                <Plus size={14} /> New Consignment
+                {creating ? <Spinner size="sm" /> : "Create"}
               </Button>
-            }
-          />
-
-          {error && <div className={styles.errorBox}>{error}</div>}
-
-          {dashboard && (
-            <StatCardRow
-              stats={[
-                {
-                  label: "Active Consignments",
-                  value: dashboard.activeConsignments,
-                  icon: <Handshake size={16} />,
-                  color: "var(--chart-1)",
-                  loading: false,
-                },
-                {
-                  label: "Total Value",
-                  value: `$${Number(dashboard.totalValue).toLocaleString()}`,
-                  icon: <DollarSign size={16} />,
-                  color: "var(--chart-2)",
-                  loading: false,
-                },
-                {
-                  label: "Total Consumed",
-                  value: Number(dashboard.totalConsumed).toLocaleString(),
-                  icon: <ArrowDown size={16} />,
-                  color: "var(--chart-3)",
-                  loading: false,
-                },
-              ]}
-            />
-          )}
-
-          <DataTable
-            columns={columns}
-            data={consignments}
-            rowKey={(r) => r.id}
-            emptyTitle="No consignments found"
-            emptyMessage="Create a new customer consignment to get started."
-            emptyIcon={<Handshake size={48} />}
-          />
-          {totalPages > 1 && (
-            <div style={{ marginTop: 16 }}>
-              <Pagination page={page} pageCount={totalPages} onChange={setPage} />
-            </div>
-          )}
-
-          <Modal
-            open={createOpen}
-            onClose={() => setCreateOpen(false)}
-            title="New Customer Consignment"
-            size="md"
-            footer={
-              <>
-                <Button
-                  variant="secondary"
-                  onClick={() => setCreateOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={handleCreate}
-                  disabled={creating}
-                >
-                  {creating ? <Spinner size="sm" /> : "Create"}
-                </Button>
-              </>
-            }
-          >
-            <form onSubmit={handleCreate} className="ui-stack-4">
-              <FormField label="Customer ID" required>
+            </>
+          }
+        >
+          <form onSubmit={handleCreate} className="ui-stack-4">
+            <FormField label="Customer ID" required>
+              <Input
+                value={form.customerId}
+                onChange={(e) =>
+                  setForm({ ...form, customerId: e.target.value })
+                }
+                placeholder="Customer ID"
+              />
+            </FormField>
+            <div className="ui-grid-2 ui-gap-3">
+              <FormField label="Product ID" required>
                 <Input
-                  value={form.customerId}
+                  value={form.productId}
                   onChange={(e) =>
-                    setForm({ ...form, customerId: e.target.value })
+                    setForm({ ...form, productId: e.target.value })
                   }
-                  placeholder="Customer ID"
+                  placeholder="Product ID"
                 />
               </FormField>
-              <div className="ui-grid-2 ui-gap-3">
-                <FormField label="Product ID" required>
-                  <Input
-                    value={form.productId}
-                    onChange={(e) =>
-                      setForm({ ...form, productId: e.target.value })
-                    }
-                    placeholder="Product ID"
-                  />
-                </FormField>
-                <FormField label="Warehouse ID" required>
-                  <Input
-                    value={form.warehouseId}
-                    onChange={(e) =>
-                      setForm({ ...form, warehouseId: e.target.value })
-                    }
-                    placeholder="Warehouse ID"
-                  />
-                </FormField>
-              </div>
-              <div className="ui-grid-2 ui-gap-3">
-                <FormField label="Quantity On Hand">
-                  <Input
-                    type="number"
-                    value={form.quantityOnHand}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        quantityOnHand: parseInt(e.target.value) || 0,
-                      })
-                    }
-                  />
-                </FormField>
-                <FormField label="Unit Price">
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={form.unitPrice}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        unitPrice: parseFloat(e.target.value) || 0,
-                      })
-                    }
-                  />
-                </FormField>
-              </div>
-              <div className="ui-grid-2 ui-gap-3">
-                <FormField label="Max Quantity">
-                  <Input
-                    type="number"
-                    value={form.maxQuantity}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        maxQuantity: parseInt(e.target.value) || 0,
-                      })
-                    }
-                  />
-                </FormField>
-                <FormField label="Reorder Point">
-                  <Input
-                    type="number"
-                    value={form.reorderPoint}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        reorderPoint: parseInt(e.target.value) || 0,
-                      })
-                    }
-                  />
-                </FormField>
-              </div>
-            </form>
-          </Modal>
-
-          <Modal
-            open={consumeOpen}
-            onClose={() => {
-              setConsumeOpen(false);
-              setConsumeTarget(null);
-            }}
-            title="Record Consumption"
-            size="sm"
-            footer={
-              <>
-                <Button
-                  variant="secondary"
-                  onClick={() => {
-                    setConsumeOpen(false);
-                    setConsumeTarget(null);
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={handleRecordConsumption}
-                  disabled={consuming}
-                >
-                  {consuming ? <Spinner size="sm" /> : "Record"}
-                </Button>
-              </>
-            }
-          >
-            <form onSubmit={handleRecordConsumption} className="ui-stack-4">
-              {consumeTarget && (
-                <div className={styles.consumeInfo}>
-                  Consuming from {consumeTarget.customer?.name || consumeTarget.customerId}
-                  {" — "}
-                  {consumeTarget.product?.name || consumeTarget.productId}
-                </div>
-              )}
-              <FormField label="Quantity" required>
+              <FormField label="Warehouse ID" required>
+                <Input
+                  value={form.warehouseId}
+                  onChange={(e) =>
+                    setForm({ ...form, warehouseId: e.target.value })
+                  }
+                  placeholder="Warehouse ID"
+                />
+              </FormField>
+            </div>
+            <div className="ui-grid-2 ui-gap-3">
+              <FormField label="Quantity On Hand">
                 <Input
                   type="number"
-                  value={consumeForm.quantity}
+                  value={form.quantityOnHand}
                   onChange={(e) =>
-                    setConsumeForm({
-                      ...consumeForm,
-                      quantity: parseInt(e.target.value) || 0,
+                    setForm({
+                      ...form,
+                      quantityOnHand: parseInt(e.target.value) || 0,
                     })
                   }
                 />
               </FormField>
-              <FormField label="Total Value">
+              <FormField label="Unit Price">
                 <Input
                   type="number"
                   step="0.01"
-                  value={consumeForm.totalValue}
+                  value={form.unitPrice}
                   onChange={(e) =>
-                    setConsumeForm({
-                      ...consumeForm,
-                      totalValue: parseFloat(e.target.value) || 0,
+                    setForm({
+                      ...form,
+                      unitPrice: parseFloat(e.target.value) || 0,
                     })
                   }
                 />
               </FormField>
-              <FormField label="Reference">
+            </div>
+            <div className="ui-grid-2 ui-gap-3">
+              <FormField label="Max Quantity">
                 <Input
-                  value={consumeForm.reference}
+                  type="number"
+                  value={form.maxQuantity}
                   onChange={(e) =>
-                    setConsumeForm({
-                      ...consumeForm,
-                      reference: e.target.value,
+                    setForm({
+                      ...form,
+                      maxQuantity: parseInt(e.target.value) || 0,
                     })
                   }
-                  placeholder="Invoice or delivery note"
                 />
               </FormField>
-            </form>
-          </Modal>
-        </div>
-      </InventoryTabLayout>
+              <FormField label="Reorder Point">
+                <Input
+                  type="number"
+                  value={form.reorderPoint}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      reorderPoint: parseInt(e.target.value) || 0,
+                    })
+                  }
+                />
+              </FormField>
+            </div>
+          </form>
+        </Modal>
+
+        <Modal
+          open={consumeOpen}
+          onClose={() => {
+            setConsumeOpen(false);
+            setConsumeTarget(null);
+          }}
+          title="Record Consumption"
+          size="sm"
+          footer={
+            <>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setConsumeOpen(false);
+                  setConsumeTarget(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleRecordConsumption}
+                disabled={consuming}
+              >
+                {consuming ? <Spinner size="sm" /> : "Record"}
+              </Button>
+            </>
+          }
+        >
+          <form onSubmit={handleRecordConsumption} className="ui-stack-4">
+            {consumeTarget && (
+              <div className={styles.consumeInfo}>
+                Consuming from{" "}
+                {consumeTarget.customer?.name || consumeTarget.customerId}
+                {" — "}
+                {consumeTarget.product?.name || consumeTarget.productId}
+              </div>
+            )}
+            <FormField label="Quantity" required>
+              <Input
+                type="number"
+                value={consumeForm.quantity}
+                onChange={(e) =>
+                  setConsumeForm({
+                    ...consumeForm,
+                    quantity: parseInt(e.target.value) || 0,
+                  })
+                }
+              />
+            </FormField>
+            <FormField label="Total Value">
+              <Input
+                type="number"
+                step="0.01"
+                value={consumeForm.totalValue}
+                onChange={(e) =>
+                  setConsumeForm({
+                    ...consumeForm,
+                    totalValue: parseFloat(e.target.value) || 0,
+                  })
+                }
+              />
+            </FormField>
+            <FormField label="Reference">
+              <Input
+                value={consumeForm.reference}
+                onChange={(e) =>
+                  setConsumeForm({
+                    ...consumeForm,
+                    reference: e.target.value,
+                  })
+                }
+                placeholder="Invoice or delivery note"
+              />
+            </FormField>
+          </form>
+        </Modal>
+      </div>
     </RouteGuard>
   );
 }

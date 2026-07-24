@@ -10,7 +10,6 @@ import {
   Eye,
   AlertTriangle,
 } from "lucide-react";
-import { FinanceTabLayout } from "@/components/finance/FinanceTabLayout";
 import { SubTabBar } from "@/components/finance/SubTabBar";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 import { Card, useToast } from "@unerp/ui";
@@ -140,116 +139,108 @@ export default function TaxPage() {
 
   return (
     <RouteGuard permission="finance.tax.read">
-      <FinanceTabLayout
-        tabs={TAX_TABS}
-        moduleId="tax"
-        moduleLabel="Tax"
-        moduleIcon={Calculator}
-        moduleDescription="Tax engine, filing, compliance, and reporting"
-      >
-        {activeTab === "overview" && (
-          <div className="ui-stack-4 ui-animate-in">
-            {summaryError && (
-              <div className="ui-alert ui-alert-danger">
-                <AlertTriangle size={16} />
-                Failed to load tax summary — figures below may be stale.{" "}
-                {summaryError}
+      {activeTab === "overview" && (
+        <div className="ui-stack-4 ui-animate-in">
+          {summaryError && (
+            <div className="ui-alert ui-alert-danger">
+              <AlertTriangle size={16} />
+              Failed to load tax summary — figures below may be stale.{" "}
+              {summaryError}
+            </div>
+          )}
+          <div className="ui-grid-2">
+            <Card padding="md">
+              <div className="ui-stack-2">
+                <p className="ui-text-xs-muted">Tax Rates Active</p>
+                <p
+                  className="ui-heading-sm"
+                  style={{ color: "var(--color-success)" }}
+                >
+                  {summary.activeRates}
+                </p>
+                <p className="ui-text-xs-muted">
+                  Across {summary.jurisdictionCount} jurisdictions
+                </p>
               </div>
+            </Card>
+            <Card padding="md">
+              <div className="ui-stack-2">
+                <p className="ui-text-xs-muted">Filing Calendar</p>
+                <p
+                  className="ui-heading-sm"
+                  style={{ color: "var(--color-warning)" }}
+                >
+                  View Detail
+                </p>
+                <p className="ui-text-xs-muted">
+                  See Filing Calendar and Tax Filing tabs
+                </p>
+              </div>
+            </Card>
+          </div>
+          <TaxEnginePage />
+        </div>
+      )}
+      {activeTab === "jurisdictions" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <TaxJurisdictionLookupTab />
+        </div>
+      )}
+      {activeTab === "calendar" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <TaxFilingCalendarTab />
+        </div>
+      )}
+      {activeTab === "tax-engine" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <TaxEnginePage />
+        </div>
+      )}
+      {activeTab === "tax-filing" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <SubTabBar
+            tabs={[
+              {
+                id: "filing",
+                label: "Tax Filing",
+                href: "/finance/tax?tab=tax-filing&subtab=filing",
+              },
+              {
+                id: "summary",
+                label: "Tax Filing Summary",
+                href: "/finance/tax?tab=tax-filing&subtab=summary",
+              },
+            ]}
+          />
+          <div style={{ marginTop: "var(--space-3)" }}>
+            {subTab === "summary" ? (
+              <TaxFilingSummaryPage />
+            ) : (
+              <TaxFilingPage />
             )}
-            <div className="ui-grid-2">
-              <Card padding="md">
-                <div className="ui-stack-2">
-                  <p className="ui-text-xs-muted">Tax Rates Active</p>
-                  <p
-                    className="ui-heading-sm"
-                    style={{ color: "var(--color-success)" }}
-                  >
-                    {summary.activeRates}
-                  </p>
-                  <p className="ui-text-xs-muted">
-                    Across {summary.jurisdictionCount} jurisdictions
-                  </p>
-                </div>
-              </Card>
-              <Card padding="md">
-                <div className="ui-stack-2">
-                  <p className="ui-text-xs-muted">Filing Calendar</p>
-                  <p
-                    className="ui-heading-sm"
-                    style={{ color: "var(--color-warning)" }}
-                  >
-                    View Detail
-                  </p>
-                  <p className="ui-text-xs-muted">
-                    See Filing Calendar and Tax Filing tabs
-                  </p>
-                </div>
-              </Card>
-            </div>
-            <TaxEnginePage />
           </div>
-        )}
-        {activeTab === "jurisdictions" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <TaxJurisdictionLookupTab />
-          </div>
-        )}
-        {activeTab === "calendar" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <TaxFilingCalendarTab />
-          </div>
-        )}
-        {activeTab === "tax-engine" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <TaxEnginePage />
-          </div>
-        )}
-        {activeTab === "tax-filing" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <SubTabBar
-              tabs={[
-                {
-                  id: "filing",
-                  label: "Tax Filing",
-                  href: "/finance/tax?tab=tax-filing&subtab=filing",
-                },
-                {
-                  id: "summary",
-                  label: "Tax Filing Summary",
-                  href: "/finance/tax?tab=tax-filing&subtab=summary",
-                },
-              ]}
-            />
-            <div style={{ marginTop: "var(--space-3)" }}>
-              {subTab === "summary" ? (
-                <TaxFilingSummaryPage />
-              ) : (
-                <TaxFilingPage />
-              )}
-            </div>
-          </div>
-        )}
-        {activeTab === "gst-vat" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <TaxFilingPage />
-          </div>
-        )}
-        {activeTab === "1099" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <Form1099Page />
-          </div>
-        )}
-        {activeTab === "economic-nexus" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <TaxNexusPage />
-          </div>
-        )}
-        {activeTab === "audit-logs" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <AuditLogsPage />
-          </div>
-        )}
-      </FinanceTabLayout>
+        </div>
+      )}
+      {activeTab === "gst-vat" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <TaxFilingPage />
+        </div>
+      )}
+      {activeTab === "1099" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <Form1099Page />
+        </div>
+      )}
+      {activeTab === "economic-nexus" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <TaxNexusPage />
+        </div>
+      )}
+      {activeTab === "audit-logs" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <AuditLogsPage />
+        </div>
+      )}
     </RouteGuard>
   );
 }

@@ -16,7 +16,6 @@ import {
   Building2,
   AlertTriangle,
 } from "lucide-react";
-import { FinanceTabLayout } from "@/components/finance/FinanceTabLayout";
 import { SubTabBar } from "@/components/finance/SubTabBar";
 import { ListView, RouteGuard, useApiClient } from "@unerp/framework";
 import { accountResource, journalResource } from "@/modules/finance";
@@ -203,328 +202,320 @@ export default function GLPage() {
 
   return (
     <RouteGuard permission="finance.journal.read">
-      <FinanceTabLayout
-        tabs={GL_TABS}
-        moduleId="gl"
-        moduleLabel="General Ledger"
-        moduleIcon={BookOpen}
-        moduleDescription="Chart of accounts, journal entries, period management, and financial close"
-      >
-        {activeTab === "overview" && (
-          <div className="ui-stack-6 ui-animate-in">
-            {summaryError && (
-              <div className="ui-alert ui-alert-danger">
-                <AlertTriangle size={16} />
-                Failed to load GL summary — figures below may be stale.{" "}
-                {summaryError}
+      {activeTab === "overview" && (
+        <div className="ui-stack-6 ui-animate-in">
+          {summaryError && (
+            <div className="ui-alert ui-alert-danger">
+              <AlertTriangle size={16} />
+              Failed to load GL summary — figures below may be stale.{" "}
+              {summaryError}
+            </div>
+          )}
+          <div className="ui-grid-3">
+            <Card padding="md">
+              <div className="ui-stack-2">
+                <p className="ui-text-xs-muted">Total Accounts</p>
+                <p
+                  className="ui-heading-sm"
+                  style={{ color: "var(--color-primary)" }}
+                >
+                  {summary.totalAccounts}
+                </p>
+                <p className="ui-text-xs-muted">
+                  Across {summary.accountCategories} categories
+                </p>
               </div>
-            )}
-            <div className="ui-grid-3">
-              <Card padding="md">
-                <div className="ui-stack-2">
-                  <p className="ui-text-xs-muted">Total Accounts</p>
-                  <p
-                    className="ui-heading-sm"
-                    style={{ color: "var(--color-primary)" }}
-                  >
-                    {summary.totalAccounts}
-                  </p>
-                  <p className="ui-text-xs-muted">
-                    Across {summary.accountCategories} categories
-                  </p>
-                </div>
-              </Card>
-              <Card padding="md">
-                <div className="ui-stack-2">
-                  <p className="ui-text-xs-muted">Journal Entries</p>
-                  <p
-                    className="ui-heading-sm"
-                    style={{ color: "var(--color-success)" }}
-                  >
-                    {summary.journalCount}
-                  </p>
-                  <p className="ui-text-xs-muted">
-                    {summary.pendingApproval} pending approval
-                  </p>
-                </div>
-              </Card>
-              <Card padding="md">
-                <div className="ui-stack-2">
-                  <p className="ui-text-xs-muted">Open Periods</p>
-                  <p
-                    className="ui-heading-sm"
-                    style={{ color: "var(--color-warning)" }}
-                  >
-                    {summary.openPeriods}
-                  </p>
-                  <p className="ui-text-xs-muted">
-                    {summary.nextCloseDate
-                      ? `Next close: ${new Date(summary.nextCloseDate).toLocaleDateString()}`
-                      : "No open periods"}
-                  </p>
-                </div>
-              </Card>
-            </div>
-            <Card padding="lg">
-              <h3
-                className="ui-heading-sm"
-                style={{ marginBottom: "var(--space-3)" }}
-              >
-                Recent Journal Entries
-              </h3>
-              <ListView resource={journalResource} />
             </Card>
-            <Card padding="lg">
-              <h3
-                className="ui-heading-sm"
-                style={{ marginBottom: "var(--space-3)" }}
-              >
-                Chart of Accounts Summary
-              </h3>
-              <ListView resource={accountResource} />
+            <Card padding="md">
+              <div className="ui-stack-2">
+                <p className="ui-text-xs-muted">Journal Entries</p>
+                <p
+                  className="ui-heading-sm"
+                  style={{ color: "var(--color-success)" }}
+                >
+                  {summary.journalCount}
+                </p>
+                <p className="ui-text-xs-muted">
+                  {summary.pendingApproval} pending approval
+                </p>
+              </div>
+            </Card>
+            <Card padding="md">
+              <div className="ui-stack-2">
+                <p className="ui-text-xs-muted">Open Periods</p>
+                <p
+                  className="ui-heading-sm"
+                  style={{ color: "var(--color-warning)" }}
+                >
+                  {summary.openPeriods}
+                </p>
+                <p className="ui-text-xs-muted">
+                  {summary.nextCloseDate
+                    ? `Next close: ${new Date(summary.nextCloseDate).toLocaleDateString()}`
+                    : "No open periods"}
+                </p>
+              </div>
             </Card>
           </div>
-        )}
-        {activeTab === "chart-of-accounts" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <PageHeader
-              title="Chart of Accounts"
-              description="Manage your full chart of accounts structure"
-            />
-            <ListView resource={accountResource} />
-          </div>
-        )}
-        {activeTab === "journal-entries" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <PageHeader
-              title="Journal Entries"
-              description="Record, approve, and post journal entries to the general ledger"
-            />
+          <Card padding="lg">
+            <h3
+              className="ui-heading-sm"
+              style={{ marginBottom: "var(--space-3)" }}
+            >
+              Recent Journal Entries
+            </h3>
             <ListView resource={journalResource} />
-          </div>
-        )}
-        {activeTab === "financial-periods" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <SubTabBar
-              tabs={[
-                {
-                  id: "periods",
-                  label: "Financial Periods",
-                  href: "/finance/gl?tab=financial-periods&subtab=periods",
-                },
-                {
-                  id: "close",
-                  label: "Close Tasks",
-                  href: "/finance/gl?tab=financial-periods&subtab=close",
-                },
-                {
-                  id: "recurring",
-                  label: "Recurring Entries",
-                  href: "/finance/gl?tab=financial-periods&subtab=recurring",
-                },
-              ]}
-            />
-            <div style={{ marginTop: "var(--space-4)" }}>
-              {subTab === "close" ? (
-                <CloseTasksPage />
-              ) : subTab === "recurring" ? (
-                <RecurringInvoicesPage />
-              ) : (
-                <FinancialPeriodsPage />
-              )}
-            </div>
-          </div>
-        )}
-        {activeTab === "closing-checklist" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <SubTabBar
-              tabs={[
-                {
-                  id: "close",
-                  label: "Close Tasks",
-                  href: "/finance/gl?tab=closing-checklist&subtab=close",
-                },
-                {
-                  id: "periods",
-                  label: "Financial Periods",
-                  href: "/finance/gl?tab=closing-checklist&subtab=periods",
-                },
-              ]}
-            />
-            <div style={{ marginTop: "var(--space-4)" }}>
-              {subTab === "periods" ? (
-                <FinancialPeriodsPage />
-              ) : (
-                <CloseTasksPage />
-              )}
-            </div>
-          </div>
-        )}
-        {activeTab === "recurring-journals" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <SubTabBar
-              tabs={[
-                {
-                  id: "recurring",
-                  label: "Recurring Entries",
-                  href: "/finance/gl?tab=recurring-journals&subtab=recurring",
-                },
-                {
-                  id: "revenue",
-                  label: "Revenue Schedules",
-                  href: "/finance/gl?tab=recurring-journals&subtab=revenue",
-                },
-              ]}
-            />
-            <div style={{ marginTop: "var(--space-4)" }}>
-              {subTab === "revenue" ? (
-                <RevenueRecognitionPage />
-              ) : (
-                <RecurringJournalsTab />
-              )}
-            </div>
-          </div>
-        )}
-        {activeTab === "exchange-rates" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <SubTabBar
-              tabs={[
-                {
-                  id: "rates",
-                  label: "Exchange Rates",
-                  href: "/finance/gl?tab=exchange-rates&subtab=rates",
-                },
-                {
-                  id: "fx",
-                  label: "FX Revaluation",
-                  href: "/finance/gl?tab=exchange-rates&subtab=fx",
-                },
-              ]}
-            />
-            <div style={{ marginTop: "var(--space-4)" }}>
-              {subTab === "fx" ? <FxRevaluationPage /> : <ExchangeRatesPage />}
-            </div>
-          </div>
-        )}
-        {activeTab === "audit-trail" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <PageHeader
-              title="Audit Trail"
-              description="Track all changes to financial records"
-            />
-            <div style={{ marginTop: "var(--space-4)" }}>
+          </Card>
+          <Card padding="lg">
+            <h3
+              className="ui-heading-sm"
+              style={{ marginBottom: "var(--space-3)" }}
+            >
+              Chart of Accounts Summary
+            </h3>
+            <ListView resource={accountResource} />
+          </Card>
+        </div>
+      )}
+      {activeTab === "chart-of-accounts" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <PageHeader
+            title="Chart of Accounts"
+            description="Manage your full chart of accounts structure"
+          />
+          <ListView resource={accountResource} />
+        </div>
+      )}
+      {activeTab === "journal-entries" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <PageHeader
+            title="Journal Entries"
+            description="Record, approve, and post journal entries to the general ledger"
+          />
+          <ListView resource={journalResource} />
+        </div>
+      )}
+      {activeTab === "financial-periods" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <SubTabBar
+            tabs={[
+              {
+                id: "periods",
+                label: "Financial Periods",
+                href: "/finance/gl?tab=financial-periods&subtab=periods",
+              },
+              {
+                id: "close",
+                label: "Close Tasks",
+                href: "/finance/gl?tab=financial-periods&subtab=close",
+              },
+              {
+                id: "recurring",
+                label: "Recurring Entries",
+                href: "/finance/gl?tab=financial-periods&subtab=recurring",
+              },
+            ]}
+          />
+          <div style={{ marginTop: "var(--space-4)" }}>
+            {subTab === "close" ? (
               <CloseTasksPage />
-            </div>
+            ) : subTab === "recurring" ? (
+              <RecurringInvoicesPage />
+            ) : (
+              <FinancialPeriodsPage />
+            )}
           </div>
-        )}
-        {activeTab === "revenue-recognition" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <SubTabBar
-              tabs={[
-                {
-                  id: "revenue",
-                  label: "Revenue Schedules",
-                  href: "/finance/gl?tab=revenue-recognition&subtab=revenue",
-                },
-                {
-                  id: "recurring",
-                  label: "Recurring Billing",
-                  href: "/finance/gl?tab=revenue-recognition&subtab=recurring",
-                },
-              ]}
-            />
-            <div style={{ marginTop: "var(--space-4)" }}>
-              {subTab === "recurring" ? (
-                <RecurringInvoicesPage />
-              ) : (
-                <RevenueRecognitionPage />
-              )}
-            </div>
+        </div>
+      )}
+      {activeTab === "closing-checklist" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <SubTabBar
+            tabs={[
+              {
+                id: "close",
+                label: "Close Tasks",
+                href: "/finance/gl?tab=closing-checklist&subtab=close",
+              },
+              {
+                id: "periods",
+                label: "Financial Periods",
+                href: "/finance/gl?tab=closing-checklist&subtab=periods",
+              },
+            ]}
+          />
+          <div style={{ marginTop: "var(--space-4)" }}>
+            {subTab === "periods" ? (
+              <FinancialPeriodsPage />
+            ) : (
+              <CloseTasksPage />
+            )}
           </div>
-        )}
-        {activeTab === "dynamic-allocations" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <SubTabBar
-              tabs={[
-                {
-                  id: "allocations",
-                  label: "Allocations",
-                  href: "/finance/gl?tab=dynamic-allocations&subtab=allocations",
-                },
-                {
-                  id: "periods",
-                  label: "Financial Periods",
-                  href: "/finance/gl?tab=dynamic-allocations&subtab=periods",
-                },
-              ]}
-            />
-            <div style={{ marginTop: "var(--space-4)" }}>
-              {subTab === "periods" ? (
-                <FinancialPeriodsPage />
-              ) : (
-                <AllocationsPage />
-              )}
-            </div>
+        </div>
+      )}
+      {activeTab === "recurring-journals" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <SubTabBar
+            tabs={[
+              {
+                id: "recurring",
+                label: "Recurring Entries",
+                href: "/finance/gl?tab=recurring-journals&subtab=recurring",
+              },
+              {
+                id: "revenue",
+                label: "Revenue Schedules",
+                href: "/finance/gl?tab=recurring-journals&subtab=revenue",
+              },
+            ]}
+          />
+          <div style={{ marginTop: "var(--space-4)" }}>
+            {subTab === "revenue" ? (
+              <RevenueRecognitionPage />
+            ) : (
+              <RecurringJournalsTab />
+            )}
           </div>
-        )}
-        {activeTab === "multi-gaap" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <SubTabBar
-              tabs={[
-                {
-                  id: "books",
-                  label: "Accounting Books",
-                  href: "/finance/gl?tab=multi-gaap&subtab=books",
-                },
-                {
-                  id: "consolidation",
-                  label: "Consolidation",
-                  href: "/finance/gl?tab=multi-gaap&subtab=consolidation",
-                },
-                {
-                  id: "fx",
-                  label: "FX Revaluation",
-                  href: "/finance/gl?tab=multi-gaap&subtab=fx",
-                },
-              ]}
-            />
-            <div style={{ marginTop: "var(--space-4)" }}>
-              {subTab === "consolidation" ? (
-                <ConsolidationPage />
-              ) : subTab === "fx" ? (
-                <FxRevaluationPage />
-              ) : (
-                <AccountingBooksPage />
-              )}
-            </div>
+        </div>
+      )}
+      {activeTab === "exchange-rates" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <SubTabBar
+            tabs={[
+              {
+                id: "rates",
+                label: "Exchange Rates",
+                href: "/finance/gl?tab=exchange-rates&subtab=rates",
+              },
+              {
+                id: "fx",
+                label: "FX Revaluation",
+                href: "/finance/gl?tab=exchange-rates&subtab=fx",
+              },
+            ]}
+          />
+          <div style={{ marginTop: "var(--space-4)" }}>
+            {subTab === "fx" ? <FxRevaluationPage /> : <ExchangeRatesPage />}
           </div>
-        )}
-        {activeTab === "consolidation" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <SubTabBar
-              tabs={[
-                {
-                  id: "consolidation",
-                  label: "Consolidation",
-                  href: "/finance/gl?tab=consolidation&subtab=consolidation",
-                },
-                {
-                  id: "books",
-                  label: "Accounting Books",
-                  href: "/finance/gl?tab=consolidation&subtab=books",
-                },
-              ]}
-            />
-            <div style={{ marginTop: "var(--space-4)" }}>
-              {subTab === "books" ? (
-                <AccountingBooksPage />
-              ) : (
-                <ConsolidationPage />
-              )}
-            </div>
+        </div>
+      )}
+      {activeTab === "audit-trail" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <PageHeader
+            title="Audit Trail"
+            description="Track all changes to financial records"
+          />
+          <div style={{ marginTop: "var(--space-4)" }}>
+            <CloseTasksPage />
           </div>
-        )}
-      </FinanceTabLayout>
+        </div>
+      )}
+      {activeTab === "revenue-recognition" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <SubTabBar
+            tabs={[
+              {
+                id: "revenue",
+                label: "Revenue Schedules",
+                href: "/finance/gl?tab=revenue-recognition&subtab=revenue",
+              },
+              {
+                id: "recurring",
+                label: "Recurring Billing",
+                href: "/finance/gl?tab=revenue-recognition&subtab=recurring",
+              },
+            ]}
+          />
+          <div style={{ marginTop: "var(--space-4)" }}>
+            {subTab === "recurring" ? (
+              <RecurringInvoicesPage />
+            ) : (
+              <RevenueRecognitionPage />
+            )}
+          </div>
+        </div>
+      )}
+      {activeTab === "dynamic-allocations" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <SubTabBar
+            tabs={[
+              {
+                id: "allocations",
+                label: "Allocations",
+                href: "/finance/gl?tab=dynamic-allocations&subtab=allocations",
+              },
+              {
+                id: "periods",
+                label: "Financial Periods",
+                href: "/finance/gl?tab=dynamic-allocations&subtab=periods",
+              },
+            ]}
+          />
+          <div style={{ marginTop: "var(--space-4)" }}>
+            {subTab === "periods" ? (
+              <FinancialPeriodsPage />
+            ) : (
+              <AllocationsPage />
+            )}
+          </div>
+        </div>
+      )}
+      {activeTab === "multi-gaap" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <SubTabBar
+            tabs={[
+              {
+                id: "books",
+                label: "Accounting Books",
+                href: "/finance/gl?tab=multi-gaap&subtab=books",
+              },
+              {
+                id: "consolidation",
+                label: "Consolidation",
+                href: "/finance/gl?tab=multi-gaap&subtab=consolidation",
+              },
+              {
+                id: "fx",
+                label: "FX Revaluation",
+                href: "/finance/gl?tab=multi-gaap&subtab=fx",
+              },
+            ]}
+          />
+          <div style={{ marginTop: "var(--space-4)" }}>
+            {subTab === "consolidation" ? (
+              <ConsolidationPage />
+            ) : subTab === "fx" ? (
+              <FxRevaluationPage />
+            ) : (
+              <AccountingBooksPage />
+            )}
+          </div>
+        </div>
+      )}
+      {activeTab === "consolidation" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <SubTabBar
+            tabs={[
+              {
+                id: "consolidation",
+                label: "Consolidation",
+                href: "/finance/gl?tab=consolidation&subtab=consolidation",
+              },
+              {
+                id: "books",
+                label: "Accounting Books",
+                href: "/finance/gl?tab=consolidation&subtab=books",
+              },
+            ]}
+          />
+          <div style={{ marginTop: "var(--space-4)" }}>
+            {subTab === "books" ? (
+              <AccountingBooksPage />
+            ) : (
+              <ConsolidationPage />
+            )}
+          </div>
+        </div>
+      )}
     </RouteGuard>
   );
 }

@@ -23,8 +23,9 @@ import {
   ViewSwitcher,
   StatCardRow,
 } from "@unerp/ui";
-import { ModuleTabLayout, type ModuleTab } from "@unerp/ui-layout";
+
 import { RouteGuard, useApiClient } from "@unerp/framework";
+import type { ModuleTab } from "@unerp/ui-layout";
 
 const MANUFACTURING_TABS: ModuleTab[] = [
   {
@@ -523,526 +524,509 @@ export default function ManufacturingDashboard() {
   return (
     <RouteGuard permission="manufacturing.dashboard.read">
       <div className="ui-stack-6 ui-animate-in">
-        <ModuleTabLayout
-          tabs={MANUFACTURING_TABS}
-          moduleId="manufacturing"
-          moduleLabel="Manufacturing Operations"
-          moduleIcon={Hammer}
-          moduleDescription="Dispatch production runs, evaluate shifts capacity, execute maintenance, track tooling metrics, and subcontracting flows."
-        >
-          {loading ? (
-            <div className="text-center p-12">
-              <Spinner size="lg" />
-            </div>
-          ) : (
-            <div>
-              {/* TAB 0: DASHBOARD */}
-              {activeTab === "dashboard" && (
-                <div className="ui-stack-6">
-                  <StatCardRow
-                    stats={[
-                      {
-                        label: "Average Machine OEE",
-                        value: `${averageOee}%`,
-                        icon: <ShieldCheck size={16} />,
-                        color: "var(--chart-2)",
-                      },
-                      {
-                        label: "Active Work Orders",
-                        value: workOrders.filter(
-                          (w) => w.status === "IN_PROGRESS",
-                        ).length,
-                        icon: <Play size={16} />,
-                        color: "var(--chart-1)",
-                      },
-                      {
-                        label: "Production Scrap Qty",
-                        value: totalScrap,
-                        icon: <AlertTriangle size={16} />,
-                        color: "var(--chart-4)",
-                      },
-                      {
-                        label: "Cost Variance",
-                        value: `$${totalCostVariance.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
-                        icon: <TrendingUp size={16} />,
-                        color:
-                          totalCostVariance > 0
-                            ? "var(--chart-4)"
-                            : "var(--chart-2)",
-                      },
-                    ]}
+        {loading ? (
+          <div className="text-center p-12">
+            <Spinner size="lg" />
+          </div>
+        ) : (
+          <div>
+            {/* TAB 0: DASHBOARD */}
+            {activeTab === "dashboard" && (
+              <div className="ui-stack-6">
+                <StatCardRow
+                  stats={[
+                    {
+                      label: "Average Machine OEE",
+                      value: `${averageOee}%`,
+                      icon: <ShieldCheck size={16} />,
+                      color: "var(--chart-2)",
+                    },
+                    {
+                      label: "Active Work Orders",
+                      value: workOrders.filter(
+                        (w) => w.status === "IN_PROGRESS",
+                      ).length,
+                      icon: <Play size={16} />,
+                      color: "var(--chart-1)",
+                    },
+                    {
+                      label: "Production Scrap Qty",
+                      value: totalScrap,
+                      icon: <AlertTriangle size={16} />,
+                      color: "var(--chart-4)",
+                    },
+                    {
+                      label: "Cost Variance",
+                      value: `$${totalCostVariance.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+                      icon: <TrendingUp size={16} />,
+                      color:
+                        totalCostVariance > 0
+                          ? "var(--chart-4)"
+                          : "var(--chart-2)",
+                    },
+                  ]}
+                />
+
+                {/* Dashboard Charts */}
+                <div className={styles.p2}>
+                  <DashboardChart
+                    title="Finite Workstation Capacity"
+                    subtitle="Allocated vs Total hours capacity"
+                    data={capacityLoadChartData}
+                    config={{
+                      xAxisKey: "name",
+                      series: [
+                        {
+                          dataKey: "Allocated",
+                          name: "Allocated Hours",
+                          color: "var(--color-primary)",
+                        },
+                        {
+                          dataKey: "Capacity",
+                          name: "Capacity Hours",
+                          color: "var(--color-border)",
+                        },
+                      ],
+                    }}
+                    defaultChartType="bar"
+                    allowedChartTypes={["bar", "stacked-bar", "line"]}
+                    height={280}
                   />
-
-                  {/* Dashboard Charts */}
-                  <div className={styles.p2}>
-                    <DashboardChart
-                      title="Finite Workstation Capacity"
-                      subtitle="Allocated vs Total hours capacity"
-                      data={capacityLoadChartData}
-                      config={{
-                        xAxisKey: "name",
-                        series: [
-                          {
-                            dataKey: "Allocated",
-                            name: "Allocated Hours",
-                            color: "var(--color-primary)",
-                          },
-                          {
-                            dataKey: "Capacity",
-                            name: "Capacity Hours",
-                            color: "var(--color-border)",
-                          },
-                        ],
-                      }}
-                      defaultChartType="bar"
-                      allowedChartTypes={["bar", "stacked-bar", "line"]}
-                      height={280}
-                    />
-                    <DashboardChart
-                      title="OEE Score Trend"
-                      subtitle="Overall Equipment Effectiveness across orders"
-                      data={oeeTrendData}
-                      config={{
-                        xAxisKey: "name",
-                        series: [
-                          {
-                            dataKey: "OEE",
-                            name: "OEE %",
-                            color: "var(--color-success)",
-                          },
-                        ],
-                      }}
-                      defaultChartType="line"
-                      allowedChartTypes={["line", "area", "bar"]}
-                      height={280}
-                    />
-                    <DashboardChart
-                      title="Cost Variance Analysis"
-                      subtitle="Standard vs Actual production costs"
-                      data={costComparisonData}
-                      config={{
-                        xAxisKey: "name",
-                        series: [
-                          {
-                            dataKey: "Standard",
-                            name: "Standard Cost",
-                            color: "var(--color-info-text)",
-                          },
-                          {
-                            dataKey: "Actual",
-                            name: "Actual Cost",
-                            color: "var(--color-warning)",
-                          },
-                        ],
-                      }}
-                      defaultChartType="bar"
-                      allowedChartTypes={["bar", "composed", "line"]}
-                      height={280}
-                    />
-                    <DashboardChart
-                      title="Work Order Status Breakout"
-                      subtitle="Total work orders grouped by stage"
-                      data={workOrderStatusData}
-                      config={{
-                        xAxisKey: "name",
-                        series: [{ dataKey: "value", name: "Orders" }],
-                        valueKey: "value",
-                        nameKey: "name",
-                      }}
-                      defaultChartType="donut"
-                      allowedChartTypes={["donut", "pie", "bar"]}
-                      height={280}
-                    />
-                  </div>
+                  <DashboardChart
+                    title="OEE Score Trend"
+                    subtitle="Overall Equipment Effectiveness across orders"
+                    data={oeeTrendData}
+                    config={{
+                      xAxisKey: "name",
+                      series: [
+                        {
+                          dataKey: "OEE",
+                          name: "OEE %",
+                          color: "var(--color-success)",
+                        },
+                      ],
+                    }}
+                    defaultChartType="line"
+                    allowedChartTypes={["line", "area", "bar"]}
+                    height={280}
+                  />
+                  <DashboardChart
+                    title="Cost Variance Analysis"
+                    subtitle="Standard vs Actual production costs"
+                    data={costComparisonData}
+                    config={{
+                      xAxisKey: "name",
+                      series: [
+                        {
+                          dataKey: "Standard",
+                          name: "Standard Cost",
+                          color: "var(--color-info-text)",
+                        },
+                        {
+                          dataKey: "Actual",
+                          name: "Actual Cost",
+                          color: "var(--color-warning)",
+                        },
+                      ],
+                    }}
+                    defaultChartType="bar"
+                    allowedChartTypes={["bar", "composed", "line"]}
+                    height={280}
+                  />
+                  <DashboardChart
+                    title="Work Order Status Breakout"
+                    subtitle="Total work orders grouped by stage"
+                    data={workOrderStatusData}
+                    config={{
+                      xAxisKey: "name",
+                      series: [{ dataKey: "value", name: "Orders" }],
+                      valueKey: "value",
+                      nameKey: "name",
+                    }}
+                    defaultChartType="donut"
+                    allowedChartTypes={["donut", "pie", "bar"]}
+                    height={280}
+                  />
                 </div>
-              )}
+              </div>
+            )}
 
-              {/* TAB 1: WORK ORDERS */}
-              {activeTab === "work-orders" && (
-                <div className="ui-stack-4">
-                  <div className="ui-flex-end">
-                    <button
-                      onClick={() => setIsWOModalOpen(true)}
-                      className={styles.p3}
-                    >
-                      <Plus size={16} /> New Work Order
-                    </button>
-                  </div>
-
-                  <div className="ui-stack-3">
-                    {workOrders.map((wo) => (
-                      <div key={wo.id} className={styles.p4}>
-                        <div>
-                          <p className="ui-heading-sm font-bold">
-                            {wo.workOrderNumber}
-                          </p>
-                          <p className={styles.p5}>BOM: {wo.bom.name}</p>
-                          {wo.workstation && (
-                            <p className={styles.p6}>
-                              Machine: {wo.workstation.name}
-                            </p>
-                          )}
-                        </div>
-
-                        <div>
-                          <span
-                            style={{
-                              background:
-                                wo.status === "COMPLETED"
-                                  ? "var(--color-success-light)"
-                                  : wo.status === "IN_PROGRESS"
-                                    ? "var(--color-primary-light)"
-                                    : "var(--color-bg-hover)",
-                              color:
-                                wo.status === "COMPLETED"
-                                  ? "var(--color-success)"
-                                  : wo.status === "IN_PROGRESS"
-                                    ? "var(--color-primary)"
-                                    : "var(--color-text-secondary)",
-                            }}
-                            className={styles.s2}
-                          >
-                            {wo.status}
-                          </span>
-                        </div>
-
-                        <div>
-                          <p className="ui-text-micro">QUANTITY</p>
-                          <p className={styles.p7}>{Number(wo.quantity)}</p>
-                        </div>
-
-                        <div>
-                          <p className="ui-text-micro">STANDARD COST</p>
-                          <p className={styles.p8}>
-                            {wo.standardCost
-                              ? `$${Number(wo.standardCost).toFixed(2)}`
-                              : "N/A"}
-                          </p>
-                        </div>
-
-                        <div>
-                          <p className="ui-text-micro">ACTUAL COST</p>
-                          <p
-                            style={{
-                              color:
-                                wo.costVariance && Number(wo.costVariance) > 0
-                                  ? "var(--color-danger)"
-                                  : "var(--color-text)",
-                            }}
-                            className={styles.s3}
-                          >
-                            {wo.actualCost
-                              ? `$${Number(wo.actualCost).toFixed(2)}`
-                              : "N/A"}
-                          </p>
-                        </div>
-
-                        <div className="text-right">
-                          {wo.status === "COMPLETED" ? (
-                            <span className={styles.p9}>
-                              <CheckCircle2 size={14} /> Completed
-                            </span>
-                          ) : (
-                            <span className="ui-text-xs-muted">
-                              Pending execution
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+            {/* TAB 1: WORK ORDERS */}
+            {activeTab === "work-orders" && (
+              <div className="ui-stack-4">
+                <div className="ui-flex-end">
+                  <button
+                    onClick={() => setIsWOModalOpen(true)}
+                    className={styles.p3}
+                  >
+                    <Plus size={16} /> New Work Order
+                  </button>
                 </div>
-              )}
 
-              {/* TAB 2: CAPACITY LOAD PLANNING & SHIFTS */}
-              {activeTab === "capacity" && (
-                <div className={styles.p10}>
-                  {/* Load Balancing list */}
-                  <div className={styles.p11}>
-                    <h3 className="ui-heading-lg">
-                      Finite Capacity Load Utilization
-                    </h3>
-                    <div className={styles.p12}>
-                      {loadBalancing.map((load, idx) => (
-                        <div key={idx} className={styles.p13}>
-                          <div className="ui-flex-between">
-                            <div>
-                              <p className={styles.p14}>{load.workstation}</p>
-                              <p className="ui-text-xs-muted">
-                                Allocated: {load.allocatedHours.toFixed(1)} hrs
-                                / Capacity: {load.capacityHours.toFixed(1)} hrs
-                              </p>
-                            </div>
-                            <span
-                              style={{
-                                background:
-                                  load.status === "OVERLOADED"
-                                    ? "var(--color-danger-light)"
-                                    : "var(--color-success-light)",
-                                color:
-                                  load.status === "OVERLOADED"
-                                    ? "var(--color-danger)"
-                                    : "var(--color-success)",
-                              }}
-                              className={styles.s4}
-                            >
-                              {load.status}
-                            </span>
-                          </div>
-
-                          {/* Progress Bar */}
-                          <div className={styles.p15}>
-                            <div
-                              style={{
-                                width: `${Math.min(load.utilizationRate, 100)}%`,
-                                background:
-                                  load.utilizationRate > 90
-                                    ? "var(--color-danger)"
-                                    : "var(--color-primary)",
-                              }}
-                              className={styles.s5}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Workstation Shift Managers */}
-                  <div className={styles.p16}>
-                    <div className="ui-flex-between">
-                      <h3 className="ui-heading-lg">
-                        Workstation Shifts Roster
-                      </h3>
-                      <button
-                        onClick={() => setIsShiftModalOpen(true)}
-                        className={styles.p17}
-                      >
-                        + Add Shift
-                      </button>
-                    </div>
-                    <div className={styles.p18}>
-                      {shifts.map((s) => (
-                        <div key={s.id} className={styles.p19}>
-                          <div>
-                            <p className={styles.p20}>{s.name}</p>
-                            <p className="ui-text-micro ui-text-muted">
-                              Station: {s.workstation.name}
-                            </p>
-                          </div>
-                          <span className={styles.p21}>
-                            {s.startTime} - {s.endTime}
-                          </span>
-                        </div>
-                      ))}
-                      {shifts.length === 0 && (
-                        <div className={styles.p22}>
-                          No shifts configured. Defaulting to 8-hour daily runs.
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* TAB 3: CMMS MAINTENANCE */}
-              {activeTab === "cmms" && (
-                <div className="ui-stack-4">
-                  <div className="ui-flex-end">
-                    <button
-                      onClick={() => setIsCmmsModalOpen(true)}
-                      className={styles.p23}
-                    >
-                      <Wrench size={16} /> Request Machine Maintenance
-                    </button>
-                  </div>
-
-                  <div className="ui-stack-3">
-                    {maintenance.map((req) => (
-                      <div key={req.id} className={styles.p24}>
-                        <div>
-                          <p className={styles.p25}>{req.title}</p>
-                          <p className={styles.p26}>
-                            Machine: {req.workstation.name}
-                          </p>
-                        </div>
-                        <div>
-                          <span className={styles.p27}>{req.type}</span>
-                        </div>
-                        <div>
-                          <span
-                            style={{
-                              background:
-                                req.priority === "HIGH"
-                                  ? "var(--color-danger-light)"
-                                  : "var(--color-bg-hover)",
-                              color:
-                                req.priority === "HIGH"
-                                  ? "var(--color-danger)"
-                                  : "var(--color-text-secondary)",
-                            }}
-                            className={styles.s4}
-                          >
-                            {req.priority}
-                          </span>
-                        </div>
-                        <div>
-                          <span
-                            style={{
-                              background:
-                                req.status === "COMPLETED"
-                                  ? "var(--color-success-light)"
-                                  : "var(--color-primary-light)",
-                              color:
-                                req.status === "COMPLETED"
-                                  ? "var(--color-success)"
-                                  : "var(--color-primary)",
-                            }}
-                            className={styles.s4}
-                          >
-                            {req.status}
-                          </span>
-                        </div>
-                        <div className="ui-text-xs-muted">
-                          Tech: {req.assignedTo || "Unassigned"}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* TAB 4: SUBCONTRACTING */}
-              {activeTab === "subcontracting" && (
-                <div className="ui-stack-4">
-                  <div className="ui-flex-end">
-                    <button
-                      onClick={() => setIsSubModalOpen(true)}
-                      className={styles.p28}
-                    >
-                      <Truck size={16} /> New Subcontracting PO
-                    </button>
-                  </div>
-
-                  <div className="ui-stack-3">
-                    {subcontracting.map((sub) => (
-                      <div key={sub.id} className={styles.p29}>
-                        <div>
-                          <p className={styles.p30}>{sub.product.name}</p>
-                          <p className={styles.p31}>
-                            Vendor: {sub.vendor.name}
-                          </p>
-                        </div>
-
-                        <div>
-                          <p className="ui-text-micro">QUANTITY</p>
-                          <p className={styles.p32}>{Number(sub.quantity)}</p>
-                        </div>
-
-                        <div>
-                          <p className="ui-text-micro">TOTAL COST</p>
-                          <p className={styles.p33}>
-                            ${Number(sub.totalCost).toFixed(2)}
-                          </p>
-                        </div>
-
-                        <div>
-                          <span
-                            style={{
-                              background:
-                                sub.status === "MATERIALS_SHIPPED"
-                                  ? "var(--color-success-light)"
-                                  : "var(--color-primary-light)",
-                              color:
-                                sub.status === "MATERIALS_SHIPPED"
-                                  ? "var(--color-success)"
-                                  : "var(--color-primary)",
-                            }}
-                            className={styles.s4}
-                          >
-                            {sub.status}
-                          </span>
-                        </div>
-
-                        <div className="text-right">
-                          {sub.status === "SENT" && (
-                            <button
-                              onClick={() => handleOpenIssueModal(sub)}
-                              className={styles.p34}
-                            >
-                              Issue Raw Materials
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* TAB 5: EQUIPMENT & TOOLS */}
-              {activeTab === "equipment" && (
-                <div className={styles.p35}>
-                  <h3 className="ui-heading-lg">
-                    Equipment tools cycle limits
-                  </h3>
-                  <div className={styles.p36}>
-                    {tools.map((t) => (
-                      <div key={t.id} className={styles.p37}>
-                        <div className="ui-flex-between">
-                          <h4 className={styles.p38}>{t.name}</h4>
-                          <span
-                            style={{
-                              background:
-                                t.status === "OK"
-                                  ? "var(--color-success-light)"
-                                  : "var(--color-danger-light)",
-                              color:
-                                t.status === "OK"
-                                  ? "var(--color-success)"
-                                  : "var(--color-danger)",
-                            }}
-                            className={styles.s6}
-                          >
-                            {t.status}
-                          </span>
-                        </div>
-                        <p className="ui-text-micro ui-text-muted">
-                          Code: {t.code} | Station: {t.workstation.name}
+                <div className="ui-stack-3">
+                  {workOrders.map((wo) => (
+                    <div key={wo.id} className={styles.p4}>
+                      <div>
+                        <p className="ui-heading-sm font-bold">
+                          {wo.workOrderNumber}
                         </p>
-                        <div className={styles.p39}>
-                          <div className={styles.p40}>
-                            <span>
-                              Cycles Count: {t.currentCycles} / {t.maxCycles}
-                            </span>
-                            <span>
-                              {Math.round(
-                                (t.currentCycles / t.maxCycles) * 100,
-                              )}
-                              %
-                            </span>
+                        <p className={styles.p5}>BOM: {wo.bom.name}</p>
+                        {wo.workstation && (
+                          <p className={styles.p6}>
+                            Machine: {wo.workstation.name}
+                          </p>
+                        )}
+                      </div>
+
+                      <div>
+                        <span
+                          style={{
+                            background:
+                              wo.status === "COMPLETED"
+                                ? "var(--color-success-light)"
+                                : wo.status === "IN_PROGRESS"
+                                  ? "var(--color-primary-light)"
+                                  : "var(--color-bg-hover)",
+                            color:
+                              wo.status === "COMPLETED"
+                                ? "var(--color-success)"
+                                : wo.status === "IN_PROGRESS"
+                                  ? "var(--color-primary)"
+                                  : "var(--color-text-secondary)",
+                          }}
+                          className={styles.s2}
+                        >
+                          {wo.status}
+                        </span>
+                      </div>
+
+                      <div>
+                        <p className="ui-text-micro">QUANTITY</p>
+                        <p className={styles.p7}>{Number(wo.quantity)}</p>
+                      </div>
+
+                      <div>
+                        <p className="ui-text-micro">STANDARD COST</p>
+                        <p className={styles.p8}>
+                          {wo.standardCost
+                            ? `$${Number(wo.standardCost).toFixed(2)}`
+                            : "N/A"}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="ui-text-micro">ACTUAL COST</p>
+                        <p
+                          style={{
+                            color:
+                              wo.costVariance && Number(wo.costVariance) > 0
+                                ? "var(--color-danger)"
+                                : "var(--color-text)",
+                          }}
+                          className={styles.s3}
+                        >
+                          {wo.actualCost
+                            ? `$${Number(wo.actualCost).toFixed(2)}`
+                            : "N/A"}
+                        </p>
+                      </div>
+
+                      <div className="text-right">
+                        {wo.status === "COMPLETED" ? (
+                          <span className={styles.p9}>
+                            <CheckCircle2 size={14} /> Completed
+                          </span>
+                        ) : (
+                          <span className="ui-text-xs-muted">
+                            Pending execution
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* TAB 2: CAPACITY LOAD PLANNING & SHIFTS */}
+            {activeTab === "capacity" && (
+              <div className={styles.p10}>
+                {/* Load Balancing list */}
+                <div className={styles.p11}>
+                  <h3 className="ui-heading-lg">
+                    Finite Capacity Load Utilization
+                  </h3>
+                  <div className={styles.p12}>
+                    {loadBalancing.map((load, idx) => (
+                      <div key={idx} className={styles.p13}>
+                        <div className="ui-flex-between">
+                          <div>
+                            <p className={styles.p14}>{load.workstation}</p>
+                            <p className="ui-text-xs-muted">
+                              Allocated: {load.allocatedHours.toFixed(1)} hrs /
+                              Capacity: {load.capacityHours.toFixed(1)} hrs
+                            </p>
                           </div>
-                          <div className={styles.p41}>
-                            <div
-                              style={{
-                                width: `${Math.min((t.currentCycles / t.maxCycles) * 100, 100)}%`,
-                                background:
-                                  t.status !== "OK"
-                                    ? "var(--color-danger)"
-                                    : "var(--color-primary)",
-                              }}
-                              className={styles.s7}
-                            />
-                          </div>
+                          <span
+                            style={{
+                              background:
+                                load.status === "OVERLOADED"
+                                  ? "var(--color-danger-light)"
+                                  : "var(--color-success-light)",
+                              color:
+                                load.status === "OVERLOADED"
+                                  ? "var(--color-danger)"
+                                  : "var(--color-success)",
+                            }}
+                            className={styles.s4}
+                          >
+                            {load.status}
+                          </span>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className={styles.p15}>
+                          <div
+                            style={{
+                              width: `${Math.min(load.utilizationRate, 100)}%`,
+                              background:
+                                load.utilizationRate > 90
+                                  ? "var(--color-danger)"
+                                  : "var(--color-primary)",
+                            }}
+                            className={styles.s5}
+                          />
                         </div>
                       </div>
                     ))}
                   </div>
                 </div>
-              )}
-            </div>
-          )}
-        </ModuleTabLayout>
+
+                {/* Workstation Shift Managers */}
+                <div className={styles.p16}>
+                  <div className="ui-flex-between">
+                    <h3 className="ui-heading-lg">Workstation Shifts Roster</h3>
+                    <button
+                      onClick={() => setIsShiftModalOpen(true)}
+                      className={styles.p17}
+                    >
+                      + Add Shift
+                    </button>
+                  </div>
+                  <div className={styles.p18}>
+                    {shifts.map((s) => (
+                      <div key={s.id} className={styles.p19}>
+                        <div>
+                          <p className={styles.p20}>{s.name}</p>
+                          <p className="ui-text-micro ui-text-muted">
+                            Station: {s.workstation.name}
+                          </p>
+                        </div>
+                        <span className={styles.p21}>
+                          {s.startTime} - {s.endTime}
+                        </span>
+                      </div>
+                    ))}
+                    {shifts.length === 0 && (
+                      <div className={styles.p22}>
+                        No shifts configured. Defaulting to 8-hour daily runs.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 3: CMMS MAINTENANCE */}
+            {activeTab === "cmms" && (
+              <div className="ui-stack-4">
+                <div className="ui-flex-end">
+                  <button
+                    onClick={() => setIsCmmsModalOpen(true)}
+                    className={styles.p23}
+                  >
+                    <Wrench size={16} /> Request Machine Maintenance
+                  </button>
+                </div>
+
+                <div className="ui-stack-3">
+                  {maintenance.map((req) => (
+                    <div key={req.id} className={styles.p24}>
+                      <div>
+                        <p className={styles.p25}>{req.title}</p>
+                        <p className={styles.p26}>
+                          Machine: {req.workstation.name}
+                        </p>
+                      </div>
+                      <div>
+                        <span className={styles.p27}>{req.type}</span>
+                      </div>
+                      <div>
+                        <span
+                          style={{
+                            background:
+                              req.priority === "HIGH"
+                                ? "var(--color-danger-light)"
+                                : "var(--color-bg-hover)",
+                            color:
+                              req.priority === "HIGH"
+                                ? "var(--color-danger)"
+                                : "var(--color-text-secondary)",
+                          }}
+                          className={styles.s4}
+                        >
+                          {req.priority}
+                        </span>
+                      </div>
+                      <div>
+                        <span
+                          style={{
+                            background:
+                              req.status === "COMPLETED"
+                                ? "var(--color-success-light)"
+                                : "var(--color-primary-light)",
+                            color:
+                              req.status === "COMPLETED"
+                                ? "var(--color-success)"
+                                : "var(--color-primary)",
+                          }}
+                          className={styles.s4}
+                        >
+                          {req.status}
+                        </span>
+                      </div>
+                      <div className="ui-text-xs-muted">
+                        Tech: {req.assignedTo || "Unassigned"}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* TAB 4: SUBCONTRACTING */}
+            {activeTab === "subcontracting" && (
+              <div className="ui-stack-4">
+                <div className="ui-flex-end">
+                  <button
+                    onClick={() => setIsSubModalOpen(true)}
+                    className={styles.p28}
+                  >
+                    <Truck size={16} /> New Subcontracting PO
+                  </button>
+                </div>
+
+                <div className="ui-stack-3">
+                  {subcontracting.map((sub) => (
+                    <div key={sub.id} className={styles.p29}>
+                      <div>
+                        <p className={styles.p30}>{sub.product.name}</p>
+                        <p className={styles.p31}>Vendor: {sub.vendor.name}</p>
+                      </div>
+
+                      <div>
+                        <p className="ui-text-micro">QUANTITY</p>
+                        <p className={styles.p32}>{Number(sub.quantity)}</p>
+                      </div>
+
+                      <div>
+                        <p className="ui-text-micro">TOTAL COST</p>
+                        <p className={styles.p33}>
+                          ${Number(sub.totalCost).toFixed(2)}
+                        </p>
+                      </div>
+
+                      <div>
+                        <span
+                          style={{
+                            background:
+                              sub.status === "MATERIALS_SHIPPED"
+                                ? "var(--color-success-light)"
+                                : "var(--color-primary-light)",
+                            color:
+                              sub.status === "MATERIALS_SHIPPED"
+                                ? "var(--color-success)"
+                                : "var(--color-primary)",
+                          }}
+                          className={styles.s4}
+                        >
+                          {sub.status}
+                        </span>
+                      </div>
+
+                      <div className="text-right">
+                        {sub.status === "SENT" && (
+                          <button
+                            onClick={() => handleOpenIssueModal(sub)}
+                            className={styles.p34}
+                          >
+                            Issue Raw Materials
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* TAB 5: EQUIPMENT & TOOLS */}
+            {activeTab === "equipment" && (
+              <div className={styles.p35}>
+                <h3 className="ui-heading-lg">Equipment tools cycle limits</h3>
+                <div className={styles.p36}>
+                  {tools.map((t) => (
+                    <div key={t.id} className={styles.p37}>
+                      <div className="ui-flex-between">
+                        <h4 className={styles.p38}>{t.name}</h4>
+                        <span
+                          style={{
+                            background:
+                              t.status === "OK"
+                                ? "var(--color-success-light)"
+                                : "var(--color-danger-light)",
+                            color:
+                              t.status === "OK"
+                                ? "var(--color-success)"
+                                : "var(--color-danger)",
+                          }}
+                          className={styles.s6}
+                        >
+                          {t.status}
+                        </span>
+                      </div>
+                      <p className="ui-text-micro ui-text-muted">
+                        Code: {t.code} | Station: {t.workstation.name}
+                      </p>
+                      <div className={styles.p39}>
+                        <div className={styles.p40}>
+                          <span>
+                            Cycles Count: {t.currentCycles} / {t.maxCycles}
+                          </span>
+                          <span>
+                            {Math.round((t.currentCycles / t.maxCycles) * 100)}%
+                          </span>
+                        </div>
+                        <div className={styles.p41}>
+                          <div
+                            style={{
+                              width: `${Math.min((t.currentCycles / t.maxCycles) * 100, 100)}%`,
+                              background:
+                                t.status !== "OK"
+                                  ? "var(--color-danger)"
+                                  : "var(--color-primary)",
+                            }}
+                            className={styles.s7}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* WO Dispatch Modal */}
         {isWOModalOpen && (

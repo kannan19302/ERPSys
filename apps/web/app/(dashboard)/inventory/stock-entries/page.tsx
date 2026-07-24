@@ -22,10 +22,6 @@ import {
 } from "lucide-react";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
 import { Package as InventoryModuleIcon } from "lucide-react";
 interface Product {
   id: string;
@@ -259,551 +255,539 @@ export default function StockEntriesPage() {
 
   return (
     <RouteGuard permission="inventory.stock-entries.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={InventoryModuleIcon}
-        moduleDescription="Record goods receipts, inter-depot transfers, and stock adjustments E2E with active valuations."
-      >
-        <div className="ui-stack-6 ui-animate-in">
-          <PageHeader
-            title="Stock Entries"
-            description="Record goods receipts, inter-depot transfers, and stock adjustments E2E with active valuations."
-            breadcrumbs={[
-              { label: "Home", href: "/dashboard" },
-              { label: "Inventory", href: "/inventory" },
-              { label: "Stock Entries" },
-            ]}
-            actions={
-              <Button
-                variant="primary"
-                onClick={() => setIsEntryModalOpen(true)}
-                className="ui-hstack-2"
-              >
-                <Plus size={14} />
-                Create Stock Entry
-              </Button>
+      <div className="ui-stack-6 ui-animate-in">
+        <PageHeader
+          title="Stock Entries"
+          description="Record goods receipts, inter-depot transfers, and stock adjustments E2E with active valuations."
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "Inventory", href: "/inventory" },
+            { label: "Stock Entries" },
+          ]}
+          actions={
+            <Button
+              variant="primary"
+              onClick={() => setIsEntryModalOpen(true)}
+              className="ui-hstack-2"
+            >
+              <Plus size={14} />
+              Create Stock Entry
+            </Button>
+          }
+        />
+
+        {error && (
+          <div className={styles.s1}>
+            <AlertCircle size={16} />
+            <span>Note: {error}</span>
+          </div>
+        )}
+
+        {loading ? (
+          <div className="ui-center-pad">
+            <Spinner size="lg" />
+          </div>
+        ) : (
+          <ListPageTemplate
+            columns={
+              [
+                {
+                  key: "entryNumber",
+                  header: "Voucher ID",
+                  render: (v) => (
+                    <span className="font-semibold">{String(v)}</span>
+                  ),
+                },
+                {
+                  key: "purpose",
+                  header: "Type",
+                  render: (v) => (
+                    <Badge
+                      variant={
+                        String(v) === "MATERIAL_RECEIPT"
+                          ? "success"
+                          : String(v) === "MATERIAL_ISSUE"
+                            ? "danger"
+                            : "info"
+                      }
+                    >
+                      {String(v).replace("_", " ")}
+                    </Badge>
+                  ),
+                },
+                {
+                  key: "postingDate",
+                  header: "Posting Date",
+                  render: (v) => new Date(String(v)).toLocaleString(),
+                },
+                {
+                  key: "status",
+                  header: "Status",
+                  render: (v) => (
+                    <Badge
+                      variant={
+                        String(v) === "SUBMITTED"
+                          ? "success"
+                          : String(v) === "CANCELLED"
+                            ? "danger"
+                            : "warning"
+                      }
+                    >
+                      {String(v)}
+                    </Badge>
+                  ),
+                },
+                {
+                  key: "totalValue",
+                  header: "Total Value",
+                  render: (v) => (
+                    <span className="font-semibold">
+                      $
+                      {Number(v).toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                      })}
+                    </span>
+                  ),
+                },
+                {
+                  key: "remarks",
+                  header: "Remarks",
+                  render: (v) => (
+                    <span className="ui-text-muted">
+                      {String(v || "No remarks")}
+                    </span>
+                  ),
+                },
+                {
+                  key: "id",
+                  header: "Actions",
+                  render: (v, row) => (
+                    <div className={styles.s2}>
+                      {row.status === "DRAFT" && (
+                        <button
+                          onClick={() => handleSubmitStockEntry(String(v))}
+                          className={`ui-btn ui-btn-primary ${styles.s3}`}
+                        >
+                          Submit Slip
+                        </button>
+                      )}
+                      {row.status === "SUBMITTED" && (
+                        <button
+                          onClick={() => triggerCancel(String(v))}
+                          className={`ui-btn ${styles.s4}`}
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </div>
+                  ),
+                },
+              ] as ListColumn[]
             }
+            data={stockEntries as unknown as Record<string, unknown>[]}
+            loading={false}
+            emptyTitle="No stock entry vouchers"
+            emptyDescription="No stock entry vouchers have been recorded."
           />
+        )}
 
-          {error && (
-            <div className={styles.s1}>
-              <AlertCircle size={16} />
-              <span>Note: {error}</span>
-            </div>
-          )}
-
-          {loading ? (
-            <div className="ui-center-pad">
-              <Spinner size="lg" />
-            </div>
-          ) : (
-            <ListPageTemplate
-              columns={
-                [
-                  {
-                    key: "entryNumber",
-                    header: "Voucher ID",
-                    render: (v) => (
-                      <span className="font-semibold">{String(v)}</span>
-                    ),
-                  },
-                  {
-                    key: "purpose",
-                    header: "Type",
-                    render: (v) => (
-                      <Badge
-                        variant={
-                          String(v) === "MATERIAL_RECEIPT"
-                            ? "success"
-                            : String(v) === "MATERIAL_ISSUE"
-                              ? "danger"
-                              : "info"
-                        }
-                      >
-                        {String(v).replace("_", " ")}
-                      </Badge>
-                    ),
-                  },
-                  {
-                    key: "postingDate",
-                    header: "Posting Date",
-                    render: (v) => new Date(String(v)).toLocaleString(),
-                  },
-                  {
-                    key: "status",
-                    header: "Status",
-                    render: (v) => (
-                      <Badge
-                        variant={
-                          String(v) === "SUBMITTED"
-                            ? "success"
-                            : String(v) === "CANCELLED"
-                              ? "danger"
-                              : "warning"
-                        }
-                      >
-                        {String(v)}
-                      </Badge>
-                    ),
-                  },
-                  {
-                    key: "totalValue",
-                    header: "Total Value",
-                    render: (v) => (
-                      <span className="font-semibold">
-                        $
-                        {Number(v).toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                        })}
-                      </span>
-                    ),
-                  },
-                  {
-                    key: "remarks",
-                    header: "Remarks",
-                    render: (v) => (
-                      <span className="ui-text-muted">
-                        {String(v || "No remarks")}
-                      </span>
-                    ),
-                  },
-                  {
-                    key: "id",
-                    header: "Actions",
-                    render: (v, row) => (
-                      <div className={styles.s2}>
-                        {row.status === "DRAFT" && (
-                          <button
-                            onClick={() => handleSubmitStockEntry(String(v))}
-                            className={`ui-btn ui-btn-primary ${styles.s3}`}
-                          >
-                            Submit Slip
-                          </button>
-                        )}
-                        {row.status === "SUBMITTED" && (
-                          <button
-                            onClick={() => triggerCancel(String(v))}
-                            className={`ui-btn ${styles.s4}`}
-                          >
-                            Cancel
-                          </button>
-                        )}
-                      </div>
-                    ),
-                  },
-                ] as ListColumn[]
-              }
-              data={stockEntries as unknown as Record<string, unknown>[]}
-              loading={false}
-              emptyTitle="No stock entry vouchers"
-              emptyDescription="No stock entry vouchers have been recorded."
-            />
-          )}
-
-          {/* CREATE STOCK ENTRY MODAL OVERLAY */}
-          {isEntryModalOpen && (
-            <div className={styles.s5}>
-              <div className={`ui-card ${styles.s6}`}>
-                <div
-                  className={`ui-card-header flex items-center justify-between ${styles.s7}`}
+        {/* CREATE STOCK ENTRY MODAL OVERLAY */}
+        {isEntryModalOpen && (
+          <div className={styles.s5}>
+            <div className={`ui-card ${styles.s6}`}>
+              <div
+                className={`ui-card-header flex items-center justify-between ${styles.s7}`}
+              >
+                <span className={styles.s8}>
+                  Create Warehouse Material Slip
+                </span>
+                <button
+                  onClick={() => setIsEntryModalOpen(false)}
+                  className="ui-btn-icon ui-text-muted"
                 >
-                  <span className={styles.s8}>
-                    Create Warehouse Material Slip
-                  </span>
-                  <button
-                    onClick={() => setIsEntryModalOpen(false)}
-                    className="ui-btn-icon ui-text-muted"
-                  >
-                    Close
-                  </button>
-                </div>
-                <div className="ui-card-body p-5">
-                  <form onSubmit={handleSaveStockEntry} className="ui-stack-4">
-                    <div className="ui-grid-2">
+                  Close
+                </button>
+              </div>
+              <div className="ui-card-body p-5">
+                <form onSubmit={handleSaveStockEntry} className="ui-stack-4">
+                  <div className="ui-grid-2">
+                    <div className="ui-form-group ui-stack-1">
+                      <label className="ui-label ui-text-xs-label">
+                        Transaction Purpose *
+                      </label>
+                      <select
+                        className="ui-input"
+                        value={entryPurpose}
+                        onChange={(e) => setEntryPurpose(e.target.value as any)}
+                      >
+                        <option value="MATERIAL_RECEIPT">
+                          Receipt (Goods In)
+                        </option>
+                        <option value="MATERIAL_ISSUE">
+                          Issue (Write-off / Stock Out)
+                        </option>
+                        <option value="MATERIAL_TRANSFER">
+                          Warehouse Stock Transfer
+                        </option>
+                      </select>
+                    </div>
+
+                    <div className="ui-form-group ui-stack-1">
+                      <label className="ui-label ui-text-xs-label">
+                        Internal Remarks
+                      </label>
+                      <input
+                        type="text"
+                        className="ui-input"
+                        value={entryRemarks}
+                        onChange={(e) => setEntryRemarks(e.target.value)}
+                        placeholder="Reference PO/SO or transfer note"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="ui-grid-2 ui-grid-2">
+                    {entryPurpose !== "MATERIAL_RECEIPT" && (
                       <div className="ui-form-group ui-stack-1">
                         <label className="ui-label ui-text-xs-label">
-                          Transaction Purpose *
+                          Source Warehouse *
                         </label>
                         <select
                           className="ui-input"
-                          value={entryPurpose}
-                          onChange={(e) =>
-                            setEntryPurpose(e.target.value as any)
-                          }
+                          value={fromWarehouse}
+                          onChange={(e) => setFromWarehouse(e.target.value)}
                         >
-                          <option value="MATERIAL_RECEIPT">
-                            Receipt (Goods In)
+                          <option value="">
+                            -- Select Source Warehouse --
                           </option>
-                          <option value="MATERIAL_ISSUE">
-                            Issue (Write-off / Stock Out)
-                          </option>
-                          <option value="MATERIAL_TRANSFER">
-                            Warehouse Stock Transfer
-                          </option>
+                          {warehouses.map((w) => (
+                            <option key={w.id} value={w.id}>
+                              {w.name} ({w.code})
+                            </option>
+                          ))}
                         </select>
                       </div>
-
+                    )}
+                    {entryPurpose !== "MATERIAL_ISSUE" && (
                       <div className="ui-form-group ui-stack-1">
                         <label className="ui-label ui-text-xs-label">
-                          Internal Remarks
+                          Destination Warehouse *
                         </label>
-                        <input
-                          type="text"
+                        <select
                           className="ui-input"
-                          value={entryRemarks}
-                          onChange={(e) => setEntryRemarks(e.target.value)}
-                          placeholder="Reference PO/SO or transfer note"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="ui-grid-2 ui-grid-2">
-                      {entryPurpose !== "MATERIAL_RECEIPT" && (
-                        <div className="ui-form-group ui-stack-1">
-                          <label className="ui-label ui-text-xs-label">
-                            Source Warehouse *
-                          </label>
-                          <select
-                            className="ui-input"
-                            value={fromWarehouse}
-                            onChange={(e) => setFromWarehouse(e.target.value)}
-                          >
-                            <option value="">
-                              -- Select Source Warehouse --
-                            </option>
-                            {warehouses.map((w) => (
-                              <option key={w.id} value={w.id}>
-                                {w.name} ({w.code})
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      )}
-                      {entryPurpose !== "MATERIAL_ISSUE" && (
-                        <div className="ui-form-group ui-stack-1">
-                          <label className="ui-label ui-text-xs-label">
-                            Destination Warehouse *
-                          </label>
-                          <select
-                            className="ui-input"
-                            value={toWarehouse}
-                            onChange={(e) => setToWarehouse(e.target.value)}
-                          >
-                            <option value="">
-                              -- Select Target Warehouse --
-                            </option>
-                            {warehouses.map((w) => (
-                              <option key={w.id} value={w.id}>
-                                {w.name} ({w.code})
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className={styles.s9}>
-                      <div className={styles.s10}>
-                        <span className={styles.s11}>Line Items</span>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setEntryItems([
-                              ...entryItems,
-                              { productId: "", qty: 1, valuationRate: 0 },
-                            ])
-                          }
-                          className={`ui-btn ui-btn-secondary ${styles.s12}`}
+                          value={toWarehouse}
+                          onChange={(e) => setToWarehouse(e.target.value)}
                         >
-                          <Plus size={12} /> Add Item
-                        </button>
+                          <option value="">
+                            -- Select Target Warehouse --
+                          </option>
+                          {warehouses.map((w) => (
+                            <option key={w.id} value={w.id}>
+                              {w.name} ({w.code})
+                            </option>
+                          ))}
+                        </select>
                       </div>
+                    )}
+                  </div>
 
-                      <div className="ui-stack-3">
-                        {entryItems.map((item, idx) => {
-                          const selectedProduct = products.find(
-                            (p) => p.id === item.productId,
-                          );
-                          const sourceBins = allBins.filter(
-                            (b) => b.warehouseId === fromWarehouse,
-                          );
-                          const targetBins = allBins.filter(
-                            (b) => b.warehouseId === toWarehouse,
-                          );
+                  <div className={styles.s9}>
+                    <div className={styles.s10}>
+                      <span className={styles.s11}>Line Items</span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setEntryItems([
+                            ...entryItems,
+                            { productId: "", qty: 1, valuationRate: 0 },
+                          ])
+                        }
+                        className={`ui-btn ui-btn-secondary ${styles.s12}`}
+                      >
+                        <Plus size={12} /> Add Item
+                      </button>
+                    </div>
 
-                          return (
-                            <div key={idx} className={styles.s13}>
-                              <div className={styles.s14}>
-                                <select
-                                  className={`ui-input ${styles.s15}`}
-                                  value={item.productId}
-                                  onChange={(e) => {
-                                    const updated = [...entryItems];
-                                    const existing = updated[idx];
-                                    if (existing) {
-                                      const p = products.find(
-                                        (prod) => prod.id === e.target.value,
-                                      );
-                                      updated[idx] = {
-                                        ...existing,
-                                        productId: e.target.value,
-                                        valuationRate: p ? p.costPrice : 0,
-                                      };
-                                      setEntryItems(updated);
-                                    }
-                                  }}
-                                  required
-                                >
-                                  <option value="">
-                                    -- Select Product * --
+                    <div className="ui-stack-3">
+                      {entryItems.map((item, idx) => {
+                        const selectedProduct = products.find(
+                          (p) => p.id === item.productId,
+                        );
+                        const sourceBins = allBins.filter(
+                          (b) => b.warehouseId === fromWarehouse,
+                        );
+                        const targetBins = allBins.filter(
+                          (b) => b.warehouseId === toWarehouse,
+                        );
+
+                        return (
+                          <div key={idx} className={styles.s13}>
+                            <div className={styles.s14}>
+                              <select
+                                className={`ui-input ${styles.s15}`}
+                                value={item.productId}
+                                onChange={(e) => {
+                                  const updated = [...entryItems];
+                                  const existing = updated[idx];
+                                  if (existing) {
+                                    const p = products.find(
+                                      (prod) => prod.id === e.target.value,
+                                    );
+                                    updated[idx] = {
+                                      ...existing,
+                                      productId: e.target.value,
+                                      valuationRate: p ? p.costPrice : 0,
+                                    };
+                                    setEntryItems(updated);
+                                  }
+                                }}
+                                required
+                              >
+                                <option value="">-- Select Product * --</option>
+                                {products.map((p) => (
+                                  <option key={p.id} value={p.id}>
+                                    {p.name} ({p.sku})
                                   </option>
-                                  {products.map((p) => (
-                                    <option key={p.id} value={p.id}>
-                                      {p.name} ({p.sku})
-                                    </option>
-                                  ))}
-                                </select>
+                                ))}
+                              </select>
 
-                                <input
-                                  type="number"
-                                  className={`ui-input ${styles.s16}`}
-                                  value={item.qty}
-                                  onChange={(e) => {
-                                    const updated = [...entryItems];
-                                    const existing = updated[idx];
-                                    if (existing) {
-                                      updated[idx] = {
-                                        ...existing,
-                                        qty: parseFloat(e.target.value) || 1,
-                                      };
-                                      setEntryItems(updated);
-                                    }
+                              <input
+                                type="number"
+                                className={`ui-input ${styles.s16}`}
+                                value={item.qty}
+                                onChange={(e) => {
+                                  const updated = [...entryItems];
+                                  const existing = updated[idx];
+                                  if (existing) {
+                                    updated[idx] = {
+                                      ...existing,
+                                      qty: parseFloat(e.target.value) || 1,
+                                    };
+                                    setEntryItems(updated);
+                                  }
+                                }}
+                                placeholder="Qty"
+                                required
+                              />
+
+                              <input
+                                type="number"
+                                className={`ui-input ${styles.s17}`}
+                                value={item.valuationRate}
+                                onChange={(e) => {
+                                  const updated = [...entryItems];
+                                  const existing = updated[idx];
+                                  if (existing) {
+                                    updated[idx] = {
+                                      ...existing,
+                                      valuationRate:
+                                        parseFloat(e.target.value) || 0,
+                                    };
+                                    setEntryItems(updated);
+                                  }
+                                }}
+                                placeholder="Rate ($)"
+                              />
+
+                              {entryItems.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const updated = entryItems.filter(
+                                      (_, i) => i !== idx,
+                                    );
+                                    setEntryItems(updated);
                                   }}
-                                  placeholder="Qty"
-                                  required
-                                />
-
-                                <input
-                                  type="number"
-                                  className={`ui-input ${styles.s17}`}
-                                  value={item.valuationRate}
-                                  onChange={(e) => {
-                                    const updated = [...entryItems];
-                                    const existing = updated[idx];
-                                    if (existing) {
-                                      updated[idx] = {
-                                        ...existing,
-                                        valuationRate:
-                                          parseFloat(e.target.value) || 0,
-                                      };
-                                      setEntryItems(updated);
-                                    }
-                                  }}
-                                  placeholder="Rate ($)"
-                                />
-
-                                {entryItems.length > 1 && (
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      const updated = entryItems.filter(
-                                        (_, i) => i !== idx,
-                                      );
-                                      setEntryItems(updated);
-                                    }}
-                                    className={styles.s18}
-                                  >
-                                    <Trash2 size={16} />
-                                  </button>
-                                )}
-                              </div>
-
-                              {/* Conditional tracing components based on product flags */}
-                              {selectedProduct && (
-                                <div className={styles.s19}>
-                                  {selectedProduct.hasBatchTracking && (
-                                    <div className={styles.s20}>
-                                      <label className={styles.s21}>
-                                        Batch Number
-                                      </label>
-                                      <input
-                                        type="text"
-                                        className="ui-input"
-                                        placeholder="BAT-2026-..."
-                                        value={item.batchNumber || ""}
-                                        onChange={(e) => {
-                                          const updated = [...entryItems];
-                                          const existing = updated[idx];
-                                          if (existing) {
-                                            updated[idx] = {
-                                              ...existing,
-                                              batchNumber: e.target.value,
-                                            };
-                                            setEntryItems(updated);
-                                          }
-                                        }}
-                                      />
-                                    </div>
-                                  )}
-
-                                  {selectedProduct.hasSerialTracking && (
-                                    <div className={styles.s20}>
-                                      <label className={styles.s21}>
-                                        Serial Number
-                                      </label>
-                                      <input
-                                        type="text"
-                                        className="ui-input"
-                                        placeholder="SN-..."
-                                        value={item.serialNo || ""}
-                                        onChange={(e) => {
-                                          const updated = [...entryItems];
-                                          const existing = updated[idx];
-                                          if (existing) {
-                                            updated[idx] = {
-                                              ...existing,
-                                              serialNo: e.target.value,
-                                            };
-                                            setEntryItems(updated);
-                                          }
-                                        }}
-                                      />
-                                    </div>
-                                  )}
-
-                                  {entryPurpose !== "MATERIAL_RECEIPT" &&
-                                    sourceBins.length > 0 && (
-                                      <div className={styles.s20}>
-                                        <label className={styles.s21}>
-                                          Source Bin
-                                        </label>
-                                        <select
-                                          className="ui-input"
-                                          value={item.fromBinId || ""}
-                                          onChange={(e) => {
-                                            const updated = [...entryItems];
-                                            const existing = updated[idx];
-                                            if (existing) {
-                                              updated[idx] = {
-                                                ...existing,
-                                                fromBinId: e.target.value,
-                                              };
-                                              setEntryItems(updated);
-                                            }
-                                          }}
-                                        >
-                                          <option value="">
-                                            -- Select Bin --
-                                          </option>
-                                          {sourceBins.map((b) => (
-                                            <option key={b.id} value={b.id}>
-                                              {b.code} ({b.name})
-                                            </option>
-                                          ))}
-                                        </select>
-                                      </div>
-                                    )}
-
-                                  {entryPurpose !== "MATERIAL_ISSUE" &&
-                                    targetBins.length > 0 && (
-                                      <div className={styles.s20}>
-                                        <label className={styles.s21}>
-                                          Destination Bin
-                                        </label>
-                                        <select
-                                          className="ui-input"
-                                          value={item.toBinId || ""}
-                                          onChange={(e) => {
-                                            const updated = [...entryItems];
-                                            const existing = updated[idx];
-                                            if (existing) {
-                                              updated[idx] = {
-                                                ...existing,
-                                                toBinId: e.target.value,
-                                              };
-                                              setEntryItems(updated);
-                                            }
-                                          }}
-                                        >
-                                          <option value="">
-                                            -- Select Bin --
-                                          </option>
-                                          {targetBins.map((b) => (
-                                            <option key={b.id} value={b.id}>
-                                              {b.code} ({b.name})
-                                            </option>
-                                          ))}
-                                        </select>
-                                      </div>
-                                    )}
-                                </div>
+                                  className={styles.s18}
+                                >
+                                  <Trash2 size={16} />
+                                </button>
                               )}
                             </div>
-                          );
-                        })}
-                      </div>
-                    </div>
 
-                    <div className={styles.s22}>
-                      <Button
-                        variant="outline"
-                        type="button"
-                        onClick={() => setIsEntryModalOpen(false)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button variant="primary" type="submit">
-                        Save Draft Slip
-                      </Button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
-          )}
+                            {/* Conditional tracing components based on product flags */}
+                            {selectedProduct && (
+                              <div className={styles.s19}>
+                                {selectedProduct.hasBatchTracking && (
+                                  <div className={styles.s20}>
+                                    <label className={styles.s21}>
+                                      Batch Number
+                                    </label>
+                                    <input
+                                      type="text"
+                                      className="ui-input"
+                                      placeholder="BAT-2026-..."
+                                      value={item.batchNumber || ""}
+                                      onChange={(e) => {
+                                        const updated = [...entryItems];
+                                        const existing = updated[idx];
+                                        if (existing) {
+                                          updated[idx] = {
+                                            ...existing,
+                                            batchNumber: e.target.value,
+                                          };
+                                          setEntryItems(updated);
+                                        }
+                                      }}
+                                    />
+                                  </div>
+                                )}
 
-          {/* CANCEL VOUCHER MODAL OVERLAY */}
-          {cancelModalOpen && (
-            <div className={styles.s5}>
-              <div className={`ui-card ${styles.s23}`}>
-                <div className={`ui-card-header ${styles.s24}`}>
-                  Cancel Stock Voucher Reversal
-                </div>
-                <form
-                  onSubmit={handleCancelStockEntry}
-                  className="p-5 ui-stack-4"
-                >
-                  <div className="ui-stack-1">
-                    <label className={styles.s25}>Reason for Reversal *</label>
-                    <input
-                      type="text"
-                      required
-                      className="ui-input"
-                      value={cancelReason}
-                      onChange={(e) => setCancelReason(e.target.value)}
-                      placeholder="e.g. Audit error / Incorrect qty recorded"
-                    />
+                                {selectedProduct.hasSerialTracking && (
+                                  <div className={styles.s20}>
+                                    <label className={styles.s21}>
+                                      Serial Number
+                                    </label>
+                                    <input
+                                      type="text"
+                                      className="ui-input"
+                                      placeholder="SN-..."
+                                      value={item.serialNo || ""}
+                                      onChange={(e) => {
+                                        const updated = [...entryItems];
+                                        const existing = updated[idx];
+                                        if (existing) {
+                                          updated[idx] = {
+                                            ...existing,
+                                            serialNo: e.target.value,
+                                          };
+                                          setEntryItems(updated);
+                                        }
+                                      }}
+                                    />
+                                  </div>
+                                )}
+
+                                {entryPurpose !== "MATERIAL_RECEIPT" &&
+                                  sourceBins.length > 0 && (
+                                    <div className={styles.s20}>
+                                      <label className={styles.s21}>
+                                        Source Bin
+                                      </label>
+                                      <select
+                                        className="ui-input"
+                                        value={item.fromBinId || ""}
+                                        onChange={(e) => {
+                                          const updated = [...entryItems];
+                                          const existing = updated[idx];
+                                          if (existing) {
+                                            updated[idx] = {
+                                              ...existing,
+                                              fromBinId: e.target.value,
+                                            };
+                                            setEntryItems(updated);
+                                          }
+                                        }}
+                                      >
+                                        <option value="">
+                                          -- Select Bin --
+                                        </option>
+                                        {sourceBins.map((b) => (
+                                          <option key={b.id} value={b.id}>
+                                            {b.code} ({b.name})
+                                          </option>
+                                        ))}
+                                      </select>
+                                    </div>
+                                  )}
+
+                                {entryPurpose !== "MATERIAL_ISSUE" &&
+                                  targetBins.length > 0 && (
+                                    <div className={styles.s20}>
+                                      <label className={styles.s21}>
+                                        Destination Bin
+                                      </label>
+                                      <select
+                                        className="ui-input"
+                                        value={item.toBinId || ""}
+                                        onChange={(e) => {
+                                          const updated = [...entryItems];
+                                          const existing = updated[idx];
+                                          if (existing) {
+                                            updated[idx] = {
+                                              ...existing,
+                                              toBinId: e.target.value,
+                                            };
+                                            setEntryItems(updated);
+                                          }
+                                        }}
+                                      >
+                                        <option value="">
+                                          -- Select Bin --
+                                        </option>
+                                        {targetBins.map((b) => (
+                                          <option key={b.id} value={b.id}>
+                                            {b.code} ({b.name})
+                                          </option>
+                                        ))}
+                                      </select>
+                                    </div>
+                                  )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <div className="ui-flex-end ui-gap-2">
+
+                  <div className={styles.s22}>
                     <Button
                       variant="outline"
                       type="button"
-                      onClick={() => setCancelModalOpen(false)}
+                      onClick={() => setIsEntryModalOpen(false)}
                     >
-                      Close
+                      Cancel
                     </Button>
                     <Button variant="primary" type="submit">
-                      Reverse & Cancel
+                      Save Draft Slip
                     </Button>
                   </div>
                 </form>
               </div>
             </div>
-          )}
-        </div>
-      </InventoryTabLayout>
+          </div>
+        )}
+
+        {/* CANCEL VOUCHER MODAL OVERLAY */}
+        {cancelModalOpen && (
+          <div className={styles.s5}>
+            <div className={`ui-card ${styles.s23}`}>
+              <div className={`ui-card-header ${styles.s24}`}>
+                Cancel Stock Voucher Reversal
+              </div>
+              <form
+                onSubmit={handleCancelStockEntry}
+                className="p-5 ui-stack-4"
+              >
+                <div className="ui-stack-1">
+                  <label className={styles.s25}>Reason for Reversal *</label>
+                  <input
+                    type="text"
+                    required
+                    className="ui-input"
+                    value={cancelReason}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                    placeholder="e.g. Audit error / Incorrect qty recorded"
+                  />
+                </div>
+                <div className="ui-flex-end ui-gap-2">
+                  <Button
+                    variant="outline"
+                    type="button"
+                    onClick={() => setCancelModalOpen(false)}
+                  >
+                    Close
+                  </Button>
+                  <Button variant="primary" type="submit">
+                    Reverse & Cancel
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
     </RouteGuard>
   );
 }

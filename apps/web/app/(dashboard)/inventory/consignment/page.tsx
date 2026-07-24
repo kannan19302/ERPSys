@@ -12,10 +12,6 @@ import {
 import { Plus, AlertCircle, Truck } from "lucide-react";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
 import { Package as InventoryModuleIcon } from "lucide-react";
 interface ConsignmentStock {
   id: string;
@@ -168,136 +164,128 @@ export default function ConsignmentPage() {
 
   return (
     <RouteGuard permission="inventory.consignment.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={InventoryModuleIcon}
-        moduleDescription="Supplier-owned stock held at tenant warehouses, with consumption-triggered billing."
-      >
-        <div className="ui-stack-6 ui-animate-in">
-          <PageHeader
-            title="Vendor-Managed / Consignment Inventory"
-            description="Supplier-owned stock held at tenant warehouses, with consumption-triggered billing."
-            breadcrumbs={[
-              { label: "Home", href: "/dashboard" },
-              { label: "Inventory", href: "/inventory" },
-              { label: "Consignment Inventory" },
-            ]}
-            actions={
-              <Button
-                variant="primary"
-                onClick={() => setIsCreateModalOpen(true)}
-                className="ui-hstack-2"
-              >
-                <Plus size={14} /> New Consignment Stock
-              </Button>
-            }
+      <div className="ui-stack-6 ui-animate-in">
+        <PageHeader
+          title="Vendor-Managed / Consignment Inventory"
+          description="Supplier-owned stock held at tenant warehouses, with consumption-triggered billing."
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "Inventory", href: "/inventory" },
+            { label: "Consignment Inventory" },
+          ]}
+          actions={
+            <Button
+              variant="primary"
+              onClick={() => setIsCreateModalOpen(true)}
+              className="ui-hstack-2"
+            >
+              <Plus size={14} /> New Consignment Stock
+            </Button>
+          }
+        />
+
+        {error && (
+          <div className={styles.s2}>
+            <AlertCircle size={16} />
+            <span>Note: {error}</span>
+          </div>
+        )}
+
+        <Card padding="none" className="builder-table-wrapper">
+          <div className={styles.s3}>
+            <Truck size={16} /> Consignment Stocks
+          </div>
+          <ListPageTemplate
+            columns={stocksColumns}
+            data={stocks as unknown as Record<string, unknown>[]}
+            loading={loading}
+            searchable
           />
+        </Card>
 
-          {error && (
-            <div className={styles.s2}>
-              <AlertCircle size={16} />
-              <span>Note: {error}</span>
-            </div>
-          )}
+        <Card padding="none" className="builder-table-wrapper">
+          <div className={styles.s4}>Unbilled Consumptions</div>
+          <ListPageTemplate
+            columns={unbilledColumns}
+            data={unbilled as unknown as Record<string, unknown>[]}
+            loading={loading}
+            searchable
+          />
+        </Card>
 
-          <Card padding="none" className="builder-table-wrapper">
-            <div className={styles.s3}>
-              <Truck size={16} /> Consignment Stocks
-            </div>
-            <ListPageTemplate
-              columns={stocksColumns}
-              data={stocks as unknown as Record<string, unknown>[]}
-              loading={loading}
-              searchable
-            />
-          </Card>
-
-          <Card padding="none" className="builder-table-wrapper">
-            <div className={styles.s4}>Unbilled Consumptions</div>
-            <ListPageTemplate
-              columns={unbilledColumns}
-              data={unbilled as unknown as Record<string, unknown>[]}
-              loading={loading}
-              searchable
-            />
-          </Card>
-
-          {isCreateModalOpen && (
-            <div className={styles.s5}>
-              <div className={`ui-card modal-card ${styles.s6}`}>
-                <div className={styles.s7}>
-                  <span className="ui-heading-base">New Consignment Stock</span>
-                  <button
-                    onClick={() => setIsCreateModalOpen(false)}
-                    className="ui-btn-icon ui-text-muted"
-                  >
-                    Close
-                  </button>
-                </div>
-                <div className="ui-card-body p-5">
-                  <form onSubmit={handleCreate} className="ui-stack-4">
-                    <div className="ui-form-group">
-                      <label className="ui-label">Supplier Name *</label>
-                      <input
-                        type="text"
-                        className="ui-input"
-                        value={supplierName}
-                        onChange={(e) => setSupplierName(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="ui-form-group">
-                      <label className="ui-label">Product ID *</label>
-                      <input
-                        type="text"
-                        className="ui-input"
-                        value={productId}
-                        onChange={(e) => setProductId(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="ui-form-group">
-                      <label className="ui-label">Warehouse ID *</label>
-                      <input
-                        type="text"
-                        className="ui-input"
-                        value={warehouseId}
-                        onChange={(e) => setWarehouseId(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="ui-form-group">
-                      <label className="ui-label">Unit Cost *</label>
-                      <input
-                        type="number"
-                        className="ui-input"
-                        value={unitCost}
-                        onChange={(e) => setUnitCost(Number(e.target.value))}
-                        required
-                        min={0}
-                      />
-                    </div>
-                    <div className={styles.s8}>
-                      <Button
-                        variant="outline"
-                        type="button"
-                        onClick={() => setIsCreateModalOpen(false)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button variant="primary" type="submit">
-                        Create
-                      </Button>
-                    </div>
-                  </form>
-                </div>
+        {isCreateModalOpen && (
+          <div className={styles.s5}>
+            <div className={`ui-card modal-card ${styles.s6}`}>
+              <div className={styles.s7}>
+                <span className="ui-heading-base">New Consignment Stock</span>
+                <button
+                  onClick={() => setIsCreateModalOpen(false)}
+                  className="ui-btn-icon ui-text-muted"
+                >
+                  Close
+                </button>
+              </div>
+              <div className="ui-card-body p-5">
+                <form onSubmit={handleCreate} className="ui-stack-4">
+                  <div className="ui-form-group">
+                    <label className="ui-label">Supplier Name *</label>
+                    <input
+                      type="text"
+                      className="ui-input"
+                      value={supplierName}
+                      onChange={(e) => setSupplierName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="ui-form-group">
+                    <label className="ui-label">Product ID *</label>
+                    <input
+                      type="text"
+                      className="ui-input"
+                      value={productId}
+                      onChange={(e) => setProductId(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="ui-form-group">
+                    <label className="ui-label">Warehouse ID *</label>
+                    <input
+                      type="text"
+                      className="ui-input"
+                      value={warehouseId}
+                      onChange={(e) => setWarehouseId(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="ui-form-group">
+                    <label className="ui-label">Unit Cost *</label>
+                    <input
+                      type="number"
+                      className="ui-input"
+                      value={unitCost}
+                      onChange={(e) => setUnitCost(Number(e.target.value))}
+                      required
+                      min={0}
+                    />
+                  </div>
+                  <div className={styles.s8}>
+                    <Button
+                      variant="outline"
+                      type="button"
+                      onClick={() => setIsCreateModalOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button variant="primary" type="submit">
+                      Create
+                    </Button>
+                  </div>
+                </form>
               </div>
             </div>
-          )}
-        </div>
-      </InventoryTabLayout>
+          </div>
+        )}
+      </div>
     </RouteGuard>
   );
 }

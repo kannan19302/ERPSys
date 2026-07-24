@@ -12,10 +12,6 @@ import {
 import { AlertCircle, LayoutGrid } from "lucide-react";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
 import { Package as InventoryModuleIcon } from "lucide-react";
 interface Recommendation {
   productId: string;
@@ -125,59 +121,51 @@ export default function SlottingPage() {
 
   return (
     <RouteGuard permission="inventory.slotting.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={InventoryModuleIcon}
-        moduleDescription="Fast-moving products flagged for a preferred zone, slow movers flagged out of it — based on real pick frequency over the trailing 30 days."
-      >
-        <div className="ui-stack-6 ui-animate-in">
-          <PageHeader
-            title="Dynamic Slotting Optimization"
-            description="Fast-moving products flagged for a preferred zone, slow movers flagged out of it — based on real pick frequency over the trailing 30 days."
-            breadcrumbs={[
-              { label: "Home", href: "/dashboard" },
-              { label: "Inventory", href: "/inventory" },
-              { label: "Slotting Optimization" },
-            ]}
-          />
+      <div className="ui-stack-6 ui-animate-in">
+        <PageHeader
+          title="Dynamic Slotting Optimization"
+          description="Fast-moving products flagged for a preferred zone, slow movers flagged out of it — based on real pick frequency over the trailing 30 days."
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "Inventory", href: "/inventory" },
+            { label: "Slotting Optimization" },
+          ]}
+        />
 
-          {error && (
-            <div className={styles.s1}>
-              <AlertCircle size={16} />
-              <span>Note: {error}</span>
-            </div>
-          )}
-
-          <div className={styles.s2}>
-            <FormField label="Warehouse" htmlFor="slotting-warehouse">
-              <Select
-                id="slotting-warehouse"
-                value={warehouseId}
-                onChange={(e) => setWarehouseId(e.target.value)}
-              >
-                {warehouses.map((w) => (
-                  <option key={w.id} value={w.id}>
-                    {w.name}
-                  </option>
-                ))}
-              </Select>
-            </FormField>
+        {error && (
+          <div className={styles.s1}>
+            <AlertCircle size={16} />
+            <span>Note: {error}</span>
           </div>
+        )}
 
-          <div className={styles.s3}>
-            <LayoutGrid size={16} /> Re-Slotting Recommendations
-          </div>
-
-          <ListPageTemplate
-            columns={columns}
-            data={recommendations as unknown as Record<string, unknown>[]}
-            loading={loading}
-            searchable
-          />
+        <div className={styles.s2}>
+          <FormField label="Warehouse" htmlFor="slotting-warehouse">
+            <Select
+              id="slotting-warehouse"
+              value={warehouseId}
+              onChange={(e) => setWarehouseId(e.target.value)}
+            >
+              {warehouses.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.name}
+                </option>
+              ))}
+            </Select>
+          </FormField>
         </div>
-      </InventoryTabLayout>
+
+        <div className={styles.s3}>
+          <LayoutGrid size={16} /> Re-Slotting Recommendations
+        </div>
+
+        <ListPageTemplate
+          columns={columns}
+          data={recommendations as unknown as Record<string, unknown>[]}
+          loading={loading}
+          searchable
+        />
+      </div>
     </RouteGuard>
   );
 }

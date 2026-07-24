@@ -10,10 +10,6 @@ import {
 import { Zap, CheckCircle, Play, Lock } from "lucide-react";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
 import { Package as InventoryModuleIcon } from "lucide-react";
 interface AutomationDashboard {
   totalRules: number;
@@ -142,403 +138,391 @@ export default function AutomationRulesPage() {
 
   return (
     <RouteGuard permission="inventory.automation-rules.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={InventoryModuleIcon}
-        moduleDescription="Manage inventory operations for this workspace."
-      >
-        <div className="p-6 space-y-6">
-          <div>
-            <h1 className="text-2xl font-bold">Automation Rules</h1>
-            <p className="text-sm text-muted-foreground">
-              Bin replenishment triggers and inventory holds
-            </p>
-          </div>
+      <div className="p-6 space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold">Automation Rules</h1>
+          <p className="text-sm text-muted-foreground">
+            Bin replenishment triggers and inventory holds
+          </p>
+        </div>
 
-          {dashboard && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                {
-                  label: "Total Rules",
-                  value: dashboard.totalRules,
-                  icon: Zap,
-                  color: "text-blue-600",
-                },
-                {
-                  label: "Active Rules",
-                  value: dashboard.activeRules,
-                  icon: CheckCircle,
-                  color: "text-green-600",
-                },
-                {
-                  label: "Active Holds",
-                  value: dashboard.activeHolds,
-                  icon: Lock,
-                  color: "text-orange-600",
-                },
-                {
-                  label: "Triggered (recent)",
-                  value: dashboard.pendingReplenishments,
-                  icon: Play,
-                  color: "text-purple-600",
-                },
-              ].map((s) => (
-                <Card key={s.label} className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-muted-foreground">{s.label}</p>
-                      <p className="text-2xl font-bold">{s.value}</p>
-                    </div>
-                    <s.icon className={`w-8 h-8 ${s.color}`} />
+        {dashboard && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              {
+                label: "Total Rules",
+                value: dashboard.totalRules,
+                icon: Zap,
+                color: "text-blue-600",
+              },
+              {
+                label: "Active Rules",
+                value: dashboard.activeRules,
+                icon: CheckCircle,
+                color: "text-green-600",
+              },
+              {
+                label: "Active Holds",
+                value: dashboard.activeHolds,
+                icon: Lock,
+                color: "text-orange-600",
+              },
+              {
+                label: "Triggered (recent)",
+                value: dashboard.pendingReplenishments,
+                icon: Play,
+                color: "text-purple-600",
+              },
+            ].map((s) => (
+              <Card key={s.label} className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground">{s.label}</p>
+                    <p className="text-2xl font-bold">{s.value}</p>
                   </div>
-                </Card>
-              ))}
-            </div>
-          )}
-
-          {evalResult && (
-            <Card className="p-4 border-green-500">
-              <p className="text-sm">
-                Evaluated <strong>{evalResult.evaluated}</strong> rules —{" "}
-                <strong>{evalResult.triggered}</strong> triggered replenishment
-                alerts.
-              </p>
-            </Card>
-          )}
-
-          <div className="flex gap-1 border-b">
-            {(["dashboard", "rules", "holds"] as const).map((t) => (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                className={`px-4 py-2 text-sm font-medium capitalize border-b-2 transition-colors ${
-                  tab === t
-                    ? "border-primary text-primary"
-                    : "border-transparent text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {t === "rules"
-                  ? "Replenishment Rules"
-                  : t.charAt(0).toUpperCase() + t.slice(1)}
-              </button>
+                  <s.icon className={`w-8 h-8 ${s.color}`} />
+                </div>
+              </Card>
             ))}
           </div>
+        )}
 
-          {tab === "dashboard" && dashboard && (
-            <Card className="p-4">
-              <h3 className="font-semibold mb-3">Active Holds by Type</h3>
-              <div className="flex flex-wrap gap-3">
-                {Object.entries(dashboard.holdsByType).map(([type, count]) => (
-                  <div key={type} className="flex items-center gap-2">
-                    <Badge variant={HOLD_TYPE_VARIANT[type] ?? "default"}>
-                      {type}
-                    </Badge>
-                    <span className="font-semibold">{count}</span>
-                  </div>
-                ))}
-                {Object.keys(dashboard.holdsByType).length === 0 && (
-                  <p className="text-sm text-muted-foreground">
-                    No active holds
-                  </p>
-                )}
-              </div>
-            </Card>
-          )}
+        {evalResult && (
+          <Card className="p-4 border-green-500">
+            <p className="text-sm">
+              Evaluated <strong>{evalResult.evaluated}</strong> rules —{" "}
+              <strong>{evalResult.triggered}</strong> triggered replenishment
+              alerts.
+            </p>
+          </Card>
+        )}
 
-          {tab === "rules" && (
-            <Card className="p-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold">Replenishment Rules</h3>
-                <div className="flex gap-2">
-                  <button
-                    onClick={evaluateRules}
-                    className="px-3 py-1.5 border rounded text-sm"
-                  >
-                    Evaluate Rules
-                  </button>
-                  <button
-                    onClick={() => setShowRuleForm(true)}
-                    className="px-3 py-1.5 bg-primary text-primary-foreground rounded text-sm"
-                  >
-                    + Add Rule
-                  </button>
+        <div className="flex gap-1 border-b">
+          {(["dashboard", "rules", "holds"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`px-4 py-2 text-sm font-medium capitalize border-b-2 transition-colors ${
+                tab === t
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {t === "rules"
+                ? "Replenishment Rules"
+                : t.charAt(0).toUpperCase() + t.slice(1)}
+            </button>
+          ))}
+        </div>
+
+        {tab === "dashboard" && dashboard && (
+          <Card className="p-4">
+            <h3 className="font-semibold mb-3">Active Holds by Type</h3>
+            <div className="flex flex-wrap gap-3">
+              {Object.entries(dashboard.holdsByType).map(([type, count]) => (
+                <div key={type} className="flex items-center gap-2">
+                  <Badge variant={HOLD_TYPE_VARIANT[type] ?? "default"}>
+                    {type}
+                  </Badge>
+                  <span className="font-semibold">{count}</span>
                 </div>
-              </div>
-              <ListPageTemplate
-                columns={
-                  [
-                    {
-                      key: "productId",
-                      header: "Product",
-                      render: (v) => (
-                        <span className="font-mono text-xs">{String(v)}</span>
-                      ),
-                    },
-                    { key: "activeBinCode", header: "Active Bin" },
-                    { key: "reserveBinCode", header: "Reserve Bin" },
-                    {
-                      key: "triggerQty",
-                      header: "Trigger Qty",
-                      render: (v) => (
-                        <span className="text-right block">
-                          {Number(v).toFixed(0)}
-                        </span>
-                      ),
-                    },
-                    {
-                      key: "replenishQty",
-                      header: "Replenish Qty",
-                      render: (v) => (
-                        <span className="text-right block">
-                          {Number(v).toFixed(0)}
-                        </span>
-                      ),
-                    },
-                    {
-                      key: "lastTriggeredAt",
-                      header: "Last Triggered",
-                      render: (v) => (
-                        <span className="text-xs">
-                          {v ? new Date(String(v)).toLocaleDateString() : "—"}
-                        </span>
-                      ),
-                    },
-                  ] as ListColumn[]
-                }
-                data={rules as unknown as Record<string, unknown>[]}
-                loading={false}
-                emptyTitle="No rules defined"
-                emptyDescription="Add a replenishment rule to get started."
-              />
-            </Card>
-          )}
+              ))}
+              {Object.keys(dashboard.holdsByType).length === 0 && (
+                <p className="text-sm text-muted-foreground">No active holds</p>
+              )}
+            </div>
+          </Card>
+        )}
 
-          {tab === "holds" && (
-            <Card className="p-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold">Inventory Holds</h3>
+        {tab === "rules" && (
+          <Card className="p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold">Replenishment Rules</h3>
+              <div className="flex gap-2">
                 <button
-                  onClick={() => setShowHoldForm(true)}
+                  onClick={evaluateRules}
+                  className="px-3 py-1.5 border rounded text-sm"
+                >
+                  Evaluate Rules
+                </button>
+                <button
+                  onClick={() => setShowRuleForm(true)}
                   className="px-3 py-1.5 bg-primary text-primary-foreground rounded text-sm"
                 >
-                  + Place Hold
+                  + Add Rule
                 </button>
               </div>
-              <ListPageTemplate
-                columns={
-                  [
-                    {
-                      key: "holdNumber",
-                      header: "Hold#",
-                      render: (v) => (
-                        <span className="font-mono text-xs">{String(v)}</span>
-                      ),
-                    },
-                    {
-                      key: "holdType",
-                      header: "Type",
-                      render: (v) => (
-                        <Badge
-                          variant={HOLD_TYPE_VARIANT[String(v)] ?? "default"}
-                        >
-                          {String(v)}
-                        </Badge>
-                      ),
-                    },
-                    {
-                      key: "reason",
-                      header: "Reason",
-                      render: (v) => (
-                        <span className="text-muted-foreground truncate max-w-xs block">
-                          {String(v)}
-                        </span>
-                      ),
-                    },
-                    {
-                      key: "heldQty",
-                      header: "Qty",
-                      render: (v) => (
-                        <span className="text-right block">
-                          {Number(v).toFixed(0)}
-                        </span>
-                      ),
-                    },
-                    { key: "status", header: "Status" },
-                    {
-                      key: "id",
-                      header: "Actions",
-                      render: (_, row) =>
-                        row.status === "ACTIVE" ? (
-                          <button
-                            onClick={() => releaseHold(String(row.id))}
-                            className="text-primary hover:underline text-xs"
-                          >
-                            Release
-                          </button>
-                        ) : null,
-                    },
-                  ] as ListColumn[]
-                }
-                data={holds as unknown as Record<string, unknown>[]}
-                loading={false}
-                emptyTitle="No holds found"
-                emptyDescription="No inventory holds are currently active."
-              />
-            </Card>
-          )}
-
-          {showRuleForm && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-              <Card className="p-6 w-full max-w-md">
-                <h3 className="font-semibold mb-4">Add Replenishment Rule</h3>
-                <form onSubmit={createRule} className="space-y-3">
-                  {[
-                    ["warehouseId", "Warehouse ID"],
-                    ["productId", "Product ID"],
-                    ["activeBinCode", "Active Bin Code"],
-                    ["reserveBinCode", "Reserve Bin Code"],
-                  ].map(([name, label]) => (
-                    <div key={name}>
-                      <label className="text-sm font-medium">{label}</label>
-                      <input
-                        name={name}
-                        required
-                        className="mt-1 w-full border rounded px-2 py-1.5 text-sm bg-background"
-                      />
-                    </div>
-                  ))}
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="text-sm font-medium">Trigger Qty</label>
-                      <input
-                        name="triggerQty"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        required
-                        className="mt-1 w-full border rounded px-2 py-1.5 text-sm bg-background"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium">
-                        Replenish Qty
-                      </label>
-                      <input
-                        name="replenishQty"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        required
-                        className="mt-1 w-full border rounded px-2 py-1.5 text-sm bg-background"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex justify-end gap-2 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => setShowRuleForm(false)}
-                      className="px-3 py-1.5 border rounded text-sm"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="px-3 py-1.5 bg-primary text-primary-foreground rounded text-sm"
-                    >
-                      Create
-                    </button>
-                  </div>
-                </form>
-              </Card>
             </div>
-          )}
+            <ListPageTemplate
+              columns={
+                [
+                  {
+                    key: "productId",
+                    header: "Product",
+                    render: (v) => (
+                      <span className="font-mono text-xs">{String(v)}</span>
+                    ),
+                  },
+                  { key: "activeBinCode", header: "Active Bin" },
+                  { key: "reserveBinCode", header: "Reserve Bin" },
+                  {
+                    key: "triggerQty",
+                    header: "Trigger Qty",
+                    render: (v) => (
+                      <span className="text-right block">
+                        {Number(v).toFixed(0)}
+                      </span>
+                    ),
+                  },
+                  {
+                    key: "replenishQty",
+                    header: "Replenish Qty",
+                    render: (v) => (
+                      <span className="text-right block">
+                        {Number(v).toFixed(0)}
+                      </span>
+                    ),
+                  },
+                  {
+                    key: "lastTriggeredAt",
+                    header: "Last Triggered",
+                    render: (v) => (
+                      <span className="text-xs">
+                        {v ? new Date(String(v)).toLocaleDateString() : "—"}
+                      </span>
+                    ),
+                  },
+                ] as ListColumn[]
+              }
+              data={rules as unknown as Record<string, unknown>[]}
+              loading={false}
+              emptyTitle="No rules defined"
+              emptyDescription="Add a replenishment rule to get started."
+            />
+          </Card>
+        )}
 
-          {showHoldForm && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-              <Card className="p-6 w-full max-w-md">
-                <h3 className="font-semibold mb-4">Place Inventory Hold</h3>
-                <form onSubmit={createHold} className="space-y-3">
-                  <div>
-                    <label className="text-sm font-medium">Warehouse ID</label>
+        {tab === "holds" && (
+          <Card className="p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold">Inventory Holds</h3>
+              <button
+                onClick={() => setShowHoldForm(true)}
+                className="px-3 py-1.5 bg-primary text-primary-foreground rounded text-sm"
+              >
+                + Place Hold
+              </button>
+            </div>
+            <ListPageTemplate
+              columns={
+                [
+                  {
+                    key: "holdNumber",
+                    header: "Hold#",
+                    render: (v) => (
+                      <span className="font-mono text-xs">{String(v)}</span>
+                    ),
+                  },
+                  {
+                    key: "holdType",
+                    header: "Type",
+                    render: (v) => (
+                      <Badge
+                        variant={HOLD_TYPE_VARIANT[String(v)] ?? "default"}
+                      >
+                        {String(v)}
+                      </Badge>
+                    ),
+                  },
+                  {
+                    key: "reason",
+                    header: "Reason",
+                    render: (v) => (
+                      <span className="text-muted-foreground truncate max-w-xs block">
+                        {String(v)}
+                      </span>
+                    ),
+                  },
+                  {
+                    key: "heldQty",
+                    header: "Qty",
+                    render: (v) => (
+                      <span className="text-right block">
+                        {Number(v).toFixed(0)}
+                      </span>
+                    ),
+                  },
+                  { key: "status", header: "Status" },
+                  {
+                    key: "id",
+                    header: "Actions",
+                    render: (_, row) =>
+                      row.status === "ACTIVE" ? (
+                        <button
+                          onClick={() => releaseHold(String(row.id))}
+                          className="text-primary hover:underline text-xs"
+                        >
+                          Release
+                        </button>
+                      ) : null,
+                  },
+                ] as ListColumn[]
+              }
+              data={holds as unknown as Record<string, unknown>[]}
+              loading={false}
+              emptyTitle="No holds found"
+              emptyDescription="No inventory holds are currently active."
+            />
+          </Card>
+        )}
+
+        {showRuleForm && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <Card className="p-6 w-full max-w-md">
+              <h3 className="font-semibold mb-4">Add Replenishment Rule</h3>
+              <form onSubmit={createRule} className="space-y-3">
+                {[
+                  ["warehouseId", "Warehouse ID"],
+                  ["productId", "Product ID"],
+                  ["activeBinCode", "Active Bin Code"],
+                  ["reserveBinCode", "Reserve Bin Code"],
+                ].map(([name, label]) => (
+                  <div key={name}>
+                    <label className="text-sm font-medium">{label}</label>
                     <input
-                      name="warehouseId"
+                      name={name}
                       required
                       className="mt-1 w-full border rounded px-2 py-1.5 text-sm bg-background"
                     />
                   </div>
+                ))}
+                <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="text-sm font-medium">Hold Type</label>
-                    <select
-                      name="holdType"
-                      className="mt-1 w-full border rounded px-2 py-1.5 text-sm bg-background"
-                    >
-                      {[
-                        "QUALITY",
-                        "CUSTOMS",
-                        "DAMAGE",
-                        "RECALL",
-                        "FINANCIAL",
-                      ].map((t) => (
-                        <option key={t} value={t}>
-                          {t}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Held Quantity</label>
+                    <label className="text-sm font-medium">Trigger Qty</label>
                     <input
-                      name="heldQty"
+                      name="triggerQty"
                       type="number"
                       step="0.01"
-                      min="0.01"
+                      min="0"
                       required
                       className="mt-1 w-full border rounded px-2 py-1.5 text-sm bg-background"
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-medium">Reason</label>
-                    <textarea
-                      name="reason"
-                      required
-                      rows={2}
-                      className="mt-1 w-full border rounded px-2 py-1.5 text-sm bg-background"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">
-                      Product ID (optional)
-                    </label>
+                    <label className="text-sm font-medium">Replenish Qty</label>
                     <input
-                      name="productId"
+                      name="replenishQty"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      required
                       className="mt-1 w-full border rounded px-2 py-1.5 text-sm bg-background"
                     />
                   </div>
-                  <div className="flex justify-end gap-2 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => setShowHoldForm(false)}
-                      className="px-3 py-1.5 border rounded text-sm"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="px-3 py-1.5 bg-primary text-primary-foreground rounded text-sm"
-                    >
-                      Place Hold
-                    </button>
-                  </div>
-                </form>
-              </Card>
-            </div>
-          )}
-        </div>
-      </InventoryTabLayout>
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowRuleForm(false)}
+                    className="px-3 py-1.5 border rounded text-sm"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="px-3 py-1.5 bg-primary text-primary-foreground rounded text-sm"
+                  >
+                    Create
+                  </button>
+                </div>
+              </form>
+            </Card>
+          </div>
+        )}
+
+        {showHoldForm && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <Card className="p-6 w-full max-w-md">
+              <h3 className="font-semibold mb-4">Place Inventory Hold</h3>
+              <form onSubmit={createHold} className="space-y-3">
+                <div>
+                  <label className="text-sm font-medium">Warehouse ID</label>
+                  <input
+                    name="warehouseId"
+                    required
+                    className="mt-1 w-full border rounded px-2 py-1.5 text-sm bg-background"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Hold Type</label>
+                  <select
+                    name="holdType"
+                    className="mt-1 w-full border rounded px-2 py-1.5 text-sm bg-background"
+                  >
+                    {[
+                      "QUALITY",
+                      "CUSTOMS",
+                      "DAMAGE",
+                      "RECALL",
+                      "FINANCIAL",
+                    ].map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Held Quantity</label>
+                  <input
+                    name="heldQty"
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    required
+                    className="mt-1 w-full border rounded px-2 py-1.5 text-sm bg-background"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Reason</label>
+                  <textarea
+                    name="reason"
+                    required
+                    rows={2}
+                    className="mt-1 w-full border rounded px-2 py-1.5 text-sm bg-background"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">
+                    Product ID (optional)
+                  </label>
+                  <input
+                    name="productId"
+                    className="mt-1 w-full border rounded px-2 py-1.5 text-sm bg-background"
+                  />
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowHoldForm(false)}
+                    className="px-3 py-1.5 border rounded text-sm"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="px-3 py-1.5 bg-primary text-primary-foreground rounded text-sm"
+                  >
+                    Place Hold
+                  </button>
+                </div>
+              </form>
+            </Card>
+          </div>
+        )}
+      </div>
     </RouteGuard>
   );
 }

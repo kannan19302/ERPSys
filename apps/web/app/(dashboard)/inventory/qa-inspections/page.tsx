@@ -9,10 +9,7 @@ import {
   type ListColumn,
 } from "@unerp/ui";
 import { RouteGuard, useApiClient } from "@unerp/framework";
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
+
 import { Package as InventoryModuleIcon } from "lucide-react";
 import { Plus, AlertCircle } from "lucide-react";
 
@@ -283,383 +280,370 @@ export default function QaInspectionsPage() {
 
   return (
     <RouteGuard permission="inventory.qa-inspections.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={InventoryModuleIcon}
-        moduleDescription="Verify raw material shipments, inspect production lots, and log compliance checklists."
-      >
-        <div className="ui-stack-6 ui-animate-in">
-          <PageHeader
-            title="QA Inspections Queue"
-            description="Verify raw material shipments, inspect production lots, and log compliance checklists."
-            breadcrumbs={[
-              { label: "Home", href: "/dashboard" },
-              { label: "Inventory", href: "/inventory" },
-              { label: "QA Inspections" },
-            ]}
-            actions={
-              <Button
-                variant="primary"
-                onClick={() => setIsCreateModalOpen(true)}
-                className="ui-hstack-2"
-              >
-                <Plus size={14} />
-                Log QA Audit Checklist
-              </Button>
-            }
-          />
+      <div className="ui-stack-6 ui-animate-in">
+        <PageHeader
+          title="QA Inspections Queue"
+          description="Verify raw material shipments, inspect production lots, and log compliance checklists."
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "Inventory", href: "/inventory" },
+            { label: "QA Inspections" },
+          ]}
+          actions={
+            <Button
+              variant="primary"
+              onClick={() => setIsCreateModalOpen(true)}
+              className="ui-hstack-2"
+            >
+              <Plus size={14} />
+              Log QA Audit Checklist
+            </Button>
+          }
+        />
 
-          {error && (
-            <div className={styles.s1}>
-              <AlertCircle size={16} />
-              <span>Note: {error}</span>
-            </div>
-          )}
+        {error && (
+          <div className={styles.s1}>
+            <AlertCircle size={16} />
+            <span>Note: {error}</span>
+          </div>
+        )}
 
-          <ListPageTemplate
-            columns={[
-              ...inspectionColumns,
-              {
-                key: "id",
-                header: "",
-                render: (v, row) => {
-                  const insp = row as unknown as QualityInspection;
-                  return insp.status === "PENDING" ? (
-                    <button
-                      onClick={() => handleOpenPerform(insp)}
-                      className={`ui-btn ui-btn-primary ${styles.s2}`}
-                    >
-                      Perform Check
-                    </button>
-                  ) : null;
-                },
+        <ListPageTemplate
+          columns={[
+            ...inspectionColumns,
+            {
+              key: "id",
+              header: "",
+              render: (v, row) => {
+                const insp = row as unknown as QualityInspection;
+                return insp.status === "PENDING" ? (
+                  <button
+                    onClick={() => handleOpenPerform(insp)}
+                    className={`ui-btn ui-btn-primary ${styles.s2}`}
+                  >
+                    Perform Check
+                  </button>
+                ) : null;
               },
-            ]}
-            data={inspections as unknown as Record<string, unknown>[]}
-            loading={loading}
-            searchable
-          />
+            },
+          ]}
+          data={inspections as unknown as Record<string, unknown>[]}
+          loading={loading}
+          searchable
+        />
 
-          {/* LOG INSPECTION MODAL */}
-          {isCreateModalOpen && (
-            <div className={styles.s3}>
-              <div className={`ui-card modal-card ${styles.s4}`}>
-                <div className={styles.s5}>
-                  <span className="ui-heading-base">
-                    Create Inspection Checkpoints Record
-                  </span>
-                  <button
-                    onClick={() => setIsCreateModalOpen(false)}
-                    className="ui-btn-icon ui-text-muted"
-                  >
-                    Close
-                  </button>
-                </div>
-                <div className="ui-card-body p-5">
-                  <form
-                    onSubmit={handleCreateQAInspection}
-                    className="ui-stack-4"
-                  >
-                    <div className="ui-grid-2">
-                      <div className="ui-form-group">
-                        <label className="ui-label">
-                          Reference Document Type
-                        </label>
-                        <select
-                          className="ui-input"
-                          value={qaRefType}
-                          onChange={(e) => setQaRefType(e.target.value as any)}
-                        >
-                          <option value="STOCK_ENTRY">Stock Entry</option>
-                          <option value="PURCHASE_RECEIPT">
-                            Purchase Receipt
-                          </option>
-                        </select>
-                      </div>
-                      <div className="ui-form-group">
-                        <label className="ui-label">
-                          Reference ID (UUID/Code)
-                        </label>
-                        <input
-                          type="text"
-                          className="ui-input"
-                          value={qaRefId}
-                          onChange={(e) => setQaRefId(e.target.value)}
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="ui-grid-2">
-                      <div className="ui-form-group">
-                        <label className="ui-label">Select Product</label>
-                        <select
-                          className="ui-input"
-                          value={qaProduct}
-                          onChange={(e) => setQaProduct(e.target.value)}
-                          required
-                        >
-                          {products.map((p) => (
-                            <option key={p.id} value={p.id}>
-                              {p.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="ui-form-group">
-                        <label className="ui-label">Inspected Lot Qty</label>
-                        <input
-                          type="number"
-                          className="ui-input"
-                          value={qaInsQty}
-                          onChange={(e) => setQaInsQty(Number(e.target.value))}
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className={styles.s6}>
-                      <div className="ui-flex-between mb-2">
-                        <span className={styles.s7}>
-                          QA Inspection Criteria checklist
-                        </span>
-                        <Button
-                          variant="outline"
-                          type="button"
-                          onClick={() =>
-                            setQaCheckpoints([
-                              ...qaCheckpoints,
-                              {
-                                parameter: "",
-                                criteria: "",
-                                sortOrder: qaCheckpoints.length,
-                              },
-                            ])
-                          }
-                          className={styles.s2}
-                        >
-                          Add Row
-                        </Button>
-                      </div>
-                      {qaCheckpoints.map((cp, idx) => (
-                        <div key={idx} className={styles.s8}>
-                          <input
-                            type="text"
-                            className="flex-1"
-                            placeholder="Param (e.g. Dimensions)"
-                            value={cp.parameter}
-                            onChange={(e) => {
-                              const updated = [...qaCheckpoints];
-                              if (updated[idx]) {
-                                updated[idx].parameter = e.target.value;
-                                setQaCheckpoints(updated);
-                              }
-                            }}
-                            required
-                          />
-                          <input
-                            type="text"
-                            className="flex-1"
-                            placeholder="Criteria (e.g. +/- 0.5mm)"
-                            value={cp.criteria}
-                            onChange={(e) => {
-                              const updated = [...qaCheckpoints];
-                              if (updated[idx]) {
-                                updated[idx].criteria = e.target.value;
-                                setQaCheckpoints(updated);
-                              }
-                            }}
-                            required
-                          />
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className={styles.s9}>
-                      <Button
-                        variant="outline"
-                        type="button"
-                        onClick={() => setIsCreateModalOpen(false)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button variant="primary" type="submit">
-                        Log Checklist
-                      </Button>
-                    </div>
-                  </form>
-                </div>
+        {/* LOG INSPECTION MODAL */}
+        {isCreateModalOpen && (
+          <div className={styles.s3}>
+            <div className={`ui-card modal-card ${styles.s4}`}>
+              <div className={styles.s5}>
+                <span className="ui-heading-base">
+                  Create Inspection Checkpoints Record
+                </span>
+                <button
+                  onClick={() => setIsCreateModalOpen(false)}
+                  className="ui-btn-icon ui-text-muted"
+                >
+                  Close
+                </button>
               </div>
-            </div>
-          )}
-
-          {/* PERFORM INSPECTION MODAL */}
-          {activeInspection && (
-            <div className={styles.s3}>
-              <div className={`ui-card modal-card ${styles.s10}`}>
-                <div className={styles.s11}>
-                  <span className="ui-heading-base">
-                    Perform Quality Check: {activeInspection.inspectionNumber}
-                  </span>
-                  <button
-                    onClick={() => setActiveInspection(null)}
-                    className="ui-btn-icon ui-text-muted"
-                  >
-                    Close
-                  </button>
-                </div>
-                <div className="ui-card-body p-5">
-                  <form onSubmit={handleSubmitPerform} className="ui-stack-4">
-                    <div className={styles.s12}>
-                      <div>
-                        <strong>Product:</strong>{" "}
-                        {activeInspection.product?.name}
-                      </div>
-                      <div>
-                        <strong>Total Inspected Lot:</strong>{" "}
-                        {activeInspection.inspectedQty}
-                      </div>
-                    </div>
-
-                    <div className={styles.s13}>
-                      <span className={styles.s14}>
-                        Checkpoint Verification
-                      </span>
-                      {activeInspection.checkpoints.map((cp) => (
-                        <div key={cp.id} className={styles.s15}>
-                          <div className="ui-flex-between">
-                            <span>
-                              <strong>{cp.parameter}:</strong> {cp.criteria}
-                            </span>
-                            <select
-                              className={`ui-input ${styles.s16}`}
-                              value={checkpointResults[cp.id]?.result}
-                              onChange={(e) => {
-                                setCheckpointResults({
-                                  ...checkpointResults,
-                                  [cp.id]: {
-                                    ...checkpointResults[cp.id]!,
-                                    result: e.target.value as any,
-                                  },
-                                });
-                              }}
-                            >
-                              <option value="PASS">PASS</option>
-                              <option value="FAIL">FAIL</option>
-                              <option value="NA">N/A</option>
-                            </select>
-                          </div>
-                          <div className={styles.s17}>
-                            <input
-                              type="text"
-                              className={styles.s18}
-                              placeholder="Observed Value"
-                              value={checkpointResults[cp.id]?.observedValue}
-                              onChange={(e) => {
-                                setCheckpointResults({
-                                  ...checkpointResults,
-                                  [cp.id]: {
-                                    ...checkpointResults[cp.id]!,
-                                    observedValue: e.target.value,
-                                  },
-                                });
-                              }}
-                            />
-                            <input
-                              type="text"
-                              className={styles.s18}
-                              placeholder="Remarks/Deviation"
-                              value={checkpointResults[cp.id]?.remarks}
-                              onChange={(e) => {
-                                setCheckpointResults({
-                                  ...checkpointResults,
-                                  [cp.id]: {
-                                    ...checkpointResults[cp.id]!,
-                                    remarks: e.target.value,
-                                  },
-                                });
-                              }}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="ui-grid-3">
-                      <div className="ui-form-group">
-                        <label className="ui-label">Final Status</label>
-                        <select
-                          className="ui-input"
-                          value={submitStatus}
-                          onChange={(e) =>
-                            setSubmitStatus(e.target.value as any)
-                          }
-                        >
-                          <option value="PASS">PASS</option>
-                          <option value="FAIL">FAIL</option>
-                          <option value="PARTIAL">PARTIAL</option>
-                        </select>
-                      </div>
-                      <div className="ui-form-group">
-                        <label className="ui-label">Accepted Qty</label>
-                        <input
-                          type="number"
-                          className="ui-input"
-                          value={submitAcceptedQty}
-                          onChange={(e) =>
-                            setSubmitAcceptedQty(Number(e.target.value))
-                          }
-                          required
-                        />
-                      </div>
-                      <div className="ui-form-group">
-                        <label className="ui-label">Rejected Qty</label>
-                        <input
-                          type="number"
-                          className="ui-input"
-                          value={submitRejectedQty}
-                          onChange={(e) =>
-                            setSubmitRejectedQty(Number(e.target.value))
-                          }
-                          required
-                        />
-                      </div>
-                    </div>
-
+              <div className="ui-card-body p-5">
+                <form
+                  onSubmit={handleCreateQAInspection}
+                  className="ui-stack-4"
+                >
+                  <div className="ui-grid-2">
                     <div className="ui-form-group">
                       <label className="ui-label">
-                        Disposition Verdict / Action
+                        Reference Document Type
+                      </label>
+                      <select
+                        className="ui-input"
+                        value={qaRefType}
+                        onChange={(e) => setQaRefType(e.target.value as any)}
+                      >
+                        <option value="STOCK_ENTRY">Stock Entry</option>
+                        <option value="PURCHASE_RECEIPT">
+                          Purchase Receipt
+                        </option>
+                      </select>
+                    </div>
+                    <div className="ui-form-group">
+                      <label className="ui-label">
+                        Reference ID (UUID/Code)
                       </label>
                       <input
                         type="text"
                         className="ui-input"
-                        value={submitDisposition}
-                        onChange={(e) => setSubmitDisposition(e.target.value)}
-                        placeholder="e.g. Scrapped, Restocked, Quarantine"
+                        value={qaRefId}
+                        onChange={(e) => setQaRefId(e.target.value)}
+                        required
                       />
                     </div>
+                  </div>
 
-                    <div className={styles.s9}>
+                  <div className="ui-grid-2">
+                    <div className="ui-form-group">
+                      <label className="ui-label">Select Product</label>
+                      <select
+                        className="ui-input"
+                        value={qaProduct}
+                        onChange={(e) => setQaProduct(e.target.value)}
+                        required
+                      >
+                        {products.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="ui-form-group">
+                      <label className="ui-label">Inspected Lot Qty</label>
+                      <input
+                        type="number"
+                        className="ui-input"
+                        value={qaInsQty}
+                        onChange={(e) => setQaInsQty(Number(e.target.value))}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className={styles.s6}>
+                    <div className="ui-flex-between mb-2">
+                      <span className={styles.s7}>
+                        QA Inspection Criteria checklist
+                      </span>
                       <Button
                         variant="outline"
                         type="button"
-                        onClick={() => setActiveInspection(null)}
+                        onClick={() =>
+                          setQaCheckpoints([
+                            ...qaCheckpoints,
+                            {
+                              parameter: "",
+                              criteria: "",
+                              sortOrder: qaCheckpoints.length,
+                            },
+                          ])
+                        }
+                        className={styles.s2}
                       >
-                        Cancel
-                      </Button>
-                      <Button variant="primary" type="submit">
-                        Submit Verdict
+                        Add Row
                       </Button>
                     </div>
-                  </form>
-                </div>
+                    {qaCheckpoints.map((cp, idx) => (
+                      <div key={idx} className={styles.s8}>
+                        <input
+                          type="text"
+                          className="flex-1"
+                          placeholder="Param (e.g. Dimensions)"
+                          value={cp.parameter}
+                          onChange={(e) => {
+                            const updated = [...qaCheckpoints];
+                            if (updated[idx]) {
+                              updated[idx].parameter = e.target.value;
+                              setQaCheckpoints(updated);
+                            }
+                          }}
+                          required
+                        />
+                        <input
+                          type="text"
+                          className="flex-1"
+                          placeholder="Criteria (e.g. +/- 0.5mm)"
+                          value={cp.criteria}
+                          onChange={(e) => {
+                            const updated = [...qaCheckpoints];
+                            if (updated[idx]) {
+                              updated[idx].criteria = e.target.value;
+                              setQaCheckpoints(updated);
+                            }
+                          }}
+                          required
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className={styles.s9}>
+                    <Button
+                      variant="outline"
+                      type="button"
+                      onClick={() => setIsCreateModalOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button variant="primary" type="submit">
+                      Log Checklist
+                    </Button>
+                  </div>
+                </form>
               </div>
             </div>
-          )}
-        </div>
-      </InventoryTabLayout>
+          </div>
+        )}
+
+        {/* PERFORM INSPECTION MODAL */}
+        {activeInspection && (
+          <div className={styles.s3}>
+            <div className={`ui-card modal-card ${styles.s10}`}>
+              <div className={styles.s11}>
+                <span className="ui-heading-base">
+                  Perform Quality Check: {activeInspection.inspectionNumber}
+                </span>
+                <button
+                  onClick={() => setActiveInspection(null)}
+                  className="ui-btn-icon ui-text-muted"
+                >
+                  Close
+                </button>
+              </div>
+              <div className="ui-card-body p-5">
+                <form onSubmit={handleSubmitPerform} className="ui-stack-4">
+                  <div className={styles.s12}>
+                    <div>
+                      <strong>Product:</strong> {activeInspection.product?.name}
+                    </div>
+                    <div>
+                      <strong>Total Inspected Lot:</strong>{" "}
+                      {activeInspection.inspectedQty}
+                    </div>
+                  </div>
+
+                  <div className={styles.s13}>
+                    <span className={styles.s14}>Checkpoint Verification</span>
+                    {activeInspection.checkpoints.map((cp) => (
+                      <div key={cp.id} className={styles.s15}>
+                        <div className="ui-flex-between">
+                          <span>
+                            <strong>{cp.parameter}:</strong> {cp.criteria}
+                          </span>
+                          <select
+                            className={`ui-input ${styles.s16}`}
+                            value={checkpointResults[cp.id]?.result}
+                            onChange={(e) => {
+                              setCheckpointResults({
+                                ...checkpointResults,
+                                [cp.id]: {
+                                  ...checkpointResults[cp.id]!,
+                                  result: e.target.value as any,
+                                },
+                              });
+                            }}
+                          >
+                            <option value="PASS">PASS</option>
+                            <option value="FAIL">FAIL</option>
+                            <option value="NA">N/A</option>
+                          </select>
+                        </div>
+                        <div className={styles.s17}>
+                          <input
+                            type="text"
+                            className={styles.s18}
+                            placeholder="Observed Value"
+                            value={checkpointResults[cp.id]?.observedValue}
+                            onChange={(e) => {
+                              setCheckpointResults({
+                                ...checkpointResults,
+                                [cp.id]: {
+                                  ...checkpointResults[cp.id]!,
+                                  observedValue: e.target.value,
+                                },
+                              });
+                            }}
+                          />
+                          <input
+                            type="text"
+                            className={styles.s18}
+                            placeholder="Remarks/Deviation"
+                            value={checkpointResults[cp.id]?.remarks}
+                            onChange={(e) => {
+                              setCheckpointResults({
+                                ...checkpointResults,
+                                [cp.id]: {
+                                  ...checkpointResults[cp.id]!,
+                                  remarks: e.target.value,
+                                },
+                              });
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="ui-grid-3">
+                    <div className="ui-form-group">
+                      <label className="ui-label">Final Status</label>
+                      <select
+                        className="ui-input"
+                        value={submitStatus}
+                        onChange={(e) => setSubmitStatus(e.target.value as any)}
+                      >
+                        <option value="PASS">PASS</option>
+                        <option value="FAIL">FAIL</option>
+                        <option value="PARTIAL">PARTIAL</option>
+                      </select>
+                    </div>
+                    <div className="ui-form-group">
+                      <label className="ui-label">Accepted Qty</label>
+                      <input
+                        type="number"
+                        className="ui-input"
+                        value={submitAcceptedQty}
+                        onChange={(e) =>
+                          setSubmitAcceptedQty(Number(e.target.value))
+                        }
+                        required
+                      />
+                    </div>
+                    <div className="ui-form-group">
+                      <label className="ui-label">Rejected Qty</label>
+                      <input
+                        type="number"
+                        className="ui-input"
+                        value={submitRejectedQty}
+                        onChange={(e) =>
+                          setSubmitRejectedQty(Number(e.target.value))
+                        }
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="ui-form-group">
+                    <label className="ui-label">
+                      Disposition Verdict / Action
+                    </label>
+                    <input
+                      type="text"
+                      className="ui-input"
+                      value={submitDisposition}
+                      onChange={(e) => setSubmitDisposition(e.target.value)}
+                      placeholder="e.g. Scrapped, Restocked, Quarantine"
+                    />
+                  </div>
+
+                  <div className={styles.s9}>
+                    <Button
+                      variant="outline"
+                      type="button"
+                      onClick={() => setActiveInspection(null)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button variant="primary" type="submit">
+                      Submit Verdict
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </RouteGuard>
   );
 }

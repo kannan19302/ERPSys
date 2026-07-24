@@ -11,10 +11,6 @@ import {
 import { AlertCircle, ShieldCheck, ShieldX, Settings } from "lucide-react";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
 import { Package as InventoryModuleIcon } from "lucide-react";
 interface Approval {
   id: string;
@@ -162,104 +158,96 @@ export default function TransferApprovalsPage() {
 
   return (
     <RouteGuard permission="inventory.transfer-approvals.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={InventoryModuleIcon}
-        moduleDescription="Value-threshold approval workflow for inter-warehouse transfers, plus per-warehouse threshold rules."
-      >
-        <div className="ui-stack-6 ui-animate-in">
-          <PageHeader
-            title="Multi-Warehouse Transfer Approvals"
-            description="Value-threshold approval workflow for inter-warehouse transfers, plus per-warehouse threshold rules."
-            breadcrumbs={[
-              { label: "Home", href: "/dashboard" },
-              { label: "Inventory", href: "/inventory" },
-              { label: "Transfer Approvals" },
-            ]}
-            actions={
-              <Button
-                variant="primary"
-                onClick={() => setIsRuleModalOpen(true)}
-                className="ui-hstack-2"
-              >
-                <Settings size={14} /> New Threshold Rule
-              </Button>
-            }
-          />
+      <div className="ui-stack-6 ui-animate-in">
+        <PageHeader
+          title="Multi-Warehouse Transfer Approvals"
+          description="Value-threshold approval workflow for inter-warehouse transfers, plus per-warehouse threshold rules."
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "Inventory", href: "/inventory" },
+            { label: "Transfer Approvals" },
+          ]}
+          actions={
+            <Button
+              variant="primary"
+              onClick={() => setIsRuleModalOpen(true)}
+              className="ui-hstack-2"
+            >
+              <Settings size={14} /> New Threshold Rule
+            </Button>
+          }
+        />
 
-          {error && (
-            <div className={styles.s4}>
-              <AlertCircle size={16} />
-              <span>Note: {error}</span>
-            </div>
-          )}
+        {error && (
+          <div className={styles.s4}>
+            <AlertCircle size={16} />
+            <span>Note: {error}</span>
+          </div>
+        )}
 
-          <ListPageTemplate
-            columns={columns}
-            data={approvals as unknown as Record<string, unknown>[]}
-            loading={loading}
-            searchable
-          />
+        <ListPageTemplate
+          columns={columns}
+          data={approvals as unknown as Record<string, unknown>[]}
+          loading={loading}
+          searchable
+        />
 
-          {isRuleModalOpen && (
-            <div className={styles.s5}>
-              <div className={`ui-card modal-card ${styles.s6}`}>
-                <div className={styles.s7}>
-                  <span className="ui-heading-base">New Threshold Rule</span>
-                  <button
-                    onClick={() => setIsRuleModalOpen(false)}
-                    className="ui-btn-icon ui-text-muted"
-                  >
-                    Close
-                  </button>
-                </div>
-                <div className="ui-card-body p-5">
-                  <form onSubmit={handleCreateRule} className="ui-stack-4">
-                    <div className="ui-form-group">
-                      <label className="ui-label">
-                        Warehouse ID (blank = tenant-wide)
-                      </label>
-                      <input
-                        type="text"
-                        className="ui-input"
-                        value={warehouseId}
-                        onChange={(e) => setWarehouseId(e.target.value)}
-                      />
-                    </div>
-                    <div className="ui-form-group">
-                      <label className="ui-label">Threshold Value *</label>
-                      <input
-                        type="number"
-                        className="ui-input"
-                        value={thresholdValue}
-                        onChange={(e) =>
-                          setThresholdValue(Number(e.target.value))
-                        }
-                        required
-                        min={0}
-                      />
-                    </div>
-                    <div className={styles.s8}>
-                      <Button
-                        variant="outline"
-                        type="button"
-                        onClick={() => setIsRuleModalOpen(false)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button variant="primary" type="submit">
-                        Create rule
-                      </Button>
-                    </div>
-                  </form>
-                </div>
+        {isRuleModalOpen && (
+          <div className={styles.s5}>
+            <div className={`ui-card modal-card ${styles.s6}`}>
+              <div className={styles.s7}>
+                <span className="ui-heading-base">New Threshold Rule</span>
+                <button
+                  onClick={() => setIsRuleModalOpen(false)}
+                  className="ui-btn-icon ui-text-muted"
+                >
+                  Close
+                </button>
+              </div>
+              <div className="ui-card-body p-5">
+                <form onSubmit={handleCreateRule} className="ui-stack-4">
+                  <div className="ui-form-group">
+                    <label className="ui-label">
+                      Warehouse ID (blank = tenant-wide)
+                    </label>
+                    <input
+                      type="text"
+                      className="ui-input"
+                      value={warehouseId}
+                      onChange={(e) => setWarehouseId(e.target.value)}
+                    />
+                  </div>
+                  <div className="ui-form-group">
+                    <label className="ui-label">Threshold Value *</label>
+                    <input
+                      type="number"
+                      className="ui-input"
+                      value={thresholdValue}
+                      onChange={(e) =>
+                        setThresholdValue(Number(e.target.value))
+                      }
+                      required
+                      min={0}
+                    />
+                  </div>
+                  <div className={styles.s8}>
+                    <Button
+                      variant="outline"
+                      type="button"
+                      onClick={() => setIsRuleModalOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button variant="primary" type="submit">
+                      Create rule
+                    </Button>
+                  </div>
+                </form>
               </div>
             </div>
-          )}
-        </div>
-      </InventoryTabLayout>
+          </div>
+        )}
+      </div>
     </RouteGuard>
   );
 }

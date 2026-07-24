@@ -25,10 +25,6 @@ import {
   Calendar,
   BarChart3,
 } from "lucide-react";
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
 
 interface DrpRun {
   id: string;
@@ -144,9 +140,7 @@ export default function DrpPlanningPage() {
     {
       key: "status",
       header: "Status",
-      render: (row) => (
-        <StatusBadge status={row.status} />
-      ),
+      render: (row) => <StatusBadge status={row.status} />,
     },
     {
       key: "horizonDays",
@@ -230,19 +224,13 @@ export default function DrpPlanningPage() {
     {
       key: "priority",
       header: "Priority",
-      render: (row) => (
-        <StatusBadge status={row.priority} />
-      ),
+      render: (row) => <StatusBadge status={row.priority} />,
     },
     {
       key: "actions",
       header: "Actions",
       render: (row) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => e.stopPropagation()}
-        >
+        <Button variant="ghost" size="sm" onClick={(e) => e.stopPropagation()}>
           <Eye size={14} />
         </Button>
       ),
@@ -252,168 +240,157 @@ export default function DrpPlanningPage() {
   if (loading && runs.length === 0 && plans.length === 0) {
     return (
       <RouteGuard permission="inventory.drp.read">
-        <InventoryTabLayout
-          tabs={INVENTORY_TABS}
-          moduleId="inventory"
-          moduleLabel="Inventory & Stock"
-          moduleIcon={Package}
-          moduleDescription="Distribution requirements planning"
-        >
-          <div className="ui-center-pad">
-            <Spinner size="lg" />
-          </div>
-        </InventoryTabLayout>
+        <div className="ui-center-pad">
+          <Spinner size="lg" />
+        </div>
       </RouteGuard>
     );
   }
 
   return (
     <RouteGuard permission="inventory.drp.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={Package}
-        moduleDescription="Distribution requirements planning"
-      >
-        <div className="ui-stack-6 ui-animate-in">
-          <PageHeader
-            title="Distribution Planning"
-            description="Distribution Requirements Planning — runs and generated plans."
-            breadcrumbs={[
-              { label: "Home", href: "/dashboard" },
-              { label: "Inventory", href: "/inventory" },
-              { label: "DRP Planning" },
-            ]}
-            actions={
+      <div className="ui-stack-6 ui-animate-in">
+        <PageHeader
+          title="Distribution Planning"
+          description="Distribution Requirements Planning — runs and generated plans."
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "Inventory", href: "/inventory" },
+            { label: "DRP Planning" },
+          ]}
+          actions={
+            <Button
+              variant="primary"
+              onClick={() => setCreateOpen(true)}
+              className="ui-hstack-2"
+            >
+              <Plus size={14} /> New Run
+            </Button>
+          }
+        />
+
+        {error && <div className={styles.errorBox}>{error}</div>}
+
+        <Card padding="none">
+          <div className={styles.sectionHeader}>
+            <Calendar size={16} /> Plan Runs
+          </div>
+          <DataTable
+            columns={runColumns}
+            data={runs}
+            rowKey={(r) => r.id}
+            emptyTitle="No runs"
+            emptyMessage="Create a new DRP run to start planning."
+            emptyIcon={<GitBranch size={48} />}
+          />
+          {runsTotalPages > 1 && (
+            <div style={{ marginTop: 16, marginBottom: 8 }}>
+              <Pagination
+                page={runsPage}
+                pageCount={runsTotalPages}
+                onChange={setRunsPage}
+              />
+            </div>
+          )}
+        </Card>
+
+        <Card padding="none">
+          <div className={styles.sectionHeader}>
+            <BarChart3 size={16} /> Plans
+          </div>
+          <DataTable
+            columns={planColumns}
+            data={plans}
+            rowKey={(r) => r.id}
+            emptyTitle="No plans"
+            emptyMessage="Execute a DRP run to generate plans."
+            emptyIcon={<BarChart3 size={48} />}
+          />
+          {plansTotalPages > 1 && (
+            <div style={{ marginTop: 16, marginBottom: 8 }}>
+              <Pagination
+                page={plansPage}
+                pageCount={plansTotalPages}
+                onChange={setPlansPage}
+              />
+            </div>
+          )}
+        </Card>
+
+        <Modal
+          open={createOpen}
+          onClose={() => setCreateOpen(false)}
+          title="New DRP Run"
+          size="md"
+          footer={
+            <>
+              <Button variant="secondary" onClick={() => setCreateOpen(false)}>
+                Cancel
+              </Button>
               <Button
                 variant="primary"
-                onClick={() => setCreateOpen(true)}
-                className="ui-hstack-2"
+                onClick={handleCreate}
+                disabled={creating}
               >
-                <Plus size={14} /> New Run
+                {creating ? <Spinner size="sm" /> : "Create"}
               </Button>
-            }
-          />
-
-          {error && <div className={styles.errorBox}>{error}</div>}
-
-          <Card padding="none">
-            <div className={styles.sectionHeader}>
-              <Calendar size={16} /> Plan Runs
+            </>
+          }
+        >
+          <form onSubmit={handleCreate} className="ui-stack-4">
+            <FormField label="Run Number" required>
+              <Input
+                value={form.runNumber}
+                onChange={(e) =>
+                  setForm({ ...form, runNumber: e.target.value })
+                }
+                placeholder="DRP-2026-001"
+              />
+            </FormField>
+            <FormField label="Horizon (Days)">
+              <Input
+                type="number"
+                value={form.horizonDays}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    horizonDays: parseInt(e.target.value) || 0,
+                  })
+                }
+              />
+            </FormField>
+            <div className="ui-grid-2 ui-gap-3">
+              <FormField label="Start Date" required>
+                <Input
+                  type="date"
+                  value={form.startDate}
+                  onChange={(e) =>
+                    setForm({ ...form, startDate: e.target.value })
+                  }
+                />
+              </FormField>
+              <FormField label="End Date" required>
+                <Input
+                  type="date"
+                  value={form.endDate}
+                  onChange={(e) =>
+                    setForm({ ...form, endDate: e.target.value })
+                  }
+                />
+              </FormField>
             </div>
-            <DataTable
-              columns={runColumns}
-              data={runs}
-              rowKey={(r) => r.id}
-              emptyTitle="No runs"
-              emptyMessage="Create a new DRP run to start planning."
-              emptyIcon={<GitBranch size={48} />}
-            />
-            {runsTotalPages > 1 && (
-              <div style={{ marginTop: 16, marginBottom: 8 }}>
-                <Pagination page={runsPage} pageCount={runsTotalPages} onChange={setRunsPage} />
-              </div>
-            )}
-          </Card>
-
-          <Card padding="none">
-            <div className={styles.sectionHeader}>
-              <BarChart3 size={16} /> Plans
-            </div>
-            <DataTable
-              columns={planColumns}
-              data={plans}
-              rowKey={(r) => r.id}
-              emptyTitle="No plans"
-              emptyMessage="Execute a DRP run to generate plans."
-              emptyIcon={<BarChart3 size={48} />}
-            />
-            {plansTotalPages > 1 && (
-              <div style={{ marginTop: 16, marginBottom: 8 }}>
-                <Pagination page={plansPage} pageCount={plansTotalPages} onChange={setPlansPage} />
-              </div>
-            )}
-          </Card>
-
-          <Modal
-            open={createOpen}
-            onClose={() => setCreateOpen(false)}
-            title="New DRP Run"
-            size="md"
-            footer={
-              <>
-                <Button
-                  variant="secondary"
-                  onClick={() => setCreateOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={handleCreate}
-                  disabled={creating}
-                >
-                  {creating ? <Spinner size="sm" /> : "Create"}
-                </Button>
-              </>
-            }
-          >
-            <form onSubmit={handleCreate} className="ui-stack-4">
-              <FormField label="Run Number" required>
-                <Input
-                  value={form.runNumber}
-                  onChange={(e) =>
-                    setForm({ ...form, runNumber: e.target.value })
-                  }
-                  placeholder="DRP-2026-001"
-                />
-              </FormField>
-              <FormField label="Horizon (Days)">
-                <Input
-                  type="number"
-                  value={form.horizonDays}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      horizonDays: parseInt(e.target.value) || 0,
-                    })
-                  }
-                />
-              </FormField>
-              <div className="ui-grid-2 ui-gap-3">
-                <FormField label="Start Date" required>
-                  <Input
-                    type="date"
-                    value={form.startDate}
-                    onChange={(e) =>
-                      setForm({ ...form, startDate: e.target.value })
-                    }
-                  />
-                </FormField>
-                <FormField label="End Date" required>
-                  <Input
-                    type="date"
-                    value={form.endDate}
-                    onChange={(e) =>
-                      setForm({ ...form, endDate: e.target.value })
-                    }
-                  />
-                </FormField>
-              </div>
-              <FormField label="Include Warehouses (comma-separated IDs)">
-                <Input
-                  value={form.includeWarehouses}
-                  onChange={(e) =>
-                    setForm({ ...form, includeWarehouses: e.target.value })
-                  }
-                  placeholder="wh-001, wh-002"
-                />
-              </FormField>
-            </form>
-          </Modal>
-        </div>
-      </InventoryTabLayout>
+            <FormField label="Include Warehouses (comma-separated IDs)">
+              <Input
+                value={form.includeWarehouses}
+                onChange={(e) =>
+                  setForm({ ...form, includeWarehouses: e.target.value })
+                }
+                placeholder="wh-001, wh-002"
+              />
+            </FormField>
+          </form>
+        </Modal>
+      </div>
     </RouteGuard>
   );
 }

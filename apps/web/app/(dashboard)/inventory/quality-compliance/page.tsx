@@ -3,10 +3,6 @@ import { useState, useEffect, useCallback } from "react";
 import { ListPageTemplate, type ListColumn } from "@unerp/ui";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
 import { Package as InventoryModuleIcon } from "lucide-react";
 type Tab = "dashboard" | "capas" | "calibrations" | "deviations" | "sops";
 
@@ -498,49 +494,41 @@ export default function QualityCompliancePage() {
 
   return (
     <RouteGuard permission="inventory.quality-compliance.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={InventoryModuleIcon}
-        moduleDescription="Manage inventory operations for this workspace."
-      >
-        <div className="ui-page-shell">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Quality & Compliance
-            </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              CAPA management, instrument calibration, deviation tracking, and
-              SOP document control
-            </p>
-          </div>
-          <div className="border-b border-gray-200 dark:border-gray-700">
-            <nav className="flex gap-1 -mb-px">
-              {TABS.map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => setTab(t.id)}
-                  className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-                    tab === t.id
-                      ? "border-blue-500 text-blue-600 dark:text-blue-400"
-                      : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                  }`}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </nav>
-          </div>
-          <div>
-            {tab === "dashboard" && <DashboardTab />}
-            {tab === "capas" && <CapasTab />}
-            {tab === "calibrations" && <CalibrationsTab />}
-            {tab === "deviations" && <DeviationsTab />}
-            {tab === "sops" && <SopsTab />}
-          </div>
+      <div className="ui-page-shell">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Quality & Compliance
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            CAPA management, instrument calibration, deviation tracking, and SOP
+            document control
+          </p>
         </div>
-      </InventoryTabLayout>
+        <div className="border-b border-gray-200 dark:border-gray-700">
+          <nav className="flex gap-1 -mb-px">
+            {TABS.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTab(t.id)}
+                className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                  tab === t.id
+                    ? "border-blue-500 text-blue-600 dark:text-blue-400"
+                    : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+        <div>
+          {tab === "dashboard" && <DashboardTab />}
+          {tab === "capas" && <CapasTab />}
+          {tab === "calibrations" && <CalibrationsTab />}
+          {tab === "deviations" && <DeviationsTab />}
+          {tab === "sops" && <SopsTab />}
+        </div>
+      </div>
     </RouteGuard>
   );
 }

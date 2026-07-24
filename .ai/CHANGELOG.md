@@ -2,6 +2,72 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-24] 100% ERP Module Layout Standardization via App Router Layout Wrappers
+
+- **App Router Module Layouts (23 modules)**: Created `layout.tsx` for all 23 ERP modules (`crm`, `finance`, `settings`, `hr`, `drive`, `supply-chain`, `education`, `healthcare`, `field-service`, `real-estate`, `projects`, `inventory`, `ecommerce`, `analytics`, `ai`, `apps`, `communication`, `connect`, `manufacturing`, `pos`, `procurement`, `saas`, `sales`). Each module `layout.tsx` renders its respective `<*TabLayout tabs={...}>`, ensuring **100% of pages, sub-pages, detail views (`[id]`), settings sub-routes, and advanced pages automatically render inside their module's primary tab bar**.
+- **Clean Architecture & Anti-Duplication**: Stripped redundant inner `<*TabLayout>` wrappers from individual `page.tsx` files so tab headers render cleanly at the layout level without double-mounting.
+- **Verification**: `pnpm --filter @unerp/web typecheck` passed clean with **0 errors** across all pages. `pnpm architecture:check` passed clean with **0 module boundary violations**. All 23 ERP modules marked **100% Compliant** in `MODULE_REGISTRY.md`.
+
+## [2026-07-24] CRM tab consolidation + Dashboard Stats Cards fix
+
+- **CRM_TABS**: Added shared `CRM_TABS` export to `CrmTabLayout.tsx` (canonical tab definitions with icons/descriptions/advanced groups). Updated `page.tsx`, `commissions/page.tsx`, `automation/page.tsx`, `customer-success/page.tsx` to import from the shared constant instead of defining tabs locally. Removed unused imports throughout.
+- **Dashboard Stats Cards**: Fixed `GET /crm/dashboard` response format to return `{ kpis: { ... } }` matching frontend expectations. Fixed `page.tsx` to correctly render KPIs from the nested shape. Dashboard now shows real data instead of zeros.
+
+## [2026-07-24] HR/Manufacturing/Projects sub-pages wrapped with ModuleTabLayout
+
+- **HR sub-pages (19)**: Wrapped self-service, recruitment, onboarding, offboarding, goals, skills, appraisals, feedback, succession, attendance, shifts, documents, trainings, operations-service, payroll, leaves, benefits, positions, analytics with `<HrTabLayout>` + `HR_TABS`.
+- **Manufacturing sub-pages (7)**: Wrapped boms, mrp, shop-floor, quality, scheduling, configurator, diagnostics with `<ManufacturingTabLayout>` + `MANUFACTURING_TABS`.
+- **Projects sub-pages (6)**: Wrapped portfolios, client-portal, workloads, health, revenue-recognition, wip-reports with `<ProjectsTabLayout>` + `PROJECTS_TABS`. `timesheets` and `reports` dirs don't exist yet — skipped.
+- **Pattern**: TabLayout wraps inside `<RouteGuard>` when present; root module pages intentionally left unwrapped. Typecheck clean (0 new errors).
+
+## [2026-07-24] Universal Sidebar Standardization — All 20 modules flattened to ≤15 items + 14 new \*TabLayout wrappers + silent-catch sweep
+
+- **Governance**: Removed duplicate/obsolete UI Navigation Compliance table from MODULE_REGISTRY.md § UI Consolidation Status (superseded by the authoritative table at § UI Navigation Compliance). Added silent-catch tracking note to the compliance table.
+- **Sidebar Descriptor Flattening** (12 modules restructured from grouped/header-based to flat ≤15-item lists):
+  - **HR**: 49 items in 3 header groups → 12 flat items (Employee Directory, Self-Service, Recruitment, Onboarding & Offboarding, Performance & Goals, Attendance & Shifts, Payroll, Leaves, Training, Benefits, Workforce Analytics, Documents)
+  - **Manufacturing**: Flattened Execution & MES header (2 items) into the flat list → 8 total
+  - **Projects**: Flattened Advanced Tools header (4 items) into the flat list, added Timesheets & Reports → 9 total
+  - **Communication**: 3 header groups (Messaging, Collaboration, Settings) → 6 flat items (Dashboard, Spaces, DMs, Meetings, Calendar, Notifications)
+  - **Drive**: 2 header groups (Document Tools, Advanced & Tools) → 8 flat items (My Drive, Shared, Recent, Starred, Trash, Generated Docs, Template Designer, E-Signatures)
+  - **Supply Chain**: 2 header groups (Operations, Planning & Analytics) → 5 flat items
+  - **POS**: 2 header groups (Retail Tools, Customizer) → 8 flat items
+  - **Field Service**: 3 header groups (Service Management, Team, Reporting) → 7 flat items
+  - **Real Estate**: 3 header groups (Portfolio, Operations, Reporting) → 6 flat items
+  - **AI**: 2 header groups (Capabilities, More AI Tools) → 6 flat items with ?tab= deep-links
+  - **Analytics**: Flattened Data Tools header → 6 flat items
+  - **Builder**: 4 header groups (Build, Web Studio, Marketplace, Manage) with 34 items → 10 flat items (Studio Home, App Studio, Form Builder, Workflow Builder, Dashboard Builder, Web Studio, Manage, Releases & Environments, Access Control, Connectors)
+  - **SaaS Portal**: Reduced from 15 to 11 flat items (consolidated Security/Compliance, API Keys/Webhooks, Exports/Add-ons)
+- **New \*TabLayout Wrapper Components** (14 created, following the Finance/CRM/Inventory re-export pattern from `@unerp/ui-layout`):
+  `HrTabLayout`, `ManufacturingTabLayout`, `ProjectsTabLayout`, `CommunicationTabLayout`, `DriveTabLayout`, `SupplyChainTabLayout`, `PosTabLayout`, `EcommerceTabLayout`, `EducationTabLayout`, `HealthcareTabLayout`, `FieldServiceTabLayout`, `SalesTabLayout`, `RealEstateTabLayout`, `AiTabLayout`, `AnalyticsTabLayout`
+  - Each exports `*_TABS` constant with primary tab definitions matching the flat sidebar; advanced/grouped overflow tabs included where applicable.
+- **Silent-Catch Hardening (app-wide sweep)**: Fixed 23 additional `catch {}` instances across:
+  - `layout.tsx` (logout error now logged)
+  - `drive/page.tsx`, `drive/trash/page.tsx` (user-facing operations now log errors)
+  - `projects/page.tsx` (baseline schedule parse — documented as intentional)
+  - `profile/page.tsx`, `profile/ProfileDirectorySection.tsx` (presence loading now logs)
+  - `connect/page.tsx` (bookmark loading now logs)
+  - `hr/advanced/trainings`, `succession`, `skills`, `shifts`, `payroll`, `positions`, `recruitment` (data-fetching catches now log errors; mutation catches now log errors)
+  - `hr/advanced/operations-service/*` (HolidaysTab, HelpdeskTab, ComplianceTab, AssetsTab, SurveysTab — data-fetching catches now log errors)
+  - **Remaining**: 57 `catch {}` instances in `saas/exp-*` (40), `ecommerce/exp-*` (7), `connect/page.tsx` (5), `hr/advanced/*` (5). The `saas/exp` and `ecommerce/exp` pages are experimental legacy code; tracked for a follow-up hardening sweep.
+- **Verification**: `pnpm --filter @unerp/web typecheck` clean (0 errors). `pnpm architecture:check` passes (0 boundary violations, 0 dependency violations).
+
+## [2026-07-24] Global UI Standardization, Finance Bug Fixes & Framework Hardening
+
+- **ADP & Compliance Governance**: Updated `.ai/MODULE_REGISTRY.md` with an audited **UI Navigation Compliance** table tracking all 20 ERP modules. Strengthened `.ai/AUTOPILOT.md` § UI navigation discipline to require both flat sidebar (≤15 items) and full page tab-layout wiring (`ModuleTabLayout`/`SubTabBar` search param routing) for compliance.
+- **Finance Reference Module Fixes**:
+  - **Banking Total Cash KPI**: Updated `banking/page.tsx` to aggregate live cash balances from Finance Dashboard GL posted activity instead of dereferencing non-existent `a.balance` (fixing the misleading $0 KPI).
+  - **Silent Error Handling**: Replaced swallowed `.catch(() => {})` in Finance overview pages with explicit error state and `useToast()` error notifications.
+- **App-Wide Framework Hardening**: Swept web application pages (including supply-chain analytics, procurement portal, etc.) to eliminate silent error-swallowing and ensure error states/notifications display properly on network or API failures.
+- **CRM & Inventory Tab-UI Retrofit**:
+  - **CRM**: Restructured `apps/web/src/navigation/descriptors/crm.ts` from 62 grouped sidebar items down to 10 flat top-level module hub items (`Dashboard`, `Accounts & Contacts`, `Sales Pipeline`, `Leads & Prospecting`, `Quotations & Pricing`, `Marketing & Outreach`, `Automation & Activities`, `Customer Service & Cases`, `CRM Intelligence & AI`, `CRM Settings`), updating CRM compliance to **Compliant**.
+  - **Inventory**: Confirmed flat sidebar descriptor (12 items) and updated compliance state to **Compliant**.
+- **Verification**: `pnpm architecture:check` passed cleanly with 0 boundary violations.
+
+## [2026-07-24] Governance — UI Navigation Compliance Framework & Audited Baseline
+
+- **UI Navigation Compliance Tracking**: Added `## UI Navigation Compliance` section to `.ai/MODULE_REGISTRY.md` with an audited status table of all 20 ERP modules (Sidebar items, structure, `*TabLayout` wrapper status, % pages wired, and compliance state).
+- **AUTOPILOT Policy Strengthened**: Clarified in `.ai/AUTOPILOT.md` § UI navigation discipline that a module is only compliant when top-level sidebar items are ≤15 AND all sub-pages are wired to `ModuleTabLayout`/`SubTabBar` search parameter routing (`?tab=` & `?subtab=`).
+
 ## [2026-07-24] Finance — Fixed silent-catch anti-pattern on 8 pages + de-drifted Dashboard styling + converted 3 raw tables to DataTable
 
 **Root cause (Part A)**: Finance Dashboard (`finance/page.tsx`) and 7 module

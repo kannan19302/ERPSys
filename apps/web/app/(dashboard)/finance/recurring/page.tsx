@@ -1,7 +1,7 @@
 "use client";
 
 import { Repeat } from "lucide-react";
-import { FinanceTabLayout } from "@/components/finance/FinanceTabLayout";
+
 import RecurringInvoicesPage from "../advanced/recurring/page";
 
 const RECURRING_TABS = [
@@ -15,15 +15,5 @@ const RECURRING_TABS = [
 ];
 
 export default function FinanceRecurringPage() {
-  return (
-    <FinanceTabLayout
-      tabs={RECURRING_TABS}
-      moduleId="recurring"
-      moduleLabel="Recurring"
-      moduleIcon={Repeat}
-      moduleDescription="Recurring invoices, templates, and generation schedule"
-    >
-      <RecurringInvoicesPage />
-    </FinanceTabLayout>
-  );
+  return <RecurringInvoicesPage />;
 }

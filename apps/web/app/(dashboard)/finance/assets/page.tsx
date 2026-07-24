@@ -9,7 +9,6 @@ import {
   Trash2,
   AlertTriangle,
 } from "lucide-react";
-import { FinanceTabLayout } from "@/components/finance/FinanceTabLayout";
 import { RouteGuard } from "@unerp/framework";
 import { Card, useToast } from "@unerp/ui";
 import { apiGet } from "@/lib/api";
@@ -121,94 +120,86 @@ export default function AssetsPage() {
 
   return (
     <RouteGuard permission="finance.assets.read">
-      <FinanceTabLayout
-        tabs={ASSETS_TABS}
-        moduleId="assets"
-        moduleLabel="Assets"
-        moduleIcon={Building2}
-        moduleDescription="Fixed assets, lease accounting, depreciation, and disposals"
-      >
-        {activeTab === "overview" && (
-          <div className="ui-stack-4 ui-animate-in">
-            {summaryError && (
-              <div className="ui-alert ui-alert-danger">
-                <AlertTriangle size={16} />
-                Failed to load assets summary — figures below may be stale.{" "}
-                {summaryError}
-              </div>
-            )}
-            <div className="ui-grid-3">
-              <Card padding="md">
-                <div className="ui-stack-2">
-                  <p className="ui-text-xs-muted">Total Asset Value</p>
-                  <p
-                    className="ui-heading-sm"
-                    style={{ color: "var(--color-primary)" }}
-                  >
-                    {summary.totalValue.toLocaleString(undefined, {
-                      style: "currency",
-                      currency: "USD",
-                      maximumFractionDigits: 0,
-                    })}
-                  </p>
-                  <p className="ui-text-xs-muted">
-                    {summary.assetCount} assets registered
-                  </p>
-                </div>
-              </Card>
-              <Card padding="md">
-                <div className="ui-stack-2">
-                  <p className="ui-text-xs-muted">Monthly Depreciation</p>
-                  <p
-                    className="ui-heading-sm"
-                    style={{ color: "var(--color-warning)" }}
-                  >
-                    {summary.monthlyDepreciation.toLocaleString(undefined, {
-                      style: "currency",
-                      currency: "USD",
-                      maximumFractionDigits: 0,
-                    })}
-                  </p>
-                  <p className="ui-text-xs-muted">Straight-line method</p>
-                </div>
-              </Card>
-              <Card padding="md">
-                <div className="ui-stack-2">
-                  <p className="ui-text-xs-muted">Active Leases</p>
-                  <p
-                    className="ui-heading-sm"
-                    style={{ color: "var(--color-success)" }}
-                  >
-                    {summary.activeLeases}
-                  </p>
-                  <p className="ui-text-xs-muted">ASC 842 / IFRS 16</p>
-                </div>
-              </Card>
+      {activeTab === "overview" && (
+        <div className="ui-stack-4 ui-animate-in">
+          {summaryError && (
+            <div className="ui-alert ui-alert-danger">
+              <AlertTriangle size={16} />
+              Failed to load assets summary — figures below may be stale.{" "}
+              {summaryError}
             </div>
-            <FixedAssetsPage />
+          )}
+          <div className="ui-grid-3">
+            <Card padding="md">
+              <div className="ui-stack-2">
+                <p className="ui-text-xs-muted">Total Asset Value</p>
+                <p
+                  className="ui-heading-sm"
+                  style={{ color: "var(--color-primary)" }}
+                >
+                  {summary.totalValue.toLocaleString(undefined, {
+                    style: "currency",
+                    currency: "USD",
+                    maximumFractionDigits: 0,
+                  })}
+                </p>
+                <p className="ui-text-xs-muted">
+                  {summary.assetCount} assets registered
+                </p>
+              </div>
+            </Card>
+            <Card padding="md">
+              <div className="ui-stack-2">
+                <p className="ui-text-xs-muted">Monthly Depreciation</p>
+                <p
+                  className="ui-heading-sm"
+                  style={{ color: "var(--color-warning)" }}
+                >
+                  {summary.monthlyDepreciation.toLocaleString(undefined, {
+                    style: "currency",
+                    currency: "USD",
+                    maximumFractionDigits: 0,
+                  })}
+                </p>
+                <p className="ui-text-xs-muted">Straight-line method</p>
+              </div>
+            </Card>
+            <Card padding="md">
+              <div className="ui-stack-2">
+                <p className="ui-text-xs-muted">Active Leases</p>
+                <p
+                  className="ui-heading-sm"
+                  style={{ color: "var(--color-success)" }}
+                >
+                  {summary.activeLeases}
+                </p>
+                <p className="ui-text-xs-muted">ASC 842 / IFRS 16</p>
+              </div>
+            </Card>
           </div>
-        )}
-        {activeTab === "fixed-assets" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <FixedAssetsPage />
-          </div>
-        )}
-        {activeTab === "lease-accounting" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <LeasesPage />
-          </div>
-        )}
-        {activeTab === "depreciation" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <FixedAssetsPage />
-          </div>
-        )}
-        {activeTab === "disposals" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <FixedAssetsPage />
-          </div>
-        )}
-      </FinanceTabLayout>
+          <FixedAssetsPage />
+        </div>
+      )}
+      {activeTab === "fixed-assets" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <FixedAssetsPage />
+        </div>
+      )}
+      {activeTab === "lease-accounting" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <LeasesPage />
+        </div>
+      )}
+      {activeTab === "depreciation" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <FixedAssetsPage />
+        </div>
+      )}
+      {activeTab === "disposals" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <FixedAssetsPage />
+        </div>
+      )}
     </RouteGuard>
   );
 }

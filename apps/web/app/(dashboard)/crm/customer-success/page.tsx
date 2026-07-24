@@ -13,11 +13,7 @@ import {
 } from "lucide-react";
 import { PageHeader, Button, Card, Spinner, KPICard } from "@unerp/ui";
 import { RouteGuard, useApiClient } from "@unerp/framework";
-import {
-  CrmTabLayout,
-  useCrmKeyMigration,
-  type CrmTab,
-} from "@/components/crm/CrmTabLayout";
+import { useCrmKeyMigration, type CrmTab } from "@/components/crm/CrmTabLayout";
 
 const TAB_DEFINITIONS: CrmTab[] = [
   { id: "overview", label: "Dashboard", href: "/crm", icon: BarChart3 },
@@ -63,79 +59,71 @@ export default function CrmCustomerSuccessPage() {
 
   return (
     <RouteGuard permission="crm.read">
-      <CrmTabLayout
-        tabs={TAB_DEFINITIONS}
-        moduleId="crm"
-        moduleLabel="CRM & Sales"
-        moduleIcon={Activity}
-        moduleDescription="Customer success & retention"
+      <PageHeader
+        title="Customer Success"
+        description="Health scores, NPS surveys, onboarding checklists, and retention campaigns"
+      />
+      <div
+        style={{
+          display: "flex",
+          gap: "var(--space-2)",
+          marginBottom: "var(--space-4)",
+          borderBottom: "1px solid var(--color-border)",
+          paddingBottom: "var(--space-2)",
+        }}
       >
-        <PageHeader
-          title="Customer Success"
-          description="Health scores, NPS surveys, onboarding checklists, and retention campaigns"
-        />
-        <div
-          style={{
-            display: "flex",
-            gap: "var(--space-2)",
-            marginBottom: "var(--space-4)",
-            borderBottom: "1px solid var(--color-border)",
-            paddingBottom: "var(--space-2)",
-          }}
-        >
-          {CS_TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className="ui-btn"
-              style={{
-                background:
-                  activeTab === tab.id ? "var(--color-primary)" : "transparent",
-                color: activeTab === tab.id ? "#fff" : "inherit",
-                border: "none",
-                padding: "var(--space-1) var(--space-3)",
-                cursor: "pointer",
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
+        {CS_TABS.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className="ui-btn"
+            style={{
+              background:
+                activeTab === tab.id ? "var(--color-primary)" : "transparent",
+              color: activeTab === tab.id ? "#fff" : "inherit",
+              border: "none",
+              padding: "var(--space-1) var(--space-3)",
+              cursor: "pointer",
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+      {loading ? (
+        <Spinner />
+      ) : (
+        <div className="ui-grid-4" style={{ marginBottom: "var(--space-4)" }}>
+          <KPICard
+            icon={<Heart className="w-5 h-5 text-primary" />}
+            value={dashboard?.avgHealthScore?.toFixed(1) ?? 0}
+            title="Avg Health Score"
+          />
+          <KPICard
+            icon={<MessageSquare className="w-5 h-5 text-primary" />}
+            value={dashboard?.totalSurveys ?? 0}
+            title="NPS Surveys"
+          />
+          <KPICard
+            icon={<ClipboardList className="w-5 h-5 text-primary" />}
+            value={dashboard?.activeChecklists ?? 0}
+            title="Active Onboarding"
+          />
+          <KPICard
+            icon={<Target className="w-5 h-5 text-primary" />}
+            value={dashboard?.retentionRate?.toFixed(1) ?? 0}
+            title="Retention Rate %"
+          />
         </div>
-        {loading ? (
-          <Spinner />
-        ) : (
-          <div className="ui-grid-4" style={{ marginBottom: "var(--space-4)" }}>
-            <KPICard
-              icon={<Heart className="w-5 h-5 text-primary" />}
-              value={dashboard?.avgHealthScore?.toFixed(1) ?? 0}
-              title="Avg Health Score"
-            />
-            <KPICard
-              icon={<MessageSquare className="w-5 h-5 text-primary" />}
-              value={dashboard?.totalSurveys ?? 0}
-              title="NPS Surveys"
-            />
-            <KPICard
-              icon={<ClipboardList className="w-5 h-5 text-primary" />}
-              value={dashboard?.activeChecklists ?? 0}
-              title="Active Onboarding"
-            />
-            <KPICard
-              icon={<Target className="w-5 h-5 text-primary" />}
-              value={dashboard?.retentionRate?.toFixed(1) ?? 0}
-              title="Retention Rate %"
-            />
-          </div>
-        )}
-        {activeTab === "overview" && (
-          <Card padding="lg">
-            <p className="ui-text-muted">
-              Customer success dashboard. Manage health score configurations,
-              NPS surveys, onboarding checklists, and retention campaigns.
-            </p>
-          </Card>
-        )}
-      </CrmTabLayout>
+      )}
+      {activeTab === "overview" && (
+        <Card padding="lg">
+          <p className="ui-text-muted">
+            Customer success dashboard. Manage health score configurations, NPS
+            surveys, onboarding checklists, and retention campaigns.
+          </p>
+        </Card>
+      )}
     </RouteGuard>
   );
 }

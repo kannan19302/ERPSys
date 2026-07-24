@@ -1,5 +1,6 @@
 "use client";
 
+import type { CrmTab } from "@/components/crm/CrmTabLayout";
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import styles from "./page.module.css";
@@ -32,7 +33,6 @@ import {
 import { apiDelete, ApiRequestError } from "../../../../src/lib/api";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 import { SubTabBar, type SubTab } from "@unerp/ui-layout";
-import { CrmTabLayout, type CrmTab } from "@/components/crm/CrmTabLayout";
 
 interface CommissionRule {
   id: string;
@@ -399,353 +399,340 @@ export default function CommissionsPage() {
 
   return (
     <RouteGuard permission="crm.commissions.read">
-      <CrmTabLayout
-        tabs={CRM_TABS}
-        moduleId="crm"
-        moduleLabel="CRM & Sales"
-        moduleIcon={DollarSign}
-        moduleDescription="Configure commission rules and track earned commissions for your sales team"
-      >
-        <div className="ui-stack-6 ui-animate-in">
-          <PageHeader
-            title="Commissions"
-            description="Configure commission rules and track earned commissions for your sales team."
-            breadcrumbs={[
-              { label: "Home", href: "/dashboard" },
-              { label: "CRM", href: "/crm" },
-              { label: "Commissions" },
-            ]}
-            actions={
-              <div className="ui-flex ui-gap-3">
-                <Button
-                  onClick={() => setIsCalcModalOpen(true)}
-                  variant="secondary"
-                  className="ui-hstack-2"
-                >
-                  <Calculator size={16} />
-                  <span>Calculate</span>
-                </Button>
-                <Button
-                  onClick={() => setIsModalOpen(true)}
-                  variant="primary"
-                  className="ui-hstack-2"
-                >
-                  <Plus size={16} />
-                  <span>New Rule</span>
-                </Button>
-              </div>
-            }
-          />
-
-          {error && (
-            <div className={styles.p22}>
-              <AlertCircle size={16} /> {error}
+      <div className="ui-stack-6 ui-animate-in">
+        <PageHeader
+          title="Commissions"
+          description="Configure commission rules and track earned commissions for your sales team."
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "CRM", href: "/crm" },
+            { label: "Commissions" },
+          ]}
+          actions={
+            <div className="ui-flex ui-gap-3">
+              <Button
+                onClick={() => setIsCalcModalOpen(true)}
+                variant="secondary"
+                className="ui-hstack-2"
+              >
+                <Calculator size={16} />
+                <span>Calculate</span>
+              </Button>
+              <Button
+                onClick={() => setIsModalOpen(true)}
+                variant="primary"
+                className="ui-hstack-2"
+              >
+                <Plus size={16} />
+                <span>New Rule</span>
+              </Button>
             </div>
-          )}
+          }
+        />
 
-          {/* Tabs */}
-          <SubTabBar
-            tabs={
-              [
-                {
-                  id: "rules",
-                  label: "Rules",
-                  href: "/crm/commissions?subtab=rules",
-                  icon: Percent,
-                },
-                {
-                  id: "earned",
-                  label: "Earned Commissions",
-                  href: "/crm/commissions?subtab=earned",
-                  icon: DollarSign,
-                },
-                {
-                  id: "revops",
-                  label: "RevOps Leaderboard",
-                  href: "/crm/commissions?subtab=revops",
-                  icon: Trophy,
-                },
-              ] as SubTab[]
-            }
-          />
+        {error && (
+          <div className={styles.p22}>
+            <AlertCircle size={16} /> {error}
+          </div>
+        )}
 
-          {loading ? (
-            <div className="ui-center-pad">
-              <Spinner size="lg" />
-            </div>
-          ) : activeTab === "rules" ? (
-            <Card>
-              <DataTable<CommissionRule>
-                columns={ruleColumns}
-                data={sortedRules}
-                rowKey={(r) => r.id}
-                sortBy={ruleSortBy}
-                sortOrder={ruleSortOrder}
-                onSortChange={(key, order) => {
-                  setRuleSortBy(key);
-                  setRuleSortOrder(order);
-                }}
-                emptyTitle="No commission rules"
-                emptyMessage="Configure a commission rule to get started."
-              />
-            </Card>
-          ) : activeTab === "earned" ? (
-            <Card>
-              <DataTable<CommissionEntry>
-                columns={entryColumns}
-                data={sortedEntries}
-                rowKey={(e) => e.id}
-                sortBy={entrySortBy}
-                sortOrder={entrySortOrder}
-                onSortChange={(key, order) => {
-                  setEntrySortBy(key);
-                  setEntrySortOrder(order);
-                }}
-                emptyTitle="No commission entries"
-                emptyMessage="Commission entries appear once opportunities close."
-              />
-            </Card>
-          ) : (
-            <div className="ui-stack-6">
-              {revopsMetrics && (
-                <div className={styles.p24}>
-                  <Card>
-                    <div className="p-5">
-                      <div className={styles.p25}>Total Revenue</div>
-                      <div className={styles.p26}>
-                        $
-                        {revopsMetrics.totalPipelineValue?.toLocaleString() ||
-                          "0"}
-                      </div>
-                    </div>
-                  </Card>
-                  <Card>
-                    <div className="p-5">
-                      <div className={styles.p27}>Closed Won Amount</div>
-                      <div className={styles.p28}>
-                        ${revopsMetrics.closedWonValue?.toLocaleString() || "0"}
-                      </div>
-                    </div>
-                  </Card>
-                  <Card>
-                    <div className="p-5">
-                      <div className={styles.p29}>Win Rate</div>
-                      <div className={styles.p210}>
-                        {revopsMetrics.winRatePct?.toFixed(1) || "0"}%
-                      </div>
-                    </div>
-                  </Card>
-                </div>
-              )}
-              <Card>
-                <div className="p-6">
-                  <h3 className={styles.p211}>Gamification Leaderboard</h3>
-                  {leaderboard.length > 0 ? (
-                    <div className="ui-stack-3">
-                      {leaderboard.map((user: any, index: number) => (
-                        <div key={user.userId} className={styles.p212}>
-                          <div className="ui-hstack-3">
-                            <span className={styles.p213}>#{index + 1}</span>
-                            <span>{user.name}</span>
-                          </div>
-                          <div className={styles.p214}>
-                            <span>
-                              Deals Won: <strong>{user.dealsWon}</strong>
-                            </span>
-                            <span>
-                              Points:{" "}
-                              <strong>
-                                {user.points || user.dealsWon * 100}
-                              </strong>
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="ui-text-muted">No leaderboard data found</p>
-                  )}
-                </div>
-              </Card>
-            </div>
-          )}
+        {/* Tabs */}
+        <SubTabBar
+          tabs={
+            [
+              {
+                id: "rules",
+                label: "Rules",
+                href: "/crm/commissions?subtab=rules",
+                icon: Percent,
+              },
+              {
+                id: "earned",
+                label: "Earned Commissions",
+                href: "/crm/commissions?subtab=earned",
+                icon: DollarSign,
+              },
+              {
+                id: "revops",
+                label: "RevOps Leaderboard",
+                href: "/crm/commissions?subtab=revops",
+                icon: Trophy,
+              },
+            ] as SubTab[]
+          }
+        />
 
-          {/* Create Rule Modal */}
-          {isModalOpen && (
-            <div className={styles.p215}>
-              <div className={styles.p216}>
-                <div className={styles.p217}>
-                  <h3 className="ui-heading-base">New Commission Rule</h3>
-                  <button
-                    onClick={() => setIsModalOpen(false)}
-                    className="ui-btn-icon ui-text-muted"
-                  >
-                    <X size={18} />
-                  </button>
-                </div>
-                {modalSuccess ? (
-                  <div className={styles.p218}>
-                    <Award size={48} className={styles.p219} />
-                    <div className="ui-heading-base">
-                      Rule Created Successfully
+        {loading ? (
+          <div className="ui-center-pad">
+            <Spinner size="lg" />
+          </div>
+        ) : activeTab === "rules" ? (
+          <Card>
+            <DataTable<CommissionRule>
+              columns={ruleColumns}
+              data={sortedRules}
+              rowKey={(r) => r.id}
+              sortBy={ruleSortBy}
+              sortOrder={ruleSortOrder}
+              onSortChange={(key, order) => {
+                setRuleSortBy(key);
+                setRuleSortOrder(order);
+              }}
+              emptyTitle="No commission rules"
+              emptyMessage="Configure a commission rule to get started."
+            />
+          </Card>
+        ) : activeTab === "earned" ? (
+          <Card>
+            <DataTable<CommissionEntry>
+              columns={entryColumns}
+              data={sortedEntries}
+              rowKey={(e) => e.id}
+              sortBy={entrySortBy}
+              sortOrder={entrySortOrder}
+              onSortChange={(key, order) => {
+                setEntrySortBy(key);
+                setEntrySortOrder(order);
+              }}
+              emptyTitle="No commission entries"
+              emptyMessage="Commission entries appear once opportunities close."
+            />
+          </Card>
+        ) : (
+          <div className="ui-stack-6">
+            {revopsMetrics && (
+              <div className={styles.p24}>
+                <Card>
+                  <div className="p-5">
+                    <div className={styles.p25}>Total Revenue</div>
+                    <div className={styles.p26}>
+                      $
+                      {revopsMetrics.totalPipelineValue?.toLocaleString() ||
+                        "0"}
                     </div>
                   </div>
+                </Card>
+                <Card>
+                  <div className="p-5">
+                    <div className={styles.p27}>Closed Won Amount</div>
+                    <div className={styles.p28}>
+                      ${revopsMetrics.closedWonValue?.toLocaleString() || "0"}
+                    </div>
+                  </div>
+                </Card>
+                <Card>
+                  <div className="p-5">
+                    <div className={styles.p29}>Win Rate</div>
+                    <div className={styles.p210}>
+                      {revopsMetrics.winRatePct?.toFixed(1) || "0"}%
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            )}
+            <Card>
+              <div className="p-6">
+                <h3 className={styles.p211}>Gamification Leaderboard</h3>
+                {leaderboard.length > 0 ? (
+                  <div className="ui-stack-3">
+                    {leaderboard.map((user: any, index: number) => (
+                      <div key={user.userId} className={styles.p212}>
+                        <div className="ui-hstack-3">
+                          <span className={styles.p213}>#{index + 1}</span>
+                          <span>{user.name}</span>
+                        </div>
+                        <div className={styles.p214}>
+                          <span>
+                            Deals Won: <strong>{user.dealsWon}</strong>
+                          </span>
+                          <span>
+                            Points:{" "}
+                            <strong>
+                              {user.points || user.dealsWon * 100}
+                            </strong>
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 ) : (
-                  <form onSubmit={handleCreateRule} className="p-6 ui-stack-4">
+                  <p className="ui-text-muted">No leaderboard data found</p>
+                )}
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {/* Create Rule Modal */}
+        {isModalOpen && (
+          <div className={styles.p215}>
+            <div className={styles.p216}>
+              <div className={styles.p217}>
+                <h3 className="ui-heading-base">New Commission Rule</h3>
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="ui-btn-icon ui-text-muted"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              {modalSuccess ? (
+                <div className={styles.p218}>
+                  <Award size={48} className={styles.p219} />
+                  <div className="ui-heading-base">
+                    Rule Created Successfully
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={handleCreateRule} className="p-6 ui-stack-4">
+                  <div>
+                    <label style={labelStyle}>Rule Name</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Standard Sales Commission"
+                      value={ruleName}
+                      onChange={(e) => setRuleName(e.target.value)}
+                      className="ui-input"
+                      style={inputStyle}
+                    />
+                  </div>
+                  <div className="ui-grid-2">
                     <div>
-                      <label style={labelStyle}>Rule Name</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. Standard Sales Commission"
-                        value={ruleName}
-                        onChange={(e) => setRuleName(e.target.value)}
-                        className="ui-input"
-                        style={inputStyle}
-                      />
-                    </div>
-                    <div className="ui-grid-2">
-                      <div>
-                        <label style={labelStyle}>Type</label>
-                        <select
-                          value={ruleType}
-                          onChange={(e) =>
-                            setRuleType(
-                              e.target.value as
-                                | "PERCENTAGE"
-                                | "FLAT"
-                                | "TIERED",
-                            )
-                          }
-                          className="ui-input"
-                          style={inputStyle}
-                        >
-                          <option value="PERCENTAGE">Percentage</option>
-                          <option value="FLAT">Flat Amount</option>
-                          <option value="TIERED">Tiered</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label style={labelStyle}>
-                          Rate {ruleType === "PERCENTAGE" ? "(%)" : "($)"}
-                        </label>
-                        <input
-                          type="number"
-                          required
-                          min={0}
-                          step={ruleType === "PERCENTAGE" ? 0.5 : 1}
-                          value={ruleRate}
-                          onChange={(e) => setRuleRate(Number(e.target.value))}
-                          className="ui-input"
-                          style={inputStyle}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label style={labelStyle}>Applies To</label>
+                      <label style={labelStyle}>Type</label>
                       <select
-                        value={ruleAppliesTo}
-                        onChange={(e) => setRuleAppliesTo(e.target.value)}
+                        value={ruleType}
+                        onChange={(e) =>
+                          setRuleType(
+                            e.target.value as "PERCENTAGE" | "FLAT" | "TIERED",
+                          )
+                        }
                         className="ui-input"
                         style={inputStyle}
                       >
-                        <option value="ALL">All Opportunities</option>
-                        <option value="ENTERPRISE">Enterprise Only</option>
-                        <option value="SMB">SMB Only</option>
-                        <option value="NEW_BUSINESS">New Business</option>
-                        <option value="RENEWAL">Renewals</option>
+                        <option value="PERCENTAGE">Percentage</option>
+                        <option value="FLAT">Flat Amount</option>
+                        <option value="TIERED">Tiered</option>
                       </select>
                     </div>
-                    <div className={styles.p220}>
-                      <Button
-                        variant="secondary"
-                        onClick={() => setIsModalOpen(false)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        variant="primary"
-                        type="submit"
-                        disabled={submitting}
-                      >
-                        {submitting ? "Creating..." : "Create Rule"}
-                      </Button>
-                    </div>
-                  </form>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Calculate Modal */}
-          {isCalcModalOpen && (
-            <div className={styles.p221}>
-              <div className={styles.p222}>
-                <div className={styles.p223}>
-                  <h3 className="ui-heading-base">Calculate Commissions</h3>
-                  <button
-                    onClick={() => setIsCalcModalOpen(false)}
-                    className="ui-btn-icon ui-text-muted"
-                  >
-                    <X size={18} />
-                  </button>
-                </div>
-                {modalSuccess ? (
-                  <div className={styles.p224}>
-                    <CheckCircle size={48} className={styles.p225} />
-                    <div className="ui-heading-base">
-                      Commissions Calculated
-                    </div>
-                    <div className="ui-text-sm-muted">
-                      Check the Earned Commissions tab for results.
+                    <div>
+                      <label style={labelStyle}>
+                        Rate {ruleType === "PERCENTAGE" ? "(%)" : "($)"}
+                      </label>
+                      <input
+                        type="number"
+                        required
+                        min={0}
+                        step={ruleType === "PERCENTAGE" ? 0.5 : 1}
+                        value={ruleRate}
+                        onChange={(e) => setRuleRate(Number(e.target.value))}
+                        className="ui-input"
+                        style={inputStyle}
+                      />
                     </div>
                   </div>
-                ) : (
-                  <form onSubmit={handleCalculate} className="p-6 ui-stack-4">
-                    <div>
-                      <label style={labelStyle}>Period Start</label>
-                      <input
-                        type="date"
-                        required
-                        value={calcStart}
-                        onChange={(e) => setCalcStart(e.target.value)}
-                        className="ui-input"
-                        style={inputStyle}
-                      />
-                    </div>
-                    <div>
-                      <label style={labelStyle}>Period End</label>
-                      <input
-                        type="date"
-                        required
-                        value={calcEnd}
-                        onChange={(e) => setCalcEnd(e.target.value)}
-                        className="ui-input"
-                        style={inputStyle}
-                      />
-                    </div>
-                    <div className={styles.p226}>
-                      <Button
-                        variant="secondary"
-                        onClick={() => setIsCalcModalOpen(false)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        variant="primary"
-                        type="submit"
-                        disabled={submitting}
-                      >
-                        {submitting ? "Calculating..." : "Calculate"}
-                      </Button>
-                    </div>
-                  </form>
-                )}
-              </div>
+                  <div>
+                    <label style={labelStyle}>Applies To</label>
+                    <select
+                      value={ruleAppliesTo}
+                      onChange={(e) => setRuleAppliesTo(e.target.value)}
+                      className="ui-input"
+                      style={inputStyle}
+                    >
+                      <option value="ALL">All Opportunities</option>
+                      <option value="ENTERPRISE">Enterprise Only</option>
+                      <option value="SMB">SMB Only</option>
+                      <option value="NEW_BUSINESS">New Business</option>
+                      <option value="RENEWAL">Renewals</option>
+                    </select>
+                  </div>
+                  <div className={styles.p220}>
+                    <Button
+                      variant="secondary"
+                      onClick={() => setIsModalOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="primary"
+                      type="submit"
+                      disabled={submitting}
+                    >
+                      {submitting ? "Creating..." : "Create Rule"}
+                    </Button>
+                  </div>
+                </form>
+              )}
             </div>
-          )}
-        </div>
-      </CrmTabLayout>
+          </div>
+        )}
+
+        {/* Calculate Modal */}
+        {isCalcModalOpen && (
+          <div className={styles.p221}>
+            <div className={styles.p222}>
+              <div className={styles.p223}>
+                <h3 className="ui-heading-base">Calculate Commissions</h3>
+                <button
+                  onClick={() => setIsCalcModalOpen(false)}
+                  className="ui-btn-icon ui-text-muted"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              {modalSuccess ? (
+                <div className={styles.p224}>
+                  <CheckCircle size={48} className={styles.p225} />
+                  <div className="ui-heading-base">Commissions Calculated</div>
+                  <div className="ui-text-sm-muted">
+                    Check the Earned Commissions tab for results.
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={handleCalculate} className="p-6 ui-stack-4">
+                  <div>
+                    <label style={labelStyle}>Period Start</label>
+                    <input
+                      type="date"
+                      required
+                      value={calcStart}
+                      onChange={(e) => setCalcStart(e.target.value)}
+                      className="ui-input"
+                      style={inputStyle}
+                    />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Period End</label>
+                    <input
+                      type="date"
+                      required
+                      value={calcEnd}
+                      onChange={(e) => setCalcEnd(e.target.value)}
+                      className="ui-input"
+                      style={inputStyle}
+                    />
+                  </div>
+                  <div className={styles.p226}>
+                    <Button
+                      variant="secondary"
+                      onClick={() => setIsCalcModalOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="primary"
+                      type="submit"
+                      disabled={submitting}
+                    >
+                      {submitting ? "Calculating..." : "Calculate"}
+                    </Button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </RouteGuard>
   );
 }

@@ -4,10 +4,6 @@ import { Modal, PageHeader } from "@unerp/ui";
 import { ListView, FormView, RouteGuard } from "@unerp/framework";
 import { warehouseResource } from "@/modules/inventory";
 
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
 import { Package as InventoryModuleIcon } from "lucide-react";
 export default function WarehousesPage() {
   const [editorId, setEditorId] = useState<string | null | undefined>(
@@ -16,44 +12,36 @@ export default function WarehousesPage() {
 
   return (
     <RouteGuard permission="inventory.warehouse.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={InventoryModuleIcon}
-        moduleDescription="Manage storage locations, transit hubs, and stock distribution sites."
-      >
-        <div className="ui-stack-6">
-          <PageHeader
-            title="Warehouse Directory"
-            description="Manage storage locations, transit hubs, and stock distribution sites."
-            breadcrumbs={[
-              { label: "Home", href: "/dashboard" },
-              { label: "Inventory", href: "/inventory" },
-              { label: "Warehouses" },
-            ]}
-          />
+      <div className="ui-stack-6">
+        <PageHeader
+          title="Warehouse Directory"
+          description="Manage storage locations, transit hubs, and stock distribution sites."
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "Inventory", href: "/inventory" },
+            { label: "Warehouses" },
+          ]}
+        />
 
-          <ListView
+        <ListView
+          resource={warehouseResource}
+          onRowClick={(row) => setEditorId(String(row.id))}
+          onCreate={() => setEditorId(null)}
+        />
+
+        <Modal
+          open={editorId !== undefined}
+          onClose={() => setEditorId(undefined)}
+          title={editorId ? "Edit Warehouse" : "New Warehouse"}
+        >
+          <FormView
             resource={warehouseResource}
-            onRowClick={(row) => setEditorId(String(row.id))}
-            onCreate={() => setEditorId(null)}
+            id={editorId ?? undefined}
+            onSuccess={() => setEditorId(undefined)}
+            onCancel={() => setEditorId(undefined)}
           />
-
-          <Modal
-            open={editorId !== undefined}
-            onClose={() => setEditorId(undefined)}
-            title={editorId ? "Edit Warehouse" : "New Warehouse"}
-          >
-            <FormView
-              resource={warehouseResource}
-              id={editorId ?? undefined}
-              onSuccess={() => setEditorId(undefined)}
-              onCancel={() => setEditorId(undefined)}
-            />
-          </Modal>
-        </div>
-      </InventoryTabLayout>
+        </Modal>
+      </div>
     </RouteGuard>
   );
 }

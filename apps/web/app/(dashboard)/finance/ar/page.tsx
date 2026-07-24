@@ -13,7 +13,6 @@ import {
   Receipt,
   AlertTriangle,
 } from "lucide-react";
-import { FinanceTabLayout } from "@/components/finance/FinanceTabLayout";
 import { SubTabBar } from "@/components/finance/SubTabBar";
 import { FormView, ListView, RouteGuard, useApiClient } from "@unerp/framework";
 import {
@@ -236,195 +235,184 @@ export default function ARPage() {
 
   return (
     <RouteGuard permission="finance.invoice.read">
-      <FinanceTabLayout
-        tabs={AR_TABS}
-        moduleId="ar"
-        moduleLabel="Accounts Receivable"
-        moduleIcon={FileText}
-        moduleDescription="Customer invoices, payments, collections, and billing"
-      >
-        {activeTab === "overview" && (
-          <div className="ui-stack-4 ui-animate-in">
-            {summaryError && (
-              <div className="ui-alert ui-alert-danger">
-                <AlertTriangle size={16} />
-                Failed to load AR summary — figures below may be stale.{" "}
-                {summaryError}
-              </div>
-            )}
-            <div className="ui-grid-3">
-              <Card padding="md">
-                <div className="ui-stack-2">
-                  <p className="ui-text-xs-muted">Outstanding Receivables</p>
-                  <p
-                    className="ui-heading-sm"
-                    style={{ color: "var(--color-primary)" }}
-                  >
-                    {summary.outstandingAr.toLocaleString(undefined, {
-                      style: "currency",
-                      currency: "USD",
-                      maximumFractionDigits: 0,
-                    })}
-                  </p>
-                  <p className="ui-text-xs-muted">
-                    Across {summary.totalInvoices} invoices
-                  </p>
-                </div>
-              </Card>
-              <Card padding="md">
-                <div className="ui-stack-2">
-                  <p className="ui-text-xs-muted">Overdue</p>
-                  <p
-                    className="ui-heading-sm"
-                    style={{ color: "var(--color-danger)" }}
-                  >
-                    {summary.overdueAmount.toLocaleString(undefined, {
-                      style: "currency",
-                      currency: "USD",
-                      maximumFractionDigits: 0,
-                    })}
-                  </p>
-                  <p className="ui-text-xs-muted">
-                    {summary.overdueInvoices} invoices past due
-                  </p>
-                </div>
-              </Card>
-              <Card padding="md">
-                <div className="ui-stack-2">
-                  <p className="ui-text-xs-muted">Collected This Month</p>
-                  <p
-                    className="ui-heading-sm"
-                    style={{ color: "var(--color-success)" }}
-                  >
-                    {summary.collectedThisMonth.toLocaleString(undefined, {
-                      style: "currency",
-                      currency: "USD",
-                      maximumFractionDigits: 0,
-                    })}
-                  </p>
-                  <p className="ui-text-xs-muted">
-                    {momChange === null
-                      ? "No data for last month"
-                      : `${momChange >= 0 ? "+" : ""}${momChange}% vs last month`}
-                  </p>
-                </div>
-              </Card>
+      {activeTab === "overview" && (
+        <div className="ui-stack-4 ui-animate-in">
+          {summaryError && (
+            <div className="ui-alert ui-alert-danger">
+              <AlertTriangle size={16} />
+              Failed to load AR summary — figures below may be stale.{" "}
+              {summaryError}
             </div>
+          )}
+          <div className="ui-grid-3">
             <Card padding="md">
-              <h3
-                className="ui-heading-sm"
-                style={{ marginBottom: "var(--space-3)" }}
-              >
-                Recent Invoices
-              </h3>
-              <ListView resource={invoiceResource} />
+              <div className="ui-stack-2">
+                <p className="ui-text-xs-muted">Outstanding Receivables</p>
+                <p
+                  className="ui-heading-sm"
+                  style={{ color: "var(--color-primary)" }}
+                >
+                  {summary.outstandingAr.toLocaleString(undefined, {
+                    style: "currency",
+                    currency: "USD",
+                    maximumFractionDigits: 0,
+                  })}
+                </p>
+                <p className="ui-text-xs-muted">
+                  Across {summary.totalInvoices} invoices
+                </p>
+              </div>
+            </Card>
+            <Card padding="md">
+              <div className="ui-stack-2">
+                <p className="ui-text-xs-muted">Overdue</p>
+                <p
+                  className="ui-heading-sm"
+                  style={{ color: "var(--color-danger)" }}
+                >
+                  {summary.overdueAmount.toLocaleString(undefined, {
+                    style: "currency",
+                    currency: "USD",
+                    maximumFractionDigits: 0,
+                  })}
+                </p>
+                <p className="ui-text-xs-muted">
+                  {summary.overdueInvoices} invoices past due
+                </p>
+              </div>
+            </Card>
+            <Card padding="md">
+              <div className="ui-stack-2">
+                <p className="ui-text-xs-muted">Collected This Month</p>
+                <p
+                  className="ui-heading-sm"
+                  style={{ color: "var(--color-success)" }}
+                >
+                  {summary.collectedThisMonth.toLocaleString(undefined, {
+                    style: "currency",
+                    currency: "USD",
+                    maximumFractionDigits: 0,
+                  })}
+                </p>
+                <p className="ui-text-xs-muted">
+                  {momChange === null
+                    ? "No data for last month"
+                    : `${momChange >= 0 ? "+" : ""}${momChange}% vs last month`}
+                </p>
+              </div>
             </Card>
           </div>
-        )}
-        {activeTab === "invoices" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <PageHeader
-              title="Invoices"
-              description="Manage customer invoices"
-            />
+          <Card padding="md">
+            <h3
+              className="ui-heading-sm"
+              style={{ marginBottom: "var(--space-3)" }}
+            >
+              Recent Invoices
+            </h3>
             <ListView resource={invoiceResource} />
+          </Card>
+        </div>
+      )}
+      {activeTab === "invoices" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <PageHeader title="Invoices" description="Manage customer invoices" />
+          <ListView resource={invoiceResource} />
+        </div>
+      )}
+      {activeTab === "customers" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <PageHeader
+            title="Customers"
+            description="Customer directory and account management"
+          />
+          <ListView resource={customerResource} />
+        </div>
+      )}
+      {activeTab === "payments" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <PageHeader
+            title="Payments"
+            description="Track incoming payments from customers"
+          />
+          <ListView resource={paymentResource} />
+        </div>
+      )}
+      {activeTab === "credit-notes" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <SubTabBar
+            tabs={[
+              {
+                id: "notes",
+                label: "Credit Notes",
+                href: "/finance/ar?tab=credit-notes",
+              },
+              {
+                id: "statements",
+                label: "Customer Statements",
+                href: "/finance/ar?tab=credit-notes&subtab=statements",
+              },
+              {
+                id: "analytics",
+                label: "Invoice Analytics",
+                href: "/finance/ar?tab=credit-notes&subtab=analytics",
+              },
+              {
+                id: "risk",
+                label: "Credit Risk",
+                href: "/finance/ar?tab=credit-notes&subtab=risk",
+              },
+              {
+                id: "reconciliation",
+                label: "Account Reconciliation",
+                href: "/finance/ar?tab=credit-notes&subtab=reconciliation",
+              },
+            ]}
+          />
+          <div style={{ marginTop: "var(--space-3)" }}>
+            {subTab === "statements" ? (
+              <CustomerStatementPage />
+            ) : subTab === "analytics" ? (
+              <InvoiceAnalyticsPage />
+            ) : subTab === "risk" ? (
+              <CreditRiskPage />
+            ) : subTab === "reconciliation" ? (
+              <AccountReconciliationPage />
+            ) : (
+              <CreditNotesPanel />
+            )}
           </div>
-        )}
-        {activeTab === "customers" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <PageHeader
-              title="Customers"
-              description="Customer directory and account management"
-            />
-            <ListView resource={customerResource} />
-          </div>
-        )}
-        {activeTab === "payments" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <PageHeader
-              title="Payments"
-              description="Track incoming payments from customers"
-            />
-            <ListView resource={paymentResource} />
-          </div>
-        )}
-        {activeTab === "credit-notes" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <SubTabBar
-              tabs={[
-                {
-                  id: "notes",
-                  label: "Credit Notes",
-                  href: "/finance/ar?tab=credit-notes",
-                },
-                {
-                  id: "statements",
-                  label: "Customer Statements",
-                  href: "/finance/ar?tab=credit-notes&subtab=statements",
-                },
-                {
-                  id: "analytics",
-                  label: "Invoice Analytics",
-                  href: "/finance/ar?tab=credit-notes&subtab=analytics",
-                },
-                {
-                  id: "risk",
-                  label: "Credit Risk",
-                  href: "/finance/ar?tab=credit-notes&subtab=risk",
-                },
-                {
-                  id: "reconciliation",
-                  label: "Account Reconciliation",
-                  href: "/finance/ar?tab=credit-notes&subtab=reconciliation",
-                },
-              ]}
-            />
-            <div style={{ marginTop: "var(--space-3)" }}>
-              {subTab === "statements" ? (
-                <CustomerStatementPage />
-              ) : subTab === "analytics" ? (
-                <InvoiceAnalyticsPage />
-              ) : subTab === "risk" ? (
-                <CreditRiskPage />
-              ) : subTab === "reconciliation" ? (
-                <AccountReconciliationPage />
-              ) : (
-                <CreditNotesPanel />
-              )}
-            </div>
-          </div>
-        )}
-        {activeTab === "recurring-billing" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <SubscriptionsPage />
-          </div>
-        )}
-        {activeTab === "subscriptions" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <SubscriptionsPage />
-          </div>
-        )}
-        {activeTab === "revenue-recognition" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <RevenueSchedulesPage />
-          </div>
-        )}
-        {activeTab === "collections" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <ArAutomationPage />
-          </div>
-        )}
-        {activeTab === "aging-analysis" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <ArAgingPage />
-          </div>
-        )}
-        {activeTab === "customer-statements" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <CustomerStatementPage />
-          </div>
-        )}
-      </FinanceTabLayout>
+        </div>
+      )}
+      {activeTab === "recurring-billing" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <SubscriptionsPage />
+        </div>
+      )}
+      {activeTab === "subscriptions" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <SubscriptionsPage />
+        </div>
+      )}
+      {activeTab === "revenue-recognition" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <RevenueSchedulesPage />
+        </div>
+      )}
+      {activeTab === "collections" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <ArAutomationPage />
+        </div>
+      )}
+      {activeTab === "aging-analysis" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <ArAgingPage />
+        </div>
+      )}
+      {activeTab === "customer-statements" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <CustomerStatementPage />
+        </div>
+      )}
     </RouteGuard>
   );
 }

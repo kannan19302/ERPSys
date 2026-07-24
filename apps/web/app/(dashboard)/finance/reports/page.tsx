@@ -9,7 +9,7 @@ import {
   PieChart,
   FileText,
 } from "lucide-react";
-import { FinanceTabLayout } from "@/components/finance/FinanceTabLayout";
+
 import { RouteGuard } from "@unerp/framework";
 import { Card } from "@unerp/ui";
 
@@ -74,80 +74,72 @@ export default function FinanceReportsPage() {
 
   return (
     <RouteGuard permission="finance.report.read">
-      <FinanceTabLayout
-        tabs={REPORTS_TABS}
-        moduleId="reports"
-        moduleLabel="Reports"
-        moduleIcon={PieChart}
-        moduleDescription="Financial statements, reports, and ratio analysis"
-      >
-        {activeTab === "overview" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <div
-              className="ui-grid-2"
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "var(--space-4)",
-              }}
+      {activeTab === "overview" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <div
+            className="ui-grid-2"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "var(--space-4)",
+            }}
+          >
+            <Card
+              padding="md"
+              className="ui-hstack-3"
+              style={{ cursor: "pointer" }}
             >
-              <Card
-                padding="md"
-                className="ui-hstack-3"
-                style={{ cursor: "pointer" }}
-              >
-                <Scale size={24} className="ui-text-primary" />
-                <div>
-                  <h3 className="ui-heading-sm">Balance Sheet</h3>
-                  <p className="ui-text-xs-muted">As of Jul 20, 2026</p>
-                </div>
-              </Card>
-              <Card
-                padding="md"
-                className="ui-hstack-3"
-                style={{ cursor: "pointer" }}
-              >
-                <TrendingUp size={24} className="ui-text-success" />
-                <div>
-                  <h3 className="ui-heading-sm">Profit & Loss</h3>
-                  <p className="ui-text-xs-muted">Q2 2026 vs Q1 2026</p>
-                </div>
-              </Card>
-            </div>
-            <ReportsPage />
+              <Scale size={24} className="ui-text-primary" />
+              <div>
+                <h3 className="ui-heading-sm">Balance Sheet</h3>
+                <p className="ui-text-xs-muted">As of Jul 20, 2026</p>
+              </div>
+            </Card>
+            <Card
+              padding="md"
+              className="ui-hstack-3"
+              style={{ cursor: "pointer" }}
+            >
+              <TrendingUp size={24} className="ui-text-success" />
+              <div>
+                <h3 className="ui-heading-sm">Profit & Loss</h3>
+                <p className="ui-text-xs-muted">Q2 2026 vs Q1 2026</p>
+              </div>
+            </Card>
           </div>
-        )}
-        {activeTab === "balance-sheet" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <ReportsPage />
-          </div>
-        )}
-        {activeTab === "profit-loss" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <ReportsPage />
-          </div>
-        )}
-        {activeTab === "cash-flow" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <ReportsPage />
-          </div>
-        )}
-        {activeTab === "trial-balance" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <ReportsPage />
-          </div>
-        )}
-        {activeTab === "financial-ratios" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <FinancialRatiosPage />
-          </div>
-        )}
-        {activeTab === "custom-reports" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <ReportsPage />
-          </div>
-        )}
-      </FinanceTabLayout>
+          <ReportsPage />
+        </div>
+      )}
+      {activeTab === "balance-sheet" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <ReportsPage />
+        </div>
+      )}
+      {activeTab === "profit-loss" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <ReportsPage />
+        </div>
+      )}
+      {activeTab === "cash-flow" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <ReportsPage />
+        </div>
+      )}
+      {activeTab === "trial-balance" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <ReportsPage />
+        </div>
+      )}
+      {activeTab === "financial-ratios" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <FinancialRatiosPage />
+        </div>
+      )}
+      {activeTab === "custom-reports" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <ReportsPage />
+        </div>
+      )}
     </RouteGuard>
   );
 }

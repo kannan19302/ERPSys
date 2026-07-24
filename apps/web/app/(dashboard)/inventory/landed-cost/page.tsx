@@ -3,10 +3,6 @@ import { useState, useEffect, useCallback } from "react";
 import { ListPageTemplate, type ListColumn, StatCardRow } from "@unerp/ui";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
 import { Package as InventoryModuleIcon } from "lucide-react";
 type Tab = "dashboard" | "vouchers" | "charge-lines" | "allocations";
 
@@ -433,267 +429,257 @@ export default function LandedCostPage() {
 
   return (
     <RouteGuard permission="inventory.landed-cost.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={InventoryModuleIcon}
-        moduleDescription="Manage inventory operations for this workspace."
-      >
-        <div className="ui-page-shell">
-          <h1 className="text-2xl font-semibold mb-4">
-            Landed Cost Allocation
-          </h1>
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
-              {error}
-              <button className="ml-2 underline" onClick={() => setError("")}>
-                dismiss
-              </button>
-            </div>
-          )}
-
-          <div className="flex gap-2 border-b mb-6">
-            {tabs.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
-                className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${tab === t.id ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
-              >
-                {t.label}
-              </button>
-            ))}
+      <div className="ui-page-shell">
+        <h1 className="text-2xl font-semibold mb-4">Landed Cost Allocation</h1>
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+            {error}
+            <button className="ml-2 underline" onClick={() => setError("")}>
+              dismiss
+            </button>
           </div>
+        )}
 
-          {/* Dashboard */}
-          {tab === "dashboard" && dashboard && (
-            <div className="space-y-4">
-              <StatCardRow
-                stats={[
-                  { label: "Total Vouchers", value: dashboard.totalVouchers },
-                  { label: "Draft", value: dashboard.byStatus.draftCount },
-                  {
-                    label: "Allocated",
-                    value: dashboard.byStatus.allocatedCount,
-                  },
-                  {
-                    label: "Total Allocated",
-                    value: `$${dashboard.totalAllocatedAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
-                  },
-                ]}
-              />
-              <StatCardRow
-                stats={[
-                  { label: "Draft", value: dashboard.byStatus.draftCount },
-                  {
-                    label: "Submitted",
-                    value: dashboard.byStatus.submittedCount,
-                  },
-                  {
-                    label: "Allocated",
-                    value: dashboard.byStatus.allocatedCount,
-                  },
-                  {
-                    label: "Cancelled",
-                    value: dashboard.byStatus.cancelledCount,
-                  },
-                ]}
-              />
+        <div className="flex gap-2 border-b mb-6">
+          {tabs.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${tab === t.id ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Dashboard */}
+        {tab === "dashboard" && dashboard && (
+          <div className="space-y-4">
+            <StatCardRow
+              stats={[
+                { label: "Total Vouchers", value: dashboard.totalVouchers },
+                { label: "Draft", value: dashboard.byStatus.draftCount },
+                {
+                  label: "Allocated",
+                  value: dashboard.byStatus.allocatedCount,
+                },
+                {
+                  label: "Total Allocated",
+                  value: `$${dashboard.totalAllocatedAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+                },
+              ]}
+            />
+            <StatCardRow
+              stats={[
+                { label: "Draft", value: dashboard.byStatus.draftCount },
+                {
+                  label: "Submitted",
+                  value: dashboard.byStatus.submittedCount,
+                },
+                {
+                  label: "Allocated",
+                  value: dashboard.byStatus.allocatedCount,
+                },
+                {
+                  label: "Cancelled",
+                  value: dashboard.byStatus.cancelledCount,
+                },
+              ]}
+            />
+          </div>
+        )}
+
+        {/* Vouchers */}
+        {tab === "vouchers" && (
+          <div>
+            <div className="flex justify-between mb-4">
+              <h2 className="text-lg font-medium">Landed Cost Vouchers</h2>
+              <button
+                onClick={() => setShowForm(true)}
+                className="px-4 py-2 bg-blue-600 text-white rounded text-sm"
+              >
+                + New Voucher
+              </button>
             </div>
-          )}
 
-          {/* Vouchers */}
-          {tab === "vouchers" && (
-            <div>
-              <div className="flex justify-between mb-4">
-                <h2 className="text-lg font-medium">Landed Cost Vouchers</h2>
-                <button
-                  onClick={() => setShowForm(true)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded text-sm"
-                >
-                  + New Voucher
-                </button>
-              </div>
-
-              {showForm && (
-                <div className="mb-6 p-4 border rounded-lg bg-gray-50">
-                  <h3 className="font-medium mb-3">Create Voucher</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    <input
-                      placeholder="Description"
-                      value={form.description}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, description: e.target.value }))
-                      }
-                      className="border rounded px-3 py-2 text-sm"
-                    />
-                    <input
-                      placeholder="Invoice Ref"
-                      value={form.invoiceRef}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, invoiceRef: e.target.value }))
-                      }
-                      className="border rounded px-3 py-2 text-sm"
-                    />
-                    <select
-                      value={form.allocationMethod}
-                      onChange={(e) =>
-                        setForm((f) => ({
-                          ...f,
-                          allocationMethod: e.target.value,
-                        }))
-                      }
-                      className="border rounded px-3 py-2 text-sm"
-                    >
-                      {METHODS.map((m) => (
-                        <option key={m}>{m}</option>
-                      ))}
-                    </select>
-                    <input
-                      placeholder="Currency (USD)"
-                      value={form.currency}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, currency: e.target.value }))
-                      }
-                      className="border rounded px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <div className="flex gap-2 mt-3">
-                    <button
-                      onClick={createVoucher}
-                      className="px-4 py-2 bg-blue-600 text-white rounded text-sm"
-                    >
-                      Create
-                    </button>
-                    <button
-                      onClick={() => setShowForm(false)}
-                      className="px-4 py-2 border rounded text-sm"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              <ListPageTemplate
-                columns={voucherColumns}
-                data={vouchers as unknown as Record<string, unknown>[]}
-                loading={loading}
-                searchable
-              />
-            </div>
-          )}
-
-          {/* Charge Lines */}
-          {tab === "charge-lines" && (
-            <div>
-              <div className="flex items-center gap-4 mb-4">
-                <h2 className="text-lg font-medium">Charge Lines</h2>
-                {selectedVoucher && (
-                  <span className="text-sm text-gray-500">
-                    Voucher: {selectedVoucher.voucherNumber}
-                  </span>
-                )}
-                {!selectedVoucher && (
-                  <span className="text-sm text-yellow-600">
-                    Select a voucher from the Vouchers tab first
-                  </span>
-                )}
-              </div>
-
-              {selectedVoucher && selectedVoucher.status === "DRAFT" && (
-                <div className="mb-4 p-4 border rounded-lg bg-gray-50">
-                  <h3 className="font-medium mb-3 text-sm">Add Charge Line</h3>
-                  <div className="grid grid-cols-3 gap-3">
-                    <select
-                      value={chargeForm.chargeType}
-                      onChange={(e) =>
-                        setChargeForm((f) => ({
-                          ...f,
-                          chargeType: e.target.value,
-                        }))
-                      }
-                      className="border rounded px-3 py-2 text-sm"
-                    >
-                      {CHARGE_TYPES.map((c) => (
-                        <option key={c}>{c}</option>
-                      ))}
-                    </select>
-                    <input
-                      placeholder="Description"
-                      value={chargeForm.description}
-                      onChange={(e) =>
-                        setChargeForm((f) => ({
-                          ...f,
-                          description: e.target.value,
-                        }))
-                      }
-                      className="border rounded px-3 py-2 text-sm"
-                    />
-                    <input
-                      type="number"
-                      placeholder="Amount"
-                      value={chargeForm.amount}
-                      onChange={(e) =>
-                        setChargeForm((f) => ({ ...f, amount: e.target.value }))
-                      }
-                      className="border rounded px-3 py-2 text-sm"
-                    />
-                    <input
-                      placeholder="Account Code"
-                      value={chargeForm.accountCode}
-                      onChange={(e) =>
-                        setChargeForm((f) => ({
-                          ...f,
-                          accountCode: e.target.value,
-                        }))
-                      }
-                      className="border rounded px-3 py-2 text-sm"
-                    />
-                    <input
-                      placeholder="Currency"
-                      value={chargeForm.currency}
-                      onChange={(e) =>
-                        setChargeForm((f) => ({
-                          ...f,
-                          currency: e.target.value,
-                        }))
-                      }
-                      className="border rounded px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <button
-                    onClick={addChargeLine}
-                    className="mt-3 px-4 py-2 bg-blue-600 text-white rounded text-sm"
+            {showForm && (
+              <div className="mb-6 p-4 border rounded-lg bg-gray-50">
+                <h3 className="font-medium mb-3">Create Voucher</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    placeholder="Description"
+                    value={form.description}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, description: e.target.value }))
+                    }
+                    className="border rounded px-3 py-2 text-sm"
+                  />
+                  <input
+                    placeholder="Invoice Ref"
+                    value={form.invoiceRef}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, invoiceRef: e.target.value }))
+                    }
+                    className="border rounded px-3 py-2 text-sm"
+                  />
+                  <select
+                    value={form.allocationMethod}
+                    onChange={(e) =>
+                      setForm((f) => ({
+                        ...f,
+                        allocationMethod: e.target.value,
+                      }))
+                    }
+                    className="border rounded px-3 py-2 text-sm"
                   >
-                    Add Line
+                    {METHODS.map((m) => (
+                      <option key={m}>{m}</option>
+                    ))}
+                  </select>
+                  <input
+                    placeholder="Currency (USD)"
+                    value={form.currency}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, currency: e.target.value }))
+                    }
+                    className="border rounded px-3 py-2 text-sm"
+                  />
+                </div>
+                <div className="flex gap-2 mt-3">
+                  <button
+                    onClick={createVoucher}
+                    className="px-4 py-2 bg-blue-600 text-white rounded text-sm"
+                  >
+                    Create
+                  </button>
+                  <button
+                    onClick={() => setShowForm(false)}
+                    className="px-4 py-2 border rounded text-sm"
+                  >
+                    Cancel
                   </button>
                 </div>
+              </div>
+            )}
+
+            <ListPageTemplate
+              columns={voucherColumns}
+              data={vouchers as unknown as Record<string, unknown>[]}
+              loading={loading}
+              searchable
+            />
+          </div>
+        )}
+
+        {/* Charge Lines */}
+        {tab === "charge-lines" && (
+          <div>
+            <div className="flex items-center gap-4 mb-4">
+              <h2 className="text-lg font-medium">Charge Lines</h2>
+              {selectedVoucher && (
+                <span className="text-sm text-gray-500">
+                  Voucher: {selectedVoucher.voucherNumber}
+                </span>
               )}
-
-              <ListPageTemplate
-                columns={chargeLineColumns}
-                data={chargeLines as unknown as Record<string, unknown>[]}
-                loading={false}
-                searchable
-              />
+              {!selectedVoucher && (
+                <span className="text-sm text-yellow-600">
+                  Select a voucher from the Vouchers tab first
+                </span>
+              )}
             </div>
-          )}
 
-          {/* Allocations */}
-          {tab === "allocations" && (
-            <div>
-              <h2 className="text-lg font-medium mb-4">Allocation Report</h2>
-              <ListPageTemplate
-                columns={allocationColumns}
-                data={allocations as unknown as Record<string, unknown>[]}
-                loading={false}
-                searchable
-              />
-            </div>
-          )}
-        </div>
-      </InventoryTabLayout>
+            {selectedVoucher && selectedVoucher.status === "DRAFT" && (
+              <div className="mb-4 p-4 border rounded-lg bg-gray-50">
+                <h3 className="font-medium mb-3 text-sm">Add Charge Line</h3>
+                <div className="grid grid-cols-3 gap-3">
+                  <select
+                    value={chargeForm.chargeType}
+                    onChange={(e) =>
+                      setChargeForm((f) => ({
+                        ...f,
+                        chargeType: e.target.value,
+                      }))
+                    }
+                    className="border rounded px-3 py-2 text-sm"
+                  >
+                    {CHARGE_TYPES.map((c) => (
+                      <option key={c}>{c}</option>
+                    ))}
+                  </select>
+                  <input
+                    placeholder="Description"
+                    value={chargeForm.description}
+                    onChange={(e) =>
+                      setChargeForm((f) => ({
+                        ...f,
+                        description: e.target.value,
+                      }))
+                    }
+                    className="border rounded px-3 py-2 text-sm"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Amount"
+                    value={chargeForm.amount}
+                    onChange={(e) =>
+                      setChargeForm((f) => ({ ...f, amount: e.target.value }))
+                    }
+                    className="border rounded px-3 py-2 text-sm"
+                  />
+                  <input
+                    placeholder="Account Code"
+                    value={chargeForm.accountCode}
+                    onChange={(e) =>
+                      setChargeForm((f) => ({
+                        ...f,
+                        accountCode: e.target.value,
+                      }))
+                    }
+                    className="border rounded px-3 py-2 text-sm"
+                  />
+                  <input
+                    placeholder="Currency"
+                    value={chargeForm.currency}
+                    onChange={(e) =>
+                      setChargeForm((f) => ({
+                        ...f,
+                        currency: e.target.value,
+                      }))
+                    }
+                    className="border rounded px-3 py-2 text-sm"
+                  />
+                </div>
+                <button
+                  onClick={addChargeLine}
+                  className="mt-3 px-4 py-2 bg-blue-600 text-white rounded text-sm"
+                >
+                  Add Line
+                </button>
+              </div>
+            )}
+
+            <ListPageTemplate
+              columns={chargeLineColumns}
+              data={chargeLines as unknown as Record<string, unknown>[]}
+              loading={false}
+              searchable
+            />
+          </div>
+        )}
+
+        {/* Allocations */}
+        {tab === "allocations" && (
+          <div>
+            <h2 className="text-lg font-medium mb-4">Allocation Report</h2>
+            <ListPageTemplate
+              columns={allocationColumns}
+              data={allocations as unknown as Record<string, unknown>[]}
+              loading={false}
+              searchable
+            />
+          </div>
+        )}
+      </div>
     </RouteGuard>
   );
 }

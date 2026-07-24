@@ -20,10 +20,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { RouteGuard } from "@unerp/framework";
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
+
 import { apiGet, apiPost } from "../../../../src/lib/api";
 
 interface AtpRecord {
@@ -103,15 +100,12 @@ export default function AtpCtpPage() {
   const handleReserve = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await apiPost(
-        `/inventory/atp-ctp/${reserveRecordId}/reserve`,
-        {
-          referenceId,
-          referenceType,
-          quantity: reserveQty,
-          committedUntil: committedUntil || undefined,
-        },
-      );
+      await apiPost(`/inventory/atp-ctp/${reserveRecordId}/reserve`, {
+        referenceId,
+        referenceType,
+        quantity: reserveQty,
+        committedUntil: committedUntil || undefined,
+      });
       setIsReserveOpen(false);
       setReferenceId("");
       setReferenceType("SALES_ORDER");
@@ -143,7 +137,14 @@ export default function AtpCtpPage() {
       key: "available",
       header: "Available",
       render: (row) => (
-        <span style={{ color: row.available > 0 ? "var(--color-success-text)" : "var(--color-danger-text)" }}>
+        <span
+          style={{
+            color:
+              row.available > 0
+                ? "var(--color-success-text)"
+                : "var(--color-danger-text)",
+          }}
+        >
           {row.available}
         </span>
       ),
@@ -175,149 +176,137 @@ export default function AtpCtpPage() {
 
   return (
     <RouteGuard permission="inventory.atp-ctp.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={InventoryModuleIcon}
-        moduleDescription="Available-to-Promise and Capable-to-Promise availability calculations."
-      >
-        <div className="ui-stack-6 ui-animate-in">
-          <PageHeader
-            title="ATP/CTP Availability"
-            description="Available-to-Promise and Capable-to-Promise availability calculations."
-            actions={
+      <div className="ui-stack-6 ui-animate-in">
+        <PageHeader
+          title="ATP/CTP Availability"
+          description="Available-to-Promise and Capable-to-Promise availability calculations."
+          actions={
+            <Button
+              variant="primary"
+              onClick={handleCompute}
+              disabled={computing}
+              className="ui-hstack-2"
+            >
+              <Play size={14} /> {computing ? "Computing..." : "Compute ATP"}
+            </Button>
+          }
+        />
+
+        {error && (
+          <div className={styles.s4}>
+            <AlertCircle size={16} /> <span>{error}</span>
+          </div>
+        )}
+
+        {dashboard && (
+          <StatCardRow
+            stats={[
+              {
+                label: "Total ATP Records",
+                value: dashboard.totalRecords,
+                icon: <BarChart3 size={16} />,
+              },
+              {
+                label: "Active Reservations",
+                value: dashboard.activeReservations,
+                icon: <CheckCircle size={16} />,
+                color: "var(--chart-2)",
+              },
+              {
+                label: "Low Availability Items",
+                value: dashboard.lowAvailability,
+                icon: <AlertTriangle size={16} />,
+                color: "var(--chart-4)",
+              },
+            ]}
+          />
+        )}
+
+        <DataTable
+          columns={columns}
+          data={records}
+          loading={loading}
+          emptyTitle="No ATP/CTP records"
+          emptyMessage="Run a computation to generate availability data."
+        />
+
+        {totalPages > 1 && (
+          <div style={{ marginTop: 16 }}>
+            <Pagination page={page} pageCount={totalPages} onChange={setPage} />
+          </div>
+        )}
+
+        <Modal
+          open={isReserveOpen}
+          onClose={() => setIsReserveOpen(false)}
+          title="Create Reservation"
+          footer={
+            <div className={styles.s8}>
               <Button
-                variant="primary"
-                onClick={handleCompute}
-                disabled={computing}
-                className="ui-hstack-2"
+                variant="outline"
+                type="button"
+                onClick={() => setIsReserveOpen(false)}
               >
-                <Play size={14} /> {computing ? "Computing..." : "Compute ATP"}
+                Cancel
               </Button>
-            }
-          />
-
-          {error && (
-            <div className={styles.s4}>
-              <AlertCircle size={16} /> <span>{error}</span>
+              <Button variant="primary" type="submit" form="reserve-form">
+                Reserve
+              </Button>
             </div>
-          )}
-
-          {dashboard && (
-            <StatCardRow
-              stats={[
-                {
-                  label: "Total ATP Records",
-                  value: dashboard.totalRecords,
-                  icon: <BarChart3 size={16} />,
-                },
-                {
-                  label: "Active Reservations",
-                  value: dashboard.activeReservations,
-                  icon: <CheckCircle size={16} />,
-                  color: "var(--chart-2)",
-                },
-                {
-                  label: "Low Availability Items",
-                  value: dashboard.lowAvailability,
-                  icon: <AlertTriangle size={16} />,
-                  color: "var(--chart-4)",
-                },
-              ]}
-            />
-          )}
-
-          <DataTable
-            columns={columns}
-            data={records}
-            loading={loading}
-            emptyTitle="No ATP/CTP records"
-            emptyMessage="Run a computation to generate availability data."
-          />
-
-          {totalPages > 1 && (
-            <div style={{ marginTop: 16 }}>
-              <Pagination
-                page={page}
-                pageCount={totalPages}
-                onChange={setPage}
+          }
+        >
+          <form
+            id="reserve-form"
+            onSubmit={handleReserve}
+            className="ui-stack-4"
+          >
+            <div className="ui-form-group">
+              <label className="ui-label">Reference ID *</label>
+              <input
+                type="text"
+                className="ui-input"
+                value={referenceId}
+                onChange={(e) => setReferenceId(e.target.value)}
+                required
+                placeholder="Order or transfer ID"
               />
             </div>
-          )}
-
-          <Modal
-            open={isReserveOpen}
-            onClose={() => setIsReserveOpen(false)}
-            title="Create Reservation"
-            footer={
-              <div className={styles.s8}>
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={() => setIsReserveOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="primary"
-                  type="submit"
-                  form="reserve-form"
-                >
-                  Reserve
-                </Button>
-              </div>
-            }
-          >
-            <form id="reserve-form" onSubmit={handleReserve} className="ui-stack-4">
-              <div className="ui-form-group">
-                <label className="ui-label">Reference ID *</label>
-                <input
-                  type="text"
-                  className="ui-input"
-                  value={referenceId}
-                  onChange={(e) => setReferenceId(e.target.value)}
-                  required
-                  placeholder="Order or transfer ID"
-                />
-              </div>
-              <div className="ui-form-group">
-                <label className="ui-label">Reference Type *</label>
-                <select
-                  className="ui-input"
-                  value={referenceType}
-                  onChange={(e) => setReferenceType(e.target.value)}
-                  required
-                >
-                  <option value="SALES_ORDER">Sales Order</option>
-                  <option value="TRANSFER">Transfer</option>
-                  <option value="MANUAL">Manual</option>
-                </select>
-              </div>
-              <div className="ui-form-group">
-                <label className="ui-label">Quantity *</label>
-                <input
-                  type="number"
-                  className="ui-input"
-                  value={reserveQty}
-                  onChange={(e) => setReserveQty(parseInt(e.target.value) || 1)}
-                  required
-                  min={1}
-                />
-              </div>
-              <div className="ui-form-group">
-                <label className="ui-label">Committed Until</label>
-                <input
-                  type="date"
-                  className="ui-input"
-                  value={committedUntil}
-                  onChange={(e) => setCommittedUntil(e.target.value)}
-                />
-              </div>
-            </form>
-          </Modal>
-        </div>
-      </InventoryTabLayout>
+            <div className="ui-form-group">
+              <label className="ui-label">Reference Type *</label>
+              <select
+                className="ui-input"
+                value={referenceType}
+                onChange={(e) => setReferenceType(e.target.value)}
+                required
+              >
+                <option value="SALES_ORDER">Sales Order</option>
+                <option value="TRANSFER">Transfer</option>
+                <option value="MANUAL">Manual</option>
+              </select>
+            </div>
+            <div className="ui-form-group">
+              <label className="ui-label">Quantity *</label>
+              <input
+                type="number"
+                className="ui-input"
+                value={reserveQty}
+                onChange={(e) => setReserveQty(parseInt(e.target.value) || 1)}
+                required
+                min={1}
+              />
+            </div>
+            <div className="ui-form-group">
+              <label className="ui-label">Committed Until</label>
+              <input
+                type="date"
+                className="ui-input"
+                value={committedUntil}
+                onChange={(e) => setCommittedUntil(e.target.value)}
+              />
+            </div>
+          </form>
+        </Modal>
+      </div>
     </RouteGuard>
   );
 }

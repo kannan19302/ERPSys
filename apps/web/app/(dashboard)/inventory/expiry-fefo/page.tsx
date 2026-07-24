@@ -12,10 +12,6 @@ import {
 import { RouteGuard, useApiClient } from "@unerp/framework";
 import { AlertCircle, Search, AlertTriangle } from "lucide-react";
 
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
 import { Package as InventoryModuleIcon } from "lucide-react";
 interface ExpiringBatch {
   batchId: string;
@@ -102,78 +98,70 @@ export default function ExpiryFefoPage() {
 
   return (
     <RouteGuard permission="inventory.expiry-fefo.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={InventoryModuleIcon}
-        moduleDescription="Batches nearing expiry (First-Expired-First-Out rotation), and recall-notice generation from real traceability data."
-      >
-        <div className="ui-stack-6 ui-animate-in">
-          <PageHeader
-            title="Expiry, FEFO & Recall Notices"
-            description="Batches nearing expiry (First-Expired-First-Out rotation), and recall-notice generation from real traceability data."
-            breadcrumbs={[
-              { label: "Home", href: "/dashboard" },
-              { label: "Inventory", href: "/inventory" },
-              { label: "Expiry & FEFO" },
-            ]}
-          />
+      <div className="ui-stack-6 ui-animate-in">
+        <PageHeader
+          title="Expiry, FEFO & Recall Notices"
+          description="Batches nearing expiry (First-Expired-First-Out rotation), and recall-notice generation from real traceability data."
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "Inventory", href: "/inventory" },
+            { label: "Expiry & FEFO" },
+          ]}
+        />
 
-          {error && (
-            <div className={styles.s1}>
-              <AlertCircle size={16} />
-              <span>Note: {error}</span>
+        {error && (
+          <div className={styles.s1}>
+            <AlertCircle size={16} />
+            <span>Note: {error}</span>
+          </div>
+        )}
+
+        <Card padding="none" className="builder-table-wrapper">
+          <div className={styles.s2}>
+            <AlertTriangle size={16} /> Expiring Within 30 Days
+          </div>
+          <ListPageTemplate
+            columns={columns}
+            data={expiring as unknown as Record<string, unknown>[]}
+            loading={loading}
+            searchable
+          />
+        </Card>
+
+        <Card className="p-5">
+          <div className={styles.s3}>Batch Recall Notice</div>
+          <div className={styles.s4}>
+            <input
+              className="ui-input flex-1"
+              placeholder="Batch ID"
+              value={recallBatchId}
+              onChange={(e) => setRecallBatchId(e.target.value)}
+            />
+            <Button
+              variant="primary"
+              onClick={handleRecallNotice}
+              className="ui-hstack-2"
+            >
+              <Search size={14} /> Generate Notice
+            </Button>
+          </div>
+          {recallNotice && (
+            <div className={styles.s5}>
+              <div>Batch: {recallNotice.batch?.batchNo}</div>
+              <div>
+                Affected sales orders:{" "}
+                {recallNotice.affectedSalesOrders?.length ?? 0}
+              </div>
+              <div>
+                Untraced consumptions: {recallNotice.untracedConsumptions}
+              </div>
+              <div className="font-semibold">
+                {recallNotice.recommendedAction}
+              </div>
             </div>
           )}
-
-          <Card padding="none" className="builder-table-wrapper">
-            <div className={styles.s2}>
-              <AlertTriangle size={16} /> Expiring Within 30 Days
-            </div>
-            <ListPageTemplate
-              columns={columns}
-              data={expiring as unknown as Record<string, unknown>[]}
-              loading={loading}
-              searchable
-            />
-          </Card>
-
-          <Card className="p-5">
-            <div className={styles.s3}>Batch Recall Notice</div>
-            <div className={styles.s4}>
-              <input
-                className="ui-input flex-1"
-                placeholder="Batch ID"
-                value={recallBatchId}
-                onChange={(e) => setRecallBatchId(e.target.value)}
-              />
-              <Button
-                variant="primary"
-                onClick={handleRecallNotice}
-                className="ui-hstack-2"
-              >
-                <Search size={14} /> Generate Notice
-              </Button>
-            </div>
-            {recallNotice && (
-              <div className={styles.s5}>
-                <div>Batch: {recallNotice.batch?.batchNo}</div>
-                <div>
-                  Affected sales orders:{" "}
-                  {recallNotice.affectedSalesOrders?.length ?? 0}
-                </div>
-                <div>
-                  Untraced consumptions: {recallNotice.untracedConsumptions}
-                </div>
-                <div className="font-semibold">
-                  {recallNotice.recommendedAction}
-                </div>
-              </div>
-            )}
-          </Card>
-        </div>
-      </InventoryTabLayout>
+        </Card>
+      </div>
     </RouteGuard>
   );
 }

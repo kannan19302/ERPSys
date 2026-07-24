@@ -13,7 +13,7 @@ import {
   Download,
   AlertTriangle,
 } from "lucide-react";
-import { FinanceTabLayout } from "@/components/finance/FinanceTabLayout";
+
 import { SubTabBar } from "@/components/finance/SubTabBar";
 import { ListView, RouteGuard, useApiClient } from "@unerp/framework";
 import { bankAccountResource } from "@/modules/finance";
@@ -164,171 +164,163 @@ export default function BankingPage() {
 
   return (
     <RouteGuard permission="finance.bank-account.read">
-      <FinanceTabLayout
-        tabs={BANKING_TABS}
-        moduleId="banking"
-        moduleLabel="Banking"
-        moduleIcon={Wallet}
-        moduleDescription="Bank accounts, reconciliation, cash management, and treasury"
-      >
-        {activeTab === "overview" && (
-          <div className="ui-stack-4 ui-animate-in">
-            {summaryError && (
-              <div className="ui-alert ui-alert-danger">
-                <AlertTriangle size={16} />
-                Failed to load banking summary — figures below may be stale.{" "}
-                {summaryError}
-              </div>
-            )}
-            <div className="ui-grid-2">
-              <Card padding="md">
-                <div className="ui-stack-2">
-                  <p className="ui-text-xs-muted">Total Cash Balance</p>
-                  <p
-                    className="ui-heading-sm"
-                    style={{ color: "var(--color-primary)" }}
-                  >
-                    {summary.totalCash.toLocaleString(undefined, {
-                      style: "currency",
-                      currency: "USD",
-                      maximumFractionDigits: 0,
-                    })}
-                  </p>
-                  <p className="ui-text-xs-muted">
-                    Across {summary.accountCount} accounts
-                  </p>
-                </div>
-              </Card>
-              <Card padding="md">
-                <div className="ui-stack-2">
-                  <p className="ui-text-xs-muted">
-                    Cash Flow Forecast &amp; Reconciliation
-                  </p>
-                  <p
-                    className="ui-heading-sm"
-                    style={{ color: "var(--color-success)" }}
-                  >
-                    View Detail
-                  </p>
-                  <p className="ui-text-xs-muted">
-                    See Cash Position and Bank Reconciliation tabs
-                  </p>
-                </div>
-              </Card>
+      {activeTab === "overview" && (
+        <div className="ui-stack-4 ui-animate-in">
+          {summaryError && (
+            <div className="ui-alert ui-alert-danger">
+              <AlertTriangle size={16} />
+              Failed to load banking summary — figures below may be stale.{" "}
+              {summaryError}
             </div>
+          )}
+          <div className="ui-grid-2">
             <Card padding="md">
-              <h3
-                className="ui-heading-sm"
-                style={{ marginBottom: "var(--space-3)" }}
-              >
-                Bank Accounts
-              </h3>
-              <ListView resource={bankAccountResource} />
+              <div className="ui-stack-2">
+                <p className="ui-text-xs-muted">Total Cash Balance</p>
+                <p
+                  className="ui-heading-sm"
+                  style={{ color: "var(--color-primary)" }}
+                >
+                  {summary.totalCash.toLocaleString(undefined, {
+                    style: "currency",
+                    currency: "USD",
+                    maximumFractionDigits: 0,
+                  })}
+                </p>
+                <p className="ui-text-xs-muted">
+                  Across {summary.accountCount} accounts
+                </p>
+              </div>
+            </Card>
+            <Card padding="md">
+              <div className="ui-stack-2">
+                <p className="ui-text-xs-muted">
+                  Cash Flow Forecast &amp; Reconciliation
+                </p>
+                <p
+                  className="ui-heading-sm"
+                  style={{ color: "var(--color-success)" }}
+                >
+                  View Detail
+                </p>
+                <p className="ui-text-xs-muted">
+                  See Cash Position and Bank Reconciliation tabs
+                </p>
+              </div>
             </Card>
           </div>
-        )}
-        {activeTab === "bank-accounts" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <PageHeader
-              title="Bank Accounts"
-              description="Manage bank accounts and opening balances"
-            />
+          <Card padding="md">
+            <h3
+              className="ui-heading-sm"
+              style={{ marginBottom: "var(--space-3)" }}
+            >
+              Bank Accounts
+            </h3>
             <ListView resource={bankAccountResource} />
+          </Card>
+        </div>
+      )}
+      {activeTab === "bank-accounts" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <PageHeader
+            title="Bank Accounts"
+            description="Manage bank accounts and opening balances"
+          />
+          <ListView resource={bankAccountResource} />
+        </div>
+      )}
+      {activeTab === "reconciliation" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <SubTabBar
+            tabs={[
+              {
+                id: "recon",
+                label: "Bank Reconciliation",
+                href: "/finance/banking?tab=reconciliation&subtab=recon",
+              },
+              {
+                id: "feeds",
+                label: "Bank Feeds & Connections",
+                href: "/finance/banking?tab=reconciliation&subtab=feeds",
+              },
+              {
+                id: "auto",
+                label: "Bank Statement Auto-Match",
+                href: "/finance/banking?tab=reconciliation&subtab=auto",
+              },
+            ]}
+          />
+          <div style={{ marginTop: "var(--space-3)" }}>
+            {subTab === "feeds" ? (
+              <BankFeedsPage />
+            ) : subTab === "auto" ? (
+              <BankReconPage />
+            ) : (
+              <ReconciliationsPage />
+            )}
           </div>
-        )}
-        {activeTab === "reconciliation" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <SubTabBar
-              tabs={[
-                {
-                  id: "recon",
-                  label: "Bank Reconciliation",
-                  href: "/finance/banking?tab=reconciliation&subtab=recon",
-                },
-                {
-                  id: "feeds",
-                  label: "Bank Feeds & Connections",
-                  href: "/finance/banking?tab=reconciliation&subtab=feeds",
-                },
-                {
-                  id: "auto",
-                  label: "Bank Statement Auto-Match",
-                  href: "/finance/banking?tab=reconciliation&subtab=auto",
-                },
-              ]}
-            />
-            <div style={{ marginTop: "var(--space-3)" }}>
-              {subTab === "feeds" ? (
-                <BankFeedsPage />
-              ) : subTab === "auto" ? (
-                <BankReconPage />
-              ) : (
-                <ReconciliationsPage />
-              )}
-            </div>
+        </div>
+      )}
+      {activeTab === "cash-position" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <SubTabBar
+            tabs={[
+              {
+                id: "position",
+                label: "Cash Position",
+                href: "/finance/banking?tab=cash-position&subtab=position",
+              },
+              {
+                id: "forecast",
+                label: "Cash Flow Forecast",
+                href: "/finance/banking?tab=cash-position&subtab=forecast",
+              },
+            ]}
+          />
+          <div style={{ marginTop: "var(--space-3)" }}>
+            {subTab === "forecast" ? (
+              <CashFlowForecastPage />
+            ) : (
+              <CashPositionPage />
+            )}
           </div>
-        )}
-        {activeTab === "cash-position" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <SubTabBar
-              tabs={[
-                {
-                  id: "position",
-                  label: "Cash Position",
-                  href: "/finance/banking?tab=cash-position&subtab=position",
-                },
-                {
-                  id: "forecast",
-                  label: "Cash Flow Forecast",
-                  href: "/finance/banking?tab=cash-position&subtab=forecast",
-                },
-              ]}
-            />
-            <div style={{ marginTop: "var(--space-3)" }}>
-              {subTab === "forecast" ? (
-                <CashFlowForecastPage />
-              ) : (
-                <CashPositionPage />
-              )}
-            </div>
-          </div>
-        )}
-        {activeTab === "cash-flow" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <CashFlowForecastPage />
-          </div>
-        )}
-        {activeTab === "treasury" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <TreasuryPage />
-          </div>
-        )}
-        {activeTab === "corporate-cards" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <CorporateCardsPage />
-          </div>
-        )}
-        {activeTab === "investments" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <TreasuryPage />
-          </div>
-        )}
-        {activeTab === "forecasting" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <CashFlowForecastPage />
-          </div>
-        )}
-        {activeTab === "payment-gateway" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <BankFeedsPage />
-          </div>
-        )}
-        {activeTab === "bank-import-rules" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <BankReconPage />
-          </div>
-        )}
-      </FinanceTabLayout>
+        </div>
+      )}
+      {activeTab === "cash-flow" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <CashFlowForecastPage />
+        </div>
+      )}
+      {activeTab === "treasury" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <TreasuryPage />
+        </div>
+      )}
+      {activeTab === "corporate-cards" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <CorporateCardsPage />
+        </div>
+      )}
+      {activeTab === "investments" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <TreasuryPage />
+        </div>
+      )}
+      {activeTab === "forecasting" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <CashFlowForecastPage />
+        </div>
+      )}
+      {activeTab === "payment-gateway" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <BankFeedsPage />
+        </div>
+      )}
+      {activeTab === "bank-import-rules" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <BankReconPage />
+        </div>
+      )}
     </RouteGuard>
   );
 }

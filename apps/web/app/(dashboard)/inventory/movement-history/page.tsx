@@ -11,10 +11,6 @@ import {
 import { Search, Printer } from "lucide-react";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
 import { Package as InventoryModuleIcon } from "lucide-react";
 interface Movement {
   type: string;
@@ -82,110 +78,94 @@ export default function MovementHistoryPage() {
 
   return (
     <RouteGuard permission="inventory.movement-history.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={InventoryModuleIcon}
-        moduleDescription="Consolidated per-product/per-warehouse movement timeline, plus barcode label lookups for SKU, batch, license-plate, and bin printing."
-      >
-        <div className="ui-stack-6 ui-animate-in">
-          <PageHeader
-            title="Movement History & Barcode Labels"
-            description="Consolidated per-product/per-warehouse movement timeline, plus barcode label lookups for SKU, batch, license-plate, and bin printing."
-            breadcrumbs={[
-              { label: "Home", href: "/dashboard" },
-              { label: "Inventory", href: "/inventory" },
-              { label: "Movement History & Labels" },
-            ]}
-          />
+      <div className="ui-stack-6 ui-animate-in">
+        <PageHeader
+          title="Movement History & Barcode Labels"
+          description="Consolidated per-product/per-warehouse movement timeline, plus barcode label lookups for SKU, batch, license-plate, and bin printing."
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "Inventory", href: "/inventory" },
+            { label: "Movement History & Labels" },
+          ]}
+        />
 
-          {error && <div className={styles.s1}>Note: {error}</div>}
+        {error && <div className={styles.s1}>Note: {error}</div>}
 
-          <Card className="p-5">
-            <div className={styles.s2}>Movement History</div>
-            <div className={styles.s3}>
-              <input
-                className="ui-input flex-1"
-                placeholder="Product ID"
-                value={productId}
-                onChange={(e) => setProductId(e.target.value)}
-              />
-              <input
-                className="ui-input flex-1"
-                placeholder="Warehouse ID"
-                value={warehouseId}
-                onChange={(e) => setWarehouseId(e.target.value)}
-              />
-              <Button
-                variant="primary"
-                onClick={search}
-                className="ui-hstack-2"
-              >
-                <Search size={14} /> Search
-              </Button>
-            </div>
-            <ListPageTemplate
-              columns={
-                [
-                  {
-                    key: "timestamp",
-                    header: "Date",
-                    render: (v) => new Date(String(v)).toLocaleString(),
-                  },
-                  { key: "productName", header: "Product" },
-                  {
-                    key: "voucherNumber",
-                    header: "Voucher",
-                    render: (v) => (
-                      <span className="font-mono">{String(v)}</span>
-                    ),
-                  },
-                  { key: "qtyIn", header: "In" },
-                  { key: "qtyOut", header: "Out" },
-                  { key: "balanceQty", header: "Balance" },
-                ] as ListColumn[]
-              }
-              data={movements as unknown as Record<string, unknown>[]}
-              loading={false}
-              emptyTitle="No movements found"
-              emptyDescription="Search for movements using the filters above."
+        <Card className="p-5">
+          <div className={styles.s2}>Movement History</div>
+          <div className={styles.s3}>
+            <input
+              className="ui-input flex-1"
+              placeholder="Product ID"
+              value={productId}
+              onChange={(e) => setProductId(e.target.value)}
             />
-          </Card>
+            <input
+              className="ui-input flex-1"
+              placeholder="Warehouse ID"
+              value={warehouseId}
+              onChange={(e) => setWarehouseId(e.target.value)}
+            />
+            <Button variant="primary" onClick={search} className="ui-hstack-2">
+              <Search size={14} /> Search
+            </Button>
+          </div>
+          <ListPageTemplate
+            columns={
+              [
+                {
+                  key: "timestamp",
+                  header: "Date",
+                  render: (v) => new Date(String(v)).toLocaleString(),
+                },
+                { key: "productName", header: "Product" },
+                {
+                  key: "voucherNumber",
+                  header: "Voucher",
+                  render: (v) => <span className="font-mono">{String(v)}</span>,
+                },
+                { key: "qtyIn", header: "In" },
+                { key: "qtyOut", header: "Out" },
+                { key: "balanceQty", header: "Balance" },
+              ] as ListColumn[]
+            }
+            data={movements as unknown as Record<string, unknown>[]}
+            loading={false}
+            emptyTitle="No movements found"
+            emptyDescription="Search for movements using the filters above."
+          />
+        </Card>
 
-          <Card className="p-5">
-            <div className={styles.s2}>Barcode Label Lookup</div>
-            <div className={styles.s3}>
-              <select
-                className={`ui-input ${styles.s4}`}
-                value={labelType}
-                onChange={(e) =>
-                  setLabelType(e.target.value as typeof labelType)
-                }
-              >
-                <option value="product">Product</option>
-                <option value="batch">Batch</option>
-                <option value="license-plate">License Plate</option>
-                <option value="bin">Bin</option>
-              </select>
-              <input
-                className="ui-input flex-1"
-                placeholder="Record ID"
-                value={labelLookupId}
-                onChange={(e) => setLabelLookupId(e.target.value)}
-              />
-              <Button
-                variant="primary"
-                onClick={lookupLabel}
-                className="ui-hstack-2"
-              >
-                <Printer size={14} /> Get Label
-              </Button>
-            </div>
-            {label && <div className={styles.s5}>{label.barcodeValue}</div>}
-          </Card>
-        </div>
-      </InventoryTabLayout>
+        <Card className="p-5">
+          <div className={styles.s2}>Barcode Label Lookup</div>
+          <div className={styles.s3}>
+            <select
+              className={`ui-input ${styles.s4}`}
+              value={labelType}
+              onChange={(e) => setLabelType(e.target.value as typeof labelType)}
+            >
+              <option value="product">Product</option>
+              <option value="batch">Batch</option>
+              <option value="license-plate">License Plate</option>
+              <option value="bin">Bin</option>
+            </select>
+            <input
+              className="ui-input flex-1"
+              placeholder="Record ID"
+              value={labelLookupId}
+              onChange={(e) => setLabelLookupId(e.target.value)}
+            />
+            <Button
+              variant="primary"
+              onClick={lookupLabel}
+              className="ui-hstack-2"
+            >
+              <Printer size={14} /> Get Label
+            </Button>
+          </div>
+          {label && <div className={styles.s5}>{label.barcodeValue}</div>}
+        </Card>
+      </div>
     </RouteGuard>
   );
 }

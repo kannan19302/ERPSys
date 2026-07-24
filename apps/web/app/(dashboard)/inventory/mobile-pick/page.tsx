@@ -11,10 +11,6 @@ import {
 } from "lucide-react";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
 import { Package as InventoryModuleIcon } from "lucide-react";
 interface PickWaveItem {
   id: string;
@@ -211,203 +207,188 @@ export default function MobilePickPage() {
 
   return (
     <RouteGuard permission="inventory.stock.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={InventoryModuleIcon}
-        moduleDescription="Scan-first, one-item-at-a-time picking for handheld/mobile devices."
-      >
-        <div className={`ui-stack-5 ui-animate-in ${styles.wrap}`}>
-          <PageHeader
-            title="Mobile Scan Pick"
-            description="Scan-first, one-item-at-a-time picking for handheld/mobile devices."
-            breadcrumbs={[
-              { label: "Home", href: "/dashboard" },
-              { label: "Inventory", href: "/inventory" },
-              { label: "Mobile Scan Pick" },
-            ]}
-          />
+      <div className={`ui-stack-5 ui-animate-in ${styles.wrap}`}>
+        <PageHeader
+          title="Mobile Scan Pick"
+          description="Scan-first, one-item-at-a-time picking for handheld/mobile devices."
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "Inventory", href: "/inventory" },
+            { label: "Mobile Scan Pick" },
+          ]}
+        />
 
-          {error && (
-            <div className={styles.errorBanner}>
-              <AlertCircle size={16} />
-              <span>Note: {error}</span>
-            </div>
-          )}
+        {error && (
+          <div className={styles.errorBanner}>
+            <AlertCircle size={16} />
+            <span>Note: {error}</span>
+          </div>
+        )}
 
-          {!activeWave ? (
-            <div className={styles.waveList}>
-              {loading && <Card className="p-5">Loading waves…</Card>}
-              {!loading && waves.length === 0 && (
-                <Card className="p-5">
-                  No waves in PICKING status right now.
-                </Card>
-              )}
-              {waves.map((w) => (
-                <button
-                  key={w.id}
-                  className={styles.waveBtn}
-                  onClick={() => openWave(w)}
-                >
-                  <span className="ui-hstack-2">
-                    <ScanLine size={20} />
-                    {w.waveNumber}
-                  </span>
-                  <Badge
-                    variant={w.status === "PICKING" ? "warning" : "default"}
-                  >
-                    {w.status}
-                  </Badge>
-                </button>
-              ))}
+        {!activeWave ? (
+          <div className={styles.waveList}>
+            {loading && <Card className="p-5">Loading waves…</Card>}
+            {!loading && waves.length === 0 && (
+              <Card className="p-5">No waves in PICKING status right now.</Card>
+            )}
+            {waves.map((w) => (
+              <button
+                key={w.id}
+                className={styles.waveBtn}
+                onClick={() => openWave(w)}
+              >
+                <span className="ui-hstack-2">
+                  <ScanLine size={20} />
+                  {w.waveNumber}
+                </span>
+                <Badge variant={w.status === "PICKING" ? "warning" : "default"}>
+                  {w.status}
+                </Badge>
+              </button>
+            ))}
+          </div>
+        ) : pendingItems.length === 0 ? (
+          <Card className={styles.doneWrap}>
+            <CheckCircle2 size={48} color="var(--color-success)" />
+            <div className="ui-heading-base">All items picked</div>
+            <div className={styles.itemMeta}>
+              {activeWave.waveNumber} is ready to pack.
             </div>
-          ) : pendingItems.length === 0 ? (
-            <Card className={styles.doneWrap}>
-              <CheckCircle2 size={48} color="var(--color-success)" />
-              <div className="ui-heading-base">All items picked</div>
-              <div className={styles.itemMeta}>
-                {activeWave.waveNumber} is ready to pack.
+            {scanError && (
+              <div className={styles.errorBanner}>
+                <AlertCircle size={16} />
+                {scanError}
               </div>
+            )}
+            <div className={styles.actionRow} style={{ width: "100%" }}>
+              <Button
+                variant="primary"
+                size="lg"
+                className={styles.bigBtn}
+                disabled={submitting}
+                onClick={completeWave}
+              >
+                <PackageCheck size={18} /> Complete &amp; Pack Wave
+              </Button>
+              <Button
+                variant="outline"
+                className={styles.bigBtn}
+                onClick={() => setActiveWave(null)}
+              >
+                Back to waves
+              </Button>
+            </div>
+          </Card>
+        ) : (
+          <div className="ui-stack-4">
+            <div className={styles.header}>
+              <span className={styles.itemMeta}>{activeWave.waveNumber}</span>
+              <button
+                className="ui-btn-icon ui-text-muted"
+                onClick={() => setActiveWave(null)}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div>
+              <div className={styles.progressTrack}>
+                <div
+                  className={styles.progressFill}
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
+              <div className={styles.progressLabel}>
+                {pickedCount} of {totalCount} picked
+              </div>
+            </div>
+
+            <Card className={styles.itemCard}>
+              <div>
+                <div className={styles.itemName}>
+                  {currentItem?.product?.name ?? currentItem?.productId}
+                </div>
+                <div className={styles.itemMeta}>
+                  SKU {currentItem?.product?.sku ?? "—"}
+                </div>
+              </div>
+              <Badge variant="default" className={styles.binBadge}>
+                Bin {currentItem?.binLocation?.code ?? "—"}
+              </Badge>
+
+              <form onSubmit={handleScanSubmit}>
+                <Input
+                  ref={scanInputRef}
+                  className={styles.scanInput}
+                  placeholder="Scan SKU or serial…"
+                  value={scanValue}
+                  onChange={(e) => setScanValue(e.target.value)}
+                  autoFocus
+                />
+              </form>
+
+              {scannedSerials.length > 0 && (
+                <div className={styles.serialChips}>
+                  {scannedSerials.map((s) => (
+                    <span key={s} className={styles.serialChip}>
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <div className={styles.qtyRow}>
+                <button
+                  type="button"
+                  className={`ui-btn ui-btn-outline ${styles.qtyBtn}`}
+                  onClick={() => setQty(Math.max(0, qty - 1))}
+                >
+                  −
+                </button>
+                <span className={styles.qtyValue}>{qty}</span>
+                <button
+                  type="button"
+                  className={`ui-btn ui-btn-outline ${styles.qtyBtn}`}
+                  onClick={() => setQty(qty + 1)}
+                >
+                  +
+                </button>
+              </div>
+              <div className={styles.itemMeta} style={{ textAlign: "center" }}>
+                of {String(currentItem?.quantity)} expected
+              </div>
+
               {scanError && (
                 <div className={styles.errorBanner}>
                   <AlertCircle size={16} />
                   {scanError}
                 </div>
               )}
-              <div className={styles.actionRow} style={{ width: "100%" }}>
+
+              <div className={styles.actionRow}>
                 <Button
                   variant="primary"
                   size="lg"
                   className={styles.bigBtn}
                   disabled={submitting}
-                  onClick={completeWave}
+                  onClick={confirmPick}
                 >
-                  <PackageCheck size={18} /> Complete &amp; Pack Wave
+                  <CheckCircle2 size={18} /> Confirm Pick
                 </Button>
-                <Button
-                  variant="outline"
-                  className={styles.bigBtn}
-                  onClick={() => setActiveWave(null)}
-                >
-                  Back to waves
-                </Button>
+                {pendingItems.length > 1 && (
+                  <Button
+                    variant="outline"
+                    className={styles.bigBtn}
+                    onClick={skipItem}
+                  >
+                    Skip for now
+                  </Button>
+                )}
               </div>
             </Card>
-          ) : (
-            <div className="ui-stack-4">
-              <div className={styles.header}>
-                <span className={styles.itemMeta}>{activeWave.waveNumber}</span>
-                <button
-                  className="ui-btn-icon ui-text-muted"
-                  onClick={() => setActiveWave(null)}
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              <div>
-                <div className={styles.progressTrack}>
-                  <div
-                    className={styles.progressFill}
-                    style={{ width: `${progressPct}%` }}
-                  />
-                </div>
-                <div className={styles.progressLabel}>
-                  {pickedCount} of {totalCount} picked
-                </div>
-              </div>
-
-              <Card className={styles.itemCard}>
-                <div>
-                  <div className={styles.itemName}>
-                    {currentItem?.product?.name ?? currentItem?.productId}
-                  </div>
-                  <div className={styles.itemMeta}>
-                    SKU {currentItem?.product?.sku ?? "—"}
-                  </div>
-                </div>
-                <Badge variant="default" className={styles.binBadge}>
-                  Bin {currentItem?.binLocation?.code ?? "—"}
-                </Badge>
-
-                <form onSubmit={handleScanSubmit}>
-                  <Input
-                    ref={scanInputRef}
-                    className={styles.scanInput}
-                    placeholder="Scan SKU or serial…"
-                    value={scanValue}
-                    onChange={(e) => setScanValue(e.target.value)}
-                    autoFocus
-                  />
-                </form>
-
-                {scannedSerials.length > 0 && (
-                  <div className={styles.serialChips}>
-                    {scannedSerials.map((s) => (
-                      <span key={s} className={styles.serialChip}>
-                        {s}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                <div className={styles.qtyRow}>
-                  <button
-                    type="button"
-                    className={`ui-btn ui-btn-outline ${styles.qtyBtn}`}
-                    onClick={() => setQty(Math.max(0, qty - 1))}
-                  >
-                    −
-                  </button>
-                  <span className={styles.qtyValue}>{qty}</span>
-                  <button
-                    type="button"
-                    className={`ui-btn ui-btn-outline ${styles.qtyBtn}`}
-                    onClick={() => setQty(qty + 1)}
-                  >
-                    +
-                  </button>
-                </div>
-                <div
-                  className={styles.itemMeta}
-                  style={{ textAlign: "center" }}
-                >
-                  of {String(currentItem?.quantity)} expected
-                </div>
-
-                {scanError && (
-                  <div className={styles.errorBanner}>
-                    <AlertCircle size={16} />
-                    {scanError}
-                  </div>
-                )}
-
-                <div className={styles.actionRow}>
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    className={styles.bigBtn}
-                    disabled={submitting}
-                    onClick={confirmPick}
-                  >
-                    <CheckCircle2 size={18} /> Confirm Pick
-                  </Button>
-                  {pendingItems.length > 1 && (
-                    <Button
-                      variant="outline"
-                      className={styles.bigBtn}
-                      onClick={skipItem}
-                    >
-                      Skip for now
-                    </Button>
-                  )}
-                </div>
-              </Card>
-            </div>
-          )}
-        </div>
-      </InventoryTabLayout>
+          </div>
+        )}
+      </div>
     </RouteGuard>
   );
 }

@@ -11,11 +11,7 @@ import {
 } from "lucide-react";
 import { PageHeader, Button, Card, Spinner, KPICard } from "@unerp/ui";
 import { RouteGuard, useApiClient } from "@unerp/framework";
-import {
-  CrmTabLayout,
-  useCrmKeyMigration,
-  type CrmTab,
-} from "@/components/crm/CrmTabLayout";
+import { useCrmKeyMigration, type CrmTab } from "@/components/crm/CrmTabLayout";
 
 const TAB_DEFINITIONS: CrmTab[] = [
   { id: "overview", label: "Dashboard", href: "/crm", icon: BarChart3 },
@@ -73,79 +69,71 @@ export default function CrmAutomationPage() {
 
   return (
     <RouteGuard permission="crm.read">
-      <CrmTabLayout
-        tabs={TAB_DEFINITIONS}
-        moduleId="crm"
-        moduleLabel="CRM & Sales"
-        moduleIcon={Activity}
-        moduleDescription="Sales automation & intelligence"
+      <PageHeader
+        title="Sales Automation"
+        description="Auto-assignment, escalation rules, scoring models, and sequences"
+      />
+      <div
+        style={{
+          display: "flex",
+          gap: "var(--space-2)",
+          marginBottom: "var(--space-4)",
+          borderBottom: "1px solid var(--color-border)",
+          paddingBottom: "var(--space-2)",
+        }}
       >
-        <PageHeader
-          title="Sales Automation"
-          description="Auto-assignment, escalation rules, scoring models, and sequences"
-        />
-        <div
-          style={{
-            display: "flex",
-            gap: "var(--space-2)",
-            marginBottom: "var(--space-4)",
-            borderBottom: "1px solid var(--color-border)",
-            paddingBottom: "var(--space-2)",
-          }}
-        >
-          {AUTOMATION_TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className="ui-btn"
-              style={{
-                background:
-                  activeTab === tab.id ? "var(--color-primary)" : "transparent",
-                color: activeTab === tab.id ? "#fff" : "inherit",
-                border: "none",
-                padding: "var(--space-1) var(--space-3)",
-                cursor: "pointer",
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
+        {AUTOMATION_TABS.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className="ui-btn"
+            style={{
+              background:
+                activeTab === tab.id ? "var(--color-primary)" : "transparent",
+              color: activeTab === tab.id ? "#fff" : "inherit",
+              border: "none",
+              padding: "var(--space-1) var(--space-3)",
+              cursor: "pointer",
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+      {loading ? (
+        <Spinner />
+      ) : (
+        <div className="ui-grid-4" style={{ marginBottom: "var(--space-4)" }}>
+          <KPICard
+            icon={<Zap className="w-5 h-5 text-primary" />}
+            value={dashboard?.totalRules ?? 0}
+            title="Total Rules"
+          />
+          <KPICard
+            icon={<Activity className="w-5 h-5 text-primary" />}
+            value={dashboard?.activeRules ?? 0}
+            title="Active Rules"
+          />
+          <KPICard
+            icon={<Target className="w-5 h-5 text-primary" />}
+            value={dashboard?.totalSequences ?? 0}
+            title="Sequences"
+          />
+          <KPICard
+            icon={<Users className="w-5 h-5 text-primary" />}
+            value={dashboard?.totalAssignments ?? 0}
+            title="Assignments"
+          />
         </div>
-        {loading ? (
-          <Spinner />
-        ) : (
-          <div className="ui-grid-4" style={{ marginBottom: "var(--space-4)" }}>
-            <KPICard
-              icon={<Zap className="w-5 h-5 text-primary" />}
-              value={dashboard?.totalRules ?? 0}
-              title="Total Rules"
-            />
-            <KPICard
-              icon={<Activity className="w-5 h-5 text-primary" />}
-              value={dashboard?.activeRules ?? 0}
-              title="Active Rules"
-            />
-            <KPICard
-              icon={<Target className="w-5 h-5 text-primary" />}
-              value={dashboard?.totalSequences ?? 0}
-              title="Sequences"
-            />
-            <KPICard
-              icon={<Users className="w-5 h-5 text-primary" />}
-              value={dashboard?.totalAssignments ?? 0}
-              title="Assignments"
-            />
-          </div>
-        )}
-        {activeTab === "overview" && (
-          <Card padding="lg">
-            <p className="ui-text-muted">
-              Sales automation overview dashboard. Configure assignment rules,
-              escalation policies, scoring models, and sales sequences.
-            </p>
-          </Card>
-        )}
-      </CrmTabLayout>
+      )}
+      {activeTab === "overview" && (
+        <Card padding="lg">
+          <p className="ui-text-muted">
+            Sales automation overview dashboard. Configure assignment rules,
+            escalation policies, scoring models, and sales sequences.
+          </p>
+        </Card>
+      )}
     </RouteGuard>
   );
 }

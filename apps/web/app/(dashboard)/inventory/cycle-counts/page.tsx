@@ -15,10 +15,6 @@ import {
 import { Plus, AlertCircle } from "lucide-react";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
 import { Package as InventoryModuleIcon } from "lucide-react";
 interface Product {
   id: string;
@@ -315,280 +311,265 @@ export default function CycleCountsPage() {
 
   return (
     <RouteGuard permission="inventory.cycle-counts.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={InventoryModuleIcon}
-        moduleDescription="Verify actual physical inventory quantities and trigger reconciliations."
-      >
-        <div className="ui-stack-6 ui-animate-in">
-          <PageHeader
-            title="Cycle Count Audits"
-            description="Verify actual physical inventory quantities and trigger reconciliations."
-            breadcrumbs={[
-              { label: "Home", href: "/dashboard" },
-              { label: "Inventory", href: "/inventory" },
-              { label: "Cycle Counts" },
-            ]}
-            actions={
-              <Button
-                variant="primary"
-                onClick={() => setIsCreateModalOpen(true)}
-                className="ui-hstack-2"
-              >
-                <Plus size={14} />
-                Create Count worksheet
-              </Button>
-            }
-          />
+      <div className="ui-stack-6 ui-animate-in">
+        <PageHeader
+          title="Cycle Count Audits"
+          description="Verify actual physical inventory quantities and trigger reconciliations."
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "Inventory", href: "/inventory" },
+            { label: "Cycle Counts" },
+          ]}
+          actions={
+            <Button
+              variant="primary"
+              onClick={() => setIsCreateModalOpen(true)}
+              className="ui-hstack-2"
+            >
+              <Plus size={14} />
+              Create Count worksheet
+            </Button>
+          }
+        />
 
-          {error && (
-            <div className={styles.s3}>
-              <AlertCircle size={16} />
-              <span>Note: {error}</span>
-            </div>
-          )}
+        {error && (
+          <div className={styles.s3}>
+            <AlertCircle size={16} />
+            <span>Note: {error}</span>
+          </div>
+        )}
 
-          <ListPageTemplate
-            columns={columns}
-            data={cycleCounts as unknown as Record<string, unknown>[]}
-            loading={loading}
-            searchable
-          />
+        <ListPageTemplate
+          columns={columns}
+          data={cycleCounts as unknown as Record<string, unknown>[]}
+          loading={loading}
+          searchable
+        />
 
-          {/* CREATE WORKSHEET MODAL */}
-          {isCreateModalOpen && (
-            <div className={styles.s4}>
-              <Card padding="none" className={styles.s5}>
-                <div className={styles.s6}>
-                  <span className="ui-heading-base">
-                    Setup Physical Count Session
-                  </span>
-                  <button
-                    onClick={() => setIsCreateModalOpen(false)}
-                    className="ui-btn-icon ui-text-muted"
+        {/* CREATE WORKSHEET MODAL */}
+        {isCreateModalOpen && (
+          <div className={styles.s4}>
+            <Card padding="none" className={styles.s5}>
+              <div className={styles.s6}>
+                <span className="ui-heading-base">
+                  Setup Physical Count Session
+                </span>
+                <button
+                  onClick={() => setIsCreateModalOpen(false)}
+                  className="ui-btn-icon ui-text-muted"
+                >
+                  Close
+                </button>
+              </div>
+              <div className="p-5">
+                <form onSubmit={handleCreateCycleCount} className="ui-stack-4">
+                  <FormField
+                    label="Warehouse Depot"
+                    htmlFor="cc-warehouse"
+                    required
                   >
-                    Close
-                  </button>
-                </div>
-                <div className="p-5">
-                  <form
-                    onSubmit={handleCreateCycleCount}
-                    className="ui-stack-4"
-                  >
-                    <FormField
-                      label="Warehouse Depot"
-                      htmlFor="cc-warehouse"
+                    <Select
+                      id="cc-warehouse"
+                      value={selectedWarehouse}
+                      onChange={(e) => setSelectedWarehouse(e.target.value)}
                       required
                     >
-                      <Select
-                        id="cc-warehouse"
-                        value={selectedWarehouse}
-                        onChange={(e) => setSelectedWarehouse(e.target.value)}
-                        required
-                      >
-                        {warehouses.map((w) => (
-                          <option key={w.id} value={w.id}>
-                            {w.name}
-                          </option>
-                        ))}
-                      </Select>
-                    </FormField>
-                    <FormField label="Session Notes" htmlFor="cc-notes">
-                      <Input
-                        id="cc-notes"
-                        type="text"
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                        placeholder="e.g. Month-end audits"
-                      />
-                    </FormField>
-
-                    <div className={styles.s7}>
-                      <div className="ui-flex-between mb-2">
-                        <span className={styles.s8}>
-                          Products Worksheet List
-                        </span>
-                        <Button
-                          variant="outline"
-                          type="button"
-                          onClick={() =>
-                            setNewCountItems([
-                              ...newCountItems,
-                              { productId: "", expectedQty: 0 },
-                            ])
-                          }
-                          className={styles.s9}
-                        >
-                          Add Product
-                        </Button>
-                      </div>
-                      {newCountItems.map((item, idx) => (
-                        <div key={idx} className={styles.s10}>
-                          <Select
-                            className={styles.s11}
-                            value={item.productId}
-                            onChange={(e) => {
-                              const updated = [...newCountItems];
-                              if (updated[idx]) {
-                                updated[idx].productId = e.target.value;
-                                setNewCountItems(updated);
-                              }
-                            }}
-                            required
-                          >
-                            <option value="">-- Select --</option>
-                            {products.map((p) => (
-                              <option key={p.id} value={p.id}>
-                                {p.name}
-                              </option>
-                            ))}
-                          </Select>
-                          <Input
-                            type="number"
-                            className={styles.s12}
-                            placeholder="Book Qty"
-                            value={item.expectedQty}
-                            onChange={(e) => {
-                              const updated = [...newCountItems];
-                              if (updated[idx]) {
-                                updated[idx].expectedQty = Number(
-                                  e.target.value,
-                                );
-                                setNewCountItems(updated);
-                              }
-                            }}
-                            required
-                          />
-                        </div>
+                      {warehouses.map((w) => (
+                        <option key={w.id} value={w.id}>
+                          {w.name}
+                        </option>
                       ))}
-                    </div>
+                    </Select>
+                  </FormField>
+                  <FormField label="Session Notes" htmlFor="cc-notes">
+                    <Input
+                      id="cc-notes"
+                      type="text"
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="e.g. Month-end audits"
+                    />
+                  </FormField>
 
-                    <div className={styles.s13}>
+                  <div className={styles.s7}>
+                    <div className="ui-flex-between mb-2">
+                      <span className={styles.s8}>Products Worksheet List</span>
                       <Button
                         variant="outline"
                         type="button"
-                        onClick={() => setIsCreateModalOpen(false)}
+                        onClick={() =>
+                          setNewCountItems([
+                            ...newCountItems,
+                            { productId: "", expectedQty: 0 },
+                          ])
+                        }
+                        className={styles.s9}
                       >
-                        Cancel
-                      </Button>
-                      <Button variant="primary" type="submit">
-                        Create worksheet
+                        Add Product
                       </Button>
                     </div>
-                  </form>
-                </div>
-              </Card>
-            </div>
-          )}
+                    {newCountItems.map((item, idx) => (
+                      <div key={idx} className={styles.s10}>
+                        <Select
+                          className={styles.s11}
+                          value={item.productId}
+                          onChange={(e) => {
+                            const updated = [...newCountItems];
+                            if (updated[idx]) {
+                              updated[idx].productId = e.target.value;
+                              setNewCountItems(updated);
+                            }
+                          }}
+                          required
+                        >
+                          <option value="">-- Select --</option>
+                          {products.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.name}
+                            </option>
+                          ))}
+                        </Select>
+                        <Input
+                          type="number"
+                          className={styles.s12}
+                          placeholder="Book Qty"
+                          value={item.expectedQty}
+                          onChange={(e) => {
+                            const updated = [...newCountItems];
+                            if (updated[idx]) {
+                              updated[idx].expectedQty = Number(e.target.value);
+                              setNewCountItems(updated);
+                            }
+                          }}
+                          required
+                        />
+                      </div>
+                    ))}
+                  </div>
 
-          {/* PERFORM COUNT WORKSHEET MODAL */}
-          {activeCountSession && (
-            <div className={styles.s4}>
-              <Card padding="none" className={styles.s14}>
-                <div className={styles.s6}>
-                  <span className="ui-heading-base">
-                    Enter Physical Count Measurements
-                  </span>
-                  <button
-                    onClick={() => setActiveCountSession(null)}
-                    className="ui-btn-icon ui-text-muted"
-                  >
-                    Close
-                  </button>
-                </div>
-                <div className="p-5">
-                  <form onSubmit={handleSubmitWorksheet} className="ui-stack-4">
-                    <table className={styles.s15}>
-                      <thead>
-                        <tr className={styles.s16}>
-                          <th className={styles.s17}>Product</th>
-                          <th className={styles.s18}>System Book Qty</th>
-                          <th className={styles.s18}>Physical Counted</th>
-                          <th className={styles.s19}>Remarks</th>
+                  <div className={styles.s13}>
+                    <Button
+                      variant="outline"
+                      type="button"
+                      onClick={() => setIsCreateModalOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button variant="primary" type="submit">
+                      Create worksheet
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {/* PERFORM COUNT WORKSHEET MODAL */}
+        {activeCountSession && (
+          <div className={styles.s4}>
+            <Card padding="none" className={styles.s14}>
+              <div className={styles.s6}>
+                <span className="ui-heading-base">
+                  Enter Physical Count Measurements
+                </span>
+                <button
+                  onClick={() => setActiveCountSession(null)}
+                  className="ui-btn-icon ui-text-muted"
+                >
+                  Close
+                </button>
+              </div>
+              <div className="p-5">
+                <form onSubmit={handleSubmitWorksheet} className="ui-stack-4">
+                  <table className={styles.s15}>
+                    <thead>
+                      <tr className={styles.s16}>
+                        <th className={styles.s17}>Product</th>
+                        <th className={styles.s18}>System Book Qty</th>
+                        <th className={styles.s18}>Physical Counted</th>
+                        <th className={styles.s19}>Remarks</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {activeCountSession.items.map((item) => (
+                        <tr key={item.id} className="border-b">
+                          <td className={styles.s20}>
+                            <div className="ui-flex-col">
+                              <span>{item.product?.name}</span>
+                              <span className="ui-text-micro ui-text-muted">
+                                {item.product?.sku}
+                              </span>
+                            </div>
+                          </td>
+                          <td className={styles.s18}>{item.expectedQty}</td>
+                          <td className={styles.s18}>
+                            <Input
+                              type="number"
+                              className={styles.s21}
+                              value={worksheetCounts[item.id]?.countedQty}
+                              onChange={(e) => {
+                                setWorksheetCounts({
+                                  ...worksheetCounts,
+                                  [item.id]: {
+                                    ...worksheetCounts[item.id]!,
+                                    countedQty: Number(e.target.value),
+                                  },
+                                });
+                              }}
+                              required
+                            />
+                          </td>
+                          <td className={styles.s19}>
+                            <Input
+                              type="text"
+                              className="text-xs"
+                              placeholder="Verification notes..."
+                              value={worksheetCounts[item.id]?.remarks || ""}
+                              onChange={(e) => {
+                                setWorksheetCounts({
+                                  ...worksheetCounts,
+                                  [item.id]: {
+                                    ...worksheetCounts[item.id]!,
+                                    remarks: e.target.value,
+                                  },
+                                });
+                              }}
+                            />
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {activeCountSession.items.map((item) => (
-                          <tr key={item.id} className="border-b">
-                            <td className={styles.s20}>
-                              <div className="ui-flex-col">
-                                <span>{item.product?.name}</span>
-                                <span className="ui-text-micro ui-text-muted">
-                                  {item.product?.sku}
-                                </span>
-                              </div>
-                            </td>
-                            <td className={styles.s18}>{item.expectedQty}</td>
-                            <td className={styles.s18}>
-                              <Input
-                                type="number"
-                                className={styles.s21}
-                                value={worksheetCounts[item.id]?.countedQty}
-                                onChange={(e) => {
-                                  setWorksheetCounts({
-                                    ...worksheetCounts,
-                                    [item.id]: {
-                                      ...worksheetCounts[item.id]!,
-                                      countedQty: Number(e.target.value),
-                                    },
-                                  });
-                                }}
-                                required
-                              />
-                            </td>
-                            <td className={styles.s19}>
-                              <Input
-                                type="text"
-                                className="text-xs"
-                                placeholder="Verification notes..."
-                                value={worksheetCounts[item.id]?.remarks || ""}
-                                onChange={(e) => {
-                                  setWorksheetCounts({
-                                    ...worksheetCounts,
-                                    [item.id]: {
-                                      ...worksheetCounts[item.id]!,
-                                      remarks: e.target.value,
-                                    },
-                                  });
-                                }}
-                              />
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                      ))}
+                    </tbody>
+                  </table>
 
-                    <FormField label="Final Remarks" htmlFor="cc-final-remarks">
-                      <Input
-                        id="cc-final-remarks"
-                        type="text"
-                        value={worksheetRemarks}
-                        onChange={(e) => setWorksheetRemarks(e.target.value)}
-                        placeholder="All counts checked by inventory manager"
-                      />
-                    </FormField>
+                  <FormField label="Final Remarks" htmlFor="cc-final-remarks">
+                    <Input
+                      id="cc-final-remarks"
+                      type="text"
+                      value={worksheetRemarks}
+                      onChange={(e) => setWorksheetRemarks(e.target.value)}
+                      placeholder="All counts checked by inventory manager"
+                    />
+                  </FormField>
 
-                    <div className={styles.s13}>
-                      <Button
-                        variant="outline"
-                        type="button"
-                        onClick={() => setActiveCountSession(null)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button variant="primary" type="submit">
-                        Submit worksheet counts
-                      </Button>
-                    </div>
-                  </form>
-                </div>
-              </Card>
-            </div>
-          )}
-        </div>
-      </InventoryTabLayout>
+                  <div className={styles.s13}>
+                    <Button
+                      variant="outline"
+                      type="button"
+                      onClick={() => setActiveCountSession(null)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button variant="primary" type="submit">
+                      Submit worksheet counts
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            </Card>
+          </div>
+        )}
+      </div>
     </RouteGuard>
   );
 }

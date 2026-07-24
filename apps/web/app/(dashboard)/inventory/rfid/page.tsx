@@ -27,10 +27,6 @@ import {
   Eye,
   Trash2,
 } from "lucide-react";
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
 
 interface RfidTag {
   id: string;
@@ -100,7 +96,7 @@ export default function RfidTagsPage() {
     try {
       const [tagRes, dashRes, readRes] = await Promise.all([
         apiGet<PaginatedResponse<RfidTag>>(
-          `/inventory/rfid?page=${page}&sortBy=${sortBy}&sortOrder=${sortOrder}`
+          `/inventory/rfid?page=${page}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
         ),
         apiGet<DashboardSummary>("/inventory/rfid/dashboard"),
         apiGet<ReadEvent[]>("/inventory/rfid/read-events?limit=5"),
@@ -113,7 +109,7 @@ export default function RfidTagsPage() {
       setError("Could not load RFID data. Please try again.");
       toast.error(
         "Could not load RFID data",
-        err instanceof Error ? err.message : undefined
+        err instanceof Error ? err.message : undefined,
       );
       setTags([]);
       setDashboard({ activeTags: 0, inTransit: 0, retired: 0, recentReads: 0 });
@@ -147,7 +143,7 @@ export default function RfidTagsPage() {
     } catch (err) {
       toast.error(
         "Could not register tag",
-        err instanceof Error ? err.message : undefined
+        err instanceof Error ? err.message : undefined,
       );
     } finally {
       setSubmitting(false);
@@ -174,7 +170,7 @@ export default function RfidTagsPage() {
     } catch (err) {
       toast.error(
         "Could not bulk register",
-        err instanceof Error ? err.message : undefined
+        err instanceof Error ? err.message : undefined,
       );
     } finally {
       setSubmitting(false);
@@ -197,7 +193,7 @@ export default function RfidTagsPage() {
     } catch (err) {
       toast.error(
         "Could not update location",
-        err instanceof Error ? err.message : undefined
+        err instanceof Error ? err.message : undefined,
       );
     } finally {
       setSubmitting(false);
@@ -214,7 +210,7 @@ export default function RfidTagsPage() {
     } catch (err) {
       toast.error(
         "Could not retire tag",
-        err instanceof Error ? err.message : undefined
+        err instanceof Error ? err.message : undefined,
       );
     }
   };
@@ -276,31 +272,31 @@ export default function RfidTagsPage() {
       key: "product",
       header: "Product",
       sortable: false,
-      render: (t) => t.product?.name || <span className="ui-text-muted">—</span>,
+      render: (t) =>
+        t.product?.name || <span className="ui-text-muted">—</span>,
     },
     {
       key: "status",
       header: "Status",
       sortable: true,
-      render: (t) => (
-        <StatusBadge status={t.status} />
-      ),
+      render: (t) => <StatusBadge status={t.status} />,
     },
     {
       key: "lastLocation",
       header: "Last Location",
       sortable: true,
-      render: (t) =>
-        t.lastLocation || <span className="ui-text-muted">—</span>,
+      render: (t) => t.lastLocation || <span className="ui-text-muted">—</span>,
     },
     {
       key: "lastRead",
       header: "Last Read",
       sortable: true,
       render: (t) =>
-        t.lastRead
-          ? new Date(t.lastRead).toLocaleString()
-          : <span className="ui-text-muted">—</span>,
+        t.lastRead ? (
+          new Date(t.lastRead).toLocaleString()
+        ) : (
+          <span className="ui-text-muted">—</span>
+        ),
     },
     {
       key: "actions",
@@ -350,325 +346,317 @@ export default function RfidTagsPage() {
 
   return (
     <RouteGuard permission="inventory.rfid.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={Tag}
-        moduleDescription="Manage RFID tags, track tagged assets, and monitor read events."
-      >
-        <div className="ui-stack-6 ui-animate-in">
-          <PageHeader
-            title="RFID Tags"
-            description="Register, track, and manage RFID-tagged inventory items."
-            breadcrumbs={[
-              { label: "Home", href: "/dashboard" },
-              { label: "Inventory", href: "/inventory" },
-              { label: "RFID Tags" },
-            ]}
-            actions={
-              <div className="ui-hstack-2">
-                <Button
-                  variant="secondary"
-                  onClick={() => {
-                    resetForm();
-                    setShowBulkModal(true);
-                  }}
-                  className="ui-hstack-2"
-                >
-                  <Upload size={16} />
-                  <span>Bulk Register</span>
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={() => {
-                    resetForm();
-                    setShowRegisterModal(true);
-                  }}
-                  className="ui-hstack-2"
-                >
-                  <Plus size={16} />
-                  <span>Register Tag</span>
-                </Button>
-              </div>
-            }
-          />
-
-          {error && (
-            <div className="rfid-error-banner">
-              <Activity size={16} /> {error}
+      <div className="ui-stack-6 ui-animate-in">
+        <PageHeader
+          title="RFID Tags"
+          description="Register, track, and manage RFID-tagged inventory items."
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "Inventory", href: "/inventory" },
+            { label: "RFID Tags" },
+          ]}
+          actions={
+            <div className="ui-hstack-2">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  resetForm();
+                  setShowBulkModal(true);
+                }}
+                className="ui-hstack-2"
+              >
+                <Upload size={16} />
+                <span>Bulk Register</span>
+              </Button>
+              <Button
+                variant="primary"
+                onClick={() => {
+                  resetForm();
+                  setShowRegisterModal(true);
+                }}
+                className="ui-hstack-2"
+              >
+                <Plus size={16} />
+                <span>Register Tag</span>
+              </Button>
             </div>
-          )}
+          }
+        />
 
-          <div className="rfid-kpi-grid">
-            {kpiCards.map((kpi, i) => (
-              <Card key={i}>
-                <div className="rfid-kpi-card-inner">
-                  <div
-                    className="rfid-kpi-icon-wrapper"
-                    style={{ background: kpi.color }}
-                  >
-                    <div className="rfid-kpi-icon" style={{ color: kpi.color }}>
-                      {kpi.icon}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="rfid-kpi-label">{kpi.label}</div>
-                    <div className="rfid-kpi-value">{kpi.value}</div>
-                  </div>
-                </div>
-              </Card>
-            ))}
+        {error && (
+          <div className="rfid-error-banner">
+            <Activity size={16} /> {error}
           </div>
+        )}
 
-          <Card>
-            {loading ? (
-              <div className="ui-center-pad">
-                <Spinner size="lg" />
-              </div>
-            ) : tags.length === 0 ? (
-              <div className="ui-empty-state">
-                <Tag size={48} className="ui-hr-faded" />
-                <div className="font-semibold">No RFID Tags Found</div>
-                <div className="text-sm">
-                  Register a tag to start tracking assets.
+        <div className="rfid-kpi-grid">
+          {kpiCards.map((kpi, i) => (
+            <Card key={i}>
+              <div className="rfid-kpi-card-inner">
+                <div
+                  className="rfid-kpi-icon-wrapper"
+                  style={{ background: kpi.color }}
+                >
+                  <div className="rfid-kpi-icon" style={{ color: kpi.color }}>
+                    {kpi.icon}
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <>
-                <DataTable<RfidTag>
-                  columns={columns}
-                  data={tags}
-                  rowKey={(t) => t.id}
-                  sortBy={sortBy}
-                  sortOrder={sortOrder}
-                  onSortChange={handleSortChange}
-                />
-                {totalPages > 1 && (
-                  <div className="rfid-pagination">
-                    <span className="text-sm ui-text-muted">
-                      Page {page} of {totalPages}
-                    </span>
-                    <div className="ui-hstack-2">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        disabled={page <= 1}
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      >
-                        Previous
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        disabled={page >= totalPages}
-                        onClick={() => setPage((p) => p + 1)}
-                      >
-                        Next
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-          </Card>
-
-          {readEvents.length > 0 && (
-            <Card>
-              <div className="rfid-section-header">
-                <h3 className="ui-heading-base">Recent Read Events</h3>
-              </div>
-              <div className="rfid-read-events">
-                {readEvents.map((evt) => (
-                  <div key={evt.id} className="rfid-read-event-row">
-                    <div className="rfid-read-event-loc">
-                      <MapPin size={14} />
-                      <span>{evt.location}</span>
-                    </div>
-                    <div className="text-xs ui-text-muted">
-                      Reader: {evt.readerId}
-                    </div>
-                    <div className="text-xs ui-text-muted">
-                      {new Date(evt.readAt).toLocaleString()}
-                    </div>
-                  </div>
-                ))}
+                <div>
+                  <div className="rfid-kpi-label">{kpi.label}</div>
+                  <div className="rfid-kpi-value">{kpi.value}</div>
+                </div>
               </div>
             </Card>
-          )}
+          ))}
         </div>
 
-        <Modal
-          open={showRegisterModal}
-          onClose={() => {
-            setShowRegisterModal(false);
-            resetForm();
-          }}
-          title="Register RFID Tag"
-        >
-          {modalSuccess ? (
-            <div className="rfid-modal-success">
-              <Tag size={48} className="rfid-modal-success-icon" />
-              <div className="ui-heading-base">Tag Registered Successfully</div>
+        <Card>
+          {loading ? (
+            <div className="ui-center-pad">
+              <Spinner size="lg" />
+            </div>
+          ) : tags.length === 0 ? (
+            <div className="ui-empty-state">
+              <Tag size={48} className="ui-hr-faded" />
+              <div className="font-semibold">No RFID Tags Found</div>
+              <div className="text-sm">
+                Register a tag to start tracking assets.
+              </div>
             </div>
           ) : (
-            <form onSubmit={handleRegister} className="rfid-form">
-              <FormField label="EPC" required>
-                <Input
-                  required
-                  placeholder="urn:epc:id:sgtin:..."
-                  value={formEpc}
-                  onChange={(e) => setFormEpc(e.target.value)}
-                />
-              </FormField>
-              <FormField label="Tag Type" required>
-                <select
-                  value={formTagType}
-                  onChange={(e) => setFormTagType(e.target.value)}
-                  className="ui-input"
-                  style={{
-                    width: "100%",
-                    height: "38px",
-                    border: "1px solid var(--color-border)",
-                    borderRadius: "var(--radius-md)",
-                    padding: "0 var(--space-3)",
-                  }}
-                >
-                  <option value="STANDARD">Standard</option>
-                  <option value="HIGH_TEMPERATURE">High Temperature</option>
-                  <option value="METAL_MOUNT">Metal Mount</option>
-                  <option value="FLEXIBLE">Flexible</option>
-                  <option value="RFID_CARD">RFID Card</option>
-                </select>
-              </FormField>
-              <FormField label="Product ID (optional)">
-                <Input
-                  placeholder="Linked product SKU"
-                  value={formProductId}
-                  onChange={(e) => setFormProductId(e.target.value)}
-                />
-              </FormField>
-              <FormField label="Status" required>
-                <select
-                  value={formStatus}
-                  onChange={(e) => setFormStatus(e.target.value)}
-                  className="ui-input"
-                  style={{
-                    width: "100%",
-                    height: "38px",
-                    border: "1px solid var(--color-border)",
-                    borderRadius: "var(--radius-md)",
-                    padding: "0 var(--space-3)",
-                  }}
-                >
-                  <option value="ACTIVE">Active</option>
-                  <option value="IN_TRANSIT">In Transit</option>
-                  <option value="RETIRED">Retired</option>
-                </select>
-              </FormField>
-              <div className="rfid-form-actions">
-                <Button
-                  variant="secondary"
-                  onClick={() => {
-                    setShowRegisterModal(false);
-                    resetForm();
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button variant="primary" type="submit" disabled={submitting}>
-                  {submitting ? "Registering..." : "Register Tag"}
-                </Button>
-              </div>
-            </form>
+            <>
+              <DataTable<RfidTag>
+                columns={columns}
+                data={tags}
+                rowKey={(t) => t.id}
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSortChange={handleSortChange}
+              />
+              {totalPages > 1 && (
+                <div className="rfid-pagination">
+                  <span className="text-sm ui-text-muted">
+                    Page {page} of {totalPages}
+                  </span>
+                  <div className="ui-hstack-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={page <= 1}
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    >
+                      Previous
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={page >= totalPages}
+                      onClick={() => setPage((p) => p + 1)}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
-        </Modal>
+        </Card>
 
-        <Modal
-          open={showBulkModal}
-          onClose={() => {
-            setShowBulkModal(false);
-            setBulkEpcs("");
-            setModalSuccess(false);
-          }}
-          title="Bulk Register Tags"
-        >
-          {modalSuccess ? (
-            <div className="rfid-modal-success">
-              <Upload size={48} className="rfid-modal-success-icon" />
-              <div className="ui-heading-base">Bulk Registration Complete</div>
+        {readEvents.length > 0 && (
+          <Card>
+            <div className="rfid-section-header">
+              <h3 className="ui-heading-base">Recent Read Events</h3>
             </div>
-          ) : (
-            <form onSubmit={handleBulkRegister} className="rfid-form">
-              <FormField label="EPC List" required>
-                <textarea
-                  required
-                  placeholder="Enter one EPC per line&#10;urn:epc:id:sgtin:001&#10;urn:epc:id:sgtin:002"
-                  value={bulkEpcs}
-                  onChange={(e) => setBulkEpcs(e.target.value)}
-                  className="ui-input"
-                  style={{
-                    width: "100%",
-                    height: "140px",
-                    border: "1px solid var(--color-border)",
-                    borderRadius: "var(--radius-md)",
-                    padding: "var(--space-2) var(--space-3)",
-                    resize: "vertical",
-                  }}
-                />
-              </FormField>
-              <div className="rfid-form-actions">
-                <Button
-                  variant="secondary"
-                  onClick={() => {
-                    setShowBulkModal(false);
-                    setBulkEpcs("");
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button variant="primary" type="submit" disabled={submitting}>
-                  {submitting ? "Registering..." : "Bulk Register"}
-                </Button>
-              </div>
-            </form>
-          )}
-        </Modal>
+            <div className="rfid-read-events">
+              {readEvents.map((evt) => (
+                <div key={evt.id} className="rfid-read-event-row">
+                  <div className="rfid-read-event-loc">
+                    <MapPin size={14} />
+                    <span>{evt.location}</span>
+                  </div>
+                  <div className="text-xs ui-text-muted">
+                    Reader: {evt.readerId}
+                  </div>
+                  <div className="text-xs ui-text-muted">
+                    {new Date(evt.readAt).toLocaleString()}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+      </div>
 
-        <Modal
-          open={showLocationModal}
-          onClose={() => {
-            setShowLocationModal(false);
-            setSelectedTagId(null);
-          }}
-          title="Update Tag Location"
-        >
-          <form onSubmit={handleUpdateLocation} className="rfid-form">
-            <FormField label="Location" required>
+      <Modal
+        open={showRegisterModal}
+        onClose={() => {
+          setShowRegisterModal(false);
+          resetForm();
+        }}
+        title="Register RFID Tag"
+      >
+        {modalSuccess ? (
+          <div className="rfid-modal-success">
+            <Tag size={48} className="rfid-modal-success-icon" />
+            <div className="ui-heading-base">Tag Registered Successfully</div>
+          </div>
+        ) : (
+          <form onSubmit={handleRegister} className="rfid-form">
+            <FormField label="EPC" required>
               <Input
                 required
-                placeholder="e.g. Warehouse A, Aisle 3, Bin 12"
-                value={newLocation}
-                onChange={(e) => setNewLocation(e.target.value)}
+                placeholder="urn:epc:id:sgtin:..."
+                value={formEpc}
+                onChange={(e) => setFormEpc(e.target.value)}
+              />
+            </FormField>
+            <FormField label="Tag Type" required>
+              <select
+                value={formTagType}
+                onChange={(e) => setFormTagType(e.target.value)}
+                className="ui-input"
+                style={{
+                  width: "100%",
+                  height: "38px",
+                  border: "1px solid var(--color-border)",
+                  borderRadius: "var(--radius-md)",
+                  padding: "0 var(--space-3)",
+                }}
+              >
+                <option value="STANDARD">Standard</option>
+                <option value="HIGH_TEMPERATURE">High Temperature</option>
+                <option value="METAL_MOUNT">Metal Mount</option>
+                <option value="FLEXIBLE">Flexible</option>
+                <option value="RFID_CARD">RFID Card</option>
+              </select>
+            </FormField>
+            <FormField label="Product ID (optional)">
+              <Input
+                placeholder="Linked product SKU"
+                value={formProductId}
+                onChange={(e) => setFormProductId(e.target.value)}
+              />
+            </FormField>
+            <FormField label="Status" required>
+              <select
+                value={formStatus}
+                onChange={(e) => setFormStatus(e.target.value)}
+                className="ui-input"
+                style={{
+                  width: "100%",
+                  height: "38px",
+                  border: "1px solid var(--color-border)",
+                  borderRadius: "var(--radius-md)",
+                  padding: "0 var(--space-3)",
+                }}
+              >
+                <option value="ACTIVE">Active</option>
+                <option value="IN_TRANSIT">In Transit</option>
+                <option value="RETIRED">Retired</option>
+              </select>
+            </FormField>
+            <div className="rfid-form-actions">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setShowRegisterModal(false);
+                  resetForm();
+                }}
+              >
+                Cancel
+              </Button>
+              <Button variant="primary" type="submit" disabled={submitting}>
+                {submitting ? "Registering..." : "Register Tag"}
+              </Button>
+            </div>
+          </form>
+        )}
+      </Modal>
+
+      <Modal
+        open={showBulkModal}
+        onClose={() => {
+          setShowBulkModal(false);
+          setBulkEpcs("");
+          setModalSuccess(false);
+        }}
+        title="Bulk Register Tags"
+      >
+        {modalSuccess ? (
+          <div className="rfid-modal-success">
+            <Upload size={48} className="rfid-modal-success-icon" />
+            <div className="ui-heading-base">Bulk Registration Complete</div>
+          </div>
+        ) : (
+          <form onSubmit={handleBulkRegister} className="rfid-form">
+            <FormField label="EPC List" required>
+              <textarea
+                required
+                placeholder="Enter one EPC per line&#10;urn:epc:id:sgtin:001&#10;urn:epc:id:sgtin:002"
+                value={bulkEpcs}
+                onChange={(e) => setBulkEpcs(e.target.value)}
+                className="ui-input"
+                style={{
+                  width: "100%",
+                  height: "140px",
+                  border: "1px solid var(--color-border)",
+                  borderRadius: "var(--radius-md)",
+                  padding: "var(--space-2) var(--space-3)",
+                  resize: "vertical",
+                }}
               />
             </FormField>
             <div className="rfid-form-actions">
               <Button
                 variant="secondary"
                 onClick={() => {
-                  setShowLocationModal(false);
-                  setSelectedTagId(null);
+                  setShowBulkModal(false);
+                  setBulkEpcs("");
                 }}
               >
                 Cancel
               </Button>
               <Button variant="primary" type="submit" disabled={submitting}>
-                {submitting ? "Updating..." : "Update Location"}
+                {submitting ? "Registering..." : "Bulk Register"}
               </Button>
             </div>
           </form>
-        </Modal>
-      </InventoryTabLayout>
+        )}
+      </Modal>
+
+      <Modal
+        open={showLocationModal}
+        onClose={() => {
+          setShowLocationModal(false);
+          setSelectedTagId(null);
+        }}
+        title="Update Tag Location"
+      >
+        <form onSubmit={handleUpdateLocation} className="rfid-form">
+          <FormField label="Location" required>
+            <Input
+              required
+              placeholder="e.g. Warehouse A, Aisle 3, Bin 12"
+              value={newLocation}
+              onChange={(e) => setNewLocation(e.target.value)}
+            />
+          </FormField>
+          <div className="rfid-form-actions">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setShowLocationModal(false);
+                setSelectedTagId(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button variant="primary" type="submit" disabled={submitting}>
+              {submitting ? "Updating..." : "Update Location"}
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </RouteGuard>
   );
 }

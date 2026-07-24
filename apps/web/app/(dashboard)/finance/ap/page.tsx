@@ -13,7 +13,6 @@ import {
   AlertTriangle,
   ShieldCheck,
 } from "lucide-react";
-import { FinanceTabLayout } from "@/components/finance/FinanceTabLayout";
 import { SubTabBar } from "@/components/finance/SubTabBar";
 import { FormView, ListView, RouteGuard, useApiClient } from "@unerp/framework";
 import {
@@ -255,219 +254,204 @@ export default function APPage() {
 
   return (
     <RouteGuard permission="finance.payables.read">
-      <FinanceTabLayout
-        tabs={AP_TABS}
-        moduleId="ap"
-        moduleLabel="Accounts Payable"
-        moduleIcon={Building2}
-        moduleDescription="Vendor bills, payments, AP automation, and invoice processing"
-      >
-        {activeTab === "overview" && (
-          <div className="ui-stack-4 ui-animate-in">
-            {summaryError && (
-              <div className="ui-alert ui-alert-danger">
-                <AlertTriangle size={16} />
-                Failed to load AP summary — figures below may be stale.{" "}
-                {summaryError}
-              </div>
-            )}
-            <div className="ui-grid-3">
-              <Card padding="md">
-                <div className="ui-stack-2">
-                  <p className="ui-text-xs-muted">Outstanding Payables</p>
-                  <p
-                    className="ui-heading-sm"
-                    style={{ color: "var(--color-primary)" }}
-                  >
-                    {summary.totalOutstanding.toLocaleString(undefined, {
-                      style: "currency",
-                      currency: "USD",
-                      maximumFractionDigits: 0,
-                    })}
-                  </p>
-                  <p className="ui-text-xs-muted">
-                    Across {summary.totalBills} bills
-                  </p>
-                </div>
-              </Card>
-              <Card padding="md">
-                <div className="ui-stack-2">
-                  <p className="ui-text-xs-muted">Due This Week</p>
-                  <p
-                    className="ui-heading-sm"
-                    style={{ color: "var(--color-warning)" }}
-                  >
-                    {summary.dueThisWeekAmount.toLocaleString(undefined, {
-                      style: "currency",
-                      currency: "USD",
-                      maximumFractionDigits: 0,
-                    })}
-                  </p>
-                  <p className="ui-text-xs-muted">
-                    {summary.dueThisWeekCount} bills due
-                  </p>
-                </div>
-              </Card>
-              <Card padding="md">
-                <div className="ui-stack-2">
-                  <p className="ui-text-xs-muted">Processed This Month</p>
-                  <p
-                    className="ui-heading-sm"
-                    style={{ color: "var(--color-success)" }}
-                  >
-                    {summary.processedThisMonthAmount.toLocaleString(
-                      undefined,
-                      {
-                        style: "currency",
-                        currency: "USD",
-                        maximumFractionDigits: 0,
-                      },
-                    )}
-                  </p>
-                  <p className="ui-text-xs-muted">
-                    {summary.processedThisMonthCount} bills paid
-                  </p>
-                </div>
-              </Card>
+      {activeTab === "overview" && (
+        <div className="ui-stack-4 ui-animate-in">
+          {summaryError && (
+            <div className="ui-alert ui-alert-danger">
+              <AlertTriangle size={16} />
+              Failed to load AP summary — figures below may be stale.{" "}
+              {summaryError}
             </div>
+          )}
+          <div className="ui-grid-3">
             <Card padding="md">
-              <h3
-                className="ui-heading-sm"
-                style={{ marginBottom: "var(--space-3)" }}
-              >
-                Vendor Bills
-              </h3>
-              <ListView resource={vendorBillResource} />
+              <div className="ui-stack-2">
+                <p className="ui-text-xs-muted">Outstanding Payables</p>
+                <p
+                  className="ui-heading-sm"
+                  style={{ color: "var(--color-primary)" }}
+                >
+                  {summary.totalOutstanding.toLocaleString(undefined, {
+                    style: "currency",
+                    currency: "USD",
+                    maximumFractionDigits: 0,
+                  })}
+                </p>
+                <p className="ui-text-xs-muted">
+                  Across {summary.totalBills} bills
+                </p>
+              </div>
+            </Card>
+            <Card padding="md">
+              <div className="ui-stack-2">
+                <p className="ui-text-xs-muted">Due This Week</p>
+                <p
+                  className="ui-heading-sm"
+                  style={{ color: "var(--color-warning)" }}
+                >
+                  {summary.dueThisWeekAmount.toLocaleString(undefined, {
+                    style: "currency",
+                    currency: "USD",
+                    maximumFractionDigits: 0,
+                  })}
+                </p>
+                <p className="ui-text-xs-muted">
+                  {summary.dueThisWeekCount} bills due
+                </p>
+              </div>
+            </Card>
+            <Card padding="md">
+              <div className="ui-stack-2">
+                <p className="ui-text-xs-muted">Processed This Month</p>
+                <p
+                  className="ui-heading-sm"
+                  style={{ color: "var(--color-success)" }}
+                >
+                  {summary.processedThisMonthAmount.toLocaleString(undefined, {
+                    style: "currency",
+                    currency: "USD",
+                    maximumFractionDigits: 0,
+                  })}
+                </p>
+                <p className="ui-text-xs-muted">
+                  {summary.processedThisMonthCount} bills paid
+                </p>
+              </div>
             </Card>
           </div>
-        )}
-        {activeTab === "bills" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <PageHeader
-              title="Bills"
-              description="Manage vendor bills and accounts payable"
-            />
-            <ListView
-              key={billsKey}
-              resource={vendorBillResource}
-              onCreate={() => setShowCreateBill(true)}
-            />
-            <Modal
-              open={showCreateBill}
-              onClose={() => setShowCreateBill(false)}
-              title="Create Vendor Bill"
-              size="lg"
+          <Card padding="md">
+            <h3
+              className="ui-heading-sm"
+              style={{ marginBottom: "var(--space-3)" }}
             >
-              <FormView
-                resource={vendorBillResource}
-                onSuccess={() => {
-                  setShowCreateBill(false);
-                  success("Vendor bill created");
-                  setBillsKey((k) => k + 1);
-                }}
-                onCancel={() => setShowCreateBill(false)}
-              />
-            </Modal>
-          </div>
-        )}
-        {activeTab === "vendors" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <PageHeader
-              title="Vendors"
-              description="Vendor directory and management"
+              Vendor Bills
+            </h3>
+            <ListView resource={vendorBillResource} />
+          </Card>
+        </div>
+      )}
+      {activeTab === "bills" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <PageHeader
+            title="Bills"
+            description="Manage vendor bills and accounts payable"
+          />
+          <ListView
+            key={billsKey}
+            resource={vendorBillResource}
+            onCreate={() => setShowCreateBill(true)}
+          />
+          <Modal
+            open={showCreateBill}
+            onClose={() => setShowCreateBill(false)}
+            title="Create Vendor Bill"
+            size="lg"
+          >
+            <FormView
+              resource={vendorBillResource}
+              onSuccess={() => {
+                setShowCreateBill(false);
+                success("Vendor bill created");
+                setBillsKey((k) => k + 1);
+              }}
+              onCancel={() => setShowCreateBill(false)}
             />
-            <ListView resource={vendorResource} />
+          </Modal>
+        </div>
+      )}
+      {activeTab === "vendors" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <PageHeader
+            title="Vendors"
+            description="Vendor directory and management"
+          />
+          <ListView resource={vendorResource} />
+        </div>
+      )}
+      {activeTab === "debit-notes" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <PageHeader
+            title="Debit Notes"
+            description="Vendor debit notes and adjustments"
+          />
+          <DebitNotesPanel />
+        </div>
+      )}
+      {activeTab === "payments" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <PageHeader
+            title="Payments"
+            description="Process outgoing payments to vendors"
+          />
+          <ListView resource={vendorBillPaymentResource} />
+        </div>
+      )}
+      {activeTab === "payment-batches" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <SubTabBar
+            tabs={[
+              {
+                id: "batches",
+                label: "Payment Batches",
+                href: "/finance/ap?tab=payment-batches&subtab=batches",
+              },
+              {
+                id: "terms",
+                label: "Payment Terms",
+                href: "/finance/ap?tab=payment-batches&subtab=terms",
+              },
+            ]}
+          />
+          <div style={{ marginTop: "var(--space-3)" }}>
+            {subTab === "terms" ? <PaymentTermsPage /> : <PaymentBatchesPage />}
           </div>
-        )}
-        {activeTab === "debit-notes" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <PageHeader
-              title="Debit Notes"
-              description="Vendor debit notes and adjustments"
-            />
-            <DebitNotesPanel />
+        </div>
+      )}
+      {activeTab === "expense-policies" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <SubTabBar
+            tabs={[
+              {
+                id: "policies",
+                label: "Expense Policies",
+                href: "/finance/ap?tab=expense-policies&subtab=policies",
+              },
+              {
+                id: "reports",
+                label: "Expense Reports",
+                href: "/finance/ap?tab=expense-policies&subtab=reports",
+              },
+            ]}
+          />
+          <div style={{ marginTop: "var(--space-3)" }}>
+            {subTab === "reports" ? (
+              <ExpenseReportsPage />
+            ) : (
+              <ExpensePoliciesPage />
+            )}
           </div>
-        )}
-        {activeTab === "payments" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <PageHeader
-              title="Payments"
-              description="Process outgoing payments to vendors"
-            />
-            <ListView resource={vendorBillPaymentResource} />
-          </div>
-        )}
-        {activeTab === "payment-batches" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <SubTabBar
-              tabs={[
-                {
-                  id: "batches",
-                  label: "Payment Batches",
-                  href: "/finance/ap?tab=payment-batches&subtab=batches",
-                },
-                {
-                  id: "terms",
-                  label: "Payment Terms",
-                  href: "/finance/ap?tab=payment-batches&subtab=terms",
-                },
-              ]}
-            />
-            <div style={{ marginTop: "var(--space-3)" }}>
-              {subTab === "terms" ? (
-                <PaymentTermsPage />
-              ) : (
-                <PaymentBatchesPage />
-              )}
-            </div>
-          </div>
-        )}
-        {activeTab === "expense-policies" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <SubTabBar
-              tabs={[
-                {
-                  id: "policies",
-                  label: "Expense Policies",
-                  href: "/finance/ap?tab=expense-policies&subtab=policies",
-                },
-                {
-                  id: "reports",
-                  label: "Expense Reports",
-                  href: "/finance/ap?tab=expense-policies&subtab=reports",
-                },
-              ]}
-            />
-            <div style={{ marginTop: "var(--space-3)" }}>
-              {subTab === "reports" ? (
-                <ExpenseReportsPage />
-              ) : (
-                <ExpensePoliciesPage />
-              )}
-            </div>
-          </div>
-        )}
-        {activeTab === "ai-invoice-capture" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <InvoiceCapturePage />
-          </div>
-        )}
-        {activeTab === "ap-automation" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <ApAutomationPage />
-          </div>
-        )}
-        {activeTab === "ap-match-rules" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <ApMatchRulesPage />
-          </div>
-        )}
-        {activeTab === "exception-queue" && (
-          <div className="ui-stack-4 ui-animate-in">
-            <ExceptionQueuePage />
-          </div>
-        )}
-      </FinanceTabLayout>
+        </div>
+      )}
+      {activeTab === "ai-invoice-capture" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <InvoiceCapturePage />
+        </div>
+      )}
+      {activeTab === "ap-automation" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <ApAutomationPage />
+        </div>
+      )}
+      {activeTab === "ap-match-rules" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <ApMatchRulesPage />
+        </div>
+      )}
+      {activeTab === "exception-queue" && (
+        <div className="ui-stack-4 ui-animate-in">
+          <ExceptionQueuePage />
+        </div>
+      )}
     </RouteGuard>
   );
 }

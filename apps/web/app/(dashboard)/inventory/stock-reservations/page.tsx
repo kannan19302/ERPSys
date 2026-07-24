@@ -12,10 +12,7 @@ import {
 } from "@unerp/ui";
 import { Plus, AlertCircle, BarChart3 } from "lucide-react";
 import { useApiClient } from "@unerp/framework";
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
+
 import { Package as InventoryModuleIcon } from "lucide-react";
 
 interface Reservation {
@@ -185,147 +182,139 @@ export default function StockReservationsPage() {
   const columns = makeColumns(handleFulfill, handleRelease);
 
   return (
-    <InventoryTabLayout
-      tabs={INVENTORY_TABS}
-      moduleId="inventory"
-      moduleLabel="Inventory & Stock"
-      moduleIcon={InventoryModuleIcon}
-      moduleDescription="Allocation reservations against sales orders/transfers, plus ABC classification and dead-stock analytics."
-    >
-      <div className="ui-stack-6 ui-animate-in">
-        <PageHeader
-          title="Stock Reservations & Inventory Analytics"
-          description="Allocation reservations against sales orders/transfers, plus ABC classification and dead-stock analytics."
-          breadcrumbs={[
-            { label: "Home", href: "/dashboard" },
-            { label: "Inventory", href: "/inventory" },
-            { label: "Stock Reservations & Analytics" },
-          ]}
-          actions={
-            <Button
-              variant="primary"
-              onClick={() => setIsCreateModalOpen(true)}
-              className="ui-hstack-2"
-            >
-              <Plus size={14} />
-              New Reservation
-            </Button>
-          }
-        />
+    <div className="ui-stack-6 ui-animate-in">
+      <PageHeader
+        title="Stock Reservations & Inventory Analytics"
+        description="Allocation reservations against sales orders/transfers, plus ABC classification and dead-stock analytics."
+        breadcrumbs={[
+          { label: "Home", href: "/dashboard" },
+          { label: "Inventory", href: "/inventory" },
+          { label: "Stock Reservations & Analytics" },
+        ]}
+        actions={
+          <Button
+            variant="primary"
+            onClick={() => setIsCreateModalOpen(true)}
+            className="ui-hstack-2"
+          >
+            <Plus size={14} />
+            New Reservation
+          </Button>
+        }
+      />
 
-        {error && (
-          <div className={styles.s4}>
-            <AlertCircle size={16} />
-            <span>Note: {error}</span>
-          </div>
-        )}
+      {error && (
+        <div className={styles.s4}>
+          <AlertCircle size={16} />
+          <span>Note: {error}</span>
+        </div>
+      )}
 
-        <StatCardRow
-          stats={[
-            ...(abc
-              ? [
-                  {
-                    label: "ABC: A Items",
-                    value: abc.counts.A,
-                    icon: <BarChart3 size={16} />,
-                    color: "success" as const,
-                  },
-                  {
-                    label: "ABC: B Items",
-                    value: abc.counts.B,
-                    icon: <BarChart3 size={16} />,
-                    color: "info" as const,
-                  },
-                  {
-                    label: "ABC: C Items",
-                    value: abc.counts.C,
-                    icon: <BarChart3 size={16} />,
-                    color: "default" as const,
-                  },
-                ]
-              : []),
-            ...(deadStock
-              ? [
-                  {
-                    label: "Dead Stock Value (90d)",
-                    value: `$${deadStock.totalDeadValue.toLocaleString()}`,
-                    color: "warning" as const,
-                  },
-                ]
-              : []),
-          ]}
-        />
+      <StatCardRow
+        stats={[
+          ...(abc
+            ? [
+                {
+                  label: "ABC: A Items",
+                  value: abc.counts.A,
+                  icon: <BarChart3 size={16} />,
+                  color: "success" as const,
+                },
+                {
+                  label: "ABC: B Items",
+                  value: abc.counts.B,
+                  icon: <BarChart3 size={16} />,
+                  color: "info" as const,
+                },
+                {
+                  label: "ABC: C Items",
+                  value: abc.counts.C,
+                  icon: <BarChart3 size={16} />,
+                  color: "default" as const,
+                },
+              ]
+            : []),
+          ...(deadStock
+            ? [
+                {
+                  label: "Dead Stock Value (90d)",
+                  value: `$${deadStock.totalDeadValue.toLocaleString()}`,
+                  color: "warning" as const,
+                },
+              ]
+            : []),
+        ]}
+      />
 
-        <ListPageTemplate
-          columns={columns}
-          data={reservations as unknown as Record<string, unknown>[]}
-          loading={loading}
-          searchable
-        />
+      <ListPageTemplate
+        columns={columns}
+        data={reservations as unknown as Record<string, unknown>[]}
+        loading={loading}
+        searchable
+      />
 
-        {isCreateModalOpen && (
-          <div className={styles.s5}>
-            <div className={`ui-card modal-card ${styles.s6}`}>
-              <div className={styles.s7}>
-                <span className="ui-heading-base">New Stock Reservation</span>
-                <button
-                  onClick={() => setIsCreateModalOpen(false)}
-                  className="ui-btn-icon ui-text-muted"
-                >
-                  Close
-                </button>
-              </div>
-              <div className="ui-card-body p-5">
-                <form onSubmit={handleCreate} className="ui-stack-4">
-                  <div className="ui-form-group">
-                    <label className="ui-label">Product ID *</label>
-                    <input
-                      type="text"
-                      className="ui-input"
-                      value={productId}
-                      onChange={(e) => setProductId(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="ui-form-group">
-                    <label className="ui-label">Warehouse ID *</label>
-                    <input
-                      type="text"
-                      className="ui-input"
-                      value={warehouseId}
-                      onChange={(e) => setWarehouseId(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="ui-form-group">
-                    <label className="ui-label">Quantity *</label>
-                    <input
-                      type="number"
-                      className="ui-input"
-                      value={quantity}
-                      onChange={(e) => setQuantity(Number(e.target.value))}
-                      required
-                      min={1}
-                    />
-                  </div>
-                  <div className={styles.s8}>
-                    <Button
-                      variant="outline"
-                      type="button"
-                      onClick={() => setIsCreateModalOpen(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button variant="primary" type="submit">
-                      Create reservation
-                    </Button>
-                  </div>
-                </form>
-              </div>
+      {isCreateModalOpen && (
+        <div className={styles.s5}>
+          <div className={`ui-card modal-card ${styles.s6}`}>
+            <div className={styles.s7}>
+              <span className="ui-heading-base">New Stock Reservation</span>
+              <button
+                onClick={() => setIsCreateModalOpen(false)}
+                className="ui-btn-icon ui-text-muted"
+              >
+                Close
+              </button>
+            </div>
+            <div className="ui-card-body p-5">
+              <form onSubmit={handleCreate} className="ui-stack-4">
+                <div className="ui-form-group">
+                  <label className="ui-label">Product ID *</label>
+                  <input
+                    type="text"
+                    className="ui-input"
+                    value={productId}
+                    onChange={(e) => setProductId(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="ui-form-group">
+                  <label className="ui-label">Warehouse ID *</label>
+                  <input
+                    type="text"
+                    className="ui-input"
+                    value={warehouseId}
+                    onChange={(e) => setWarehouseId(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="ui-form-group">
+                  <label className="ui-label">Quantity *</label>
+                  <input
+                    type="number"
+                    className="ui-input"
+                    value={quantity}
+                    onChange={(e) => setQuantity(Number(e.target.value))}
+                    required
+                    min={1}
+                  />
+                </div>
+                <div className={styles.s8}>
+                  <Button
+                    variant="outline"
+                    type="button"
+                    onClick={() => setIsCreateModalOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button variant="primary" type="submit">
+                    Create reservation
+                  </Button>
+                </div>
+              </form>
             </div>
           </div>
-        )}
-      </div>
-    </InventoryTabLayout>
+        </div>
+      )}
+    </div>
   );
 }

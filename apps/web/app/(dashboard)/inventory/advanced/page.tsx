@@ -15,12 +15,9 @@ import {
   Select,
 } from "@unerp/ui";
 import { RouteGuard, useApiClient } from "@unerp/framework";
+import { SubTabBar } from "@unerp/ui-layout";
 import { useSearchParams } from "next/navigation";
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-  SubTabBar,
-} from "@/components/inventory/InventoryTabLayout";
+
 import { Package as InventoryModuleIcon } from "lucide-react";
 import {
   FolderTree,
@@ -311,509 +308,488 @@ export default function AdvancedInventoryPage() {
 
   return (
     <RouteGuard permission="inventory.advanced.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={InventoryModuleIcon}
-        moduleDescription="Configure classifications, Unit of Measure mappings, reorder rules, and product bundle definitions."
-      >
-        <div className="ui-stack-6 ui-animate-in">
-          <PageHeader
-            title="Advanced Inventory Hub"
-            description="Configure classifications, Unit of Measure mappings, reorder rules, and product bundle definitions."
-            breadcrumbs={[
-              { label: "Home", href: "/dashboard" },
-              { label: "Inventory", href: "/inventory" },
-              { label: "Advanced Settings" },
-            ]}
-          />
+      <div className="ui-stack-6 ui-animate-in">
+        <PageHeader
+          title="Advanced Inventory Hub"
+          description="Configure classifications, Unit of Measure mappings, reorder rules, and product bundle definitions."
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "Inventory", href: "/inventory" },
+            { label: "Advanced Settings" },
+          ]}
+        />
 
-          {error && (
-            <div className={styles.s1}>
-              <AlertCircle size={16} />
-              <span>Note: {error}</span>
+        {error && (
+          <div className={styles.s1}>
+            <AlertCircle size={16} />
+            <span>Note: {error}</span>
+          </div>
+        )}
+
+        {/* Tabs */}
+        <SubTabBar
+          tabs={[
+            {
+              id: "categories",
+              label: "Product Categories",
+              href: "/inventory/advanced?subtab=categories",
+              icon: FolderTree,
+            },
+            {
+              id: "uoms",
+              label: "Units of Measure",
+              href: "/inventory/advanced?subtab=uoms",
+              icon: Scale,
+            },
+            {
+              id: "reorder",
+              label: "Reorder Rules",
+              href: "/inventory/advanced?subtab=reorder",
+              icon: Settings,
+            },
+            {
+              id: "kits",
+              label: "Kits & Bundling",
+              href: "/inventory/advanced?subtab=kits",
+              icon: Boxes,
+            },
+          ]}
+        />
+
+        <div className="relative">
+          {loading ? (
+            <div className="ui-center-pad">
+              <Spinner size="lg" />
             </div>
-          )}
+          ) : (
+            <div>
+              {/* Category Tab */}
+              {activeTab === "categories" && (
+                <Card padding="none">
+                  <div className={styles.s2}>
+                    <span className="ui-heading-base">
+                      Classifications Hierarchy
+                    </span>
+                    <Button
+                      variant="primary"
+                      onClick={() => {
+                        setModalType("category");
+                        setIsModalOpen(true);
+                      }}
+                      className={styles.s3}
+                    >
+                      <Plus size={14} /> Add Category
+                    </Button>
+                  </div>
+                  <ListPageTemplate
+                    columns={
+                      [
+                        { key: "name", header: "Name" },
+                        { key: "slug", header: "Slug" },
+                        {
+                          key: "parent",
+                          header: "Parent Category",
+                          render: (row) =>
+                            (row as unknown as Category).parent?.name || "Root",
+                        },
+                        {
+                          key: "actions",
+                          header: "Actions",
+                          render: () => (
+                            <button className={styles.s4}>
+                              <Trash2 size={16} />
+                            </button>
+                          ),
+                        },
+                      ] as ListColumn[]
+                    }
+                    data={categories as unknown as Record<string, unknown>[]}
+                    loading={false}
+                    searchable
+                  />
+                </Card>
+              )}
 
-          {/* Tabs */}
-          <SubTabBar
-            tabs={[
-              {
-                id: "categories",
-                label: "Product Categories",
-                href: "/inventory/advanced?subtab=categories",
-                icon: FolderTree,
-              },
-              {
-                id: "uoms",
-                label: "Units of Measure",
-                href: "/inventory/advanced?subtab=uoms",
-                icon: Scale,
-              },
-              {
-                id: "reorder",
-                label: "Reorder Rules",
-                href: "/inventory/advanced?subtab=reorder",
-                icon: Settings,
-              },
-              {
-                id: "kits",
-                label: "Kits & Bundling",
-                href: "/inventory/advanced?subtab=kits",
-                icon: Boxes,
-              },
-            ]}
-          />
-
-          <div className="relative">
-            {loading ? (
-              <div className="ui-center-pad">
-                <Spinner size="lg" />
-              </div>
-            ) : (
-              <div>
-                {/* Category Tab */}
-                {activeTab === "categories" && (
+              {/* UoM Tab */}
+              {activeTab === "uoms" && (
+                <div className="ui-stack-4">
                   <Card padding="none">
                     <div className={styles.s2}>
                       <span className="ui-heading-base">
-                        Classifications Hierarchy
+                        Standard Measurement Codes
                       </span>
                       <Button
                         variant="primary"
                         onClick={() => {
-                          setModalType("category");
+                          setModalType("uom");
                           setIsModalOpen(true);
                         }}
                         className={styles.s3}
                       >
-                        <Plus size={14} /> Add Category
+                        <Plus size={14} /> Add UoM
                       </Button>
                     </div>
                     <ListPageTemplate
                       columns={
                         [
                           { key: "name", header: "Name" },
-                          { key: "slug", header: "Slug" },
                           {
-                            key: "parent",
-                            header: "Parent Category",
-                            render: (row) =>
-                              (row as unknown as Category).parent?.name ||
-                              "Root",
-                          },
-                          {
-                            key: "actions",
-                            header: "Actions",
-                            render: () => (
-                              <button className={styles.s4}>
-                                <Trash2 size={16} />
-                              </button>
+                            key: "abbreviation",
+                            header: "Code",
+                            render: (row) => (
+                              <Badge variant="info">
+                                {String((row as unknown as UoM).abbreviation)}
+                              </Badge>
                             ),
+                          },
+                          { key: "type", header: "Dimension Type" },
+                          {
+                            key: "isBase",
+                            header: "Base Unit",
+                            render: (row) =>
+                              (row as unknown as UoM).isBase ? "Yes" : "No",
                           },
                         ] as ListColumn[]
                       }
-                      data={categories as unknown as Record<string, unknown>[]}
+                      data={uoms as unknown as Record<string, unknown>[]}
                       loading={false}
                       searchable
                     />
                   </Card>
-                )}
 
-                {/* UoM Tab */}
-                {activeTab === "uoms" && (
-                  <div className="ui-stack-4">
-                    <Card padding="none">
-                      <div className={styles.s2}>
-                        <span className="ui-heading-base">
-                          Standard Measurement Codes
-                        </span>
-                        <Button
-                          variant="primary"
-                          onClick={() => {
-                            setModalType("uom");
-                            setIsModalOpen(true);
-                          }}
-                          className={styles.s3}
-                        >
-                          <Plus size={14} /> Add UoM
-                        </Button>
-                      </div>
-                      <ListPageTemplate
-                        columns={
-                          [
-                            { key: "name", header: "Name" },
-                            {
-                              key: "abbreviation",
-                              header: "Code",
-                              render: (row) => (
-                                <Badge variant="info">
-                                  {String((row as unknown as UoM).abbreviation)}
-                                </Badge>
-                              ),
-                            },
-                            { key: "type", header: "Dimension Type" },
-                            {
-                              key: "isBase",
-                              header: "Base Unit",
-                              render: (row) =>
-                                (row as unknown as UoM).isBase ? "Yes" : "No",
-                            },
-                          ] as ListColumn[]
-                        }
-                        data={uoms as unknown as Record<string, unknown>[]}
-                        loading={false}
-                        searchable
-                      />
-                    </Card>
-
-                    <Card padding="none">
-                      <div className={styles.s2}>
-                        <span className="ui-heading-base">
-                          UoM Conversion Matrix
-                        </span>
-                        <Button
-                          variant="primary"
-                          onClick={() => {
-                            setModalType("conversion");
-                            setIsModalOpen(true);
-                          }}
-                          className={styles.s3}
-                        >
-                          <Plus size={14} /> Add Conversion Factor
-                        </Button>
-                      </div>
-                      <ListPageTemplate
-                        columns={
-                          [
-                            {
-                              key: "fromUoM",
-                              header: "Source UoM",
-                              render: (row) =>
-                                (row as unknown as UoMConversion).fromUoM.name,
-                            },
-                            {
-                              key: "toUoM",
-                              header: "Target UoM",
-                              render: (row) =>
-                                (row as unknown as UoMConversion).toUoM.name,
-                            },
-                            { key: "factor", header: "Conversion Factor" },
-                          ] as ListColumn[]
-                        }
-                        data={
-                          uomConversions as unknown as Record<string, unknown>[]
-                        }
-                        loading={false}
-                        searchable
-                      />
-                    </Card>
-                  </div>
-                )}
-
-                {/* Reorder Rules Tab */}
-                {activeTab === "reorder" && (
                   <Card padding="none">
                     <div className={styles.s2}>
                       <span className="ui-heading-base">
-                        Automatic Replenishment Limits
+                        UoM Conversion Matrix
                       </span>
                       <Button
                         variant="primary"
                         onClick={() => {
-                          setModalType("rule");
+                          setModalType("conversion");
                           setIsModalOpen(true);
                         }}
                         className={styles.s3}
                       >
-                        <Plus size={14} /> Add Rule
+                        <Plus size={14} /> Add Conversion Factor
                       </Button>
                     </div>
                     <ListPageTemplate
                       columns={
                         [
                           {
-                            key: "product",
-                            header: "Product",
-                            render: (row) => {
-                              const r = row as unknown as ReorderRule;
-                              return `${r.product.name} (${r.product.sku})`;
-                            },
-                          },
-                          { key: "minQty", header: "Min Threshold" },
-                          {
-                            key: "maxQty",
-                            header: "Max Limit",
+                            key: "fromUoM",
+                            header: "Source UoM",
                             render: (row) =>
-                              (row as unknown as ReorderRule).maxQty || "N/A",
+                              (row as unknown as UoMConversion).fromUoM.name,
                           },
-                          { key: "reorderQty", header: "Trigger PO Qty" },
-                          { key: "leadTimeDays", header: "Lead Time (Days)" },
                           {
-                            key: "status",
-                            header: "Status",
-                            render: () => (
-                              <Badge variant="success">Active</Badge>
-                            ),
+                            key: "toUoM",
+                            header: "Target UoM",
+                            render: (row) =>
+                              (row as unknown as UoMConversion).toUoM.name,
                           },
+                          { key: "factor", header: "Conversion Factor" },
                         ] as ListColumn[]
                       }
                       data={
-                        reorderRules as unknown as Record<string, unknown>[]
+                        uomConversions as unknown as Record<string, unknown>[]
                       }
                       loading={false}
                       searchable
                     />
                   </Card>
-                )}
-
-                {/* Kits Tab */}
-                {activeTab === "kits" && (
-                  <Card padding="none">
-                    <div className={styles.s2}>
-                      <span className="ui-heading-base">
-                        Production Assemblies & Kits
-                      </span>
-                      <Button
-                        variant="primary"
-                        onClick={() => {
-                          setModalType("kit");
-                          setIsModalOpen(true);
-                        }}
-                        className={styles.s3}
-                      >
-                        <Plus size={14} /> Add Kit
-                      </Button>
-                    </div>
-                    <ListPageTemplate
-                      columns={
-                        [
-                          {
-                            key: "sku",
-                            header: "Assembly SKU",
-                            render: (row) =>
-                              (row as unknown as ProductKit).product.sku,
-                          },
-                          { key: "name", header: "Kit Name" },
-                          {
-                            key: "sellPrice",
-                            header: "Base Price",
-                            render: (row) =>
-                              `$${Number((row as unknown as ProductKit).sellPrice).toLocaleString()}`,
-                          },
-                          {
-                            key: "discount",
-                            header: "Discount %",
-                            render: (row) =>
-                              `${(row as unknown as ProductKit).discount}%`,
-                          },
-                          {
-                            key: "components",
-                            header: "Components Count",
-                            render: (row) =>
-                              `${(row as unknown as ProductKit).components.length} items`,
-                          },
-                        ] as ListColumn[]
-                      }
-                      data={kits as unknown as Record<string, unknown>[]}
-                      loading={false}
-                      searchable
-                    />
-                  </Card>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* FORM MODAL */}
-          {isModalOpen && (
-            <div className={styles.s5}>
-              <Card padding="none" className={styles.s6}>
-                <div className={styles.s7}>
-                  <span className="ui-heading-base">Add New config Record</span>
-                  <button
-                    onClick={() => setIsModalOpen(false)}
-                    className="ui-btn-icon ui-text-muted"
-                  >
-                    Close
-                  </button>
                 </div>
-                <div className="p-5">
-                  <form onSubmit={handleSave} className="ui-stack-4">
-                    {modalType === "category" && (
-                      <>
-                        <FormField label="Category Name" htmlFor="cat-name">
-                          <Input
-                            id="cat-name"
-                            type="text"
-                            value={catName}
-                            onChange={(e) => {
-                              setCatName(e.target.value);
-                              setCatSlug(
-                                e.target.value.toLowerCase().replace(/ /g, "-"),
-                              );
-                            }}
-                            required
-                          />
-                        </FormField>
-                        <FormField label="Slug" htmlFor="cat-slug">
-                          <Input
-                            id="cat-slug"
-                            type="text"
-                            value={catSlug}
-                            onChange={(e) => setCatSlug(e.target.value)}
-                            required
-                          />
-                        </FormField>
-                        <FormField label="Parent Category" htmlFor="cat-parent">
-                          <Select
-                            id="cat-parent"
-                            value={catParent}
-                            onChange={(e) => setCatParent(e.target.value)}
-                          >
-                            <option value="">-- Root --</option>
-                            {categories.map((c) => (
-                              <option key={c.id} value={c.id}>
-                                {c.name}
-                              </option>
-                            ))}
-                          </Select>
-                        </FormField>
-                      </>
-                    )}
+              )}
 
-                    {modalType === "uom" && (
-                      <>
-                        <FormField label="Measurement Name" htmlFor="uom-name">
-                          <Input
-                            id="uom-name"
-                            type="text"
-                            value={uomName}
-                            onChange={(e) => setUomName(e.target.value)}
-                            required
-                          />
-                        </FormField>
-                        <FormField label="Abbreviation" htmlFor="uom-abbr">
-                          <Input
-                            id="uom-abbr"
-                            type="text"
-                            value={uomAbbr}
-                            onChange={(e) => setUomAbbr(e.target.value)}
-                            required
-                          />
-                        </FormField>
-                      </>
-                    )}
+              {/* Reorder Rules Tab */}
+              {activeTab === "reorder" && (
+                <Card padding="none">
+                  <div className={styles.s2}>
+                    <span className="ui-heading-base">
+                      Automatic Replenishment Limits
+                    </span>
+                    <Button
+                      variant="primary"
+                      onClick={() => {
+                        setModalType("rule");
+                        setIsModalOpen(true);
+                      }}
+                      className={styles.s3}
+                    >
+                      <Plus size={14} /> Add Rule
+                    </Button>
+                  </div>
+                  <ListPageTemplate
+                    columns={
+                      [
+                        {
+                          key: "product",
+                          header: "Product",
+                          render: (row) => {
+                            const r = row as unknown as ReorderRule;
+                            return `${r.product.name} (${r.product.sku})`;
+                          },
+                        },
+                        { key: "minQty", header: "Min Threshold" },
+                        {
+                          key: "maxQty",
+                          header: "Max Limit",
+                          render: (row) =>
+                            (row as unknown as ReorderRule).maxQty || "N/A",
+                        },
+                        { key: "reorderQty", header: "Trigger PO Qty" },
+                        { key: "leadTimeDays", header: "Lead Time (Days)" },
+                        {
+                          key: "status",
+                          header: "Status",
+                          render: () => <Badge variant="success">Active</Badge>,
+                        },
+                      ] as ListColumn[]
+                    }
+                    data={reorderRules as unknown as Record<string, unknown>[]}
+                    loading={false}
+                    searchable
+                  />
+                </Card>
+              )}
 
-                    {modalType === "rule" && (
-                      <>
-                        <FormField label="Select Product" htmlFor="rule-prod">
-                          <Select
-                            id="rule-prod"
-                            value={ruleProd}
-                            onChange={(e) => setRuleProd(e.target.value)}
-                            required
-                          >
-                            <option value="">-- Select --</option>
-                            {products.map((p) => (
-                              <option key={p.id} value={p.id}>
-                                {p.name}
-                              </option>
-                            ))}
-                          </Select>
-                        </FormField>
-                        <FormField
-                          label="Min Alert Stock Qty"
-                          htmlFor="rule-min"
-                        >
-                          <Input
-                            id="rule-min"
-                            type="number"
-                            value={ruleMin}
-                            onChange={(e) => setRuleMin(Number(e.target.value))}
-                            required
-                          />
-                        </FormField>
-                        <FormField
-                          label="Purchase Trigger Qty"
-                          htmlFor="rule-reorder"
-                        >
-                          <Input
-                            id="rule-reorder"
-                            type="number"
-                            value={ruleReorder}
-                            onChange={(e) =>
-                              setRuleReorder(Number(e.target.value))
-                            }
-                            required
-                          />
-                        </FormField>
-                      </>
-                    )}
-
-                    {modalType === "kit" && (
-                      <>
-                        <FormField
-                          label="Kit Parent Product"
-                          htmlFor="kit-prod"
-                        >
-                          <Select
-                            id="kit-prod"
-                            value={kitProd}
-                            onChange={(e) => setKitProd(e.target.value)}
-                            required
-                          >
-                            <option value="">-- Select --</option>
-                            {products.map((p) => (
-                              <option key={p.id} value={p.id}>
-                                {p.name}
-                              </option>
-                            ))}
-                          </Select>
-                        </FormField>
-                        <FormField label="Display Kit Name" htmlFor="kit-name">
-                          <Input
-                            id="kit-name"
-                            type="text"
-                            value={kitName}
-                            onChange={(e) => setKitName(e.target.value)}
-                            required
-                          />
-                        </FormField>
-                        <FormField label="Package Pricing" htmlFor="kit-price">
-                          <Input
-                            id="kit-price"
-                            type="number"
-                            value={kitPrice}
-                            onChange={(e) =>
-                              setKitPrice(Number(e.target.value))
-                            }
-                            required
-                          />
-                        </FormField>
-                      </>
-                    )}
-
-                    <div className={styles.s8}>
-                      <Button
-                        variant="outline"
-                        type="button"
-                        onClick={() => setIsModalOpen(false)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button variant="primary" type="submit">
-                        Submit Rule
-                      </Button>
-                    </div>
-                  </form>
-                </div>
-              </Card>
+              {/* Kits Tab */}
+              {activeTab === "kits" && (
+                <Card padding="none">
+                  <div className={styles.s2}>
+                    <span className="ui-heading-base">
+                      Production Assemblies & Kits
+                    </span>
+                    <Button
+                      variant="primary"
+                      onClick={() => {
+                        setModalType("kit");
+                        setIsModalOpen(true);
+                      }}
+                      className={styles.s3}
+                    >
+                      <Plus size={14} /> Add Kit
+                    </Button>
+                  </div>
+                  <ListPageTemplate
+                    columns={
+                      [
+                        {
+                          key: "sku",
+                          header: "Assembly SKU",
+                          render: (row) =>
+                            (row as unknown as ProductKit).product.sku,
+                        },
+                        { key: "name", header: "Kit Name" },
+                        {
+                          key: "sellPrice",
+                          header: "Base Price",
+                          render: (row) =>
+                            `$${Number((row as unknown as ProductKit).sellPrice).toLocaleString()}`,
+                        },
+                        {
+                          key: "discount",
+                          header: "Discount %",
+                          render: (row) =>
+                            `${(row as unknown as ProductKit).discount}%`,
+                        },
+                        {
+                          key: "components",
+                          header: "Components Count",
+                          render: (row) =>
+                            `${(row as unknown as ProductKit).components.length} items`,
+                        },
+                      ] as ListColumn[]
+                    }
+                    data={kits as unknown as Record<string, unknown>[]}
+                    loading={false}
+                    searchable
+                  />
+                </Card>
+              )}
             </div>
           )}
         </div>
-      </InventoryTabLayout>
+
+        {/* FORM MODAL */}
+        {isModalOpen && (
+          <div className={styles.s5}>
+            <Card padding="none" className={styles.s6}>
+              <div className={styles.s7}>
+                <span className="ui-heading-base">Add New config Record</span>
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="ui-btn-icon ui-text-muted"
+                >
+                  Close
+                </button>
+              </div>
+              <div className="p-5">
+                <form onSubmit={handleSave} className="ui-stack-4">
+                  {modalType === "category" && (
+                    <>
+                      <FormField label="Category Name" htmlFor="cat-name">
+                        <Input
+                          id="cat-name"
+                          type="text"
+                          value={catName}
+                          onChange={(e) => {
+                            setCatName(e.target.value);
+                            setCatSlug(
+                              e.target.value.toLowerCase().replace(/ /g, "-"),
+                            );
+                          }}
+                          required
+                        />
+                      </FormField>
+                      <FormField label="Slug" htmlFor="cat-slug">
+                        <Input
+                          id="cat-slug"
+                          type="text"
+                          value={catSlug}
+                          onChange={(e) => setCatSlug(e.target.value)}
+                          required
+                        />
+                      </FormField>
+                      <FormField label="Parent Category" htmlFor="cat-parent">
+                        <Select
+                          id="cat-parent"
+                          value={catParent}
+                          onChange={(e) => setCatParent(e.target.value)}
+                        >
+                          <option value="">-- Root --</option>
+                          {categories.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.name}
+                            </option>
+                          ))}
+                        </Select>
+                      </FormField>
+                    </>
+                  )}
+
+                  {modalType === "uom" && (
+                    <>
+                      <FormField label="Measurement Name" htmlFor="uom-name">
+                        <Input
+                          id="uom-name"
+                          type="text"
+                          value={uomName}
+                          onChange={(e) => setUomName(e.target.value)}
+                          required
+                        />
+                      </FormField>
+                      <FormField label="Abbreviation" htmlFor="uom-abbr">
+                        <Input
+                          id="uom-abbr"
+                          type="text"
+                          value={uomAbbr}
+                          onChange={(e) => setUomAbbr(e.target.value)}
+                          required
+                        />
+                      </FormField>
+                    </>
+                  )}
+
+                  {modalType === "rule" && (
+                    <>
+                      <FormField label="Select Product" htmlFor="rule-prod">
+                        <Select
+                          id="rule-prod"
+                          value={ruleProd}
+                          onChange={(e) => setRuleProd(e.target.value)}
+                          required
+                        >
+                          <option value="">-- Select --</option>
+                          {products.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.name}
+                            </option>
+                          ))}
+                        </Select>
+                      </FormField>
+                      <FormField label="Min Alert Stock Qty" htmlFor="rule-min">
+                        <Input
+                          id="rule-min"
+                          type="number"
+                          value={ruleMin}
+                          onChange={(e) => setRuleMin(Number(e.target.value))}
+                          required
+                        />
+                      </FormField>
+                      <FormField
+                        label="Purchase Trigger Qty"
+                        htmlFor="rule-reorder"
+                      >
+                        <Input
+                          id="rule-reorder"
+                          type="number"
+                          value={ruleReorder}
+                          onChange={(e) =>
+                            setRuleReorder(Number(e.target.value))
+                          }
+                          required
+                        />
+                      </FormField>
+                    </>
+                  )}
+
+                  {modalType === "kit" && (
+                    <>
+                      <FormField label="Kit Parent Product" htmlFor="kit-prod">
+                        <Select
+                          id="kit-prod"
+                          value={kitProd}
+                          onChange={(e) => setKitProd(e.target.value)}
+                          required
+                        >
+                          <option value="">-- Select --</option>
+                          {products.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.name}
+                            </option>
+                          ))}
+                        </Select>
+                      </FormField>
+                      <FormField label="Display Kit Name" htmlFor="kit-name">
+                        <Input
+                          id="kit-name"
+                          type="text"
+                          value={kitName}
+                          onChange={(e) => setKitName(e.target.value)}
+                          required
+                        />
+                      </FormField>
+                      <FormField label="Package Pricing" htmlFor="kit-price">
+                        <Input
+                          id="kit-price"
+                          type="number"
+                          value={kitPrice}
+                          onChange={(e) => setKitPrice(Number(e.target.value))}
+                          required
+                        />
+                      </FormField>
+                    </>
+                  )}
+
+                  <div className={styles.s8}>
+                    <Button
+                      variant="outline"
+                      type="button"
+                      onClick={() => setIsModalOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button variant="primary" type="submit">
+                      Submit Rule
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            </Card>
+          </div>
+        )}
+      </div>
     </RouteGuard>
   );
 }

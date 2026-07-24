@@ -3,10 +3,6 @@ import { useState, useEffect, useCallback } from "react";
 import { ListPageTemplate, type ListColumn, StatCardRow } from "@unerp/ui";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
 import { Package as InventoryModuleIcon } from "lucide-react";
 function useFrameworkFetch() {
   const client = useApiClient();
@@ -846,49 +842,39 @@ export default function HazmatPage() {
 
   return (
     <RouteGuard permission="inventory.hazmat.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={InventoryModuleIcon}
-        moduleDescription="Manage inventory operations for this workspace."
-      >
-        <div className="ui-page-shell">
-          <div>
-            <h1 className="text-2xl font-bold">
-              Hazardous Materials Management
-            </h1>
-            <p className="text-sm text-gray-500 mt-1">
-              Dangerous goods classification, SDS management, hazmat manifests,
-              and compliance reporting
-            </p>
-          </div>
-
-          <div className="border-b flex gap-0 overflow-x-auto">
-            {TABS.map(({ id, label }) => (
-              <button
-                key={id}
-                onClick={() => setTab(id)}
-                className={`px-4 py-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-                  tab === id
-                    ? "border-red-600 text-red-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          <div>
-            {tab === "dashboard" && <Dashboard />}
-            {tab === "classifications" && <Classifications />}
-            {tab === "manifests" && <Manifests />}
-            {tab === "incidents" && <Incidents />}
-            {tab === "compliance" && <ComplianceReport />}
-          </div>
+      <div className="ui-page-shell">
+        <div>
+          <h1 className="text-2xl font-bold">Hazardous Materials Management</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Dangerous goods classification, SDS management, hazmat manifests,
+            and compliance reporting
+          </p>
         </div>
-      </InventoryTabLayout>
+
+        <div className="border-b flex gap-0 overflow-x-auto">
+          {TABS.map(({ id, label }) => (
+            <button
+              key={id}
+              onClick={() => setTab(id)}
+              className={`px-4 py-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+                tab === id
+                  ? "border-red-600 text-red-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <div>
+          {tab === "dashboard" && <Dashboard />}
+          {tab === "classifications" && <Classifications />}
+          {tab === "manifests" && <Manifests />}
+          {tab === "incidents" && <Incidents />}
+          {tab === "compliance" && <ComplianceReport />}
+        </div>
+      </div>
     </RouteGuard>
   );
 }

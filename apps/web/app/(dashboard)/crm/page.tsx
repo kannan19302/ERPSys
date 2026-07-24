@@ -1,5 +1,6 @@
 "use client";
 
+import { useCrmKeyMigration, type CrmTab } from "@/components/crm/CrmTabLayout";
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -29,11 +30,6 @@ import {
   KPICard,
 } from "@unerp/ui";
 import { RouteGuard, ListView } from "@unerp/framework";
-import {
-  CrmTabLayout,
-  useCrmKeyMigration,
-  type CrmTab,
-} from "@/components/crm/CrmTabLayout";
 
 interface DashboardData {
   kpis: {
@@ -215,129 +211,121 @@ export default function CrmPage() {
 
   return (
     <RouteGuard permission="crm.read">
-      <CrmTabLayout
-        tabs={TAB_DEFINITIONS}
-        moduleId="crm"
-        moduleLabel="CRM & Sales"
-        moduleIcon={BarChart3}
-        moduleDescription="Customer relationship management and sales pipeline"
-      >
-        <div style={{ position: "relative" }}>
-          {loading ? (
+      <div style={{ position: "relative" }}>
+        {loading ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              padding: "var(--space-8)",
+            }}
+          >
+            <Spinner />
+          </div>
+        ) : (
+          <>
             <div
               style={{
                 display: "flex",
-                justifyContent: "center",
-                padding: "var(--space-8)",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "var(--space-4)",
               }}
             >
-              <Spinner />
+              <div style={{ display: "flex", gap: "var(--space-2)" }}>
+                {PAGES.map((p) => (
+                  <Link
+                    key={p.id}
+                    href={
+                      p.id === "executive-overview"
+                        ? "/crm"
+                        : `/crm?page=${p.id}`
+                    }
+                    className="ui-btn"
+                    style={{
+                      background:
+                        activePage === p.id
+                          ? "var(--color-primary)"
+                          : "transparent",
+                      color: activePage === p.id ? "#fff" : "inherit",
+                      border: "1px solid var(--color-border)",
+                      padding: "var(--space-1) var(--space-3)",
+                      borderRadius: "var(--radius-md)",
+                      fontSize: "var(--text-sm)",
+                      textDecoration: "none",
+                    }}
+                  >
+                    <p.icon size={14} style={{ marginRight: 4 }} />
+                    {p.label}
+                  </Link>
+                ))}
+              </div>
+              <button
+                onClick={fetchDashboard}
+                className="ui-btn"
+                style={{ padding: "var(--space-1) var(--space-3)" }}
+              >
+                <RefreshCw size={14} style={{ marginRight: 4 }} />
+                Refresh
+              </button>
             </div>
-          ) : (
-            <>
-              <div
+
+            {data && <KPICardGroup data={data} />}
+
+            {/* Page Navigation Arrows */}
+            {prevPage && (
+              <Link
+                href={
+                  prevPage.id === "executive-overview"
+                    ? "/crm"
+                    : `/crm?page=${prevPage.id}`
+                }
                 style={{
+                  position: "absolute",
+                  left: -48,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "var(--color-warning)",
+                  color: "#000",
+                  width: 36,
+                  height: 36,
+                  borderRadius: "50%",
                   display: "flex",
-                  justifyContent: "space-between",
                   alignItems: "center",
-                  marginBottom: "var(--space-4)",
+                  justifyContent: "center",
+                  textDecoration: "none",
+                  zIndex: 10,
                 }}
               >
-                <div style={{ display: "flex", gap: "var(--space-2)" }}>
-                  {PAGES.map((p) => (
-                    <Link
-                      key={p.id}
-                      href={
-                        p.id === "executive-overview"
-                          ? "/crm"
-                          : `/crm?page=${p.id}`
-                      }
-                      className="ui-btn"
-                      style={{
-                        background:
-                          activePage === p.id
-                            ? "var(--color-primary)"
-                            : "transparent",
-                        color: activePage === p.id ? "#fff" : "inherit",
-                        border: "1px solid var(--color-border)",
-                        padding: "var(--space-1) var(--space-3)",
-                        borderRadius: "var(--radius-md)",
-                        fontSize: "var(--text-sm)",
-                        textDecoration: "none",
-                      }}
-                    >
-                      <p.icon size={14} style={{ marginRight: 4 }} />
-                      {p.label}
-                    </Link>
-                  ))}
-                </div>
-                <button
-                  onClick={fetchDashboard}
-                  className="ui-btn"
-                  style={{ padding: "var(--space-1) var(--space-3)" }}
-                >
-                  <RefreshCw size={14} style={{ marginRight: 4 }} />
-                  Refresh
-                </button>
-              </div>
-
-              {data && <KPICardGroup data={data} />}
-
-              {/* Page Navigation Arrows */}
-              {prevPage && (
-                <Link
-                  href={
-                    prevPage.id === "executive-overview"
-                      ? "/crm"
-                      : `/crm?page=${prevPage.id}`
-                  }
-                  style={{
-                    position: "absolute",
-                    left: -48,
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    background: "var(--color-warning)",
-                    color: "#000",
-                    width: 36,
-                    height: 36,
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    textDecoration: "none",
-                    zIndex: 10,
-                  }}
-                >
-                  <ChevronLeft size={20} />
-                </Link>
-              )}
-              {nextPage && (
-                <Link
-                  href={`/crm?page=${nextPage.id}`}
-                  style={{
-                    position: "absolute",
-                    right: -48,
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    background: "var(--color-warning)",
-                    color: "#000",
-                    width: 36,
-                    height: 36,
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    textDecoration: "none",
-                    zIndex: 10,
-                  }}
-                >
-                  <ChevronRight size={20} />
-                </Link>
-              )}
-            </>
-          )}
-        </div>
-      </CrmTabLayout>
+                <ChevronLeft size={20} />
+              </Link>
+            )}
+            {nextPage && (
+              <Link
+                href={`/crm?page=${nextPage.id}`}
+                style={{
+                  position: "absolute",
+                  right: -48,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "var(--color-warning)",
+                  color: "#000",
+                  width: 36,
+                  height: 36,
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  textDecoration: "none",
+                  zIndex: 10,
+                }}
+              >
+                <ChevronRight size={20} />
+              </Link>
+            )}
+          </>
+        )}
+      </div>
     </RouteGuard>
   );
 }

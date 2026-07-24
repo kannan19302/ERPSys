@@ -4,10 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { ListPageTemplate, type ListColumn } from "@unerp/ui";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
 import { Package as InventoryModuleIcon } from "lucide-react";
 function useFrameworkFetch() {
   const client = useApiClient();
@@ -667,46 +663,38 @@ export default function AslPage() {
 
   return (
     <RouteGuard permission="inventory.asl.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={InventoryModuleIcon}
-        moduleDescription="Manage inventory operations for this workspace."
-      >
-        <div className="p-6 space-y-6 max-w-7xl mx-auto">
-          <div>
-            <h1 className="text-2xl font-bold">Approved Supplier List (ASL)</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              Vendor item catalog, supplier qualification, price tiers, and
-              compliance management
-            </p>
-          </div>
-
-          <div className="border-b flex gap-0 overflow-x-auto">
-            {TABS.map(({ id, label }) => (
-              <button
-                key={id}
-                onClick={() => setTab(id)}
-                className={`px-4 py-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-                  tab === id
-                    ? "border-indigo-600 text-indigo-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          <div>
-            {tab === "dashboard" && <Dashboard />}
-            {tab === "suppliers" && <ApprovedSuppliers />}
-            {tab === "compliance" && <Compliance />}
-            {tab === "sourcing" && <SourcingReport />}
-          </div>
+      <div className="p-6 space-y-6 max-w-7xl mx-auto">
+        <div>
+          <h1 className="text-2xl font-bold">Approved Supplier List (ASL)</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Vendor item catalog, supplier qualification, price tiers, and
+            compliance management
+          </p>
         </div>
-      </InventoryTabLayout>
+
+        <div className="border-b flex gap-0 overflow-x-auto">
+          {TABS.map(({ id, label }) => (
+            <button
+              key={id}
+              onClick={() => setTab(id)}
+              className={`px-4 py-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+                tab === id
+                  ? "border-indigo-600 text-indigo-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <div>
+          {tab === "dashboard" && <Dashboard />}
+          {tab === "suppliers" && <ApprovedSuppliers />}
+          {tab === "compliance" && <Compliance />}
+          {tab === "sourcing" && <SourcingReport />}
+        </div>
+      </div>
     </RouteGuard>
   );
 }

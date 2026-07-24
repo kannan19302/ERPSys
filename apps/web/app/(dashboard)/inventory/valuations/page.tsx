@@ -12,10 +12,6 @@ import {
 import { Search, AlertCircle, DollarSign } from "lucide-react";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
 import { Package as InventoryModuleIcon } from "lucide-react";
 interface ValuationItem {
   productId: string;
@@ -99,63 +95,55 @@ export default function ValuationsPage() {
 
   return (
     <RouteGuard permission="inventory.valuations.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={InventoryModuleIcon}
-        moduleDescription="Monitor real-time product inventory values and weighted average costing models."
-      >
-        <div className="ui-stack-6 ui-animate-in">
-          <PageHeader
-            title="Inventory Cost Valuations"
-            description="Monitor real-time product inventory values and weighted average costing models."
-            breadcrumbs={[
-              { label: "Home", href: "/dashboard" },
-              { label: "Inventory", href: "/inventory" },
-              { label: "Valuations" },
-            ]}
-          />
+      <div className="ui-stack-6 ui-animate-in">
+        <PageHeader
+          title="Inventory Cost Valuations"
+          description="Monitor real-time product inventory values and weighted average costing models."
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "Inventory", href: "/inventory" },
+            { label: "Valuations" },
+          ]}
+        />
 
-          {error && (
-            <div className={styles.s3}>
-              <AlertCircle size={16} />
-              <span>Note: {error}</span>
-            </div>
-          )}
+        {error && (
+          <div className={styles.s3}>
+            <AlertCircle size={16} />
+            <span>Note: {error}</span>
+          </div>
+        )}
 
-          <StatCardRow
-            stats={[
-              {
-                label: "Total Inventory Asset Value",
-                value: `$${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
-                icon: <DollarSign size={16} />,
-                color: "primary",
-              },
-            ]}
-          />
+        <StatCardRow
+          stats={[
+            {
+              label: "Total Inventory Asset Value",
+              value: `$${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+              icon: <DollarSign size={16} />,
+              color: "primary",
+            },
+          ]}
+        />
 
-          <Card padding="md" className={styles.s4}>
-            <div className={styles.s5}>
-              <Search size={16} className={styles.s6} />
-              <input
-                type="text"
-                className={`ui-input ${styles.s7}`}
-                placeholder="Search valuations by SKU or product name..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-          </Card>
+        <Card padding="md" className={styles.s4}>
+          <div className={styles.s5}>
+            <Search size={16} className={styles.s6} />
+            <input
+              type="text"
+              className={`ui-input ${styles.s7}`}
+              placeholder="Search valuations by SKU or product name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </Card>
 
-          <ListPageTemplate
-            columns={columns}
-            data={filteredItems as unknown as Record<string, unknown>[]}
-            loading={loading}
-            searchable={false}
-          />
-        </div>
-      </InventoryTabLayout>
+        <ListPageTemplate
+          columns={columns}
+          data={filteredItems as unknown as Record<string, unknown>[]}
+          loading={loading}
+          searchable={false}
+        />
+      </div>
     </RouteGuard>
   );
 }

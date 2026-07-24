@@ -13,10 +13,6 @@ import {
 import { RouteGuard, useApiClient } from "@unerp/framework";
 import { AlertCircle, Layers, TrendingUp } from "lucide-react";
 
-import {
-  InventoryTabLayout,
-  INVENTORY_TABS,
-} from "@/components/inventory/InventoryTabLayout";
 import { Package as InventoryModuleIcon } from "lucide-react";
 interface KitComponent {
   productId: string;
@@ -201,138 +197,130 @@ export default function KitsPage() {
 
   return (
     <RouteGuard permission="inventory.kits.read">
-      <InventoryTabLayout
-        tabs={INVENTORY_TABS}
-        moduleId="inventory"
-        moduleLabel="Inventory & Stock"
-        moduleIcon={InventoryModuleIcon}
-        moduleDescription="Bundle/kit definitions with component availability checks, cost rollup, and assemble/disassemble stock operations."
-      >
-        <div className="ui-stack-6 ui-animate-in">
-          <PageHeader
-            title="Product Kits & Assembly"
-            description="Bundle/kit definitions with component availability checks, cost rollup, and assemble/disassemble stock operations."
-            breadcrumbs={[
-              { label: "Home", href: "/dashboard" },
-              { label: "Inventory", href: "/inventory" },
-              { label: "Kits & Assembly" },
-            ]}
-          />
+      <div className="ui-stack-6 ui-animate-in">
+        <PageHeader
+          title="Product Kits & Assembly"
+          description="Bundle/kit definitions with component availability checks, cost rollup, and assemble/disassemble stock operations."
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "Inventory", href: "/inventory" },
+            { label: "Kits & Assembly" },
+          ]}
+        />
 
-          {error && (
-            <div className={styles.s1}>
-              <AlertCircle size={16} />
-              <span>Note: {error}</span>
-            </div>
-          )}
-
-          <div className={`ui-form-group ${styles.s2}`}>
-            <label className="ui-label">Warehouse</label>
-            <select
-              className="ui-input"
-              value={warehouseId}
-              onChange={(e) => setWarehouseId(e.target.value)}
-            >
-              {warehouses.map((w) => (
-                <option key={w.id} value={w.id}>
-                  {w.name}
-                </option>
-              ))}
-            </select>
+        {error && (
+          <div className={styles.s1}>
+            <AlertCircle size={16} />
+            <span>Note: {error}</span>
           </div>
+        )}
 
-          {loading ? (
-            <div className="ui-center-pad">
-              <Spinner size="lg" />
-            </div>
-          ) : (
-            <div className="ui-grid-2 ui-gap-6">
-              <Card padding="none" className="builder-table-wrapper">
-                <div className={styles.s3}>
-                  <Layers size={16} /> Kits
-                </div>
-                <ListPageTemplate
-                  columns={kitColumns}
-                  data={kits as unknown as Record<string, unknown>[]}
-                  loading={loading}
-                  searchable
-                />
-              </Card>
-
-              <Card className="p-5">
-                {!selectedKit ? (
-                  <div className={styles.s4}>
-                    Select a kit to view availability and margin.
-                  </div>
-                ) : (
-                  <div className="ui-stack-4">
-                    <div className="font-semibold">{selectedKit.name}</div>
-                    {availability && (
-                      <div className="text-sm">
-                        Max buildable now:{" "}
-                        <strong>{availability.maxBuildable}</strong>
-                      </div>
-                    )}
-                    {costRollup && (
-                      <div className={styles.s5}>
-                        <TrendingUp size={14} /> Cost ${costRollup.totalCost} ·
-                        Sell ${costRollup.sellPrice} · Margin{" "}
-                        {costRollup.marginPct}%
-                      </div>
-                    )}
-                    <div className={styles.s6}>
-                      <input
-                        type="number"
-                        className={`ui-input ${styles.s7}`}
-                        value={assembleQty}
-                        min={1}
-                        onChange={(e) => setAssembleQty(Number(e.target.value))}
-                      />
-                      <Button variant="primary" onClick={handleAssemble}>
-                        Assemble
-                      </Button>
-                      <Button variant="outline" onClick={handleDisassemble}>
-                        Disassemble
-                      </Button>
-                    </div>
-
-                    <div className={styles.s8}>
-                      <div className="ui-flex-between mb-2">
-                        <span className={styles.s9}>BOM Version History</span>
-                        <Button
-                          variant="outline"
-                          onClick={handleSnapshotVersion}
-                          className={styles.s10}
-                        >
-                          Snapshot Version
-                        </Button>
-                      </div>
-                      {versions.map((v) => (
-                        <div key={v.id} className={styles.s11}>
-                          <span>
-                            v{v.versionNo} {v.notes ? `— ${v.notes}` : ""}{" "}
-                            {v.isActive && (
-                              <Badge variant="success">Active</Badge>
-                            )}
-                          </span>
-                          {!v.isActive && (
-                            <button
-                              onClick={() => handleActivateVersion(v.id)}
-                              className={`ui-btn ui-btn-primary ${styles.s12}`}
-                            >
-                              Activate
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </Card>
-            </div>
-          )}
+        <div className={`ui-form-group ${styles.s2}`}>
+          <label className="ui-label">Warehouse</label>
+          <select
+            className="ui-input"
+            value={warehouseId}
+            onChange={(e) => setWarehouseId(e.target.value)}
+          >
+            {warehouses.map((w) => (
+              <option key={w.id} value={w.id}>
+                {w.name}
+              </option>
+            ))}
+          </select>
         </div>
-      </InventoryTabLayout>
+
+        {loading ? (
+          <div className="ui-center-pad">
+            <Spinner size="lg" />
+          </div>
+        ) : (
+          <div className="ui-grid-2 ui-gap-6">
+            <Card padding="none" className="builder-table-wrapper">
+              <div className={styles.s3}>
+                <Layers size={16} /> Kits
+              </div>
+              <ListPageTemplate
+                columns={kitColumns}
+                data={kits as unknown as Record<string, unknown>[]}
+                loading={loading}
+                searchable
+              />
+            </Card>
+
+            <Card className="p-5">
+              {!selectedKit ? (
+                <div className={styles.s4}>
+                  Select a kit to view availability and margin.
+                </div>
+              ) : (
+                <div className="ui-stack-4">
+                  <div className="font-semibold">{selectedKit.name}</div>
+                  {availability && (
+                    <div className="text-sm">
+                      Max buildable now:{" "}
+                      <strong>{availability.maxBuildable}</strong>
+                    </div>
+                  )}
+                  {costRollup && (
+                    <div className={styles.s5}>
+                      <TrendingUp size={14} /> Cost ${costRollup.totalCost} ·
+                      Sell ${costRollup.sellPrice} · Margin{" "}
+                      {costRollup.marginPct}%
+                    </div>
+                  )}
+                  <div className={styles.s6}>
+                    <input
+                      type="number"
+                      className={`ui-input ${styles.s7}`}
+                      value={assembleQty}
+                      min={1}
+                      onChange={(e) => setAssembleQty(Number(e.target.value))}
+                    />
+                    <Button variant="primary" onClick={handleAssemble}>
+                      Assemble
+                    </Button>
+                    <Button variant="outline" onClick={handleDisassemble}>
+                      Disassemble
+                    </Button>
+                  </div>
+
+                  <div className={styles.s8}>
+                    <div className="ui-flex-between mb-2">
+                      <span className={styles.s9}>BOM Version History</span>
+                      <Button
+                        variant="outline"
+                        onClick={handleSnapshotVersion}
+                        className={styles.s10}
+                      >
+                        Snapshot Version
+                      </Button>
+                    </div>
+                    {versions.map((v) => (
+                      <div key={v.id} className={styles.s11}>
+                        <span>
+                          v{v.versionNo} {v.notes ? `— ${v.notes}` : ""}{" "}
+                          {v.isActive && (
+                            <Badge variant="success">Active</Badge>
+                          )}
+                        </span>
+                        {!v.isActive && (
+                          <button
+                            onClick={() => handleActivateVersion(v.id)}
+                            className={`ui-btn ui-btn-primary ${styles.s12}`}
+                          >
+                            Activate
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </Card>
+          </div>
+        )}
+      </div>
     </RouteGuard>
   );
 }
