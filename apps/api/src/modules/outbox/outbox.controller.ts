@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, NotFoundException, ConflictException, InternalServerErrorException } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, NotFoundException, ConflictException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';

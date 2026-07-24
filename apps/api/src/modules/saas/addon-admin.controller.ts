@@ -88,7 +88,7 @@ export class AddonAdminController {
   @Permissions("saas.addon.read")
   @Get("purchases")
   async listAllPurchases(@Req() _req: AuthReq) {
-    return prisma.tenantAddOn.findMany({
+    return this.saasService.db.tenantAddOn.findMany({
       include: { addon: true, tenant: { select: { name: true } } },
       orderBy: { createdAt: "desc" },
     }).catch(() => []);
@@ -98,7 +98,7 @@ export class AddonAdminController {
   @Permissions("saas.addon.read")
   @Get("revenue")
   async getAddonRevenue(@Req() _req: AuthReq) {
-    const purchases = await prisma.tenantAddOn.findMany({
+    const purchases = await this.saasService.db.tenantAddOn.findMany({
       where: { status: "ACTIVE" },
       include: { addon: true },
     }).catch(() => []);
@@ -110,7 +110,7 @@ export class AddonAdminController {
   @Permissions("saas.addon.read")
   @Get("popular")
   async getPopularAddons(@Req() _req: AuthReq) {
-    const purchases = await prisma.tenantAddOn.findMany({
+    const purchases = await this.saasService.db.tenantAddOn.findMany({
       where: { status: "ACTIVE" },
       include: { addon: true },
     }).catch(() => []);

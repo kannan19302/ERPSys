@@ -253,7 +253,7 @@ export class BlockchainController {
   @Permissions('blockchain.network.read')
   @ApiOperation({ summary: 'Get blockchain statistics for the tenant' })
   async getStats(@Req() req: AuthenticatedRequest) {
-    return this.documentBlockchainService.getStats(
+    return this.documentBlockchain.getStats(
       req.user.tenantId,
       this.fabricGateway.isConnected(),
     );

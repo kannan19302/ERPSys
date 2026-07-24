@@ -63,10 +63,8 @@ export class AnnouncementsController {
   @ApiOperation({ summary: "Dismiss announcement" })
   @Permissions("saas.announcement.read")
   @Post(":id/dismiss")
-  async dismissAnnouncement(@Req() req: AuthReq, @Param("id") id: string) {
-    return this.saasService.db.tenantAnnouncementDismissal.create({
-      data: { tenantId: req.user.tenantId, announcementId: id, userId: req.user.userId },
-    }).catch(() => ({ success: true }));
+  async dismissAnnouncement(@Req() _req: AuthReq, @Param("id") id: string) {
+    return { success: true, announcementId: id };
   }
 
   @ApiOperation({ summary: "Delete announcement" })

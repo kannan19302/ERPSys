@@ -45,7 +45,7 @@ export class AnalyticsExtController {
   @Permissions("saas.analytics.read")
   @Get("revenue/total")
   async getTotalRevenue() {
-    const result = await prisma.saaSInvoice.aggregate({
+    const result = await this.tenantAnalyticsService.db.saaSInvoice.aggregate({
       where: { status: "PAID" },
       _sum: { totalAmount: true },
       _count: true,
@@ -64,7 +64,7 @@ export class AnalyticsExtController {
     const startDate = new Date();
     startDate.setMonth(startDate.getMonth() - numMonths);
 
-    const invoices = await prisma.saaSInvoice.findMany({
+    const invoices = await this.tenantAnalyticsService.db.saaSInvoice.findMany({
       where: { status: "PAID", paidAt: { gte: startDate } },
       orderBy: { paidAt: "asc" },
       select: { totalAmount: true, paidAt: true },
@@ -84,7 +84,7 @@ export class AnalyticsExtController {
   @Get("revenue/forecast")
   async getRevenueForecast() {
     const mrr = await this.tenantAnalyticsService.getRevenueAnalytics("30d");
-    const activeSubs = await prisma.tenantSubscription.count({
+    const activeSubs = await this.tenantAnalyticsService.db.tenantSubscription.count({
       where: { status: { in: ["ACTIVE", "TRIAL"] } },
     });
     const avgRevenue = activeSubs > 0 ? (Number(mrr.totalRevenue) / activeSubs) : 0;
@@ -108,9 +108,9 @@ export class AnalyticsExtController {
   @Get("subscriptions/conversion")
   async getConversionRate() {
     const [totalVisitors, trialStarts, paidConversions] = await Promise.all([
-      prisma.tenant.count({ where: { createdAt: { gte: new Date(Date.now() - 30 * 86400000) } } }),
-      prisma.tenantSubscription.count({ where: { status: "TRIAL", startDate: { gte: new Date(Date.now() - 30 * 86400000) } } }),
-      prisma.tenantSubscription.count({ where: { status: "ACTIVE", startDate: { gte: new Date(Date.now() - 30 * 86400000) } } }),
+      this.tenantAnalyticsService.db.tenant.count({ where: { createdAt: { gte: new Date(Date.now() - 30 * 86400000) } } }),
+      this.tenantAnalyticsService.db.tenantSubscription.count({ where: { status: "TRIAL", startDate: { gte: new Date(Date.now() - 30 * 86400000) } } }),
+      this.tenantAnalyticsService.db.tenantSubscription.count({ where: { status: "ACTIVE", startDate: { gte: new Date(Date.now() - 30 * 86400000) } } }),
     ]);
     return {
       period: "30d",
@@ -127,16 +127,16 @@ export class AnalyticsExtController {
   @Get("subscriptions/trial")
   async getTrialConversion() {
     const [trials, converted, expired] = await Promise.all([
-      prisma.tenantSubscription.findMany({ where: { status: "TRIAL" }, include: { plan: { select: { name: true } } } }),
-      prisma.tenantSubscription.count({ where: { status: "ACTIVE", trialEndsAt: { not: null } } }),
-      prisma.tenantSubscription.count({ where: { status: "EXPIRED" } }),
+      this.tenantAnalyticsService.db.tenantSubscription.findMany({ where: { status: "TRIAL" }, include: { plan: { select: { name: true } } } }),
+      this.tenantAnalyticsService.db.tenantSubscription.count({ where: { status: "ACTIVE", trialEndsAt: { not: null } } }),
+      this.tenantAnalyticsService.db.tenantSubscription.count({ where: { status: "EXPIRED" } }),
     ]);
     return {
       activeTrials: trials.length,
       convertedToPaid: converted,
       expiredTrials: expired,
       conversionRate: trials.length > 0 ? Math.round((converted / trials.length) * 100) : 0,
-      byPlan: trials.reduce((acc: Record<string, number>, t) => {
+      byPlan: trials.reduce((acc: Record<string, number>, t: any) => {
         const name = t.plan?.name ?? "Unknown";
         acc[name] = (acc[name] ?? 0) + 1;
         return acc;
@@ -154,9 +154,9 @@ export class AnalyticsExtController {
     const monthAgo = new Date(today.getTime() - 30 * 86400000);
 
     const [daily, weekly, monthly] = await Promise.all([
-      prisma.user.count({ where: { lastLoginAt: { gte: today } } }),
-      prisma.user.count({ where: { lastLoginAt: { gte: weekAgo } } }),
-      prisma.user.count({ where: { lastLoginAt: { gte: monthAgo } } }),
+      this.tenantAnalyticsService.db.user.count({ where: { lastLoginAt: { gte: today } } }),
+      this.tenantAnalyticsService.db.user.count({ where: { lastLoginAt: { gte: weekAgo } } }),
+      this.tenantAnalyticsService.db.user.count({ where: { lastLoginAt: { gte: monthAgo } } }),
     ]);
 
     return { dailyActiveUsers: daily, weeklyActiveUsers: weekly, monthlyActiveUsers: monthly };
@@ -173,9 +173,9 @@ export class AnalyticsExtController {
   @Permissions("saas.analytics.read")
   @Get("users/retention")
   async getUserRetention() {
-    const totalUsers = await prisma.user.count();
-    const activeUsers = await prisma.user.count({ where: { lastLoginAt: { gte: new Date(Date.now() - 30 * 86400000) } } });
-    const retainedUsers = await prisma.user.count({ where: { lastLoginAt: { gte: new Date(Date.now() - 90 * 86400000) } } });
+    const totalUsers = await this.tenantAnalyticsService.db.user.count();
+    const activeUsers = await this.tenantAnalyticsService.db.user.count({ where: { lastLoginAt: { gte: new Date(Date.now() - 30 * 86400000) } } });
+    const retainedUsers = await this.tenantAnalyticsService.db.user.count({ where: { lastLoginAt: { gte: new Date(Date.now() - 90 * 86400000) } } });
     return {
       totalUsers,
       activeUsers,
