@@ -1,6 +1,6 @@
 {
   "name": "@unerp/ui",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "description": "UniERP Design System — backward-compat facade over @unerp/ui-* packages",
   "main": "./src/index.ts",

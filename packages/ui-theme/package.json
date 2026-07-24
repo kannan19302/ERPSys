@@ -1,6 +1,6 @@
 {
   "name": "@unerp/ui-theme",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "UniERP Design System — ThemeProvider, useTheme, runtime customer branding",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

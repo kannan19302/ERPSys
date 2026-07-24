@@ -1,6 +1,6 @@
 {
   "name": "@unerp/ui-workflow",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "UniERP Design System — workflow/stepper composites (thin pre-v1 layer)",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
