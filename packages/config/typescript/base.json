@@ -20,6 +20,7 @@
     "declarationMap": true,
     "sourceMap": true,
     "skipLibCheck": true,
+    "baseUrl": ".",
     "paths": {
       "@unerp/ui-tokens": ["../ui-tokens/src/index.ts", "../ui-tokens/dist/index.d.ts"],
       "@unerp/ui-components": ["../ui-components/src/index.ts", "../ui-components/dist/index.d.ts"],
