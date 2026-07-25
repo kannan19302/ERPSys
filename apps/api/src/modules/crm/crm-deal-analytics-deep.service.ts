@@ -4,20 +4,24 @@ import { prisma } from "@unerp/database";
 @Injectable()
 export class CrmDealAnalyticsDeepService {
   async getDealVelocityAnalysis(tenantId: string) {
-    const deals = await prisma.deal.findMany({ where: { tenantId } });
+    const deals = await prisma.opportunity.findMany({ where: { tenantId } });
     const closed = deals.filter(
-      (d) => d.stage === "CLOSED_WON" || d.stage === "CLOSED_LOST",
+      (d: { stage: string }) =>
+        d.stage === "CLOSED_WON" || d.stage === "CLOSED_LOST",
     );
     const avgDays = closed.length
-      ? closed.reduce((sum, d) => {
-          const days =
-            d.closedAt && d.createdAt
-              ? Math.ceil(
-                  (d.closedAt.getTime() - d.createdAt.getTime()) / 86400000,
-                )
-              : 0;
-          return sum + days;
-        }, 0) / closed.length
+      ? closed.reduce(
+          (sum: number, d: { updatedAt: Date; createdAt: Date }) => {
+            const days =
+              d.updatedAt && d.createdAt
+                ? Math.ceil(
+                    (d.updatedAt.getTime() - d.createdAt.getTime()) / 86400000,
+                  )
+                : 0;
+            return sum + days;
+          },
+          0,
+        ) / closed.length
       : 0;
     return {
       averageSalesCycleDays: Math.round(avgDays),
@@ -27,15 +31,15 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getStageDurationBreakdown(tenantId: string) {
-    const deals = await prisma.deal.findMany({
+    const deals = await prisma.opportunity.findMany({
       where: { tenantId },
-      select: { stage: true, createdAt: true, closedAt: true },
+      select: { stage: true, createdAt: true, updatedAt: true },
     });
     const stageMap: Record<string, number[]> = {};
-    deals.forEach((d) => {
+    deals.forEach((d: { stage: string; updatedAt: Date; createdAt: Date }) => {
       if (!stageMap[d.stage]) stageMap[d.stage] = [];
-      const days = d.closedAt
-        ? Math.ceil((d.closedAt.getTime() - d.createdAt.getTime()) / 86400000)
+      const days = d.updatedAt
+        ? Math.ceil((d.updatedAt.getTime() - d.createdAt.getTime()) / 86400000)
         : 0;
       stageMap[d.stage].push(days);
     });
@@ -49,9 +53,9 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getDealValueDistribution(tenantId: string) {
-    const deals = await prisma.deal.findMany({
+    const deals = await prisma.opportunity.findMany({
       where: { tenantId },
-      select: { value: true, stage: true },
+      select: { amount: true, stage: true },
     });
     const buckets = [
       { label: "< $10K", min: 0, max: 10000, count: 0, total: 0 },
@@ -60,8 +64,8 @@ export class CrmDealAnalyticsDeepService {
       { label: "$100K–$500K", min: 100000, max: 500000, count: 0, total: 0 },
       { label: "> $500K", min: 500000, max: Infinity, count: 0, total: 0 },
     ];
-    deals.forEach((d) => {
-      const v = Number(d.value ?? 0);
+    deals.forEach((d: { amount: any }) => {
+      const v = Number(d.amount ?? 0);
       const b = buckets.find((bk) => v >= bk.min && v < bk.max);
       if (b) {
         b.count++;
@@ -72,12 +76,16 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getWinRateByStage(tenantId: string) {
-    const deals = await prisma.deal.findMany({
+    const deals = await prisma.opportunity.findMany({
       where: { tenantId },
       select: { stage: true },
     });
-    const won = deals.filter((d) => d.stage === "CLOSED_WON").length;
-    const lost = deals.filter((d) => d.stage === "CLOSED_LOST").length;
+    const won = deals.filter(
+      (d: { stage: string }) => d.stage === "CLOSED_WON",
+    ).length;
+    const lost = deals.filter(
+      (d: { stage: string }) => d.stage === "CLOSED_LOST",
+    ).length;
     const totalClosed = won + lost;
     return {
       winRate: totalClosed ? Math.round((won / totalClosed) * 100) : 0,
@@ -88,12 +96,12 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getLossReasonBreakdown(tenantId: string) {
-    const deals = await prisma.deal.findMany({
+    const deals = await prisma.opportunity.findMany({
       where: { tenantId, stage: "CLOSED_LOST" },
       select: { lossReason: true },
     });
     const map: Record<string, number> = {};
-    deals.forEach((d) => {
+    deals.forEach((d: { lossReason: string | null }) => {
       const reason = d.lossReason ?? "Unknown";
       map[reason] = (map[reason] ?? 0) + 1;
     });
@@ -103,27 +111,40 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getSalesCycleByProduct(tenantId: string) {
-    const deals = await prisma.deal.findMany({
+    const deals = await prisma.opportunity.findMany({
       where: { tenantId, stage: "CLOSED_WON" },
-      select: { name: true, createdAt: true, closedAt: true, value: true },
+      select: { name: true, createdAt: true, updatedAt: true, amount: true },
     });
-    return deals.slice(0, 20).map((d) => ({
-      name: d.name,
-      cycleDays: d.closedAt
-        ? Math.ceil((d.closedAt.getTime() - d.createdAt.getTime()) / 86400000)
-        : 0,
-      value: Number(d.value ?? 0),
-    }));
+    return deals
+      .slice(0, 20)
+      .map(
+        (d: {
+          name: string;
+          updatedAt: Date;
+          createdAt: Date;
+          amount: any;
+        }) => ({
+          name: d.name,
+          cycleDays: d.updatedAt
+            ? Math.ceil(
+                (d.updatedAt.getTime() - d.createdAt.getTime()) / 86400000,
+              )
+            : 0,
+          value: Number(d.amount ?? 0),
+        }),
+      );
   }
 
   async getForecastAccuracyAnalysis(tenantId: string) {
-    const deals = await prisma.deal.findMany({
+    const deals = await prisma.opportunity.findMany({
       where: { tenantId, stage: "CLOSED_WON" },
-      select: { value: true, expectedCloseDate: true, closedAt: true },
+      select: { amount: true, expectedCloseDate: true, updatedAt: true },
     });
     const onTime = deals.filter(
-      (d) =>
-        d.closedAt && d.expectedCloseDate && d.closedAt <= d.expectedCloseDate,
+      (d: { updatedAt: Date; expectedCloseDate: Date | null }) =>
+        d.updatedAt &&
+        d.expectedCloseDate &&
+        d.updatedAt <= d.expectedCloseDate,
     ).length;
     return {
       totalClosed: deals.length,
@@ -135,14 +156,18 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getPipelineHealthScore(tenantId: string) {
-    const deals = await prisma.deal.findMany({ where: { tenantId } });
+    const deals = await prisma.opportunity.findMany({ where: { tenantId } });
     const active = deals.filter(
-      (d) => d.stage !== "CLOSED_WON" && d.stage !== "CLOSED_LOST",
+      (d: { stage: string }) =>
+        d.stage !== "CLOSED_WON" && d.stage !== "CLOSED_LOST",
     );
-    const totalValue = active.reduce((s, d) => s + Number(d.value ?? 0), 0);
+    const totalValue = active.reduce(
+      (s: number, d: { amount: any }) => s + Number(d.amount ?? 0),
+      0,
+    );
     const avgAge = active.length
       ? active.reduce(
-          (s, d) =>
+          (s: number, d: { createdAt: Date }) =>
             s + Math.ceil((Date.now() - d.createdAt.getTime()) / 86400000),
           0,
         ) / active.length
@@ -157,7 +182,7 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getDealConversionFunnel(tenantId: string) {
-    const deals = await prisma.deal.findMany({
+    const deals = await prisma.opportunity.findMany({
       where: { tenantId },
       select: { stage: true },
     });
@@ -170,7 +195,7 @@ export class CrmDealAnalyticsDeepService {
     ];
     return stages.map((stage) => ({
       stage,
-      count: deals.filter((d) => d.stage === stage).length,
+      count: deals.filter((d: { stage: string }) => d.stage === stage).length,
     }));
   }
 

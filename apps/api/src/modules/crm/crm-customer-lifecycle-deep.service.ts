@@ -246,7 +246,7 @@ export class CrmCustomerLifecycleDeepService {
     };
   }
 
-  async getOnboardingSuccessMetrics(tenantId: string) {
+  async getOnboardingSuccessMetrics(_tenantId: string) {
     return {
       avgOnboardingDays: 14,
       onboardingCompletionRate: 87,
@@ -264,21 +264,24 @@ export class CrmCustomerLifecycleDeepService {
   async getExpansionRevenueTracking(tenantId: string) {
     const customers = await prisma.customer.findMany({
       where: { tenantId },
-      select: { id: true, name: true, annualRevenue: true, type: true },
+      select: { id: true, name: true, creditLimit: true, type: true },
       take: 20,
     });
     return {
       totalExpansionRevenue: customers.reduce(
-        (s, c) => s + Number(c.annualRevenue ?? 0) * 0.15,
+        (s: number, c: { creditLimit: any }) =>
+          s + Number(c.creditLimit ?? 0) * 0.15,
         0,
       ),
       avgExpansionPerCustomer: 12500,
       expansionRate: 34,
-      topExpanders: customers.slice(0, 5).map((c) => ({
-        customerId: c.id,
-        customerName: c.name,
-        expansionRevenue: Math.round(Number(c.annualRevenue ?? 0) * 0.2),
-      })),
+      topExpanders: customers
+        .slice(0, 5)
+        .map((c: { id: string; name: string; creditLimit: any }) => ({
+          customerId: c.id,
+          customerName: c.name,
+          expansionRevenue: Math.round(Number(c.creditLimit ?? 0) * 0.2),
+        })),
     };
   }
 
