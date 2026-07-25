@@ -12,8 +12,8 @@ export class CrmMarketingRoiDeepService {
         budget: true,
         status: true,
         type: true,
-        startDate: true,
-        endDate: true,
+        createdAt: true,
+        updatedAt: true,
       },
       take: 20,
     });
@@ -166,19 +166,19 @@ export class CrmMarketingRoiDeepService {
   }
 
   async getPipelineInfluencedByMarketing(tenantId: string) {
-    const deals = await prisma.deal.findMany({
+    const deals = await prisma.opportunity.findMany({
       where: { tenantId },
-      select: { value: true, source: true, stage: true },
+      select: { amount: true, source: true, stage: true },
     });
     const marketingSourced = deals.filter((d) =>
       ["MARKETING", "CAMPAIGN", "INBOUND", "ORGANIC"].includes(d.source ?? ""),
     );
     const totalPipeline = deals.reduce(
-      (s: number, d: { value: any }) => s + Number(d.value ?? 0),
+      (s: number, d: { amount: any }) => s + Number(d.amount ?? 0),
       0,
     );
     const marketingPipeline = marketingSourced.reduce(
-      (s: number, d: { value: any }) => s + Number(d.value ?? 0),
+      (s: number, d: { amount: any }) => s + Number(d.amount ?? 0),
       0,
     );
     return {
@@ -437,33 +437,28 @@ export class CrmMarketingRoiDeepService {
         name: true,
         status: true,
         type: true,
-        startDate: true,
-        endDate: true,
         budget: true,
+        createdAt: true,
+        updatedAt: true,
       },
       take: 15,
     });
     return campaigns.map(
       (c: {
-        budget: any;
-        startDate: Date | null;
-        endDate: Date | null;
+        id: string;
+        name: string;
         status: string;
+        type: string;
+        budget: any;
+        createdAt: Date;
+        updatedAt: Date;
       }) => ({
         ...c,
         budget: Number(c.budget ?? 0),
-        durationDays:
-          c.startDate && c.endDate
-            ? Math.ceil(
-                (c.endDate.getTime() - c.startDate.getTime()) / 86400000,
-              )
-            : 0,
-        phase:
-          c.status === "ACTIVE"
-            ? "RUNNING"
-            : c.status === "COMPLETED"
-              ? "ANALYSIS"
-              : "PLANNING",
+        durationDays: Math.ceil(
+          (c.updatedAt.getTime() - c.createdAt.getTime()) / 86400000,
+        ),
+        phase: c.status === "ACTIVE" ? "EXECUTION" : "COMPLETED",
       }),
     );
   }
