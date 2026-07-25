@@ -61,7 +61,12 @@ export class CrmSalesOperationsDeepService {
     }));
     const avgRevenue =
       reps.length > 0
-        ? Math.round(reps.reduce((s, r) => s + r.revenue, 0) / reps.length)
+        ? Math.round(
+            reps.reduce(
+              (s: number, r: { revenue: number }) => s + r.revenue,
+              0,
+            ) / reps.length,
+          )
         : 0;
     return {
       repProductivity: reps,
@@ -70,7 +75,7 @@ export class CrmSalesOperationsDeepService {
     };
   }
 
-  async getOperationalBottlenecks(tenantId: string) {
+  async getOperationalBottlenecks(_tenantId: string) {
     return [
       {
         area: "Proposal Generation",
@@ -103,7 +108,7 @@ export class CrmSalesOperationsDeepService {
     ];
   }
 
-  async getProcessComplianceRate(tenantId: string) {
+  async getProcessComplianceRate(_tenantId: string) {
     return {
       opportunityDataCompleteness: 78,
       activityLoggingCompliance: 85,
@@ -114,7 +119,7 @@ export class CrmSalesOperationsDeepService {
     };
   }
 
-  async getSalesTechStackUtilization(tenantId: string) {
+  async getSalesTechStackUtilization(_tenantId: string) {
     return [
       {
         tool: "CRM Core",
@@ -149,7 +154,7 @@ export class CrmSalesOperationsDeepService {
     ];
   }
 
-  async getForecastSubmissionCompliance(tenantId: string) {
+  async getForecastSubmissionCompliance(_tenantId: string) {
     return {
       weeksWithSubmission: 18,
       totalWeeks: 20,
@@ -219,7 +224,9 @@ export class CrmSalesOperationsDeepService {
       select: { assignedTo: true },
       distinct: ["assignedTo"],
     });
-    const repCount = reps.filter((r) => r.assignedTo).length;
+    const repCount = reps.filter(
+      (r: { assignedTo: string | null }) => r.assignedTo,
+    ).length;
     const dealsPerRep = repCount > 0 ? Math.round(deals / repCount) : 0;
     return {
       activePipeline: deals,
@@ -234,7 +241,7 @@ export class CrmSalesOperationsDeepService {
     };
   }
 
-  async getSalesIncentiveStructure(tenantId: string) {
+  async getSalesIncentiveStructure(_tenantId: string) {
     return {
       currentQuota: 500000,
       baseCommissionRate: 8,
@@ -249,7 +256,7 @@ export class CrmSalesOperationsDeepService {
     };
   }
 
-  async getDealRoomUtilization(tenantId: string) {
+  async getDealRoomUtilization(_tenantId: string) {
     return {
       totalDealRoomsCreated: 145,
       activeDealRooms: 87,
@@ -288,7 +295,7 @@ export class CrmSalesOperationsDeepService {
     }));
   }
 
-  async getRampTimAnalysis(tenantId: string) {
+  async getRampTimAnalysis(_tenantId: string) {
     return {
       avgRampTimeMonths: 4.5,
       fullyRampedRevenue: 450000,
@@ -311,11 +318,15 @@ export class CrmSalesOperationsDeepService {
     });
     const avgDealValue =
       deals.length > 0
-        ? deals.reduce((s, d) => s + Number(d.value ?? 0), 0) / deals.length
+        ? deals.reduce(
+            (s: number, d: { value: any }) => s + Number(d.value ?? 0),
+            0,
+          ) / deals.length
         : 0;
     const winRate =
       deals.length > 0
-        ? deals.filter((d) => d.stage === "CLOSED_WON").length / deals.length
+        ? deals.filter((d: { stage: string }) => d.stage === "CLOSED_WON")
+            .length / deals.length
         : 0;
     const avgCycleDays = 45;
     const pipelineVelocity = Math.round(
