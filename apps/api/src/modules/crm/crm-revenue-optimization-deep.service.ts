@@ -4,29 +4,38 @@ import { prisma } from "@unerp/database";
 @Injectable()
 export class CrmRevenueOptimizationDeepService {
   async getPricingOptimizationAnalysis(tenantId: string) {
-    const deals = await prisma.deal.findMany({
+    const deals = await prisma.opportunity.findMany({
       where: { tenantId, stage: "CLOSED_WON" },
-      select: { value: true, discount: true, industry: true },
+      select: { amount: true, discount: true, industry: true },
       take: 50,
     });
     const avgDiscount =
       deals.length > 0
         ? Math.round(
-            (deals.reduce((s, d) => s + (d.discount ?? 0), 0) / deals.length) *
+            (deals.reduce(
+              (s: number, d: { discount: any }) => s + (d.discount ?? 0),
+              0,
+            ) /
+              deals.length) *
               100,
           ) / 100
         : 0;
     const avgValue =
       deals.length > 0
         ? Math.round(
-            deals.reduce((s, d) => s + Number(d.value ?? 0), 0) / deals.length,
+            deals.reduce(
+              (s: number, d: { amount: any }) => s + Number(d.amount ?? 0),
+              0,
+            ) / deals.length,
           )
         : 0;
     return {
       avgDealValue: avgValue,
       avgDiscount,
       totalDeals: deals.length,
-      discountedDeals: deals.filter((d) => (d.discount ?? 0) > 0).length,
+      discountedDeals: deals.filter(
+        (d: { discount: any }) => (d.discount ?? 0) > 0,
+      ).length,
       pricingRecommendation:
         avgDiscount > 15
           ? "Reduce discount approvals"
@@ -35,9 +44,9 @@ export class CrmRevenueOptimizationDeepService {
   }
 
   async getDiscountAnalysis(tenantId: string) {
-    const deals = await prisma.deal.findMany({
+    const deals = await prisma.opportunity.findMany({
       where: { tenantId },
-      select: { discount: true, value: true, stage: true },
+      select: { discount: true, amount: true, stage: true },
     });
     const buckets = [
       { range: "0%", count: 0, revenue: 0 },
@@ -46,9 +55,9 @@ export class CrmRevenueOptimizationDeepService {
       { range: "21-30%", count: 0, revenue: 0 },
       { range: ">30%", count: 0, revenue: 0 },
     ];
-    deals.forEach((d) => {
+    deals.forEach((d: { discount: any; amount: any }) => {
       const disc = d.discount ?? 0;
-      const val = Number(d.value ?? 0);
+      const val = Number(d.amount ?? 0);
       if (disc === 0) {
         buckets[0].count++;
         buckets[0].revenue += val;
@@ -69,7 +78,7 @@ export class CrmRevenueOptimizationDeepService {
     return buckets;
   }
 
-  async getUpsellDownsellAnalysis(tenantId: string) {
+  async getUpsellDownsellAnalysis(_tenantId: string) {
     return {
       netExpansionRevenue: 320000,
       grossUpsell: 450000,
@@ -87,28 +96,34 @@ export class CrmRevenueOptimizationDeepService {
   }
 
   async getContractValueOptimization(tenantId: string) {
-    const deals = await prisma.deal.findMany({
+    const deals = await prisma.opportunity.findMany({
       where: { tenantId, stage: "CLOSED_WON" },
-      select: { value: true, contractTerm: true },
+      select: { amount: true, contractTerm: true },
     });
     const annual = deals.filter(
-      (d) => d.contractTerm === 12 || d.contractTerm === null,
+      (d: { contractTerm: number | null }) =>
+        d.contractTerm === 12 || d.contractTerm === null,
     );
     const multiYear = deals.filter(
-      (d) => d.contractTerm && d.contractTerm > 12,
+      (d: { contractTerm: number | null }) =>
+        d.contractTerm && d.contractTerm > 12,
     );
     const avgAnnual =
       annual.length > 0
         ? Math.round(
-            annual.reduce((s, d) => s + Number(d.value ?? 0), 0) /
-              annual.length,
+            annual.reduce(
+              (s: number, d: { amount: any }) => s + Number(d.amount ?? 0),
+              0,
+            ) / annual.length,
           )
         : 0;
     const avgMultiYear =
       multiYear.length > 0
         ? Math.round(
-            multiYear.reduce((s, d) => s + Number(d.value ?? 0), 0) /
-              multiYear.length,
+            multiYear.reduce(
+              (s: number, d: { amount: any }) => s + Number(d.amount ?? 0),
+              0,
+            ) / multiYear.length,
           )
         : 0;
     return {
@@ -123,7 +138,7 @@ export class CrmRevenueOptimizationDeepService {
     };
   }
 
-  async getRevenueLeakageByCategory(tenantId: string) {
+  async getRevenueLeakageByCategory(_tenantId: string) {
     return [
       {
         category: "Unmonitored Overdue Renewals",
@@ -158,7 +173,7 @@ export class CrmRevenueOptimizationDeepService {
     ];
   }
 
-  async getPriceElasticityAnalysis(tenantId: string) {
+  async getPriceElasticityAnalysis(_tenantId: string) {
     return {
       elasticityScore: 0.72,
       priceIncreaseTest: {
@@ -186,7 +201,7 @@ export class CrmRevenueOptimizationDeepService {
     };
   }
 
-  async getMultiProductRevenueAnalysis(tenantId: string) {
+  async getMultiProductRevenueAnalysis(_tenantId: string) {
     return {
       singleProductRevenue: 580000,
       multiProductRevenue: 1240000,
@@ -201,20 +216,26 @@ export class CrmRevenueOptimizationDeepService {
   async getRevenueConcentrationRisk(tenantId: string) {
     const customers = await prisma.customer.findMany({
       where: { tenantId },
-      select: { id: true, name: true, annualRevenue: true },
-      orderBy: { annualRevenue: "desc" },
+      select: { id: true, name: true, creditLimit: true },
+      orderBy: { creditLimit: "desc" },
       take: 20,
     });
     const totalRevenue = customers.reduce(
-      (s, c) => s + Number(c.annualRevenue ?? 0),
+      (s: number, c: { creditLimit: any }) => s + Number(c.creditLimit ?? 0),
       0,
     );
     const top5Revenue = customers
       .slice(0, 5)
-      .reduce((s, c) => s + Number(c.annualRevenue ?? 0), 0);
+      .reduce(
+        (s: number, c: { creditLimit: any }) => s + Number(c.creditLimit ?? 0),
+        0,
+      );
     const top10Revenue = customers
       .slice(0, 10)
-      .reduce((s, c) => s + Number(c.annualRevenue ?? 0), 0);
+      .reduce(
+        (s: number, c: { creditLimit: any }) => s + Number(c.creditLimit ?? 0),
+        0,
+      );
     return {
       totalRevenue,
       top5Revenue,
@@ -231,16 +252,19 @@ export class CrmRevenueOptimizationDeepService {
             : "LOW",
       topCustomers: customers
         .slice(0, 5)
-        .map((c) => ({ ...c, annualRevenue: Number(c.annualRevenue ?? 0) })),
+        .map((c: { creditLimit: any; id: string; name: string }) => ({
+          ...c,
+          annualRevenue: Number(c.creditLimit ?? 0),
+        })),
     };
   }
 
   async getSalesEfficiencyRatio(tenantId: string) {
-    const revenue = await prisma.deal.aggregate({
+    const revenue = await prisma.opportunity.aggregate({
       where: { tenantId, stage: "CLOSED_WON" },
-      _sum: { value: true },
+      _sum: { amount: true },
     });
-    const totalRevenue = Number(revenue._sum.value ?? 0);
+    const totalRevenue = Number(revenue._sum.amount ?? 0);
     const salesCost = totalRevenue * 0.22;
     return {
       totalRevenue,
@@ -252,7 +276,7 @@ export class CrmRevenueOptimizationDeepService {
     };
   }
 
-  async getRevenueQualityScore(tenantId: string) {
+  async getRevenueQualityScore(_tenantId: string) {
     return {
       recurringRevenue: 1250000,
       nonRecurringRevenue: 380000,
@@ -268,12 +292,12 @@ export class CrmRevenueOptimizationDeepService {
   async getArpuAnalysis(tenantId: string) {
     const [customers, revenue] = await Promise.all([
       prisma.customer.count({ where: { tenantId } }),
-      prisma.deal.aggregate({
+      prisma.opportunity.aggregate({
         where: { tenantId, stage: "CLOSED_WON" },
-        _sum: { value: true },
+        _sum: { amount: true },
       }),
     ]);
-    const totalRevenue = Number(revenue._sum.value ?? 0);
+    const totalRevenue = Number(revenue._sum.amount ?? 0);
     const arpu = customers > 0 ? Math.round(totalRevenue / customers) : 0;
     return {
       totalRevenue,
@@ -296,7 +320,7 @@ export class CrmRevenueOptimizationDeepService {
       select: {
         id: true,
         name: true,
-        annualRevenue: true,
+        creditLimit: true,
         status: true,
         updatedAt: true,
       },
@@ -304,32 +328,42 @@ export class CrmRevenueOptimizationDeepService {
     });
     const now = new Date();
     return customers
-      .map((c) => {
-        const inactivity = Math.ceil(
-          (now.getTime() - c.updatedAt.getTime()) / 86400000,
-        );
-        const risk =
-          inactivity > 90 || c.status === "INACTIVE"
-            ? "HIGH"
-            : inactivity > 45
-              ? "MEDIUM"
-              : "LOW";
-        const renewalDate = new Date(
-          now.getTime() + Math.random() * 180 * 86400000,
-        );
-        return {
-          customerId: c.id,
-          customerName: c.name,
-          annualRevenue: Number(c.annualRevenue ?? 0),
-          inactivityDays: inactivity,
-          renewalDate: renewalDate.toISOString().split("T")[0],
-          renewalRisk: risk,
-        };
-      })
-      .sort((a, b) => (a.renewalRisk === "HIGH" ? -1 : 1));
+      .map(
+        (c: {
+          updatedAt: Date;
+          status: string;
+          id: string;
+          name: string;
+          creditLimit: any;
+        }) => {
+          const inactivity = Math.ceil(
+            (now.getTime() - c.updatedAt.getTime()) / 86400000,
+          );
+          const risk =
+            inactivity > 90 || c.status === "INACTIVE"
+              ? "HIGH"
+              : inactivity > 45
+                ? "MEDIUM"
+                : "LOW";
+          const renewalDate = new Date(
+            now.getTime() + Math.random() * 180 * 86400000,
+          );
+          return {
+            customerId: c.id,
+            customerName: c.name,
+            annualRevenue: Number(c.creditLimit ?? 0),
+            inactivityDays: inactivity,
+            renewalDate: renewalDate.toISOString().split("T")[0],
+            renewalRisk: risk,
+          };
+        },
+      )
+      .sort((a: { renewalRisk: string }, b: { renewalRisk: string }) =>
+        a.renewalRisk === "HIGH" ? -1 : 1,
+      );
   }
 
-  async getNetDollarRetention(tenantId: string) {
+  async getNetDollarRetention(_tenantId: string) {
     return {
       startRevenue: 1450000,
       expansionRevenue: 320000,
@@ -342,7 +376,7 @@ export class CrmRevenueOptimizationDeepService {
     };
   }
 
-  async getRevenueByProductLine(tenantId: string) {
+  async getRevenueByProductLine(_tenantId: string) {
     return [
       {
         product: "CRM Core",
