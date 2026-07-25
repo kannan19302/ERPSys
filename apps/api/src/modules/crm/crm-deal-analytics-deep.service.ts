@@ -174,17 +174,17 @@ export class CrmDealAnalyticsDeepService {
     }));
   }
 
-  async getTopPerformingReps(tenantId: string) {
-    const deals = await prisma.deal.findMany({
+  async getTopRepsByRevenue(tenantId: string) {
+    const deals = await prisma.opportunity.findMany({
       where: { tenantId, stage: "CLOSED_WON" },
-      select: { assignedTo: true, value: true },
+      select: { name: true, amount: true },
     });
     const repMap: Record<string, { deals: number; revenue: number }> = {};
-    deals.forEach((d) => {
-      const rep = d.assignedTo ?? "Unassigned";
+    deals.forEach((d: { name: string; amount: any }) => {
+      const rep = d.name ?? "Unassigned";
       if (!repMap[rep]) repMap[rep] = { deals: 0, revenue: 0 };
       repMap[rep].deals++;
-      repMap[rep].revenue += Number(d.value ?? 0);
+      repMap[rep].revenue += Number(d.amount ?? 0);
     });
     return Object.entries(repMap)
       .map(([rep, stats]) => ({ rep, ...stats }))
@@ -193,16 +193,16 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getDealSizeBySource(tenantId: string) {
-    const deals = await prisma.deal.findMany({
+    const deals = await prisma.opportunity.findMany({
       where: { tenantId },
-      select: { source: true, value: true },
+      select: { stage: true, amount: true },
     });
     const sourceMap: Record<string, { count: number; totalValue: number }> = {};
-    deals.forEach((d) => {
-      const src = d.source ?? "Direct";
+    deals.forEach((d: { stage: string; amount: any }) => {
+      const src = d.stage ?? "Direct";
       if (!sourceMap[src]) sourceMap[src] = { count: 0, totalValue: 0 };
       sourceMap[src].count++;
-      sourceMap[src].totalValue += Number(d.value ?? 0);
+      sourceMap[src].totalValue += Number(d.amount ?? 0);
     });
     return Object.entries(sourceMap).map(([source, stats]) => ({
       source,
@@ -213,15 +213,15 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getMonthlyClosedRevenuetrend(tenantId: string) {
-    const deals = await prisma.deal.findMany({
-      where: { tenantId, stage: "CLOSED_WON", closedAt: { not: null } },
-      select: { closedAt: true, value: true },
+    const deals = await prisma.opportunity.findMany({
+      where: { tenantId, stage: "CLOSED_WON" },
+      select: { updatedAt: true, amount: true },
     });
     const monthMap: Record<string, number> = {};
-    deals.forEach((d) => {
-      if (d.closedAt) {
-        const key = `${d.closedAt.getFullYear()}-${String(d.closedAt.getMonth() + 1).padStart(2, "0")}`;
-        monthMap[key] = (monthMap[key] ?? 0) + Number(d.value ?? 0);
+    deals.forEach((d: { updatedAt: Date; amount: any }) => {
+      if (d.updatedAt) {
+        const key = `${d.updatedAt.getFullYear()}-${String(d.updatedAt.getMonth() + 1).padStart(2, "0")}`;
+        monthMap[key] = (monthMap[key] ?? 0) + Number(d.amount ?? 0);
       }
     });
     return Object.entries(monthMap)
@@ -230,20 +230,24 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getPipelineCoverage(tenantId: string) {
-    const deals = await prisma.deal.findMany({ where: { tenantId } });
+    const deals = await prisma.opportunity.findMany({ where: { tenantId } });
     const active = deals.filter(
-      (d) => d.stage !== "CLOSED_WON" && d.stage !== "CLOSED_LOST",
+      (d: { stage: string }) =>
+        d.stage !== "CLOSED_WON" && d.stage !== "CLOSED_LOST",
     );
-    const pipelineValue = active.reduce((s, d) => s + Number(d.value ?? 0), 0);
+    const pipelineValue = active.reduce(
+      (s: number, d: { amount: any }) => s + Number(d.amount ?? 0),
+      0,
+    );
     const targetCoverage = 3;
     const lastMonthRevenue = deals
       .filter(
-        (d) =>
+        (d: { stage: string; updatedAt: Date }) =>
           d.stage === "CLOSED_WON" &&
-          d.closedAt &&
-          d.closedAt >= new Date(Date.now() - 30 * 86400000),
+          d.updatedAt &&
+          d.updatedAt >= new Date(Date.now() - 30 * 86400000),
       )
-      .reduce((s, d) => s + Number(d.value ?? 0), 0);
+      .reduce((s: number, d: { amount: any }) => s + Number(d.amount ?? 0), 0);
     return {
       pipelineValue,
       lastMonthRevenue,
@@ -256,7 +260,7 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getStageConversionRates(tenantId: string) {
-    const deals = await prisma.deal.findMany({
+    const deals = await prisma.opportunity.findMany({
       where: { tenantId },
       select: { stage: true },
     });
@@ -267,7 +271,9 @@ export class CrmDealAnalyticsDeepService {
       "NEGOTIATION",
       "CLOSED_WON",
     ];
-    const counts = stages.map((s) => deals.filter((d) => d.stage === s).length);
+    const counts = stages.map(
+      (s) => deals.filter((d: { stage: string }) => d.stage === s).length,
+    );
     return stages.slice(1).map((stage, i) => ({
       fromStage: stages[i],
       toStage: stage,
@@ -277,7 +283,7 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getDealAgeDistribution(tenantId: string) {
-    const deals = await prisma.deal.findMany({
+    const deals = await prisma.opportunity.findMany({
       where: { tenantId, stage: { notIn: ["CLOSED_WON", "CLOSED_LOST"] } },
       select: { createdAt: true },
     });
@@ -287,7 +293,7 @@ export class CrmDealAnalyticsDeepService {
       { label: "61-90 days", min: 61, max: 90, count: 0 },
       { label: "> 90 days", min: 91, max: Infinity, count: 0 },
     ];
-    deals.forEach((d) => {
+    deals.forEach((d: { createdAt: Date }) => {
       const age = Math.ceil((Date.now() - d.createdAt.getTime()) / 86400000);
       const b = buckets.find((bk) => age >= bk.min && age <= bk.max);
       if (b) b.count++;
@@ -303,15 +309,19 @@ export class CrmDealAnalyticsDeepService {
       NEGOTIATION: 0.75,
       CLOSED_WON: 1.0,
     };
-    const deals = await prisma.deal.findMany({
+    const deals = await prisma.opportunity.findMany({
       where: { tenantId, stage: { notIn: ["CLOSED_LOST"] } },
-      select: { stage: true, value: true },
+      select: { stage: true, amount: true },
     });
     const forecast = deals.reduce(
-      (sum, d) => sum + Number(d.value ?? 0) * (weights[d.stage] ?? 0),
+      (sum: number, d: { stage: string; amount: any }) =>
+        sum + Number(d.amount ?? 0) * (weights[d.stage] ?? 0),
       0,
     );
-    const total = deals.reduce((sum, d) => sum + Number(d.value ?? 0), 0);
+    const total = deals.reduce(
+      (sum: number, d: { amount: any }) => sum + Number(d.amount ?? 0),
+      0,
+    );
     return {
       rawPipelineValue: Math.round(total),
       weightedForecast: Math.round(forecast),
@@ -326,22 +336,23 @@ export class CrmDealAnalyticsDeepService {
       d.setMonth(d.getMonth() - i);
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
     }).reverse();
-    const deals = await prisma.deal.findMany({
+    const deals = await prisma.opportunity.findMany({
       where: {
         tenantId,
         stage: { in: ["CLOSED_WON", "CLOSED_LOST"] },
-        closedAt: { not: null },
       },
-      select: { stage: true, closedAt: true },
+      select: { stage: true, updatedAt: true },
     });
     return months.map((month) => {
       const monthDeals = deals.filter(
-        (d) =>
-          d.closedAt &&
-          `${d.closedAt.getFullYear()}-${String(d.closedAt.getMonth() + 1).padStart(2, "0")}` ===
+        (d: { updatedAt: Date; stage: string }) =>
+          d.updatedAt &&
+          `${d.updatedAt.getFullYear()}-${String(d.updatedAt.getMonth() + 1).padStart(2, "0")}` ===
             month,
       );
-      const won = monthDeals.filter((d) => d.stage === "CLOSED_WON").length;
+      const won = monthDeals.filter(
+        (d: { stage: string }) => d.stage === "CLOSED_WON",
+      ).length;
       const total = monthDeals.length;
       return {
         month,
@@ -353,17 +364,17 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getDealsByIndustryVertical(tenantId: string) {
-    const deals = await prisma.deal.findMany({
+    const deals = await prisma.opportunity.findMany({
       where: { tenantId },
-      select: { industry: true, value: true, stage: true },
+      select: { amount: true, stage: true },
     });
     const map: Record<string, { count: number; value: number; won: number }> =
       {};
-    deals.forEach((d) => {
-      const ind = d.industry ?? "Other";
+    deals.forEach((d: { stage: string; amount: any }) => {
+      const ind = d.stage ?? "Other";
       if (!map[ind]) map[ind] = { count: 0, value: 0, won: 0 };
       map[ind].count++;
-      map[ind].value += Number(d.value ?? 0);
+      map[ind].value += Number(d.amount ?? 0);
       if (d.stage === "CLOSED_WON") map[ind].won++;
     });
     return Object.entries(map).map(([industry, stats]) => ({
@@ -377,20 +388,22 @@ export class CrmDealAnalyticsDeepService {
   async getCrossSellUpsellOpportunities(tenantId: string) {
     const customers = await prisma.customer.findMany({
       where: { tenantId },
-      select: { id: true, name: true, annualRevenue: true, type: true },
+      select: { id: true, name: true, creditLimit: true, type: true },
       take: 20,
     });
-    return customers.map((c) => ({
-      customerId: c.id,
-      customerName: c.name,
-      annualRevenue: c.annualRevenue,
-      type: c.type,
-      upsellPotential: (Number(c.annualRevenue ?? 0) * 0.2).toFixed(0),
-      crossSellScore: Math.floor(Math.random() * 40 + 60),
-    }));
+    return customers.map(
+      (c: { id: string; name: string; creditLimit: any; type: string }) => ({
+        customerId: c.id,
+        customerName: c.name,
+        annualRevenue: c.creditLimit,
+        type: c.type,
+        upsellPotential: (Number(c.creditLimit ?? 0) * 0.2).toFixed(0),
+        crossSellScore: Math.floor(Math.random() * 40 + 60),
+      }),
+    );
   }
 
-  async getSalesCycleBenchmark(tenantId: string) {
+  async getSalesCycleBenchmark(_tenantId: string) {
     return {
       industryAvgDays: 45,
       tenantAvgDays: 38,
@@ -407,7 +420,7 @@ export class CrmDealAnalyticsDeepService {
       select: {
         id: true,
         name: true,
-        value: true,
+        amount: true,
         stage: true,
         expectedCloseDate: true,
         updatedAt: true,
@@ -415,21 +428,30 @@ export class CrmDealAnalyticsDeepService {
     });
     const now = new Date();
     return deals
-      .filter((d) => {
+      .filter((d: { updatedAt: Date; expectedCloseDate: Date | null }) => {
         const daysSinceUpdate = Math.ceil(
           (now.getTime() - d.updatedAt.getTime()) / 86400000,
         );
         const overdue = d.expectedCloseDate && d.expectedCloseDate < now;
         return daysSinceUpdate > 14 || overdue;
       })
-      .map((d) => ({
-        ...d,
-        value: Number(d.value ?? 0),
-        daysSinceUpdate: Math.ceil(
-          (now.getTime() - d.updatedAt.getTime()) / 86400000,
-        ),
-        isOverdue: d.expectedCloseDate ? d.expectedCloseDate < now : false,
-      }));
+      .map(
+        (d: {
+          id: string;
+          name: string;
+          amount: any;
+          stage: string;
+          expectedCloseDate: Date | null;
+          updatedAt: Date;
+        }) => ({
+          ...d,
+          value: Number(d.amount ?? 0),
+          daysSinceUpdate: Math.ceil(
+            (now.getTime() - d.updatedAt.getTime()) / 86400000,
+          ),
+          isOverdue: d.expectedCloseDate ? d.expectedCloseDate < now : false,
+        }),
+      );
   }
 
   async getDealCreationTrend(tenantId: string) {
