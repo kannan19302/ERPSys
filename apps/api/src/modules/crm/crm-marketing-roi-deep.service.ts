@@ -614,21 +614,17 @@ export class CrmMarketingRoiDeepService {
 
   async getDemandGenerationSummary(tenantId: string) {
     const [leads, deals] = await Promise.all([
-      this.prisma.lead.count({ where: { tenantId } }),
-      this.prisma.deal.aggregate({
+      prisma.lead.count({ where: { tenantId } }),
+      prisma.opportunity.aggregate({
         where: { tenantId },
-        _sum: { value: true },
+        _sum: { amount: true },
       }),
     ]);
-    const revenue = Number(deals._sum.value ?? 0);
+    const revenue = Number(deals._sum.amount ?? 0);
     return {
-      totalLeads: leads,
-      totalPipelineValue: revenue,
-      costOfDemandGen: 150000,
-      revenuePerDollarSpent:
-        revenue > 0 ? Math.round((revenue / 150000) * 100) / 100 : 0,
-      targetedAccounts: Math.floor(leads * 0.15),
-      engagedAccounts: Math.floor(leads * 0.08),
+      leads,
+      revenue,
+      demandIndex: leads > 0 ? Math.round((revenue / leads) * 100) / 100 : 0,
     };
   }
 }
