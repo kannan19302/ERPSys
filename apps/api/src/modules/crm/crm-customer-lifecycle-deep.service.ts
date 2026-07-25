@@ -544,7 +544,7 @@ export class CrmCustomerLifecycleDeepService {
     ]);
     const revenues = await prisma.customer.aggregate({
       where: { tenantId },
-      _sum: { annualRevenue: true },
+      _sum: { creditLimit: true },
     });
     return {
       total,
@@ -552,10 +552,10 @@ export class CrmCustomerLifecycleDeepService {
       smb,
       startups,
       other: total - enterprise - smb - startups,
-      totalManagedRevenue: Number(revenues._sum.annualRevenue ?? 0),
+      totalManagedRevenue: Number(revenues._sum?.creditLimit ?? 0),
       avgRevenuePerCustomer:
         total > 0
-          ? Math.round(Number(revenues._sum.annualRevenue ?? 0) / total)
+          ? Math.round(Number(revenues._sum?.creditLimit ?? 0) / total)
           : 0,
     };
   }

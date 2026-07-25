@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards, Req } from "@nestjs/common";
+import { Controller, Get, UseGuards, Req } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
@@ -94,7 +94,7 @@ export class CrmDealAnalyticsDeepController {
   @Permissions("crm.deal.analytics.read")
   @ApiOperation({ summary: "Get top performing sales representatives" })
   async getTopReps(@Req() req: AuthenticatedRequest) {
-    return { data: await this.svc.getTopPerformingReps(req.user.tenantId) };
+    return { data: await this.svc.getTopRepsByRevenue(req.user.tenantId) };
   }
 
   @Get("deals-by-source")
