@@ -156,7 +156,7 @@ async function bootstrap() {
   app.use(entitlementMiddleware);
 
   const port = process.env.API_PORT ?? 3001;
-  await app.listen(port);
+  await app.listen(port, "0.0.0.0");
 
   logger.log(`UniERP API running on http://localhost:${port}/api/v1`);
   logger.log(`Swagger docs at http://localhost:${port}/swagger`);

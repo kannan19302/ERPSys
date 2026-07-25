@@ -46,6 +46,7 @@ import { CommunicationModule } from "./modules/communication/communication.modul
 import { PosModule } from "./modules/pos/pos.module";
 import { AdvancedFinanceModule } from "./modules/advanced-finance/advanced-finance.module";
 import { AdvancedHrModule } from "./modules/advanced-hr/advanced-hr.module";
+import { HrAdvancedModule } from "./modules/hr-advanced/hr-advanced.module";
 import { WorkflowModule } from "./modules/workflow/workflow.module";
 import { NotificationsModule } from "./modules/notifications/notifications.module";
 import { StorageModule } from "./modules/storage/storage.module";
@@ -192,6 +193,7 @@ import {
 
     // Phase 7 — Advanced HR
     AdvancedHrModule,
+    HrAdvancedModule,
 
     // Phase 8 — Workflow Engine
     WorkflowModule,

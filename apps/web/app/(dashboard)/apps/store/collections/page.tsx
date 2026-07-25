@@ -53,18 +53,13 @@ export default function CollectionsPage() {
   return (
     <RouteGuard permission="apps.store.collections.read">
       <div className="ui-stack-5 ui-animate-in">
-        <div className="ui-hstack-3">
-          <Link href="/apps/store" className="ui-text-muted">
-            <ArrowLeft size={18} />
-          </Link>
-          <div>
-            <h1 className="ui-heading-lg ui-flex ui-items-center ui-gap-2">
-              <Sparkles className="ui-text-primary" /> Collections
-            </h1>
-            <p className="ui-text-sm-muted">
-              Curated app bundles hand-picked for specific use cases
-            </p>
-          </div>
+        <div>
+          <h1 className="ui-heading-lg ui-flex ui-items-center ui-gap-2">
+            <Sparkles className="ui-text-warning" size={22} /> App Collections
+          </h1>
+          <p className="ui-text-sm-muted">
+            Curated app bundles for your industry and workflows
+          </p>
         </div>
 
         {loadError && (

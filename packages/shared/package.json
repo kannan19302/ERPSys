@@ -33,6 +33,10 @@
     "./module-registry": {
       "types": "./dist/module-registry/index.d.ts",
       "default": "./dist/module-registry/index.js"
+    },
+    "./hr": {
+      "types": "./dist/hr/index.d.ts",
+      "default": "./dist/hr/index.js"
     }
   },
   "scripts": {

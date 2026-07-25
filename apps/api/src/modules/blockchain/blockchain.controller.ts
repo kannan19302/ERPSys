@@ -34,7 +34,6 @@ import { FinanceLedgerBlockchainService } from "./services/finance-ledger-blockc
 import { SupplyChainBlockchainService } from "./services/supply-chain-blockchain.service";
 import { ProcurementBlockchainService } from "./services/procurement-blockchain.service";
 import { FabricGatewayProvider } from "./providers/fabric-gateway.provider";
-import { BlockchainTxStatus } from "@unerp/blockchain";
 import { VerifyDocumentDto } from "./dto/verify-document.dto";
 import { VerifyJournalDto } from "./dto/verify-journal.dto";
 import { ThreeWayMatchDto } from "./dto/three-way-match.dto";

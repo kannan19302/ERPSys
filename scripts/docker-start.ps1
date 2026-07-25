@@ -298,7 +298,6 @@ Write-Host "  |  Password: admin123                 |" -ForegroundColor DarkCyan
 Write-Host "  +-------------------------------------+" -ForegroundColor DarkCyan
 Write-Host ""
 Write-Host "  Web App:        http://localhost:3000" -ForegroundColor Cyan
-Write-Host "  Corporate Site: http://localhost:3002" -ForegroundColor Cyan
 Write-Host "  API Backend:    http://localhost:3001/api/v1" -ForegroundColor Cyan
 Write-Host "  Swagger Docs:   http://localhost:3001/swagger" -ForegroundColor Cyan
 Write-Host "  MinIO Console:  http://localhost:9001" -ForegroundColor Cyan

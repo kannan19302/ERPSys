@@ -31,6 +31,7 @@ export class ApiRequestError extends Error {
 // Endpoints that must never trigger a silent refresh (they ARE the auth flow).
 const NO_REFRESH_PATHS = [
   "/auth/login",
+  "/auth/login-demo",
   "/auth/refresh",
   "/auth/logout",
   "/auth/register",

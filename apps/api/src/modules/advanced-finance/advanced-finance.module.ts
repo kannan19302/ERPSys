@@ -13,6 +13,14 @@ import { GlobalTaxDeepController } from "./global-tax-deep.controller";
 import { FinancialInstrumentsController } from "./financial-instruments.controller";
 import { BudgetDeepController } from "./budget-deep.controller";
 import { NettingDeepController } from "./netting-deep.controller";
+import { WorkingCapitalController } from "./working-capital.controller";
+import { CloseManagementController } from "./close-management.controller";
+import { ConsolidationV2Controller } from "./consolidation-v2.controller";
+import { RiskManagementController } from "./risk-management.controller";
+import { EsgAccountingController } from "./esg-accounting.controller";
+import { TaxProvisioningController } from "./tax-provisioning.controller";
+import { ApAutomationController } from "./ap-automation.controller";
+import { AiAnalyticsController } from "./ai-analytics.controller";
 import { AdvancedFinanceService } from "./advanced-finance.service";
 import { FinanceExpansionDeepService } from "./services/finance-expansion-deep.service";
 import {
@@ -61,6 +69,14 @@ import { FpaDeepService } from "./services/fpa-deep.service";
 import { RevenueBillingService } from "./services/revenue-billing.service";
 import { ComplianceControlsService } from "./services/compliance-controls.service";
 import { EconomicNexusService } from "./services/economic-nexus.service";
+import { WorkingCapitalService } from "./services/working-capital.service";
+import { CloseManagementService } from "./services/close-management.service";
+import { ConsolidationV2Service } from "./services/consolidation-v2.service";
+import { RiskManagementService } from "./services/risk-management.service";
+import { EsgAccountingService } from "./services/esg-accounting.service";
+import { TaxProvisioningService } from "./services/tax-provisioning.service";
+import { ApAutomationService } from "./services/ap-automation.service";
+import { AiAnalyticsService } from "./services/ai-analytics.service";
 
 const domainServices = [
   GlAccountingService,
@@ -111,6 +127,14 @@ const domainServices = [
   TaxJurisdictionLookupService,
   TaxFilingCalendarService,
   RecurringJournalSchedulerService,
+  WorkingCapitalService,
+  CloseManagementService,
+  ConsolidationV2Service,
+  RiskManagementService,
+  EsgAccountingService,
+  TaxProvisioningService,
+  ApAutomationService,
+  AiAnalyticsService,
 ];
 
 @Module({
@@ -129,6 +153,14 @@ const domainServices = [
     FinancialInstrumentsController,
     BudgetDeepController,
     NettingDeepController,
+    WorkingCapitalController,
+    CloseManagementController,
+    ConsolidationV2Controller,
+    RiskManagementController,
+    EsgAccountingController,
+    TaxProvisioningController,
+    ApAutomationController,
+    AiAnalyticsController,
   ],
   providers: [AdvancedFinanceService, ...domainServices],
   exports: [AdvancedFinanceService, ...domainServices],

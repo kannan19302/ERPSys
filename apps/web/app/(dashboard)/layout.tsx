@@ -514,8 +514,9 @@ export default function DashboardLayout({
   };
 
   const isAppsLanding = pathname === "/apps";
+  const isAppsSection = pathname.startsWith("/apps");
   const hideSidebar =
-    isAppsLanding ||
+    isAppsSection ||
     pathname === "/profile" ||
     pathname.startsWith("/profile/");
   const appNav =
@@ -527,7 +528,7 @@ export default function DashboardLayout({
 
   const pathSegments = pathname.split("/").filter(Boolean);
   const showBreadcrumbs =
-    !isAppsLanding &&
+    !isAppsSection &&
     !pathname.startsWith("/builder") &&
     pathSegments.length > 0;
 
@@ -647,7 +648,9 @@ export default function DashboardLayout({
             style={{
               padding: pathname.startsWith("/builder")
                 ? "0"
-                : "var(--space-2) var(--space-6)",
+                : isAppsSection
+                  ? "var(--space-2) 20px"
+                  : "var(--space-2) var(--space-6)",
             }}
             className={styles.s4}
           >
@@ -655,7 +658,9 @@ export default function DashboardLayout({
               style={{
                 maxWidth: pathname.startsWith("/builder")
                   ? "100%"
-                  : "var(--content-max-width)",
+                  : isAppsSection
+                    ? "60%"
+                    : "var(--content-max-width)",
               }}
               className={styles.s5}
             >

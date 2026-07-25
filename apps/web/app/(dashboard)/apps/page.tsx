@@ -508,17 +508,14 @@ export default function AppsHubPage() {
 
   return (
     <RouteGuard permission="apps.read">
-      <div
-        className="ui-stack-6 relative ui-animate-in"
-        style={{ minHeight: "80vh" }}
-      >
+      <div className="ui-stack-4 relative ui-animate-in">
         <OnboardingChecklist
           variant="compact"
           show={subStatus === "TRIAL"}
           autoCompleteDashboard
         />
 
-        <div className="ui-flex-between px-6 py-4 border-b">
+        <div className="ui-flex-between px-6 py-3 border-b">
           <div>
             <h2 className="ui-heading-lg m-0">
               {openFolder ? openFolderObj?.name : "Desk Workspace"}
@@ -563,7 +560,7 @@ export default function AppsHubPage() {
           </div>
         </div>
 
-        <div className="p-6" style={{ minHeight: 400 }}>
+        <div className="p-5" style={{ minHeight: 180 }}>
           {searchQuery.trim() ? (
             <div>
               {searchResults.length === 0 ? (
@@ -574,7 +571,7 @@ export default function AppsHubPage() {
                   </p>
                 </div>
               ) : (
-                <div className="ui-flex ui-flex-wrap ui-gap-5">
+                <div className="ui-flex ui-flex-wrap ui-gap-4">
                   {searchResults.map(({ app, folderName }) => (
                     <div
                       key={app.id}
@@ -592,13 +589,13 @@ export default function AppsHubPage() {
               )}
             </div>
           ) : openFolder ? (
-            <div className="ui-flex ui-flex-wrap ui-gap-5">
+            <div className="ui-flex ui-flex-wrap ui-gap-4">
               {appsInOpenFolder.map((app) => (
                 <SingleAppTile key={app.id} app={app} />
               ))}
             </div>
           ) : (
-            <div className="ui-flex ui-flex-wrap ui-gap-5">
+            <div className="ui-flex ui-flex-wrap ui-gap-4">
               {gridItems.map((item) => {
                 if (item.type === "folder") {
                   return (

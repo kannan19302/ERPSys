@@ -42,6 +42,7 @@ export interface ModuleTabLayoutProps {
   moduleIcon: ComponentType<{ size?: number; className?: string }>;
   moduleDescription: string;
   headerActions?: ReactNode;
+  variant?: "default" | "card";
   children?: ReactNode;
 }
 
@@ -67,6 +68,7 @@ export const ModuleTabLayout: FC<ModuleTabLayoutProps> = ({
   moduleIcon: ModuleIcon,
   moduleDescription,
   headerActions,
+  variant = "default",
   children,
 }) => {
   const pathname = usePathname();
@@ -197,6 +199,146 @@ export const ModuleTabLayout: FC<ModuleTabLayoutProps> = ({
   const advancedTabs = tabs.filter((t) => t.advanced);
   const groups = [...new Set(advancedTabs.map((t) => t.group || "Advanced"))];
 
+  const renderTabBarAndContent = () => (
+    <>
+      {/* Tab Bar */}
+      <div className={styles.tabBar}>
+        <div
+          className={styles.tabScroll}
+          role="tablist"
+          aria-label={`${moduleLabel} sections`}
+        >
+          {orderedTabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = tab.id === activeId;
+            const isDraggingThis = tab.id === draggedTabId;
+
+            return (
+              <div
+                key={tab.id}
+                draggable={isEditing}
+                onDragStart={(e) => handleDragStart(e, tab.id)}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, tab.id)}
+                onDragEnd={() => setDraggedTabId(null)}
+                className={`${styles.tabWrap} ${isEditing ? styles.tabWrapEditing : ""} ${isDraggingThis ? styles.tabDragging : ""}`}
+              >
+                {isEditing && (
+                  <button
+                    type="button"
+                    className={styles.dragHandle}
+                    title="Drag, or press arrow keys, to rearrange"
+                    aria-label={`Reorder ${tab.label} (arrow keys to move)`}
+                    onKeyDown={(e) => handleHandleKeyDown(e, tab.id)}
+                  >
+                    <GripVertical size={13} />
+                  </button>
+                )}
+                <Link
+                  href={tab.href || `?tab=${tab.id}`}
+                  className={`${styles.tab} ${isActive ? styles.tabActive : ""}`}
+                  title={tab.description || tab.label}
+                  role="tab"
+                  aria-selected={isActive}
+                  aria-current={isActive ? "page" : undefined}
+                  onClick={(e) => {
+                    if (isEditing) e.preventDefault();
+                  }}
+                >
+                  {Icon && <Icon size={16} className={styles.tabIcon} />}
+                  <span>{tab.label}</span>
+                  {!isEditing && (
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        togglePin(tab.id);
+                      }}
+                      className={`${styles.pinBtn} ${isPinned(tab.id) ? styles.pinActive : ""}`}
+                      aria-label={isPinned(tab.id) ? "Unpin tab" : "Pin tab"}
+                      aria-pressed={isPinned(tab.id)}
+                    >
+                      <Star size={12} />
+                    </button>
+                  )}
+                  {isPinned(tab.id) && !isEditing && (
+                    <div className={styles.pinIndicator} />
+                  )}
+                </Link>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Advanced Dropdown */}
+        {advancedTabs.length > 0 && (
+          <div className={styles.advancedWrap} ref={advancedRef}>
+            <button
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className={`${styles.advancedBtn} ${showAdvanced ? styles.advancedBtnOpen : ""}`}
+              aria-haspopup="menu"
+              aria-expanded={showAdvanced}
+            >
+              <GripHorizontal size={14} />
+              <span>Advanced</span>
+              <ChevronDown size={14} className={styles.chevron} />
+            </button>
+            {showAdvanced && (
+              <div
+                className={styles.advancedDropdown}
+                role="menu"
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") closeAdvanced();
+                }}
+              >
+                {groups.map((group) => (
+                  <div key={group} className={styles.advancedGroup}>
+                    <div className={styles.advancedGroupTitle}>{group}</div>
+                    {advancedTabs
+                      .filter((t) => (t.group || "Advanced") === group)
+                      .map((tab) => {
+                        const Icon = tab.icon;
+                        return (
+                          <Link
+                            key={tab.id}
+                            href={tab.href || `?tab=${tab.id}`}
+                            role="menuitem"
+                            className={`${styles.advancedItem} ${tab.id === activeId ? styles.advancedItemActive : ""}`}
+                            onClick={() => setShowAdvanced(false)}
+                            title={tab.description}
+                          >
+                            {Icon && <Icon size={16} />}
+                            <span>{tab.label}</span>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                togglePin(tab.id);
+                              }}
+                              className={`${styles.advPinBtn} ${isPinned(tab.id) ? styles.pinActive : ""}`}
+                              aria-label={
+                                isPinned(tab.id) ? "Unpin tab" : "Pin tab"
+                              }
+                              aria-pressed={isPinned(tab.id)}
+                            >
+                              <Star size={11} />
+                            </button>
+                          </Link>
+                        );
+                      })}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Tab Content */}
+      <div className={styles.content}>{children}</div>
+    </>
+  );
+
   return (
     <div className={styles.wrapper}>
       {/* Module Header */}
@@ -262,144 +404,11 @@ export const ModuleTabLayout: FC<ModuleTabLayoutProps> = ({
         </div>
       )}
 
-      {/* Card Container holding all tabs inside card header + content in card body */}
-      <div className={styles.cardContainer}>
-        {/* Tab Bar */}
-        <div className={styles.tabBar}>
-          <div
-            className={styles.tabScroll}
-            role="tablist"
-            aria-label={`${moduleLabel} sections`}
-          >
-            {orderedTabs.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = tab.id === activeId;
-              const isDraggingThis = tab.id === draggedTabId;
-
-              return (
-                <div
-                  key={tab.id}
-                  draggable={isEditing}
-                  onDragStart={(e) => handleDragStart(e, tab.id)}
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, tab.id)}
-                  onDragEnd={() => setDraggedTabId(null)}
-                  className={`${styles.tabWrap} ${isEditing ? styles.tabWrapEditing : ""} ${isDraggingThis ? styles.tabDragging : ""}`}
-                >
-                  {isEditing && (
-                    <button
-                      type="button"
-                      className={styles.dragHandle}
-                      title="Drag, or press arrow keys, to rearrange"
-                      aria-label={`Reorder ${tab.label} (arrow keys to move)`}
-                      onKeyDown={(e) => handleHandleKeyDown(e, tab.id)}
-                    >
-                      <GripVertical size={13} />
-                    </button>
-                  )}
-                  <Link
-                    href={tab.href || `?tab=${tab.id}`}
-                    className={`${styles.tab} ${isActive ? styles.tabActive : ""}`}
-                    title={tab.description || tab.label}
-                    role="tab"
-                    aria-selected={isActive}
-                    aria-current={isActive ? "page" : undefined}
-                    onClick={(e) => {
-                      if (isEditing) e.preventDefault();
-                    }}
-                  >
-                    {Icon && <Icon size={16} className={styles.tabIcon} />}
-                    <span>{tab.label}</span>
-                    {!isEditing && (
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          togglePin(tab.id);
-                        }}
-                        className={`${styles.pinBtn} ${isPinned(tab.id) ? styles.pinActive : ""}`}
-                        aria-label={isPinned(tab.id) ? "Unpin tab" : "Pin tab"}
-                        aria-pressed={isPinned(tab.id)}
-                      >
-                        <Star size={12} />
-                      </button>
-                    )}
-                    {isPinned(tab.id) && !isEditing && (
-                      <div className={styles.pinIndicator} />
-                    )}
-                  </Link>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Advanced Dropdown */}
-          {advancedTabs.length > 0 && (
-            <div className={styles.advancedWrap} ref={advancedRef}>
-              <button
-                onClick={() => setShowAdvanced(!showAdvanced)}
-                className={`${styles.advancedBtn} ${showAdvanced ? styles.advancedBtnOpen : ""}`}
-                aria-haspopup="menu"
-                aria-expanded={showAdvanced}
-              >
-                <GripHorizontal size={14} />
-                <span>Advanced</span>
-                <ChevronDown size={14} className={styles.chevron} />
-              </button>
-              {showAdvanced && (
-                <div
-                  className={styles.advancedDropdown}
-                  role="menu"
-                  onKeyDown={(e) => {
-                    if (e.key === "Escape") closeAdvanced();
-                  }}
-                >
-                  {groups.map((group) => (
-                    <div key={group} className={styles.advancedGroup}>
-                      <div className={styles.advancedGroupTitle}>{group}</div>
-                      {advancedTabs
-                        .filter((t) => (t.group || "Advanced") === group)
-                        .map((tab) => {
-                          const Icon = tab.icon;
-                          return (
-                            <Link
-                              key={tab.id}
-                              href={tab.href || `?tab=${tab.id}`}
-                              role="menuitem"
-                              className={`${styles.advancedItem} ${tab.id === activeId ? styles.advancedItemActive : ""}`}
-                              onClick={() => setShowAdvanced(false)}
-                              title={tab.description}
-                            >
-                              {Icon && <Icon size={16} />}
-                              <span>{tab.label}</span>
-                              <button
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  togglePin(tab.id);
-                                }}
-                                className={`${styles.advPinBtn} ${isPinned(tab.id) ? styles.pinActive : ""}`}
-                                aria-label={
-                                  isPinned(tab.id) ? "Unpin tab" : "Pin tab"
-                                }
-                                aria-pressed={isPinned(tab.id)}
-                              >
-                                <Star size={11} />
-                              </button>
-                            </Link>
-                          );
-                        })}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Tab Content */}
-        <div className={styles.content}>{children}</div>
-      </div>
+      {variant === "card" ? (
+        <div className={styles.cardContainer}>{renderTabBarAndContent()}</div>
+      ) : (
+        renderTabBarAndContent()
+      )}
     </div>
   );
 };

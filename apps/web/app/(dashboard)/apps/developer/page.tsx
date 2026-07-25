@@ -257,10 +257,7 @@ export default function DeveloperPortalPage() {
           </div>
         )}
 
-        <div className="ui-hstack-3">
-          <Link href="/apps/store" className="ui-text-muted">
-            <ArrowLeft size={18} />
-          </Link>
+        <div>
           <h1 className="ui-heading-lg ui-flex ui-items-center ui-gap-2">
             <Code2 className="ui-text-primary" /> Developer Portal
           </h1>

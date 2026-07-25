@@ -34,6 +34,8 @@ import { CustomerPortalService } from "./customer-portal.service";
 import { CustomerPortalAdminController } from "./customer-portal-admin.controller";
 import { CustomerPortalController } from "./customer-portal.controller";
 import { CrmSettingsController } from "./settings.controller";
+import { CrmCpqService } from "./crm-cpq.service";
+import { CrmCpqController } from "./crm-cpq.controller";
 import { AppSettingsService } from "../../common/settings/settings.service";
 import { CrmExpansionV1Service } from "./crm-expansion-v1.service";
 import { CrmExpansionV1Controller } from "./crm-expansion-v1.controller";
@@ -83,6 +85,10 @@ import { CrmCustomerSuccessService } from "./crm-customer-success.service";
 import { CrmMarketingAutomationService } from "./crm-marketing-automation.service";
 import { CrmDeepController } from "./crm-deep.controller";
 import { CrmExpansionDeepController } from "./crm-expansion-deep.controller";
+import { CrmActivityCaptureService } from "./crm-activity-capture.service";
+import { CrmActivityCaptureController } from "./crm-activity-capture.controller";
+import { CrmMarketingDeepService } from "./crm-marketing-deep.service";
+import { CrmMarketingDeepController } from "./crm-marketing-deep.controller";
 
 import { CrmLeadEnrichmentService } from "./crm-lead-enrichment.service";
 import {
@@ -128,8 +134,98 @@ import {
   CrmPartnerDealRegistrationController,
   CrmPartnerMdfController,
 } from "./crm-partner-deep.controller";
+import { CrmPartnerDeepTwoService } from "./crm-partner-deep-two.service";
+import { CrmPartnerDeepTwoController } from "./crm-partner-deep-two.controller";
+import { CrmIntegrationDeepService } from "./crm-integration-deep.service";
+import { CrmIntegrationDeepController } from "./crm-integration-deep.controller";
+import { CrmPipelineDeepService } from "./crm-pipeline-deep.service";
+import { CrmPipelineDeepController } from "./crm-pipeline-deep.controller";
+import { CrmAbmOrchestrationService } from "./crm-abm-orchestration.service";
+import { CrmAbmOrchestrationController } from "./crm-abm-orchestration.controller";
+import { CrmBehavioralAnalyticsService } from "./crm-behavioral-analytics.service";
+import { CrmBehavioralAnalyticsController } from "./crm-behavioral-analytics.controller";
+import { CrmIncentiveDeepService } from "./crm-incentive-deep.service";
+import { CrmIncentiveDeepController } from "./crm-incentive-deep.controller";
+import { CrmLeadEnrichmentDeepService } from "./crm-lead-enrichment-deep.service";
+import { CrmLeadEnrichmentDeepController } from "./crm-lead-enrichment-deep.controller";
+import { CrmLeadRoutingService } from "./crm-lead-routing.service";
+import { CrmLeadRoutingController } from "./crm-lead-routing.controller";
+import { CrmChannelPortalDeepService } from "./crm-channel-portal-deep.service";
 import { CrmWinLossService } from "./crm-win-loss.service";
 import { CrmWinLossController } from "./crm-win-loss.controller";
+import { CrmForecastGovernanceService } from "./crm-forecast-governance.service";
+import { CrmDealDeskService } from "./crm-deal-desk.service";
+import { CrmDealDeskController } from "./crm-deal-desk.controller";
+import { CrmSupportDeepController } from "./crm-support-deep.controller";
+import { CrmPortalDeepController } from "./crm-portal-deep.controller";
+import { CrmCustomerJourneyService } from "./crm-customer-journey.service";
+import { CrmCustomerJourneyController } from "./crm-customer-journey.controller";
+import { CrmSupportDeepService } from "./crm-support-deep.service";
+import { CrmPortalDeepService } from "./crm-portal-deep.service";
+import { CrmContentManagementService } from "./crm-content-management.service";
+import { CrmContentManagementController } from "./crm-content-management.controller";
+import { CrmDataManagementService } from "./crm-data-management.service";
+import { CrmDataManagementController } from "./crm-data-management.controller";
+import { CrmTerritoryDeepService } from "./crm-territory-deep.service";
+import { CrmReportingDeepService } from "./crm-reporting-deep.service";
+import { CrmTerritoryDeepController } from "./crm-territory-deep.controller";
+import { CrmReportingDeepController } from "./crm-reporting-deep.controller";
+import { CrmAiIntelligenceService } from "./crm-ai-intelligence.service";
+import { CrmAiIntelligenceController } from "./crm-ai-intelligence.controller";
+import { CrmCompetitorIntelligenceService } from "./crm-competitor-intelligence.service";
+import { CrmCompetitorIntelligenceController } from "./crm-competitor-intelligence.controller";
+import { CrmCommunicationDeepService } from "./crm-communication-deep.service";
+import { CrmCommunicationDeepController } from "./crm-communication-deep.controller";
+import { CrmContractDeepService } from "./crm-contract-deep.service";
+import { CrmContractDeepController } from "./crm-contract-deep.controller";
+import { CrmGamificationDeepService } from "./crm-gamification-deep.service";
+import { CrmGamificationDeepController } from "./crm-gamification-deep.controller";
+import { CrmCoachingDeepService } from "./crm-coaching-deep.service";
+import { CrmCoachingDeepController } from "./crm-coaching-deep.controller";
+import { CrmGuidedSellingDeepService } from "./crm-guided-selling-deep.service";
+import { CrmGuidedSellingDeepController } from "./crm-guided-selling-deep.controller";
+import { CrmPipelineIntelligenceService } from "./crm-pipeline-intelligence.service";
+import { CrmPipelineIntelligenceController } from "./crm-pipeline-intelligence.controller";
+import { CrmRevenueAttributionDeepService } from "./crm-revenue-attribution-deep.service";
+import { CrmRevenueAttributionDeepController } from "./crm-revenue-attribution-deep.controller";
+import { CrmCustomerSuccessDeepService } from "./crm-customer-success-deep.service";
+import { CrmCustomerSuccessDeepController } from "./crm-customer-success-deep.controller";
+import { CrmPipelineForecastingDeepService } from "./crm-pipeline-forecasting-deep.service";
+import { CrmPipelineForecastingDeepController } from "./crm-pipeline-forecasting-deep.controller";
+import { CrmEnterpriseTerritoryService } from "./crm-enterprise-territory.service";
+import { CrmEnterpriseTerritoryController } from "./crm-enterprise-territory.controller";
+import { CrmSalesCadenceDeepService } from "./crm-sales-cadence-deep.service";
+import { CrmSalesCadenceDeepController } from "./crm-sales-cadence-deep.controller";
+import { CrmAccountHierarchiesDeepService } from "./crm-account-hierarchies-deep.service";
+import { CrmAccountHierarchiesDeepController } from "./crm-account-hierarchies-deep.controller";
+import { CrmRenewalsUpsellDeepService } from "./crm-renewals-upsell-deep.service";
+import { CrmRenewalsUpsellDeepController } from "./crm-renewals-upsell-deep.controller";
+import { CrmQuotesCpqDeepService } from "./crm-quotes-cpq-deep.service";
+import { CrmQuotesCpqDeepController } from "./crm-quotes-cpq-deep.controller";
+import { CrmSalesGamificationEventsService } from "./crm-sales-gamification-events.service";
+import { CrmSalesGamificationEventsController } from "./crm-sales-gamification-events.controller";
+import { CrmExecutiveCommandDeepService } from "./crm-executive-command-deep.service";
+import { CrmExecutiveCommandDeepController } from "./crm-executive-command-deep.controller";
+import { CrmDealAnalyticsDeepService } from "./crm-deal-analytics-deep.service";
+import { CrmDealAnalyticsDeepController } from "./crm-deal-analytics-deep.controller";
+import { CrmAccountIntelligenceDeepService } from "./crm-account-intelligence-deep.service";
+import { CrmAccountIntelligenceDeepController } from "./crm-account-intelligence-deep.controller";
+import { CrmMarketingRoiDeepService } from "./crm-marketing-roi-deep.service";
+import { CrmMarketingRoiDeepController } from "./crm-marketing-roi-deep.controller";
+import { CrmCustomerLifecycleDeepService } from "./crm-customer-lifecycle-deep.service";
+import { CrmCustomerLifecycleDeepController } from "./crm-customer-lifecycle-deep.controller";
+import { CrmSalesOperationsDeepService } from "./crm-sales-operations-deep.service";
+import { CrmSalesOperationsDeepController } from "./crm-sales-operations-deep.controller";
+import { CrmRevenueOptimizationDeepService } from "./crm-revenue-optimization-deep.service";
+import { CrmRevenueOptimizationDeepController } from "./crm-revenue-optimization-deep.controller";
+import { CrmCustomerExperienceDeepService } from "./crm-customer-experience-deep.service";
+import { CrmCustomerExperienceDeepController } from "./crm-customer-experience-deep.controller";
+import {
+  CrmRelationshipsDeepController,
+  CrmPipelineOpsController,
+  CrmSalesForecastingDeepController,
+  CrmSalesAnalyticsExpansionController,
+} from "./crm-deep-expansion-v2.controller";
 
 const CRM_SERVICES = [
   CrmService,
@@ -186,14 +282,62 @@ const CRM_SERVICES = [
   CrmKnowledgeBaseService,
   CrmPartnerDeepService,
   CrmWinLossService,
+  CrmCustomerJourneyService,
   AppSettingsService,
   CrmExpansionV1Service,
+  CrmActivityCaptureService,
+  CrmMarketingDeepService,
+  CrmCpqService,
+  CrmSupportDeepService,
+  CrmPortalDeepService,
+  CrmForecastGovernanceService,
+  CrmDealDeskService,
+  CrmContentManagementService,
+  CrmDataManagementService,
+  CrmTerritoryDeepService,
+  CrmReportingDeepService,
+  CrmPartnerDeepTwoService,
+  CrmIntegrationDeepService,
+  CrmPipelineDeepService,
+  CrmAbmOrchestrationService,
+  CrmBehavioralAnalyticsService,
+  CrmIncentiveDeepService,
+  CrmLeadEnrichmentDeepService,
+  CrmLeadRoutingService,
+  CrmChannelPortalDeepService,
+  CrmAiIntelligenceService,
+  CrmCompetitorIntelligenceService,
+  CrmGamificationDeepService,
+  CrmCoachingDeepService,
+  CrmCommunicationDeepService,
+  CrmContractDeepService,
+  CrmGuidedSellingDeepService,
+  CrmPipelineIntelligenceService,
+  CrmRevenueAttributionDeepService,
+  CrmCustomerSuccessDeepService,
+  CrmPipelineForecastingDeepService,
+  CrmEnterpriseTerritoryService,
+  CrmSalesCadenceDeepService,
+  CrmAccountHierarchiesDeepService,
+  CrmRenewalsUpsellDeepService,
+  CrmQuotesCpqDeepService,
+  CrmSalesGamificationEventsService,
+  CrmExecutiveCommandDeepService,
+  CrmDealAnalyticsDeepService,
+  CrmAccountIntelligenceDeepService,
+  CrmMarketingRoiDeepService,
+  CrmCustomerLifecycleDeepService,
+  CrmSalesOperationsDeepService,
+  CrmRevenueOptimizationDeepService,
+  CrmCustomerExperienceDeepService,
 ];
 
 @Module({
   controllers: [
     CrmController,
     CrmExpansionV1Controller,
+
+    CrmDealDeskController,
     CrmIntelligenceController,
     CrmLeadScoringController,
     CrmDuplicatesController,
@@ -221,6 +365,8 @@ const CRM_SERVICES = [
     CrmDealRoomPublicController,
     CrmDeepController,
     CrmExpansionDeepController,
+    CrmActivityCaptureController,
+    CrmMarketingDeepController,
     CrmLeadEnrichmentSourceController,
     CrmLeadEnrichmentRuleController,
     CrmLeadEnrichmentFieldMappingController,
@@ -247,7 +393,52 @@ const CRM_SERVICES = [
     CrmPartnerDealRegistrationController,
     CrmPartnerMdfController,
     CrmWinLossController,
+    CrmCustomerJourneyController,
+    CrmCpqController,
+    CrmSupportDeepController,
+    CrmPortalDeepController,
+    CrmContentManagementController,
+    CrmDataManagementController,
+    CrmTerritoryDeepController,
+    CrmReportingDeepController,
+    CrmPartnerDeepTwoController,
+    CrmIntegrationDeepController,
+    CrmPipelineDeepController,
+    CrmAbmOrchestrationController,
+    CrmBehavioralAnalyticsController,
+    CrmIncentiveDeepController,
+    CrmLeadEnrichmentDeepController,
+    CrmLeadRoutingController,
     CrmSettingsController,
+    CrmAiIntelligenceController,
+    CrmCompetitorIntelligenceController,
+    CrmGamificationDeepController,
+    CrmCoachingDeepController,
+    CrmCommunicationDeepController,
+    CrmContractDeepController,
+    CrmGuidedSellingDeepController,
+    CrmPipelineIntelligenceController,
+    CrmRevenueAttributionDeepController,
+    CrmCustomerSuccessDeepController,
+    CrmPipelineForecastingDeepController,
+    CrmEnterpriseTerritoryController,
+    CrmSalesCadenceDeepController,
+    CrmAccountHierarchiesDeepController,
+    CrmRenewalsUpsellDeepController,
+    CrmQuotesCpqDeepController,
+    CrmSalesGamificationEventsController,
+    CrmExecutiveCommandDeepController,
+    CrmDealAnalyticsDeepController,
+    CrmAccountIntelligenceDeepController,
+    CrmMarketingRoiDeepController,
+    CrmCustomerLifecycleDeepController,
+    CrmSalesOperationsDeepController,
+    CrmRevenueOptimizationDeepController,
+    CrmCustomerExperienceDeepController,
+    CrmRelationshipsDeepController,
+    CrmPipelineOpsController,
+    CrmSalesForecastingDeepController,
+    CrmSalesAnalyticsExpansionController,
   ],
   providers: CRM_SERVICES,
   exports: CRM_SERVICES,

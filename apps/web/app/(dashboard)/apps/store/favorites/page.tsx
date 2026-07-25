@@ -125,18 +125,13 @@ export default function FavoritesPage() {
           </div>
         )}
 
-        <div className="ui-hstack-3">
-          <Link href="/apps/store" className="ui-text-muted">
-            <ArrowLeft size={18} />
-          </Link>
-          <div>
-            <h1 className="ui-heading-lg ui-flex ui-items-center ui-gap-2">
-              <Heart className="ui-text-danger" size={22} /> My Favorites
-            </h1>
-            <p className="ui-text-sm-muted">
-              {favorites.length} saved app{favorites.length !== 1 ? "s" : ""}
-            </p>
-          </div>
+        <div>
+          <h1 className="ui-heading-lg ui-flex ui-items-center ui-gap-2">
+            <Heart className="ui-text-danger" size={22} /> My Favorites
+          </h1>
+          <p className="ui-text-sm-muted">
+            {favorites.length} saved app{favorites.length !== 1 ? "s" : ""}
+          </p>
         </div>
 
         {loadError && (

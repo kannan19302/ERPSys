@@ -433,8 +433,20 @@ export default function LoginPage() {
   const [isLocalhost, setIsLocalhost] = useState(false);
   useEffect(() => {
     if (typeof window === "undefined") return;
+    const hostname = window.location.hostname.toLowerCase();
     setIsLocalhost(
-      ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname),
+      [
+        "localhost",
+        "127.0.0.1",
+        "::1",
+        "host.docker.internal",
+        "unerp-dev",
+        "0.0.0.0",
+      ].includes(hostname) ||
+        hostname.startsWith("172.") ||
+        hostname.startsWith("192.168.") ||
+        hostname.startsWith("10.") ||
+        hostname.endsWith(".local"),
     );
   }, []);
   const showDemoEntryPoint =

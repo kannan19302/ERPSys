@@ -8,15 +8,23 @@ import {
   Sparkles,
   LayoutGrid,
 } from "lucide-react";
-import type { ModuleTab } from "@unerp/ui-layout";
+import React, { type FC } from "react";
+import {
+  ModuleTabLayout,
+  type ModuleTab,
+  type ModuleTabLayoutProps,
+} from "@unerp/ui-layout";
 
 export {
-  ModuleTabLayout as AppsTabLayout,
   type ModuleTab as AppsTab,
   type ModuleTabLayoutProps as AppsTabLayoutProps,
   SubTabBar,
   type SubTab,
 } from "@unerp/ui-layout";
+
+export const AppsTabLayout: FC<ModuleTabLayoutProps> = (props) => {
+  return <ModuleTabLayout variant="card" {...props} />;
+};
 
 export const APPS_TABS: ModuleTab[] = [
   {

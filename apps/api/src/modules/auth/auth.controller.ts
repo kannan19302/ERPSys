@@ -327,7 +327,10 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: "Login demo user (non-production only)" })
-  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @Throttle({
+    short: { limit: 10, ttl: 1000 },
+    medium: { limit: 30, ttl: 60000 },
+  })
   @Post("login-demo")
   @HttpCode(HttpStatus.OK)
   async loginDemo(
@@ -340,25 +343,37 @@ export class AuthController {
     // Defense in depth: even outside production this is a shared dev
     // database seed shortcut, not a real account — never reachable from
     // anything but the machine running the dev server.
-    const hostHeader = req.headers["x-forwarded-host"];
+    const rawHostHeader =
+      (req.headers["x-forwarded-host"] as string | string[] | undefined) ||
+      (req.headers["host"] as string | string[] | undefined);
     let hostWithPort = "";
-    if (typeof hostHeader === "string") {
-      hostWithPort = hostHeader;
+    if (typeof rawHostHeader === "string") {
+      hostWithPort = rawHostHeader;
     } else if (
-      Array.isArray(hostHeader) &&
-      hostHeader.length > 0 &&
-      typeof hostHeader[0] === "string"
+      Array.isArray(rawHostHeader) &&
+      rawHostHeader.length > 0 &&
+      typeof rawHostHeader[0] === "string"
     ) {
-      hostWithPort = hostHeader[0];
+      hostWithPort = rawHostHeader[0];
     } else if (typeof req.hostname === "string") {
       hostWithPort = req.hostname;
     }
     const host = (hostWithPort.split(":")[0] as string).toLowerCase();
     const isLocal =
-      ["localhost", "127.0.0.1", "::1", "api", "web"].includes(host) ||
+      [
+        "localhost",
+        "127.0.0.1",
+        "::1",
+        "api",
+        "web",
+        "host.docker.internal",
+        "unerp-dev",
+        "0.0.0.0",
+      ].includes(host) ||
       host.startsWith("172.") ||
       host.startsWith("192.168.") ||
-      host.startsWith("10.");
+      host.startsWith("10.") ||
+      host.endsWith(".local");
     if (!isLocal) {
       throw new NotFoundException();
     }
@@ -600,7 +615,9 @@ export class AuthController {
   @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Post("verify-otp")
   @HttpCode(HttpStatus.OK)
-  async verifyOtp(@Body(new ZodValidationPipe(verifyOtpSchema)) dto: VerifyOtpInput) {
+  async verifyOtp(
+    @Body(new ZodValidationPipe(verifyOtpSchema)) dto: VerifyOtpInput,
+  ) {
     return this.authService.verifyOtp(dto.email, dto.code);
   }
 

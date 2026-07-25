@@ -3,8 +3,31 @@
   "allowed": [
     { "model": "Vendor", "field": "averageLeadTimeDays", "class": "metric" },
     { "model": "Vendor", "field": "qualityScore", "class": "metric" },
-    { "model": "ExpenseReportItem", "field": "ocrConfidence", "class": "metric" },
-    { "model": "WebOrder", "field": "subtotal", "class": "money-QUEUED-for-Decimal(18,2)" },
-    { "model": "WebOrder", "field": "total", "class": "money-QUEUED-for-Decimal(18,2)" }
+    {
+      "model": "ExpenseReportItem",
+      "field": "ocrConfidence",
+      "class": "metric"
+    },
+    { "model": "RfidReadEvent", "field": "rssi", "class": "metric" },
+    {
+      "model": "CrmLeadEnrichmentData",
+      "field": "confidence",
+      "class": "metric"
+    },
+    { "model": "CrmEnrichmentCache", "field": "confidence", "class": "metric" },
+    { "model": "FormAnalytic", "field": "completionRate", "class": "metric" },
+    { "model": "AiTrainingJob", "field": "progress", "class": "metric" },
+    { "model": "AiTrainingRun", "field": "loss", "class": "metric" },
+    { "model": "AiTrainingRun", "field": "accuracy", "class": "metric" },
+    {
+      "model": "WebOrder",
+      "field": "subtotal",
+      "class": "money-QUEUED-for-Decimal(18,2)"
+    },
+    {
+      "model": "WebOrder",
+      "field": "total",
+      "class": "money-QUEUED-for-Decimal(18,2)"
+    }
   ]
 }
