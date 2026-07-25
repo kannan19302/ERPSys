@@ -73,6 +73,10 @@ const nextConfig = {
   async rewrites() {
     return [
       {
+        source: '/mfa-push-sw.js',
+        destination: '/mfa-push-sw',
+      },
+      {
         source: '/api/v1/:path*',
         destination: `${apiBaseUrl}/api/v1/:path*`,
       },

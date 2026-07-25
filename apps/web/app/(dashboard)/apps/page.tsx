@@ -305,7 +305,10 @@ function FolderTile({
   if (appsInFolder.length === 0) return null;
 
   return (
-    <div onClick={onClick} className="ui-flex-col ui-items-center ui-gap-2 cursor-pointer">
+    <div
+      onClick={onClick}
+      className="ui-flex-col ui-items-center ui-gap-2 cursor-pointer"
+    >
       <div className="relative">
         <div
           style={{ "--tile-color": folder.color } as React.CSSProperties}
@@ -329,7 +332,10 @@ function FolderTile({
                 />
               ))}
         </div>
-        <div style={{ background: folder.color }} className={styles.folderTileBadge}>
+        <div
+          style={{ background: folder.color }}
+          className={styles.folderTileBadge}
+        >
           {appsInFolder.length}
         </div>
       </div>
@@ -502,134 +508,147 @@ export default function AppsHubPage() {
 
   return (
     <RouteGuard permission="apps.read">
-      <div className="ui-stack-6 relative ui-animate-in" style={{ minHeight: "80vh" }}>
+      <div
+        className="ui-stack-6 relative ui-animate-in"
+        style={{ minHeight: "80vh" }}
+      >
         <OnboardingChecklist
           variant="compact"
           show={subStatus === "TRIAL"}
           autoCompleteDashboard
         />
 
-        <div className="ui-flex-center pt-8">
-          <div className="ui-card" style={{ boxShadow: "var(--shadow-xl)", maxWidth: "100%", width: 940, position: "relative" }}>
-            <div className="ui-flex-between px-6 py-5 border-b">
-              <div>
-                <h2 className="ui-heading-lg m-0">
-                  {openFolder ? openFolderObj?.name : "Desk"}
-                </h2>
-                {openFolder && (
-                  <button
-                    onClick={() => setOpenFolder(null)}
-                    className="ui-btn ui-text-primary ui-text-sm p-0 mt-1"
-                    style={{ background: "none", border: "none", display: "flex", alignItems: "center", gap: 4 }}
-                  >
-                    ← Back to All Apps
-                  </button>
-                )}
-              </div>
-              <div className="ui-search-wrapper" style={{ width: 240 }}>
-                <Search size={14} className="ui-search-icon" />
-                <input
-                  className="ui-search-input"
-                  type="text"
-                  placeholder={
-                    openFolder
-                      ? `Search in ${openFolderObj?.name}...`
-                      : "Search all apps..."
-                  }
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className={styles.searchClearBtn}
-                  >
-                    <X size={13} />
-                  </button>
-                )}
-              </div>
-            </div>
+        <div className="ui-flex-between px-6 py-4 border-b">
+          <div>
+            <h2 className="ui-heading-lg m-0">
+              {openFolder ? openFolderObj?.name : "Desk Workspace"}
+            </h2>
+            {openFolder && (
+              <button
+                onClick={() => setOpenFolder(null)}
+                className="ui-btn ui-text-primary ui-text-sm p-0 mt-1"
+                style={{
+                  background: "none",
+                  border: "none",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                }}
+              >
+                ← Back to All Apps
+              </button>
+            )}
+          </div>
+          <div className="ui-search-wrapper" style={{ width: 260 }}>
+            <Search size={14} className="ui-search-icon" />
+            <input
+              className="ui-search-input"
+              type="text"
+              placeholder={
+                openFolder
+                  ? `Search in ${openFolderObj?.name}...`
+                  : "Search all apps..."
+              }
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className={styles.searchClearBtn}
+              >
+                <X size={13} />
+              </button>
+            )}
+          </div>
+        </div>
 
-            <div className="p-6" style={{ minHeight: 400 }}>
-              {searchQuery.trim() ? (
-                <div>
-                  {searchResults.length === 0 ? (
-                    <div className="ui-empty-state">
-                      <Search size={40} className="ui-empty-state-icon" />
-                      <p className="ui-empty-state-text">
-                        No apps found for &quot;{searchQuery}&quot;
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="ui-flex ui-flex-wrap ui-gap-5">
-                      {searchResults.map(({ app, folderName }) => (
-                        <div key={app.id} className="ui-flex-col ui-items-center ui-gap-1">
-                          <SingleAppTile app={app} />
-                          {folderName && (
-                            <span className="ui-text-xs-tertiary text-center">
-                              in {folderName}
-                            </span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ) : openFolder ? (
-                <div className="ui-flex ui-flex-wrap ui-gap-5">
-                  {appsInOpenFolder.map((app) => (
-                    <SingleAppTile key={app.id} app={app} />
-                  ))}
+        <div className="p-6" style={{ minHeight: 400 }}>
+          {searchQuery.trim() ? (
+            <div>
+              {searchResults.length === 0 ? (
+                <div className="ui-empty-state">
+                  <Search size={40} className="ui-empty-state-icon" />
+                  <p className="ui-empty-state-text">
+                    No apps found for &quot;{searchQuery}&quot;
+                  </p>
                 </div>
               ) : (
                 <div className="ui-flex ui-flex-wrap ui-gap-5">
-                  {gridItems.map((item) => {
-                    if (item.type === "folder") {
-                      return (
-                        <FolderTile
-                          key={item.id}
-                          folder={item.data}
-                          onClick={() => setOpenFolder(item.id)}
-                          activeApps={sortedActiveApps}
-                        />
-                      );
-                    } else {
-                      return <SingleAppTile key={item.id} app={item.data} />;
-                    }
-                  })}
+                  {searchResults.map(({ app, folderName }) => (
+                    <div
+                      key={app.id}
+                      className="ui-flex-col ui-items-center ui-gap-1"
+                    >
+                      <SingleAppTile app={app} />
+                      {folderName && (
+                        <span className="ui-text-xs-tertiary text-center">
+                          in {folderName}
+                        </span>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
-
-            <div className={`ui-flex-between px-6 py-3 ${styles.pageFooter}`}>
-              <span className="ui-text-xs-tertiary">
-                {sortedActiveApps.length} apps · {sortedSubfolders.length}{" "}
-                folders
-              </span>
-              <div className="ui-flex ui-gap-3 ui-items-center">
-                <Link href="/apps/store" className={styles.footerActionLink}>
-                  <ShoppingBag size={12} />
-                  App Store
-                  <ChevronRight size={10} />
-                </Link>
-                <button
-                  onClick={() => {
-                    localStorage.removeItem("token");
-                    localStorage.removeItem("user");
-                    router.push("/login");
-                  }}
-                  className={styles.footerActionBtn}
-                >
-                  Logout
-                </button>
-              </div>
+          ) : openFolder ? (
+            <div className="ui-flex ui-flex-wrap ui-gap-5">
+              {appsInOpenFolder.map((app) => (
+                <SingleAppTile key={app.id} app={app} />
+              ))}
             </div>
+          ) : (
+            <div className="ui-flex ui-flex-wrap ui-gap-5">
+              {gridItems.map((item) => {
+                if (item.type === "folder") {
+                  return (
+                    <FolderTile
+                      key={item.id}
+                      folder={item.data}
+                      onClick={() => setOpenFolder(item.id)}
+                      activeApps={sortedActiveApps}
+                    />
+                  );
+                } else {
+                  return <SingleAppTile key={item.id} app={item.data} />;
+                }
+              })}
+            </div>
+          )}
+        </div>
+
+        <div className={`ui-flex-between px-6 py-3 ${styles.pageFooter}`}>
+          <span className="ui-text-xs-tertiary">
+            {sortedActiveApps.length} apps · {sortedSubfolders.length} folders
+          </span>
+          <div className="ui-flex ui-gap-3 ui-items-center">
+            <Link href="/apps/store" className={styles.footerActionLink}>
+              <ShoppingBag size={12} />
+              App Store
+              <ChevronRight size={10} />
+            </Link>
+            <button
+              onClick={() => {
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+                router.push("/login");
+              }}
+              className={styles.footerActionBtn}
+            >
+              Logout
+            </button>
           </div>
         </div>
 
         {openFolder && (
-          <div onClick={() => setOpenFolder(null)} className={`${styles.modalOverlay} modal-overlay`}>
-            <div onClick={(e) => e.stopPropagation()} className={`${styles.modalCard} modal-card`}>
+          <div
+            onClick={() => setOpenFolder(null)}
+            className={`${styles.modalOverlay} modal-overlay`}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className={`${styles.modalCard} modal-card`}
+            >
               <div
                 className="ui-flex-between px-6 py-5 border-b"
                 style={{

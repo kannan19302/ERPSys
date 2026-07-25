@@ -1,6 +1,13 @@
 "use client";
 
-import { ShoppingBag, Store, Heart, Code2, Sparkles } from "lucide-react";
+import {
+  ShoppingBag,
+  Store,
+  Heart,
+  Code2,
+  Sparkles,
+  LayoutGrid,
+} from "lucide-react";
 import type { ModuleTab } from "@unerp/ui-layout";
 
 export {
@@ -12,6 +19,13 @@ export {
 } from "@unerp/ui-layout";
 
 export const APPS_TABS: ModuleTab[] = [
+  {
+    id: "desk",
+    label: "Desk",
+    href: "/apps",
+    icon: LayoutGrid,
+    description: "Your installed workspace apps and modules",
+  },
   {
     id: "store",
     label: "App Store",

@@ -2,6 +2,19 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-25] Tenant-Customizable Website Engine (`/` Endpoint) & Corporate Site Separation
+
+- **Corporate Site Extraction**: Separated the UniERP SaaS corporate marketing landing page into `@unerp/corporate-site-template` (`packages/corporate-site-template/package.json` & `CorporateLandingPage.tsx`) for independent deployment.
+- **Root '/' Endpoint Transformation**: Re-architected `apps/web/app/page.tsx` so unauthenticated visitors hitting `/` are served the **Tenant's customizable Website, E-Commerce Storefront, Blog, and CMS pages** dynamically rendered via Builder Studio. Authenticated users are routed seamlessly to the ERP Desk (`/apps`).
+- **Tenant Header & Footer (`TenantHeaderFooter.tsx`)**: Created reusable `TenantHeader` and `TenantFooter` components with brand logo, dynamic navbar links (`webMenu`), storefront cart trigger, search, and an "ERP Desk" sign-in action button.
+- **Tenant Starter Website (`TenantStarterHome.tsx`)**: Created a modern fallback tenant website with hero banner, storefront highlights, blog cards, and quick action links to Builder Studio (`/apps/builder/web/pages`).
+- **Public Page Renderer (`PublicPageRenderer.tsx`)**: Enhanced builder renderer to wrap dynamic page sections inside `TenantHeader` and `TenantFooter` with live CSS design tokens.
+
+- **Card-Integrated Tab Bar**: Refactored `ModuleTabLayout` (`packages/ui-layout/src/module-tab-layout.tsx` & `.module.css`) to wrap the top Tab Bar and active content inside a unified `cardContainer` (`.ui-card` elevation). The tab bar now sits seamlessly as the card header with active tab styling (`tabActive`), eliminating disunity between floating tabs and card content.
+- **Desk Tab Integration**: Updated `APPS_TABS` in `AppsTabLayout.tsx` to include `Desk` (`/apps`) as the first tab alongside `App Store`, `Collections`, `Favorites`, and `Developer Portal`.
+- **Apps Page Streamlining**: Streamlined `AppsHubPage` (`apps/web/app/(dashboard)/apps/page.tsx`) by removing double nested card containers, seamlessly embedding the Desk Workspace search bar and installed apps grid inside `ModuleTabLayout`'s card body.
+- **Verification**: Built `@unerp/ui-layout` (`tsup` build clean) and typechecked `@unerp/web` (`tsc --noEmit` clean, 0 errors).
+
 ## [2026-07-24] Remote Branch Cleanup & GitHub CI Migration Alignment
 
 - **Remote Branch Cleanup**: Purged stale remote branches `v1` and `changeset-release/main` from GitHub (`origin`), locking the repository strictly to active `main` and `v1.0` branches under the Disable Branch Delete policy.
