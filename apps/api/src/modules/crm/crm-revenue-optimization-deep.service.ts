@@ -1,12 +1,10 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "../../common/prisma/prisma.service";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class CrmRevenueOptimizationDeepService {
-  constructor(private readonly prisma: PrismaService) {}
-
   async getPricingOptimizationAnalysis(tenantId: string) {
-    const deals = await this.prisma.deal.findMany({
+    const deals = await prisma.deal.findMany({
       where: { tenantId, stage: "CLOSED_WON" },
       select: { value: true, discount: true, industry: true },
       take: 50,
@@ -37,7 +35,7 @@ export class CrmRevenueOptimizationDeepService {
   }
 
   async getDiscountAnalysis(tenantId: string) {
-    const deals = await this.prisma.deal.findMany({
+    const deals = await prisma.deal.findMany({
       where: { tenantId },
       select: { discount: true, value: true, stage: true },
     });
@@ -89,7 +87,7 @@ export class CrmRevenueOptimizationDeepService {
   }
 
   async getContractValueOptimization(tenantId: string) {
-    const deals = await this.prisma.deal.findMany({
+    const deals = await prisma.deal.findMany({
       where: { tenantId, stage: "CLOSED_WON" },
       select: { value: true, contractTerm: true },
     });
@@ -201,7 +199,7 @@ export class CrmRevenueOptimizationDeepService {
   }
 
   async getRevenueConcentrationRisk(tenantId: string) {
-    const customers = await this.prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: { tenantId },
       select: { id: true, name: true, annualRevenue: true },
       orderBy: { annualRevenue: "desc" },
@@ -238,7 +236,7 @@ export class CrmRevenueOptimizationDeepService {
   }
 
   async getSalesEfficiencyRatio(tenantId: string) {
-    const revenue = await this.prisma.deal.aggregate({
+    const revenue = await prisma.deal.aggregate({
       where: { tenantId, stage: "CLOSED_WON" },
       _sum: { value: true },
     });
@@ -269,8 +267,8 @@ export class CrmRevenueOptimizationDeepService {
 
   async getArpuAnalysis(tenantId: string) {
     const [customers, revenue] = await Promise.all([
-      this.prisma.customer.count({ where: { tenantId } }),
-      this.prisma.deal.aggregate({
+      prisma.customer.count({ where: { tenantId } }),
+      prisma.deal.aggregate({
         where: { tenantId, stage: "CLOSED_WON" },
         _sum: { value: true },
       }),
@@ -293,7 +291,7 @@ export class CrmRevenueOptimizationDeepService {
   }
 
   async getContractRenewalRiskMatrix(tenantId: string) {
-    const customers = await this.prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: { tenantId },
       select: {
         id: true,

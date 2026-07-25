@@ -1,12 +1,10 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "../../common/prisma/prisma.service";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class CrmDealAnalyticsDeepService {
-  constructor(private readonly prisma: PrismaService) {}
-
   async getDealVelocityAnalysis(tenantId: string) {
-    const deals = await this.prisma.deal.findMany({ where: { tenantId } });
+    const deals = await prisma.deal.findMany({ where: { tenantId } });
     const closed = deals.filter(
       (d) => d.stage === "CLOSED_WON" || d.stage === "CLOSED_LOST",
     );
@@ -29,7 +27,7 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getStageDurationBreakdown(tenantId: string) {
-    const deals = await this.prisma.deal.findMany({
+    const deals = await prisma.deal.findMany({
       where: { tenantId },
       select: { stage: true, createdAt: true, closedAt: true },
     });
@@ -51,7 +49,7 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getDealValueDistribution(tenantId: string) {
-    const deals = await this.prisma.deal.findMany({
+    const deals = await prisma.deal.findMany({
       where: { tenantId },
       select: { value: true, stage: true },
     });
@@ -74,7 +72,7 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getWinRateByStage(tenantId: string) {
-    const deals = await this.prisma.deal.findMany({
+    const deals = await prisma.deal.findMany({
       where: { tenantId },
       select: { stage: true },
     });
@@ -90,7 +88,7 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getLossReasonBreakdown(tenantId: string) {
-    const deals = await this.prisma.deal.findMany({
+    const deals = await prisma.deal.findMany({
       where: { tenantId, stage: "CLOSED_LOST" },
       select: { lossReason: true },
     });
@@ -105,7 +103,7 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getSalesCycleByProduct(tenantId: string) {
-    const deals = await this.prisma.deal.findMany({
+    const deals = await prisma.deal.findMany({
       where: { tenantId, stage: "CLOSED_WON" },
       select: { name: true, createdAt: true, closedAt: true, value: true },
     });
@@ -119,7 +117,7 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getForecastAccuracyAnalysis(tenantId: string) {
-    const deals = await this.prisma.deal.findMany({
+    const deals = await prisma.deal.findMany({
       where: { tenantId, stage: "CLOSED_WON" },
       select: { value: true, expectedCloseDate: true, closedAt: true },
     });
@@ -137,7 +135,7 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getPipelineHealthScore(tenantId: string) {
-    const deals = await this.prisma.deal.findMany({ where: { tenantId } });
+    const deals = await prisma.deal.findMany({ where: { tenantId } });
     const active = deals.filter(
       (d) => d.stage !== "CLOSED_WON" && d.stage !== "CLOSED_LOST",
     );
@@ -159,7 +157,7 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getDealConversionFunnel(tenantId: string) {
-    const deals = await this.prisma.deal.findMany({
+    const deals = await prisma.deal.findMany({
       where: { tenantId },
       select: { stage: true },
     });
@@ -177,7 +175,7 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getTopPerformingReps(tenantId: string) {
-    const deals = await this.prisma.deal.findMany({
+    const deals = await prisma.deal.findMany({
       where: { tenantId, stage: "CLOSED_WON" },
       select: { assignedTo: true, value: true },
     });
@@ -195,7 +193,7 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getDealSizeBySource(tenantId: string) {
-    const deals = await this.prisma.deal.findMany({
+    const deals = await prisma.deal.findMany({
       where: { tenantId },
       select: { source: true, value: true },
     });
@@ -215,7 +213,7 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getMonthlyClosedRevenuetrend(tenantId: string) {
-    const deals = await this.prisma.deal.findMany({
+    const deals = await prisma.deal.findMany({
       where: { tenantId, stage: "CLOSED_WON", closedAt: { not: null } },
       select: { closedAt: true, value: true },
     });
@@ -232,7 +230,7 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getPipelineCoverage(tenantId: string) {
-    const deals = await this.prisma.deal.findMany({ where: { tenantId } });
+    const deals = await prisma.deal.findMany({ where: { tenantId } });
     const active = deals.filter(
       (d) => d.stage !== "CLOSED_WON" && d.stage !== "CLOSED_LOST",
     );
@@ -258,7 +256,7 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getStageConversionRates(tenantId: string) {
-    const deals = await this.prisma.deal.findMany({
+    const deals = await prisma.deal.findMany({
       where: { tenantId },
       select: { stage: true },
     });
@@ -279,7 +277,7 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getDealAgeDistribution(tenantId: string) {
-    const deals = await this.prisma.deal.findMany({
+    const deals = await prisma.deal.findMany({
       where: { tenantId, stage: { notIn: ["CLOSED_WON", "CLOSED_LOST"] } },
       select: { createdAt: true },
     });
@@ -305,7 +303,7 @@ export class CrmDealAnalyticsDeepService {
       NEGOTIATION: 0.75,
       CLOSED_WON: 1.0,
     };
-    const deals = await this.prisma.deal.findMany({
+    const deals = await prisma.deal.findMany({
       where: { tenantId, stage: { notIn: ["CLOSED_LOST"] } },
       select: { stage: true, value: true },
     });
@@ -328,7 +326,7 @@ export class CrmDealAnalyticsDeepService {
       d.setMonth(d.getMonth() - i);
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
     }).reverse();
-    const deals = await this.prisma.deal.findMany({
+    const deals = await prisma.deal.findMany({
       where: {
         tenantId,
         stage: { in: ["CLOSED_WON", "CLOSED_LOST"] },
@@ -355,7 +353,7 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getDealsByIndustryVertical(tenantId: string) {
-    const deals = await this.prisma.deal.findMany({
+    const deals = await prisma.deal.findMany({
       where: { tenantId },
       select: { industry: true, value: true, stage: true },
     });
@@ -377,7 +375,7 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getCrossSellUpsellOpportunities(tenantId: string) {
-    const customers = await this.prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: { tenantId },
       select: { id: true, name: true, annualRevenue: true, type: true },
       take: 20,
@@ -404,7 +402,7 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getAtRiskDeals(tenantId: string) {
-    const deals = await this.prisma.deal.findMany({
+    const deals = await prisma.deal.findMany({
       where: { tenantId, stage: { notIn: ["CLOSED_WON", "CLOSED_LOST"] } },
       select: {
         id: true,
@@ -441,7 +439,7 @@ export class CrmDealAnalyticsDeepService {
       d.setMonth(d.getMonth() - i);
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
     }).reverse();
-    const deals = await this.prisma.deal.findMany({
+    const deals = await prisma.deal.findMany({
       where: { tenantId },
       select: { createdAt: true },
     });
@@ -456,7 +454,7 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getPipelineByAssignee(tenantId: string) {
-    const deals = await this.prisma.deal.findMany({
+    const deals = await prisma.deal.findMany({
       where: { tenantId, stage: { notIn: ["CLOSED_WON", "CLOSED_LOST"] } },
       select: { assignedTo: true, value: true },
     });
@@ -473,7 +471,7 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getRevenueLeakageAnalysis(tenantId: string) {
-    const deals = await this.prisma.deal.findMany({
+    const deals = await prisma.deal.findMany({
       where: { tenantId, stage: "CLOSED_LOST" },
       select: { value: true, lossReason: true },
     });
@@ -492,10 +490,10 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getNegotiationSuccessRate(tenantId: string) {
-    const negotiation = await this.prisma.deal.count({
+    const negotiation = await prisma.deal.count({
       where: { tenantId, stage: "NEGOTIATION" },
     });
-    const wonFromNegotiation = await this.prisma.deal.count({
+    const wonFromNegotiation = await prisma.deal.count({
       where: { tenantId, stage: "CLOSED_WON" },
     });
     return {
@@ -510,7 +508,7 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getQuotaAttainmentByRep(tenantId: string) {
-    const deals = await this.prisma.deal.findMany({
+    const deals = await prisma.deal.findMany({
       where: {
         tenantId,
         stage: "CLOSED_WON",
@@ -541,7 +539,7 @@ export class CrmDealAnalyticsDeepService {
       PROPOSAL: 50,
       NEGOTIATION: 75,
     };
-    const deals = await this.prisma.deal.findMany({
+    const deals = await prisma.deal.findMany({
       where: { tenantId, stage: { notIn: ["CLOSED_WON", "CLOSED_LOST"] } },
       select: { id: true, name: true, stage: true, value: true },
     });
@@ -556,7 +554,7 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getTeamQuotaRollup(tenantId: string) {
-    const deals = await this.prisma.deal.findMany({
+    const deals = await prisma.deal.findMany({
       where: {
         tenantId,
         stage: "CLOSED_WON",
@@ -574,7 +572,7 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getDealVelocityByChannel(tenantId: string) {
-    const deals = await this.prisma.deal.findMany({
+    const deals = await prisma.deal.findMany({
       where: { tenantId, stage: "CLOSED_WON" },
       select: { source: true, createdAt: true, closedAt: true },
     });
@@ -619,7 +617,7 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getCompetitorWinLoss(tenantId: string) {
-    const deals = await this.prisma.deal.findMany({
+    const deals = await prisma.deal.findMany({
       where: { tenantId, stage: { in: ["CLOSED_WON", "CLOSED_LOST"] } },
       select: { stage: true, competitor: true },
     });
@@ -641,7 +639,7 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getDealRiskHeatmap(tenantId: string) {
-    const deals = await this.prisma.deal.findMany({
+    const deals = await prisma.deal.findMany({
       where: { tenantId, stage: { notIn: ["CLOSED_WON", "CLOSED_LOST"] } },
       select: {
         id: true,
@@ -685,7 +683,7 @@ export class CrmDealAnalyticsDeepService {
   }
 
   async getEngagementScoreDistribution(tenantId: string) {
-    const contacts = await this.prisma.contact.findMany({
+    const contacts = await prisma.contact.findMany({
       where: { tenantId },
       select: { id: true, engagementScore: true },
       take: 100,

@@ -1,12 +1,10 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "../../common/prisma/prisma.service";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class CrmAccountIntelligenceDeepService {
-  constructor(private readonly prisma: PrismaService) {}
-
   async getAccountHealthScores(tenantId: string) {
-    const customers = await this.prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: { tenantId },
       select: {
         id: true,
@@ -29,7 +27,7 @@ export class CrmAccountIntelligenceDeepService {
   }
 
   async getExpansionSignals(tenantId: string) {
-    const customers = await this.prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: { tenantId, type: "ENTERPRISE" },
       select: { id: true, name: true, annualRevenue: true },
       take: 20,
@@ -49,7 +47,7 @@ export class CrmAccountIntelligenceDeepService {
   }
 
   async getChurnRiskAccounts(tenantId: string) {
-    const customers = await this.prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: { tenantId },
       select: { id: true, name: true, annualRevenue: true, updatedAt: true },
       take: 50,
@@ -78,7 +76,7 @@ export class CrmAccountIntelligenceDeepService {
   }
 
   async getProductAdoptionAnalysis(tenantId: string) {
-    const customers = await this.prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: { tenantId },
       select: { id: true, name: true, type: true },
       take: 30,
@@ -96,7 +94,7 @@ export class CrmAccountIntelligenceDeepService {
   }
 
   async getEngagementAnalytics(tenantId: string) {
-    const contacts = await this.prisma.contact.findMany({
+    const contacts = await prisma.contact.findMany({
       where: { tenantId },
       select: { id: true, name: true, engagementScore: true, company: true },
       take: 50,
@@ -116,7 +114,7 @@ export class CrmAccountIntelligenceDeepService {
   }
 
   async getRelationshipMapping(tenantId: string, customerId: string) {
-    const contacts = await this.prisma.contact.findMany({
+    const contacts = await prisma.contact.findMany({
       where: { tenantId, customerId },
       select: {
         id: true,
@@ -142,7 +140,7 @@ export class CrmAccountIntelligenceDeepService {
   }
 
   async getStakeholderTracking(tenantId: string) {
-    const contacts = await this.prisma.contact.findMany({
+    const contacts = await prisma.contact.findMany({
       where: { tenantId },
       select: {
         id: true,
@@ -168,7 +166,7 @@ export class CrmAccountIntelligenceDeepService {
   }
 
   async getAccountGrowthTrends(tenantId: string) {
-    const customers = await this.prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: { tenantId },
       select: { id: true, name: true, annualRevenue: true, createdAt: true },
       take: 20,
@@ -185,7 +183,7 @@ export class CrmAccountIntelligenceDeepService {
   }
 
   async getKeyAccountSummary(tenantId: string) {
-    const customers = await this.prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: { tenantId, type: "ENTERPRISE" },
       select: {
         id: true,
@@ -208,7 +206,7 @@ export class CrmAccountIntelligenceDeepService {
   }
 
   async getWhitespaceAnalysis(tenantId: string) {
-    const customers = await this.prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: { tenantId },
       select: { id: true, name: true, industry: true },
       take: 20,
@@ -224,11 +222,11 @@ export class CrmAccountIntelligenceDeepService {
   }
 
   async getAccountExecutiveSummary(tenantId: string) {
-    const total = await this.prisma.customer.count({ where: { tenantId } });
-    const enterprise = await this.prisma.customer.count({
+    const total = await prisma.customer.count({ where: { tenantId } });
+    const enterprise = await prisma.customer.count({
       where: { tenantId, type: "ENTERPRISE" },
     });
-    const contacts = await this.prisma.contact.count({ where: { tenantId } });
+    const contacts = await prisma.contact.count({ where: { tenantId } });
     return {
       totalAccounts: total,
       enterpriseAccounts: enterprise,
@@ -238,7 +236,7 @@ export class CrmAccountIntelligenceDeepService {
   }
 
   async getAccountPenetrationRate(tenantId: string) {
-    const customers = await this.prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: { tenantId },
       select: { id: true, name: true },
       take: 20,
@@ -253,7 +251,7 @@ export class CrmAccountIntelligenceDeepService {
   }
 
   async getAtRiskAccounts(tenantId: string) {
-    const customers = await this.prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: { tenantId },
       select: {
         id: true,
@@ -275,7 +273,7 @@ export class CrmAccountIntelligenceDeepService {
   }
 
   async getContactInfluenceMap(tenantId: string, customerId: string) {
-    const contacts = await this.prisma.contact.findMany({
+    const contacts = await prisma.contact.findMany({
       where: { tenantId, customerId },
       select: {
         id: true,
@@ -301,7 +299,7 @@ export class CrmAccountIntelligenceDeepService {
   }
 
   async getAccountSegmentation(tenantId: string) {
-    const customers = await this.prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: { tenantId },
       select: { type: true, industry: true, annualRevenue: true },
     });
@@ -316,7 +314,7 @@ export class CrmAccountIntelligenceDeepService {
   }
 
   async getRecentAccountActivities(tenantId: string) {
-    const activities = await this.prisma.activity.findMany({
+    const activities = await prisma.activity.findMany({
       where: { tenantId },
       orderBy: { createdAt: "desc" },
       take: 20,
@@ -332,7 +330,7 @@ export class CrmAccountIntelligenceDeepService {
   }
 
   async getAccountRevenueTrend(tenantId: string) {
-    const customers = await this.prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: { tenantId },
       select: { annualRevenue: true, createdAt: true },
     });
@@ -347,11 +345,11 @@ export class CrmAccountIntelligenceDeepService {
   }
 
   async getDecisionMakerCoverage(tenantId: string) {
-    const total = await this.prisma.contact.count({ where: { tenantId } });
-    const decisionMakers = await this.prisma.contact.count({
+    const total = await prisma.contact.count({ where: { tenantId } });
+    const decisionMakers = await prisma.contact.count({
       where: { tenantId, decisionMaker: true },
     });
-    const influencers = await this.prisma.contact.count({
+    const influencers = await prisma.contact.count({
       where: { tenantId, influencer: true },
     });
     return {
@@ -378,7 +376,7 @@ export class CrmAccountIntelligenceDeepService {
   }
 
   async getPredictiveChurnScore(tenantId: string) {
-    const customers = await this.prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: { tenantId },
       select: { id: true, name: true, annualRevenue: true, updatedAt: true },
       take: 30,
@@ -422,7 +420,7 @@ export class CrmAccountIntelligenceDeepService {
   }
 
   async getCompetitiveDisplacement(tenantId: string) {
-    const customers = await this.prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: { tenantId },
       select: { id: true, name: true, competitors: true },
       take: 20,
@@ -438,7 +436,7 @@ export class CrmAccountIntelligenceDeepService {
   }
 
   async getRenewalPipeline(tenantId: string) {
-    const customers = await this.prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: { tenantId },
       select: { id: true, name: true, annualRevenue: true },
       take: 20,
@@ -458,12 +456,12 @@ export class CrmAccountIntelligenceDeepService {
   }
 
   async getAccountTouchpointFrequency(tenantId: string) {
-    const customers = await this.prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: { tenantId },
       select: { id: true, name: true },
       take: 20,
     });
-    const activities = await this.prisma.activity.findMany({
+    const activities = await prisma.activity.findMany({
       where: { tenantId },
       select: { customerId: true },
     });
@@ -500,13 +498,13 @@ export class CrmAccountIntelligenceDeepService {
 
   async getAccountIntelligenceTimeline(tenantId: string, customerId: string) {
     const [activities, contacts] = await Promise.all([
-      this.prisma.activity.findMany({
+      prisma.activity.findMany({
         where: { tenantId, customerId },
         orderBy: { createdAt: "desc" },
         take: 10,
         select: { type: true, subject: true, status: true, createdAt: true },
       }),
-      this.prisma.contact.findMany({
+      prisma.contact.findMany({
         where: { tenantId, customerId },
         select: { name: true, title: true },
       }),

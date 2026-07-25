@@ -1,12 +1,10 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "../../common/prisma/prisma.service";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class CrmCustomerLifecycleDeepService {
-  constructor(private readonly prisma: PrismaService) {}
-
   async getLifecycleStageTracking(tenantId: string) {
-    const customers = await this.prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: { tenantId },
       select: {
         id: true,
@@ -40,7 +38,7 @@ export class CrmCustomerLifecycleDeepService {
   }
 
   async getActivationMilestones(tenantId: string) {
-    const customers = await this.prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: { tenantId },
       select: { id: true, name: true, createdAt: true },
       take: 20,
@@ -121,7 +119,7 @@ export class CrmCustomerLifecycleDeepService {
   }
 
   async getCustomerLtvCalculation(tenantId: string) {
-    const customers = await this.prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: { tenantId },
       select: {
         id: true,
@@ -205,7 +203,7 @@ export class CrmCustomerLifecycleDeepService {
   }
 
   async getAdvocacyManagement(tenantId: string) {
-    const customers = await this.prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: { tenantId, type: "ENTERPRISE" },
       select: { id: true, name: true, annualRevenue: true },
       take: 15,
@@ -223,7 +221,7 @@ export class CrmCustomerLifecycleDeepService {
   }
 
   async getChurnAnalysisReport(tenantId: string) {
-    const customers = await this.prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: { tenantId, status: "INACTIVE" },
       select: { id: true, name: true, annualRevenue: true, updatedAt: true },
       take: 20,
@@ -264,7 +262,7 @@ export class CrmCustomerLifecycleDeepService {
   }
 
   async getExpansionRevenueTracking(tenantId: string) {
-    const customers = await this.prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: { tenantId },
       select: { id: true, name: true, annualRevenue: true, type: true },
       take: 20,
@@ -276,18 +274,16 @@ export class CrmCustomerLifecycleDeepService {
       ),
       avgExpansionPerCustomer: 12500,
       expansionRate: 34,
-      topExpanders: customers
-        .slice(0, 5)
-        .map((c) => ({
-          customerId: c.id,
-          customerName: c.name,
-          expansionRevenue: Math.round(Number(c.annualRevenue ?? 0) * 0.2),
-        })),
+      topExpanders: customers.slice(0, 5).map((c) => ({
+        customerId: c.id,
+        customerName: c.name,
+        expansionRevenue: Math.round(Number(c.annualRevenue ?? 0) * 0.2),
+      })),
     };
   }
 
   async getCustomerHealthIndex(tenantId: string) {
-    const customers = await this.prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: { tenantId },
       select: { id: true, name: true, status: true, updatedAt: true },
       take: 30,
@@ -310,7 +306,7 @@ export class CrmCustomerLifecycleDeepService {
   }
 
   async getRenewalForecast(tenantId: string) {
-    const customers = await this.prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: { tenantId },
       select: { id: true, name: true, annualRevenue: true },
       take: 20,
@@ -366,7 +362,7 @@ export class CrmCustomerLifecycleDeepService {
   }
 
   async getTimeToValueAnalysis(tenantId: string) {
-    const customers = await this.prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: { tenantId },
       select: { id: true, name: true, createdAt: true },
       take: 20,
@@ -443,8 +439,8 @@ export class CrmCustomerLifecycleDeepService {
   }
 
   async getCustomerSuccessKpis(tenantId: string) {
-    const total = await this.prisma.customer.count({ where: { tenantId } });
-    const active = await this.prisma.customer.count({
+    const total = await prisma.customer.count({ where: { tenantId } });
+    const active = await prisma.customer.count({
       where: { tenantId, status: "ACTIVE" },
     });
     return {
@@ -515,7 +511,7 @@ export class CrmCustomerLifecycleDeepService {
   }
 
   async getFirstYearRetentionPrediction(tenantId: string) {
-    const customers = await this.prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: { tenantId },
       select: { id: true, name: true, createdAt: true },
       take: 20,
@@ -541,12 +537,12 @@ export class CrmCustomerLifecycleDeepService {
 
   async getCustomerPortfolioSummary(tenantId: string) {
     const [total, enterprise, smb, startups] = await Promise.all([
-      this.prisma.customer.count({ where: { tenantId } }),
-      this.prisma.customer.count({ where: { tenantId, type: "ENTERPRISE" } }),
-      this.prisma.customer.count({ where: { tenantId, type: "SMB" } }),
-      this.prisma.customer.count({ where: { tenantId, type: "STARTUP" } }),
+      prisma.customer.count({ where: { tenantId } }),
+      prisma.customer.count({ where: { tenantId, type: "ENTERPRISE" } }),
+      prisma.customer.count({ where: { tenantId, type: "SMB" } }),
+      prisma.customer.count({ where: { tenantId, type: "STARTUP" } }),
     ]);
-    const revenues = await this.prisma.customer.aggregate({
+    const revenues = await prisma.customer.aggregate({
       where: { tenantId },
       _sum: { annualRevenue: true },
     });

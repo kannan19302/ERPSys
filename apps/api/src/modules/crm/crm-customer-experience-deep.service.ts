@@ -1,11 +1,9 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "../../common/prisma/prisma.service";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class CrmCustomerExperienceDeepService {
-  constructor(private readonly prisma: PrismaService) {}
-
-  async getCsatScores(tenantId: string) {
+  async getCsatScores(_tenantId: string) {
     return {
       overallCsat: 87,
       responses: 420,
@@ -18,7 +16,7 @@ export class CrmCustomerExperienceDeepService {
     };
   }
 
-  async getCustomerFeedbackAnalysis(tenantId: string) {
+  async getCustomerFeedbackAnalysis(_tenantId: string) {
     return {
       totalFeedback: 385,
       positive: 275,
@@ -36,7 +34,7 @@ export class CrmCustomerExperienceDeepService {
     };
   }
 
-  async getSupportTicketAnalysis(tenantId: string) {
+  async getSupportTicketAnalysis(_tenantId: string) {
     return {
       totalTickets: 1284,
       openTickets: 156,
@@ -53,7 +51,7 @@ export class CrmCustomerExperienceDeepService {
     };
   }
 
-  async getCustomerEffortScore(tenantId: string) {
+  async getCustomerEffortScore(_tenantId: string) {
     return {
       cesScore: 72,
       benchmark: 68,
@@ -68,7 +66,7 @@ export class CrmCustomerExperienceDeepService {
     };
   }
 
-  async getOnlineReputationMonitoring(tenantId: string) {
+  async getOnlineReputationMonitoring(_tenantId: string) {
     return {
       g2Rating: 4.6,
       g2Reviews: 285,
@@ -93,7 +91,7 @@ export class CrmCustomerExperienceDeepService {
     };
   }
 
-  async getCustomerJourneyAnalytics(tenantId: string) {
+  async getCustomerJourneyAnalytics(_tenantId: string) {
     return {
       touchpoints: [
         {
@@ -127,7 +125,7 @@ export class CrmCustomerExperienceDeepService {
     };
   }
 
-  async getVoiceOfCustomerProgram(tenantId: string) {
+  async getVoiceOfCustomerProgram(_tenantId: string) {
     return {
       programs: [
         {
@@ -162,7 +160,7 @@ export class CrmCustomerExperienceDeepService {
     };
   }
 
-  async getExperienceGapsAnalysis(tenantId: string) {
+  async getExperienceGapsAnalysis(_tenantId: string) {
     return [
       {
         area: "Mobile Experience",
@@ -203,37 +201,44 @@ export class CrmCustomerExperienceDeepService {
   }
 
   async getPersonalizedEngagementRecommendations(tenantId: string) {
-    const customers = await this.prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: { tenantId },
       select: { id: true, name: true, type: true, updatedAt: true },
       take: 20,
     });
     const now = new Date();
-    return customers.map((c) => {
-      const daysSince = Math.ceil(
-        (now.getTime() - c.updatedAt.getTime()) / 86400000,
-      );
-      const action =
-        daysSince > 60
-          ? "Schedule Executive Business Review"
-          : daysSince > 30
-            ? "Send feature newsletter"
-            : "Continue regular cadence";
-      return {
-        customerId: c.id,
-        customerName: c.name,
-        type: c.type,
-        daysSinceLastContact: daysSince,
-        recommendedAction: action,
-        priority: daysSince > 60 ? "HIGH" : daysSince > 30 ? "MEDIUM" : "LOW",
-      };
-    });
+    return customers.map(
+      (c: {
+        updatedAt: Date;
+        type: string | null;
+        id: string;
+        name: string;
+      }) => {
+        const daysSince = Math.ceil(
+          (now.getTime() - c.updatedAt.getTime()) / 86400000,
+        );
+        const action =
+          daysSince > 60
+            ? "Schedule Executive Business Review"
+            : daysSince > 30
+              ? "Send feature newsletter"
+              : "Continue regular cadence";
+        return {
+          customerId: c.id,
+          customerName: c.name,
+          type: c.type,
+          daysSinceLastContact: daysSince,
+          recommendedAction: action,
+          priority: daysSince > 60 ? "HIGH" : daysSince > 30 ? "MEDIUM" : "LOW",
+        };
+      },
+    );
   }
 
   async getCustomerSuccessMetricsRollup(tenantId: string) {
     const [total, active] = await Promise.all([
-      this.prisma.customer.count({ where: { tenantId } }),
-      this.prisma.customer.count({ where: { tenantId, status: "ACTIVE" } }),
+      prisma.customer.count({ where: { tenantId } }),
+      prisma.customer.count({ where: { tenantId, status: "ACTIVE" } }),
     ]);
     return {
       totalCustomers: total,
@@ -248,12 +253,14 @@ export class CrmCustomerExperienceDeepService {
   }
 
   async getInteractionQualityScore(tenantId: string) {
-    const activities = await this.prisma.activity.findMany({
+    const activities = await prisma.activity.findMany({
       where: { tenantId },
       select: { type: true, status: true },
       take: 100,
     });
-    const completed = activities.filter((a) => a.status === "COMPLETED").length;
+    const completed = activities.filter(
+      (a: { status: string }) => a.status === "COMPLETED",
+    ).length;
     return {
       totalInteractions: activities.length,
       completedInteractions: completed,
@@ -264,13 +271,14 @@ export class CrmCustomerExperienceDeepService {
       qualityScore: 78,
       byType: ["CALL", "EMAIL", "MEETING"].map((type) => ({
         type,
-        count: activities.filter((a) => a.type === type).length,
+        count: activities.filter((a: { type: string }) => a.type === type)
+          .length,
         quality: Math.floor(Math.random() * 20 + 70),
       })),
     };
   }
 
-  async getProactiveOutreachEffectiveness(tenantId: string) {
+  async getProactiveOutreachEffectiveness(_tenantId: string) {
     return {
       proactiveTouchpoints: 342,
       reactiveTickets: 156,
@@ -285,7 +293,7 @@ export class CrmCustomerExperienceDeepService {
     };
   }
 
-  async getCommunityEngagementMetrics(tenantId: string) {
+  async getCommunityEngagementMetrics(_tenantId: string) {
     return {
       communityMembers: 2840,
       monthlyActiveMembers: 890,
@@ -315,7 +323,7 @@ export class CrmCustomerExperienceDeepService {
     };
   }
 
-  async getKnowledgeBaseEffectiveness(tenantId: string) {
+  async getKnowledgeBaseEffectiveness(_tenantId: string) {
     return {
       totalArticles: 485,
       avgRating: 4.2,
@@ -332,7 +340,7 @@ export class CrmCustomerExperienceDeepService {
     };
   }
 
-  async getExperienceBenchmarking(tenantId: string) {
+  async getExperienceBenchmarking(_tenantId: string) {
     return {
       nps: { ours: 42, industryAvg: 31, topQuartile: 55 },
       csat: { ours: 87, industryAvg: 78, topQuartile: 92 },

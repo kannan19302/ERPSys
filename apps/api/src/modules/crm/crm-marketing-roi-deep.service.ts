@@ -1,12 +1,10 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "../../common/prisma/prisma.service";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class CrmMarketingRoiDeepService {
-  constructor(private readonly prisma: PrismaService) {}
-
   async getCampaignRoiAnalysis(tenantId: string) {
-    const campaigns = await this.prisma.campaign.findMany({
+    const campaigns = await prisma.campaign.findMany({
       where: { tenantId },
       select: {
         id: true,
@@ -33,7 +31,7 @@ export class CrmMarketingRoiDeepService {
   }
 
   async getAttributionModelAnalysis(tenantId: string) {
-    const campaigns = await this.prisma.campaign.findMany({
+    const campaigns = await prisma.campaign.findMany({
       where: { tenantId },
       select: { name: true, type: true, budget: true },
       take: 10,
@@ -59,7 +57,7 @@ export class CrmMarketingRoiDeepService {
   }
 
   async getLeadSourceAnalysis(tenantId: string) {
-    const leads = await this.prisma.lead.findMany({
+    const leads = await prisma.lead.findMany({
       where: { tenantId },
       select: { source: true, status: true },
     });
@@ -150,7 +148,7 @@ export class CrmMarketingRoiDeepService {
   }
 
   async getSpendEfficiencyAnalysis(tenantId: string) {
-    const campaigns = await this.prisma.campaign.findMany({
+    const campaigns = await prisma.campaign.findMany({
       where: { tenantId },
       select: { name: true, budget: true, type: true },
       take: 15,
@@ -168,16 +166,19 @@ export class CrmMarketingRoiDeepService {
   }
 
   async getPipelineInfluencedByMarketing(tenantId: string) {
-    const deals = await this.prisma.deal.findMany({
+    const deals = await prisma.deal.findMany({
       where: { tenantId },
       select: { value: true, source: true, stage: true },
     });
     const marketingSourced = deals.filter((d) =>
       ["MARKETING", "CAMPAIGN", "INBOUND", "ORGANIC"].includes(d.source ?? ""),
     );
-    const totalPipeline = deals.reduce((s, d) => s + Number(d.value ?? 0), 0);
+    const totalPipeline = deals.reduce(
+      (s: number, d: { value: any }) => s + Number(d.value ?? 0),
+      0,
+    );
     const marketingPipeline = marketingSourced.reduce(
-      (s, d) => s + Number(d.value ?? 0),
+      (s: number, d: { value: any }) => s + Number(d.value ?? 0),
       0,
     );
     return {
@@ -191,7 +192,7 @@ export class CrmMarketingRoiDeepService {
     };
   }
 
-  async getEmailCampaignPerformance(tenantId: string) {
+  async getEmailCampaignPerformance(_tenantId: string) {
     return [
       {
         campaign: "Q3 Product Newsletter",
@@ -232,7 +233,7 @@ export class CrmMarketingRoiDeepService {
     ];
   }
 
-  async getSeoOrganicPerformance(tenantId: string) {
+  async getSeoOrganicPerformance(_tenantId: string) {
     return {
       organicTraffic: 25000,
       organicLeads: 480,
@@ -246,7 +247,7 @@ export class CrmMarketingRoiDeepService {
     };
   }
 
-  async getSocialMediaRoi(tenantId: string) {
+  async getSocialMediaRoi(_tenantId: string) {
     return [
       {
         platform: "LinkedIn",
@@ -275,7 +276,7 @@ export class CrmMarketingRoiDeepService {
     ];
   }
 
-  async getPaidMediaPerformance(tenantId: string) {
+  async getPaidMediaPerformance(_tenantId: string) {
     return [
       {
         channel: "Google Search",
@@ -311,7 +312,7 @@ export class CrmMarketingRoiDeepService {
   }
 
   async getLeadQualityByChannel(tenantId: string) {
-    const leads = await this.prisma.lead.findMany({
+    const leads = await prisma.lead.findMany({
       where: { tenantId },
       select: { source: true, score: true, status: true },
     });
@@ -319,7 +320,7 @@ export class CrmMarketingRoiDeepService {
       string,
       { total: number; qualified: number; totalScore: number }
     > = {};
-    leads.forEach((l) => {
+    leads.forEach((l: { source: string | null; score: number | null }) => {
       const src = l.source ?? "Direct";
       if (!channelMap[src])
         channelMap[src] = { total: 0, qualified: 0, totalScore: 0 };
@@ -340,10 +341,10 @@ export class CrmMarketingRoiDeepService {
 
   async getMarketingFunnelMetrics(tenantId: string) {
     const [leadCount, dealCount] = await Promise.all([
-      this.prisma.lead.count({ where: { tenantId } }),
-      this.prisma.deal.count({ where: { tenantId } }),
+      prisma.lead.count({ where: { tenantId } }),
+      prisma.deal.count({ where: { tenantId } }),
     ]);
-    const closedWon = await this.prisma.deal.count({
+    const closedWon = await prisma.deal.count({
       where: { tenantId, stage: "CLOSED_WON" },
     });
     return {
@@ -364,7 +365,7 @@ export class CrmMarketingRoiDeepService {
     };
   }
 
-  async getMarketingSpendAllocation(tenantId: string) {
+  async getMarketingSpendAllocation(_tenantId: string) {
     return {
       total: 150000,
       channels: [
@@ -414,7 +415,7 @@ export class CrmMarketingRoiDeepService {
     };
   }
 
-  async getMarketingQualifiedLeadTrend(tenantId: string) {
+  async getMarketingQualifiedLeadTrend(_tenantId: string) {
     const now = new Date();
     return Array.from({ length: 6 }, (_, i) => {
       const d = new Date(now);
@@ -429,7 +430,7 @@ export class CrmMarketingRoiDeepService {
   }
 
   async getCampaignLifecycleAnalysis(tenantId: string) {
-    const campaigns = await this.prisma.campaign.findMany({
+    const campaigns = await prisma.campaign.findMany({
       where: { tenantId },
       select: {
         id: true,
@@ -442,23 +443,32 @@ export class CrmMarketingRoiDeepService {
       },
       take: 15,
     });
-    return campaigns.map((c) => ({
-      ...c,
-      budget: Number(c.budget ?? 0),
-      durationDays:
-        c.startDate && c.endDate
-          ? Math.ceil((c.endDate.getTime() - c.startDate.getTime()) / 86400000)
-          : 0,
-      phase:
-        c.status === "ACTIVE"
-          ? "RUNNING"
-          : c.status === "COMPLETED"
-            ? "ANALYSIS"
-            : "PLANNING",
-    }));
+    return campaigns.map(
+      (c: {
+        budget: any;
+        startDate: Date | null;
+        endDate: Date | null;
+        status: string;
+      }) => ({
+        ...c,
+        budget: Number(c.budget ?? 0),
+        durationDays:
+          c.startDate && c.endDate
+            ? Math.ceil(
+                (c.endDate.getTime() - c.startDate.getTime()) / 86400000,
+              )
+            : 0,
+        phase:
+          c.status === "ACTIVE"
+            ? "RUNNING"
+            : c.status === "COMPLETED"
+              ? "ANALYSIS"
+              : "PLANNING",
+      }),
+    );
   }
 
-  async getEventMarketingRoi(tenantId: string) {
+  async getEventMarketingRoi(_tenantId: string) {
     return [
       {
         event: "Annual User Conference",
@@ -487,7 +497,7 @@ export class CrmMarketingRoiDeepService {
     ];
   }
 
-  async getReferralProgramMetrics(tenantId: string) {
+  async getReferralProgramMetrics(_tenantId: string) {
     return {
       activeReferrers: 42,
       totalReferrals: 156,
@@ -517,7 +527,7 @@ export class CrmMarketingRoiDeepService {
     };
   }
 
-  async getCohortRevenueAnalysis(tenantId: string) {
+  async getCohortRevenueAnalysis(_tenantId: string) {
     return {
       cohorts: [
         {
@@ -545,7 +555,7 @@ export class CrmMarketingRoiDeepService {
     };
   }
 
-  async getPersonalizationImpact(tenantId: string) {
+  async getPersonalizationImpact(_tenantId: string) {
     return {
       personalizedCampaigns: {
         emailOpenRate: 34.5,
@@ -568,7 +578,7 @@ export class CrmMarketingRoiDeepService {
     };
   }
 
-  async getPartnerMarketingRoi(tenantId: string) {
+  async getPartnerMarketingRoi(_tenantId: string) {
     return [
       {
         partner: "Technology Alliance Partner A",
@@ -589,7 +599,7 @@ export class CrmMarketingRoiDeepService {
     ];
   }
 
-  async getMarketingBenchmarks(tenantId: string) {
+  async getMarketingBenchmarks(_tenantId: string) {
     return {
       emailOpenRateIndustryAvg: 21.5,
       emailOpenRateOurs: 28.3,
