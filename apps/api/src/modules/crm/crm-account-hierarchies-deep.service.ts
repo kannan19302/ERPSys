@@ -39,25 +39,34 @@ export class CrmAccountHierarchiesDeepService {
   async getAccountTree(tenantId: string, rootAccountId: string) {
     const root = await prisma.customer.findFirst({
       where: { tenantId, id: rootAccountId },
-      include: { contacts: true, deals: true },
+      include: { contacts: true, opportunities: true },
     });
     if (!root) throw new NotFoundException("Root account not found");
 
     const subsidiaries = await prisma.customer.findMany({
       where: { tenantId, type: { contains: rootAccountId } },
-      include: { contacts: true, deals: true },
+      include: { contacts: true, opportunities: true },
     });
 
-    const aggregateArr = [root, ...subsidiaries].reduce((sum, acc) => {
-      const dealsWon = acc.deals.filter((d) => d.stage === "CLOSED_WON");
-      return (
-        sum +
-        dealsWon.reduce(
-          (dSum, d) => dSum + (d.amount ? Number(d.amount) : 0),
-          0,
-        )
-      );
-    }, 0);
+    const aggregateArr = [root, ...subsidiaries].reduce(
+      (
+        sum: number,
+        acc: { opportunities: Array<{ stage: string; amount: any }> },
+      ) => {
+        const dealsWon = acc.opportunities.filter(
+          (d: { stage: string }) => d.stage === "CLOSED_WON",
+        );
+        return (
+          sum +
+          dealsWon.reduce(
+            (dSum: number, d: { amount: any }) =>
+              dSum + (d.amount ? Number(d.amount) : 0),
+            0,
+          )
+        );
+      },
+      0,
+    );
 
     return {
       rootAccountId,
@@ -101,9 +110,8 @@ export class CrmAccountHierarchiesDeepService {
 
   async getCrossSubsidiaryDeals(tenantId: string, globalParentId: string) {
     const tree = await this.getAccountTree(tenantId, globalParentId);
-    const accountIds = tree.treeNodes.map((n) => n.accountId);
 
-    const deals = await prisma.deal.findMany({
+    const deals = await prisma.opportunity.findMany({
       where: { tenantId },
       take: 50,
     });
@@ -111,13 +119,21 @@ export class CrmAccountHierarchiesDeepService {
     return {
       globalParentId,
       totalSubsidiaryDeals: deals.length,
-      deals: deals.map((d) => ({
-        dealId: d.id,
-        title: d.title,
-        amount: d.amount,
-        stage: d.stage,
-        createdAt: d.createdAt,
-      })),
+      deals: deals.map(
+        (d: {
+          id: string;
+          name: string;
+          amount: any;
+          stage: string;
+          createdAt: Date;
+        }) => ({
+          dealId: d.id,
+          title: d.name,
+          amount: d.amount,
+          stage: d.stage,
+          createdAt: d.createdAt,
+        }),
+      ),
     };
   }
 }

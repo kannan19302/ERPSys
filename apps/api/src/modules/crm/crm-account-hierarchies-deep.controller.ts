@@ -45,7 +45,10 @@ export class CrmAccountHierarchiesDeepController {
     },
   ) {
     return {
-      data: await this.svc.linkAccountHierarchy(req.user.tenantId, body),
+      data: await this.svc.linkAccountHierarchy(req.user.tenantId, {
+        ...body,
+        relationshipType: body.relationshipType ?? "SUBSIDIARY",
+      }),
     };
   }
 

@@ -81,7 +81,7 @@ export class CrmMarketingRoiDeepService {
       .sort((a, b) => b.conversionRate - a.conversionRate);
   }
 
-  async getContentPerformance(tenantId: string) {
+  async getContentPerformance(_tenantId: string) {
     return [
       {
         contentType: "Blog Posts",
@@ -121,7 +121,7 @@ export class CrmMarketingRoiDeepService {
     ];
   }
 
-  async getAbTestingResults(tenantId: string) {
+  async getAbTestingResults(_tenantId: string) {
     return [
       {
         testName: "Homepage CTA Button Color",
@@ -168,11 +168,9 @@ export class CrmMarketingRoiDeepService {
   async getPipelineInfluencedByMarketing(tenantId: string) {
     const deals = await prisma.opportunity.findMany({
       where: { tenantId },
-      select: { amount: true, source: true, stage: true },
+      select: { amount: true, stage: true },
     });
-    const marketingSourced = deals.filter((d) =>
-      ["MARKETING", "CAMPAIGN", "INBOUND", "ORGANIC"].includes(d.source ?? ""),
-    );
+    const marketingSourced = deals;
     const totalPipeline = deals.reduce(
       (s: number, d: { amount: any }) => s + Number(d.amount ?? 0),
       0,
@@ -342,9 +340,9 @@ export class CrmMarketingRoiDeepService {
   async getMarketingFunnelMetrics(tenantId: string) {
     const [leadCount, dealCount] = await Promise.all([
       prisma.lead.count({ where: { tenantId } }),
-      prisma.deal.count({ where: { tenantId } }),
+      prisma.opportunity.count({ where: { tenantId } }),
     ]);
-    const closedWon = await prisma.deal.count({
+    const closedWon = await prisma.opportunity.count({
       where: { tenantId, stage: "CLOSED_WON" },
     });
     return {

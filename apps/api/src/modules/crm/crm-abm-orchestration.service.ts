@@ -118,7 +118,7 @@ export class CrmAbmOrchestrationService {
     const accounts = await prisma.customer.findMany({
       where: { tenantId },
       take: 50,
-      include: { contacts: true, deals: true },
+      include: { contacts: true, opportunities: true },
     });
 
     return {
@@ -126,12 +126,12 @@ export class CrmAbmOrchestrationService {
       totalTargetAccounts: accounts.length,
       coverageRatePercent: 84.5,
       tierDistribution: { tier1: 12, tier2: 28, tier3: 10 },
-      accounts: accounts.map((a) => ({
+      accounts: accounts.map((a: { id: string; name: string; contacts: any[]; opportunities: any[] }) => ({
         id: a.id,
         name: a.name,
         contactCount: a.contacts.length,
-        dealCount: a.deals.length,
-        status: a.deals.length > 0 ? "ENGAGED" : "UNCONTACTED",
+        dealCount: a.opportunities.length,
+        status: a.opportunities.length > 0 ? "ENGAGED" : "UNCONTACTED",
       })),
     };
   }
@@ -156,13 +156,13 @@ export class CrmAbmOrchestrationService {
   }
 
   async getAbmRoiAnalytics(tenantId: string) {
-    const deals = await prisma.deal.findMany({
+    const deals = await prisma.opportunity.findMany({
       where: { tenantId, stage: "CLOSED_WON" },
       take: 100,
     });
 
     const totalPipeline = deals.reduce(
-      (acc, d) => acc + (d.amount ? Number(d.amount) : 0),
+      (acc: number, d: { amount: any }) => acc + (d.amount ? Number(d.amount) : 0),
       0,
     );
 
