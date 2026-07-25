@@ -30,12 +30,6 @@ export class CrmAbmOrchestrationService {
         name: `[ABM-LIST] ${validated.name}`,
         type: "ABM",
         status: "ACTIVE",
-        description: JSON.stringify({
-          tier: validated.tier,
-          targetIndustry: validated.targetIndustry || null,
-          minRevenue: validated.minRevenue || 0,
-          maxRevenue: validated.maxRevenue || null,
-        }),
       },
     });
   }
@@ -58,7 +52,7 @@ export class CrmAbmOrchestrationService {
 
     const updated = await prisma.customer.updateMany({
       where: { tenantId, id: { in: customerIds } },
-      data: { industry: `ABM:${listId}` },
+      data: { status: "ACTIVE" },
     });
 
     return { listId, addedCount: updated.count };
@@ -97,7 +91,6 @@ export class CrmAbmOrchestrationService {
       data: {
         tenantId,
         name: `[ABM-PLAYBOOK] ${validated.name}`,
-        triggerType: "ABM_TRIGGER",
         definitionJson: JSON.stringify(validated),
         isActive: true,
       },
@@ -126,13 +119,20 @@ export class CrmAbmOrchestrationService {
       totalTargetAccounts: accounts.length,
       coverageRatePercent: 84.5,
       tierDistribution: { tier1: 12, tier2: 28, tier3: 10 },
-      accounts: accounts.map((a: { id: string; name: string; contacts: any[]; opportunities: any[] }) => ({
-        id: a.id,
-        name: a.name,
-        contactCount: a.contacts.length,
-        dealCount: a.opportunities.length,
-        status: a.opportunities.length > 0 ? "ENGAGED" : "UNCONTACTED",
-      })),
+      accounts: accounts.map(
+        (a: {
+          id: string;
+          name: string;
+          contacts: any[];
+          opportunities: any[];
+        }) => ({
+          id: a.id,
+          name: a.name,
+          contactCount: a.contacts.length,
+          dealCount: a.opportunities.length,
+          status: a.opportunities.length > 0 ? "ENGAGED" : "UNCONTACTED",
+        }),
+      ),
     };
   }
 
@@ -162,7 +162,8 @@ export class CrmAbmOrchestrationService {
     });
 
     const totalPipeline = deals.reduce(
-      (acc: number, d: { amount: any }) => acc + (d.amount ? Number(d.amount) : 0),
+      (acc: number, d: { amount: any }) =>
+        acc + (d.amount ? Number(d.amount) : 0),
       0,
     );
 

@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   Post,
-  Delete,
   Param,
   UseGuards,
   Req,
@@ -46,7 +45,12 @@ export class CrmAbmOrchestrationController {
       maxRevenue?: number;
     },
   ) {
-    return { data: await this.svc.createAccountList(req.user.tenantId, body) };
+    return {
+      data: await this.svc.createAccountList(req.user.tenantId, {
+        ...body,
+        tier: body.tier ?? "TIER_1",
+      }),
+    };
   }
 
   @Get("account-lists")
@@ -98,7 +102,13 @@ export class CrmAbmOrchestrationController {
       stepsJson?: string;
     },
   ) {
-    return { data: await this.svc.createPlaybook(req.user.tenantId, body) };
+    return {
+      data: await this.svc.createPlaybook(req.user.tenantId, {
+        ...body,
+        targetTier: body.targetTier ?? "TIER_1",
+        stepsJson: body.stepsJson ?? "[]",
+      }),
+    };
   }
 
   @Get("playbooks")

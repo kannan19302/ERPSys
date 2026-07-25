@@ -217,11 +217,7 @@ export class WorkingCapitalController {
     )
     dto: any,
   ) {
-    return this.wcService.createFacility(
-      req.user.tenantId,
-      await resolveOrgId(req.user.tenantId, req.user.orgId),
-      dto,
-    );
+    return this.wcService.createFacility(req.user.tenantId, dto);
   }
 
   @Get("facilities")
@@ -232,11 +228,10 @@ export class WorkingCapitalController {
     @Query("supplierId") supplierId?: string,
     @Query("facilityType") facilityType?: string,
   ) {
-    return this.wcService.getFacilities(
-      req.user.tenantId,
-      supplierId,
-      facilityType,
-    );
+    return this.wcService.getFacilities(req.user.tenantId, {
+      recourseType: supplierId,
+      status: facilityType,
+    });
   }
 
   @Get("facilities/:id")
