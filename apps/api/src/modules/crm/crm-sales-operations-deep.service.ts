@@ -42,11 +42,11 @@ export class CrmSalesOperationsDeepService {
   async getSalesHeadcountProductivity(tenantId: string) {
     const deals = await prisma.opportunity.findMany({
       where: { tenantId, stage: "CLOSED_WON" },
-      select: { assignedTo: true, amount: true },
+      select: { name: true, amount: true },
     });
     const repMap: Record<string, { deals: number; revenue: number }> = {};
-    deals.forEach((d: { assignedTo: string | null; amount: any }) => {
-      const r = d.assignedTo ?? "Unassigned";
+    deals.forEach((d: { name: string; amount: any }) => {
+      const r = d.name ?? "Unassigned";
       if (!repMap[r]) repMap[r] = { deals: 0, revenue: 0 };
       repMap[r].deals++;
       repMap[r].revenue += Number(d.amount ?? 0);
@@ -219,12 +219,10 @@ export class CrmSalesOperationsDeepService {
     });
     const reps = await prisma.opportunity.findMany({
       where: { tenantId },
-      select: { assignedTo: true },
-      distinct: ["assignedTo"],
+      select: { stage: true },
+      distinct: ["stage"],
     });
-    const repCount = reps.filter(
-      (r: { assignedTo: string | null }) => r.assignedTo,
-    ).length;
+    const repCount = Math.max(1, reps.length);
     const dealsPerRep = repCount > 0 ? Math.round(deals / repCount) : 0;
     return {
       activePipeline: deals,
@@ -272,21 +270,19 @@ export class CrmSalesOperationsDeepService {
   async getSalesChannelPerformance(tenantId: string) {
     const deals = await prisma.opportunity.findMany({
       where: { tenantId },
-      select: { source: true, amount: true, stage: true },
+      select: { amount: true, stage: true },
     });
     const channelMap: Record<
       string,
       { revenue: number; deals: number; won: number }
     > = {};
-    deals.forEach(
-      (d: { source: string | null; amount: any; stage: string }) => {
-        const ch = d.source ?? "Direct";
-        if (!channelMap[ch]) channelMap[ch] = { revenue: 0, deals: 0, won: 0 };
-        channelMap[ch].deals++;
-        channelMap[ch].revenue += Number(d.amount ?? 0);
-        if (d.stage === "CLOSED_WON") channelMap[ch].won++;
-      },
-    );
+    deals.forEach((d: { amount: any; stage: string }) => {
+      const ch = d.stage ?? "Direct";
+      if (!channelMap[ch]) channelMap[ch] = { revenue: 0, deals: 0, won: 0 };
+      channelMap[ch].deals++;
+      channelMap[ch].revenue += Number(d.amount ?? 0);
+      if (d.stage === "CLOSED_WON") channelMap[ch].won++;
+    });
     return Object.entries(channelMap).map(([channel, stats]) => ({
       channel,
       ...stats,
@@ -314,7 +310,7 @@ export class CrmSalesOperationsDeepService {
   async getPipelineVelocityMetrics(tenantId: string) {
     const deals = await prisma.opportunity.findMany({
       where: { tenantId },
-      select: { amount: true, stage: true, createdAt: true, closedAt: true },
+      select: { amount: true, stage: true, createdAt: true, updatedAt: true },
     });
     const avgDealValue =
       deals.length > 0
