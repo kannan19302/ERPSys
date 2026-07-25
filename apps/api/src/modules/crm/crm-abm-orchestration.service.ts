@@ -95,7 +95,7 @@ export class CrmAbmOrchestrationService {
         triggerCondition: validated.triggerCondition,
         stepsJson: validated.stepsJson,
         isActive: true,
-      },
+      } as any,
     });
   }
 

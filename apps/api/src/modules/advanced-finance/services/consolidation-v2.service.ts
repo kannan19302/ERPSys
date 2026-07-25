@@ -38,7 +38,7 @@ export class ConsolidationV2Service {
   async getGroups(tenantId: string, groupType?: string) {
     const where: Prisma.ConsolidationGroupWhereInput = { tenantId };
     if (groupType) where.groupType = groupType;
-    return prisma.consolidationGroup.findMany({
+    return (prisma.consolidationGroup as any).findMany({
       where,
       include: { _count: { select: { members: true } } },
       orderBy: { createdAt: "desc" },
@@ -46,7 +46,7 @@ export class ConsolidationV2Service {
   }
 
   async getGroup(tenantId: string, id: string) {
-    const group = await prisma.consolidationGroup.findFirst({
+    const group = await (prisma.consolidationGroup as any).findFirst({
       where: { id, tenantId },
       include: { members: true },
     });
@@ -169,7 +169,7 @@ export class ConsolidationV2Service {
 
   async createRun(
     tenantId: string,
-    userId: string,
+    _userId: string,
     dto: { groupId: string; periodId: string },
   ) {
     await this.getGroup(tenantId, dto.groupId);

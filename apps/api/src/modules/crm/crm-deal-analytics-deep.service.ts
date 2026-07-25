@@ -41,7 +41,7 @@ export class CrmDealAnalyticsDeepService {
       const days = d.updatedAt
         ? Math.ceil((d.updatedAt.getTime() - d.createdAt.getTime()) / 86400000)
         : 0;
-      stageMap[d.stage].push(days);
+      stageMap[d.stage]!.push(days);
     });
     return Object.entries(stageMap).map(([stage, durations]) => ({
       stage,
@@ -303,7 +303,9 @@ export class CrmDealAnalyticsDeepService {
       fromStage: stages[i],
       toStage: stage,
       conversionRate:
-        counts[i] > 0 ? Math.round((counts[i + 1] / counts[i]) * 100) : 0,
+        (counts[i] ?? 0) > 0
+          ? Math.round(((counts[i + 1] ?? 0) / (counts[i] ?? 1)) * 100)
+          : 0,
     }));
   }
 

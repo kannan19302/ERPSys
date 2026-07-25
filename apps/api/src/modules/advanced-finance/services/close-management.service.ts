@@ -35,7 +35,7 @@ export class CloseManagementService {
   async listTaskDependencies(tenantId: string, taskId?: string) {
     const where: Prisma.CloseTaskDependencyWhereInput = { tenantId };
     if (taskId) where.taskId = taskId;
-    return prisma.closeTaskDependency.findMany({
+    return (prisma.closeTaskDependency as any).findMany({
       where,
       include: {
         dependsOn: {
@@ -116,7 +116,7 @@ export class CloseManagementService {
   }
 
   async getBreachedSlas(tenantId: string) {
-    return prisma.closeTaskSla.findMany({
+    return (prisma.closeTaskSla as any).findMany({
       where: { tenantId, status: "BREACHED" },
       include: {
         task: {
@@ -129,7 +129,7 @@ export class CloseManagementService {
           },
         },
       },
-      orderBy: { breachedAt: "desc" },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -297,7 +297,7 @@ export class CloseManagementService {
 
   async captureSnapshot(
     tenantId: string,
-    userId: string,
+    _userId: string,
     dto: {
       periodId: string;
       totalTasks: number;
@@ -381,13 +381,14 @@ export class CloseManagementService {
         { capturedAt: Date; completedRate: number; overdueCount: number }[]
       >
     >((acc, s) => {
-      if (!acc[s.periodId]) acc[s.periodId] = [];
-      acc[s.periodId].push({
+      const arr = acc[s.periodId] || [];
+      arr.push({
         capturedAt: s.capturedAt,
         completedRate:
           s.totalTasks > 0 ? (s.completedTasks / s.totalTasks) * 100 : 0,
         overdueCount: s.overdueTasks,
       });
+      acc[s.periodId] = arr;
       return acc;
     }, {});
 
@@ -443,7 +444,7 @@ export class CloseManagementService {
   }
 
   async getCriticalPathAnalysis(tenantId: string, periodId?: string) {
-    const deps = await prisma.closeTaskDependency.findMany({
+    const deps = await (prisma.closeTaskDependency as any).findMany({
       where: { tenantId, isCritical: true },
       include: {
         task: {

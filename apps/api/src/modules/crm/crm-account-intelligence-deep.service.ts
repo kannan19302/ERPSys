@@ -115,7 +115,7 @@ export class CrmAccountIntelligenceDeepService {
   async getEngagementAnalytics(tenantId: string) {
     const contacts = await prisma.contact.findMany({
       where: { tenantId },
-      select: { id: true, firstName: true, lastName: true, role: true },
+      select: { id: true, firstName: true, lastName: true, title: true },
       take: 50,
     });
     return {
@@ -134,20 +134,16 @@ export class CrmAccountIntelligenceDeepService {
         firstName: true,
         lastName: true,
         title: true,
-        role: true,
+        department: true,
       },
     });
     return {
       customerId,
-      contacts: contacts.map(
-        (c: {
-          id: string;
-          firstName: string;
-          lastName: string;
-          title: string | null;
-          role: string | null;
-        }) => ({ ...c, name: `${c.firstName} ${c.lastName}`.trim() }),
-      ),
+      contacts: contacts.map((c: any) => ({
+        ...c,
+        name: `${c.firstName} ${c.lastName}`.trim(),
+        role: c.department || "DECISION_MAKER",
+      })),
       decisionMakers: Math.floor(contacts.length * 0.4),
       influencers: Math.floor(contacts.length * 0.3),
       relationshipStrength:
@@ -170,29 +166,22 @@ export class CrmAccountIntelligenceDeepService {
       },
       take: 30,
     });
-    return contacts.map(
-      (c: {
-        id: string;
-        firstName: string;
-        lastName: string;
-        title: string | null;
-      }) => ({
-        contactId: c.id,
-        name: `${c.firstName} ${c.lastName}`.trim(),
-        title: c.title,
-        company: "Client Org",
-        engagementLevel: ["ENGAGED", "PASSIVE", "UNRESPONSIVE"][
-          Math.floor(Math.random() * 3)
-        ],
-        lastInteractionDays: Math.floor(Math.random() * 60),
-      }),
-    );
+    return contacts.map((c: any) => ({
+      contactId: c.id,
+      name: `${c.firstName} ${c.lastName}`.trim(),
+      title: c.title,
+      company: "Client Org",
+      engagementLevel: ["ENGAGED", "PASSIVE", "UNRESPONSIVE"][
+        Math.floor(Math.random() * 3)
+      ],
+      lastInteractionDays: Math.floor(Math.random() * 60),
+    }));
   }
 
   async getAccountGrowthTrends(tenantId: string) {
     const customers = await prisma.customer.findMany({
       where: { tenantId },
-      select: { id: true, name: true, creditLimit: true, createdAt: Date },
+      select: { id: true, name: true, creditLimit: true, createdAt: true },
       take: 20,
     });
     return customers.map(
@@ -310,7 +299,7 @@ export class CrmAccountIntelligenceDeepService {
         firstName: true,
         lastName: true,
         title: true,
-        role: true,
+        department: true,
       },
     });
     return {
@@ -321,10 +310,11 @@ export class CrmAccountIntelligenceDeepService {
             firstName: string;
             lastName: string;
             title: string | null;
-            role: string | null;
+            department: string | null;
           }) => ({
             ...c,
             name: `${c.firstName} ${c.lastName}`.trim(),
+            role: c.department || "DECISION_MAKER",
             influenceScore: Math.floor(Math.random() * 40 + 50),
           }),
         )
