@@ -81,7 +81,7 @@ export class CrmCustomerLifecycleDeepService {
     }));
   }
 
-  async getRetentionProgramsAnalysis(tenantId: string) {
+  async getRetentionProgramsAnalysis(_tenantId: string) {
     return [
       {
         program: "Onboarding Journey",
@@ -490,7 +490,7 @@ export class CrmCustomerLifecycleDeepService {
     };
   }
 
-  async getAlertsByLifecycleStage(tenantId: string) {
+  async getAlertsByLifecycleStage(_tenantId: string) {
     return [
       {
         stage: "ONBOARDING",

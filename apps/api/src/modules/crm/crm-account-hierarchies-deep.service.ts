@@ -109,7 +109,7 @@ export class CrmAccountHierarchiesDeepService {
   }
 
   async getCrossSubsidiaryDeals(tenantId: string, globalParentId: string) {
-    const tree = await this.getAccountTree(tenantId, globalParentId);
+    const _tree = await this.getAccountTree(tenantId, globalParentId);
 
     const deals = await prisma.opportunity.findMany({
       where: { tenantId },

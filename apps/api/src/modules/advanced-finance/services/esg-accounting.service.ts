@@ -149,9 +149,10 @@ export class EsgAccountingService {
     const byScope = records.reduce<
       Record<string, { totalCo2eKg: number; count: number }>
     >((acc, r) => {
-      if (!acc[r.scope]) acc[r.scope] = { totalCo2eKg: 0, count: 0 };
-      acc[r.scope].totalCo2eKg += Number(r.co2eKg);
-      acc[r.scope].count++;
+      const curr = acc[r.scope] || { totalCo2eKg: 0, count: 0 };
+      curr.totalCo2eKg += Number(r.co2eKg);
+      curr.count++;
+      acc[r.scope] = curr;
       return acc;
     }, {});
     return {
@@ -546,7 +547,6 @@ export class EsgAccountingService {
       prisma.emissionSourceRecord.findMany({ where: { tenantId, fiscalYear } }),
       prisma.esgKpiActualValue.findMany({
         where: { tenantId, fiscalYear },
-        include: { definition: true },
       }),
       prisma.sustainabilityTarget.findMany({ where: { tenantId } }),
     ]);
@@ -850,7 +850,6 @@ export class EsgAccountingService {
       }),
       prisma.esgKpiActualValue.findMany({
         where: { tenantId, fiscalYear: fy },
-        include: { definition: true },
       }),
       prisma.sustainabilityTarget.findMany({ where: { tenantId } }),
       prisma.emissionOffsetCredit.findMany({

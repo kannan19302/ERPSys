@@ -62,8 +62,8 @@ export class CrmMarketingRoiDeepService {
       select: { source: true, status: true },
     });
     const sourceMap: Record<string, { total: number; converted: number }> = {};
-    leads.forEach((l) => {
-      const src = l.source ?? "Direct";
+    leads.forEach((l: any) => {
+      const src = (l.source as string) ?? "Direct";
       if (!sourceMap[src]) sourceMap[src] = { total: 0, converted: 0 };
       sourceMap[src].total++;
       if (l.status === "CONVERTED") sourceMap[src].converted++;
@@ -318,8 +318,8 @@ export class CrmMarketingRoiDeepService {
       string,
       { total: number; qualified: number; totalScore: number }
     > = {};
-    leads.forEach((l: { source: string | null; score: number | null }) => {
-      const src = l.source ?? "Direct";
+    leads.forEach((l: any) => {
+      const src = (l.source as string) ?? "Direct";
       if (!channelMap[src])
         channelMap[src] = { total: 0, qualified: 0, totalScore: 0 };
       channelMap[src].total++;

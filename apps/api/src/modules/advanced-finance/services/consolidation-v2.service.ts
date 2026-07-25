@@ -249,7 +249,7 @@ export class ConsolidationV2Service {
           tenantId,
           accountId:
             rule.sourceEntityId || rule.targetEntityId
-              ? { in: [rule.sourceAccountId || "", rule.targetAccountId || ""] }
+              ? { in: [rule.sourceEntityId || "", rule.targetEntityId || ""] }
               : undefined,
         },
       });
@@ -346,7 +346,7 @@ export class ConsolidationV2Service {
         ruleType: dto.ruleType,
         sourceEntityId: dto.sourceEntityId || null,
         targetEntityId: dto.targetEntityId || null,
-        matchCriteria: dto.matchCriteria,
+        matchCriteria: dto.matchCriteria as any,
         autoPost: dto.autoPost || false,
         toleranceAmount: dto.toleranceAmount
           ? new Prisma.Decimal(dto.toleranceAmount)
@@ -387,7 +387,8 @@ export class ConsolidationV2Service {
     await this.getEliminationRule(tenantId, id);
     const data: Prisma.ConsolidationEliminationRuleUpdateInput = {};
     if (dto.name !== undefined) data.name = dto.name;
-    if (dto.matchCriteria !== undefined) data.matchCriteria = dto.matchCriteria;
+    if (dto.matchCriteria !== undefined)
+      data.matchCriteria = dto.matchCriteria as any;
     if (dto.autoPost !== undefined) data.autoPost = dto.autoPost;
     if (dto.toleranceAmount !== undefined)
       data.toleranceAmount = new Prisma.Decimal(dto.toleranceAmount);

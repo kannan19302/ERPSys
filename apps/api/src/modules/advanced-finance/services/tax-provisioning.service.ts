@@ -790,16 +790,16 @@ export class TaxProvisioningService {
     const [runs, details, deferred, uncertain, valuations] = await Promise.all([
       prisma.taxProvisionRun.findMany({ where: { tenantId, fiscalYear: fy } }),
       prisma.taxProvisionDetail.findMany({
-        where: { tenantId, run: { tenantId, fiscalYear: fy } },
+        where: { tenantId },
       }),
       prisma.deferredTaxSchedule.findMany({
-        where: { tenantId, run: { tenantId, fiscalYear: fy } },
+        where: { tenantId },
       }),
       prisma.uncertainTaxPosition.findMany({
-        where: { tenantId, run: { tenantId, fiscalYear: fy } },
+        where: { tenantId },
       }),
       prisma.valuationAllowanceAssessment.findMany({
-        where: { tenantId, run: { tenantId, fiscalYear: fy } },
+        where: { tenantId },
       }),
     ]);
 
