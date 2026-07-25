@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Patch,
-  Delete,
   UseGuards,
   Req,
   Param,
@@ -121,28 +120,26 @@ export class WorkingCapitalController {
 
   @Post("programs")
   @Permissions("finance.working-capital.manage")
-  @ApiOperation({ summary: "Create working capital program" })
+  @ApiOperation({ summary: "Create supply chain finance program" })
   async createProgram(
     @Req() req: AuthenticatedRequest,
     @ZodBody(
       z.object({
         name: z.string().min(1),
-        description: z.string().optional(),
         programType: z.string().min(1),
-        status: z.string().optional(),
+        fundingLimit: z.number().positive(),
+        interestRate: z.number().min(0),
         startDate: z.string().min(1),
         endDate: z.string().optional(),
-        fundingLimit: z.number().positive().optional(),
-        interestRate: z.number().min(0).optional(),
+        currency: z.string().optional(),
         feeStructure: z.any().optional(),
-        eligibilityCriteria: z.any().optional(),
       }),
     )
     dto: any,
   ) {
     return this.wcService.createProgram(
       req.user.tenantId,
-      await resolveOrgId(req.user.tenantId, req.user.orgId),
+      req.user.userId,
       dto,
     );
   }
@@ -154,7 +151,7 @@ export class WorkingCapitalController {
     @Req() req: AuthenticatedRequest,
     @Query("status") status?: string,
   ) {
-    return this.wcService.getPrograms(req.user.tenantId, status);
+    return this.wcService.getPrograms(req.user.tenantId, { status });
   }
 
   @Get("programs/:id")

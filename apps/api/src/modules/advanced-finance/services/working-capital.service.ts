@@ -12,7 +12,7 @@ export class WorkingCapitalService {
 
   async createDiscountOffer(
     tenantId: string,
-    userId: string,
+    _userId: string,
     dto: {
       invoiceId: string;
       customerId: string;
@@ -238,7 +238,8 @@ export class WorkingCapitalService {
       data.fundingLimit = new Prisma.Decimal(dto.fundingLimit);
     if (dto.interestRate !== undefined)
       data.interestRate = new Prisma.Decimal(dto.interestRate);
-    if (dto.feeStructure !== undefined) data.feeStructure = dto.feeStructure;
+    if (dto.feeStructure !== undefined)
+      data.feeStructure = dto.feeStructure as any;
     if (dto.status !== undefined) data.status = dto.status;
     if (dto.endDate !== undefined)
       data.endDate = dto.endDate ? new Date(dto.endDate) : null;

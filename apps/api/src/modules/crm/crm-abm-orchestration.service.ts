@@ -27,6 +27,7 @@ export class CrmAbmOrchestrationService {
     return prisma.campaign.create({
       data: {
         tenantId,
+        orgId: "default",
         name: `[ABM-LIST] ${validated.name}`,
         type: "ABM",
         status: "ACTIVE",
@@ -91,7 +92,8 @@ export class CrmAbmOrchestrationService {
       data: {
         tenantId,
         name: `[ABM-PLAYBOOK] ${validated.name}`,
-        definitionJson: JSON.stringify(validated),
+        triggerCondition: validated.triggerCondition,
+        stepsJson: validated.stepsJson,
         isActive: true,
       },
     });

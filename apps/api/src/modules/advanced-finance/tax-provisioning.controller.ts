@@ -181,7 +181,11 @@ export class TaxProvisioningController {
     @Req() req: AuthenticatedRequest,
     @ZodBody(createProvisionDetailSchema) dto: any,
   ) {
-    return this.taxProvService.createProvisionDetail(req.user.tenantId, dto);
+    return this.taxProvService.createProvisionDetail(
+      req.user.tenantId,
+      dto.runId || "",
+      dto,
+    );
   }
 
   @Get("provision-details")
@@ -248,6 +252,7 @@ export class TaxProvisioningController {
   ) {
     return this.taxProvService.createDeferredTaxSchedule(
       req.user.tenantId,
+      dto.runId || "",
       dto,
     );
   }
@@ -319,6 +324,7 @@ export class TaxProvisioningController {
   ) {
     return this.taxProvService.createUncertainTaxPosition(
       req.user.tenantId,
+      dto.runId || "",
       dto,
     );
   }
@@ -429,7 +435,11 @@ export class TaxProvisioningController {
     @Req() req: AuthenticatedRequest,
     @ZodBody(createValuationAllowanceSchema) dto: any,
   ) {
-    return this.taxProvService.createValuationAllowance(req.user.tenantId, dto);
+    return this.taxProvService.createValuationAllowance(
+      req.user.tenantId,
+      dto.runId || "",
+      dto,
+    );
   }
 
   @Get("valuation-allowances")
