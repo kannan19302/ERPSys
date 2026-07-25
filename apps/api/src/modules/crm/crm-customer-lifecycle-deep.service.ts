@@ -124,30 +124,32 @@ export class CrmCustomerLifecycleDeepService {
       select: {
         id: true,
         name: true,
-        annualRevenue: true,
+        creditLimit: true,
         type: true,
         createdAt: true,
       },
       take: 30,
     });
-    return customers.map((c) => {
-      const avgRevenue = Number(c.annualRevenue ?? 0) * 0.1;
-      const avgLifespan = 4.5;
-      const churnRate = 0.1;
-      const ltv = avgRevenue * (1 / churnRate);
-      return {
-        customerId: c.id,
-        customerName: c.name,
-        type: c.type,
-        annualRevenue: Number(c.annualRevenue ?? 0),
-        estimatedLtv: Math.round(ltv),
-        avgLifespan,
-        churnRate,
-      };
-    });
+    return customers.map(
+      (c: { id: string; name: string; creditLimit: any; type: string }) => {
+        const avgRevenue = Number(c.creditLimit ?? 0) * 0.1;
+        const avgLifespan = 4.5;
+        const churnRate = 0.1;
+        const ltv = avgRevenue * (1 / churnRate);
+        return {
+          customerId: c.id,
+          customerName: c.name,
+          type: c.type,
+          annualRevenue: Number(c.creditLimit ?? 0),
+          estimatedLtv: Math.round(ltv),
+          avgLifespan,
+          churnRate,
+        };
+      },
+    );
   }
 
-  async getCohortRetentionAnalysis(tenantId: string) {
+  async getCohortRetentionAnalysis(_tenantId: string) {
     return {
       cohorts: [
         {
@@ -190,7 +192,7 @@ export class CrmCustomerLifecycleDeepService {
     };
   }
 
-  async getNpsTracking(tenantId: string) {
+  async getNpsTracking(_tenantId: string) {
     const now = new Date();
     return Array.from({ length: 4 }, (_, i) => ({
       quarter: `Q${i + 1} ${now.getFullYear()}`,
@@ -205,31 +207,33 @@ export class CrmCustomerLifecycleDeepService {
   async getAdvocacyManagement(tenantId: string) {
     const customers = await prisma.customer.findMany({
       where: { tenantId, type: "ENTERPRISE" },
-      select: { id: true, name: true, annualRevenue: true },
+      select: { id: true, name: true, creditLimit: true },
       take: 15,
     });
-    return customers.map((c) => ({
-      customerId: c.id,
-      customerName: c.name,
-      annualRevenue: Number(c.annualRevenue ?? 0),
-      advocateStatus: ["REFERENCE", "CASE_STUDY", "SPEAKING", "NONE"][
-        Math.floor(Math.random() * 4)
-      ],
-      referralCount: Math.floor(Math.random() * 5),
-      npsScore: Math.floor(Math.random() * 3 + 8),
-    }));
+    return customers.map(
+      (c: { id: string; name: string; creditLimit: any }) => ({
+        customerId: c.id,
+        customerName: c.name,
+        annualRevenue: Number(c.creditLimit ?? 0),
+        advocateStatus: ["REFERENCE", "CASE_STUDY", "SPEAKING", "NONE"][
+          Math.floor(Math.random() * 4)
+        ],
+        referralCount: Math.floor(Math.random() * 5),
+        npsScore: Math.floor(Math.random() * 3 + 8),
+      }),
+    );
   }
 
   async getChurnAnalysisReport(tenantId: string) {
     const customers = await prisma.customer.findMany({
       where: { tenantId, status: "INACTIVE" },
-      select: { id: true, name: true, annualRevenue: true, updatedAt: true },
+      select: { id: true, name: true, creditLimit: true, updatedAt: true },
       take: 20,
     });
     return {
       totalChurned: customers.length,
       revenueChurned: customers.reduce(
-        (s, c) => s + Number(c.annualRevenue ?? 0),
+        (s: number, c: { creditLimit: any }) => s + Number(c.creditLimit ?? 0),
         0,
       ),
       avgDaysBeforeChurn: 180,
@@ -239,9 +243,9 @@ export class CrmCustomerLifecycleDeepService {
         "Feature gaps",
         "Support issues",
       ],
-      churnedCustomers: customers.map((c) => ({
+      churnedCustomers: customers.map((c: { creditLimit: any }) => ({
         ...c,
-        annualRevenue: Number(c.annualRevenue ?? 0),
+        annualRevenue: Number(c.creditLimit ?? 0),
       })),
     };
   }
