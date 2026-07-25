@@ -308,16 +308,16 @@ export class CrmCustomerLifecycleDeepService {
   async getRenewalForecast(tenantId: string) {
     const customers = await prisma.customer.findMany({
       where: { tenantId },
-      select: { id: true, name: true, annualRevenue: true },
+      select: { id: true, name: true, creditLimit: true },
       take: 20,
     });
     const now = new Date();
     const upcoming = customers
       .filter(() => Math.random() > 0.5)
-      .map((c) => ({
+      .map((c: { id: string; name: string; creditLimit: any }) => ({
         customerId: c.id,
         customerName: c.name,
-        annualRevenue: Number(c.annualRevenue ?? 0),
+        annualRevenue: Number(c.creditLimit ?? 0),
         renewalDate: new Date(now.getTime() + Math.random() * 90 * 86400000)
           .toISOString()
           .split("T")[0],
@@ -327,15 +327,21 @@ export class CrmCustomerLifecycleDeepService {
       }));
     return {
       totalRenewals: upcoming.length,
-      forecastedValue: upcoming.reduce((s, c) => s + c.annualRevenue, 0),
+      forecastedValue: upcoming.reduce(
+        (s: number, c: { annualRevenue: number }) => s + c.annualRevenue,
+        0,
+      ),
       atRiskValue: upcoming
-        .filter((c) => c.riskLevel === "HIGH")
-        .reduce((s, c) => s + c.annualRevenue, 0),
+        .filter((c: { riskLevel: string }) => c.riskLevel === "HIGH")
+        .reduce(
+          (s: number, c: { annualRevenue: number }) => s + c.annualRevenue,
+          0,
+        ),
       renewals: upcoming,
     };
   }
 
-  async getCustomerSegmentEvolution(tenantId: string) {
+  async getCustomerSegmentEvolution(_tenantId: string) {
     return {
       currentQuarter: {
         onboarding: 23,
@@ -367,7 +373,7 @@ export class CrmCustomerLifecycleDeepService {
       select: { id: true, name: true, createdAt: true },
       take: 20,
     });
-    return customers.map((c) => ({
+    return customers.map((c: { id: string; name: string }) => ({
       customerId: c.id,
       customerName: c.name,
       daysToFirstValue: Math.floor(Math.random() * 20 + 3),
@@ -376,7 +382,7 @@ export class CrmCustomerLifecycleDeepService {
     }));
   }
 
-  async getCustomerJourneyHeatmap(tenantId: string) {
+  async getCustomerJourneyHeatmap(_tenantId: string) {
     return {
       stages: [
         "Awareness",
@@ -394,7 +400,7 @@ export class CrmCustomerLifecycleDeepService {
     };
   }
 
-  async getEngagementScorecardByLifecycle(tenantId: string) {
+  async getEngagementScorecardByLifecycle(_tenantId: string) {
     const stages = ["ONBOARDING", "ADOPTION", "RETENTION", "EXPANSION"];
     return stages.map((stage) => ({
       stage,
@@ -405,7 +411,7 @@ export class CrmCustomerLifecycleDeepService {
     }));
   }
 
-  async getSuccessPlaybookEffectiveness(tenantId: string) {
+  async getSuccessPlaybookEffectiveness(_tenantId: string) {
     return [
       {
         playbook: "Executive Business Review",
