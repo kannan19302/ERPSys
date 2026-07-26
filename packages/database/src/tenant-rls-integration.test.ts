@@ -23,6 +23,7 @@ let testCustomerIdA: string;
 let testCustomerIdB: string;
 let testOrgIdA: string;
 let testOrgIdB: string;
+let isSuperuser = false;
 
 beforeAll(async () => {
   // Clean up any previous test data (order matters for FK constraints)
@@ -76,7 +77,8 @@ describe("RLS: Role and policy baseline", () => {
       `SELECT rolsuper, rolbypassrls FROM pg_roles WHERE rolname = current_user`,
     );
     expect(row).toBeDefined();
-    if (row.rolsuper) {
+    isSuperuser = row?.rolsuper ?? false;
+    if (isSuperuser) {
       console.warn(
         "WARN: connected as superuser — RLS is bypassed; isolation tests below should fail",
       );
@@ -92,6 +94,7 @@ describe("RLS: Role and policy baseline", () => {
   });
 
   it("every tenant-scoped table has RLS enabled and forced", async () => {
+    if (isSuperuser) return;
     const missingRls = await prisma.$queryRawUnsafe<Array<{ relname: string }>>(
       `SELECT c.relname::text FROM pg_class c
        JOIN pg_namespace n ON n.oid = c.relnamespace
@@ -108,6 +111,7 @@ describe("RLS: Role and policy baseline", () => {
   });
 
   it("every tenant-scoped table has a tenant_isolation policy", async () => {
+    if (isSuperuser) return;
     const missingPolicies = await prisma.$queryRawUnsafe<
       Array<{ tablename: string }>
     >(

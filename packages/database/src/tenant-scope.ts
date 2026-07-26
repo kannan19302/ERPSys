@@ -10,7 +10,6 @@
 export const MODELS_WITHOUT_TENANT = new Set([
   "Tenant",
   "SaaSPlan",
-  "LanguageOverride",
   "UserRole",
   // Global marketplace catalog — vendor/package/bundle/listing rows are
   // platform-wide, not per-tenant (AppVendor scopes by ownerTenantId instead).
@@ -23,17 +22,34 @@ export const MODELS_WITHOUT_TENANT = new Set([
   "AppCollectionItem",
   // EmailSequenceStep has no tenantId column of its own — it is scoped
   // transitively through its parent (tenant-scoped) EmailSequence via
-  // sequenceId, the same pattern as UserRole above. Without this entry the
-  // extension injects a nonexistent `tenantId` filter into every
-  // `emailSequenceStep` query/create and Prisma throws a validation error
-  // (only surfaces under a real request-scoped tenant session, so unit
-  // tests — which never set one — never caught it).
+  // sequenceId, the same pattern as UserRole above.
   "EmailSequenceStep",
   // Platform-wide admin-editable integration credentials/tunables (SaaS
   // Portal Settings -> Integrations). Deliberately has no tenantId column —
   // see PlatformCredential in schema.prisma and
   // apps/api/src/common/platform-credentials.
   "PlatformCredential",
+  // Additional platform-level or join models without tenantId field:
+  "Passkey",
+  "ConnectPollOption",
+  "SaaSCoupon",
+  "SaaSAddOn",
+  "QuotaRule",
+  "SaaSPlanPrice",
+  "SaaSPlanFeature",
+  "SaaSInvoiceLineItem",
+  "TicketMessage",
+  "WebDomain",
+  "ContactTagLink",
+  "CustomerTagLink",
+  "Permission",
+  "RoleAccessPackage",
+  "UserGroupMember",
+  "SegmentMember",
+  "FxRevaluationDetail",
+  "EliminationRunDetail",
+  "BlockchainSyncCheckpoint",
+  "AiModel",
 ]);
 
 const READ_OPS = new Set([
