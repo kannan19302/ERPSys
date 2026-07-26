@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { PageHeader, Tabs, Spinner, Button, Card, Switch } from "@unerp/ui";
+import { PageHeader, Tabs, Spinner, Button, Card } from "@unerp/ui";
 import { Activity, Mail, Calendar, Settings, Link2 } from "lucide-react";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
@@ -121,23 +121,35 @@ function ActivityCaptureContent() {
             <div className="ui-grid-2">
               <div className="ui-form-group">
                 <label className="ui-label">Capture Emails</label>
-                <Switch
+                <input
+                  type="checkbox"
+                  className="ui-checkbox"
                   checked={settings.captureEmails}
-                  onChange={(v: boolean) => updateSetting("captureEmails", v)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    updateSetting("captureEmails", e.target.checked)
+                  }
                 />
               </div>
               <div className="ui-form-group">
                 <label className="ui-label">Capture Calendar Events</label>
-                <Switch
+                <input
+                  type="checkbox"
+                  className="ui-checkbox"
                   checked={settings.captureCalendar}
-                  onChange={(v: boolean) => updateSetting("captureCalendar", v)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    updateSetting("captureCalendar", e.target.checked)
+                  }
                 />
               </div>
               <div className="ui-form-group">
                 <label className="ui-label">Auto-Link to CRM Records</label>
-                <Switch
+                <input
+                  type="checkbox"
+                  className="ui-checkbox"
                   checked={settings.autoLinkEnabled}
-                  onChange={(v: boolean) => updateSetting("autoLinkEnabled", v)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    updateSetting("autoLinkEnabled", e.target.checked)
+                  }
                 />
               </div>
               <div className="ui-form-group">

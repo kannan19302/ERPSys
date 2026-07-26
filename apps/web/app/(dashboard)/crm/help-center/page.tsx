@@ -62,8 +62,8 @@ export default function HelpCenterPage() {
     setLoading(true);
     try {
       const [cats, arts] = await Promise.all([
-        apiGet("/api/crm/support/help-center/categories"),
-        apiGet(
+        apiGet<Category[]>("/api/crm/support/help-center/categories"),
+        apiGet<{ data: Article[] }>(
           `/api/crm/support/help-center/articles?${selectedCategory ? `categoryId=${selectedCategory}&` : ""}${search ? `search=${search}&` : ""}limit=50`,
         ),
       ]);
@@ -106,7 +106,7 @@ export default function HelpCenterPage() {
     <div className="ui-page">
       <PageHeader
         title="Help Center"
-        subtitle="Manage knowledge base categories and articles"
+        description="Manage knowledge base categories and articles"
       />
       <div className="ui-flex ui-gap-3 ui-mb-4">
         <div className="ui-input-group" style={{ flex: 1 }}>
@@ -296,7 +296,7 @@ export default function HelpCenterPage() {
                     <div className="ui-flex ui-gap-2 ui-text-xs text-muted ui-mt-1">
                       <Badge
                         variant={
-                          art.status === "PUBLISHED" ? "success" : "secondary"
+                          art.status === "PUBLISHED" ? "success" : "default"
                         }
                       >
                         {art.status}

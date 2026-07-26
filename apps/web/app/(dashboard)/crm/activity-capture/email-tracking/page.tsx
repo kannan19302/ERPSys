@@ -24,45 +24,51 @@ function EmailTrackingPage() {
       });
   }, []);
 
-  const columns: Column[] = [
-    { key: "recipient", label: "Recipient", sortable: true },
+  const columns: Column<Record<string, unknown>>[] = [
+    { key: "recipient", header: "Recipient", sortable: true },
     {
       key: "eventType",
-      label: "Event",
+      header: "Event",
       sortable: true,
-      render: (v: string) => (
-        <Badge
-          variant={
-            v === "OPENED"
-              ? "info"
-              : v === "CLICKED"
-                ? "success"
-                : v === "BOUNCED"
-                  ? "danger"
-                  : "warning"
-          }
-        >
-          {v}
-        </Badge>
-      ),
+      render: (row) => {
+        const v = (row as any).eventType as string;
+        return (
+          <Badge
+            variant={
+              v === "OPENED"
+                ? "info"
+                : v === "CLICKED"
+                  ? "success"
+                  : v === "BOUNCED"
+                    ? "danger"
+                    : "warning"
+            }
+          >
+            {v}
+          </Badge>
+        );
+      },
     },
     {
       key: "linkUrl",
-      label: "Link",
-      render: (v: string) =>
-        v ? (
+      header: "Link",
+      render: (row) => {
+        const v = (row as any).linkUrl as string | undefined;
+        return v ? (
           <span className="ui-text-truncate" style={{ maxWidth: 200 }}>
             {v}
           </span>
         ) : (
           "-"
-        ),
+        );
+      },
     },
     {
       key: "occurredAt",
-      label: "Time",
+      header: "Time",
       sortable: true,
-      render: (v: string) => new Date(v).toLocaleString(),
+      render: (row) =>
+        new Date((row as any).occurredAt as string).toLocaleString(),
     },
   ];
 
@@ -92,7 +98,7 @@ function EmailTrackingPage() {
         ]}
       />
       <Card>
-        <DataTable columns={columns} data={events} pageSize={25} />
+        <DataTable columns={columns} data={events} />
       </Card>
     </div>
   );

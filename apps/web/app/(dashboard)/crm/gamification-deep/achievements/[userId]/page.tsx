@@ -65,7 +65,8 @@ export default function AchievementsPage() {
     <div className="ui-page">
       <PageHeader
         title="User Achievements"
-        subtitle={
+        description="View and manage user badges, streaks, and leaderboard history"
+        actions={
           <button
             className="ui-link"
             onClick={() => router.push("/crm/gamification-deep")}

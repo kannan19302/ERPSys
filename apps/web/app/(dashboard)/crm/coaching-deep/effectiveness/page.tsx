@@ -82,17 +82,18 @@ export default function EffectivenessPage() {
 
   return (
     <div className="ui-page">
+      <div style={{ marginBottom: "var(--space-2)" }}>
+        <button
+          className="ui-link"
+          onClick={() => router.push("/crm/coaching-deep")}
+          style={{ background: "none", border: "none", cursor: "pointer" }}
+        >
+          <ArrowLeft size={16} /> Back
+        </button>
+      </div>
       <PageHeader
         title="Coaching Effectiveness"
-        subtitle={
-          <button
-            className="ui-link"
-            onClick={() => router.push("/crm/coaching-deep")}
-            style={{ background: "none", border: "none", cursor: "pointer" }}
-          >
-            <ArrowLeft size={16} /> Back
-          </button>
-        }
+        description="Track coaching effectiveness across reps"
       />
       <div className="ui-grid-3">
         <Card className="ui-card">

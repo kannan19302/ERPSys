@@ -235,7 +235,7 @@ export default function ContestsPage() {
     <div className="ui-page">
       <PageHeader
         title="Sales Contests"
-        subtitle="Competitions and races for the sales team"
+        description="Competitions and races for the sales team"
       />
       <div className="ui-toolbar">
         <ProtectedComponent permission="crm.gamification-deep.contests.create">

@@ -9,10 +9,9 @@ import {
   useToast,
   Button,
   Input,
-  Switch,
 } from "@unerp/ui";
 import { Settings, Plus, Trash2, Play, Edit3 } from "lucide-react";
-import { apiGet, apiPost, apiPut, apiDelete } from "../../_components/api";
+import { apiGet, apiPost, apiPut, apiSend } from "../../_components/api";
 
 export default function DealAutomationPage() {
   const [loading, setLoading] = useState(true);
@@ -84,7 +83,7 @@ export default function DealAutomationPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      await apiDelete(`/crm/deal-desk/automation-rules/${id}`);
+      await apiSend(`/crm/deal-desk/automation-rules/${id}`, "DELETE");
       toast.success("Success", "Rule deleted.");
       loadRules();
     } catch (err) {
@@ -146,7 +145,7 @@ export default function DealAutomationPage() {
       <PageHeader
         title="Automation Rules"
         description="Configure and manage deal desk automation rules"
-        breadcrumb={[
+        breadcrumbs={[
           { label: "Deal Desk", href: "/crm/deal-desk" },
           { label: "Automation" },
         ]}
@@ -309,9 +308,11 @@ export default function DealAutomationPage() {
                   </td>
                   <td>{r.priority}</td>
                   <td>
-                    <Switch
+                    <input
+                      type="checkbox"
                       checked={r.isActive}
                       onChange={() => handleToggle(r.id, r.isActive)}
+                      style={{ cursor: "pointer" }}
                     />
                   </td>
                   <td>

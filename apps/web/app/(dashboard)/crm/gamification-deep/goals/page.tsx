@@ -180,7 +180,7 @@ export default function GoalsPage() {
     <div className="ui-page">
       <PageHeader
         title="Team Goals"
-        subtitle="Revenue, deals, and activity targets"
+        description="Revenue, deals, and activity targets"
       />
       <div className="ui-toolbar">
         <ProtectedComponent permission="crm.gamification-deep.goals.create">

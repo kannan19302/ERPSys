@@ -131,7 +131,7 @@ export default function Customer360Page() {
   };
 
   return (
-    <RouteGuard module="crm" permission="crm.contact.read">
+    <RouteGuard permission="crm.contact.read">
       <div>
         <PageHeader
           title={data ? `Customer 360: ${data.customer.name}` : "Customer 360"}

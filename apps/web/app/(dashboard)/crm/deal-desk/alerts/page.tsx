@@ -58,7 +58,7 @@ export default function DealAlertsPage() {
       <PageHeader
         title="Deal Alerts"
         description="View and manage alerts for deals requiring attention"
-        breadcrumb={[
+        breadcrumbs={[
           { label: "Deal Desk", href: "/crm/deal-desk" },
           { label: "Alerts" },
         ]}
@@ -112,7 +112,7 @@ export default function DealAlertsPage() {
                       <Badge
                         variant={
                           a.severity === "CRITICAL"
-                            ? "error"
+                            ? "danger"
                             : a.severity === "WARNING"
                               ? "warning"
                               : "info"

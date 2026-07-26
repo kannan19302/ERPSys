@@ -1,17 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { api } from "@unerp/shared";
-
 export default function WebhooksPage() {
   const [webhooks, setWebhooks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api
-      .get("/crm/integrations/webhooks")
-      .then((res: any) => {
-        setWebhooks(res.data || []);
+    fetch("/api/v1/crm/integrations/webhooks")
+      .then((res) => res.json())
+      .then((data) => {
+        setWebhooks(Array.isArray(data) ? data : data?.data || []);
         setLoading(false);
       })
       .catch(() => setLoading(false));

@@ -1,17 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { api } from "@unerp/shared";
-
 export default function EventLogsPage() {
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [retrying, setRetrying] = useState<string | null>(null);
 
+  const API_BASE = "/api/v1";
+
   const fetchLogs = async () => {
     try {
-      const res: any = await api.get("/crm/integrations/event-logs");
-      setLogs(res.data || []);
+      const res = await fetch(`${API_BASE}/crm/integrations/event-logs`);
+      const data = await res.json();
+      setLogs(Array.isArray(data) ? data : data?.data || []);
     } catch {
       /* ignore */
     }
@@ -25,7 +26,9 @@ export default function EventLogsPage() {
   const retry = async (id: string) => {
     setRetrying(id);
     try {
-      await api.post(`/crm/integrations/event-logs/${id}/retry`);
+      await fetch(`${API_BASE}/crm/integrations/event-logs/${id}/retry`, {
+        method: "POST",
+      });
       fetchLogs();
     } catch {
       /* ignore */

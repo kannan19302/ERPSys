@@ -62,7 +62,7 @@ export default function DealDeskRequestsPage() {
       <PageHeader
         title="Deal Desk Requests"
         description="View and manage discount, special terms, and pricing requests"
-        breadcrumb={[
+        breadcrumbs={[
           { label: "Deal Desk", href: "/crm/deal-desk" },
           { label: "Requests" },
         ]}
@@ -130,7 +130,7 @@ export default function DealDeskRequestsPage() {
                     <Badge
                       variant={
                         r.priority === "URGENT"
-                          ? "error"
+                          ? "danger"
                           : r.priority === "HIGH"
                             ? "warning"
                             : "default"
@@ -145,7 +145,7 @@ export default function DealDeskRequestsPage() {
                         r.status === "APPROVED"
                           ? "success"
                           : r.status === "REJECTED"
-                            ? "error"
+                            ? "danger"
                             : r.status === "PENDING"
                               ? "warning"
                               : "info"

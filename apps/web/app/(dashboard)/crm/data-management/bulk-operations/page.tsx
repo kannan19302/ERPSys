@@ -210,7 +210,7 @@ export default function BulkOperationsPage() {
                         op.status === "COMPLETED"
                           ? "success"
                           : op.status === "FAILED" || op.status === "CANCELLED"
-                            ? "error"
+                            ? "danger"
                             : "warning"
                       }
                     >

@@ -195,7 +195,7 @@ export default function ImportPage() {
                         log.status === "COMPLETED"
                           ? "success"
                           : log.status === "FAILED"
-                            ? "error"
+                            ? "danger"
                             : "warning"
                       }
                     >

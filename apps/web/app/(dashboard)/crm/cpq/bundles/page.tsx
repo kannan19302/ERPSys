@@ -20,7 +20,7 @@ import { Plus, Pencil, Trash2, Package } from "lucide-react";
 
 export default function CpqBundlesPage() {
   const router = useRouter();
-  const { addToast } = useToast();
+  const toast = useToast();
   const [bundles, setBundles] = useState<Array<Record<string, unknown>>>([]);
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
@@ -62,46 +62,49 @@ export default function CpqBundlesPage() {
     if (!confirm("Delete this bundle?")) return;
     try {
       await fetch(`/api/crm/cpq/bundles/${id}`, { method: "DELETE" });
-      addToast("Bundle deleted", "success");
+      toast.success("Bundle deleted");
       fetchBundles();
     } catch {
-      addToast("Failed to delete bundle", "error");
+      toast.error("Failed to delete bundle");
     }
   };
 
-  const columns: Column[] = [
-    { key: "name", label: "Name", sortable: true },
+  const columns: Column<Record<string, unknown>>[] = [
+    { key: "name", header: "Name", sortable: true },
     {
       key: "bundlePrice",
-      label: "Bundle Price",
+      header: "Bundle Price",
       sortable: true,
-      render: (v: unknown) => `$${Number(v).toFixed(2)}`,
+      render: (row: Record<string, unknown>) =>
+        `$${Number(row.bundlePrice).toFixed(2)}`,
     },
     {
       key: "savingsPct",
-      label: "Savings %",
-      render: (v: unknown) => `${Number(v).toFixed(1)}%`,
+      header: "Savings %",
+      render: (row: Record<string, unknown>) =>
+        `${Number(row.savingsPct).toFixed(1)}%`,
     },
-    { key: "currency", label: "Currency" },
+    { key: "currency", header: "Currency" },
     {
       key: "isActive",
-      label: "Status",
-      render: (v: unknown) =>
-        v ? (
+      header: "Status",
+      render: (row: Record<string, unknown>) =>
+        row.isActive ? (
           <Badge variant="success">Active</Badge>
         ) : (
-          <Badge variant="muted">Inactive</Badge>
+          <Badge variant="default">Inactive</Badge>
         ),
     },
     {
       key: "_count",
-      label: "Items",
-      render: (v: unknown) => String((v as Record<string, number>)?.items ?? 0),
+      header: "Items",
+      render: (row: Record<string, unknown>) =>
+        String((row._count as Record<string, number>)?.items ?? 0),
     },
     {
       key: "actions",
-      label: "Actions",
-      render: (_: unknown, row: Record<string, unknown>) => (
+      header: "Actions",
+      render: (row: Record<string, unknown>) => (
         <div className="ui-flex-row ui-gap-1">
           <Button
             size="sm"
@@ -161,14 +164,10 @@ export default function CpqBundlesPage() {
             data={bundles}
             sortBy={sortBy}
             sortOrder={sortOrder}
-            page={page}
-            totalPages={totalPages}
             onSortChange={(key, order) => {
               setSortBy(key);
               setSortOrder(order);
             }}
-            onPageChange={setPage}
-            onSearch={setSearch}
             onRowClick={(row) => router.push(`/crm/cpq/bundles/${row.id}`)}
           />
         )}
@@ -195,11 +194,11 @@ export default function CpqBundlesPage() {
                 }),
               });
               if (!res.ok) throw new Error();
-              addToast("Bundle created", "success");
+              toast.success("Bundle created");
               setShowCreate(false);
               fetchBundles();
             } catch {
-              addToast("Failed to create bundle", "error");
+              toast.error("Failed to create bundle");
             }
             setCreating(false);
           }}

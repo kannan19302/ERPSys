@@ -37,8 +37,8 @@ export default function WinProbabilityPage() {
     setLoading(true);
     try {
       const data = await apiSend(
-        "POST",
         "/crm/ai-intelligence/win-probability/batch",
+        "POST",
         { opportunityIds: ids },
       );
       setResult({ batch: true, results: data });

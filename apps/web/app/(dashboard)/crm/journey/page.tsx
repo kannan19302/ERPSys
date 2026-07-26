@@ -69,7 +69,7 @@ export default function CustomerJourneyDashboard() {
   }, []);
 
   return (
-    <RouteGuard module="crm" permission="crm.contact.read">
+    <RouteGuard permission="crm.contact.read">
       <div>
         <PageHeader
           title="Customer Journey"
@@ -98,7 +98,7 @@ export default function CustomerJourneyDashboard() {
                   title="Journey Stages"
                   value={data?.stagesCount ?? 0}
                   icon={<MapPin className="ui-w-5 ui-h-5" />}
-                  trend={{ value: 0, isPositive: true }}
+                  change={0}
                 />
               </Link>
               <Link href="/crm/journey/nps">
@@ -106,11 +106,7 @@ export default function CustomerJourneyDashboard() {
                   title="NPS Score"
                   value={data?.npsScore ?? 0}
                   icon={<HeartHandshake className="ui-w-5 ui-h-5" />}
-                  trend={
-                    data && data.npsScore > 0
-                      ? { value: 0, isPositive: true }
-                      : undefined
-                  }
+                  change={data && data.npsScore > 0 ? data.npsScore : undefined}
                 />
               </Link>
               <Link href="/crm/journey/churn">

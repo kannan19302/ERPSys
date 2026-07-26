@@ -20,7 +20,7 @@ import { Plus, Trash2, Package, Eye } from "lucide-react";
 export default function CpqBundleDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { addToast } = useToast();
+  const toast = useToast();
   const [bundle, setBundle] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<Array<Record<string, unknown>>>([]);
@@ -56,7 +56,7 @@ export default function CpqBundleDetailPage() {
       });
       if (res.ok) setPreview(await res.json());
     } catch {
-      addToast("Failed to preview", "error");
+      toast.error("Failed to preview");
     }
   };
 
@@ -67,7 +67,7 @@ export default function CpqBundleDetailPage() {
       });
       if (res.ok) setValidation(await res.json());
     } catch {
-      addToast("Failed to validate", "error");
+      toast.error("Failed to validate");
     }
   };
 
@@ -77,21 +77,21 @@ export default function CpqBundleDetailPage() {
       await fetch(`/api/crm/cpq/bundles/${id}/items/${itemId}`, {
         method: "DELETE",
       });
-      addToast("Item removed", "success");
+      toast.success("Item removed");
       fetchBundle();
     } catch {
-      addToast("Failed to remove item", "error");
+      toast.error("Failed to remove item");
     }
   };
 
-  const itemColumns: Column[] = [
-    { key: "productId", label: "Product ID" },
-    { key: "quantity", label: "Qty" },
-    { key: "sortOrder", label: "Sort Order" },
+  const itemColumns: Column<Record<string, unknown>>[] = [
+    { key: "productId", header: "Product ID" },
+    { key: "quantity", header: "Qty" },
+    { key: "sortOrder", header: "Sort Order" },
     {
       key: "actions",
-      label: "",
-      render: (_: unknown, row: Record<string, unknown>) => (
+      header: "",
+      render: (row: Record<string, unknown>) => (
         <Button
           size="sm"
           variant="ghost"
@@ -163,7 +163,7 @@ export default function CpqBundleDetailPage() {
               {bundle.isActive ? (
                 <Badge variant="success">Active</Badge>
               ) : (
-                <Badge variant="muted">Inactive</Badge>
+                <Badge variant="default">Inactive</Badge>
               )}
             </div>
           </div>
@@ -267,11 +267,11 @@ export default function CpqBundleDetailPage() {
                 }),
               });
               if (!res.ok) throw new Error();
-              addToast("Item added", "success");
+              toast.success("Item added");
               setShowAddItem(false);
               fetchBundle();
             } catch {
-              addToast("Failed to add item", "error");
+              toast.error("Failed to add item");
             }
           }}
         >

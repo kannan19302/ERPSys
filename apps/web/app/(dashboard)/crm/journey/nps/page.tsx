@@ -113,7 +113,7 @@ export default function NpsPage() {
   };
 
   return (
-    <RouteGuard module="crm" permission="crm.nps.surveys.read">
+    <RouteGuard permission="crm.nps.surveys.read">
       <div>
         <PageHeader
           title="NPS Surveys"
@@ -137,11 +137,7 @@ export default function NpsPage() {
                   title="NPS Score"
                   value={summary.npsScore}
                   icon={<BarChart3 className="ui-w-5 ui-h-5" />}
-                  trend={
-                    summary.npsScore > 0
-                      ? { value: 0, isPositive: true }
-                      : undefined
-                  }
+                  change={summary.npsScore > 0 ? summary.npsScore : undefined}
                 />
                 <KPICard
                   title="Responses"
@@ -173,28 +169,31 @@ export default function NpsPage() {
             )}
 
             <Card className="ui-p-0">
-              <DataTable
+              <DataTable<NpsSurvey>
                 columns={[
-                  { header: "Name", accessor: "name", sortable: true },
-                  { header: "Status", accessor: "status", sortable: true },
+                  { key: "name", header: "Name", sortable: true },
+                  { key: "status", header: "Status", sortable: true },
                   {
+                    key: "_count",
                     header: "Responses",
-                    accessor: (row: NpsSurvey) => row._count.responses,
+                    render: (row) => row._count.responses,
                   },
-                  { header: "Question", accessor: "question" },
+                  { key: "question", header: "Question" },
                   {
+                    key: "sendAutomatically",
                     header: "Auto-send",
-                    accessor: (row: NpsSurvey) =>
-                      row.sendAutomatically ? "Yes" : "No",
+                    render: (row) => (row.sendAutomatically ? "Yes" : "No"),
                   },
                   {
+                    key: "createdAt",
                     header: "Created",
-                    accessor: (row: NpsSurvey) =>
+                    render: (row) =>
                       new Date(row.createdAt).toLocaleDateString(),
                   },
                   {
+                    key: "id",
                     header: "Actions",
-                    accessor: (row: NpsSurvey) => (
+                    render: (row) => (
                       <div className="ui-flex ui-gap-2">
                         <Link href={`/crm/journey/nps/surveys/${row.id}`}>
                           <button

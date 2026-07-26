@@ -7,8 +7,7 @@ import { InventoryQaService } from "./inventory-qa.service";
 import { InventoryEventHandler } from "./inventory.event-handler";
 import { CostingService } from "./costing.service";
 import { CostingController } from "./costing.controller";
-import { DemandForecastingService } from "./demand-forecasting.service";
-import { DemandForecastingController } from "./demand-forecasting.controller";
+
 import { RtvService } from "./rtv.service";
 import { RtvController } from "./rtv.controller";
 import { InventoryLaborService } from "./inventory-labor.service";
@@ -46,7 +45,6 @@ import { InventoryDeepExpansionBulkController } from "./inventory-deep-expansion
   controllers: [
     InventoryController,
     CostingController,
-    DemandForecastingController,
     RtvController,
     InventoryLaborController,
     SupplierQualityController,
@@ -71,7 +69,6 @@ import { InventoryDeepExpansionBulkController } from "./inventory-deep-expansion
     InventoryQaService,
     InventoryEventHandler,
     CostingService,
-    DemandForecastingService,
     RtvService,
     InventoryLaborService,
     SupplierQualityService,
@@ -92,7 +89,6 @@ import { InventoryDeepExpansionBulkController } from "./inventory-deep-expansion
     InventoryProductsService,
     InventoryQaService,
     CostingService,
-    DemandForecastingService,
     RtvService,
     InventoryLaborService,
     SupplierQualityService,

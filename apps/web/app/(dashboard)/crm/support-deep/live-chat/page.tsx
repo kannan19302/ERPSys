@@ -27,7 +27,7 @@ export default function LiveChatPage() {
   const load = async () => {
     setLoading(true);
     try {
-      const res = await apiGet(
+      const res = await apiGet<ChatSession[] | { data: ChatSession[] }>(
         `/api/crm/support/live-chat${filter ? `?status=${filter}` : ""}`,
       );
       setSessions(Array.isArray(res) ? res : res?.data || []);

@@ -1,90 +1,51 @@
-# Implementation Plan — Cycle 44: HR Module Deepening to 2,000+ Features
+# Implementation Plan — Cycle 45
 
-**Phase**: M — Module strengthening
-**Focus**: HR (user-directed override of focus order)
-**Start SHA**: bc6156e7
-**Throughput floor**: 5,000 net LOC OR 40 features per cycle
+## Phase & Scope
 
-## Scope
+- **Phase**: M (Module strengthening)
+- **Cycle**: 45
+- **Focus**: 5 Core Modules — UI type error remediation & backend registration fixes
+- **Why**: All 5 core modules (Finance, CRM, HR, Inventory, Procurement) already have 1500+ features per feature ledger. However, the frontend UI pages (especially CRM) have ~200+ TypeScript compilation errors due to API mismatches with the `@unerp/ui` library. These must be fixed to achieve zero-stub, fully-wired UI across all modules. Additionally, minor backend registration issues need fixing.
 
-Deepen the aggregate HR module (`hr` + `advanced-hr` + `hr-advanced`) from ~1,011 to 2,000+ features by building 5 new sub-domains via parallel agents.
+## Scope (Work Items)
 
-## Current Feature Count
+### Backend Fixes
 
-| Sub-module  | Features   |
-| ----------- | ---------- |
-| hr          | 144        |
-| advanced-hr | 710        |
-| hr-advanced | 157        |
-| **Total**   | **1,011**  |
-| **Target**  | **2,000+** |
-| **Gap**     | **~989**   |
+1. **Inventory**: Remove duplicate `DemandForecastingController`/`DemandForecastingService` from `inventory.module.ts` (already registered in `demand-forecasting.module.ts`)
+2. **Procurement**: Register `ProcurementSettingsController` from `settings.controller.ts` in `procurement.module.ts`
 
-## Parallel Work Breakdown
+### Frontend Type Error Categories (CRM UI pages)
 
-5 parallel agents, each building an independent sub-domain with its own service + controller + Prisma models + shared schemas + permissions. No shared-file conflicts.
+1. **Column<T>** — Add missing type argument to all `Column` usages
+2. **DataTable props** — Remove `pageSize`, `page`, `totalPages` (not DataTable props); use proper pagination
+3. **PageHeader** — Replace `subtitle` → `description`, `breadcrumb` → `breadcrumbs`
+4. **Badge** — Replace `"muted"` → `"default"`, `"error"` → `"danger"`, `"secondary"` → `"default"`
+5. **Card** — Replace `hoverable` → `hover`
+6. **Modal** — Add `open` prop where missing
+7. **ToastApi** — Replace `addToast()` → `toast.success()`, `toast.error()`, etc.
+8. **KPICard/DashboardKPICard** — Fix `trend` from `{value, isPositive}` → `number[]`
+9. **ProtectedComponent** — Remove `module` prop
+10. **api import** — Fix `@unerp/shared` `api` import → use correct source
+11. **apiDelete** — Fix import path
+12. **Column render** — Use `key`+`header`+`render(row, index)`, not `accessor`
+13. **Cell renderers** — Fix from `(value, row)` to `(row, index)` signature
+14. **Switch** — Replace with styled checkbox or `ViewSwitcher` as appropriate
 
-### Agent 1: Talent Management & Development
+### Duplicate-Check against Feature Ledger
 
-- **Prisma models**: LearningCourse, LearningModule, LearningEnrollment, Certification, SkillMatrix, SkillGapAnalysis, CareerPath, MentoringProgram, MentoringSession
-- **Service**: `hr-talent.service.ts`
-- **Endpoints**: ~40 (courses CRUD, modules CRUD, enrollments, certifications, skills matrix, gap analysis, career paths, mentoring programs/sessions, analytics)
-- **Permissions**: 9 resources × 4 actions = 36
-- **Feature contribution**: ~40
-
-### Agent 2: Advanced Compensation & Benefits
-
-- **Prisma models**: BonusPlan, BonusPayout, EquityGrant, EquityVestingSchedule, BenefitsEligibilityRule, FlexibleBenefitCredit, CompensationReview, CompensationBenchmark, TotalRewardsStatement
-- **Service**: `hr-compensation.service.ts`
-- **Endpoints**: ~40 (bonus plans/payouts, equity grants/vesting, eligibility rules, flexible credits, comp reviews, benchmarks, total rewards)
-- **Permissions**: 9 resources × 4 actions = 36
-- **Feature contribution**: ~40
-
-### Agent 3: HR Operations, Helpdesk & Employee Relations
-
-- **Prisma models**: HrTicket, HrTicketAssignment, HrTicketCategory, EmployeeGrievance, DisputeResolution, BackgroundCheckRequest, VisaRecord, ImmigrationDocument, EmployeeWellnessProgram, WellnessActivity
-- **Service**: `hr-operations.service.ts`
-- **Endpoints**: ~40 (tickets CRUD/assignment/dashboard, grievances, disputes, background checks, visa/immigration, wellness programs)
-- **Permissions**: 10 resources × 4 actions = 40
-- **Feature contribution**: ~40
-
-### Agent 4: Workforce Planning & DEI Analytics
-
-- **Prisma models**: HeadcountPlan, HeadcountPlanLine, SuccessionPlan, SuccessionCandidate, DEIMetric, DEIReport, TurnoverPrediction, ComplianceReportTemplate, HRComplianceReport, ComplianceRequirement
-- **Service**: `hr-analytics.service.ts`
-- **Endpoints**: ~40 (headcount plans, succession pipeline, DEI metrics/reports, turnover prediction, compliance reports/requirements)
-- **Permissions**: 10 resources × 4 actions = 40
-- **Feature contribution**: ~40
-
-### Agent 5: Employee Experience & Engagement
-
-- **Prisma models**: EmployeeRecognition, EmployeeRecognitionAward, WellnessChallenge, WellnessLeaderboard, eNPSurvey, PulseSurvey, SurveyResponse, EmployeeJourneyMilestone, AlumniRecord, AlumniEvent
-- **Service**: `hr-experience.service.ts`
-- **Endpoints**: ~40 (recognition CRUD/awards, wellness challenges/leaderboards, eNPS/pulse surveys CRUD/responses, journey milestones, alumni records/events)
-- **Permissions**: 10 resources × 4 actions = 40
-- **Feature contribution**: ~40
-
-## Total New: ~200 features + ~8,000 LOC
-
-## Duplicate Check
-
-Grep the working tree for each proposed Prisma model name — none exist.
+- All 5 modules already at 1500+ (Finance 1634, CRM 1508, HR 1818, Inventory 1588, Procurement 1530)
+- No new features being added — this cycle is about fixing compilation errors in existing UI pages
 
 ## Gate Tier
 
-MILESTONE (new schema + API surface). Each agent verifies its own typecheck before completing.
+- **FAST** — No risky surfaces (all changes are in frontend TypeScript files and minor backend registrations)
 
-## Rollback
+## Rollback Note
 
-All new code is additive (new service/controller files, additive schema changes). To rollback: remove the new imports from `hr-advanced.module.ts` and revert the schema additions.
+- All changes are in source files only; no schema/migration changes. Rollback = revert commits.
 
-## Execution
+## Build Order
 
-1. Write all Prisma models to `schema.prisma` (coordinated by orchestrator)
-2. Write all shared Zod schemas to `shared/src/hr/index.ts` (coordinated by orchestrator)
-3. Write all permissions to `registry.ts` (coordinated by orchestrator)
-4. Launch 5 parallel agents to build service + controller + module wiring
-5. Merge all outputs
-6. Typecheck + arch check
-7. Test
-8. Record + Ship
+1. Fix backend registration issues (Inventory + Procurement)
+2. Fix CRM UI type errors (category by category)
+3. Verify with `pnpm typecheck` across all packages

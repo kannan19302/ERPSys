@@ -39,7 +39,7 @@ export default function RevenueIntelligencePage() {
       switch (section) {
         case "digest":
           setDigest(
-            await apiSend("POST", "/crm/ai-intelligence/revenue-digest", {}),
+            await apiSend("/crm/ai-intelligence/revenue-digest", "POST", {}),
           );
           break;
         case "trends":

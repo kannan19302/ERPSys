@@ -121,7 +121,6 @@ export default function DealHealthPage() {
               variant={
                 score >= 70 ? "success" : score >= 40 ? "warning" : "danger"
               }
-              style={{ marginTop: "0.5rem" }}
             >
               {getLabel(score)}
             </Badge>

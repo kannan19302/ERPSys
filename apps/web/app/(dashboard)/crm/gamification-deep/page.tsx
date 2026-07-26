@@ -69,7 +69,7 @@ export default function GamificationDeepPage() {
     <div className="ui-page">
       <PageHeader
         title="Gamification Deepening"
-        subtitle="Team goals, contests, achievements & streaks"
+        description="Team goals, contests, achievements & streaks"
       />
       <div className="ui-grid-3">
         <Card className="ui-card">

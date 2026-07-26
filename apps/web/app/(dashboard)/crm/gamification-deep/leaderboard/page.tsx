@@ -78,7 +78,7 @@ export default function LeaderboardPage() {
     <div className="ui-page">
       <PageHeader
         title="Leaderboard"
-        subtitle="Current standings across periods and metrics"
+        description="Current standings across periods and metrics"
       />
       <div
         className="ui-flex-row"

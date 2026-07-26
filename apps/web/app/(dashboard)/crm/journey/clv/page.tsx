@@ -41,7 +41,7 @@ export default function ClvPage() {
   );
 
   return (
-    <RouteGuard module="crm" permission="crm.clv.read">
+    <RouteGuard permission="crm.clv.read">
       <div>
         <PageHeader
           title="Customer Lifetime Value"
@@ -78,39 +78,43 @@ export default function ClvPage() {
             </div>
 
             <Card className="ui-p-0">
-              <DataTable
+              <DataTable<ClvEntry>
                 columns={[
                   {
+                    key: "customer",
                     header: "Customer",
-                    accessor: (row: ClvEntry) =>
-                      row.customer?.name || "Unknown",
+                    render: (row) => row.customer?.name || "Unknown",
                     sortable: true,
                   },
                   {
+                    key: "clvAmount",
                     header: "CLV",
-                    accessor: (row: ClvEntry) =>
+                    render: (row) =>
                       `$${Number(row.clvAmount).toLocaleString()}`,
                     sortable: true,
                   },
                   {
+                    key: "averageOrderValue",
                     header: "Avg Order Value",
-                    accessor: (row: ClvEntry) =>
+                    render: (row) =>
                       `$${Number(row.averageOrderValue).toLocaleString()}`,
                   },
-                  { header: "Orders", accessor: "totalOrders", sortable: true },
+                  { key: "totalOrders", header: "Orders", sortable: true },
                   {
+                    key: "customerLifespanMonths",
                     header: "Lifespan (mo)",
-                    accessor: "customerLifespanMonths",
                     sortable: true,
                   },
                   {
+                    key: "totalRevenue",
                     header: "Total Revenue",
-                    accessor: (row: ClvEntry) =>
+                    render: (row) =>
                       `$${Number(row.totalRevenue).toLocaleString()}`,
                   },
                   {
+                    key: "calculatedAt",
                     header: "Calculated",
-                    accessor: (row: ClvEntry) =>
+                    render: (row) =>
                       new Date(row.calculatedAt).toLocaleDateString(),
                   },
                 ]}

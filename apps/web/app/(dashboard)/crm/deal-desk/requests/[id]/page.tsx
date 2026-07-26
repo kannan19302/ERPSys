@@ -65,7 +65,7 @@ export default function DealDeskRequestDetailPage() {
       <PageHeader
         title="Request Detail"
         description={`Request ID: ${id}`}
-        breadcrumb={[
+        breadcrumbs={[
           { label: "Deal Desk", href: "/crm/deal-desk" },
           { label: "Requests", href: "/crm/deal-desk/requests" },
           { label: id },
@@ -89,7 +89,7 @@ export default function DealDeskRequestDetailPage() {
                     request?.status === "APPROVED"
                       ? "success"
                       : request?.status === "REJECTED"
-                        ? "error"
+                        ? "danger"
                         : "warning"
                   }
                 >
@@ -103,7 +103,7 @@ export default function DealDeskRequestDetailPage() {
                 <Badge
                   variant={
                     request?.priority === "URGENT"
-                      ? "error"
+                      ? "danger"
                       : request?.priority === "HIGH"
                         ? "warning"
                         : "default"
@@ -165,7 +165,7 @@ export default function DealDeskRequestDetailPage() {
                   <Info size={16} /> Request More Info
                 </Button>
                 <Button
-                  variant="warning"
+                  variant="secondary"
                   onClick={() => handleAction("escalate")}
                   disabled={actionLoading}
                 >

@@ -88,7 +88,7 @@ export default function CustomerJourneyPage() {
   };
 
   return (
-    <RouteGuard module="crm" permission="crm.customer-journey.events.read">
+    <RouteGuard permission="crm.customer-journey.events.read">
       <div>
         <PageHeader
           title={data ? `Journey: ${data.customer.name}` : "Customer Journey"}

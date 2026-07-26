@@ -14,7 +14,7 @@ import {
 import { Calculator, BarChart3, History, Layers } from "lucide-react";
 
 export default function CpqQuoteAnalysisPage() {
-  const { addToast } = useToast();
+  const toast = useToast();
   const [quotationId, setQuotationId] = useState("");
   const [margin, setMargin] = useState<Record<string, unknown> | null>(null);
   const [versions, setVersions] = useState<Array<Record<string, unknown>>>([]);
@@ -30,9 +30,9 @@ export default function CpqQuoteAnalysisPage() {
     try {
       const res = await fetch(`/api/crm/cpq/quote-margin/${quotationId}`);
       if (res.ok) setMargin(await res.json());
-      else addToast("No margin found for this quote", "warning");
+      else toast.warning("No margin found for this quote");
     } catch {
-      addToast("Failed to fetch margin", "error");
+      toast.error("Failed to fetch margin");
     }
     setLoading(false);
   };
@@ -43,9 +43,9 @@ export default function CpqQuoteAnalysisPage() {
     try {
       const res = await fetch(`/api/crm/cpq/quote-versions/${quotationId}`);
       if (res.ok) setVersions(await res.json());
-      else addToast("No versions found", "warning");
+      else toast.warning("No versions found");
     } catch {
-      addToast("Failed to fetch versions", "error");
+      toast.error("Failed to fetch versions");
     }
     setLoading(false);
   };
@@ -56,9 +56,9 @@ export default function CpqQuoteAnalysisPage() {
     try {
       const res = await fetch(`/api/crm/cpq/quote-history/${quotationId}`);
       if (res.ok) setHistory(await res.json());
-      else addToast("No history found", "warning");
+      else toast.warning("No history found");
     } catch {
-      addToast("Failed to fetch history", "error");
+      toast.error("Failed to fetch history");
     }
     setLoading(false);
   };
@@ -70,35 +70,40 @@ export default function CpqQuoteAnalysisPage() {
         `/api/crm/cpq/quote-versions/${quotationId}/compare/${compareA}/${compareB}`,
       );
       if (res.ok) setDiff(await res.json());
-      else addToast("Failed to compare versions", "error");
+      else toast.error("Failed to compare versions");
     } catch {
-      addToast("Comparison failed", "error");
+      toast.error("Comparison failed");
     }
   };
 
-  const versionColumns: Column[] = [
-    { key: "versionNumber", label: "Version" },
+  const versionColumns: Column<Record<string, unknown>>[] = [
+    { key: "versionNumber", header: "Version" },
     {
       key: "subtotal",
-      label: "Subtotal",
-      render: (v: unknown) => `$${Number(v).toFixed(2)}`,
+      header: "Subtotal",
+      render: (row: Record<string, unknown>) =>
+        `$${Number(row.subtotal).toFixed(2)}`,
     },
     {
       key: "totalDiscount",
-      label: "Discount",
-      render: (v: unknown) => `$${Number(v).toFixed(2)}`,
+      header: "Discount",
+      render: (row: Record<string, unknown>) =>
+        `$${Number(row.totalDiscount).toFixed(2)}`,
     },
     {
       key: "grandTotal",
-      label: "Grand Total",
-      render: (v: unknown) => `$${Number(v).toFixed(2)}`,
+      header: "Grand Total",
+      render: (row: Record<string, unknown>) =>
+        `$${Number(row.grandTotal).toFixed(2)}`,
     },
-    { key: "changeNote", label: "Change Note" },
+    { key: "changeNote", header: "Change Note" },
     {
       key: "createdAt",
-      label: "Created",
-      render: (v: unknown) =>
-        v ? new Date(v as string).toLocaleDateString() : "-",
+      header: "Created",
+      render: (row: Record<string, unknown>) =>
+        row.createdAt
+          ? new Date(row.createdAt as string).toLocaleDateString()
+          : "-",
     },
   ];
 

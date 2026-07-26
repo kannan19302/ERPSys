@@ -30,7 +30,7 @@ const APPLIED_TO_OPTIONS = ["PRODUCT", "BUNDLE", "CATEGORY", "ORDER"];
 
 export default function CpqPricingRulesPage() {
   const router = useRouter();
-  const { addToast } = useToast();
+  const toast = useToast();
   const [rules, setRules] = useState<Array<Record<string, unknown>>>([]);
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
@@ -72,10 +72,10 @@ export default function CpqPricingRulesPage() {
     if (!confirm("Delete this pricing rule?")) return;
     try {
       await fetch(`/api/crm/cpq/pricing-rules/${id}`, { method: "DELETE" });
-      addToast("Pricing rule deleted", "success");
+      toast.success("Pricing rule deleted");
       fetchRules();
     } catch {
-      addToast("Failed to delete rule", "error");
+      toast.error("Failed to delete rule");
     }
   };
 
@@ -104,29 +104,30 @@ export default function CpqPricingRulesPage() {
     );
   };
 
-  const columns: Column[] = [
-    { key: "name", label: "Name", sortable: true },
+  const columns: Column<Record<string, unknown>>[] = [
+    { key: "name", header: "Name", sortable: true },
     {
       key: "ruleType",
-      label: "Type",
-      render: (v: unknown) => ruleTypeBadge(v as string),
+      header: "Type",
+      render: (row: Record<string, unknown>) =>
+        ruleTypeBadge(row.ruleType as string),
     },
-    { key: "priority", label: "Priority", sortable: true },
-    { key: "appliedTo", label: "Applies To" },
+    { key: "priority", header: "Priority", sortable: true },
+    { key: "appliedTo", header: "Applies To" },
     {
       key: "isActive",
-      label: "Active",
-      render: (v: unknown) =>
-        v ? (
+      header: "Active",
+      render: (row: Record<string, unknown>) =>
+        row.isActive ? (
           <Badge variant="success">Yes</Badge>
         ) : (
-          <Badge variant="muted">No</Badge>
+          <Badge variant="default">No</Badge>
         ),
     },
     {
       key: "actions",
-      label: "Actions",
-      render: (_: unknown, row: Record<string, unknown>) => (
+      header: "Actions",
+      render: (row: Record<string, unknown>) => (
         <div className="ui-flex-row ui-gap-1">
           <Button
             size="sm"
@@ -186,14 +187,10 @@ export default function CpqPricingRulesPage() {
             data={rules}
             sortBy={sortBy}
             sortOrder={sortOrder}
-            page={page}
-            totalPages={totalPages}
             onSortChange={(key, order) => {
               setSortBy(key);
               setSortOrder(order);
             }}
-            onPageChange={setPage}
-            onSearch={setSearch}
             onRowClick={(row) =>
               router.push(`/crm/cpq/pricing-rules/${row.id}`)
             }
@@ -222,11 +219,11 @@ export default function CpqPricingRulesPage() {
                 }),
               });
               if (!res.ok) throw new Error();
-              addToast("Pricing rule created", "success");
+              toast.success("Pricing rule created");
               setShowCreate(false);
               fetchRules();
             } catch {
-              addToast("Failed to create pricing rule", "error");
+              toast.error("Failed to create pricing rule");
             }
             setCreating(false);
           }}

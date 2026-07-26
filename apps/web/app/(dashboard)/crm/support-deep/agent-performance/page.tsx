@@ -46,7 +46,7 @@ export default function AgentPerformancePage() {
           typeof res === "object" &&
           !Array.isArray(res) &&
           Object.keys(res).length > 0
-          ? res
+          ? (res as Dashboard)
           : null,
       );
     } finally {

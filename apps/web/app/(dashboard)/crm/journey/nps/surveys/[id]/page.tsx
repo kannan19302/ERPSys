@@ -79,7 +79,7 @@ export default function SurveyDetailPage() {
       : 0;
 
   return (
-    <RouteGuard module="crm" permission="crm.nps.surveys.read">
+    <RouteGuard permission="crm.nps.surveys.read">
       <div>
         <PageHeader
           title={survey?.name || "Survey Details"}
@@ -175,14 +175,15 @@ export default function SurveyDetailPage() {
               <div className="ui-p-4 ui-border-b">
                 <h3 className="ui-font-semibold">Responses</h3>
               </div>
-              <DataTable
+              <DataTable<NpsResponse>
                 columns={[
-                  { header: "Rating", accessor: "rating", sortable: true },
-                  { header: "Category", accessor: "category", sortable: true },
-                  { header: "Comment", accessor: "comment" },
+                  { key: "rating", header: "Rating", sortable: true },
+                  { key: "category", header: "Category", sortable: true },
+                  { key: "comment", header: "Comment" },
                   {
+                    key: "respondedAt",
                     header: "Responded",
-                    accessor: (row: NpsResponse) =>
+                    render: (row) =>
                       row.respondedAt
                         ? new Date(row.respondedAt).toLocaleDateString()
                         : "N/A",

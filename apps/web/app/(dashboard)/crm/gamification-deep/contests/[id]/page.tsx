@@ -94,7 +94,8 @@ export default function ContestDetailPage() {
     <div className="ui-page">
       <PageHeader
         title="Contest Leaderboard"
-        subtitle={
+        description="Leaderboard for the current contest"
+        actions={
           <button
             className="ui-link"
             onClick={() => router.push("/crm/gamification-deep/contests")}

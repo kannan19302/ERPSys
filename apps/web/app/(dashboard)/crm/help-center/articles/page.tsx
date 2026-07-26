@@ -26,7 +26,7 @@ export default function ArticlesPage() {
   const load = async () => {
     setLoading(true);
     try {
-      const res = await apiGet(
+      const res = await apiGet<{ data: Article[] }>(
         `/api/crm/support/help-center/articles?limit=100${search ? `&search=${search}` : ""}`,
       );
       setArticles(res?.data || []);
@@ -55,7 +55,7 @@ export default function ArticlesPage() {
     <div className="ui-page">
       <PageHeader
         title="All Articles"
-        subtitle="Browse and manage knowledge base articles"
+        description="Browse and manage knowledge base articles"
         breadcrumbs={[
           { label: "Help Center", href: "/crm/help-center" },
           { label: "Articles" },
@@ -104,7 +104,7 @@ export default function ArticlesPage() {
                             ? "success"
                             : art.status === "DRAFT"
                               ? "warning"
-                              : "secondary"
+                              : "default"
                         }
                       >
                         {art.status}

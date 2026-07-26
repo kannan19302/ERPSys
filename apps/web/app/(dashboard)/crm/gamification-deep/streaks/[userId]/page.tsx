@@ -57,7 +57,8 @@ export default function StreaksPage() {
     <div className="ui-page">
       <PageHeader
         title="Streak Data"
-        subtitle={
+        description="Current and best streaks for this user"
+        actions={
           <button
             className="ui-link"
             onClick={() => router.push("/crm/gamification-deep")}

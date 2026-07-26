@@ -30,7 +30,9 @@ export default function ArticleDetailPage() {
   const load = async () => {
     setLoading(true);
     try {
-      const res = await apiGet(`/api/crm/support/help-center/articles?limit=1`);
+      const res = await apiGet<{ data: Article[] }>(
+        `/api/crm/support/help-center/articles?limit=1`,
+      );
       const arts = res?.data || [];
       setArticle(arts.find((a: any) => a.id === id) || null);
     } finally {
@@ -63,7 +65,7 @@ export default function ArticleDetailPage() {
     <div className="ui-page" style={{ maxWidth: 800 }}>
       <PageHeader
         title={article.title}
-        subtitle={article.excerpt || ""}
+        description={article.excerpt || ""}
         breadcrumbs={[
           { label: "Help Center", href: "/crm/help-center" },
           { label: "Articles", href: "/crm/help-center/articles" },
@@ -74,7 +76,7 @@ export default function ArticleDetailPage() {
         <div className="ui-card-body">
           <div className="ui-flex ui-gap-2 ui-mb-3 ui-flex-wrap">
             <Badge
-              variant={article.status === "PUBLISHED" ? "success" : "secondary"}
+              variant={article.status === "PUBLISHED" ? "success" : "default"}
             >
               {article.status}
             </Badge>

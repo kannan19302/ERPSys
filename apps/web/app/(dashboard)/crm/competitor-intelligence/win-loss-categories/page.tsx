@@ -38,14 +38,14 @@ export default function WinLossCategoriesPage() {
     try {
       if (editId) {
         await apiSend(
-          "PUT",
           `/crm/competitor-intelligence/win-loss-categories/${editId}`,
+          "PUT",
           form,
         );
       } else {
         await apiSend(
-          "POST",
           "/crm/competitor-intelligence/win-loss-categories",
+          "POST",
           form,
         );
       }
@@ -62,9 +62,8 @@ export default function WinLossCategoriesPage() {
     async (id: string) => {
       try {
         await apiSend(
-          "DELETE",
           `/crm/competitor-intelligence/win-loss-categories/${id}`,
-          {},
+          "DELETE",
         );
         load();
       } catch (e) {

@@ -147,7 +147,7 @@ export default function CoachingDeepPage() {
     <div className="ui-page">
       <PageHeader
         title="Coaching Deepening"
-        subtitle="Programs, recommendations, effectiveness"
+        description="Programs, recommendations, effectiveness"
       />
       <div className={styles.tabs}>
         <button

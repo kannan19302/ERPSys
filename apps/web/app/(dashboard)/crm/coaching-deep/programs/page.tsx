@@ -139,7 +139,7 @@ export default function ProgramsPage() {
     <div className="ui-page">
       <PageHeader
         title="Coaching Programs"
-        subtitle="Onboarding, skill improvement, product training"
+        description="Onboarding, skill improvement, product training"
       />
       <ProtectedComponent permission="crm.coaching-deep.programs.create">
         <div className="ui-toolbar">

@@ -55,7 +55,7 @@ export default function ForecastAccuracyPage() {
       <PageHeader
         title="Forecast Accuracy"
         description="Compare forecasted vs actual revenue across periods"
-        breadcrumb={[
+        breadcrumbs={[
           { label: "Forecast Governance", href: "/crm/forecast-governance" },
           { label: "Accuracy" },
         ]}
@@ -149,7 +149,7 @@ export default function ForecastAccuracyPage() {
                           ? "success"
                           : a.accuracyPct >= 50
                             ? "warning"
-                            : "error"
+                            : "danger"
                       }
                     >
                       {a.accuracyPct}%

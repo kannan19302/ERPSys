@@ -38,42 +38,46 @@ function UnlinkedEmailsPage() {
     load();
   };
 
-  const columns: Column[] = [
-    { key: "subject", label: "Subject", sortable: true },
-    { key: "fromEmail", label: "From" },
-    { key: "toEmail", label: "To" },
+  const columns: Column<Record<string, unknown>>[] = [
+    { key: "subject", header: "Subject", sortable: true },
+    { key: "fromEmail", header: "From" },
+    { key: "toEmail", header: "To" },
     {
       key: "receivedAt",
-      label: "Received",
-      render: (v: string) => new Date(v).toLocaleString(),
+      header: "Received",
+      render: (row) =>
+        new Date((row as any).receivedAt as string).toLocaleString(),
     },
     {
       key: "id",
-      label: "Actions",
-      render: (v: string) => (
-        <div className="ui-flex-h-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              const eid = prompt("Entity ID:");
-              if (eid) handleLink(v, "LEAD", eid);
-            }}
-          >
-            <Link2 size={14} /> Link to Lead
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              const eid = prompt("Entity ID:");
-              if (eid) handleLink(v, "CONTACT", eid);
-            }}
-          >
-            <Link2 size={14} /> Link to Contact
-          </Button>
-        </div>
-      ),
+      header: "Actions",
+      render: (row) => {
+        const id = (row as any).id;
+        return (
+          <div className="ui-flex-h-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const eid = prompt("Entity ID:");
+                if (eid) handleLink(id, "LEAD", eid);
+              }}
+            >
+              <Link2 size={14} /> Link to Lead
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const eid = prompt("Entity ID:");
+                if (eid) handleLink(id, "CONTACT", eid);
+              }}
+            >
+              <Link2 size={14} /> Link to Contact
+            </Button>
+          </div>
+        );
+      },
     },
   ];
 
@@ -97,7 +101,7 @@ function UnlinkedEmailsPage() {
         ]}
       />
       <Card>
-        <DataTable columns={columns} data={emails} pageSize={25} />
+        <DataTable columns={columns} data={emails} />
       </Card>
     </div>
   );

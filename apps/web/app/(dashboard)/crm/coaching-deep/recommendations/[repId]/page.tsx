@@ -59,17 +59,18 @@ export default function RecommendationsPage() {
 
   return (
     <div className="ui-page">
+      <div style={{ marginBottom: "var(--space-2)" }}>
+        <button
+          className="ui-link"
+          onClick={() => router.push("/crm/coaching-deep")}
+          style={{ background: "none", border: "none", cursor: "pointer" }}
+        >
+          <ArrowLeft size={16} /> Back
+        </button>
+      </div>
       <PageHeader
         title={`Coaching for ${repId}`}
-        subtitle={
-          <button
-            className="ui-link"
-            onClick={() => router.push("/crm/coaching-deep")}
-            style={{ background: "none", border: "none", cursor: "pointer" }}
-          >
-            <ArrowLeft size={16} /> Back
-          </button>
-        }
+        description="Personalized coaching recommendations and actions"
       />
       <div className="ui-grid-2">
         <Card className="ui-card">

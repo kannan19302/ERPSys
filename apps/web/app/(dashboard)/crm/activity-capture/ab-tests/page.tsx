@@ -57,44 +57,64 @@ function ABTestsPage() {
     load();
   };
 
-  const columns: Column[] = [
-    { key: "name", label: "Name", sortable: true },
+  const columns: Column<Record<string, unknown>>[] = [
+    { key: "name", header: "Name", sortable: true },
     {
       key: "status",
-      label: "Status",
+      header: "Status",
       sortable: true,
-      render: (v: string) => (
-        <Badge variant={v === "RUNNING" ? "info" : "success"}>{v}</Badge>
-      ),
+      render: (row) => {
+        const v = (row as any).status;
+        return (
+          <Badge variant={v === "RUNNING" ? "info" : "success"}>{v}</Badge>
+        );
+      },
     },
-    { key: "winner", label: "Winner", render: (v: string | null) => v || "-" },
+    {
+      key: "winner",
+      header: "Winner",
+      render: (row) => (row as any).winner || "-",
+    },
     {
       key: "openedRateA",
-      label: "Open Rate A",
-      render: (v: any) => (v ? `${v}%` : "-"),
+      header: "Open Rate A",
+      render: (row) => {
+        const v = (row as any).openedRateA;
+        return v ? `${v}%` : "-";
+      },
     },
     {
       key: "openedRateB",
-      label: "Open Rate B",
-      render: (v: any) => (v ? `${v}%` : "-"),
+      header: "Open Rate B",
+      render: (row) => {
+        const v = (row as any).openedRateB;
+        return v ? `${v}%` : "-";
+      },
     },
-    { key: "sampleSize", label: "Sample", sortable: true },
+    { key: "sampleSize", header: "Sample", sortable: true },
     {
       key: "startedAt",
-      label: "Started",
-      render: (v: string) => new Date(v).toLocaleDateString(),
+      header: "Started",
+      render: (row) =>
+        new Date((row as any).startedAt as string).toLocaleDateString(),
     },
     {
       key: "id",
-      label: "Actions",
-      render: (v: string, row: any) =>
-        row.status === "RUNNING" ? (
-          <Button size="sm" variant="outline" onClick={() => handleComplete(v)}>
+      header: "Actions",
+      render: (row) => {
+        const r = row as any;
+        return r.status === "RUNNING" ? (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => handleComplete(r.id)}
+          >
             <CheckCircle size={14} /> Complete
           </Button>
         ) : (
           <span className="ui-text-muted">Done</span>
-        ),
+        );
+      },
     },
   ];
 
@@ -123,11 +143,15 @@ function ABTestsPage() {
         }
       />
       <Card>
-        <DataTable columns={columns} data={tests} pageSize={25} />
+        <DataTable columns={columns} data={tests} />
       </Card>
 
       {showCreate && (
-        <Modal title="Create A/B Test" onClose={() => setShowCreate(false)}>
+        <Modal
+          open={showCreate}
+          title="Create A/B Test"
+          onClose={() => setShowCreate(false)}
+        >
           <div className="ui-stack-4">
             <div className="ui-form-group">
               <label className="ui-label">Sequence ID</label>

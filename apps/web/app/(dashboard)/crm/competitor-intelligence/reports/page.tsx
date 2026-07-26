@@ -45,12 +45,12 @@ export default function CompetitorReportsPage() {
     try {
       if (editId) {
         await apiSend(
-          "PUT",
           `/crm/competitor-intelligence/reports/${editId}`,
+          "PUT",
           form,
         );
       } else {
-        await apiSend("POST", "/crm/competitor-intelligence/reports", form);
+        await apiSend("/crm/competitor-intelligence/reports", "POST", form);
       }
       setShowForm(false);
       setEditId(null);
@@ -71,11 +71,7 @@ export default function CompetitorReportsPage() {
   const remove = useCallback(
     async (id: string) => {
       try {
-        await apiSend(
-          "DELETE",
-          `/crm/competitor-intelligence/reports/${id}`,
-          {},
-        );
+        await apiSend(`/crm/competitor-intelligence/reports/${id}`, "DELETE");
         load();
       } catch (e) {
         console.error(e);
@@ -88,9 +84,8 @@ export default function CompetitorReportsPage() {
     async (id: string) => {
       try {
         await apiSend(
-          "POST",
           `/crm/competitor-intelligence/reports/${id}/read`,
-          {},
+          "POST",
         );
         load();
       } catch (e) {

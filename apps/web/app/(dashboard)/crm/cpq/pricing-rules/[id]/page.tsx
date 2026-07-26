@@ -8,7 +8,7 @@ import { ArrowLeft } from "lucide-react";
 export default function CpqPricingRuleDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { addToast } = useToast();
+  const toast = useToast();
   const [rule, setRule] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -100,9 +100,9 @@ export default function CpqPricingRuleDetailPage() {
             <div>
               <strong>Applies To:</strong> {rule.appliedTo as string}
             </div>
-            {rule.targetId && (
+            {!!rule.targetId && (
               <div>
-                <strong>Target ID:</strong> {rule.targetId as string}
+                <strong>Target ID:</strong> {String(rule.targetId)}
               </div>
             )}
             <div>
@@ -110,19 +110,19 @@ export default function CpqPricingRuleDetailPage() {
               {rule.isActive ? (
                 <Badge variant="success">Yes</Badge>
               ) : (
-                <Badge variant="muted">No</Badge>
+                <Badge variant="default">No</Badge>
               )}
             </div>
-            {rule.validFrom && (
+            {!!rule.validFrom && (
               <div>
                 <strong>Valid From:</strong>{" "}
-                {new Date(rule.validFrom as string).toLocaleDateString()}
+                {new Date(String(rule.validFrom)).toLocaleDateString()}
               </div>
             )}
-            {rule.validUntil && (
+            {!!rule.validUntil && (
               <div>
                 <strong>Valid Until:</strong>{" "}
-                {new Date(rule.validUntil as string).toLocaleDateString()}
+                {new Date(String(rule.validUntil)).toLocaleDateString()}
               </div>
             )}
           </div>

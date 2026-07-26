@@ -45,7 +45,7 @@ export default function CompetitorIntelligencePage() {
       <div className="ui-grid-3" style={{ gap: "1rem" }}>
         {features.map((f) => (
           <Link key={f.name} href={f.href} style={{ textDecoration: "none" }}>
-            <Card hoverable>
+            <Card hover>
               <div
                 className="ui-card-body"
                 style={{ display: "flex", alignItems: "center", gap: "1rem" }}

@@ -1,17 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { api } from "@unerp/shared";
-
 export default function CalendarPage() {
   const [connections, setConnections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api
-      .get("/crm/integrations/calendar")
-      .then((res: any) => {
-        setConnections(res.data || []);
+    fetch("/api/v1/crm/integrations/calendar")
+      .then((res) => res.json())
+      .then((data) => {
+        setConnections(Array.isArray(data) ? data : data?.data || []);
         setLoading(false);
       })
       .catch(() => setLoading(false));

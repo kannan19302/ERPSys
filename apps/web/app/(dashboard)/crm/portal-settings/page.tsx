@@ -52,7 +52,7 @@ export default function PortalSettingsPage() {
           typeof c === "object" &&
           !Array.isArray(c) &&
           Object.keys(c).length > 0
-          ? c
+          ? (c as Customization)
           : null,
       );
       setAnalytics(
@@ -60,7 +60,7 @@ export default function PortalSettingsPage() {
           typeof a === "object" &&
           !Array.isArray(a) &&
           Object.keys(a).length > 0
-          ? a
+          ? (a as Analytics)
           : null,
       );
     } finally {

@@ -118,7 +118,7 @@ export default function DealDeskPage() {
                       <Badge
                         variant={
                           r.priority === "URGENT"
-                            ? "error"
+                            ? "danger"
                             : r.priority === "HIGH"
                               ? "warning"
                               : "default"
@@ -165,7 +165,7 @@ export default function DealDeskPage() {
                           r.status === "APPROVED"
                             ? "success"
                             : r.status === "REJECTED"
-                              ? "error"
+                              ? "danger"
                               : "warning"
                         }
                       >

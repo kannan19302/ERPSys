@@ -48,22 +48,23 @@ export default function CrmCpqPage() {
       .catch(() => setLoading(false));
   }, [sortBy, sortOrder]);
 
-  const columns: Column[] = [
-    { key: "name", label: "Bundle", sortable: true },
+  const columns: Column<Record<string, unknown>>[] = [
+    { key: "name", header: "Bundle", sortable: true },
     {
       key: "bundlePrice",
-      label: "Price",
+      header: "Price",
       sortable: true,
-      render: (v: unknown) => `$${Number(v).toFixed(2)}`,
+      render: (row: Record<string, unknown>) =>
+        `$${Number(row.bundlePrice).toFixed(2)}`,
     },
     {
       key: "isActive",
-      label: "Status",
-      render: (v: unknown) =>
-        v ? (
+      header: "Status",
+      render: (row: Record<string, unknown>) =>
+        row.isActive ? (
           <Badge variant="success">Active</Badge>
         ) : (
-          <Badge variant="muted">Inactive</Badge>
+          <Badge variant="default">Inactive</Badge>
         ),
     },
   ];

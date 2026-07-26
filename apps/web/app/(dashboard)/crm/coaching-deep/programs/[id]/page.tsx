@@ -112,17 +112,18 @@ export default function ProgramDetailPage() {
 
   return (
     <div className="ui-page">
+      <div style={{ marginBottom: "var(--space-2)" }}>
+        <button
+          className="ui-link"
+          onClick={() => router.push("/crm/coaching-deep/programs")}
+          style={{ background: "none", border: "none", cursor: "pointer" }}
+        >
+          <ArrowLeft size={16} /> Back to Programs
+        </button>
+      </div>
       <PageHeader
         title={analytics.name}
-        subtitle={
-          <button
-            className="ui-link"
-            onClick={() => router.push("/crm/coaching-deep/programs")}
-            style={{ background: "none", border: "none", cursor: "pointer" }}
-          >
-            <ArrowLeft size={16} /> Back to Programs
-          </button>
-        }
+        description="Program detail and analytics"
       />
       <div className="ui-grid-3">
         <Card className="ui-card">

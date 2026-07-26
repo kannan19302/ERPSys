@@ -123,14 +123,14 @@ export default function JourneyStagesPage() {
           </div>
         ) : (
           <Card className="ui-p-0">
-            <DataTable<any>
+            <DataTable<JourneyStage>
               columns={[
-                { header: "Order", key: "sortOrder" },
-                { header: "Name", key: "name" },
+                { key: "sortOrder", header: "Order" },
+                { key: "name", header: "Name" },
                 {
-                  header: "Color",
                   key: "color",
-                  render: (_v: any, row: JourneyStage) => (
+                  header: "Color",
+                  render: (row) => (
                     <div className="ui-flex ui-items-center ui-gap-2">
                       <div
                         className="ui-w-5 ui-h-5 ui-rounded-full"
@@ -142,17 +142,16 @@ export default function JourneyStagesPage() {
                     </div>
                   ),
                 },
-                { header: "Icon", key: "icon" },
+                { key: "icon", header: "Icon" },
                 {
-                  header: "Active",
                   key: "isActive",
-                  render: (_v: any, row: JourneyStage) =>
-                    row.isActive ? "Yes" : "No",
+                  header: "Active",
+                  render: (row) => (row.isActive ? "Yes" : "No"),
                 },
                 {
-                  header: "Actions",
                   key: "id",
-                  render: (_v: any, row: JourneyStage) => (
+                  header: "Actions",
+                  render: (row) => (
                     <div className="ui-flex ui-gap-2">
                       <button
                         onClick={(e) => {

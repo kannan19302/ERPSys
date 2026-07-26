@@ -203,7 +203,7 @@ export default function ForecastGovernancePage() {
                             ? "success"
                             : a.accuracyPct >= 50
                               ? "warning"
-                              : "error"
+                              : "danger"
                         }
                       >
                         {a.accuracyPct}%

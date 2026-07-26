@@ -101,28 +101,28 @@ export default function UpsellPage() {
             </div>
 
             <Card className="ui-p-0">
-              <DataTable<any>
+              <DataTable<UpsellRecommendation>
                 columns={[
-                  { header: "Product", key: "productName" },
-                  { header: "Category", key: "productCategory" },
+                  { key: "productName", header: "Product" },
+                  { key: "productCategory", header: "Category" },
                   {
-                    header: "Confidence",
                     key: "confidenceScore",
-                    render: (_v: any, row: UpsellRecommendation) =>
+                    header: "Confidence",
+                    render: (row) =>
                       `${Number(row.confidenceScore).toFixed(0)}%`,
                   },
                   {
-                    header: "Est. Value",
                     key: "estimatedValue",
-                    render: (_v: any, row: UpsellRecommendation) =>
+                    header: "Est. Value",
+                    render: (row) =>
                       `$${Number(row.estimatedValue).toLocaleString()}`,
                   },
-                  { header: "Status", key: "status" },
-                  { header: "Reason", key: "reason" },
+                  { key: "status", header: "Status" },
+                  { key: "reason", header: "Reason" },
                   {
-                    header: "Actions",
                     key: "id",
-                    render: (_v: any, row: UpsellRecommendation) =>
+                    header: "Actions",
+                    render: (row) =>
                       row.status === "PENDING" ? (
                         <div className="ui-flex ui-gap-2">
                           <button

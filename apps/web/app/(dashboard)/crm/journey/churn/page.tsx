@@ -33,7 +33,7 @@ export default function ChurnPage() {
   const medium = predictions.filter((p) => p.riskLevel === "MEDIUM").length;
 
   return (
-    <RouteGuard module="crm" permission="crm.churn-predictions.read">
+    <RouteGuard permission="crm.churn-predictions.read">
       <div>
         <PageHeader
           title="Churn Predictions"
@@ -58,9 +58,7 @@ export default function ChurnPage() {
                 icon={
                   <AlertTriangle className="ui-w-5 ui-h-5 ui-text-red-600" />
                 }
-                trend={
-                  critical > 0 ? { value: 0, isPositive: false } : undefined
-                }
+                change={critical > 0 ? 0 : undefined}
               />
               <KPICard
                 title="High Risk"
@@ -77,36 +75,38 @@ export default function ChurnPage() {
             </div>
 
             <Card className="ui-p-0">
-              <DataTable
+              <DataTable<ChurnPrediction>
                 columns={[
                   {
+                    key: "customer",
                     header: "Customer",
-                    accessor: (row: ChurnPrediction) =>
-                      row.customer?.name || "Unknown",
+                    render: (row) => row.customer?.name || "Unknown",
                     sortable: true,
                   },
                   {
+                    key: "score",
                     header: "Risk Score",
-                    accessor: (row: ChurnPrediction) =>
-                      `${Number(row.score).toFixed(1)}%`,
+                    render: (row) => `${Number(row.score).toFixed(1)}%`,
                     sortable: true,
                   },
                   {
+                    key: "riskLevel",
                     header: "Risk Level",
-                    accessor: "riskLevel",
                     sortable: true,
                   },
                   {
+                    key: "signals",
                     header: "Signals",
-                    accessor: (row: ChurnPrediction) =>
+                    render: (row) =>
                       Array.isArray(row.signals)
                         ? row.signals.slice(0, 3).join(", ")
                         : "",
                   },
-                  { header: "Reason", accessor: "reason" },
+                  { key: "reason", header: "Reason" },
                   {
+                    key: "predictedAt",
                     header: "Predicted",
-                    accessor: (row: ChurnPrediction) =>
+                    render: (row) =>
                       new Date(row.predictedAt).toLocaleDateString(),
                   },
                 ]}
