@@ -6,7 +6,7 @@ registerModule({
   icon: "Hammer",
   routeSegment: "manufacturing",
   dashboardRoute: "/manufacturing",
-  settingsRoute: undefined,
+  settingsRoute: "/manufacturing/settings",
   nav: [
     { label: "Work Orders", href: "/manufacturing", icon: "Hammer" },
     {
@@ -32,5 +32,14 @@ registerModule({
       href: "/manufacturing/diagnostics",
       icon: "Cpu",
     },
+    { label: "Work Centers", href: "/manufacturing/work-centers", icon: "Cpu" },
+    { label: "Routing", href: "/manufacturing/routing", icon: "Map" },
+    { label: "Scrap Records", href: "/manufacturing/scrap", icon: "Trash2" },
+    {
+      label: "Quality Checks",
+      href: "/manufacturing/quality-checks",
+      icon: "ShieldCheck",
+    },
+    { label: "Settings", href: "/manufacturing/settings", icon: "Settings" },
   ],
 });

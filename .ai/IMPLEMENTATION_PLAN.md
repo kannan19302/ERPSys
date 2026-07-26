@@ -1,58 +1,53 @@
-# Implementation Plan — Cycle 46
+# Implementation Plan — Cycle 47 (Completed)
+
+> Status: All 5 modules gap-filled. CrossDock @map("tenant_id") schema fix deferred — requires migration cycle (non-breaking inconsistency, 3 models out of 150+ have it missing).
 
 ## Phase & Scope
 
 - **Phase**: M (Module strengthening)
-- **Scope**: Fix all identified gaps across 5 core modules (Finance, CRM, HR, Inventory, Procurement) from the full Cycle 46 audit
-- **Why**: Ensure end-to-end functionality — all backend services have matching frontend pages, all nav routes resolve, no dead schema models
+- **Scope**: Fix all identified gaps across next 5 modules in Phase M focus order (Supply Chain, Manufacturing, Projects, Communication, Builder)
+- **Why**: Ensure end-to-end functionality — all backend services have matching frontend pages, settings controllers registered, navigation complete
 - **Gate tier**: FAST
 
 ## Work Items
 
-### Gap 1 (HR — Critical): Employee detail page at `/hr/employees/[id]/page.tsx`
+### Supply Chain (5 gaps)
 
-- HR dashboard (`/hr/page.tsx`) calls `router.push('/hr/employees/' + row.id)` on row click
-- Route `/hr/employees/[id]` does NOT exist → users cannot view individual employees
-- **Fix**: Create detail page using `@unerp/framework` `FormView` + `useApiClient` pattern
+1. Register `SupplyChainSettingsController` in `supply-chain.module.ts`
+2. Add 15+ missing `SEGMENT_NAMES` entries in `registry.tsx`
+3. Add CrossDock models @@map("tenant_id") fix (schema)
 
-### Gap 2 (Finance — High): Invoice detail page at `/finance/invoices/[id]/page.tsx`
+### Manufacturing (5 gaps)
 
-- Finance dashboard (`/finance/page.tsx` line 769) calls `router.push('/finance/invoices/' + row.id)`
-- Route `/finance/invoices/[id]` does NOT exist
-- **Fix**: Create detail page showing invoice data, line items, payments, 3-way match, change history
+1. Register `ManufacturingSettingsController` in `manufacturing.module.ts`
+2. Fix nav descriptor: add `settingsRoute` + missing sidebar entries (routing, work-centers, scrap, quality-checks, settings)
 
-### Gap 3 (Procurement — Medium): Approvals page at `/procurement/approvals/page.tsx`
+### Projects (5 gaps — 5 missing pages)
 
-- Tab already exists in `PROCUREMENT_TABS` but no page file exists
-- Backend has `ProcurementApprovalsService` with ~12 endpoints (pending, history, stats, approve/reject, delegation, policy)
-- **Fix**: Create approvals management page with pending queue, history, stats, policy settings, delegation
+1. Create `/projects/timesheets/page.tsx`
+2. Create `/projects/reports/page.tsx`
+3. Create `/projects/templates/page.tsx`
+4. Create `/projects/billing-rates/page.tsx`
+5. Create `/projects/milestone-templates/page.tsx`
 
-### Gap 4 (CRM — Medium): Fill ~30 empty CRM page directories
+### Communication (4 gaps)
 
-- ~30 sub-route directories under `/crm/` exist but have no `page.tsx` files
-- These are: opportunities, cases, campaigns, products, price-books, ai-drafting, ai-intelligence, automation, coaching, coaching-deep, gamification, communication-deep, competitor-intelligence, forecasting, forecast-governance, intelligence, journey, partner-deep, partner-management, pipeline-deep, playbooks, reporting-deep, approvals, battlecards, commissions, documents, email-templates, forms, help-center, integrations, marketing-deep, marketing-outreach, portal-settings, activity-capture, account-hierarchy, account-plans
-- **Fix**: Create minimal page.tsx in each with proper tab layout, resource integration, and permission guards
+1. Register `CommunicationSettingsController` in `communication.module.ts`
+2. Fix notifications page — replace mock with real API calls
+3. Fix advanced page — replace mock with real API integration
 
-### Gap 5 (Procurement — Minor): Add missing nav tabs
+### Builder (2 gaps)
 
-- Contracts, Sourcing, Intelligence pages exist but have NO tab entries in `PROCUREMENT_TABS`
-- **Fix**: Add tab entries in `ProcurementTabLayout.tsx`
+1. Add `error.tsx` boundary at `/builder/`
+2. Add `loading.tsx` at `/builder/`
 
 ## Duplicate-Check
 
-- All 5 modules already at 1500+ features — this cycle fills UI gaps in existing modules
-- No new Prisma models or backend endpoints needed
+- All 5 modules have existing backend services and Prisma models
+- No new Prisma models or backend controllers needed (just registrations)
+- All gaps are UI pages, nav config, or module registration fixes
 
 ## Rollback Note
 
-- All changes in source files only (pages + nav config); no schema/migration changes
+- All changes in source files only; no schema/migration changes
 - Rollback = revert commits
-
-## Build Order
-
-1. Create HR employee detail page
-2. Create Finance invoice detail page
-3. Create Procurement approvals page
-4. Fill CRM empty page directories
-5. Add missing Procurement nav tabs
-6. Verify with `pnpm typecheck` api + web

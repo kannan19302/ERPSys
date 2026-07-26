@@ -54,6 +54,7 @@ import { LogisticsExecutionController } from "./controllers/logistics-execution.
 import { SupplierRiskController } from "./controllers/supplier-risk.controller";
 import { ControlTowerAdvancedController } from "./controllers/control-tower-advanced.controller";
 import { SupplyChainEventsService } from "./events/supply-chain-events.service";
+import { SupplyChainSettingsController } from "./settings.controller";
 
 @Module({
   controllers: [
@@ -82,6 +83,7 @@ import { SupplyChainEventsService } from "./events/supply-chain-events.service";
     LogisticsExecutionController,
     SupplierRiskController,
     ControlTowerAdvancedController,
+    SupplyChainSettingsController,
   ],
   providers: [
     SupplyChainService,

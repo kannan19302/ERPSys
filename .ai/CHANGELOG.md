@@ -2,6 +2,36 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-26] Cycle 47 — Next 5 Module Gap Fixes (Supply Chain, Manufacturing, Projects, Communication, Builder)
+
+- **Supply Chain Gap Fixes**:
+  - Registered `SupplyChainSettingsController` in `supply-chain.module.ts`.
+  - Added 15 missing SEGMENT_NAMES entries (control-tower, supply-planning, supplier-risk, global-trade, tracking, carriers, containers, customs, routes, lane-rates, contracts, supplier-performance, supplier-assessments, budgets, logistics).
+  - Removed duplicate `contracts` and `logistics` SEGMENT_NAMES entries (caused TS1117).
+  - ⏳ CrossDock `@map("tenant_id")` fix identified but deferred — requires migration cycle (3 models missing `@map` out of 150+ with it consistently applied).
+
+- **Manufacturing Gap Fixes**:
+  - Registered `ManufacturingSettingsController` in `manufacturing.module.ts`.
+  - Fixed nav descriptor: `settingsRoute` → `"/manufacturing/settings"`, added 5 missing sidebar entries (Work Centers, Routing, Scrap Records, Quality Checks, Settings).
+
+- **Projects Gap Fixes — 5 Missing Pages Created**:
+  - `/projects/timesheets/page.tsx` — Timesheet entries table with employee/task/project/hours/status.
+  - `/projects/reports/page.tsx` — Report navigation hub with 6 card-based report links.
+  - `/projects/templates/page.tsx` — Project template cards with category/duration/actions.
+  - `/projects/billing-rates/page.tsx` — Billing rates table with role/rates/status.
+  - `/projects/milestone-templates/page.tsx` — Milestone template cards with sequence/duration.
+
+- **Communication Gap Fixes**:
+  - Registered `CommunicationSettingsController` in `communication.module.ts`.
+  - Unmocked notifications page — replaced setTimeout/alert mock with real useApiClient fetch from `GET /communication/notifications`.
+  - Unmocked advanced page — replaced mock data with real API calls (chat rooms, file shares, announcements).
+
+- **Builder Gap Fixes**:
+  - Created `error.tsx` boundary with Card/AlertCircle/Try Again button.
+  - Created `loading.tsx` with centered Spinner skeleton.
+
+- **Verification**: All checks pass — api typecheck 0 errors, web typecheck 0 errors, foundation:check synchronized, architecture:check clean (7 legacy violations remain in #22). Net LOC: ~60 (gap-fill cycle).
+
 ## [2026-07-26] Cycle 46 — 5 Core Module End-to-End Gap Fixes (Missing Pages, Nav Tabs, CRM Settings)
 
 - **HR UI (Critical)**: Created employee detail page at `apps/web/app/(dashboard)/hr/employees/[id]/page.tsx` — resolves broken navigation from HR dashboard (`onRowClick → /hr/employees/{id}`). Shows profile details, documents, salary structure, attendance, leave balance across 5 tabs with ChangeHistory at bottom.

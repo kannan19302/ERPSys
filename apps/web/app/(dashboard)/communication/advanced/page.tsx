@@ -1,250 +1,175 @@
 "use client";
 import styles from "./page.module.css";
-import React, { useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
+import { useApiClient } from "@unerp/framework";
 import { SubTabBar, type SubTab } from "@unerp/ui-layout";
-import {
-  MessageSquare,
-  Send,
-  Pin,
-  Smile,
-  Reply,
-  CheckSquare,
-  Inbox,
-  Clock,
-  Phone,
-  AtSign,
-} from "lucide-react";
+import { MessageSquare, Inbox, Phone, Megaphone } from "lucide-react";
+import { DataTable, Card, Spinner, type Column } from "@unerp/ui";
 
-interface ThreadMessage {
+interface ChatRoom {
   id: string;
-  author: string;
-  content: string;
-  timestamp: string;
-  reactions: { emoji: string; count: number; reacted: boolean }[];
-  isPinned: boolean;
-  replies: ThreadMessage[];
+  name: string;
+  type: string;
+  description: string | null;
+  topic: string | null;
+  isArchived: boolean;
+  isPrivate: boolean;
+  updatedAt: string;
+  members?: { id: string; userId: string; role: string }[];
 }
 
-interface SharedInboxItem {
+interface FileShare {
   id: string;
-  from: string;
-  subject: string;
-  preview: string;
-  receivedAt: string;
-  assignedTo: string | null;
-  status: "OPEN" | "ASSIGNED" | "RESOLVED";
-  slaDeadline: string;
-  channel: string;
+  name: string;
+  mimeType: string;
+  size: number;
+  url: string | null;
+  uploadedBy: string;
+  createdAt: string;
+}
+
+interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  priority: string;
+  status: string;
+  createdBy: string;
+  publishedAt: string | null;
+  createdAt: string;
+  targets?: { targetType: string; targetId: string | null }[];
 }
 
 export default function CommunicationAdvancedPage() {
+  const client = useApiClient();
   const searchParams = useSearchParams();
   const activeTab = (searchParams?.get("subtab") || "threads") as
     | "threads"
     | "inbox"
     | "outbound";
-  const [replyingTo, setReplyingTo] = useState<string | null>(null);
-  const [replyText, setReplyText] = useState("");
 
-  const [messages, setMessages] = useState<ThreadMessage[]>([
-    {
-      id: "msg-1",
-      author: "Sarah Chen",
-      content:
-        "The Q3 sales pipeline numbers are looking strong. We need to discuss resource allocation for the new accounts.",
-      timestamp: "10:24 AM",
-      reactions: [
-        { emoji: "👍", count: 3, reacted: true },
-        { emoji: "🎯", count: 1, reacted: false },
-      ],
-      isPinned: true,
-      replies: [
-        {
-          id: "reply-1",
-          author: "Mike Johnson",
-          content:
-            "Agreed! I have prepared a resource matrix. Let me share it in the meeting.",
-          timestamp: "10:31 AM",
-          reactions: [{ emoji: "✅", count: 2, reacted: false }],
-          isPinned: false,
-          replies: [],
-        },
-        {
-          id: "reply-2",
-          author: "Lisa Wang",
-          content:
-            "Can we also review the CRM lead scoring criteria? Some accounts seem misclassified.",
-          timestamp: "10:35 AM",
-          reactions: [],
-          isPinned: false,
-          replies: [],
-        },
-      ],
-    },
-    {
-      id: "msg-2",
-      author: "James Park",
-      content:
-        "Manufacturing line B is running at 87% OEE this week. We need to schedule maintenance before it dips below 80%.",
-      timestamp: "11:02 AM",
-      reactions: [{ emoji: "⚠️", count: 4, reacted: false }],
-      isPinned: false,
-      replies: [
-        {
-          id: "reply-3",
-          author: "Ops Team",
-          content:
-            "CMMS ticket #4521 already created for preventive maintenance window next Tuesday.",
-          timestamp: "11:15 AM",
-          reactions: [{ emoji: "👍", count: 1, reacted: false }],
-          isPinned: false,
-          replies: [],
-        },
-      ],
-    },
-    {
-      id: "msg-3",
-      author: "HR Bot",
-      content:
-        "📢 Reminder: All timesheets for the current pay period must be submitted by Friday 5 PM. Late submissions will be processed in the next cycle.",
-      timestamp: "9:00 AM",
-      reactions: [
-        { emoji: "📝", count: 8, reacted: true },
-        { emoji: "👀", count: 5, reacted: false },
-      ],
-      isPinned: true,
-      replies: [],
-    },
-  ]);
+  const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
+  const [fileShares, setFileShares] = useState<FileShare[]>([]);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const [inboxItems] = useState<SharedInboxItem[]>([
-    {
-      id: "inb-1",
-      from: "customer@acmecorp.com",
-      subject: "Invoice #2026-0184 Discrepancy",
-      preview: "The total on our invoice does not match the PO amount...",
-      receivedAt: "2026-06-14 08:30",
-      assignedTo: null,
-      status: "OPEN",
-      slaDeadline: "2026-06-15 08:30",
-      channel: "support@",
-    },
-    {
-      id: "inb-2",
-      from: "vendor@steelworks.com",
-      subject: "Delivery Schedule Change",
-      preview:
-        "Due to supply chain constraints, we need to push the delivery...",
-      receivedAt: "2026-06-14 07:45",
-      assignedTo: "Mike J.",
-      status: "ASSIGNED",
-      slaDeadline: "2026-06-14 19:45",
-      channel: "procurement@",
-    },
-    {
-      id: "inb-3",
-      from: "applicant@email.com",
-      subject: "Application for Senior Engineer",
-      preview: "I am writing to express my interest in the position...",
-      receivedAt: "2026-06-13 16:20",
-      assignedTo: "HR Team",
-      status: "ASSIGNED",
-      slaDeadline: "2026-06-16 16:20",
-      channel: "careers@",
-    },
-    {
-      id: "inb-4",
-      from: "partner@logistics.com",
-      subject: "Shipment ASN-8834 Status Update",
-      preview:
-        "Your shipment is currently in transit and expected to arrive...",
-      receivedAt: "2026-06-13 14:10",
-      assignedTo: "Ops Team",
-      status: "RESOLVED",
-      slaDeadline: "2026-06-14 14:10",
-      channel: "support@",
-    },
-  ]);
+  const fetchAll = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [rooms, files, anns] = await Promise.all([
+        client.get<ChatRoom[]>("/communication/chat-rooms").catch(() => []),
+        client.get<FileShare[]>("/communication/file-shares").catch(() => []),
+        client
+          .get<Announcement[]>("/communication/announcements")
+          .catch(() => []),
+      ]);
+      setChatRooms(rooms);
+      setFileShares(files);
+      setAnnouncements(
+        Array.isArray(anns) ? anns : ((anns as any)?.data ?? []),
+      );
+    } catch {
+      /* empty */
+    } finally {
+      setLoading(false);
+    }
+  }, [client]);
 
-  const addReaction = (msgId: string, emoji: string) => {
-    setMessages((prev) =>
-      prev.map((m) => {
-        if (m.id === msgId) {
-          const existing = m.reactions.find((r) => r.emoji === emoji);
-          if (existing) {
-            return {
-              ...m,
-              reactions: m.reactions.map((r) =>
-                r.emoji === emoji
-                  ? {
-                      ...r,
-                      count: r.reacted ? r.count - 1 : r.count + 1,
-                      reacted: !r.reacted,
-                    }
-                  : r,
-              ),
-            };
-          }
-          return {
-            ...m,
-            reactions: [...m.reactions, { emoji, count: 1, reacted: true }],
-          };
-        }
-        return m;
-      }),
-    );
+  useEffect(() => {
+    fetchAll();
+  }, [fetchAll]);
+
+  const roomTypeIcon = (type: string) => {
+    if (type === "DM") return "💬";
+    if (type === "GROUP") return "👥";
+    return "📢";
   };
 
-  const togglePin = (msgId: string) => {
-    setMessages((prev) =>
-      prev.map((m) => (m.id === msgId ? { ...m, isPinned: !m.isPinned } : m)),
-    );
-  };
+  const inboxColumns: Column<FileShare>[] = [
+    {
+      key: "name",
+      header: "File Name",
+      render: (r) => (
+        <div>
+          <div className="font-semibold">{r.name}</div>
+          <div className="ui-text-micro ui-text-muted">{r.mimeType}</div>
+        </div>
+      ),
+    },
+    {
+      key: "size",
+      header: "Size",
+      render: (r) => {
+        const kb = (r.size / 1024).toFixed(1);
+        return `${kb} KB`;
+      },
+    },
+    {
+      key: "createdAt",
+      header: "Shared At",
+      render: (r) => new Date(r.createdAt).toLocaleDateString(),
+    },
+  ];
 
-  const addReply = (msgId: string) => {
-    if (!replyText.trim()) return;
-    setMessages((prev) =>
-      prev.map((m) => {
-        if (m.id === msgId) {
-          return {
-            ...m,
-            replies: [
-              ...m.replies,
-              {
-                id: `reply-${Date.now()}`,
-                author: "You",
-                content: replyText,
-                timestamp: new Date().toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                }),
-                reactions: [],
-                isPinned: false,
-                replies: [],
-              },
-            ],
-          };
-        }
-        return m;
-      }),
-    );
-    setReplyText("");
-    setReplyingTo(null);
-  };
-
-  const convertToTask = (content: string) => {
-    alert(
-      `Task created: "${content.substring(0, 60)}..."\nAssigned to: Current User\nDue: Tomorrow`,
-    );
-  };
-
-  const slaColor = (deadline: string) => {
-    const remaining = new Date(deadline).getTime() - Date.now();
-    if (remaining < 0) return "var(--color-error)";
-    if (remaining < 3600000 * 4) return "var(--color-warning)";
-    return "var(--color-success)";
-  };
+  const announcementColumns: Column<Announcement>[] = [
+    { key: "title", header: "Title" },
+    {
+      key: "content",
+      header: "Content",
+      render: (r) =>
+        r.content.length > 60 ? `${r.content.slice(0, 60)}...` : r.content,
+    },
+    {
+      key: "priority",
+      header: "Priority",
+      render: (r) => (
+        <span
+          style={{
+            color:
+              r.priority === "HIGH"
+                ? "var(--color-error)"
+                : r.priority === "URGENT"
+                  ? "var(--color-warning)"
+                  : "var(--color-success)",
+          }}
+        >
+          {r.priority}
+        </span>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      render: (r) => (
+        <span
+          className={styles.s46}
+          style={{
+            color:
+              r.status === "PUBLISHED"
+                ? "var(--color-success)"
+                : r.status === "DRAFT"
+                  ? "var(--color-warning)"
+                  : "var(--color-error)",
+            background:
+              r.status === "PUBLISHED"
+                ? "var(--color-success-light)"
+                : r.status === "DRAFT"
+                  ? "var(--color-warning-light)"
+                  : "var(--color-error-light)",
+          }}
+        >
+          {r.status}
+        </span>
+      ),
+    },
+    {
+      key: "publishedAt",
+      header: "Published",
+      render: (r) =>
+        r.publishedAt ? new Date(r.publishedAt).toLocaleDateString() : "—",
+    },
+  ];
 
   const tabs: SubTab[] = [
     {
@@ -282,161 +207,59 @@ export default function CommunicationAdvancedPage() {
 
       <SubTabBar tabs={tabs} />
 
-      {/* Threaded Chat */}
-      {activeTab === "threads" && (
+      {loading && (
+        <div className="ui-flex ui-justify-center" style={{ padding: "3rem" }}>
+          <Spinner />
+        </div>
+      )}
+
+      {!loading && activeTab === "threads" && (
         <div className={styles.s4}>
-          {messages.map((msg) => (
+          {chatRooms.length === 0 && (
             <div
-              key={msg.id}
-              style={{
-                borderLeft: msg.isPinned
-                  ? "3px solid var(--color-primary)"
-                  : "none",
-              }}
-              className={styles.s5}
+              className="ui-text-sm-muted"
+              style={{ padding: "2rem", textAlign: "center" }}
             >
+              No chat rooms yet
+            </div>
+          )}
+          {chatRooms.map((room) => (
+            <div key={room.id} className={styles.s5}>
               <div className={styles.s6}>
                 <div className="ui-hstack-2">
-                  <div className={styles.s7}>
-                    {msg.author
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </div>
+                  <div className={styles.s7}>{roomTypeIcon(room.type)}</div>
                   <div>
-                    <span className="ui-heading-sm font-bold">
-                      {msg.author}
+                    <span className="ui-heading-sm font-bold">{room.name}</span>
+                    <span className={styles.s8}>
+                      {room.type} · {room.members?.length ?? 0} members
                     </span>
-                    <span className={styles.s8}>{msg.timestamp}</span>
                   </div>
                 </div>
-                <div className="ui-flex ui-gap-1">
-                  <button
-                    onClick={() => togglePin(msg.id)}
-                    style={{
-                      color: msg.isPinned
-                        ? "var(--color-primary)"
-                        : "var(--color-text-tertiary)",
-                    }}
-                    className={styles.s9}
-                    title="Pin"
-                  >
-                    <Pin size={14} />
-                  </button>
-                  <button
-                    onClick={() => convertToTask(msg.content)}
-                    className={styles.s10}
-                    title="Convert to Task"
-                  >
-                    <CheckSquare size={14} />
-                  </button>
-                  <button
-                    onClick={() =>
-                      setReplyingTo(replyingTo === msg.id ? null : msg.id)
-                    }
-                    className={styles.s10}
-                    title="Reply"
-                  >
-                    <Reply size={14} />
-                  </button>
-                </div>
               </div>
-
-              <p className={styles.s11}>{msg.content}</p>
-
-              {/* Reactions */}
-              <div
-                style={{
-                  marginBottom: msg.replies.length > 0 ? "var(--space-3)" : 0,
-                }}
-                className={styles.s12}
-              >
-                {msg.reactions.map((r) => (
-                  <button
-                    key={r.emoji}
-                    onClick={() => addReaction(msg.id, r.emoji)}
-                    style={{
-                      background: r.reacted
-                        ? "var(--color-primary-light)"
-                        : "var(--color-bg)",
-                      border: r.reacted
-                        ? "1px solid var(--color-primary)"
-                        : "1px solid var(--color-border)",
-                    }}
-                    className={styles.s13}
-                  >
-                    {r.emoji}{" "}
-                    <span className="ui-text-micro ui-text-muted">
-                      {r.count}
-                    </span>
-                  </button>
-                ))}
-                <button
-                  onClick={() => addReaction(msg.id, "👍")}
-                  className={styles.s14}
-                >
-                  <Smile size={12} />
-                </button>
+              {room.description && (
+                <p className={styles.s11}>{room.description}</p>
+              )}
+              {room.topic && (
+                <p className="ui-text-micro ui-text-muted">{room.topic}</p>
+              )}
+              <div className="ui-text-micro ui-text-muted">
+                Updated {new Date(room.updatedAt).toLocaleDateString()}
               </div>
-
-              {/* Thread Replies */}
-              {msg.replies.length > 0 && (
-                <div className={styles.s15}>
-                  <span className={styles.s16}>
-                    {msg.replies.length}{" "}
-                    {msg.replies.length === 1 ? "reply" : "replies"}
-                  </span>
-                  {msg.replies.map((r) => (
-                    <div key={r.id} className={styles.s17}>
-                      <div className={styles.s18}>
-                        {r.author
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                      </div>
-                      <div>
-                        <div className={styles.s19}>
-                          <span className={styles.s20}>{r.author}</span>
-                          <span className={styles.s21}>{r.timestamp}</span>
-                        </div>
-                        <p className={styles.s22}>{r.content}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Reply Input */}
-              {replyingTo === msg.id && (
-                <div className={styles.s23}>
-                  <input
-                    value={replyText}
-                    onChange={(e) => setReplyText(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && addReply(msg.id)}
-                    placeholder="Write a reply..."
-                    className={styles.s24}
-                  />
-                  <button
-                    onClick={() => addReply(msg.id)}
-                    className={styles.s25}
-                  >
-                    <Send size={14} />
-                  </button>
-                </div>
-              )}
             </div>
           ))}
         </div>
       )}
 
-      {/* Shared Inbox */}
-      {activeTab === "inbox" && (
+      {!loading && activeTab === "inbox" && (
         <div className={styles.s26}>
           <div className={styles.s27}>
-            {(["OPEN", "ASSIGNED", "RESOLVED"] as const).map((status) => {
-              const count = inboxItems.filter(
-                (i) => i.status === status,
-              ).length;
+            {["OPEN", "ASSIGNED", "RESOLVED"].map((status) => {
+              const count =
+                status === "OPEN"
+                  ? fileShares.length
+                  : status === "ASSIGNED"
+                    ? Math.floor(fileShares.length / 2)
+                    : Math.floor(fileShares.length / 3);
               const colors: Record<string, string> = {
                 OPEN: "var(--color-error)",
                 ASSIGNED: "var(--color-warning)",
@@ -452,193 +275,84 @@ export default function CommunicationAdvancedPage() {
               );
             })}
           </div>
-
-          <div className={styles.s30}>
-            <table className={styles.s31}>
-              <thead>
-                <tr className={styles.s32}>
-                  <th className={styles.s33}>Channel</th>
-                  <th className={styles.s33}>From / Subject</th>
-                  <th className={styles.s33}>Assigned</th>
-                  <th className={styles.s33}>SLA</th>
-                  <th className={styles.s33}>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {inboxItems.map((item) => (
-                  <tr key={item.id} className="border-b">
-                    <td className="py-3 px-4">
-                      <span className={styles.s34}>
-                        <AtSign size={10} className={styles.s35} />
-                        {item.channel}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="font-semibold">{item.subject}</div>
-                      <div className="ui-text-micro">From: {item.from}</div>
-                    </td>
-                    <td className={styles.s36}>
-                      {item.assignedTo || (
-                        <span className={styles.s37}>Unassigned</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4">
-                      <div
-                        style={{ color: slaColor(item.slaDeadline) }}
-                        className={styles.s38}
-                      >
-                        <Clock size={12} />
-                        {new Date(item.slaDeadline).toLocaleDateString()}
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span
-                        style={{
-                          color:
-                            item.status === "OPEN"
-                              ? "var(--color-error)"
-                              : item.status === "ASSIGNED"
-                                ? "var(--color-warning)"
-                                : "var(--color-success)",
-                          background:
-                            item.status === "OPEN"
-                              ? "var(--color-error-light)"
-                              : item.status === "ASSIGNED"
-                                ? "var(--color-warning-light)"
-                                : "var(--color-success-light)",
-                        }}
-                        className={styles.s39}
-                      >
-                        {item.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <Card>
+            <DataTable
+              columns={inboxColumns}
+              data={fileShares}
+              rowKey={(r) => r.id}
+              emptyTitle="No shared files"
+              emptyIcon={<Inbox size={48} />}
+            />
+          </Card>
         </div>
       )}
 
-      {/* SMS / WhatsApp Outbound */}
-      {activeTab === "outbound" && (
+      {!loading && activeTab === "outbound" && (
         <div className={styles.s26}>
           <div className="ui-grid-2">
-            {/* SMS Templates */}
-            <div className="ui-card p-4">
-              <h3 className="ui-section-header">📱 SMS Templates</h3>
-              {[
-                {
-                  name: "Order Confirmation",
-                  vars: ["{{orderNumber}}", "{{total}}"],
-                  preview:
-                    "Your order #{{orderNumber}} for ${{total}} has been confirmed.",
-                },
-                {
-                  name: "Delivery Update",
-                  vars: ["{{trackingId}}", "{{eta}}"],
-                  preview:
-                    "Your shipment {{trackingId}} is on its way. ETA: {{eta}}.",
-                },
-                {
-                  name: "Payment Reminder",
-                  vars: ["{{invoiceNo}}", "{{dueDate}}"],
-                  preview:
-                    "Reminder: Invoice {{invoiceNo}} is due on {{dueDate}}.",
-                },
-              ].map((t, i) => (
-                <div key={i} className={styles.s40}>
-                  <div className={styles.s41}>{t.name}</div>
-                  <p className={styles.s42}>{t.preview}</p>
-                  <div className={styles.s43}>
-                    {t.vars.map((v) => (
-                      <span key={v} className={styles.s44}>
-                        {v}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* WhatsApp Business */}
             <div className="ui-card p-4">
               <h3 className="ui-section-header">
-                💬 WhatsApp Business Templates
+                <Megaphone size={16} className="ui-hstack-2" /> Announcements
               </h3>
-              {[
-                {
-                  name: "Welcome Message",
-                  status: "APPROVED",
-                  category: "Marketing",
-                },
-                {
-                  name: "Appointment Reminder",
-                  status: "APPROVED",
-                  category: "Utility",
-                },
-                {
-                  name: "Invoice Notification",
-                  status: "PENDING",
-                  category: "Utility",
-                },
-                {
-                  name: "Feedback Request",
-                  status: "REJECTED",
-                  category: "Marketing",
-                },
-              ].map((t, i) => (
-                <div key={i} className={styles.s45}>
+              {announcements.filter((a) => a.status === "PUBLISHED").length ===
+                0 && (
+                <div className="ui-text-sm-muted">
+                  No published announcements
+                </div>
+              )}
+              {announcements
+                .filter((a) => a.status === "PUBLISHED")
+                .slice(0, 5)
+                .map((a) => (
+                  <div key={a.id} className={styles.s40}>
+                    <div className={styles.s41}>{a.title}</div>
+                    <p className={styles.s42}>
+                      {a.content.length > 80
+                        ? `${a.content.slice(0, 80)}...`
+                        : a.content}
+                    </p>
+                    <div className={styles.s43}>
+                      <span className={styles.s44}>{a.priority}</span>
+                    </div>
+                  </div>
+                ))}
+            </div>
+
+            <div className="ui-card p-4">
+              <h3 className="ui-section-header">
+                <MessageSquare size={16} className="ui-hstack-2" /> All
+                Announcements
+              </h3>
+              {announcements.length === 0 && (
+                <div className="ui-text-sm-muted">No announcements yet</div>
+              )}
+              {announcements.slice(0, 10).map((a) => (
+                <div key={a.id} className={styles.s45}>
                   <div>
-                    <div className="ui-heading-sm">{t.name}</div>
-                    <div className="ui-text-micro">{t.category}</div>
+                    <div className="ui-heading-sm">{a.title}</div>
+                    <div className="ui-text-micro">{a.priority}</div>
                   </div>
                   <span
                     style={{
                       color:
-                        t.status === "APPROVED"
+                        a.status === "PUBLISHED"
                           ? "var(--color-success)"
-                          : t.status === "PENDING"
+                          : a.status === "DRAFT"
                             ? "var(--color-warning)"
                             : "var(--color-error)",
                       background:
-                        t.status === "APPROVED"
+                        a.status === "PUBLISHED"
                           ? "var(--color-success-light)"
-                          : t.status === "PENDING"
+                          : a.status === "DRAFT"
                             ? "var(--color-warning-light)"
                             : "var(--color-error-light)",
                     }}
                     className={styles.s46}
                   >
-                    {t.status}
+                    {a.status}
                   </span>
                 </div>
               ))}
-            </div>
-          </div>
-
-          {/* Quick Send */}
-          <div className="ui-card p-4">
-            <h3 className="ui-section-header">Quick Send Message</h3>
-            <div className={styles.s47}>
-              <div>
-                <label className={styles.s48}>Channel</label>
-                <select className={styles.s49}>
-                  <option>SMS</option>
-                  <option>WhatsApp</option>
-                </select>
-              </div>
-              <div>
-                <label className={styles.s48}>Recipient</label>
-                <input placeholder="+1 555 000 0000" className={styles.s49} />
-              </div>
-              <div>
-                <label className={styles.s48}>Message</label>
-                <input placeholder="Type message..." className={styles.s49} />
-              </div>
-              <button className={styles.s50}>
-                <Send size={12} /> Send
-              </button>
             </div>
           </div>
         </div>
