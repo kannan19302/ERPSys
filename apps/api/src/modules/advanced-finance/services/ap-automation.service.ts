@@ -219,7 +219,7 @@ export class ApAutomationService {
       totalAmount?: number;
     },
   ) {
-    const _result = await this.getCaptureResult(tenantId, id);
+    await this.getCaptureResult(tenantId, id);
     const data: Record<string, unknown> = {
       correctedBy,
       validationStatus: "CORRECTED",

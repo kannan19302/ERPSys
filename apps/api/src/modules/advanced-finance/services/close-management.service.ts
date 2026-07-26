@@ -468,7 +468,7 @@ export class CloseManagementService {
       },
     });
 
-    const criticalDepIds = deps.map((d) => d.dependsOnTaskId);
+    const criticalDepIds = deps.map((d: any) => d.dependsOnTaskId);
     const blockedTasks = await prisma.closeTask.count({
       where: {
         tenantId,
@@ -481,7 +481,7 @@ export class CloseManagementService {
     return {
       criticalDependencies: deps.length,
       blockedTasks,
-      criticalPath: deps.map((d) => ({
+      criticalPath: deps.map((d: any) => ({
         id: d.id,
         task: d.task,
         dependsOn: d.dependsOn,

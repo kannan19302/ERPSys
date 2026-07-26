@@ -331,7 +331,7 @@ export class AiAnalyticsService {
   }
 
   async updateForecastLineWithActuals(tenantId: string, scenarioId: string) {
-    const _scenario = await this.getForecastScenario(tenantId, scenarioId);
+    await this.getForecastScenario(tenantId, scenarioId);
     const lines = await prisma.aiForecastScenarioLine.findMany({
       where: { tenantId, scenarioId, actualAmount: null },
     });

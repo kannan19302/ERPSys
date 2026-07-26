@@ -73,11 +73,10 @@ export class WorkingCapitalController {
     @Query("supplierId") supplierId?: string,
     @Query("status") status?: string,
   ) {
-    return this.wcService.getDiscountOffers(
-      req.user.tenantId,
-      supplierId,
+    return this.wcService.getDiscountOffers(req.user.tenantId, {
+      customerId: supplierId,
       status,
-    );
+    });
   }
 
   @Get("discount-offers/:id")
