@@ -1,0 +1,289 @@
+.spinnerWrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+.notFound {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-12);
+}
+.notFoundIcon {
+  color: var(--color-danger);
+  margin-bottom: var(--space-4);
+}
+.notFoundTitle {
+  font-size: var(--text-lg);
+  font-weight: bold;
+}
+.notFoundBtn {
+  margin-top: var(--space-4);
+}
+.backBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  transition: background 0.2s;
+}
+.backBtn:hover,
+.backBtn:focus-visible {
+  background: var(--color-bg-sunken);
+}
+.errorBanner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-warning-light);
+  border: 1px solid var(--color-warning);
+  border-radius: var(--radius-md);
+  color: var(--color-warning-text);
+  font-size: var(--text-sm);
+}
+.mainCard {
+  grid-column: span 2 / span 2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: var(--space-3);
+}
+.customerInfo {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+.customerName {
+  font-size: var(--text-md);
+  font-weight: bold;
+}
+.badgeGroup {
+  display: flex;
+  gap: var(--space-2);
+}
+.amountsGrid {
+  background: var(--color-bg-sunken);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+}
+.amountLabel {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.amountValue {
+  font-size: var(--text-sm);
+  font-weight: bold;
+  margin-top: var(--space-1);
+}
+.balanceDueValue {
+  font-size: var(--text-sm);
+  font-weight: bold;
+  margin-top: var(--space-1);
+  color: var(--color-primary);
+}
+.tabsRow {
+  display: flex;
+  border-bottom: 1px solid var(--color-border);
+  margin-top: var(--space-2);
+}
+.tabBtn {
+  padding: var(--space-2) var(--space-4);
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: var(--text-sm);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.itemsTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+.itemsTableHead {
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs);
+  font-weight: bold;
+  text-transform: uppercase;
+}
+.itemsTableHead th {
+  padding: var(--space-3) var(--space-2);
+}
+.itemsTableHead th:last-child {
+  padding: var(--space-3) var(--space-2);
+  text-align: right;
+}
+.itemsTableBody tr {
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--text-sm);
+}
+.itemsTableBody td {
+  padding: var(--space-3) var(--space-2);
+}
+.itemsTableBody td:first-child {
+  font-weight: var(--weight-medium);
+}
+.itemsTableBody td:last-child {
+  padding: var(--space-3) var(--space-2);
+  text-align: right;
+  font-weight: bold;
+}
+.totalsPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  align-items: flex-end;
+  margin-top: var(--space-4);
+  padding-right: var(--space-4);
+}
+.totalsPanel strong {
+  color: var(--color-text);
+}
+.totalsPanel .grandTotal {
+  font-size: var(--text-sm);
+  font-weight: bold;
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-2);
+  margin-top: var(--space-1);
+}
+.infoCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.infoCard h4 {
+  font-size: var(--text-sm);
+  font-weight: bold;
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: var(--space-2);
+  margin-bottom: 0;
+}
+.infoCardBody {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+.infoListItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.infoListItem:last-child {
+  border-bottom: none;
+}
+.infoListItemLabel {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  min-width: 100px;
+}
+.infoListItemValue {
+  font-size: var(--text-sm);
+  font-weight: bold;
+}
+.matchBanner {
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  display: flex;
+  gap: var(--space-3);
+}
+.matchIcon {
+  flex-shrink: 0;
+}
+.matchTitle {
+  font-weight: bold;
+  font-size: var(--text-md);
+}
+.matchDesc {
+  font-size: var(--text-xs);
+  margin-top: var(--space-1);
+  opacity: 0.9;
+}
+.matchTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: var(--text-xs);
+}
+.matchTableHead {
+  background: var(--color-bg-sunken);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-weight: bold;
+}
+.matchTableHead th {
+  padding: var(--space-3);
+  text-align: center;
+}
+.matchTableHead th:first-child {
+  text-align: left;
+}
+.matchTableBody tr {
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+.matchTableBody td {
+  padding: var(--space-3);
+  text-align: center;
+}
+.matchTableBody td:first-child {
+  text-align: left;
+  font-weight: bold;
+}
+.paymentsSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.paymentRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+.paymentInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.paymentDate {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+.paymentMethod {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+.paymentAmount {
+  font-size: var(--text-sm);
+  font-weight: bold;
+}
+.notesText {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+  margin: 0;
+}

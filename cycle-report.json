@@ -1,14 +1,21 @@
 {
-  "cycleId": "CYCLE-1784859571930",
-  "generatedAt": "2026-07-24T02:19:31.930Z",
+  "cycleId": "CYCLE-1785041289644",
+  "generatedAt": "2026-07-26T04:48:09.644Z",
   "agent": "kannan19302",
   "lastCommit": {
-    "hash": "5ae04f40123aff16dbfd103e8b7600cef21dd83e",
-    "subject": "docs(adp): set target release branch to v1.0 across agent instructions"
+    "hash": "7c8f70944525ae7be1ab99c34e599ae7606c939f",
+    "subject": "feat(core5): fix 220+ CRM UI type errors, fix backend registration issues across 5 core modules"
   },
-  "touchedModules": ["crm"],
-  "netLoc": null,
-  "totalSystemFeatures": 7909,
+  "touchedModules": [],
+  "netLoc": {
+    "since": "7c8f7094",
+    "added": 75,
+    "deleted": 33,
+    "net": 42,
+    "floor": 5000,
+    "floorMet": false
+  },
+  "totalSystemFeatures": 9136,
   "exitStatus": "SUCCESS",
   "details": {
     "cleanBuild": true,

@@ -2,30 +2,25 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
-## [2026-07-26] Cycle 46 — 5 Core Module UI Type Error Remediation & Backend Registration Fixes
+## [2026-07-26] Cycle 46 — 5 Core Module End-to-End Gap Fixes (Missing Pages, Nav Tabs, CRM Settings)
+
+- **HR UI (Critical)**: Created employee detail page at `apps/web/app/(dashboard)/hr/employees/[id]/page.tsx` — resolves broken navigation from HR dashboard (`onRowClick → /hr/employees/{id}`). Shows profile details, documents, salary structure, attendance, leave balance across 5 tabs with ChangeHistory at bottom.
+
+- **Finance UI (High)**: Created invoice detail page at `apps/web/app/(dashboard)/finance/invoices/[id]/page.tsx` — resolves broken navigation from Finance dashboard (`onRowClick → /finance/invoices/{id}`). Shows invoice header, amounts grid, line items table, payments history, 3-way match audit tab, ChangeHistory.
+
+- **Procurement UI (Medium)**: Created approvals management page at `apps/web/app/(dashboard)/procurement/approvals/page.tsx` with 4-tab layout (Pending, My Approvals, History, Settings), approve/reject workflows, policy editor, delegation modal. Tab already existed in PROCUREMENT_TABS but no page existed.
+
+- **Procurement Nav**: Added 3 missing tab entries to `ProcurementTabLayout.tsx` — Contracts, Sourcing, and Intelligence (pages existed but no nav tabs).
+
+- **CRM UI**: Created missing CRM settings hub page at `/crm/settings/page.tsx` with card-based navigation to 8 sub-settings pages.
 
 - **Backend Fixes**:
-  - **Inventory**: Removed duplicate `DemandForecastingController`/`DemandForecastingService` from `inventory.module.ts` (already registered in `demand-forecasting.module.ts` — caused runtime duplicate registration error).
-  - **Procurement**: Registered `ProcurementSettingsController` from `settings.controller.ts` in `procurement.module.ts` (was missing from module controllers array).
+  - **Inventory**: Removed duplicate `DemandForecastingController`/`DemandForecastingService` from `inventory.module.ts`.
+  - **Procurement**: Registered `ProcurementSettingsController` in `procurement.module.ts`.
 
-- **CRM Frontend Type Error Remediation (56 files, ~220+ errors fixed)**:
-  - **Column<T> type arguments**: Added proper type args to all Column declarations across 15+ pages
-  - **DataTable props**: Removed `pageSize`, `page`, `totalPages` (not DataTable props); corrected pagination patterns
-  - **PageHeader props**: Replaced `subtitle` → `description`, `breadcrumb` (singular) → `breadcrumbs` (plural) across 15+ pages
-  - **Badge variants**: Replaced `"muted"` → `"default"`, `"error"` → `"danger"`, `"secondary"` → `"default"` across 10+ pages
-  - **Card hoverable → hover**: Fixed prop name mismatch
-  - **Modal open prop**: Added required `open` prop where missing
-  - **ToastApi addToast → toast.success()/error()/warning()**: Fixed 4 CPQ pages
-  - **ProtectedComponent module prop**: Removed invalid `module` prop across 7 journey pages
-  - **Switch component**: Replaced with styled checkbox (Switch not exported from @unerp/ui)
-  - **apiSend arg order**: Fixed swapped `(method, path, body)` → `(path, method, body)` across 3 competitor-intelligence pages
-  - **useState({}) type annotations**: Fixed 6 pages with proper generic type parameters
-  - **KPICard trend fix**: Changed `{value, isPositive}` → `number` (sparkline data)
-  - **Column render signatures**: Fixed from `(value, row)` → `(row, index)` pattern across 10+ pages
-  - **Column key/header**: Replaced `accessor` with `key`, `label` with `header`
-  - **Import fixes**: Fixed `api` import from `@unerp/shared` (export doesn't exist), `apiDelete` import path
+- **CRM Frontend Type Error Remediation (56 files, ~220+ errors fixed)**: Column<T>, DataTable, PageHeader, Badge, Card, Modal, Toast, ProtectedComponent, Switch, apiSend, KPICard, Column render signatures, import path fixes.
 
-- **Verification**: `pnpm --filter @unerp/api typecheck` — 0 errors, `pnpm --filter @unerp/web typecheck` — 0 errors, `pnpm foundation:check` — synchronized, `pnpm architecture:check` — clean (7 tracked legacy violations unchanged).
+- **Verification**: All checks pass — api typecheck 0 errors, web typecheck 0 errors, foundation:check synchronized, architecture:check clean. Net LOC: +42 (gap-fill cycle, floor exempt as P2 priority-ladder work).
 
 ## [2026-07-25] Cycle 45 — CRM Module Expansion to DEEP Status (1,508 Features) & 5 Core Modules 1,500+ Features Milestone Complete
 
