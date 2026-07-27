@@ -18,6 +18,8 @@ import { AnalyticsRealtimeStreamDeepService } from "./analytics-realtime-stream-
 import { AnalyticsRealtimeStreamDeepController } from "./analytics-realtime-stream-deep.controller";
 import { AnalyticsAnomalyDetectionDeepService } from "./analytics-anomaly-detection-deep.service";
 import { AnalyticsAnomalyDetectionDeepController } from "./analytics-anomaly-detection-deep.controller";
+import { AnalyticsDeepService } from "./analytics-deep.service";
+import { AnalyticsDeepController } from "./analytics-deep.controller";
 
 @Module({
   controllers: [
@@ -30,6 +32,7 @@ import { AnalyticsAnomalyDetectionDeepController } from "./analytics-anomaly-det
     AnalyticsFunnelConversionDeepController,
     AnalyticsRealtimeStreamDeepController,
     AnalyticsAnomalyDetectionDeepController,
+    AnalyticsDeepController,
   ],
   providers: [
     AnalyticsService,
@@ -41,6 +44,7 @@ import { AnalyticsAnomalyDetectionDeepController } from "./analytics-anomaly-det
     AnalyticsFunnelConversionDeepService,
     AnalyticsRealtimeStreamDeepService,
     AnalyticsAnomalyDetectionDeepService,
+    AnalyticsDeepService,
   ],
   exports: [
     AnalyticsService,
@@ -52,6 +56,7 @@ import { AnalyticsAnomalyDetectionDeepController } from "./analytics-anomaly-det
     AnalyticsFunnelConversionDeepService,
     AnalyticsRealtimeStreamDeepService,
     AnalyticsAnomalyDetectionDeepService,
+    AnalyticsDeepService,
   ],
 })
 export class AnalyticsModule {}

@@ -91,3 +91,51 @@ export const createAiTrainingJobSchema = z.object({
   config: z.record(z.unknown()).optional(),
 });
 export type CreateAiTrainingJobInput = z.infer<typeof createAiTrainingJobSchema>;
+
+// ── AI Intent Classification ──
+export const classifyIntentSchema = z.object({
+  text: z.string().min(1).max(5000),
+});
+export type ClassifyIntentInput = z.infer<typeof classifyIntentSchema>;
+
+export const createIntentTrainingDataSchema = z.object({
+  intent: z.string().min(1),
+  text: z.string().min(1),
+  language: z.string().optional(),
+  entities: z.array(z.object({
+    entity: z.string(),
+    value: z.string(),
+    startPos: z.number().int().optional(),
+    endPos: z.number().int().optional(),
+  })).optional(),
+});
+export type CreateIntentTrainingDataInput = z.infer<typeof createIntentTrainingDataSchema>;
+
+export const updateIntentTrainingDataSchema = createIntentTrainingDataSchema.partial();
+export type UpdateIntentTrainingDataInput = z.infer<typeof updateIntentTrainingDataSchema>;
+
+// ── AI NLU Training Data ──
+export const createNluTrainingDataSchema = z.object({
+  intent: z.string().min(1),
+  text: z.string().min(1),
+  language: z.string().default('en'),
+  entities: z.array(z.object({
+    entity: z.string(),
+    value: z.string(),
+    startPos: z.number().int().optional(),
+    endPos: z.number().int().optional(),
+  })).optional(),
+});
+export type CreateNluTrainingDataInput = z.infer<typeof createNluTrainingDataSchema>;
+
+export const updateNluTrainingDataSchema = createNluTrainingDataSchema.partial();
+export type UpdateNluTrainingDataInput = z.infer<typeof updateNluTrainingDataSchema>;
+
+// ── AI Model Accuracy Metrics ──
+export const recordAiModelAccuracySchema = z.object({
+  modelId: z.string().min(1),
+  metric: z.string().min(1),
+  value: z.number(),
+  metadata: z.record(z.unknown()).optional(),
+});
+export type RecordAiModelAccuracyInput = z.infer<typeof recordAiModelAccuracySchema>;

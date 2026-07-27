@@ -11,10 +11,12 @@ import { BlockchainSyncService } from './services/blockchain-sync.service';
 import { BlockchainAnchorService } from './services/blockchain-anchor.service';
 import { BlockchainOutboxHandler } from './blockchain-outbox.handler';
 import { BlockchainController } from './blockchain.controller';
+import { BlockchainDeepController } from './blockchain-deep.controller';
+import { BlockchainDeepService } from './blockchain-deep.service';
 
 @Module({
   imports: [OutboxModule],
-  controllers: [BlockchainController],
+  controllers: [BlockchainController, BlockchainDeepController],
   providers: [
     FabricGatewayProvider,
     BlockchainEventListener,
@@ -25,6 +27,7 @@ import { BlockchainController } from './blockchain.controller';
     FinanceLedgerBlockchainService,
     SupplyChainBlockchainService,
     ProcurementBlockchainService,
+    BlockchainDeepService,
   ],
   exports: [
     DocumentBlockchainService,
@@ -33,6 +36,7 @@ import { BlockchainController } from './blockchain.controller';
     ProcurementBlockchainService,
     FabricGatewayProvider,
     BlockchainOutboxHandler,
+    BlockchainDeepService,
   ],
 })
 export class BlockchainModule implements OnModuleInit, OnModuleDestroy {

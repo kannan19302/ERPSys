@@ -2195,6 +2195,23 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
   p("documents", "folder", "delete", "endpoint", "Delete folders"),
   p("documents", "template", "read", "endpoint", "View document templates"),
   p("documents", "template", "create", "endpoint", "Create document templates"),
+  p("documents", "template", "update", "endpoint", "Update document templates"),
+  p("documents", "template", "delete", "endpoint", "Delete document templates"),
+  p("documents", "template", "render", "endpoint", "Render document templates with variable substitution"),
+  // ── Document categories ──
+  p("documents", "category", "read", "endpoint", "View document categories"),
+  p("documents", "category", "create", "endpoint", "Create document categories"),
+  p("documents", "category", "update", "endpoint", "Update document categories"),
+  p("documents", "category", "delete", "endpoint", "Delete document categories"),
+  // ── Document approvals ──
+  p("documents", "approval", "read", "endpoint", "View document approvals"),
+  p("documents", "approval", "submit", "endpoint", "Submit documents for approval"),
+  p("documents", "approval", "review", "endpoint", "Approve or reject document approvals"),
+  // ── Document versions ──
+  p("documents", "version", "read", "endpoint", "View document versions and diffs"),
+  // ── Document bulk / OCR ──
+  p("documents", "document", "bulk-upload", "endpoint", "Bulk upload documents"),
+  p("documents", "document", "ocr", "endpoint", "Process OCR on documents"),
   p("documents", "storage-quota", "read", "endpoint", "View storage quotas"),
   p(
     "documents",
@@ -2257,6 +2274,35 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
     level: "endpoint",
     description: "Manage global AI settings (kill switch, engine control)",
   },
+
+  // AI — Deep Module (Intent Classification, NLU, Model Registry, Prompts)
+  p("ai", "intent", "classify", "endpoint", "Classify text intent"),
+  p("ai", "intent-training", "read", "endpoint", "View intent training data"),
+  p("ai", "intent-training", "create", "endpoint", "Create intent training examples"),
+  p("ai", "intent-training", "update", "endpoint", "Update intent training examples"),
+  p("ai", "intent-training", "delete", "endpoint", "Delete intent training examples"),
+  p("ai", "conversation", "search", "endpoint", "Search conversation history"),
+  p("ai", "nlu-training", "read", "endpoint", "View NLU training data"),
+  p("ai", "nlu-training", "create", "endpoint", "Create NLU training examples"),
+  p("ai", "nlu-training", "update", "endpoint", "Update NLU training examples"),
+  p("ai", "nlu-training", "delete", "endpoint", "Delete NLU training examples"),
+  p("ai", "model-accuracy", "read", "endpoint", "View model accuracy metrics"),
+  p("ai", "model-accuracy", "create", "endpoint", "Record model accuracy metrics"),
+  // AI model, prompt, deployment permissions already exist via expansion endpoints
+
+  // Analytics — Deep Module (KPI Library, Trends, Cross-Filter Dashboards, BI Catalog)
+  p("analytics", "kpi-definition", "read", "endpoint", "View KPI definitions"),
+  p("analytics", "kpi-definition", "create", "endpoint", "Create KPI definitions"),
+  p("analytics", "kpi-definition", "update", "endpoint", "Update KPI definitions"),
+  p("analytics", "kpi-definition", "delete", "endpoint", "Delete KPI definitions"),
+  p("analytics", "trend", "read", "endpoint", "View trend analysis"),
+  p("analytics", "trend", "compute", "endpoint", "Compute trend analysis"),
+  p("analytics", "dashboard", "update", "endpoint", "Update cross-filter dashboards"),
+  p("analytics", "dashboard", "delete", "endpoint", "Delete cross-filter dashboards"),
+  p("analytics", "bi-metric", "read", "endpoint", "View BI metric catalog"),
+  p("analytics", "bi-metric", "create", "endpoint", "Create BI metric definitions"),
+  p("analytics", "bi-metric", "update", "endpoint", "Update BI metric definitions"),
+  p("analytics", "bi-metric", "delete", "endpoint", "Delete BI metric definitions"),
 
   // API Platform
   p("api-platform", "api-key", "read", "endpoint", "View API keys"),
@@ -2353,6 +2399,16 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
   p("marketplace", "bundle", "install", "endpoint", "Install app bundles"),
   p("marketplace", "package", "read", "endpoint", "View app packages"),
   p("marketplace", "package", "create", "endpoint", "Publish app packages"),
+  p("marketplace", "review", "read", "endpoint", "View app reviews with aggregate ratings"),
+  p("marketplace", "review", "create", "endpoint", "Create app reviews"),
+  p("marketplace", "review", "update", "endpoint", "Update app reviews"),
+  p("marketplace", "review", "delete", "endpoint", "Delete app reviews"),
+  p("marketplace", "version", "read", "endpoint", "View app version history"),
+  p("marketplace", "version", "create", "endpoint", "Create app versions"),
+  p("marketplace", "submission", "read", "endpoint", "View developer submissions"),
+  p("marketplace", "submission", "create", "endpoint", "Create developer submissions"),
+  p("marketplace", "submission", "review", "endpoint", "Approve/reject developer submissions"),
+  p("marketplace", "analytics", "read", "endpoint", "View marketplace analytics and install trends"),
 
   // Studio / Builder (module #31)
   p("studio", "form", "read", "endpoint", "View studio forms"),
@@ -2863,6 +2919,19 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
     level: "endpoint",
     description: "Update Auth module (legacy coarse permission)",
   },
+  // Auth — deep module permissions
+  p("auth", "api-token", "read", "endpoint", "View API tokens"),
+  p("auth", "api-token", "create", "endpoint", "Create API tokens"),
+  p("auth", "api-token", "delete", "endpoint", "Revoke API tokens"),
+  p("auth", "login-history", "read", "endpoint", "View login history"),
+  p("auth", "session", "read", "endpoint", "View active sessions"),
+  p("auth", "session", "revoke", "endpoint", "Revoke sessions"),
+  p("auth", "password-policy", "read", "endpoint", "View password policy"),
+  p("auth", "password-policy", "update", "endpoint", "Update password policy"),
+  p("auth", "ip-allowlist", "read", "endpoint", "View IP allowlist"),
+  p("auth", "ip-allowlist", "create", "endpoint", "Create IP allowlist entries"),
+  p("auth", "ip-allowlist", "update", "endpoint", "Update IP allowlist entries"),
+  p("auth", "ip-allowlist", "delete", "endpoint", "Delete IP allowlist entries"),
   {
     code: "builder.read",
     module: "builder",
@@ -5805,6 +5874,62 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
     "endpoint",
     "List all blockchain transaction audit logs",
   ),
+  p(
+    "blockchain",
+    "transaction",
+    "read",
+    "endpoint",
+    "Search and view blockchain transactions",
+  ),
+  p(
+    "blockchain",
+    "contract",
+    "read",
+    "endpoint",
+    "View smart contract registry",
+  ),
+  p(
+    "blockchain",
+    "contract",
+    "create",
+    "endpoint",
+    "Register smart contracts",
+  ),
+  p(
+    "blockchain",
+    "contract",
+    "update",
+    "endpoint",
+    "Update smart contract records",
+  ),
+  p(
+    "blockchain",
+    "contract",
+    "delete",
+    "endpoint",
+    "Delete smart contract records",
+  ),
+  p(
+    "blockchain",
+    "audit",
+    "read",
+    "endpoint",
+    "View blockchain audit trail",
+  ),
+  p(
+    "blockchain",
+    "audit",
+    "create",
+    "endpoint",
+    "Create blockchain audit trail entries",
+  ),
+  p(
+    "blockchain",
+    "network",
+    "manage",
+    "endpoint",
+    "Manage blockchain network health records",
+  ),
 
   // CRM — Knowledge Base (this cycle)
   p(
@@ -6677,6 +6802,17 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
   p("drive", "storage-quota", "read", "endpoint", "View storage quota"),
   p("drive", "activity", "read", "endpoint", "View drive activity log"),
   p("drive", "settings", "write", "endpoint", "Manage drive settings"),
+  // ── Drive — Folder Sharing ──
+  p("drive", "folder", "share", "endpoint", "Share folders with users"),
+  // ── Drive — Trash Management ──
+  p("drive", "trash", "read", "endpoint", "View trash items"),
+  p("drive", "trash", "delete", "endpoint", "Empty trash and purge items"),
+  // ── Drive — File Tags ──
+  p("drive", "tag", "read", "endpoint", "View file tags"),
+  p("drive", "tag", "create", "endpoint", "Create file tags"),
+  p("drive", "tag", "update", "endpoint", "Update file tags"),
+  p("drive", "tag", "delete", "endpoint", "Delete file tags"),
+  p("drive", "tag", "assign", "endpoint", "Assign/remove tags on files"),
 
   // Projects — Expansion
   p(

@@ -45,6 +45,7 @@ model Tenant {
   ssoConfigs              SsoConfig[]
   userSessions            UserSession[]
   loginHistories          LoginHistory[]
+  authApiTokens           AuthApiToken[]
   userGroups              UserGroup[]
   ipRestrictions          IpRestriction[]
   fixedAssets             FixedAsset[]
@@ -55,6 +56,9 @@ model Tenant {
   savedViews              SavedView[]
   blockchainTransactions  BlockchainTransaction[]
   blockchainVerifications BlockchainVerification[]
+  blockchainSmartContracts BlockchainSmartContract[]
+  blockchainAuditTrails   BlockchainAuditTrail[]
+  blockchainTransactionExplorers BlockchainTransactionExplorer[]
   outboxEvents            OutboxEvent[]
   outboxDeliveries        OutboxDelivery[]
   outboxConsumerReceipts  OutboxConsumerReceipt[]
@@ -76,6 +80,7 @@ model Tenant {
   webhookEndpoints        TenantWebhookEndpoint[]
   webhookDeliveries       TenantWebhookDelivery[]
   announcements           TenantAnnouncement[]
+  marketplaceDeveloperSubmissions MarketplaceDeveloperSubmission[]
 
   formTemplates           FormTemplate[]
   pageTemplates           PageTemplate[]
@@ -109,9 +114,14 @@ model Tenant {
   localeFormattingRules   LocaleFormattingRule[]
   fixedAssetDisposals     FixedAssetDisposal[]
   fixedAssetAuditLogs     FixedAssetAuditLog[]
-  apiKeyScopes            ApiKeyScope[]
-  apiUsageMetrics         ApiUsageMetric[]
-  endpointRegistries      EndpointRegistry[]
+  apiKeyScopes                    ApiKeyScope[]
+  apiUsageMetrics                 ApiUsageMetric[]
+  endpointRegistries              EndpointRegistry[]
+  aiIntentTrainingExamples        AiIntentTrainingExample[]
+  aiModelAccuracyMetrics          AiModelAccuracyMetric[]
+  analyticsKpiDefinitions         AnalyticsKpiDefinition[]
+  analyticsCrossFilterDashboards  AnalyticsCrossFilterDashboard[]
+  analyticsBiMetricDefinitions    AnalyticsBiMetricDefinition[]
 
   @@map("tenants")
 }
@@ -169,6 +179,7 @@ model User {
   passwordResetTokens     PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
   identities              UserIdentity[]
+  apiTokens               AuthApiToken[]
   loginHistories          LoginHistory[]
   profile                 UserProfile?
   directReports           UserProfile[]            @relation("UserProfileManager")
@@ -2282,6 +2293,7 @@ model Document {
   versions   DocumentVersion[]
   signatures Signature[]
   shares     DocumentShare[]
+  approvals  DocumentApproval[]
 
   @@index([tenantId])
   @@map("documents")
@@ -2294,6 +2306,7 @@ model DocumentVersion {
   versionNumber Int      @map("version_number")
   fileUrl       String   @map("file_url")
   fileSize      Int      @map("file_size")
+  changes       String?  @map("changes") @db.Text
   createdBy     String?  @map("created_by")
   createdAt     DateTime @default(now()) @map("created_at")
   iv            String?  @map("iv")
@@ -2301,6 +2314,7 @@ model DocumentVersion {
   document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
+  @@index([documentId])
   @@map("document_versions")
 }
 
@@ -2343,13 +2357,49 @@ model DocumentTemplate {
   tenantId  String   @map("tenant_id")
   orgId     String   @map("org_id")
   name      String
+  category  String?  @map("category")
   content   String   @db.Text
+  variables Json     @default("[]") @map("variables")
   createdBy String?  @map("created_by")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([tenantId])
   @@map("document_templates")
+}
+
+model DocumentCategory {
+  id        String             @id @default(cuid())
+  tenantId  String             @map("tenant_id")
+  name      String
+  parentId  String?            @map("parent_id")
+  sortOrder Int                @default(0) @map("sort_order")
+  createdAt DateTime           @default(now()) @map("created_at")
+
+  parent   DocumentCategory?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children DocumentCategory[] @relation("CategoryTree")
+
+  @@index([tenantId])
+  @@index([parentId])
+  @@map("document_categories")
+}
+
+model DocumentApproval {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  documentId  String    @map("document_id")
+  approverId  String    @map("approver_id")
+  status      String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  comment     String?   @db.Text
+  createdAt   DateTime  @default(now()) @map("created_at")
+  approvedAt  DateTime? @map("approved_at")
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([documentId])
+  @@index([approverId])
+  @@map("document_approvals")
 }
 
 model Signature {
@@ -12702,6 +12752,25 @@ model SsoConfig {
   @@map("sso_configs")
 }
 
+model AuthApiToken {
+  id         String    @id @default(cuid())
+  tenantId   String    @map("tenant_id")
+  userId     String    @map("user_id")
+  name       String
+  tokenHash  String    @unique @map("token_hash")
+  scopes     Json      @default("[]")
+  expiresAt  DateTime? @map("expires_at")
+  lastUsedAt DateTime? @map("last_used_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([userId])
+  @@map("auth_api_tokens")
+}
+
 model UserSession {
   id               String    @id @default(cuid())
   tenantId         String    @map("tenant_id")
@@ -12897,6 +12966,8 @@ model MarketplaceApp {
   changelogs      AppChangelog[]
   collectionItems AppCollectionItem[]
   favorites       AppFavorite[]
+  versions        MarketplaceAppVersion[]
+  analyticsRecords MarketplaceAnalytics[]
 
   @@index([category])
   @@index([featured])
@@ -12976,6 +13047,65 @@ model AppBundle {
   @@index([packageId])
   @@index([status])
   @@map("app_bundles")
+}
+
+model MarketplaceAppVersion {
+  id          String    @id @default(cuid())
+  appId       String    @map("app_id")
+  version     String
+  changelog   String?   @db.Text
+  fileUrl     String?   @map("file_url")
+  status      String    @default("PUBLISHED") // PUBLISHED, DRAFT, DEPRECATED
+  publishedAt DateTime  @default(now()) @map("published_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  app MarketplaceApp @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  @@unique([appId, version])
+  @@index([appId])
+  @@map("marketplace_app_versions")
+}
+
+model MarketplaceDeveloperSubmission {
+  id               String    @id @default(cuid())
+  tenantId         String    @map("tenant_id")
+  developerId      String    @map("developer_id")
+  appId            String?   @map("app_id")
+  name             String
+  slug             String
+  description      String    @db.Text
+  category         String
+  icon             String?
+  status           String    @default("PENDING") // PENDING, IN_REVIEW, APPROVED, REJECTED
+  submissionNotes  String?   @map("submission_notes") @db.Text
+  reviewedBy       String?   @map("reviewed_by")
+  reviewedAt       DateTime? @map("reviewed_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([status])
+  @@map("marketplace_developer_submissions")
+}
+
+model MarketplaceAnalytics {
+  id          String   @id @default(cuid())
+  appId       String   @map("app_id")
+  date        DateTime
+  installs    Int      @default(0)
+  uninstalls  Int      @default(0)
+  activeUsers Int      @default(0) @map("active_users")
+  revenue     Decimal  @default(0) @db.Decimal(15, 2)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  app MarketplaceApp @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  @@unique([appId, date])
+  @@index([appId])
+  @@index([date])
+  @@map("marketplace_analytics")
 }
 
 model AppReview {
@@ -20173,6 +20303,82 @@ model BlockchainSyncCheckpoint {
 
   @@unique([channelName, chaincodeName])
   @@map("blockchain_sync_checkpoints")
+}
+
+model BlockchainSmartContract {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  address     String   @map("address")
+  abi         Json     @default("[]")
+  network     String   @default("ethereum")
+  deployedAt  DateTime @default(now()) @map("deployed_at")
+  version     String   @default("1.0.0")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([address])
+  @@map("blockchain_smart_contracts")
+}
+
+model BlockchainAuditTrail {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  entityType      String   @map("entity_type")
+  entityId        String   @map("entity_id")
+  action          String
+  transactionHash String?  @map("transaction_hash")
+  performedBy     String   @map("performed_by")
+  metadata        Json?    @default("{}")
+  timestamp       DateTime @default(now())
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, entityType, entityId])
+  @@index([transactionHash])
+  @@map("blockchain_audit_trails")
+}
+
+model BlockchainNetworkHealth {
+  id            String    @id @default(cuid())
+  network       String
+  blockHeight   Int       @default(0) @map("block_height")
+  peers         Int       @default(0)
+  syncStatus    String    @default("SYNCING") @map("sync_status") // SYNCING, SYNCED, ERROR
+  lastCheckedAt DateTime  @default(now()) @map("last_checked_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@unique([network])
+  @@index([network, lastCheckedAt])
+  @@map("blockchain_network_health")
+}
+
+model BlockchainTransactionExplorer {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  transactionHash String    @map("transaction_hash")
+  blockNumber     Int?      @map("block_number")
+  fromAddress     String?   @map("from_address")
+  toAddress       String?   @map("to_address")
+  value           String?   @default("0")
+  status          String    @default("PENDING") // PENDING, CONFIRMED, FAILED
+  timestamp       DateTime  @default(now())
+  metadata        Json?     @default("{}")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([transactionHash])
+  @@index([tenantId, fromAddress])
+  @@index([tenantId, toAddress])
+  @@index([tenantId, status])
+  @@map("blockchain_transaction_explorers")
 }
 
 // ════════════════════════════════════════════════
@@ -29840,8 +30046,9 @@ model AiModel {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  deployments AiModelDeployment[]
-  tenant      Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  deployments      AiModelDeployment[]
+  tenant           Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  accuracyMetrics  AiModelAccuracyMetric[]
 
   @@index([tenantId])
   @@index([tenantId, provider])
@@ -30080,6 +30287,176 @@ model AiTrainingRun {
 }
 
 // ════════════════════════════════════════════════
+// AI — Intent Classification & NLU Training
+// ════════════════════════════════════════════════
+
+model AiIntentTrainingExample {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  intent    String
+  text      String
+  language  String   @default("en")
+  confidence Float?  @default(0)
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  entities  AiNluEntity[]
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, intent])
+  @@map("ai_intent_training_examples")
+}
+
+model AiNluEntity {
+  id              String                 @id @default(cuid())
+  tenantId        String                 @map("tenant_id")
+  trainingExampleId String               @map("training_example_id")
+  entity          String
+  value           String
+  startPos        Int?                   @map("start_pos")
+  endPos          Int?                   @map("end_pos")
+  createdAt       DateTime               @default(now()) @map("created_at")
+
+  trainingExample AiIntentTrainingExample @relation(fields: [trainingExampleId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([trainingExampleId])
+  @@map("ai_nlu_entities")
+}
+
+// ════════════════════════════════════════════════
+// AI — Model Registry Accuracy Metrics
+// ════════════════════════════════════════════════
+
+model AiModelAccuracyMetric {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  modelId     String   @map("model_id")
+  metric      String   // accuracy, precision, recall, f1, latency
+  value       Float
+  recordedAt  DateTime @default(now()) @map("recorded_at")
+  metadata    Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  model  AiModel @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  tenant Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([modelId])
+  @@map("ai_model_accuracy_metrics")
+}
+
+// ════════════════════════════════════════════════
+// ANALYTICS — KPI Library & Trend Analysis
+// ════════════════════════════════════════════════
+
+model AnalyticsKpiDefinition {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  name            String
+  code            String
+  description     String?
+  formula         String   // e.g. "SUM(revenue) / COUNT(orders)"
+  target          Float?
+  unit            String?  // %, $, count, days
+  visualization   String   @default("NUMBER") // NUMBER, GAUGE, BAR, LINE, PIE
+  category        String?
+  sourceTable     String?  // e.g. "invoices", "orders"
+  sourceColumn    String?
+  isActive        Boolean  @default(true) @map("is_active")
+  config          Json?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  trendResults    AnalyticsTrendResult[]
+  tenant          Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([tenantId, category])
+  @@map("analytics_kpi_definitions")
+}
+
+model AnalyticsTrendResult {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  kpiDefinitionId String   @map("kpi_definition_id")
+  period          String   // MONTHLY, QUARTERLY, YEARLY
+  periodStart     DateTime @map("period_start")
+  periodEnd       DateTime @map("period_end")
+  value           Float
+  previousValue   Float?
+  changePercent   Float?
+  trend           String?  // UP, DOWN, FLAT
+  metadata        Json?
+  computedAt      DateTime @default(now()) @map("computed_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  kpiDefinition AnalyticsKpiDefinition @relation(fields: [kpiDefinitionId], references: [id], onDelete: Cascade)
+
+  @@unique([kpiDefinitionId, period, periodStart, periodEnd])
+  @@index([tenantId])
+  @@index([kpiDefinitionId])
+  @@index([periodStart, periodEnd])
+  @@map("analytics_trend_results")
+}
+
+// ════════════════════════════════════════════════
+// ANALYTICS — Cross-Filter Dashboards
+// ════════════════════════════════════════════════
+
+model AnalyticsCrossFilterDashboard {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  description String?
+  layout      Json     @default("[]")   // widget layout config
+  filters     Json     @default("[]")   // linked filter definitions
+  widgets     Json     @default("[]")   // chart/widget configs
+  isActive    Boolean  @default(true) @map("is_active")
+  createdBy   String?  @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("analytics_cross_filter_dashboards")
+}
+
+// ════════════════════════════════════════════════
+// ANALYTICS — BI Metric Catalog
+// ════════════════════════════════════════════════
+
+model AnalyticsBiMetricDefinition {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  name            String
+  code            String
+  description     String?
+  sourceTable     String   // schema.table_name
+  sourceColumn    String   // column_name
+  aggregation     String   @default("SUM") // SUM, COUNT, AVG, MIN, MAX, DISTINCT_COUNT
+  dataType        String   @default("NUMBER") // NUMBER, CURRENCY, PERCENTAGE, STRING, DATE
+  unit            String?
+  category        String?
+  formula         String?  // custom SQL expression
+  isActive        Boolean  @default(true) @map("is_active")
+  metadata        Json?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([tenantId, category])
+  @@map("analytics_bi_metric_definitions")
+}
+
+// ════════════════════════════════════════════════
 // COMMUNICATION — Chat Rooms & Messaging
 // ════════════════════════════════════════════════
 
@@ -30308,6 +30685,7 @@ model DriveFolder {
   permissions DriveFolderPermission[]
   files       DriveFile[]
   activities  DriveActivity[]
+  shares      DriveFolderShare[]
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
@@ -30364,6 +30742,8 @@ model DriveFile {
   comments   DriveFileComment[]
   shareLinks DriveShareLink[]
   activities DriveActivity[]
+  tagMappings DriveFileTagMapping[]
+  trashItems  DriveTrashItem[]
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
@@ -30474,6 +30854,75 @@ model DriveActivity {
   @@index([userId])
   @@index([tenantId, createdAt])
   @@map("drive_activities")
+}
+
+// ════════════════════════════════════════════════
+// DRIVE — Folder Sharing (user-level)
+// ════════════════════════════════════════════════
+
+model DriveFolderShare {
+  id               String   @id @default(cuid())
+  tenantId         String   @map("tenant_id")
+  folderId         String   @map("folder_id")
+  sharedWithUserId String   @map("shared_with_user_id")
+  permission       String   @default("VIEW") // VIEW, EDIT
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  folder DriveFolder @relation(fields: [folderId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([folderId])
+  @@index([sharedWithUserId])
+  @@map("drive_folder_shares")
+}
+
+// ════════════════════════════════════════════════
+// DRIVE — File Tags
+// ════════════════════════════════════════════════
+
+model DriveFileTag {
+  id       String @id @default(cuid())
+  tenantId String @map("tenant_id")
+  name     String
+  color    String @default("#6366f1")
+
+  files    DriveFileTagMapping[]
+
+  @@index([tenantId])
+  @@map("drive_file_tags")
+}
+
+model DriveFileTagMapping {
+  id     String       @id @default(cuid())
+  fileId String       @map("file_id")
+  tagId  String       @map("tag_id")
+
+  file DriveFile  @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  tag  DriveFileTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([fileId, tagId])
+  @@index([fileId])
+  @@index([tagId])
+  @@map("drive_file_tag_mappings")
+}
+
+// ════════════════════════════════════════════════
+// DRIVE — Trash Items (soft-delete tracking)
+// ════════════════════════════════════════════════
+
+model DriveTrashItem {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  fileId       String   @map("file_id")
+  deletedAt    DateTime @default(now()) @map("deleted_at")
+  originalPath String?  @map("original_path")
+  deletedBy    String   @map("deleted_by")
+
+  file DriveFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([fileId])
+  @@map("drive_trash_items")
 }
 
 // ════════════════════════════════════════════════

@@ -1,6 +1,8 @@
 import { Module } from "@nestjs/common";
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
+import { AuthDeepController } from "./auth-deep.controller";
+import { AuthDeepService } from "./auth-deep.service";
 import { OAuthController } from "./oauth.controller";
 import { OAuthService } from "./oauth.service";
 import { SsoController } from "./sso.controller";
@@ -15,12 +17,14 @@ import { PlatformCredentialsModule } from "../../common/platform-credentials/pla
   imports: [PlatformCredentialsModule],
   controllers: [
     AuthController,
+    AuthDeepController,
     OAuthController,
     SsoController,
     OnboardingController,
   ],
   providers: [
     AuthService,
+    AuthDeepService,
     OAuthService,
     SsoService,
     ProvisioningService,
@@ -29,6 +33,7 @@ import { PlatformCredentialsModule } from "../../common/platform-credentials/pla
   ],
   exports: [
     AuthService,
+    AuthDeepService,
     OAuthService,
     SsoService,
     ProvisioningService,
