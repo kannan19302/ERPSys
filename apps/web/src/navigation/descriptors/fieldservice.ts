@@ -31,10 +31,29 @@ registerModule({
     },
     { label: "Technicians", href: "/field-service/technicians", icon: "Users" },
     {
-      label: "Customer Directory",
-      href: "/field-service/customers",
-      icon: "Users",
+      label: "Mobile Dispatch",
+      href: "/field-service/mobile-dispatch",
+      icon: "Smartphone",
     },
-    { label: "Reports", href: "/field-service/reports", icon: "BarChart3" },
+    {
+      label: "Scheduling",
+      href: "/field-service/scheduling",
+      icon: "Calendar",
+    },
+    {
+      label: "Parts Requests",
+      href: "/field-service/parts",
+      icon: "Package",
+    },
+    {
+      label: "Van Stock",
+      href: "/field-service/van-stock",
+      icon: "Truck",
+    },
+    {
+      label: "Reports",
+      href: "/field-service/reports",
+      icon: "BarChart3",
+    },
   ],
 });

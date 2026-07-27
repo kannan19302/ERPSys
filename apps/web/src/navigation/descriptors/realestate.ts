@@ -14,6 +14,21 @@ registerModule({
     { label: "Tenants", href: "/real-estate/tenants", icon: "Users" },
     { label: "Maintenance", href: "/real-estate/maintenance", icon: "Wrench" },
     {
+      label: "Maintenance Requests",
+      href: "/real-estate/maintenance-requests",
+      icon: "ClipboardList",
+    },
+    {
+      label: "Lease Renewals",
+      href: "/real-estate/lease-renewals",
+      icon: "FileText",
+    },
+    {
+      label: "Property Financials",
+      href: "/real-estate/financials",
+      icon: "DollarSign",
+    },
+    {
       label: "Agent Commissions",
       href: "/real-estate/commissions",
       icon: "DollarSign",

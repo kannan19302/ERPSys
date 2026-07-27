@@ -26069,6 +26069,169 @@ model RealEstatePropertyValuation {
   @@map("real_estate_valuations")
 }
 
+model RealEstateMaintenanceRequest {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  propertyId      String    @map("property_id")
+  unitId          String?   @map("unit_id")
+  leaseId         String?   @map("lease_id")
+  requestedBy     String?   @map("requested_by")
+  requestedName   String?   @map("requested_name")
+  requestedEmail  String?   @map("requested_email")
+  requestedPhone  String?   @map("requested_phone")
+  title           String
+  description     String?   @db.Text
+  category        String    @default("GENERAL") // PLUMBING, ELECTRICAL, HVAC, APPLIANCE, STRUCTURAL, PEST, GENERAL, OTHER
+  priority        String    @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT, EMERGENCY
+  status          String    @default("OPEN") // OPEN, ASSIGNED, IN_PROGRESS, COMPLETED, CANCELLED, ON_HOLD
+  vendorId        String?   @map("vendor_id")
+  assignedTo      String?   @map("assigned_to")
+  estimatedCost   Decimal?  @map("estimated_cost")
+  actualCost      Decimal   @default(0) @map("actual_cost")
+  scheduledDate   DateTime? @map("scheduled_date")
+  completedDate   DateTime? @map("completed_date")
+  partsUsed       Json      @default("[]")
+  images          Json      @default("[]")
+  notes           String?
+  resolution      String?   @db.Text
+  isBillable      Boolean   @default(true) @map("is_billable")
+  isActive        Boolean   @default(true) @map("is_active")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([propertyId])
+  @@index([vendorId])
+  @@index([tenantId, status])
+  @@index([tenantId, priority])
+  @@index([tenantId, category])
+  @@map("real_estate_maintenance_requests")
+}
+
+model RealEstateLeaseRenewal {
+  id                  String    @id @default(cuid())
+  tenantId            String    @map("tenant_id")
+  leaseId             String    @map("lease_id")
+  propertyId          String    @map("property_id")
+  unitId              String?   @map("unit_id")
+  tenantName          String    @map("tenant_name")
+  tenantEmail         String?   @map("tenant_email")
+  currentRent         Decimal   @map("current_rent")
+  proposedRent        Decimal   @map("proposed_rent")
+  rentChangePercent   Decimal   @default(0) @map("rent_change_percent")
+  renewalTermMonths   Int       @default(12) @map("renewal_term_months")
+  currentEndDate      DateTime  @map("current_end_date")
+  proposedStartDate   DateTime  @map("proposed_start_date")
+  proposedEndDate     DateTime  @map("proposed_end_date")
+  escalationRate      Decimal   @default(0) @map("escalation_rate") // annual escalation %
+  concessionAmount    Decimal   @default(0) @map("concession_amount") // free rent or discount
+  status              String    @default("DRAFT") // DRAFT, SENT, NEGOTIATING, APPROVED, EXECUTED, DECLINED, EXPIRED
+  approvedBy          String?   @map("approved_by")
+  approvedAt          DateTime? @map("approved_at")
+  executedAt          DateTime? @map("executed_at")
+  documents           Json      @default("[]")
+  notes               String?
+  isActive            Boolean   @default(true) @map("is_active")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([leaseId])
+  @@index([propertyId])
+  @@index([tenantId, status])
+  @@map("real_estate_lease_renewals")
+}
+
+model RealEstateRentEscalation {
+  id                String    @id @default(cuid())
+  tenantId          String    @map("tenant_id")
+  leaseId           String    @map("lease_id")
+  propertyId        String    @map("property_id")
+  unitId            String?   @map("unit_id")
+  scheduleName      String    @map("schedule_name")
+  escalationType    String    @default("PERCENTAGE") // PERCENTAGE, FIXED_AMOUNT, CPI_INDEX, MARKET_REVIEW, STEPPED
+  escalationRate    Decimal   @default(0) @map("escalation_rate")
+  frequencyMonths   Int       @default(12) @map("frequency_months")
+  nextEscalationDate DateTime? @map("next_escalation_date")
+  lastEscalationDate DateTime? @map("last_escalation_date")
+  capRate           Decimal?  @map("cap_rate") // maximum % increase per period
+  floorRate         Decimal?  @map("floor_rate") // minimum % increase per period
+  baseRent          Decimal   @map("base_rent")
+  currentRent       Decimal   @map("current_rent")
+  cpiIndexName      String?   @map("cpi_index_name")
+  cpiCurrentValue   Decimal?  @map("cpi_current_value")
+  notes             String?
+  status            String    @default("ACTIVE") // ACTIVE, PAUSED, COMPLETED, CANCELLED
+  isActive          Boolean   @default(true) @map("is_active")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([leaseId])
+  @@index([propertyId])
+  @@index([tenantId, nextEscalationDate])
+  @@map("real_estate_rent_escalations")
+}
+
+model RealEstatePropertyFinancial {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  propertyId      String    @map("property_id")
+  periodStart     DateTime  @map("period_start")
+  periodEnd       DateTime  @map("period_end")
+  grossRentIncome Decimal   @default(0) @map("gross_rent_income")
+  otherIncome     Decimal   @default(0) @map("other_income") // parking, laundry, storage
+  totalIncome     Decimal   @default(0) @map("total_income")
+  vacancyLoss     Decimal   @default(0) @map("vacancy_loss")
+  effectiveIncome Decimal   @default(0) @map("effective_income")
+  operatingExpenses Decimal @default(0) @map("operating_expenses")
+  repairsMaintenance Decimal @default(0) @map("repairs_maintenance")
+  propertyManagement Decimal @default(0) @map("property_management")
+  insurance       Decimal   @default(0)
+  taxes           Decimal   @default(0)
+  utilities       Decimal   @default(0)
+  hoaFees         Decimal   @default(0) @map("hoa_fees")
+  otherExpenses   Decimal   @default(0) @map("other_expenses")
+  totalExpenses   Decimal   @default(0) @map("total_expenses")
+  netOperatingIncome Decimal @default(0) @map("net_operating_income")
+  debtService     Decimal   @default(0) @map("debt_service") // mortgage payments
+  cashFlowBeforeTax Decimal @default(0) @map("cash_flow_before_tax")
+  capitalExpenditures Decimal @default(0) @map("capital_expenditures")
+  netCashFlow     Decimal   @default(0) @map("net_cash_flow")
+  capRate         Decimal?  @map("cap_rate") // calculated NOI / property value
+  cashOnCashReturn Decimal? @map("cash_on_cash_return") // percentage
+  occupancyRate   Decimal?  @map("occupancy_rate") // percentage
+  status          String    @default("DRAFT") // DRAFT, FINAL, ARCHIVED
+  currency        String    @default("USD")
+  notes           String?
+  isActive        Boolean   @default(true) @map("is_active")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([propertyId])
+  @@index([tenantId, periodStart, periodEnd])
+  @@map("real_estate_property_financials")
+}
+
+model RealEstateExpenseCategory {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  code        String
+  description String?
+  type        String   @default("OPERATING") // OPERATING, CAPITAL, ADMINISTRATIVE, OTHER
+  isTaxDeductible Boolean @default(true) @map("is_tax_deductible")
+  sortOrder   Int      @default(0) @map("sort_order")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@map("real_estate_expense_categories")
+}
+
 // ============================================================
 // FIELD SERVICE MODULE — Phase 15
 // ============================================================
@@ -26396,6 +26559,140 @@ model FieldServicePartsUsage {
   @@index([ticketId])
   @@index([itemId])
   @@map("field_service_parts_usage")
+}
+
+model FieldServiceTechnicianDashboard {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  technicianId  String   @map("technician_id")
+  date          DateTime @map("date")
+  totalJobs     Int      @default(0) @map("total_jobs")
+  completedJobs Int      @default(0) @map("completed_jobs")
+  cancelledJobs Int      @default(0) @map("cancelled_jobs")
+  totalHours    Decimal  @default(0) @map("total_hours")
+  travelHours   Decimal  @default(0) @map("travel_hours")
+  totalRevenue  Decimal  @default(0) @map("total_revenue")
+  partsCost     Decimal  @default(0) @map("parts_cost")
+  rating        Decimal  @default(0)
+  onTimeRate    Decimal  @default(0) @map("on_time_rate") // percentage
+  lastUpdatedAt DateTime @default(now()) @map("last_updated_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([technicianId])
+  @@index([tenantId, date])
+  @@index([tenantId, technicianId, date])
+  @@map("field_service_technician_dashboards")
+}
+
+model FieldServiceSchedule {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  technicianId  String    @map("technician_id")
+  ticketId      String?   @map("ticket_id")
+  title         String
+  description   String?
+  scheduledDate DateTime  @map("scheduled_date")
+  startTime     DateTime? @map("start_time")
+  endTime       DateTime? @map("end_time")
+  durationMin   Int       @default(60) @map("duration_min")
+  location      String?
+  latitude      Float?
+  longitude     Float?
+  status        String    @default("SCHEDULED") // SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED, NO_SHOW
+  notes         String?
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([technicianId])
+  @@index([ticketId])
+  @@index([tenantId, scheduledDate])
+  @@index([tenantId, status])
+  @@map("field_service_schedules")
+}
+
+model FieldServiceCalendarEvent {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  technicianId  String    @map("technician_id")
+  scheduleId    String?   @map("schedule_id")
+  ticketId      String?   @map("ticket_id")
+  title         String
+  description   String?
+  eventType     String    @default("APPOINTMENT") // APPOINTMENT, BREAK, TRAVEL, MEETING, PERSONAL, OTHER
+  startTime     DateTime  @map("start_time")
+  endTime       DateTime  @map("end_time")
+  allDay        Boolean   @default(false) @map("all_day")
+  color         String?   // hex color for calendar display
+  location      String?
+  status        String    @default("ACTIVE") // ACTIVE, CANCELLED, COMPLETED
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([technicianId])
+  @@index([tenantId, startTime, endTime])
+  @@map("field_service_calendar_events")
+}
+
+model FieldServicePartRequest {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  ticketId        String?   @map("ticket_id")
+  technicianId    String    @map("technician_id")
+  itemId          String    @map("item_id")
+  itemName        String    @map("item_name")
+  partNumber      String?   @map("part_number")
+  quantityRequested Int     @default(1) @map("quantity_requested")
+  quantityApproved Int?     @map("quantity_approved")
+  quantityFulfilled Int?    @map("quantity_fulfilled")
+  source          String    @default("WAREHOUSE") // WAREHOUSE, VAN, VENDOR, CUSTOMER
+  priority        String    @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  status          String    @default("PENDING") // PENDING, APPROVED, PARTIALLY_FULFILLED, FULFILLED, CANCELLED, REJECTED
+  unitPrice       Decimal   @default(0) @map("unit_price")
+  totalPrice      Decimal   @default(0) @map("total_price")
+  requestedBy     String?   @map("requested_by")
+  approvedBy      String?   @map("approved_by")
+  approvedAt      DateTime? @map("approved_at")
+  fulfilledAt     DateTime? @map("fulfilled_at")
+  notes           String?
+  isActive        Boolean   @default(true) @map("is_active")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([technicianId])
+  @@index([ticketId])
+  @@index([tenantId, status])
+  @@map("field_service_part_requests")
+}
+
+model FieldServiceVanStock {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  technicianId   String   @map("technician_id")
+  itemId         String   @map("item_id")
+  itemName       String   @map("item_name")
+  quantityOnVan  Int      @default(0) @map("quantity_on_van")
+  minStockLevel  Int      @default(5) @map("min_stock_level")
+  maxStockLevel  Int      @default(20) @map("max_stock_level")
+  reorderPoint   Int      @default(5) @map("reorder_point")
+  lastRestocked  DateTime? @map("last_restocked")
+  lastCounted    DateTime? @map("last_counted")
+  location       String?  // shelf/bin location in van
+  notes          String?
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([technicianId])
+  @@unique([tenantId, technicianId, itemId])
+  @@map("field_service_van_stock")
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -37878,4 +38175,418 @@ model ExtIntegrationTemplate {
   @@index([tenantId, provider])
   @@map("ext_integration_templates")
 }
+
+// ═══════════════════════════════════════════════════════════════
+// CYCLE 64: PEOPLE MODULE EXPANSION
+// ═══════════════════════════════════════════════════════════════
+
+model PeopleCompetency {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  category    String   @default("TECHNICAL") // TECHNICAL, LEADERSHIP, SOFT_SKILLS, DOMAIN
+  description String?  @db.Text
+  proficiencyLevels Json @map("proficiency_levels") // level 1-5 definitions
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, category])
+  @@map("people_competencies")
+}
+
+model PeopleSuccessionPlan {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  positionTitle   String   @map("position_title")
+  currentIncumbentId String? @map("current_incumbent_id")
+  readinessRating String   @default("MEDIUM") // READY_NOW, 1_YEAR, 2_YEARS, EMERGENCY
+  successors      Json     @default("[]") // candidate IDs, readiness, gap notes
+  riskOfLoss      String   @default("LOW") @map("risk_of_loss") // LOW, MEDIUM, HIGH, CRITICAL
+  impactOfLoss    String   @default("HIGH") @map("impact_of_loss") // LOW, MEDIUM, HIGH, CRITICAL
+  notes           String?  @db.Text
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, readinessRating])
+  @@map("people_succession_plans")
+}
+
+model PeoplePerformanceMetric {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  employeeId    String   @map("employee_id")
+  period        String   // e.g. 2026-Q1, 2026-Q2
+  kpiScore      Decimal  @default(0) @map("kpi_score")
+  goalsCompleted Int     @default(0) @map("goals_completed")
+  goalsTotal    Int      @default(0) @map("goals_total")
+  feedbackRating Decimal @default(0) @map("feedback_rating")
+  status        String   @default("DRAFT") // DRAFT, SUBMITTED, APPROVED, CLOSED
+  metadata      Json     @default("{}")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, employeeId])
+  @@index([tenantId, period])
+  @@map("people_performance_metrics")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CYCLE 64: SEARCH MODULE EXPANSION
+// ═══════════════════════════════════════════════════════════════
+
+model SearchIndexConfig {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  entityType     String   @map("entity_type") // e.g. Customer, Order, Product, Employee
+  searchableFields String[] @map("searchable_fields")
+  boostFields    Json     @default("{}") @map("boost_fields")
+  filterFields   String[] @map("filter_fields")
+  isAutoIndexed  Boolean  @default(true) @map("is_auto_indexed")
+  lastReindexedAt DateTime? @map("last_reindexed_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, entityType])
+  @@index([tenantId])
+  @@map("search_index_configs")
+}
+
+model SearchSynonymGroup {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  synonyms    String[] // e.g. ["PO", "Purchase Order", "Procurement"]
+  isOneWay    Boolean  @default(false) @map("is_one_way")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("search_synonym_groups")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CYCLE 64: FIXED ASSETS MODULE EXPANSION
+// ═══════════════════════════════════════════════════════════════
+
+model AssetDepreciationSchedule {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  assetId         String   @map("asset_id")
+  period          String   // e.g. 2026-01
+  startingBookValue Decimal @map("starting_book_value")
+  depreciationAmount Decimal @map("depreciation_amount")
+  endingBookValue Decimal @map("ending_book_value")
+  accumulatedDepreciation Decimal @map("accumulated_depreciation")
+  isPosted        Boolean  @default(false) @map("is_posted")
+  postedAt        DateTime? @map("posted_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, assetId])
+  @@index([tenantId, period])
+  @@map("asset_depreciation_schedules")
+}
+
+model AssetMaintenanceSchedule {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  assetId        String    @map("asset_id")
+  title          String
+  maintenanceType String   @default("PREVENTIVE") // PREVENTIVE, CORRECTIVE, INSPECTION
+  scheduledDate  DateTime  @map("scheduled_date")
+  completedDate  DateTime? @map("completed_date")
+  assignedTo     String?   @map("assigned_to")
+  cost           Decimal   @default(0)
+  status         String    @default("PLANNED") // PLANNED, IN_PROGRESS, COMPLETED, OVERDUE, CANCELLED
+  notes          String?   @db.Text
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, assetId])
+  @@index([tenantId, status])
+  @@map("asset_maintenance_schedules")
+}
+
+model AssetDisposalLog {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  assetId        String   @map("asset_id")
+  disposalDate   DateTime @map("disposal_date")
+  disposalType   String   @default("SALE") // SALE, SCRAP, DONATION, LOSS
+  salePrice      Decimal  @default(0) @map("sale_price")
+  bookValueAtDisposal Decimal @map("book_value_at_disposal")
+  gainOrLoss     Decimal  @default(0) @map("gain_or_loss")
+  reason         String?  @db.Text
+  approvedBy     String?  @map("approved_by")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, assetId])
+  @@map("asset_disposal_logs")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CYCLE 64: API PLATFORM MODULE EXPANSION
+// ═══════════════════════════════════════════════════════════════
+
+model ApiRateLimitRule {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  name         String
+  endpointPath String   @map("endpoint_path") // e.g. /api/v1/sales/*
+  limitPerMinute Int    @default(60) @map("limit_per_minute")
+  burstLimit   Int      @default(100) @map("burst_limit")
+  clientTier   String   @default("STANDARD") // STANDARD, PREMIUM, ENTERPRISE
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, endpointPath])
+  @@map("api_rate_limit_rules")
+}
+
+model ApiQuotaPolicy {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  clientAppId    String   @map("client_app_id")
+  dailyCallQuota Int      @default(10000) @map("daily_call_quota")
+  monthlyCallQuota Int    @default(300000) @map("monthly_call_quota")
+  callsToday     Int      @default(0) @map("calls_today")
+  callsThisMonth Int      @default(0) @map("calls_this_month")
+  resetDate      DateTime @map("reset_date")
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, clientAppId])
+  @@map("api_quota_policies")
+}
+
+model ApiUsageAnalytics {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  clientAppId String?  @map("client_app_id")
+  endpoint    String
+  httpMethod  String   @map("http_method")
+  statusCode  Int      @map("status_code")
+  responseTimeMs Int   @map("response_time_ms")
+  requestSize Int      @default(0) @map("request_size")
+  responseSize Int     @default(0) @map("response_size")
+  timestamp   DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([tenantId, timestamp])
+  @@index([tenantId, endpoint])
+  @@map("api_usage_analytics")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CYCLE 64: SUBSCRIPTIONS MODULE EXPANSION
+// ═══════════════════════════════════════════════════════════════
+
+model SubscriptionPlanTier {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  name         String
+  code         String
+  monthlyPrice Decimal  @map("monthly_price")
+  annualPrice  Decimal  @map("annual_price")
+  includedUnits Int     @default(100) @map("included_units")
+  overageRate  Decimal  @default(0) @map("overage_rate")
+  features     Json     @default("[]")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@map("subscription_plan_tiers")
+}
+
+model SubscriptionUsageBilling {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  subscriptionId String   @map("subscription_id")
+  metricName     String   @map("metric_name") // e.g. API_CALLS, STORAGE_GB
+  unitsConsumed  Int      @default(0) @map("units_consumed")
+  billingPeriod  String   @map("billing_period") // e.g. 2026-07
+  totalCharge    Decimal  @default(0) @map("total_charge")
+  isBilled       Boolean  @default(false) @map("is_billed")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, subscriptionId])
+  @@index([tenantId, billingPeriod])
+  @@map("subscription_usage_billings")
+}
+
+model SubscriptionChurnSurvey {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  subscriptionId String   @map("subscription_id")
+  reasonCategory String   @map("reason_category") // PRICE, MISSING_FEATURE, POOR_SUPPORT, SWITCHED_COMPETITOR, OTHER
+  feedbackNotes  String?  @db.Text
+  competitorName String?  @map("competitor_name")
+  wouldRecommend Boolean  @default(false) @map("would_recommend")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, subscriptionId])
+  @@map("subscription_churn_surveys")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CYCLE 64: STORAGE MODULE EXPANSION
+// ═══════════════════════════════════════════════════════════════
+
+model StorageBucketConfig {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  bucketName   String   @map("bucket_name")
+  provider     String   @default("S3") // S3, AZURE_BLOB, GCS, MINIO
+  region       String   @default("us-east-1")
+  maxQuotaGb   Int      @default(100) @map("max_quota_gb")
+  currentSizeGb Decimal @default(0) @map("current_size_gb")
+  isPublic     Boolean  @default(false) @map("is_public")
+  versioning   Boolean  @default(true)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, bucketName])
+  @@index([tenantId])
+  @@map("storage_bucket_configs")
+}
+
+model StorageLifecycleRule {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  bucketName    String   @map("bucket_name")
+  ruleName      String   @map("rule_name")
+  prefix        String?
+  transitionDays Int?    @map("transition_days") // e.g. move to Glacier after 30 days
+  storageClass  String?  @map("storage_class") // GLACIER, INFREQUENT_ACCESS
+  expirationDays Int?    @map("expiration_days") // e.g. delete after 365 days
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, bucketName])
+  @@map("storage_lifecycle_rules")
+}
+
+model StorageAccessPolicy {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  bucketName  String   @map("bucket_name")
+  roleOrUser  String   @map("role_or_user")
+  permission  String   @default("READ") // READ, WRITE, DELETE, ADMIN
+  allowedIpSubnet String? @map("allowed_ip_subnet")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, bucketName])
+  @@map("storage_access_policies")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CYCLE 64: PWA MODULE EXPANSION
+// ═══════════════════════════════════════════════════════════════
+
+model PwaOfflineSyncQueue {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  userId      String   @map("user_id")
+  actionType  String   @map("action_type") // e.g. CREATE_ORDER, CLOCK_IN, TICKET_UPDATE
+  payload     Json
+  status      String   @default("PENDING") // PENDING, SYNCED, FAILED
+  errorMessage String? @map("error_message") @db.Text
+  retryCount  Int      @default(0) @map("retry_count")
+  syncedAt    DateTime? @map("synced_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, userId])
+  @@index([tenantId, status])
+  @@map("pwa_offline_sync_queues")
+}
+
+model PwaManifestConfig {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  appName         String   @map("app_name")
+  shortName       String   @map("short_name")
+  themeColor      String   @default("#000000") @map("theme_color")
+  backgroundColor String   @default("#ffffff") @map("background_color")
+  displayMode     String   @default("standalone") @map("display_mode")
+  startUrl        String   @default("/") @map("start_url")
+  icons           Json     @default("[]")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId])
+  @@map("pwa_manifest_configs")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CYCLE 64: SAVED VIEWS MODULE EXPANSION
+// ═══════════════════════════════════════════════════════════════
+
+model SavedViewShare {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  viewId      String   @map("view_id")
+  sharedWith  String   @map("shared_with") // userId or roleName
+  permission  String   @default("READ") // READ, EDIT
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, viewId])
+  @@map("saved_view_shares")
+}
+
+model SavedViewFilterRule {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  viewId      String   @map("view_id")
+  field       String
+  operator    String   // EQUALS, CONTAINS, GREATER_THAN, IN, etc.
+  value       String
+  logicalOp   String   @default("AND") @map("logical_op") // AND, OR
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, viewId])
+  @@map("saved_view_filter_rules")
+}
+
+model SavedViewPreference {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  userId        String   @map("user_id")
+  moduleName    String   @map("module_name") // e.g. sales, inventory, crm
+  defaultViewId String?  @map("default_view_id")
+  pinnedViews   String[] @map("pinned_views")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, userId, moduleName])
+  @@index([tenantId])
+  @@index([tenantId, userId])
+  @@map("saved_view_preferences")
+}
+
 

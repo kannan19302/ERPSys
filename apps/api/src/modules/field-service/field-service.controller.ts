@@ -17,6 +17,9 @@ import { Permissions } from "../../common/decorators/permissions.decorator";
 import { FieldServiceTicketsService } from "./field-service-tickets.service";
 import { FieldServiceDispatchService } from "./field-service-dispatch.service";
 import { FieldServiceLogisticsService } from "./field-service-logistics.service";
+import { FieldServiceTechMobileService } from "./field-service-tech-mobile.service";
+import { FieldServiceSchedulingService } from "./field-service-scheduling.service";
+import { FieldServicePartsService } from "./field-service-parts.service";
 import { Request } from "express";
 
 interface AuthRequest extends Request {
@@ -30,6 +33,9 @@ export class FieldServiceController {
     private readonly tickets: FieldServiceTicketsService,
     private readonly dispatch: FieldServiceDispatchService,
     private readonly logistics: FieldServiceLogisticsService,
+    private readonly techMobile: FieldServiceTechMobileService,
+    private readonly scheduling: FieldServiceSchedulingService,
+    private readonly parts: FieldServicePartsService,
   ) {}
 
   // ── Tickets ──
@@ -544,6 +550,226 @@ export class FieldServiceController {
     return this.logistics.generateInvoiceFromTimesheets(
       req.user.tenantId,
       ticketId,
+    );
+  }
+
+  // ── Technician Mobile Dashboard ──
+  @Get("mobile-dashboard/:technicianId")
+  @Permissions("field-service.mobile-dashboard.read")
+  async getMobileDashboard(
+    @Req() req: AuthRequest,
+    @Param("technicianId") technicianId: string,
+  ) {
+    return this.techMobile.getDashboard(req.user.tenantId, technicianId);
+  }
+
+  @Get("mobile-dashboard/:technicianId/today")
+  @Permissions("field-service.mobile-dashboard.read")
+  async getTodayJobs(
+    @Req() req: AuthRequest,
+    @Param("technicianId") technicianId: string,
+  ) {
+    return this.techMobile.getTodayJobs(req.user.tenantId, technicianId);
+  }
+
+  @Put("mobile-dashboard/:id")
+  @Permissions("field-service.mobile-dashboard.update")
+  async updateDashboard(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @Body() body: any,
+  ) {
+    return this.techMobile.updateDashboard(req.user.tenantId, id, body);
+  }
+
+  @Post("mobile-dashboard/upsert")
+  @Permissions("field-service.mobile-dashboard.update")
+  async upsertDashboard(@Req() req: AuthRequest, @Body() body: any) {
+    return this.techMobile.upsertDashboard(req.user.tenantId, body);
+  }
+
+  @Get("technician-statuses")
+  @Permissions("field-service.technician-status.read")
+  async getTechnicianStatuses(@Req() req: AuthRequest) {
+    return this.techMobile.getTechnicianStatuses(req.user.tenantId);
+  }
+
+  @Patch("technician-statuses/:id")
+  @Permissions("field-service.technician-status.update")
+  async updateTechnicianStatus(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @Body() body: any,
+  ) {
+    return this.techMobile.updateTechnicianStatus(
+      req.user.tenantId,
+      id,
+      body.status,
+    );
+  }
+
+  // ── Scheduling & Calendar ──
+  @Get("schedules")
+  @Permissions("field-service.schedule.read")
+  async getSchedules(@Req() req: AuthRequest, @Query() query: any) {
+    return this.scheduling.getSchedules(req.user.tenantId, query);
+  }
+
+  @Get("schedules/weekly")
+  @Permissions("field-service.schedule.read")
+  async getWeeklySchedule(
+    @Req() req: AuthRequest,
+    @Query("startDate") startDate: string,
+  ) {
+    return this.scheduling.getWeeklySchedule(req.user.tenantId, startDate);
+  }
+
+  @Get("schedules/:id")
+  @Permissions("field-service.schedule.read")
+  async getSchedule(@Req() req: AuthRequest, @Param("id") id: string) {
+    return this.scheduling.getScheduleById(req.user.tenantId, id);
+  }
+
+  @Post("schedules")
+  @Permissions("field-service.schedule.create")
+  async createSchedule(@Req() req: AuthRequest, @Body() body: any) {
+    return this.scheduling.createSchedule(req.user.tenantId, body);
+  }
+
+  @Put("schedules/:id")
+  @Permissions("field-service.schedule.update")
+  async updateSchedule(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @Body() body: any,
+  ) {
+    return this.scheduling.updateSchedule(req.user.tenantId, id, body);
+  }
+
+  @Delete("schedules/:id")
+  @Permissions("field-service.schedule.delete")
+  async deleteSchedule(@Req() req: AuthRequest, @Param("id") id: string) {
+    return this.scheduling.deleteSchedule(req.user.tenantId, id);
+  }
+
+  @Get("calendar-events")
+  @Permissions("field-service.calendar.read")
+  async getCalendarEvents(@Req() req: AuthRequest, @Query() query: any) {
+    return this.scheduling.getCalendarEvents(req.user.tenantId, query);
+  }
+
+  @Post("calendar-events")
+  @Permissions("field-service.calendar.create")
+  async createCalendarEvent(@Req() req: AuthRequest, @Body() body: any) {
+    return this.scheduling.createCalendarEvent(req.user.tenantId, body);
+  }
+
+  @Put("calendar-events/:id")
+  @Permissions("field-service.calendar.update")
+  async updateCalendarEvent(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @Body() body: any,
+  ) {
+    return this.scheduling.updateCalendarEvent(req.user.tenantId, id, body);
+  }
+
+  @Delete("calendar-events/:id")
+  @Permissions("field-service.calendar.delete")
+  async deleteCalendarEvent(@Req() req: AuthRequest, @Param("id") id: string) {
+    return this.scheduling.deleteCalendarEvent(req.user.tenantId, id);
+  }
+
+  // ── Parts & Inventory Check-out ──
+  @Get("part-requests")
+  @Permissions("field-service.part-request.read")
+  async getPartRequests(@Req() req: AuthRequest, @Query() query: any) {
+    return this.parts.getPartRequests(req.user.tenantId, query);
+  }
+
+  @Get("part-requests/:id")
+  @Permissions("field-service.part-request.read")
+  async getPartRequest(@Req() req: AuthRequest, @Param("id") id: string) {
+    return this.parts.getPartRequestById(req.user.tenantId, id);
+  }
+
+  @Post("part-requests")
+  @Permissions("field-service.part-request.create")
+  async createPartRequest(@Req() req: AuthRequest, @Body() body: any) {
+    return this.parts.createPartRequest(req.user.tenantId, body);
+  }
+
+  @Put("part-requests/:id")
+  @Permissions("field-service.part-request.update")
+  async updatePartRequest(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @Body() body: any,
+  ) {
+    return this.parts.updatePartRequest(req.user.tenantId, id, body);
+  }
+
+  @Post("part-requests/:id/approve")
+  @Permissions("field-service.part-request.approve")
+  async approvePartRequest(@Req() req: AuthRequest, @Param("id") id: string) {
+    return this.parts.approvePartRequest(
+      req.user.tenantId,
+      id,
+      req.user.userId,
+    );
+  }
+
+  @Get("van-stock")
+  @Permissions("field-service.van-stock.read")
+  async getVanStock(@Req() req: AuthRequest, @Query() query: any) {
+    return this.parts.getVanStock(req.user.tenantId, query);
+  }
+
+  @Get("van-stock/low-stock")
+  @Permissions("field-service.van-stock.read")
+  async getLowStockAlerts(@Req() req: AuthRequest) {
+    return this.parts.getLowStockAlerts(req.user.tenantId);
+  }
+
+  @Get("van-stock/:id")
+  @Permissions("field-service.van-stock.read")
+  async getVanStockItem(@Req() req: AuthRequest, @Param("id") id: string) {
+    return this.parts.getVanStockById(req.user.tenantId, id);
+  }
+
+  @Post("van-stock")
+  @Permissions("field-service.van-stock.create")
+  async createVanStock(@Req() req: AuthRequest, @Body() body: any) {
+    return this.parts.createVanStock(req.user.tenantId, body);
+  }
+
+  @Put("van-stock/:id")
+  @Permissions("field-service.van-stock.update")
+  async updateVanStock(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @Body() body: any,
+  ) {
+    return this.parts.updateVanStock(req.user.tenantId, id, body);
+  }
+
+  @Delete("van-stock/:id")
+  @Permissions("field-service.van-stock.delete")
+  async deleteVanStock(@Req() req: AuthRequest, @Param("id") id: string) {
+    return this.parts.deleteVanStock(req.user.tenantId, id);
+  }
+
+  @Patch("van-stock/:id/quantity")
+  @Permissions("field-service.van-stock.update")
+  async adjustVanStockQuantity(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @Body() body: any,
+  ) {
+    return this.parts.adjustVanStockQuantity(
+      req.user.tenantId,
+      id,
+      body.quantity,
     );
   }
 }

@@ -48,7 +48,44 @@ interface AuthenticatedRequest extends Request {
 @Controller("fixed-assets")
 @UseGuards(JwtAuthGuard, RbacGuard)
 export class FixedAssetsController {
-  constructor(private readonly service: FixedAssetsService) {}
+  constructor(
+    private readonly service: FixedAssetsService,
+    private readonly depreciationService: AssetDepreciationService,
+    private readonly maintenanceService: AssetMaintenanceService,
+  ) {}
+
+  @Get("depreciation-schedules")
+  @Permissions("fixed-assets.depreciation.read")
+  @ApiOperation({ summary: "List depreciation schedule details" })
+  async getDepreciationSchedules(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: any,
+  ) {
+    return this.depreciationService.getSchedules(req.user.tenantId, query);
+  }
+
+  @Post("depreciation-schedules")
+  @Permissions("fixed-assets.depreciation.create")
+  @ApiOperation({ summary: "Create depreciation schedule entry" })
+  async createDepreciationSchedule(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody() body: any,
+  ) {
+    return this.depreciationService.createSchedule(req.user.tenantId, body);
+  }
+
+  @Get("maintenance-schedules")
+  @Permissions("fixed-assets.assets.read")
+  @ApiOperation({ summary: "List planned maintenance schedules" })
+  async getMaintenanceSchedules(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: any,
+  ) {
+    return this.maintenanceService.getMaintenanceSchedules(
+      req.user.tenantId,
+      query,
+    );
+  }
 
   // ─── CATEGORY ──────────────────────────────────────
 

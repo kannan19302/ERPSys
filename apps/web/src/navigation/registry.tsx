@@ -127,6 +127,18 @@ export const SEGMENT_NAMES: Record<string, string> = {
   renewals: "Renewals",
   slas: "SLAs",
   dispatch: "Dispatch",
+  "mobile-dispatch": "Mobile Dispatch",
+  "calendar-events": "Calendar Events",
+  parts: "Parts & Inventory",
+  "part-requests": "Part Requests",
+  "van-stock": "Van Stock",
+  "maintenance-requests": "Maintenance Requests",
+  "lease-renewals": "Lease Renewals",
+  "rent-escalations": "Rent Escalations",
+  financials: "Property Financials",
+  "property-financials": "Property Financials",
+  "expense-categories": "Expense Categories",
+  "portfolio-summary": "Portfolio Summary",
   appointments: "Appointments",
   "low-stock": "Low Stock",
   "parts-usage": "Parts Usage",
@@ -410,16 +422,16 @@ export const SEGMENT_NAMES: Record<string, string> = {
   workflow: "Workflow",
   definitions: "Definitions",
   instances: "Instances",
-   tasks: "My Tasks",
-   "sla-rules": "SLA Rules",
-   "audit-log": "Audit Log",
-   // Fixed Assets sub-pages
-   depreciation: "Depreciation",
-   disposals: "Disposals",
-   // API Platform module
-   "api-keys": "API Keys",
-   "usage-dashboard": "Usage Dashboard",
-   "endpoint-registry": "Endpoint Registry",
+  tasks: "My Tasks",
+  "sla-rules": "SLA Rules",
+  "audit-log": "Audit Log",
+  // Fixed Assets sub-pages
+  depreciation: "Depreciation",
+  disposals: "Disposals",
+  // API Platform module
+  "api-keys": "API Keys",
+  "usage-dashboard": "Usage Dashboard",
+  "endpoint-registry": "Endpoint Registry",
   // Localization module
   localization: "Localization",
   locales: "Locales",
@@ -481,9 +493,9 @@ export const SEGMENT_NAMES: Record<string, string> = {
   "conversation-intelligence": "Conversation Intelligence",
   "conversion-analytics": "Conversion Analytics",
   "ai-drafting": "AI Drafting",
-   gamification: "Gamification & Leaderboards",
-   // also used by real-estate module
-   coaching: "Sales Coaching",
+  gamification: "Gamification & Leaderboards",
+  // also used by real-estate module
+  coaching: "Sales Coaching",
   "deal-rooms": "Deal Rooms",
   "account-hierarchy": "Account Hierarchy",
   // DevOps Pipeline

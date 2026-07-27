@@ -22,24 +22,60 @@ import {
   type UploadPronunciationInput,
 } from "@unerp/shared";
 import { PeopleService } from "./people.service";
+import { PeopleCompetenciesService } from "./people-competencies.service";
+import { PeopleSuccessionService } from "./people-succession.service";
 
 interface AuthenticatedRequest extends Request {
   user: { tenantId: string; userId: string };
 }
 
-/**
- * Directory / org-chart profile endpoints powering the header hover card and
- * the full /profile page. Gated on the existing `auth.read`/`auth.update`
- * permissions rather than a new namespace — this is fundamentally an
- * extension of a user's own identity, and every authenticated role already
- * has those.
- */
 @ApiTags("people")
 @ApiBearerAuth()
 @Controller("people")
 @UseGuards(JwtAuthGuard, RbacGuard)
 export class PeopleController {
-  constructor(private readonly peopleService: PeopleService) {}
+  constructor(
+    private readonly peopleService: PeopleService,
+    private readonly competenciesService: PeopleCompetenciesService,
+    private readonly successionService: PeopleSuccessionService,
+  ) {}
+
+  @ApiOperation({ summary: "List competency definitions" })
+  @Permissions("hr.read")
+  @Get("competencies")
+  async getCompetencies(@Req() req: AuthenticatedRequest, @Query() query: any) {
+    return this.competenciesService.getCompetencies(req.user.tenantId, query);
+  }
+
+  @ApiOperation({ summary: "Create competency definition" })
+  @Permissions("hr.create")
+  @Post("competencies")
+  async createCompetency(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody() body: any,
+  ) {
+    return this.competenciesService.createCompetency(req.user.tenantId, body);
+  }
+
+  @ApiOperation({ summary: "List succession plans" })
+  @Permissions("hr.read")
+  @Get("succession-plans")
+  async getSuccessionPlans(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: any,
+  ) {
+    return this.successionService.getSuccessionPlans(req.user.tenantId, query);
+  }
+
+  @ApiOperation({ summary: "Create succession plan" })
+  @Permissions("hr.create")
+  @Post("succession-plans")
+  async createSuccessionPlan(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody() body: any,
+  ) {
+    return this.successionService.createSuccessionPlan(req.user.tenantId, body);
+  }
 
   @ApiOperation({ summary: "Get my full profile (for the /profile page)" })
   @Permissions("auth.read")

@@ -16,6 +16,8 @@ import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { RbacGuard } from "../../common/guards/rbac.guard";
 import { Permissions } from "../../common/decorators/permissions.decorator";
 import { StorageService } from "./storage.service";
+import { StorageBucketsService } from "./storage-buckets.service";
+import { StoragePoliciesService } from "./storage-policies.service";
 import {
   createFolderSchema,
   updateFolderSchema,
@@ -47,7 +49,35 @@ const presignedUrlSchema = z.object({
 @Controller("storage")
 @UseGuards(JwtAuthGuard, RbacGuard)
 export class StorageController {
-  constructor(private readonly service: StorageService) {}
+  constructor(
+    private readonly service: StorageService,
+    private readonly bucketsService: StorageBucketsService,
+    private readonly policiesService: StoragePoliciesService,
+  ) {}
+
+  @Get("buckets")
+  @Permissions("storage.quota.read")
+  @ApiOperation({ summary: "List storage bucket configurations" })
+  async getBuckets(@Req() req: AuthenticatedRequest) {
+    return this.bucketsService.getBuckets(req.user.tenantId);
+  }
+
+  @Post("buckets")
+  @Permissions("storage.quota.manage")
+  @ApiOperation({ summary: "Create storage bucket configuration" })
+  async createBucket(@Req() req: AuthenticatedRequest, @ZodBody() body: any) {
+    return this.bucketsService.createBucket(req.user.tenantId, body);
+  }
+
+  @Get("access-policies")
+  @Permissions("storage.quota.read")
+  @ApiOperation({ summary: "List storage access policies" })
+  async getAccessPolicies(
+    @Req() req: AuthenticatedRequest,
+    @Query("bucket") bucket?: string,
+  ) {
+    return this.policiesService.getAccessPolicies(req.user.tenantId, bucket);
+  }
 
   @Get("folders")
   @Permissions("storage.folders.read")

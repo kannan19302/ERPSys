@@ -83,7 +83,7 @@ export class SavedViewsDeepService {
     },
   ) {
     const count = await prisma.savedViewFilter.count({
-      where: { tenantId, viewId },
+      where: { tenantId, viewId: data.viewId },
     });
     return prisma.savedViewFilter.create({
       data: {

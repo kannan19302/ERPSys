@@ -16,6 +16,8 @@ import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { RbacGuard } from "../../common/guards/rbac.guard";
 import { Permissions } from "../../common/decorators/permissions.decorator";
 import { SearchService } from "./search.service";
+import { SearchConfigService } from "./search-config.service";
+import { SearchSynonymsService } from "./search-synonyms.service";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 
 interface AuthenticatedRequest extends Request {
@@ -54,7 +56,50 @@ const indexRuleSchema = z.object({
 @Controller("search")
 @UseGuards(JwtAuthGuard, RbacGuard)
 export class SearchController {
-  constructor(private readonly service: SearchService) {}
+  constructor(
+    private readonly service: SearchService,
+    private readonly configService: SearchConfigService,
+    private readonly synonymsService: SearchSynonymsService,
+  ) {}
+
+  @ApiOperation({ summary: "Get search index configs" })
+  @Get("index-configs")
+  @Permissions("search.rules.read")
+  async getIndexConfigs(@Req() req: AuthenticatedRequest) {
+    return this.configService.getIndexConfigs(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: "Upsert search index config" })
+  @Post("index-configs/:entityType")
+  @Permissions("search.rules.create")
+  async upsertIndexConfig(
+    @Req() req: AuthenticatedRequest,
+    @Param("entityType") entityType: string,
+    @Body() body: any,
+  ) {
+    return this.configService.upsertIndexConfig(
+      req.user.tenantId,
+      entityType,
+      body,
+    );
+  }
+
+  @ApiOperation({ summary: "List synonym groups" })
+  @Get("synonyms")
+  @Permissions("search.rules.read")
+  async getSynonyms(@Req() req: AuthenticatedRequest) {
+    return this.synonymsService.getSynonymGroups(req.user.tenantId);
+  }
+
+  @ApiOperation({ summary: "Create synonym group" })
+  @Post("synonyms")
+  @Permissions("search.rules.create")
+  async createSynonymGroup(
+    @Req() req: AuthenticatedRequest,
+    @Body() body: any,
+  ) {
+    return this.synonymsService.createSynonymGroup(req.user.tenantId, body);
+  }
 
   @ApiOperation({
     summary: "Global tenant-scoped entity search (RBAC-filtered per entity)",

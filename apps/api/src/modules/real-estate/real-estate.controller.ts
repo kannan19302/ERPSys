@@ -17,6 +17,9 @@ import { Permissions } from "../../common/decorators/permissions.decorator";
 import { RealEstatePropertiesService } from "./real-estate-properties.service";
 import { RealEstateLeasingService } from "./real-estate-leasing.service";
 import { RealEstateOperationsService } from "./real-estate-operations.service";
+import { RealEstateMaintenanceService } from "./real-estate-maintenance.service";
+import { RealEstateLeaseRenewalService } from "./real-estate-lease-renewal.service";
+import { RealEstateFinancialsService } from "./real-estate-financials.service";
 import { Request } from "express";
 
 interface AuthRequest extends Request {
@@ -30,6 +33,9 @@ export class RealEstateController {
     private readonly props: RealEstatePropertiesService,
     private readonly leasing: RealEstateLeasingService,
     private readonly ops: RealEstateOperationsService,
+    private readonly maint: RealEstateMaintenanceService,
+    private readonly renewals: RealEstateLeaseRenewalService,
+    private readonly financials: RealEstateFinancialsService,
   ) {}
 
   // ── Properties ──
@@ -551,5 +557,252 @@ export class RealEstateController {
   @Permissions("real-estate.valuations.delete")
   async deleteValuation(@Req() req: AuthRequest, @Param("id") id: string) {
     return this.ops.deleteValuation(req.user.tenantId, id);
+  }
+
+  // ── Maintenance Requests ──
+  @Get("maintenance-requests")
+  @Permissions("real-estate.maintenance-request.read")
+  async getMaintenanceRequests(@Req() req: AuthRequest, @Query() query: any) {
+    return this.maint.getRequests(req.user.tenantId, query);
+  }
+
+  @Get("maintenance-requests/stats")
+  @Permissions("real-estate.maintenance-request.read")
+  async getMaintenanceRequestStats(@Req() req: AuthRequest) {
+    return this.maint.getRequestStats(req.user.tenantId);
+  }
+
+  @Get("maintenance-requests/:id")
+  @Permissions("real-estate.maintenance-request.read")
+  async getMaintenanceRequest(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+  ) {
+    return this.maint.getRequestById(req.user.tenantId, id);
+  }
+
+  @Post("maintenance-requests")
+  @Permissions("real-estate.maintenance-request.create")
+  async createMaintenanceRequest(@Req() req: AuthRequest, @Body() body: any) {
+    return this.maint.createRequest(req.user.tenantId, body);
+  }
+
+  @Put("maintenance-requests/:id")
+  @Permissions("real-estate.maintenance-request.update")
+  async updateMaintenanceRequest(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @Body() body: any,
+  ) {
+    return this.maint.updateRequest(req.user.tenantId, id, body);
+  }
+
+  @Delete("maintenance-requests/:id")
+  @Permissions("real-estate.maintenance-request.delete")
+  async deleteMaintenanceRequest(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+  ) {
+    return this.maint.deleteRequest(req.user.tenantId, id);
+  }
+
+  @Post("maintenance-requests/:id/assign")
+  @Permissions("real-estate.maintenance-request.update")
+  async assignMaintenanceVendor(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @Body() body: any,
+  ) {
+    return this.maint.assignVendor(req.user.tenantId, id, body.vendorId);
+  }
+
+  // ── Maintenance Vendors ──
+  @Get("maintenance-vendors")
+  @Permissions("real-estate.maintenance-vendor.read")
+  async getMaintenanceVendors(@Req() req: AuthRequest) {
+    return this.maint.getVendors(req.user.tenantId);
+  }
+
+  @Get("maintenance-vendors/:id")
+  @Permissions("real-estate.maintenance-vendor.read")
+  async getMaintenanceVendor(@Req() req: AuthRequest, @Param("id") id: string) {
+    return this.maint.getVendorById(req.user.tenantId, id);
+  }
+
+  @Post("maintenance-vendors")
+  @Permissions("real-estate.maintenance-vendor.create")
+  async createMaintenanceVendor(@Req() req: AuthRequest, @Body() body: any) {
+    return this.maint.createVendor(req.user.tenantId, body);
+  }
+
+  @Put("maintenance-vendors/:id")
+  @Permissions("real-estate.maintenance-vendor.update")
+  async updateMaintenanceVendor(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @Body() body: any,
+  ) {
+    return this.maint.updateVendor(req.user.tenantId, id, body);
+  }
+
+  // ── Lease Renewals ──
+  @Get("lease-renewals")
+  @Permissions("real-estate.lease-renewal.read")
+  async getLeaseRenewals(@Req() req: AuthRequest, @Query() query: any) {
+    return this.renewals.getRenewals(req.user.tenantId, query);
+  }
+
+  @Get("lease-renewals/:id")
+  @Permissions("real-estate.lease-renewal.read")
+  async getLeaseRenewal(@Req() req: AuthRequest, @Param("id") id: string) {
+    return this.renewals.getRenewalById(req.user.tenantId, id);
+  }
+
+  @Post("lease-renewals")
+  @Permissions("real-estate.lease-renewal.create")
+  async createLeaseRenewal(@Req() req: AuthRequest, @Body() body: any) {
+    return this.renewals.createRenewal(req.user.tenantId, body);
+  }
+
+  @Put("lease-renewals/:id")
+  @Permissions("real-estate.lease-renewal.update")
+  async updateLeaseRenewal(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @Body() body: any,
+  ) {
+    return this.renewals.updateRenewal(req.user.tenantId, id, body);
+  }
+
+  @Post("lease-renewals/:id/approve")
+  @Permissions("real-estate.lease-renewal.approve")
+  async approveLeaseRenewal(@Req() req: AuthRequest, @Param("id") id: string) {
+    return this.renewals.approveRenewal(req.user.tenantId, id, req.user.userId);
+  }
+
+  @Post("lease-renewals/:id/execute")
+  @Permissions("real-estate.lease-renewal.update")
+  async executeLeaseRenewal(@Req() req: AuthRequest, @Param("id") id: string) {
+    return this.renewals.executeRenewal(req.user.tenantId, id);
+  }
+
+  // ── Rent Escalations ──
+  @Get("rent-escalations")
+  @Permissions("real-estate.rent-escalation.read")
+  async getRentEscalations(@Req() req: AuthRequest, @Query() query: any) {
+    return this.renewals.getRentEscalations(req.user.tenantId, query);
+  }
+
+  @Post("rent-escalations")
+  @Permissions("real-estate.rent-escalation.create")
+  async createRentEscalation(@Req() req: AuthRequest, @Body() body: any) {
+    return this.renewals.createRentEscalation(req.user.tenantId, body);
+  }
+
+  @Put("rent-escalations/:id")
+  @Permissions("real-estate.rent-escalation.update")
+  async updateRentEscalation(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @Body() body: any,
+  ) {
+    return this.renewals.updateRentEscalation(req.user.tenantId, id, body);
+  }
+
+  @Delete("rent-escalations/:id")
+  @Permissions("real-estate.rent-escalation.delete")
+  async deleteRentEscalation(@Req() req: AuthRequest, @Param("id") id: string) {
+    return this.renewals.deleteRentEscalation(req.user.tenantId, id);
+  }
+
+  @Post("rent-escalations/:id/apply")
+  @Permissions("real-estate.rent-escalation.update")
+  async applyRentEscalation(@Req() req: AuthRequest, @Param("id") id: string) {
+    return this.renewals.applyEscalation(req.user.tenantId, id);
+  }
+
+  // ── Property Financials ──
+  @Get("property-financials")
+  @Permissions("real-estate.property-financial.read")
+  async getPropertyFinancials(@Req() req: AuthRequest, @Query() query: any) {
+    return this.financials.getFinancials(req.user.tenantId, query);
+  }
+
+  @Get("property-financials/portfolio-summary")
+  @Permissions("real-estate.property-financial.read")
+  async getPortfolioSummary(@Req() req: AuthRequest) {
+    return this.financials.getPortfolioSummary(req.user.tenantId);
+  }
+
+  @Get("property-financials/summary/:propertyId")
+  @Permissions("real-estate.property-financial.read")
+  async getPropertyFinancialSummary(
+    @Req() req: AuthRequest,
+    @Param("propertyId") propertyId: string,
+  ) {
+    return this.financials.getPropertySummary(req.user.tenantId, propertyId);
+  }
+
+  @Get("property-financials/:id")
+  @Permissions("real-estate.property-financial.read")
+  async getPropertyFinancial(@Req() req: AuthRequest, @Param("id") id: string) {
+    return this.financials.getFinancialById(req.user.tenantId, id);
+  }
+
+  @Post("property-financials")
+  @Permissions("real-estate.property-financial.create")
+  async createPropertyFinancial(@Req() req: AuthRequest, @Body() body: any) {
+    return this.financials.createFinancial(req.user.tenantId, body);
+  }
+
+  @Put("property-financials/:id")
+  @Permissions("real-estate.property-financial.update")
+  async updatePropertyFinancial(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @Body() body: any,
+  ) {
+    return this.financials.updateFinancial(req.user.tenantId, id, body);
+  }
+
+  @Delete("property-financials/:id")
+  @Permissions("real-estate.property-financial.delete")
+  async deletePropertyFinancial(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+  ) {
+    return this.financials.deleteFinancial(req.user.tenantId, id);
+  }
+
+  // ── Expense Categories ──
+  @Get("expense-categories")
+  @Permissions("real-estate.expense-category.read")
+  async getExpenseCategories(@Req() req: AuthRequest) {
+    return this.financials.getExpenseCategories(req.user.tenantId);
+  }
+
+  @Post("expense-categories")
+  @Permissions("real-estate.expense-category.create")
+  async createExpenseCategory(@Req() req: AuthRequest, @Body() body: any) {
+    return this.financials.createExpenseCategory(req.user.tenantId, body);
+  }
+
+  @Put("expense-categories/:id")
+  @Permissions("real-estate.expense-category.update")
+  async updateExpenseCategory(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @Body() body: any,
+  ) {
+    return this.financials.updateExpenseCategory(req.user.tenantId, id, body);
+  }
+
+  @Delete("expense-categories/:id")
+  @Permissions("real-estate.expense-category.delete")
+  async deleteExpenseCategory(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+  ) {
+    return this.financials.deleteExpenseCategory(req.user.tenantId, id);
   }
 }

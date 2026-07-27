@@ -15,14 +15,8 @@ import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { RbacGuard } from "../../common/guards/rbac.guard";
 import { Permissions } from "../../common/decorators/permissions.decorator";
 import { ApiPlatformService } from "./api-platform.service";
-import {
-  createApiKeySchema,
-  updateApiKeyScopesSchema,
-  createWebhookSchema,
-  updateWebhookSchema,
-  registerEndpointSchema,
-} from "./api-platform.dtos";
-import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
+import { ApiRateLimitsService } from "./api-rate-limits.service";
+import { ApiQuotasService } from "./api-quotas.service";
 
 interface AuthenticatedRequest extends Request {
   user: { tenantId: string; userId: string; email: string; roles: string[] };
@@ -33,7 +27,35 @@ interface AuthenticatedRequest extends Request {
 @Controller("admin/api-platform")
 @UseGuards(JwtAuthGuard, RbacGuard)
 export class ApiPlatformController {
-  constructor(private readonly service: ApiPlatformService) {}
+  constructor(
+    private readonly service: ApiPlatformService,
+    private readonly rateLimitsService: ApiRateLimitsService,
+    private readonly quotasService: ApiQuotasService,
+  ) {}
+
+  @Get("rate-limits")
+  @Permissions("api-platform.keys.read")
+  @ApiOperation({ summary: "List API rate limit rules" })
+  async getRateLimits(@Req() req: AuthenticatedRequest) {
+    return this.rateLimitsService.getRateLimitRules(req.user.tenantId);
+  }
+
+  @Post("rate-limits")
+  @Permissions("api-platform.keys.create")
+  @ApiOperation({ summary: "Create API rate limit rule" })
+  async createRateLimitRule(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody() body: any,
+  ) {
+    return this.rateLimitsService.createRateLimitRule(req.user.tenantId, body);
+  }
+
+  @Get("quotas")
+  @Permissions("api-platform.usage.read")
+  @ApiOperation({ summary: "List API quota policies" })
+  async getQuotas(@Req() req: AuthenticatedRequest) {
+    return this.quotasService.getQuotaPolicies(req.user.tenantId);
+  }
 
   @Get("keys")
   @Permissions("api-platform.keys.read")
