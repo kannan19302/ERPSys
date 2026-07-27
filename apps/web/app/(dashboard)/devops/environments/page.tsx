@@ -42,27 +42,30 @@ export default function EnvironmentsPage() {
     );
 
   const columns: Column<Environment>[] = [
-    { header: "Name", accessor: "name", sortable: true },
-    { header: "Slug", accessor: "slug" },
+    { key: "name", header: "Name", sortable: true },
+    { key: "slug", header: "Slug" },
     {
+      key: "type",
       header: "Type",
-      accessor: (r) => (
+      render: (r) => (
         <Badge variant={r.type === "PRODUCTION" ? "danger" : "info"}>
           {r.type}
         </Badge>
       ),
     },
     {
+      key: "status",
       header: "Status",
-      accessor: (r) => (
+      render: (r) => (
         <Badge variant={r.status === "ACTIVE" ? "success" : "warning"}>
           {r.status}
         </Badge>
       ),
     },
     {
+      key: "healthStatus",
       header: "Health",
-      accessor: (r) =>
+      render: (r) =>
         r.healthStatus ? (
           <Badge variant={r.healthStatus === "HEALTHY" ? "success" : "danger"}>
             {r.healthStatus}
@@ -71,10 +74,11 @@ export default function EnvironmentsPage() {
           "-"
         ),
     },
-    { header: "Region", accessor: (r) => r.region || "-" },
+    { key: "region", header: "Region", render: (r) => r.region || "-" },
     {
+      key: "id",
       header: "Actions",
-      accessor: (r) => (
+      render: (r) => (
         <div className="flex gap-2">
           <button
             onClick={(e) => {
@@ -106,7 +110,7 @@ export default function EnvironmentsPage() {
         </Button>
       </div>
       <Card>
-        <DataTable columns={columns} data={items} sortable />
+        <DataTable columns={columns} data={items} />
       </Card>
     </div>
   );

@@ -53,23 +53,26 @@ export default function ReleasesPage() {
             : "warning";
 
   const columns: Column<Release>[] = [
-    { header: "Name", accessor: "name", sortable: true },
-    { header: "Version", accessor: "version" },
-    { header: "Application", accessor: "application" },
+    { key: "name", header: "Name", sortable: true },
+    { key: "version", header: "Version" },
+    { key: "application", header: "Application" },
     {
+      key: "releaseType",
       header: "Type",
-      accessor: (r) => <Badge variant="info">{r.releaseType}</Badge>,
+      render: (r) => <Badge variant="info">{r.releaseType}</Badge>,
     },
     {
+      key: "status",
       header: "Status",
-      accessor: (r) => (
+      render: (r) => (
         <Badge variant={variantForStatus(r.status)}>{r.status}</Badge>
       ),
     },
-    { header: "Branch", accessor: (r) => r.branch || "-" },
+    { key: "branch", header: "Branch", render: (r) => r.branch || "-" },
     {
+      key: "id",
       header: "Actions",
-      accessor: (r) => (
+      render: (r) => (
         <div className="flex gap-2">
           <button
             onClick={(e) => {
@@ -101,7 +104,7 @@ export default function ReleasesPage() {
         </Button>
       </div>
       <Card>
-        <DataTable columns={columns} data={items} sortable />
+        <DataTable columns={columns} data={items} />
       </Card>
     </div>
   );

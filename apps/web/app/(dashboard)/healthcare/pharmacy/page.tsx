@@ -1,7 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
-import { api } from "@unerp/shared/api";
 import { ProtectedComponent } from "@unerp/ui";
+
+const BASE = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
+const api = {
+  get: async (p: string) => { const r = await fetch(`${BASE}${p}`, { credentials: "include" }); if (!r.ok) throw new Error(await r.text()); return r.json(); },
+  post: async (p: string, b?: unknown) => { const r = await fetch(`${BASE}${p}`, { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: b ? JSON.stringify(b) : undefined }); if (!r.ok) throw new Error(await r.text()); return r.json(); },
+};
 import { Plus, Loader2, AlertTriangle } from "lucide-react";
 
 export default function HealthcarePharmacyPage() {

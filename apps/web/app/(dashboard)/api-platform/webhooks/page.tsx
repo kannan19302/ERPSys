@@ -5,7 +5,7 @@ import {
   Button,
   Spinner,
   DataTable,
-  type ListColumn,
+  type Column,
 } from "@unerp/ui";
 import { apiGet } from "@/lib/api";
 import { Plus } from "lucide-react";
@@ -22,26 +22,26 @@ export default function WebhooksPage() {
 
   if (loading) return <Spinner />;
 
-  const columns: ListColumn[] = [
-    { key: "name", label: "Name" },
-    { key: "targetUrl", label: "Target URL" },
-    { key: "events", label: "Events" },
-    { key: "status", label: "Status" },
-    { key: "createdAt", label: "Created" },
+  const columns: Column<Record<string, unknown>>[] = [
+    { key: "name", header: "Name" },
+    { key: "targetUrl", header: "Target URL" },
+    { key: "events", header: "Events" },
+    { key: "status", header: "Status" },
+    { key: "createdAt", header: "Created" },
   ];
 
   return (
     <div>
       <PageHeader
         title="Webhooks"
-        subtitle={`${webhooks.length} subscriptions`}
+        description={`${webhooks.length} subscriptions`}
       />
       <div className="ui-card">
         <div
           className="ui-flex"
           style={{ justifyContent: "flex-end", marginBottom: "var(--space-4)" }}
         >
-          <Button icon={Plus}>Add Webhook</Button>
+          <Button leftIcon={<Plus size={16} />}>Add Webhook</Button>
         </div>
         <DataTable columns={columns} data={webhooks} />
       </div>

@@ -26,10 +26,10 @@ export default function QuotaPage() {
     <div>
       <PageHeader
         title="Storage Quota"
-        subtitle={`${usedGB} GB used of ${limitGB} GB`}
+        description={`${usedGB} GB used of ${limitGB} GB`}
       />
       <StatCardRow
-        cards={[
+        stats={[
           { label: "Storage Used", value: `${usedGB} GB` },
           { label: "Storage Limit", value: `${limitGB} GB` },
           { label: "Total Files", value: quota?.fileCount || 0 },

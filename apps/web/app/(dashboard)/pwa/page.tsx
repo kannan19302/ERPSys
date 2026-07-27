@@ -71,14 +71,15 @@ export default function PwaPage() {
     );
 
   const cacheColumns: Column<CacheRule>[] = [
-    { header: "Name", accessor: "name" },
-    { header: "URL Pattern", accessor: "urlPattern" },
-    { header: "Strategy", accessor: "cacheStrategy" },
+    { key: "name", header: "Name" },
+    { key: "urlPattern", header: "URL Pattern" },
+    { key: "cacheStrategy", header: "Strategy" },
     {
+      key: "maxAgeSeconds",
       header: "TTL",
-      accessor: (r) => `${Math.round(r.maxAgeSeconds / 60)}min`,
+      render: (r) => `${Math.round(r.maxAgeSeconds / 60)}min`,
     },
-    { header: "Active", accessor: (r) => (r.isActive ? "Yes" : "No") },
+    { key: "isActive", header: "Active", render: (r) => (r.isActive ? "Yes" : "No") },
   ];
 
   return (
@@ -90,13 +91,11 @@ export default function PwaPage() {
         <KPICard
           title="Manifest"
           value={manifest?.name || "UniERP"}
-          subtitle="App Name"
           icon={<Smartphone size={20} />}
         />
         <KPICard
           title="Service Worker"
           value={sw?.version || "N/A"}
-          subtitle="Version"
           icon={<CloudOff size={20} />}
         />
         <KPICard
@@ -111,37 +110,39 @@ export default function PwaPage() {
         />
       </div>
       <div className="ui-grid-2">
-        <Card
-          title="Cache Rules"
-          action={
-            <Button variant="primary" size="sm">
-              <Settings size={14} /> Manage
-            </Button>
-          }
-        >
-          <DataTable columns={cacheColumns} data={cacheRules.slice(0, 5)} />
-        </Card>
-        <Card
-          title="Install Prompt"
-          action={
-            <Button variant="primary" size="sm">
-              <Settings size={14} /> Configure
-            </Button>
-          }
-        >
-          {manifest && (
-            <div className="p-4">
-              <p>
-                <strong>Display:</strong> {manifest.display}
-              </p>
-              <p>
-                <strong>Theme Color:</strong> {manifest.themeColor}
-              </p>
-              <p>
-                <strong>Start URL:</strong> {manifest.startUrl}
-              </p>
+        <Card padding="sm">
+          <div style={{ padding: 'var(--space-3)' }}>
+            <div className="ui-flex" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+              <h4 className="text-xs font-semibold m-0">Cache Rules</h4>
+              <Button variant="primary" size="sm">
+                <Settings size={14} /> Manage
+              </Button>
             </div>
-          )}
+            <DataTable columns={cacheColumns} data={cacheRules.slice(0, 5)} />
+          </div>
+        </Card>
+        <Card padding="sm">
+          <div style={{ padding: 'var(--space-3)' }}>
+            <div className="ui-flex" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+              <h4 className="text-xs font-semibold m-0">Install Prompt</h4>
+              <Button variant="primary" size="sm">
+                <Settings size={14} /> Configure
+              </Button>
+            </div>
+            {manifest && (
+              <div className="p-4">
+                <p>
+                  <strong>Display:</strong> {manifest.display}
+                </p>
+                <p>
+                  <strong>Theme Color:</strong> {manifest.themeColor}
+                </p>
+                <p>
+                  <strong>Start URL:</strong> {manifest.startUrl}
+                </p>
+              </div>
+            )}
+          </div>
         </Card>
       </div>
     </div>

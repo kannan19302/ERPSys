@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { PageHeader, Spinner, DataTable, type ListColumn } from "@unerp/ui";
+import { PageHeader, Spinner, DataTable, type Column } from "@unerp/ui";
 import { apiGet } from "@/lib/api";
 
 export default function DepreciationPage() {
@@ -16,19 +16,19 @@ export default function DepreciationPage() {
   if (loading) return <Spinner />;
 
   const entries = report?.entries || [];
-  const columns: ListColumn[] = [
-    { key: "asset.name", label: "Asset" },
-    { key: "periodName", label: "Period" },
-    { key: "amount", label: "Amount" },
-    { key: "bookValue", label: "Book Value" },
-    { key: "date", label: "Posted" },
+  const columns: Column<Record<string, unknown>>[] = [
+    { key: "asset.name", header: "Asset" },
+    { key: "periodName", header: "Period" },
+    { key: "amount", header: "Amount" },
+    { key: "bookValue", header: "Book Value" },
+    { key: "date", header: "Posted" },
   ];
 
   return (
     <div>
       <PageHeader
         title="Depreciation Schedule"
-        subtitle={`Total: ${report?.totalAmount || 0}`}
+        description={`Total: ${report?.totalAmount || 0}`}
       />
       <div className="ui-card">
         <DataTable columns={columns} data={entries} />

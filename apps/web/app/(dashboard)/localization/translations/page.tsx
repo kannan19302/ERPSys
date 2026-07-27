@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { PageHeader, Spinner, DataTable, type ListColumn } from "@unerp/ui";
+import { PageHeader, Spinner, DataTable, type Column } from "@unerp/ui";
 import { apiGet } from "@/lib/api";
 
 export default function TranslationsPage() {
@@ -15,19 +15,19 @@ export default function TranslationsPage() {
 
   if (loading) return <Spinner />;
 
-  const columns: ListColumn[] = [
-    { key: "locale.code", label: "Locale" },
-    { key: "key.key", label: "Key" },
-    { key: "value", label: "Translation" },
-    { key: "isOverride", label: "Override" },
-    { key: "updatedAt", label: "Updated" },
+  const columns: Column<Record<string, unknown>>[] = [
+    { key: "locale.code", header: "Locale" },
+    { key: "key.key", header: "Key" },
+    { key: "value", header: "Translation" },
+    { key: "isOverride", header: "Override" },
+    { key: "updatedAt", header: "Updated" },
   ];
 
   return (
     <div>
       <PageHeader
         title="Translation Editor"
-        subtitle={`${translations.length} entries`}
+        description={`${translations.length} entries`}
       />
       <div className="ui-card">
         <DataTable columns={columns} data={translations} />

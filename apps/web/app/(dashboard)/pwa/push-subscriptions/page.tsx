@@ -35,22 +35,24 @@ export default function PushSubscriptionsPage() {
     );
 
   const columns: Column<PushSub>[] = [
-    { header: "User", accessor: "userId" },
-    { header: "Device", accessor: (r) => r.deviceType || "-" },
-    { header: "Browser", accessor: (r) => r.browser || "-" },
-    { header: "Platform", accessor: (r) => r.platform || "-" },
+    { key: "userId", header: "User" },
+    { key: "deviceType", header: "Device", render: (r) => r.deviceType || "-" },
+    { key: "browser", header: "Browser", render: (r) => r.browser || "-" },
+    { key: "platform", header: "Platform", render: (r) => r.platform || "-" },
     {
+      key: "status",
       header: "Status",
-      accessor: (r) => (
+      render: (r) => (
         <Badge variant={r.status === "ACTIVE" ? "success" : "danger"}>
           {r.status}
         </Badge>
       ),
     },
-    { header: "Tags", accessor: (r) => r.tags?.join(", ") || "-" },
+    { key: "tags", header: "Tags", render: (r) => r.tags?.join(", ") || "-" },
     {
+      key: "actions",
       header: "Actions",
-      accessor: (r) => (
+      render: (r) => (
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -69,7 +71,7 @@ export default function PushSubscriptionsPage() {
         <h1>Push Subscriptions</h1>
       </div>
       <Card>
-        <DataTable columns={columns} data={items} sortable />
+        <DataTable columns={columns} data={items} />
       </Card>
     </div>
   );

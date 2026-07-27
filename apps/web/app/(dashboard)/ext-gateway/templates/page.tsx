@@ -40,24 +40,28 @@ export default function TemplatesPage() {
     );
 
   const columns: Column<Template>[] = [
-    { header: "Name", accessor: "name", sortable: true },
-    { header: "Provider", accessor: "provider" },
+    { key: "name", header: "Name", sortable: true },
+    { key: "provider", header: "Provider" },
     {
+      key: "category",
       header: "Category",
-      accessor: (r) => <Badge variant="info">{r.category}</Badge>,
+      render: (r) => <Badge variant="info">{r.category}</Badge>,
     },
     {
+      key: "isBuiltIn",
       header: "Built-in",
-      accessor: (r) =>
+      render: (r) =>
         r.isBuiltIn ? <Star size={14} className="text-yellow-500" /> : "-",
     },
     {
+      key: "description",
       header: "Description",
-      accessor: (r) => r.description?.slice(0, 60) || "-",
+      render: (r) => r.description?.slice(0, 60) || "-",
     },
     {
+      key: "id",
       header: "Actions",
-      accessor: (r) => (
+      render: (r) => (
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -79,7 +83,7 @@ export default function TemplatesPage() {
         </Button>
       </div>
       <Card>
-        <DataTable columns={columns} data={items} sortable />
+        <DataTable columns={columns} data={items} />
       </Card>
     </div>
   );

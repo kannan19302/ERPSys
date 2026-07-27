@@ -4,7 +4,7 @@ import {
   PageHeader,
   Spinner,
   DataTable,
-  type ListColumn,
+  type Column,
   StatusBadge,
 } from "@unerp/ui";
 import { apiGet } from "@/lib/api";
@@ -21,19 +21,19 @@ export default function WorkflowInstancesPage() {
 
   if (loading) return <Spinner />;
 
-  const columns: ListColumn[] = [
-    { key: "status", label: "Status" },
-    { key: "trigger", label: "Trigger" },
-    { key: "startedAt", label: "Started" },
-    { key: "completedAt", label: "Completed" },
-    { key: "duration", label: "Duration (s)" },
+  const columns: Column<Record<string, unknown>>[] = [
+    { key: "status", header: "Status" },
+    { key: "trigger", header: "Trigger" },
+    { key: "startedAt", header: "Started" },
+    { key: "completedAt", header: "Completed" },
+    { key: "duration", header: "Duration (s)" },
   ];
 
   return (
     <div>
       <PageHeader
         title="Workflow Instances"
-        subtitle={`${instances.length} instances`}
+        description={`${instances.length} instances`}
       />
       <div className="ui-card">
         <DataTable columns={columns} data={instances} />

@@ -24,9 +24,9 @@ export default function WorkflowAnalyticsPage() {
 
   return (
     <div>
-      <PageHeader title="Workflow Analytics" subtitle="Performance metrics" />
+      <PageHeader title="Workflow Analytics" description="Performance metrics" />
       <StatCardRow
-        cards={[
+        stats={[
           { label: "Total Instances", value: total },
           { label: "Running", value: running },
           { label: "Completed", value: completed },

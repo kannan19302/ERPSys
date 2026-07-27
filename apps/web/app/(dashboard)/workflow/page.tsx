@@ -5,7 +5,7 @@ import {
   Button,
   Spinner,
   DataTable,
-  type ListColumn,
+  type Column,
   StatusBadge,
   StatCardRow,
 } from "@unerp/ui";
@@ -24,30 +24,30 @@ export default function WorkflowDefinitionsPage() {
 
   if (loading) return <Spinner />;
 
-  const columns: ListColumn[] = [
-    { key: "name", label: "Name", sortable: true },
-    { key: "category", label: "Category" },
-    { key: "trigger", label: "Trigger" },
-    { key: "status", label: "Status" },
-    { key: "version", label: "Version" },
-    { key: "createdAt", label: "Created", sortable: true },
+  const columns: Column<Record<string, unknown>>[] = [
+    { key: "name", header: "Name" },
+    { key: "category", header: "Category" },
+    { key: "trigger", header: "Trigger" },
+    { key: "status", header: "Status" },
+    { key: "version", header: "Version" },
+    { key: "createdAt", header: "Created" },
   ];
 
   return (
     <div>
       <PageHeader
         title="Workflow Definitions"
-        subtitle={`${definitions.length} definitions`}
+        description={`${definitions.length} definitions`}
       />
       <StatCardRow
-        cards={[{ label: "Total Definitions", value: definitions.length }]}
+        stats={[{ label: "Total Definitions", value: definitions.length }]}
       />
       <div className="ui-card" style={{ marginTop: "var(--space-6)" }}>
         <div
           className="ui-flex"
           style={{ justifyContent: "flex-end", marginBottom: "var(--space-4)" }}
         >
-          <Button icon={Plus}>New Definition</Button>
+          <Button leftIcon={<Plus size={16} />}>New Definition</Button>
         </div>
         <DataTable columns={columns} data={definitions} />
       </div>

@@ -5,7 +5,7 @@ import {
   Button,
   Spinner,
   DataTable,
-  type ListColumn,
+  type Column,
   StatusBadge,
   StatCardRow,
 } from "@unerp/ui";
@@ -24,25 +24,25 @@ export default function ApiKeysPage() {
 
   if (loading) return <Spinner />;
 
-  const columns: ListColumn[] = [
-    { key: "name", label: "Name", sortable: true },
-    { key: "prefix", label: "Prefix" },
-    { key: "rateLimit", label: "Rate Limit" },
-    { key: "status", label: "Status" },
-    { key: "expiresAt", label: "Expires" },
-    { key: "createdAt", label: "Created" },
+  const columns: Column<Record<string, unknown>>[] = [
+    { key: "name", header: "Name" },
+    { key: "prefix", header: "Prefix" },
+    { key: "rateLimit", header: "Rate Limit" },
+    { key: "status", header: "Status" },
+    { key: "expiresAt", header: "Expires" },
+    { key: "createdAt", header: "Created" },
   ];
 
   return (
     <div>
-      <PageHeader title="API Keys" subtitle={`${keys.length} keys`} />
-      <StatCardRow cards={[{ label: "Total API Keys", value: keys.length }]} />
+      <PageHeader title="API Keys" description={`${keys.length} keys`} />
+      <StatCardRow stats={[{ label: "Total API Keys", value: keys.length }]} />
       <div className="ui-card" style={{ marginTop: "var(--space-6)" }}>
         <div
           className="ui-flex"
           style={{ justifyContent: "flex-end", marginBottom: "var(--space-4)" }}
         >
-          <Button icon={Plus}>Generate Key</Button>
+          <Button leftIcon={<Plus size={16} />}>Generate Key</Button>
         </div>
         <DataTable columns={columns} data={keys} />
       </div>

@@ -53,21 +53,23 @@ export default function OutboxPage() {
     );
 
   const columns: Column<DlqEntry>[] = [
-    { header: "Event", accessor: "eventName" },
-    { header: "Destination", accessor: "destination" },
+    { key: "eventName", header: "Event" },
+    { key: "destination", header: "Destination" },
     {
+      key: "status",
       header: "Status",
-      accessor: (r) =>
+      render: (r) =>
         r.status === "PENDING_REVIEW" ? (
           <span className="ui-badge ui-badge-warning">Pending Review</span>
         ) : (
           <span className="ui-badge ui-badge-info">{r.status}</span>
         ),
     },
-    { header: "Attempts", accessor: "failedAttempts" },
+    { key: "failedAttempts", header: "Attempts" },
     {
+      key: "actions",
       header: "Actions",
-      accessor: (r) => (
+      render: (r) => (
         <div className="flex gap-2">
           <button
             onClick={(e) => {
@@ -100,13 +102,13 @@ export default function OutboxPage() {
           title="Pending Review"
           value={stats.pendingReview || 0}
           icon={<AlertTriangle size={20} />}
-          variant="warning"
+          color="var(--color-warning)"
         />
         <KPICard
           title="Retrying"
           value={stats.retrying || 0}
           icon={<Activity size={20} />}
-          variant="info"
+          color="var(--color-primary)"
         />
         <KPICard
           title="Archived"
@@ -119,15 +121,16 @@ export default function OutboxPage() {
           icon={<Inbox size={20} />}
         />
       </div>
-      <Card
-        title="Dead Letter Queue"
-        action={
-          <Button variant="primary" size="sm">
-            <Eye size={14} /> View All
-          </Button>
-        }
-      >
-        <DataTable columns={columns} data={dlqItems.slice(0, 10)} />
+      <Card padding="sm">
+        <div style={{ padding: 'var(--space-3)' }}>
+          <div className="ui-flex" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+            <h4 className="text-xs font-semibold m-0">Dead Letter Queue</h4>
+            <Button variant="primary" size="sm">
+              <Eye size={14} /> View All
+            </Button>
+          </div>
+          <DataTable columns={columns} data={dlqItems.slice(0, 10)} />
+        </div>
       </Card>
     </div>
   );

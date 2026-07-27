@@ -70,13 +70,11 @@ export default function DevopsAnalyticsPage() {
           title="Success Rate"
           value={`${successRate}%`}
           icon={<CheckCircle size={20} />}
-          variant={successRate > 90 ? "success" : "warning"}
         />
         <KPICard
           title="Failed"
           value={latest.failedDeployments}
           icon={<AlertTriangle size={20} />}
-          variant="danger"
         />
         <KPICard
           title="Avg Duration"

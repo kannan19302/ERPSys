@@ -43,21 +43,24 @@ export default function CacheRulesPage() {
     );
 
   const columns: Column<CacheRule>[] = [
-    { header: "Name", accessor: "name", sortable: true },
-    { header: "URL Pattern", accessor: "urlPattern" },
+    { key: "name", header: "Name", sortable: true },
+    { key: "urlPattern", header: "URL Pattern" },
     {
+      key: "cacheStrategy",
       header: "Strategy",
-      accessor: (r) => <Badge variant="info">{r.cacheStrategy}</Badge>,
+      render: (r) => <Badge variant="info">{r.cacheStrategy}</Badge>,
     },
     {
+      key: "maxAgeSeconds",
       header: "TTL",
-      accessor: (r) => `${Math.round(r.maxAgeSeconds / 60)} min`,
+      render: (r) => `${Math.round(r.maxAgeSeconds / 60)} min`,
     },
-    { header: "Max Entries", accessor: "maxEntries" },
-    { header: "Priority", accessor: "priority" },
+    { key: "maxEntries", header: "Max Entries" },
+    { key: "priority", header: "Priority" },
     {
+      key: "isActive",
       header: "Active",
-      accessor: (r) =>
+      render: (r) =>
         r.isActive ? (
           <Badge variant="success">Active</Badge>
         ) : (
@@ -65,8 +68,9 @@ export default function CacheRulesPage() {
         ),
     },
     {
+      key: "actions",
       header: "Actions",
-      accessor: (r) => (
+      render: (r) => (
         <div className="flex gap-2">
           <button
             onClick={(e) => {
@@ -98,7 +102,7 @@ export default function CacheRulesPage() {
         </Button>
       </div>
       <Card>
-        <DataTable columns={columns} data={items} sortable />
+        <DataTable columns={columns} data={items} />
       </Card>
     </div>
   );

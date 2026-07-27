@@ -43,12 +43,13 @@ export default function DeploymentsPage() {
     );
 
   const columns: Column<Deployment>[] = [
-    { header: "Name", accessor: "name", sortable: true },
-    { header: "Application", accessor: "application", sortable: true },
-    { header: "Version", accessor: "version" },
+    { key: "name", header: "Name", sortable: true },
+    { key: "application", header: "Application", sortable: true },
+    { key: "version", header: "Version" },
     {
+      key: "status",
       header: "Status",
-      accessor: (r) => (
+      render: (r) => (
         <Badge
           variant={
             r.status === "SUCCESS"
@@ -62,12 +63,13 @@ export default function DeploymentsPage() {
         </Badge>
       ),
     },
-    { header: "Strategy", accessor: "strategy" },
-    { header: "Branch", accessor: (r) => r.branch || "-" },
-    { header: "Deployed By", accessor: "deployedBy" },
+    { key: "strategy", header: "Strategy" },
+    { key: "branch", header: "Branch", render: (r) => r.branch || "-" },
+    { key: "deployedBy", header: "Deployed By" },
     {
+      key: "id",
       header: "Actions",
-      accessor: (r) => (
+      render: (r) => (
         <div className="flex gap-2">
           <button
             onClick={(e) => {
@@ -99,7 +101,7 @@ export default function DeploymentsPage() {
         </Button>
       </div>
       <Card>
-        <DataTable columns={columns} data={items} sortable />
+        <DataTable columns={columns} data={items} />
       </Card>
     </div>
   );

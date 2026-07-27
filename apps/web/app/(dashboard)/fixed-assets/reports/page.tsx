@@ -17,9 +17,9 @@ export default function ReportsPage() {
 
   return (
     <div>
-      <PageHeader title="Asset Reports" subtitle="Summary and analytics" />
+      <PageHeader title="Asset Reports" description="Summary and analytics" />
       <StatCardRow
-        cards={[
+        stats={[
           { label: "Total Assets", value: summary?.totalAssets || 0 },
           {
             label: "Total Purchase Value",

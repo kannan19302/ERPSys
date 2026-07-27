@@ -43,27 +43,31 @@ export default function DlqPage() {
     );
 
   const columns: Column<DlqEntry>[] = [
-    { header: "Event", accessor: "eventName", sortable: true },
-    { header: "Destination", accessor: "destination" },
+    { key: "eventName", header: "Event", sortable: true },
+    { key: "destination", header: "Destination" },
     {
+      key: "failedAttempts",
       header: "Attempts",
-      accessor: (r) => `${r.failedAttempts}/${r.maxRequeues}`,
+      render: (r) => `${r.failedAttempts}/${r.maxRequeues}`,
     },
     {
+      key: "status",
       header: "Status",
-      accessor: (r) => (
+      render: (r) => (
         <Badge variant={r.status === "PENDING_REVIEW" ? "warning" : "info"}>
           {r.status}
         </Badge>
       ),
     },
     {
+      key: "createdAt",
       header: "Created",
-      accessor: (r) => new Date(r.createdAt).toLocaleDateString(),
+      render: (r) => new Date(r.createdAt).toLocaleDateString(),
     },
     {
+      key: "actions",
       header: "Actions",
-      accessor: (r) => (
+      render: (r) => (
         <div className="flex gap-2">
           <button
             onClick={(e) => {
@@ -100,7 +104,7 @@ export default function DlqPage() {
         <h1>Dead Letter Queue</h1>
       </div>
       <Card>
-        <DataTable columns={columns} data={items} sortable />
+        <DataTable columns={columns} data={items} />
       </Card>
     </div>
   );

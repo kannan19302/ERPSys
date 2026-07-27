@@ -1,7 +1,15 @@
 "use client";
 import { useState, useEffect } from "react";
-import { api } from "@unerp/shared/api";
 import { Loader2 } from "lucide-react";
+
+const BASE = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
+const api = {
+  get: async (p: string) => {
+    const r = await fetch(`${BASE}${p}`, { credentials: "include" });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  },
+};
 
 export default function HealthcareAllergiesPage() {
   const [allergies, setAllergies] = useState<any[]>([]);

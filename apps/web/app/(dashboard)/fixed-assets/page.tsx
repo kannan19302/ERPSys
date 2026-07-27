@@ -5,7 +5,7 @@ import {
   Button,
   Spinner,
   DataTable,
-  type ListColumn,
+  type Column,
   StatusBadge,
   StatCardRow,
 } from "@unerp/ui";
@@ -31,20 +31,20 @@ export default function FixedAssetsPage() {
 
   if (loading) return <Spinner />;
 
-  const columns: ListColumn[] = [
-    { key: "assetCode", label: "Code", sortable: true },
-    { key: "name", label: "Name", sortable: true },
-    { key: "status", label: "Status" },
-    { key: "purchaseValue", label: "Purchase Value" },
-    { key: "currentValue", label: "Current Value" },
-    { key: "purchaseDate", label: "Purchase Date" },
+  const columns: Column<Record<string, unknown>>[] = [
+    { key: "assetCode", header: "Code" },
+    { key: "name", header: "Name" },
+    { key: "status", header: "Status" },
+    { key: "purchaseValue", header: "Purchase Value" },
+    { key: "currentValue", header: "Current Value" },
+    { key: "purchaseDate", header: "Purchase Date" },
   ];
 
   return (
     <div>
-      <PageHeader title="Asset Registry" subtitle={`${assets.length} assets`} />
+      <PageHeader title="Asset Registry" description={`${assets.length} assets`} />
       <StatCardRow
-        cards={[
+        stats={[
           { label: "Total Assets", value: summary?.totalAssets || 0 },
           { label: "Active", value: summary?.activeAssets || 0 },
           { label: "Disposed", value: summary?.disposedAssets || 0 },
@@ -56,7 +56,7 @@ export default function FixedAssetsPage() {
           className="ui-flex"
           style={{ justifyContent: "flex-end", marginBottom: "var(--space-4)" }}
         >
-          <Button icon={Plus}>Register Asset</Button>
+          <Button leftIcon={<Plus size={16} />}>Register Asset</Button>
         </div>
         <DataTable columns={columns} data={assets} />
       </div>

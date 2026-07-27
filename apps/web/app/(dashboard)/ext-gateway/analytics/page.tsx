@@ -39,13 +39,11 @@ export default function ExtAnalyticsPage() {
           title="Active"
           value={data.activeConnections || 0}
           icon={<Activity size={20} />}
-          variant="success"
         />
         <KPICard
           title="Success Rate"
           value={`${data.successRate || 0}%`}
           icon={<CheckCircle size={20} />}
-          variant={data.successRate > 90 ? "success" : "warning"}
         />
         <KPICard
           title="Logs (24h)"
@@ -54,22 +52,21 @@ export default function ExtAnalyticsPage() {
         />
       </div>
       <div className="ui-grid-3">
-        <Card title="Webhook Stats">
-          <div className="p-4">
-            <p>Total Deliveries: {data.totalDeliveries || 0}</p>
-            <p>Success: {data.successDeliveries || 0}</p>
-            <p>Failed: {data.failedDeliveries || 0}</p>
+        <Card padding="md">
+          <h3 className="text-xs font-semibold m-0 mb-2">Webhook Stats</h3>
+          <div className="ui-stack-1">
+            <p className="m-0 text-xs">Total Deliveries: {data.totalDeliveries || 0}</p>
+            <p className="m-0 text-xs">Success: {data.successDeliveries || 0}</p>
+            <p className="m-0 text-xs">Failed: {data.failedDeliveries || 0}</p>
           </div>
         </Card>
-        <Card title="Rate Limits">
-          <div className="p-4">
-            <p>Configs: {data.totalRateLimits || 0}</p>
-          </div>
+        <Card padding="md">
+          <h3 className="text-xs font-semibold m-0 mb-2">Rate Limits</h3>
+          <p className="m-0 text-xs">Configs: {data.totalRateLimits || 0}</p>
         </Card>
-        <Card title="Activity (24h)">
-          <div className="p-4">
-            <p>Log Entries: {data.logsLast24h || 0}</p>
-          </div>
+        <Card padding="md">
+          <h3 className="text-xs font-semibold m-0 mb-2">Activity (24h)</h3>
+          <p className="m-0 text-xs">Log Entries: {data.logsLast24h || 0}</p>
         </Card>
       </div>
     </div>

@@ -5,7 +5,7 @@ import {
   Button,
   Spinner,
   DataTable,
-  type ListColumn,
+  type Column,
   StatusBadge,
   StatCardRow,
 } from "@unerp/ui";
@@ -28,21 +28,21 @@ export default function StoragePage() {
 
   if (loading) return <Spinner />;
 
-  const fileColumns: ListColumn[] = [
-    { key: "name", label: "Name", sortable: true },
-    { key: "mimeType", label: "Type" },
-    { key: "size", label: "Size", sortable: true },
-    { key: "createdAt", label: "Uploaded", sortable: true },
+  const fileColumns: Column<Record<string, unknown>>[] = [
+    { key: "name", header: "Name" },
+    { key: "mimeType", header: "Type" },
+    { key: "size", header: "Size" },
+    { key: "createdAt", header: "Uploaded" },
   ];
 
   return (
     <div>
       <PageHeader
         title="File Browser"
-        subtitle={`${files.length} files, ${folders.length} folders`}
+        description={`${files.length} files, ${folders.length} folders`}
       />
       <StatCardRow
-        cards={[
+        stats={[
           { label: "Total Files", value: files.length },
           { label: "Folders", value: folders.length },
         ]}
@@ -57,10 +57,10 @@ export default function StoragePage() {
         >
           <h3 className="ui-heading-sm">Files</h3>
           <div className="ui-flex" style={{ gap: "var(--space-2)" }}>
-            <Button variant="secondary" icon={Plus}>
+            <Button variant="secondary" leftIcon={<Plus size={16} />}>
               New Folder
             </Button>
-            <Button icon={Upload}>Upload</Button>
+            <Button leftIcon={<Upload size={16} />}>Upload</Button>
           </div>
         </div>
         <DataTable columns={fileColumns} data={files} />

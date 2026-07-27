@@ -40,26 +40,30 @@ export default function DeadLettersPage() {
     );
 
   const columns: Column<DeadLetter>[] = [
-    { header: "Event", accessor: "eventName", sortable: true },
-    { header: "Destination", accessor: "destination" },
+    { key: "eventName", header: "Event", sortable: true },
+    { key: "destination", header: "Destination" },
     {
+      key: "failureReason",
       header: "Reason",
-      accessor: (r) =>
+      render: (r) =>
         r.failureReason ? r.failureReason.slice(0, 50) + "..." : "-",
     },
     {
+      key: "action",
       header: "Action",
-      accessor: (r) =>
+      render: (r) =>
         r.action ? <Badge variant="info">{r.action}</Badge> : "-",
     },
-    { header: "Actioned By", accessor: (r) => r.actionedBy || "-" },
+    { key: "actionedBy", header: "Actioned By", render: (r) => r.actionedBy || "-" },
     {
+      key: "deadLetterAt",
       header: "Dead Since",
-      accessor: (r) => new Date(r.deadLetterAt).toLocaleDateString(),
+      render: (r) => new Date(r.deadLetterAt).toLocaleDateString(),
     },
     {
+      key: "actions",
       header: "Actions",
-      accessor: (r) => (
+      render: (r) => (
         <div className="flex gap-2">
           <button
             onClick={(e) => {
@@ -88,7 +92,7 @@ export default function DeadLettersPage() {
         <h1>Dead Letters</h1>
       </div>
       <Card>
-        <DataTable columns={columns} data={items} sortable />
+        <DataTable columns={columns} data={items} />
       </Card>
     </div>
   );

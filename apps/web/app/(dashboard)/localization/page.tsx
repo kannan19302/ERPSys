@@ -5,7 +5,7 @@ import {
   Button,
   Spinner,
   DataTable,
-  type ListColumn,
+  type Column,
   StatusBadge,
   StatCardRow,
 } from "@unerp/ui";
@@ -24,26 +24,26 @@ export default function LocalizationPage() {
 
   if (loading) return <Spinner />;
 
-  const columns: ListColumn[] = [
-    { key: "code", label: "Code" },
-    { key: "name", label: "Name" },
-    { key: "direction", label: "Direction" },
-    { key: "isActive", label: "Active" },
-    { key: "isDefault", label: "Default" },
+  const columns: Column<Record<string, unknown>>[] = [
+    { key: "code", header: "Code" },
+    { key: "name", header: "Name" },
+    { key: "direction", header: "Direction" },
+    { key: "isActive", header: "Active" },
+    { key: "isDefault", header: "Default" },
   ];
 
   return (
     <div>
-      <PageHeader title="Locales" subtitle={`${locales.length} languages`} />
+      <PageHeader title="Locales" description={`${locales.length} languages`} />
       <StatCardRow
-        cards={[{ label: "Total Locales", value: locales.length }]}
+        stats={[{ label: "Total Locales", value: locales.length }]}
       />
       <div className="ui-card" style={{ marginTop: "var(--space-6)" }}>
         <div
           className="ui-flex"
           style={{ justifyContent: "flex-end", marginBottom: "var(--space-4)" }}
         >
-          <Button icon={Plus}>Add Locale</Button>
+          <Button leftIcon={<Plus size={16} />}>Add Locale</Button>
         </div>
         <DataTable columns={columns} data={locales} />
       </div>

@@ -56,12 +56,13 @@ export default function ExtGatewayPage() {
     );
 
   const columns: Column<Connection>[] = [
-    { header: "Name", accessor: "name", sortable: true },
-    { header: "Provider", accessor: "provider" },
-    { header: "Type", accessor: "type" },
+    { key: "name", header: "Name", sortable: true },
+    { key: "provider", header: "Provider" },
+    { key: "type", header: "Type" },
     {
+      key: "status",
       header: "Status",
-      accessor: (r) => (
+      render: (r) => (
         <span
           className={`ui-badge ui-badge-${r.status === "ACTIVE" ? "success" : r.status === "ERROR" ? "danger" : "warning"}`}
         >
@@ -69,10 +70,11 @@ export default function ExtGatewayPage() {
         </span>
       ),
     },
-    { header: "Errors", accessor: "errorCount" },
+    { key: "errorCount", header: "Errors" },
     {
+      key: "id",
       header: "Actions",
-      accessor: (r) => (
+      render: (r) => (
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -103,7 +105,6 @@ export default function ExtGatewayPage() {
           title="Active"
           value={analytics.activeConnections || 0}
           icon={<Globe size={20} />}
-          variant="success"
         />
         <KPICard
           title="Webhooks"
@@ -116,8 +117,8 @@ export default function ExtGatewayPage() {
           icon={<Activity size={20} />}
         />
       </div>
-      <Card title="Connections">
-        <DataTable columns={columns} data={connections} sortable />
+      <Card padding="md">
+        <DataTable columns={columns} data={connections} />
       </Card>
     </div>
   );

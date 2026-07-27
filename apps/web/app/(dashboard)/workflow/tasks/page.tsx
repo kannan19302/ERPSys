@@ -4,7 +4,7 @@ import {
   PageHeader,
   Spinner,
   DataTable,
-  type ListColumn,
+  type Column,
   StatusBadge,
 } from "@unerp/ui";
 import { apiGet } from "@/lib/api";
@@ -21,16 +21,16 @@ export default function WorkflowTasksPage() {
 
   if (loading) return <Spinner />;
 
-  const columns: ListColumn[] = [
-    { key: "status", label: "Status" },
-    { key: "assigneeId", label: "Assignee" },
-    { key: "dueAt", label: "Due" },
-    { key: "createdAt", label: "Created" },
+  const columns: Column<Record<string, unknown>>[] = [
+    { key: "status", header: "Status" },
+    { key: "assigneeId", header: "Assignee" },
+    { key: "dueAt", header: "Due" },
+    { key: "createdAt", header: "Created" },
   ];
 
   return (
     <div>
-      <PageHeader title="My Tasks" subtitle={`${tasks.length} tasks`} />
+      <PageHeader title="My Tasks" description={`${tasks.length} tasks`} />
       <div className="ui-card">
         <DataTable columns={columns} data={tasks} />
       </div>

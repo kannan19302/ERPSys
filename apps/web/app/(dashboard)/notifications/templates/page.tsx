@@ -118,8 +118,8 @@ export default function NotificationTemplatesPage() {
           .filter(Boolean)
           .map((l: string) => {
             const [k, ...v] = l.split("=");
-            return [k.trim(), v.join("=").trim()];
-          }),
+            return k ? [k.trim(), v.join("=").trim()] : [];
+          }).filter((pair) => pair.length > 0),
       );
       const res = await fetch(`/api/notifications/templates/${id}/render`, {
         method: "POST",

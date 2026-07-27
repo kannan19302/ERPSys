@@ -43,14 +43,15 @@ export default function WebhooksPage() {
     );
 
   const columns: Column<Webhook>[] = [
-    { header: "Name", accessor: "name", sortable: true },
-    { header: "URL", accessor: (r) => r.url.slice(0, 40) + "..." },
-    { header: "Events", accessor: (r) => r.eventTypes?.join(", ") || "-" },
-    { header: "Format", accessor: "format" },
-    { header: "Retry", accessor: "retryPolicy" },
+    { key: "name", header: "Name", sortable: true },
+    { key: "url", header: "URL", render: (r) => r.url.slice(0, 40) + "..." },
+    { key: "eventTypes", header: "Events", render: (r) => r.eventTypes?.join(", ") || "-" },
+    { key: "format", header: "Format" },
+    { key: "retryPolicy", header: "Retry" },
     {
+      key: "active",
       header: "Active",
-      accessor: (r) =>
+      render: (r) =>
         r.active ? (
           <Badge variant="success">Active</Badge>
         ) : (
@@ -58,16 +59,18 @@ export default function WebhooksPage() {
         ),
     },
     {
+      key: "consecutiveFailureCount",
       header: "Failures",
-      accessor: (r) => (
+      render: (r) => (
         <Badge variant={r.consecutiveFailureCount > 0 ? "danger" : "success"}>
           {r.consecutiveFailureCount}
         </Badge>
       ),
     },
     {
+      key: "id",
       header: "Actions",
-      accessor: (r) => (
+      render: (r) => (
         <div className="flex gap-2">
           <button
             onClick={(e) => {
@@ -99,7 +102,7 @@ export default function WebhooksPage() {
         </Button>
       </div>
       <Card>
-        <DataTable columns={columns} data={items} sortable />
+        <DataTable columns={columns} data={items} />
       </Card>
     </div>
   );

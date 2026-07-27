@@ -76,12 +76,13 @@ export default function DevopsPage() {
     );
 
   const depColumns: Column<Deployment>[] = [
-    { header: "Name", accessor: "name", sortable: true },
-    { header: "App", accessor: "application" },
-    { header: "Version", accessor: "version" },
+    { key: "name", header: "Name", sortable: true },
+    { key: "application", header: "App" },
+    { key: "version", header: "Version" },
     {
+      key: "status",
       header: "Status",
-      accessor: (r) => (
+      render: (r) => (
         <span
           className={`ui-badge ui-badge-${r.status === "SUCCESS" ? "success" : r.status === "FAILED" ? "danger" : "warning"}`}
         >
@@ -89,8 +90,8 @@ export default function DevopsPage() {
         </span>
       ),
     },
-    { header: "Strategy", accessor: "strategy" },
-    { header: "By", accessor: "deployedBy" },
+    { key: "strategy", header: "Strategy" },
+    { key: "deployedBy", header: "By" },
   ];
 
   return (
@@ -120,16 +121,15 @@ export default function DevopsPage() {
           icon={<GitBranch size={20} />}
         />
       </div>
-      <Card
-        title="Recent Deployments"
-        action={
+      <div className="ui-card" style={{ padding: 'var(--space-4)' }}>
+        <div className="ui-flex" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
+          <h3 className="text-sm font-semibold m-0">Recent Deployments</h3>
           <Button variant="primary" size="sm">
             <Plus size={14} /> New Deployment
           </Button>
-        }
-      >
+        </div>
         <DataTable columns={depColumns} data={deployments.slice(0, 10)} />
-      </Card>
+      </div>
     </div>
   );
 }

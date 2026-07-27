@@ -45,14 +45,15 @@ export default function ConnectionsPage() {
     );
 
   const columns: Column<Connection>[] = [
-    { header: "Name", accessor: "name", sortable: true },
-    { header: "Provider", accessor: "provider" },
-    { header: "Type", accessor: "type" },
-    { header: "Auth", accessor: "authType" },
-    { header: "Rate Limit", accessor: (r) => `${r.rateLimitPerMin}/min` },
+    { key: "name", header: "Name", sortable: true },
+    { key: "provider", header: "Provider" },
+    { key: "type", header: "Type" },
+    { key: "authType", header: "Auth" },
+    { key: "rateLimitPerMin", header: "Rate Limit", render: (r) => `${r.rateLimitPerMin}/min` },
     {
+      key: "status",
       header: "Status",
-      accessor: (r) => (
+      render: (r) => (
         <Badge
           variant={
             r.status === "ACTIVE"
@@ -67,8 +68,9 @@ export default function ConnectionsPage() {
       ),
     },
     {
+      key: "id",
       header: "Actions",
-      accessor: (r) => (
+      render: (r) => (
         <div className="flex gap-2">
           <button
             onClick={(e) => {
@@ -108,7 +110,7 @@ export default function ConnectionsPage() {
         </Button>
       </div>
       <Card>
-        <DataTable columns={columns} data={items} sortable />
+        <DataTable columns={columns} data={items} />
       </Card>
     </div>
   );

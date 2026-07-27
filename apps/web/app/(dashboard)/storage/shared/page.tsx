@@ -4,7 +4,7 @@ import {
   PageHeader,
   Spinner,
   DataTable,
-  type ListColumn,
+  type Column,
   StatusBadge,
 } from "@unerp/ui";
 import { apiGet } from "@/lib/api";
@@ -21,17 +21,17 @@ export default function SharedFilesPage() {
 
   if (loading) return <Spinner />;
 
-  const columns: ListColumn[] = [
-    { key: "token", label: "Link Token" },
-    { key: "permission", label: "Permission" },
-    { key: "downloadCount", label: "Downloads" },
-    { key: "expiresAt", label: "Expires" },
-    { key: "createdAt", label: "Created" },
+  const columns: Column<Record<string, unknown>>[] = [
+    { key: "token", header: "Link Token" },
+    { key: "permission", header: "Permission" },
+    { key: "downloadCount", header: "Downloads" },
+    { key: "expiresAt", header: "Expires" },
+    { key: "createdAt", header: "Created" },
   ];
 
   return (
     <div>
-      <PageHeader title="Shared Files" subtitle="Manage file share links" />
+      <PageHeader title="Shared Files" description="Manage file share links" />
       <div className="ui-card">
         <DataTable columns={columns} data={links} />
       </div>

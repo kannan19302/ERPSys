@@ -17,9 +17,9 @@ export default function UsagePage() {
 
   return (
     <div>
-      <PageHeader title="API Usage Dashboard" subtitle="30-day metrics" />
+      <PageHeader title="API Usage Dashboard" description="30-day metrics" />
       <StatCardRow
-        cards={[
+        stats={[
           { label: "Total Requests", value: metrics?.totalRequests || 0 },
           {
             label: "Avg Response Time",
