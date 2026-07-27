@@ -65,7 +65,7 @@ export class StorageController {
   @Post("buckets")
   @Permissions("storage.quota.manage")
   @ApiOperation({ summary: "Create storage bucket configuration" })
-  async createBucket(@Req() req: AuthenticatedRequest, @ZodBody() body: any) {
+  async createBucket(@Req() req: AuthenticatedRequest, @Body() body: any) {
     return this.bucketsService.createBucket(req.user.tenantId, body);
   }
 

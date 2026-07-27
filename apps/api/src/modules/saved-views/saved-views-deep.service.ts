@@ -304,7 +304,7 @@ export class SavedViewsDeepService {
         userId,
         resourceName: source.resourceName,
         name: newName,
-        state: source.state,
+        state: source.state as any,
       },
     });
     const layouts = await prisma.savedViewLayout.findMany({
@@ -317,9 +317,9 @@ export class SavedViewsDeepService {
           userId,
           viewId: cloned.id,
           layoutType: l.layoutType,
-          columns: l.columns,
+          columns: l.columns as any,
           groupBy: l.groupBy,
-          sortBy: l.sortBy,
+          sortBy: l.sortBy as any,
           pageSize: l.pageSize,
         },
       });
@@ -335,7 +335,7 @@ export class SavedViewsDeepService {
           viewId: cloned.id,
           field: f.field,
           operator: f.operator,
-          value: f.value,
+          value: f.value as any,
           logic: f.logic,
           sortOrder: f.sortOrder,
         },

@@ -158,7 +158,10 @@ export class SavedViewsController {
     @Req() req: AuthenticatedRequest,
     @ZodBody(filterSchema) body: z.infer<typeof filterSchema>,
   ) {
-    return this.deepService.addFilter(req.user.tenantId, req.user.userId, body);
+    return this.deepService.addFilter(req.user.tenantId, req.user.userId, {
+      ...body,
+      operator: body.operator ?? "=",
+    });
   }
 
   @Put("filters/:id")

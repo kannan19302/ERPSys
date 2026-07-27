@@ -495,7 +495,6 @@ export class SearchService {
       avgResponseMs,
       topQueries,
       zeroResultQueries,
-      searchAnalytics,
     ] = await Promise.all([
       prisma.searchQueryLog.count({ where }),
       prisma.searchQueryLog.groupBy({
