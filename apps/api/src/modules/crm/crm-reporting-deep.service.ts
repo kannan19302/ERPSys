@@ -33,7 +33,7 @@ export const createReportScheduleSchema = z.object({
     .optional(),
   cronExpr: z.string().optional(),
   recipients: z.array(z.string().email()).optional(),
-  format: z.enum(["PDF", "CSV", "XLSX", "HTML"]).optional(),
+  format: z.enum(["PDF", "CSV", "XLSX", "HTML"]).optional().default("PDF"),
   filters: z.record(z.any()).optional(),
   isActive: z.boolean().optional(),
 });

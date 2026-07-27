@@ -1,24 +1,37 @@
-import { Controller, Get, Post, Put, Param, UseGuards, Req, Query, BadRequestException } from '@nestjs/common';
-import { Request } from 'express';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { RbacGuard } from '../../common/guards/rbac.guard';
-import { Permissions } from '../../common/decorators/permissions.decorator';
-import { ZodBody } from '../../common/decorators/zod-body.decorator';
-import { FixedAssetsService } from './fixed-assets.service';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Param,
+  UseGuards,
+  Req,
+  Query,
+  BadRequestException,
+} from "@nestjs/common";
+import { Request } from "express";
+import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
+import { RbacGuard } from "../../common/guards/rbac.guard";
+import { Permissions } from "../../common/decorators/permissions.decorator";
+import { ZodBody } from "../../common/decorators/zod-body.decorator";
+import { FixedAssetsService } from "./fixed-assets.service";
 import {
   CreateFixedAssetCategoryInput,
   CreateFixedAssetInput,
   UpdateFixedAssetInput,
   TransferFixedAssetInput,
   LogFixedAssetMaintenanceInput,
+  DisposeFixedAssetInput,
   createFixedAssetCategorySchema,
   createFixedAssetSchema,
   updateFixedAssetSchema,
   transferFixedAssetSchema,
   logFixedAssetMaintenanceSchema,
-} from './fixed-assets.dtos';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { z } from 'zod';
+  disposeFixedAssetSchema,
+  postDepreciationSchema,
+} from "./fixed-assets.dtos";
+import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
+import { z } from "zod";
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -30,123 +43,217 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
-const postDepreciationBodySchema = z.object({
-  periodName: z.string().min(4).max(10).regex(/^\d{4}-\d{2}$/, 'Period name must be in format YYYY-MM'),
-});
-type PostDepreciationBody = z.infer<typeof postDepreciationBodySchema>;
-
-@ApiTags('fixed-assets')
+@ApiTags("fixed-assets")
 @ApiBearerAuth()
-@Controller('fixed-assets')
+@Controller("fixed-assets")
 @UseGuards(JwtAuthGuard, RbacGuard)
 export class FixedAssetsController {
-  constructor(private readonly fixedAssetsService: FixedAssetsService) {}
+  constructor(private readonly service: FixedAssetsService) {}
 
-  // ─── CATEGORY ENDPOINTS ────────────────────────────
+  // ─── CATEGORY ──────────────────────────────────────
 
-  @Get('categories')
-  @Permissions('assets.category.manage')
-  @ApiOperation({ summary: 'List all asset categories' })
+  @Get("categories")
+  @Permissions("fixed-assets.categories.read")
+  @ApiOperation({ summary: "List asset categories" })
   async getCategories(@Req() req: AuthenticatedRequest) {
-    return this.fixedAssetsService.getCategories(req.user.tenantId);
+    return this.service.getCategories(req.user.tenantId);
   }
 
-  @Post('categories')
-  @Permissions('assets.category.manage')
-  @ApiOperation({ summary: 'Create an asset category' })
+  @Post("categories")
+  @Permissions("fixed-assets.categories.create")
+  @ApiOperation({ summary: "Create asset category" })
   async createCategory(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(createFixedAssetCategorySchema) body: CreateFixedAssetCategoryInput
+    @ZodBody(createFixedAssetCategorySchema)
+    body: CreateFixedAssetCategoryInput,
   ) {
-    return this.fixedAssetsService.createCategory(req.user.tenantId, body);
+    return this.service.createCategory(req.user.tenantId, body);
   }
 
-  // ─── ASSET REGISTRY ENDPOINTS ──────────────────────
+  // ─── ASSETS ─────────────────────────────────────────
 
   @Get()
-  @Permissions('assets.asset.read')
-  @ApiOperation({ summary: 'List fixed assets with optional filters' })
+  @Permissions("fixed-assets.assets.read")
+  @ApiOperation({ summary: "List fixed assets" })
   async getAssets(
     @Req() req: AuthenticatedRequest,
-    @Query('categoryId') categoryId?: string,
-    @Query('status') status?: string,
-    @Query('locationId') locationId?: string
+    @Query("categoryId") categoryId?: string,
+    @Query("status") status?: string,
+    @Query("locationId") locationId?: string,
   ) {
-    return this.fixedAssetsService.getAssets(req.user.tenantId, { categoryId, status, locationId });
+    return this.service.getAssets(req.user.tenantId, {
+      categoryId,
+      status,
+      locationId,
+    });
   }
 
-  @Get(':id')
-  @Permissions('assets.asset.read')
-  @ApiOperation({ summary: 'Retrieve asset details by ID' })
-  async getAssetById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.fixedAssetsService.getAssetById(req.user.tenantId, id);
+  @Get(":id")
+  @Permissions("fixed-assets.assets.read")
+  @ApiOperation({ summary: "Get asset by ID" })
+  async getAssetById(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.service.getAssetById(req.user.tenantId, id);
   }
 
   @Post()
-  @Permissions('assets.asset.create')
-  @ApiOperation({ summary: 'Register a new fixed asset' })
+  @Permissions("fixed-assets.assets.create")
+  @ApiOperation({ summary: "Create fixed asset" })
   async createAsset(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(createFixedAssetSchema) body: CreateFixedAssetInput
+    @ZodBody(createFixedAssetSchema) body: CreateFixedAssetInput,
   ) {
     const orgId = req.user.orgId;
-    if (!orgId) {
-      throw new BadRequestException('User session is missing orgId scope.');
-    }
-    return this.fixedAssetsService.createAsset(req.user.tenantId, orgId, req.user.userId, body);
+    if (!orgId)
+      throw new BadRequestException("User session is missing orgId scope.");
+    return this.service.createAsset(
+      req.user.tenantId,
+      orgId,
+      req.user.userId,
+      body,
+    );
   }
 
-  @Put(':id')
-  @Permissions('assets.asset.update')
-  @ApiOperation({ summary: 'Update asset details' })
+  @Put(":id")
+  @Permissions("fixed-assets.assets.update")
+  @ApiOperation({ summary: "Update asset" })
   async updateAsset(
     @Req() req: AuthenticatedRequest,
-    @Param('id') id: string,
-    @ZodBody(updateFixedAssetSchema) body: UpdateFixedAssetInput
+    @Param("id") id: string,
+    @ZodBody(updateFixedAssetSchema) body: UpdateFixedAssetInput,
   ) {
-    return this.fixedAssetsService.updateAsset(req.user.tenantId, id, req.user.userId, body);
+    return this.service.updateAsset(
+      req.user.tenantId,
+      id,
+      req.user.userId,
+      body,
+    );
   }
 
-  // ─── CUSTODY / LOCATION TRANSFER ──────────────────
+  // ─── TRANSFERS ──────────────────────────────────────
 
-  @Post(':id/transfer')
-  @Permissions('assets.transfer.manage')
-  @ApiOperation({ summary: 'Record an asset location or custodian transfer' })
+  @Post(":id/transfer")
+  @Permissions("fixed-assets.assets.update")
+  @ApiOperation({ summary: "Transfer asset" })
   async transferAsset(
     @Req() req: AuthenticatedRequest,
-    @Param('id') id: string,
-    @ZodBody(transferFixedAssetSchema) body: TransferFixedAssetInput
+    @Param("id") id: string,
+    @ZodBody(transferFixedAssetSchema) body: TransferFixedAssetInput,
   ) {
-    return this.fixedAssetsService.transferAsset(req.user.tenantId, id, req.user.userId, body);
+    return this.service.transferAsset(
+      req.user.tenantId,
+      id,
+      req.user.userId,
+      body,
+    );
   }
 
-  // ─── MAINTENANCE RECORDING ────────────────────────
+  // ─── MAINTENANCE ────────────────────────────────────
 
-  @Post(':id/maintenance')
-  @Permissions('assets.maintenance.manage')
-  @ApiOperation({ summary: 'Log a maintenance event for a fixed asset' })
+  @Post(":id/maintenance")
+  @Permissions("fixed-assets.assets.update")
+  @ApiOperation({ summary: "Log maintenance" })
   async logMaintenance(
     @Req() req: AuthenticatedRequest,
-    @Param('id') id: string,
-    @ZodBody(logFixedAssetMaintenanceSchema) body: LogFixedAssetMaintenanceInput
+    @Param("id") id: string,
+    @ZodBody(logFixedAssetMaintenanceSchema)
+    body: LogFixedAssetMaintenanceInput,
   ) {
-    return this.fixedAssetsService.logMaintenance(req.user.tenantId, id, req.user.userId, body);
+    return this.service.logMaintenance(
+      req.user.tenantId,
+      id,
+      req.user.userId,
+      body,
+    );
   }
 
-  // ─── DEPRECIATION RUNS ────────────────────────────
+  // ─── DEPRECIATION ───────────────────────────────────
 
-  @Post(':id/depreciate')
-  @Permissions('assets.depreciation.post')
-  @ApiOperation({ summary: 'Calculate and post depreciation for a single asset' })
+  @Post(":id/depreciate")
+  @Permissions("fixed-assets.depreciation.create")
+  @ApiOperation({ summary: "Post depreciation" })
   async postDepreciation(
     @Req() req: AuthenticatedRequest,
-    @Param('id') id: string,
-    @ZodBody(postDepreciationBodySchema) body: PostDepreciationBody
+    @Param("id") id: string,
+    @ZodBody(postDepreciationSchema) body: { periodName: string },
   ) {
     const orgId = req.user.orgId;
-    if (!orgId) {
-      throw new BadRequestException('User session is missing orgId scope.');
-    }
-    return this.fixedAssetsService.postDepreciation(req.user.tenantId, orgId, req.user.userId, id, body.periodName);
+    if (!orgId)
+      throw new BadRequestException("User session is missing orgId scope.");
+    return this.service.postDepreciation(
+      req.user.tenantId,
+      orgId,
+      req.user.userId,
+      id,
+      body.periodName,
+    );
+  }
+
+  // ─── DISPOSAL ───────────────────────────────────────
+
+  @Get("disposals")
+  @Permissions("fixed-assets.disposals.read")
+  @ApiOperation({ summary: "List disposals" })
+  async getDisposals(
+    @Req() req: AuthenticatedRequest,
+    @Query("assetId") assetId?: string,
+  ) {
+    return this.service.getDisposals(req.user.tenantId, assetId);
+  }
+
+  @Post(":id/dispose")
+  @Permissions("fixed-assets.disposals.create")
+  @ApiOperation({ summary: "Dispose asset" })
+  async disposeAsset(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+    @ZodBody(disposeFixedAssetSchema) body: DisposeFixedAssetInput,
+  ) {
+    return this.service.disposeAsset(
+      req.user.tenantId,
+      id,
+      req.user.userId,
+      body,
+    );
+  }
+
+  // ─── AUDIT LOG ──────────────────────────────────────
+
+  @Get("audit-log")
+  @Permissions("fixed-assets.assets.read")
+  @ApiOperation({ summary: "Get audit logs" })
+  async getAuditLogs(
+    @Req() req: AuthenticatedRequest,
+    @Query("assetId") assetId?: string,
+  ) {
+    return this.service.getAuditLogs(req.user.tenantId, assetId);
+  }
+
+  // ─── REPORTS ────────────────────────────────────────
+
+  @Get("reports/depreciation")
+  @Permissions("fixed-assets.depreciation.read")
+  @ApiOperation({ summary: "Depreciation report" })
+  async getDepreciationReport(
+    @Req() req: AuthenticatedRequest,
+    @Query("periodName") periodName?: string,
+  ) {
+    return this.service.getDepreciationReport(req.user.tenantId, periodName);
+  }
+
+  @Get("reports/summary")
+  @Permissions("fixed-assets.assets.read")
+  @ApiOperation({ summary: "Asset summary" })
+  async getAssetSummary(@Req() req: AuthenticatedRequest) {
+    return this.service.getAssetSummary(req.user.tenantId);
+  }
+
+  @Get("reports/maintenance")
+  @Permissions("fixed-assets.assets.read")
+  @ApiOperation({ summary: "Maintenance report" })
+  async getMaintenanceReport(@Req() req: AuthenticatedRequest) {
+    return this.service.getMaintenanceReport(req.user.tenantId);
   }
 }

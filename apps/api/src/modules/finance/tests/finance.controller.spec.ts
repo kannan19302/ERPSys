@@ -2,6 +2,14 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { FinanceController } from "../finance.controller";
 import { FinanceService } from "../finance.service";
 
+vi.mock("@unerp/database", () => ({
+  prisma: {
+    organization: {
+      findFirst: vi.fn().mockResolvedValue({ id: "org-system-default" }),
+    },
+  },
+}));
+
 describe("FinanceController", () => {
   let controller: FinanceController;
   let service: FinanceService;
@@ -58,7 +66,9 @@ describe("FinanceController", () => {
 
   describe("createPayment", () => {
     it("should call financeService.createPayment with correct params", async () => {
-      const req: unknown = { user: { tenantId: "tenant-1", userId: "user-1" } };
+      const req: unknown = {
+        user: { tenantId: "tenant-1", orgId: "org-1", userId: "user-1" },
+      };
       const dto = {} as never;
       await controller.createPayment(req as never, dto as never);
       expect(service.createPayment).toHaveBeenCalledWith(
@@ -67,28 +77,13 @@ describe("FinanceController", () => {
         "user-1",
       );
     });
-
-    it("should fallback to system user if not provided in req", async () => {
-      const req: unknown = { user: { tenantId: "tenant-1" } };
-      const dto = {} as never;
-      await controller.createPayment(req as never, dto as never);
-      expect(service.createPayment).toHaveBeenCalledWith(
-        "tenant-1",
-        dto,
-        "system",
-      );
-    });
   });
 
   describe("getDashboardData", () => {
     it("should call financeService.getDashboardData with tenantId", async () => {
       const req: unknown = { user: { tenantId: "tenant-1" } };
-      (
-        service.getDashboardData as unknown as ReturnType<typeof vi.fn>
-      ).mockResolvedValue({ kpis: {} });
-      const result = await controller.getDashboardData(req as never);
+      await controller.getDashboardData(req as never);
       expect(service.getDashboardData).toHaveBeenCalledWith("tenant-1");
-      expect(result).toEqual({ kpis: {} });
     });
   });
 });

@@ -23,6 +23,7 @@
 2. [Coding Conventions](#coding-conventions)
    - [UniERP Design System](#unierp-design-system)
 3. [Data Model](#data-model)
+   - [Deep Expanded Modules (Phase M)](#deep-expanded-modules)
 4. [API Standards](#api-standards)
 5. [Tech Stack](#tech-stack)
 6. [Security](#security)

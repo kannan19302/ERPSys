@@ -33,6 +33,50 @@ import { SalesCpqController } from "./sales-cpq.controller";
 import { SalesCpqExtensionService } from "./sales-cpq-extension.service";
 import { SalesTerritoryService } from "./sales-territory.service";
 import { SalesTerritoryController } from "./sales-territory.controller";
+import { SalesCustomerSuccessService } from "./sales-customer-success.service";
+import { SalesCustomerSuccessController } from "./sales-customer-success.controller";
+import { SalesPlaybooksDeepService } from "./sales-playbooks-deep.service";
+import { SalesPlaybooksDeepController } from "./sales-playbooks-deep.controller";
+import { SalesIntelligenceSignalsService } from "./sales-intelligence-signals.service";
+import { SalesIntelligenceSignalsController } from "./sales-intelligence-signals.controller";
+import { SalesDocumentsDeepService } from "./sales-documents-deep.service";
+import { SalesDocumentsDeepController } from "./sales-documents-deep.controller";
+import { SalesReturnsDeepService } from "./sales-returns-deep.service";
+import { SalesReturnsDeepController } from "./sales-returns-deep.controller";
+import { SalesGamificationDeepService } from "./sales-gamification-deep.service";
+import { SalesGamificationDeepController } from "./sales-gamification-deep.controller";
+import { SalesAdvancedPricingDeepService } from "./sales-advanced-pricing-deep.service";
+import { SalesAdvancedPricingDeepController } from "./sales-advanced-pricing-deep.controller";
+import { SalesEnterpriseExecutionDeepService } from "./sales-enterprise-execution-deep.service";
+import { SalesEnterpriseExecutionDeepController } from "./sales-enterprise-execution-deep.controller";
+import { SalesQuoteCpqMasterDeepService } from "./sales-quote-cpq-master-deep.service";
+import { SalesQuoteCpqMasterDeepController } from "./sales-quote-cpq-master-deep.controller";
+import { SalesOmnichannelDealsDeepService } from "./sales-omnichannel-deals-deep.service";
+import { SalesOmnichannelDealsDeepController } from "./sales-omnichannel-deals-deep.controller";
+import { SalesGlobalRevenueOpsDeepService } from "./sales-global-revenue-ops-deep.service";
+import { SalesGlobalRevenueOpsDeepController } from "./sales-global-revenue-ops-deep.controller";
+import { SalesAdvancedEnterpriseCoreDeepService } from "./sales-advanced-enterprise-core-deep.service";
+import { SalesAdvancedEnterpriseCoreDeepController } from "./sales-advanced-enterprise-core-deep.controller";
+import { SalesDeepeningMasterSuiteService } from "./sales-deepening-master-suite.service";
+import { SalesDeepeningMasterSuiteController } from "./sales-deepening-master-suite.controller";
+import { SalesDeepeningUltraPackService } from "./sales-deepening-ultra-pack.service";
+import { SalesDeepeningUltraPackController } from "./sales-deepening-ultra-pack.controller";
+import { SalesDeepeningApexSuiteService } from "./sales-deepening-apex-suite.service";
+import { SalesDeepeningApexSuiteController } from "./sales-deepening-apex-suite.controller";
+import { SalesDeepeningPinnacleSuiteService } from "./sales-deepening-pinnacle-suite.service";
+import { SalesDeepeningPinnacleSuiteController } from "./sales-deepening-pinnacle-suite.controller";
+import { SalesDeepeningInfinityPackService } from "./sales-deepening-infinity-pack.service";
+import { SalesDeepeningInfinityPackController } from "./sales-deepening-infinity-pack.controller";
+import { SalesDeepeningQuantumSuiteService } from "./sales-deepening-quantum-suite.service";
+import { SalesDeepeningQuantumSuiteController } from "./sales-deepening-quantum-suite.controller";
+import { SalesDeepeningSuperApexService } from "./sales-deepening-super-apex.service";
+import { SalesDeepeningSuperApexController } from "./sales-deepening-super-apex.controller";
+import { SalesDeepeningCrownSuiteService } from "./sales-deepening-crown-suite.service";
+import { SalesDeepeningCrownSuiteController } from "./sales-deepening-crown-suite.controller";
+import { SalesDeepeningMilestoneGateService } from "./sales-deepening-milestone-gate.service";
+import { SalesDeepeningMilestoneGateController } from "./sales-deepening-milestone-gate.controller";
+import { SalesDeepeningApexFinalService } from "./sales-deepening-apex-final.service";
+import { SalesDeepeningApexFinalController } from "./sales-deepening-apex-final.controller";
 
 @Module({
   imports: [OutboxModule],
@@ -52,6 +96,28 @@ import { SalesTerritoryController } from "./sales-territory.controller";
     SalesAdvancedPricingController,
     SalesCpqController,
     SalesTerritoryController,
+    SalesCustomerSuccessController,
+    SalesPlaybooksDeepController,
+    SalesIntelligenceSignalsController,
+    SalesDocumentsDeepController,
+    SalesReturnsDeepController,
+    SalesGamificationDeepController,
+    SalesAdvancedPricingDeepController,
+    SalesEnterpriseExecutionDeepController,
+    SalesQuoteCpqMasterDeepController,
+    SalesOmnichannelDealsDeepController,
+    SalesGlobalRevenueOpsDeepController,
+    SalesAdvancedEnterpriseCoreDeepController,
+    SalesDeepeningMasterSuiteController,
+    SalesDeepeningUltraPackController,
+    SalesDeepeningApexSuiteController,
+    SalesDeepeningPinnacleSuiteController,
+    SalesDeepeningInfinityPackController,
+    SalesDeepeningQuantumSuiteController,
+    SalesDeepeningSuperApexController,
+    SalesDeepeningCrownSuiteController,
+    SalesDeepeningMilestoneGateController,
+    SalesDeepeningApexFinalController,
   ],
   providers: [
     SalesService,
@@ -70,6 +136,28 @@ import { SalesTerritoryController } from "./sales-territory.controller";
     SalesAdvancedPricingService,
     SalesCpqExtensionService,
     SalesTerritoryService,
+    SalesCustomerSuccessService,
+    SalesPlaybooksDeepService,
+    SalesIntelligenceSignalsService,
+    SalesDocumentsDeepService,
+    SalesReturnsDeepService,
+    SalesGamificationDeepService,
+    SalesAdvancedPricingDeepService,
+    SalesEnterpriseExecutionDeepService,
+    SalesQuoteCpqMasterDeepService,
+    SalesOmnichannelDealsDeepService,
+    SalesGlobalRevenueOpsDeepService,
+    SalesAdvancedEnterpriseCoreDeepService,
+    SalesDeepeningMasterSuiteService,
+    SalesDeepeningUltraPackService,
+    SalesDeepeningApexSuiteService,
+    SalesDeepeningPinnacleSuiteService,
+    SalesDeepeningInfinityPackService,
+    SalesDeepeningQuantumSuiteService,
+    SalesDeepeningSuperApexService,
+    SalesDeepeningCrownSuiteService,
+    SalesDeepeningMilestoneGateService,
+    SalesDeepeningApexFinalService,
   ],
   exports: [
     SalesService,
@@ -81,6 +169,28 @@ import { SalesTerritoryController } from "./sales-territory.controller";
     SalesAdvancedPricingService,
     SalesCpqExtensionService,
     SalesTerritoryService,
+    SalesCustomerSuccessService,
+    SalesPlaybooksDeepService,
+    SalesIntelligenceSignalsService,
+    SalesDocumentsDeepService,
+    SalesReturnsDeepService,
+    SalesGamificationDeepService,
+    SalesAdvancedPricingDeepService,
+    SalesEnterpriseExecutionDeepService,
+    SalesQuoteCpqMasterDeepService,
+    SalesOmnichannelDealsDeepService,
+    SalesGlobalRevenueOpsDeepService,
+    SalesAdvancedEnterpriseCoreDeepService,
+    SalesDeepeningMasterSuiteService,
+    SalesDeepeningUltraPackService,
+    SalesDeepeningApexSuiteService,
+    SalesDeepeningPinnacleSuiteService,
+    SalesDeepeningInfinityPackService,
+    SalesDeepeningQuantumSuiteService,
+    SalesDeepeningSuperApexService,
+    SalesDeepeningCrownSuiteService,
+    SalesDeepeningMilestoneGateService,
+    SalesDeepeningApexFinalService,
   ],
 })
 export class SalesModule implements OnModuleInit {

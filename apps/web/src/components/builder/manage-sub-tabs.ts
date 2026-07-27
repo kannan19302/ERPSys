@@ -11,6 +11,8 @@ import {
   Settings,
   GitBranch,
   Smartphone,
+  Palette,
+  Repeat,
 } from "lucide-react";
 import type { SubTab } from "@unerp/ui-layout";
 
@@ -78,6 +80,18 @@ export const MANAGE_SUB_TABS: SubTab[] = [
     label: "Widgets",
     href: "/builder/manage/widgets",
     icon: Settings,
+  },
+  {
+    id: "etl",
+    label: "ETL",
+    href: "/builder/manage/etl",
+    icon: Repeat,
+  },
+  {
+    id: "theme-manager",
+    label: "Themes",
+    href: "/builder/manage/theme-manager",
+    icon: Palette,
   },
   {
     id: "git",

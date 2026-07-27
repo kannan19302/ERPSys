@@ -1,27 +1,32 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
 import {
   CreateFixedAssetCategoryInput,
   CreateFixedAssetInput,
   UpdateFixedAssetInput,
   TransferFixedAssetInput,
   LogFixedAssetMaintenanceInput,
-} from './fixed-assets.dtos';
-import { Prisma } from '@prisma/client';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { FixedAssetCreatedEvent } from './events/fixed-asset-created.event';
-import { FixedAssetDepreciatedEvent } from './events/fixed-asset-depreciated.event';
+  DisposeFixedAssetInput,
+} from "./fixed-assets.dtos";
+import { Prisma } from "@prisma/client";
+import { EventEmitter2 } from "@nestjs/event-emitter";
+import { FixedAssetCreatedEvent } from "./events/fixed-asset-created.event";
+import { FixedAssetDepreciatedEvent } from "./events/fixed-asset-depreciated.event";
 
 @Injectable()
 export class FixedAssetsService {
   constructor(private readonly eventEmitter?: EventEmitter2) {}
-  
+
   // ─── CATEGORY METHODS ──────────────────────────────
 
   async getCategories(tenantId: string) {
     return prisma.fixedAssetCategory.findMany({
       where: { tenantId },
-      orderBy: { name: 'asc' },
+      orderBy: { name: "asc" },
     });
   }
 
@@ -30,7 +35,9 @@ export class FixedAssetsService {
       where: { tenantId, name: input.name },
     });
     if (existing) {
-      throw new BadRequestException(`Asset category with name "${input.name}" already exists.`);
+      throw new BadRequestException(
+        `Asset category with name "${input.name}" already exists.`,
+      );
     }
 
     return prisma.fixedAssetCategory.create({
@@ -40,7 +47,9 @@ export class FixedAssetsService {
         description: input.description,
         depreciationMethod: input.depreciationMethod,
         expectedLifeMonths: input.expectedLifeMonths,
-        depreciationRate: input.depreciationRate ? new Prisma.Decimal(input.depreciationRate) : null,
+        depreciationRate: input.depreciationRate
+          ? new Prisma.Decimal(input.depreciationRate)
+          : null,
         assetAccountId: input.assetAccountId,
         depreciationAccountId: input.depreciationAccountId,
         expenseAccountId: input.expenseAccountId,
@@ -50,7 +59,10 @@ export class FixedAssetsService {
 
   // ─── FIXED ASSET METHODS ───────────────────────────
 
-  async getAssets(tenantId: string, filters?: { categoryId?: string; status?: string; locationId?: string }) {
+  async getAssets(
+    tenantId: string,
+    filters?: { categoryId?: string; status?: string; locationId?: string },
+  ) {
     const whereClause: Prisma.FixedAssetWhereInput = { tenantId };
 
     if (filters?.categoryId) whereClause.categoryId = filters.categoryId;
@@ -64,7 +76,7 @@ export class FixedAssetsService {
         location: true,
         custodian: true,
       },
-      orderBy: { assetCode: 'asc' },
+      orderBy: { assetCode: "asc" },
     });
   }
 
@@ -76,13 +88,13 @@ export class FixedAssetsService {
         location: true,
         custodian: true,
         depreciations: {
-          orderBy: { date: 'desc' },
+          orderBy: { date: "desc" },
         },
         transfers: {
-          orderBy: { transferDate: 'desc' },
+          orderBy: { transferDate: "desc" },
         },
         maintenanceLogs: {
-          orderBy: { maintenanceDate: 'desc' },
+          orderBy: { maintenanceDate: "desc" },
         },
       },
     });
@@ -94,7 +106,12 @@ export class FixedAssetsService {
     return asset;
   }
 
-  async createAsset(tenantId: string, orgId: string, userId: string, input: CreateFixedAssetInput) {
+  async createAsset(
+    tenantId: string,
+    orgId: string,
+    userId: string,
+    input: CreateFixedAssetInput,
+  ) {
     // Verify asset code uniqueness
     const existingCode = await prisma.fixedAsset.findUnique({
       where: {
@@ -105,7 +122,9 @@ export class FixedAssetsService {
       },
     });
     if (existingCode) {
-      throw new BadRequestException(`Asset code "${input.assetCode}" is already in use.`);
+      throw new BadRequestException(
+        `Asset code "${input.assetCode}" is already in use.`,
+      );
     }
 
     // Verify category exists
@@ -114,7 +133,9 @@ export class FixedAssetsService {
         where: { tenantId, id: input.categoryId },
       });
       if (!category) {
-        throw new NotFoundException(`Asset category with ID "${input.categoryId}" not found.`);
+        throw new NotFoundException(
+          `Asset category with ID "${input.categoryId}" not found.`,
+        );
       }
     }
 
@@ -134,13 +155,15 @@ export class FixedAssetsService {
         salvageValue: new Prisma.Decimal(input.salvageValue),
         usefulLifeYears: input.usefulLifeYears,
         depreciationMethod: input.depreciationMethod,
-        depreciationRate: input.depreciationRate ? new Prisma.Decimal(input.depreciationRate) : null,
+        depreciationRate: input.depreciationRate
+          ? new Prisma.Decimal(input.depreciationRate)
+          : null,
         currentValue,
         accountId: input.accountId,
         accumDepAccountId: input.accumDepAccountId,
         locationId: input.locationId,
         custodianId: input.custodianId,
-        status: 'ACTIVE',
+        status: "ACTIVE",
         createdBy: userId,
         updatedBy: userId,
       },
@@ -148,46 +171,68 @@ export class FixedAssetsService {
 
     if (this.eventEmitter) {
       this.eventEmitter.emit(
-        'assets.asset.created',
+        "assets.asset.created",
         new FixedAssetCreatedEvent(
           tenantId,
           asset.id,
           asset.assetCode,
           asset.name,
           Number(asset.purchaseValue),
-          asset.purchaseDate
-        )
+          asset.purchaseDate,
+        ),
       );
     }
 
     return asset;
   }
 
-  async updateAsset(tenantId: string, id: string, userId: string, input: UpdateFixedAssetInput) {
+  async updateAsset(
+    tenantId: string,
+    id: string,
+    userId: string,
+    input: UpdateFixedAssetInput,
+  ) {
     await this.getAssetById(tenantId, id);
 
     const updateData: Prisma.FixedAssetUpdateInput = {
       name: input.name,
       description: input.description,
-      purchaseDate: input.purchaseDate ? new Date(input.purchaseDate) : undefined,
-      purchaseValue: input.purchaseValue ? new Prisma.Decimal(input.purchaseValue) : undefined,
-      salvageValue: input.salvageValue ? new Prisma.Decimal(input.salvageValue) : undefined,
+      purchaseDate: input.purchaseDate
+        ? new Date(input.purchaseDate)
+        : undefined,
+      purchaseValue: input.purchaseValue
+        ? new Prisma.Decimal(input.purchaseValue)
+        : undefined,
+      salvageValue: input.salvageValue
+        ? new Prisma.Decimal(input.salvageValue)
+        : undefined,
       usefulLifeYears: input.usefulLifeYears,
       depreciationMethod: input.depreciationMethod,
-      depreciationRate: input.depreciationRate ? new Prisma.Decimal(input.depreciationRate) : undefined,
+      depreciationRate: input.depreciationRate
+        ? new Prisma.Decimal(input.depreciationRate)
+        : undefined,
       accountId: input.accountId,
       accumDepAccountId: input.accumDepAccountId,
       status: input.status,
       updatedBy: userId,
-      category: input.categoryId !== undefined
-        ? (input.categoryId ? { connect: { id: input.categoryId } } : { disconnect: true })
-        : undefined,
-      location: input.locationId !== undefined
-        ? (input.locationId ? { connect: { id: input.locationId } } : { disconnect: true })
-        : undefined,
-      custodian: input.custodianId !== undefined
-        ? (input.custodianId ? { connect: { id: input.custodianId } } : { disconnect: true })
-        : undefined,
+      category:
+        input.categoryId !== undefined
+          ? input.categoryId
+            ? { connect: { id: input.categoryId } }
+            : { disconnect: true }
+          : undefined,
+      location:
+        input.locationId !== undefined
+          ? input.locationId
+            ? { connect: { id: input.locationId } }
+            : { disconnect: true }
+          : undefined,
+      custodian:
+        input.custodianId !== undefined
+          ? input.custodianId
+            ? { connect: { id: input.custodianId } }
+            : { disconnect: true }
+          : undefined,
     };
 
     return prisma.fixedAsset.update({
@@ -198,7 +243,12 @@ export class FixedAssetsService {
 
   // ─── LOCATION & CUSTODY TRANSFER ──────────────────
 
-  async transferAsset(tenantId: string, id: string, userId: string, input: TransferFixedAssetInput) {
+  async transferAsset(
+    tenantId: string,
+    id: string,
+    userId: string,
+    input: TransferFixedAssetInput,
+  ) {
     const asset = await this.getAssetById(tenantId, id);
 
     return prisma.$transaction(async (tx) => {
@@ -233,7 +283,12 @@ export class FixedAssetsService {
 
   // ─── MAINTENANCE METHODS ──────────────────────────
 
-  async logMaintenance(tenantId: string, id: string, userId: string, input: LogFixedAssetMaintenanceInput) {
+  async logMaintenance(
+    tenantId: string,
+    id: string,
+    userId: string,
+    input: LogFixedAssetMaintenanceInput,
+  ) {
     await this.getAssetById(tenantId, id);
 
     return prisma.$transaction(async (tx) => {
@@ -247,16 +302,18 @@ export class FixedAssetsService {
           description: input.description,
           cost: new Prisma.Decimal(input.cost),
           performedBy: input.performedBy,
-          nextMaintenanceDate: input.nextMaintenanceDate ? new Date(input.nextMaintenanceDate) : null,
+          nextMaintenanceDate: input.nextMaintenanceDate
+            ? new Date(input.nextMaintenanceDate)
+            : null,
         },
       });
 
       // 2. Temporarily set status to maintenance if CORRECTIVE or CALIBRATION
-      if (input.type === 'CORRECTIVE' || input.type === 'CALIBRATION') {
+      if (input.type === "CORRECTIVE" || input.type === "CALIBRATION") {
         await tx.fixedAsset.update({
           where: { id },
           data: {
-            status: 'UNDER_MAINTENANCE',
+            status: "UNDER_MAINTENANCE",
             updatedBy: userId,
           },
         });
@@ -268,7 +325,13 @@ export class FixedAssetsService {
 
   // ─── DEPRECIATION MATHEMATICS & GL POSTING ────────
 
-  async postDepreciation(tenantId: string, orgId: string, userId: string, assetId: string, periodName: string) {
+  async postDepreciation(
+    tenantId: string,
+    orgId: string,
+    userId: string,
+    assetId: string,
+    periodName: string,
+  ) {
     const asset = await this.getAssetById(tenantId, assetId);
 
     // Verify depreciation hasn't already been run for this asset in this period
@@ -276,7 +339,9 @@ export class FixedAssetsService {
       where: { tenantId, assetId, periodName },
     });
     if (existing) {
-      throw new BadRequestException(`Depreciation for asset "${asset.name}" in period "${periodName}" is already posted.`);
+      throw new BadRequestException(
+        `Depreciation for asset "${asset.name}" in period "${periodName}" is already posted.`,
+      );
     }
 
     // Load category mapping GL accounts
@@ -293,21 +358,25 @@ export class FixedAssetsService {
     const salvage = new Prisma.Decimal(asset.salvageValue);
     const method = asset.depreciationMethod;
 
-    if (method === 'SLM' || method === 'STRAIGHT_LINE') {
+    if (method === "SLM" || method === "STRAIGHT_LINE") {
       const depreciableAmount = cost.minus(salvage);
       const annualDep = depreciableAmount.div(asset.usefulLifeYears);
       amount = annualDep.div(12); // monthly depreciation slice
-    } else if (method === 'WDV' || method === 'DOUBLE_DECLINING') {
+    } else if (method === "WDV" || method === "DOUBLE_DECLINING") {
       // Written Down Value (WDV)
-      const rate = asset.depreciationRate 
-        ? new Prisma.Decimal(asset.depreciationRate).div(100) 
-        : (category?.depreciationRate ? new Prisma.Decimal(category.depreciationRate).div(100) : new Prisma.Decimal(0.20)); // default 20%
-      
+      const rate = asset.depreciationRate
+        ? new Prisma.Decimal(asset.depreciationRate).div(100)
+        : category?.depreciationRate
+          ? new Prisma.Decimal(category.depreciationRate).div(100)
+          : new Prisma.Decimal(0.2); // default 20%
+
       const currentAssetVal = new Prisma.Decimal(asset.currentValue);
       const annualDep = currentAssetVal.mul(rate);
       amount = annualDep.div(12);
     } else {
-      throw new BadRequestException(`Unsupported depreciation method "${method}".`);
+      throw new BadRequestException(
+        `Unsupported depreciation method "${method}".`,
+      );
     }
 
     // Safeguard to ensure book value never drops below salvage value
@@ -318,7 +387,9 @@ export class FixedAssetsService {
     }
 
     if (amount.lessThanOrEqualTo(0)) {
-      throw new BadRequestException(`Asset "${asset.name}" has already reached its salvage value or cannot be depreciated further.`);
+      throw new BadRequestException(
+        `Asset "${asset.name}" has already reached its salvage value or cannot be depreciated further.`,
+      );
     }
 
     const newBookValue = currentVal.minus(amount);
@@ -326,7 +397,9 @@ export class FixedAssetsService {
       where: { tenantId, assetId },
       _sum: { amount: true },
     });
-    const oldAccumulated = pastDepSum._sum.amount ? new Prisma.Decimal(pastDepSum._sum.amount) : new Prisma.Decimal(0);
+    const oldAccumulated = pastDepSum._sum.amount
+      ? new Prisma.Decimal(pastDepSum._sum.amount)
+      : new Prisma.Decimal(0);
     const newAccumulated = oldAccumulated.plus(amount);
 
     return prisma.$transaction(async (tx) => {
@@ -334,19 +407,20 @@ export class FixedAssetsService {
 
       // GL Journal posting (only if cost, accumulated dep, and expense accounts are mapped)
       const assetAcc = asset.accountId || category?.assetAccountId;
-      const accumAcc = asset.accumDepAccountId || category?.depreciationAccountId;
+      const accumAcc =
+        asset.accumDepAccountId || category?.depreciationAccountId;
       const expenseAcc = category?.expenseAccountId;
 
       if (assetAcc && accumAcc && expenseAcc) {
         const entryNumber = `JV-DEP-${asset.assetCode}-${periodName}-${Date.now().toString().slice(-4)}`;
-        
+
         const journal = await tx.journal.create({
           data: {
             tenantId,
             orgId,
             entryNumber,
             date: new Date(),
-            status: 'POSTED',
+            status: "POSTED",
             notes: `Depreciation run for ${asset.name} (${asset.assetCode}) for period ${periodName}`,
             createdBy: userId,
           },
@@ -389,7 +463,7 @@ export class FixedAssetsService {
           periodName,
           accumulatedDepreciation: newAccumulated,
           bookValue: newBookValue,
-          status: 'POSTED',
+          status: "POSTED",
           journalId,
         },
       });
@@ -405,18 +479,150 @@ export class FixedAssetsService {
 
       if (this.eventEmitter) {
         this.eventEmitter.emit(
-          'assets.asset.depreciated',
+          "assets.asset.depreciated",
           new FixedAssetDepreciatedEvent(
             tenantId,
             assetId,
             Number(amount),
             periodName,
-            journalId
-          )
+            journalId,
+          ),
         );
       }
 
       return depRecord;
+    });
+  }
+
+  // ─── DISPOSAL ───────────────────────────────────────
+
+  async getDisposals(tenantId: string, assetId?: string) {
+    const where: Prisma.FixedAssetDisposalWhereInput = { tenantId };
+    if (assetId) where.assetId = assetId;
+    return prisma.fixedAssetDisposal.findMany({
+      where,
+      include: { asset: { select: { id: true, assetCode: true, name: true } } },
+      orderBy: { disposalDate: "desc" },
+    });
+  }
+
+  async disposeAsset(
+    tenantId: string,
+    assetId: string,
+    userId: string,
+    input: DisposeFixedAssetInput,
+  ) {
+    const asset = await this.getAssetById(tenantId, assetId);
+    if (asset.status === "DISPOSED")
+      throw new BadRequestException("Asset is already disposed");
+    return prisma.$transaction(async (tx) => {
+      const bookValue = new Prisma.Decimal(asset.currentValue);
+      const salePrice = input.salePrice
+        ? new Prisma.Decimal(input.salePrice)
+        : null;
+      const gainLoss = salePrice ? salePrice.minus(bookValue) : null;
+      const disposal = await tx.fixedAssetDisposal.create({
+        data: {
+          tenantId,
+          assetId,
+          disposalDate: new Date(input.disposalDate),
+          disposalType: input.disposalType,
+          salePrice,
+          bookValueAtDisposal: bookValue,
+          gainLoss,
+          reason: input.reason,
+          approvedBy: input.approvedBy,
+        },
+      });
+      await tx.fixedAsset.update({
+        where: { id: assetId },
+        data: { status: "DISPOSED", updatedBy: userId },
+      });
+      await tx.fixedAssetAuditLog.create({
+        data: {
+          tenantId,
+          assetId,
+          action: "DISPOSED",
+          changedBy: userId,
+          newValue: `Disposed: ${input.disposalType}`,
+        },
+      });
+      return disposal;
+    });
+  }
+
+  // ─── AUDIT LOG ──────────────────────────────────────
+
+  async getAuditLogs(tenantId: string, assetId?: string) {
+    const where: Prisma.FixedAssetAuditLogWhereInput = { tenantId };
+    if (assetId) where.assetId = assetId;
+    return prisma.fixedAssetAuditLog.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    });
+  }
+
+  // ─── REPORTS ────────────────────────────────────────
+
+  async getDepreciationReport(tenantId: string, periodName?: string) {
+    const where: Prisma.AssetDepreciationWhereInput = { tenantId };
+    if (periodName) where.periodName = periodName;
+    const data = await prisma.assetDepreciation.findMany({
+      where,
+      include: {
+        asset: {
+          select: {
+            id: true,
+            assetCode: true,
+            name: true,
+            purchaseValue: true,
+            currentValue: true,
+            depreciationMethod: true,
+          },
+        },
+      },
+      orderBy: { date: "desc" },
+    });
+    const total = data.reduce((s, r) => s + Number(r.amount), 0);
+    return { entries: data, totalAmount: total, recordCount: data.length };
+  }
+
+  async getAssetSummary(tenantId: string) {
+    const [
+      totalAssets,
+      activeAssets,
+      disposedAssets,
+      totalValue,
+      totalDepreciation,
+    ] = await Promise.all([
+      prisma.fixedAsset.count({ where: { tenantId } }),
+      prisma.fixedAsset.count({ where: { tenantId, status: "ACTIVE" } }),
+      prisma.fixedAsset.count({ where: { tenantId, status: "DISPOSED" } }),
+      prisma.fixedAsset.aggregate({
+        where: { tenantId },
+        _sum: { purchaseValue: true },
+      }),
+      prisma.assetDepreciation.aggregate({
+        where: { tenantId },
+        _sum: { amount: true },
+      }),
+    ]);
+    return {
+      totalAssets,
+      activeAssets,
+      disposedAssets,
+      totalPurchaseValue: totalValue._sum.purchaseValue || 0,
+      totalDepreciation: totalDepreciation._sum.amount || 0,
+    };
+  }
+
+  async getMaintenanceReport(tenantId: string) {
+    return prisma.assetMaintenanceLog.findMany({
+      where: { tenantId },
+      include: { asset: { select: { id: true, assetCode: true, name: true } } },
+      orderBy: { maintenanceDate: "desc" },
+      take: 50,
     });
   }
 }

@@ -1,9 +1,9 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const createFixedAssetCategorySchema = z.object({
-  name: z.string().min(1, 'Category name is required').max(200),
+  name: z.string().min(1).max(200),
   description: z.string().max(2000).optional(),
-  depreciationMethod: z.enum(['SLM', 'WDV']),
+  depreciationMethod: z.enum(["SLM", "WDV"]),
   expectedLifeMonths: z.number().int().positive(),
   depreciationRate: z.number().min(0).max(100).optional(),
   assetAccountId: z.string().optional(),
@@ -12,49 +12,67 @@ export const createFixedAssetCategorySchema = z.object({
 });
 
 export const createFixedAssetSchema = z.object({
-  assetCode: z.string().min(1, 'Asset code is required').max(50),
-  name: z.string().min(1, 'Asset name is required').max(200),
+  assetCode: z.string().min(1).max(50),
+  name: z.string().min(1).max(200),
   description: z.string().max(2000).optional(),
   categoryId: z.string().optional(),
-  purchaseDate: z.string().min(1, 'Purchase date is required'),
+  purchaseDate: z.string().min(1),
   purchaseValue: z.number().nonnegative(),
   salvageValue: z.number().nonnegative(),
   usefulLifeYears: z.number().int().positive(),
   depreciationMethod: z.string().min(1),
   depreciationRate: z.number().min(0).max(100).optional(),
-  accountId: z.string().min(1, 'Asset account is required'),
-  accumDepAccountId: z.string().min(1, 'Accumulated depreciation account is required'),
+  accountId: z.string().min(1),
+  accumDepAccountId: z.string().min(1),
   locationId: z.string().optional(),
   custodianId: z.string().optional(),
 });
 
-export const updateFixedAssetSchema = createFixedAssetSchema.partial().omit({ assetCode: true });
+export const updateFixedAssetSchema = createFixedAssetSchema
+  .partial()
+  .omit({ assetCode: true });
 export const transferFixedAssetSchema = z.object({
-  transferDate: z.string().min(1, 'Transfer date is required'),
+  transferDate: z.string().min(1),
   toLocationId: z.string().optional(),
   toCustodianId: z.string().optional(),
   reason: z.string().max(2000).optional(),
 });
+
 export const logFixedAssetMaintenanceSchema = z.object({
-  maintenanceDate: z.string().min(1, 'Maintenance date is required'),
-  type: z.enum(['PREVENTIVE', 'CORRECTIVE', 'CALIBRATION']),
-  description: z.string().min(1, 'Description is required').max(2000),
+  maintenanceDate: z.string().min(1),
+  type: z.enum(["PREVENTIVE", "CORRECTIVE", "CALIBRATION"]),
+  description: z.string().min(1).max(2000),
   cost: z.number().nonnegative(),
-  performedBy: z.string().min(1, 'Performer name is required'),
+  performedBy: z.string().min(1),
   nextMaintenanceDate: z.string().optional(),
+});
+
+export const disposeFixedAssetSchema = z.object({
+  disposalDate: z.string().min(1),
+  disposalType: z.enum(["SALE", "SCRAP", "DONATION", "THEFT"]),
+  salePrice: z.number().nonnegative().optional(),
+  reason: z.string().max(2000).optional(),
+  approvedBy: z.string().min(1),
+});
+
+export const postDepreciationSchema = z.object({
+  periodName: z
+    .string()
+    .min(4)
+    .max(10)
+    .regex(/^\d{4}-\d{2}$/, "Must be YYYY-MM"),
 });
 
 export interface CreateFixedAssetCategoryInput {
   name: string;
   description?: string;
-  depreciationMethod: 'SLM' | 'WDV';
+  depreciationMethod: "SLM" | "WDV";
   expectedLifeMonths: number;
   depreciationRate?: number;
   assetAccountId?: string;
   depreciationAccountId?: string;
   expenseAccountId?: string;
 }
-
 export interface CreateFixedAssetInput {
   assetCode: string;
   name: string;
@@ -71,7 +89,6 @@ export interface CreateFixedAssetInput {
   locationId?: string;
   custodianId?: string;
 }
-
 export interface UpdateFixedAssetInput {
   name?: string;
   description?: string;
@@ -88,19 +105,27 @@ export interface UpdateFixedAssetInput {
   custodianId?: string | null;
   status?: string;
 }
-
 export interface TransferFixedAssetInput {
   transferDate: string;
   toLocationId?: string;
   toCustodianId?: string;
   reason?: string;
 }
-
 export interface LogFixedAssetMaintenanceInput {
   maintenanceDate: string;
-  type: 'PREVENTIVE' | 'CORRECTIVE' | 'CALIBRATION';
+  type: "PREVENTIVE" | "CORRECTIVE" | "CALIBRATION";
   description: string;
   cost: number;
   performedBy: string;
   nextMaintenanceDate?: string;
+}
+export interface DisposeFixedAssetInput {
+  disposalDate: string;
+  disposalType: "SALE" | "SCRAP" | "DONATION" | "THEFT";
+  salePrice?: number;
+  reason?: string;
+  approvedBy: string;
+}
+export interface PostDepreciationInput {
+  periodName: string;
 }

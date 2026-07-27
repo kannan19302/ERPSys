@@ -1,99 +1,196 @@
-import { Controller, Get, Post, Delete, Param, UseGuards, Req } from '@nestjs/common';
-import { z } from 'zod';
-import { ZodBody } from '../../common/decorators/zod-body.decorator';
-import { Request } from 'express';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { RbacGuard } from '../../common/guards/rbac.guard';
-import { Permissions } from '../../common/decorators/permissions.decorator';
-import { ApiPlatformService } from './api-platform.service';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  UseGuards,
+  Req,
+  Query,
+} from "@nestjs/common";
+import { ZodBody } from "../../common/decorators/zod-body.decorator";
+import { Request } from "express";
+import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
+import { RbacGuard } from "../../common/guards/rbac.guard";
+import { Permissions } from "../../common/decorators/permissions.decorator";
+import { ApiPlatformService } from "./api-platform.service";
+import {
+  createApiKeySchema,
+  updateApiKeyScopesSchema,
+  createWebhookSchema,
+  updateWebhookSchema,
+  registerEndpointSchema,
+} from "./api-platform.dtos";
+import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 
 interface AuthenticatedRequest extends Request {
-  user: {
-    tenantId: string;
-    userId: string;
-    email: string;
-    roles: string[];
-  };
+  user: { tenantId: string; userId: string; email: string; roles: string[] };
 }
 
-@ApiTags('api-platform')
+@ApiTags("api-platform")
 @ApiBearerAuth()
-@Controller('admin/api-platform')
+@Controller("admin/api-platform")
 @UseGuards(JwtAuthGuard, RbacGuard)
 export class ApiPlatformController {
-  constructor(private readonly apiPlatformService: ApiPlatformService) {}
+  constructor(private readonly service: ApiPlatformService) {}
 
-  @ApiOperation({ summary: 'Get api keys' })
-  @Get('keys')
-  @Permissions('admin.api-keys.read')
+  @Get("keys")
+  @Permissions("api-platform.keys.read")
+  @ApiOperation({ summary: "List API keys" })
   async getApiKeys(@Req() req: AuthenticatedRequest) {
-    return this.apiPlatformService.getApiKeys(req.user.tenantId);
+    return this.service.getApiKeys(req.user.tenantId);
   }
 
-  @ApiOperation({ summary: 'Create api key' })
-  @Post('keys')
-  @Permissions('admin.api-keys.create')
+  @Post("keys")
+  @Permissions("api-platform.keys.create")
+  @ApiOperation({ summary: "Create API key" })
   async createApiKey(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.any()) dto: { name: string; rateLimit?: number; apiScopes?: string[]; ipWhitelist?: string[] }
+    @ZodBody(createApiKeySchema) body: any,
   ) {
-    return this.apiPlatformService.createApiKey(req.user.tenantId, dto);
+    return this.service.createApiKey(req.user.tenantId, body);
   }
 
-  @ApiOperation({ summary: 'Revoke api key' })
-  @Delete('keys/:id')
-  @Permissions('admin.api-keys.delete')
-  async revokeApiKey(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.apiPlatformService.revokeApiKey(req.user.tenantId, id);
-  }
-
-  @ApiOperation({ summary: 'Get webhook subscriptions' })
-  @Get('webhooks')
-  @Permissions('admin.webhooks.read')
-  async getWebhookSubscriptions(@Req() req: AuthenticatedRequest) {
-    return this.apiPlatformService.getWebhookSubscriptions(req.user.tenantId);
-  }
-
-  @ApiOperation({ summary: 'Create webhook subscription' })
-  @Post('webhooks')
-  @Permissions('admin.webhooks.create')
-  async createWebhookSubscription(
+  @Delete("keys/:id")
+  @Permissions("api-platform.keys.delete")
+  @ApiOperation({ summary: "Revoke API key" })
+  async revokeApiKey(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.any()) dto: { name: string; targetUrl: string; events: string[]; secret: string }
+    @Param("id") id: string,
   ) {
-    return this.apiPlatformService.createWebhookSubscription(req.user.tenantId, dto);
+    return this.service.revokeApiKey(req.user.tenantId, id);
   }
 
-  @ApiOperation({ summary: 'Delete webhook subscription' })
-  @Delete('webhooks/:id')
-  @Permissions('admin.webhooks.delete')
-  async deleteWebhookSubscription(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.apiPlatformService.deleteWebhookSubscription(req.user.tenantId, id);
+  @Post("keys/:id/rotate")
+  @Permissions("api-platform.keys.update")
+  @ApiOperation({ summary: "Rotate API key" })
+  async rotateApiKey(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.service.rotateApiKey(req.user.tenantId, id);
   }
 
-  @ApiOperation({ summary: 'Get webhook delivery logs' })
-  @Get('webhooks/logs')
-  @Permissions('admin.webhooks.read')
-  async getWebhookDeliveryLogs(@Req() req: AuthenticatedRequest) {
-    return this.apiPlatformService.getWebhookDeliveryLogs(req.user.tenantId);
-  }
-
-  @ApiOperation({ summary: 'Update api key scopes' })
-  @Post('keys/:id/scopes')
-  @Permissions('admin.api-keys.create')
+  @Put("keys/:id/scopes")
+  @Permissions("api-platform.keys.update")
+  @ApiOperation({ summary: "Update API key scopes" })
   async updateApiKeyScopes(
     @Req() req: AuthenticatedRequest,
-    @Param('id') id: string,
-    @ZodBody(z.any()) dto: { apiScopes: string[]; ipWhitelist?: string[] }
+    @Param("id") id: string,
+    @ZodBody(updateApiKeyScopesSchema) body: any,
   ) {
-    return this.apiPlatformService.updateApiKeyScopes(req.user.tenantId, id, dto);
+    return this.service.updateApiKeyScopes(req.user.tenantId, id, body);
   }
 
-  @ApiOperation({ summary: 'Retry webhook delivery' })
-  @Post('webhooks/logs/:id/retry')
-  @Permissions('admin.webhooks.create')
-  async retryWebhookDelivery(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
-    return this.apiPlatformService.retryWebhookDelivery(req.user.tenantId, id);
+  @Get("webhooks")
+  @Permissions("api-platform.webhooks.read")
+  @ApiOperation({ summary: "List webhook subscriptions" })
+  async getWebhookSubscriptions(@Req() req: AuthenticatedRequest) {
+    return this.service.getWebhookSubscriptions(req.user.tenantId);
+  }
+
+  @Post("webhooks")
+  @Permissions("api-platform.webhooks.create")
+  @ApiOperation({ summary: "Create webhook subscription" })
+  async createWebhookSubscription(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(createWebhookSchema) body: any,
+  ) {
+    return this.service.createWebhookSubscription(req.user.tenantId, body);
+  }
+
+  @Put("webhooks/:id")
+  @Permissions("api-platform.webhooks.update")
+  @ApiOperation({ summary: "Update webhook subscription" })
+  async updateWebhookSubscription(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+    @ZodBody(updateWebhookSchema) body: any,
+  ) {
+    return this.service.updateWebhookSubscription(req.user.tenantId, id, body);
+  }
+
+  @Delete("webhooks/:id")
+  @Permissions("api-platform.webhooks.delete")
+  @ApiOperation({ summary: "Delete webhook subscription" })
+  async deleteWebhookSubscription(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.service.deleteWebhookSubscription(req.user.tenantId, id);
+  }
+
+  @Post("webhooks/:id/toggle")
+  @Permissions("api-platform.webhooks.update")
+  @ApiOperation({ summary: "Toggle webhook active status" })
+  async toggleWebhookSubscription(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.service.toggleWebhookSubscription(req.user.tenantId, id);
+  }
+
+  @Get("webhooks/logs")
+  @Permissions("api-platform.webhooks.read")
+  @ApiOperation({ summary: "Get webhook delivery logs" })
+  async getWebhookDeliveryLogs(
+    @Req() req: AuthenticatedRequest,
+    @Query("subscriptionId") subscriptionId?: string,
+  ) {
+    return this.service.getWebhookDeliveryLogs(
+      req.user.tenantId,
+      subscriptionId,
+    );
+  }
+
+  @Post("webhooks/logs/:id/retry")
+  @Permissions("api-platform.webhooks.update")
+  @ApiOperation({ summary: "Retry webhook delivery" })
+  async retryWebhookDelivery(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.service.retryWebhookDelivery(req.user.tenantId, id);
+  }
+
+  @Get("usage")
+  @Permissions("api-platform.usage.read")
+  @ApiOperation({ summary: "Get API usage metrics" })
+  async getUsageMetrics(
+    @Req() req: AuthenticatedRequest,
+    @Query("period") period?: string,
+  ) {
+    return this.service.getUsageMetrics(req.user.tenantId, period);
+  }
+
+  @Get("endpoints")
+  @Permissions("api-platform.usage.read")
+  @ApiOperation({ summary: "List registered endpoints" })
+  async getEndpoints(
+    @Req() req: AuthenticatedRequest,
+    @Query("module") module?: string,
+  ) {
+    return this.service.getEndpoints(req.user.tenantId, module);
+  }
+
+  @Post("endpoints")
+  @Permissions("api-platform.keys.create")
+  @ApiOperation({ summary: "Register endpoint" })
+  async registerEndpoint(
+    @Req() req: AuthenticatedRequest,
+    @ZodBody(registerEndpointSchema) body: any,
+  ) {
+    return this.service.registerEndpoint(req.user.tenantId, body);
+  }
+
+  @Delete("endpoints/:id")
+  @Permissions("api-platform.keys.delete")
+  @ApiOperation({ summary: "De-register endpoint" })
+  async deregisterEndpoint(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.service.deregisterEndpoint(req.user.tenantId, id);
   }
 }

@@ -1,11 +1,13 @@
-import { Module } from '@nestjs/common';
-import { BullModule } from '@nestjs/bullmq';
-import { OutboxController } from './outbox.controller';
-import { OutboxDispatcherService } from './outbox-dispatcher.service';
-import { OutboxProcessorService } from './outbox-processor.service';
-import { OutboxMetricsService } from './outbox-metrics.service';
-import { OutboxHandlerRegistry } from './outbox-handler.registry';
-import { OutboxService } from '@unerp/shared';
+import { Module } from "@nestjs/common";
+import { BullModule } from "@nestjs/bullmq";
+import { OutboxController } from "./outbox.controller";
+import { OutboxDeepController } from "./outbox-deep.controller";
+import { OutboxDispatcherService } from "./outbox-dispatcher.service";
+import { OutboxProcessorService } from "./outbox-processor.service";
+import { OutboxMetricsService } from "./outbox-metrics.service";
+import { OutboxDeepService } from "./outbox-deep.service";
+import { OutboxHandlerRegistry } from "./outbox-handler.registry";
+import { OutboxService } from "@unerp/shared";
 
 /**
  * OutboxService must be a singleton shared by every module that writes or
@@ -21,7 +23,7 @@ function outboxServiceFactory(): OutboxService {
 @Module({
   imports: [
     BullModule.registerQueue({
-      name: 'outbox',
+      name: "outbox",
       defaultJobOptions: {
         attempts: 1,
         removeOnComplete: 1000,
@@ -29,11 +31,12 @@ function outboxServiceFactory(): OutboxService {
       },
     }),
   ],
-  controllers: [OutboxController],
+  controllers: [OutboxController, OutboxDeepController],
   providers: [
     OutboxDispatcherService,
     OutboxProcessorService,
     OutboxMetricsService,
+    OutboxDeepService,
     OutboxHandlerRegistry,
     { provide: OutboxService, useFactory: outboxServiceFactory },
   ],
@@ -42,6 +45,7 @@ function outboxServiceFactory(): OutboxService {
     OutboxHandlerRegistry,
     OutboxMetricsService,
     OutboxService,
+    OutboxDeepService,
   ],
 })
 export class OutboxModule {}

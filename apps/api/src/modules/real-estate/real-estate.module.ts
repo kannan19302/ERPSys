@@ -1,10 +1,20 @@
 import { Module } from "@nestjs/common";
 import { RealEstateController } from "./real-estate.controller";
-import { RealEstateService } from "./real-estate.service";
+import { RealEstatePropertiesService } from "./real-estate-properties.service";
+import { RealEstateLeasingService } from "./real-estate-leasing.service";
+import { RealEstateOperationsService } from "./real-estate-operations.service";
 
 @Module({
   controllers: [RealEstateController],
-  providers: [RealEstateService],
-  exports: [RealEstateService],
+  providers: [
+    RealEstatePropertiesService,
+    RealEstateLeasingService,
+    RealEstateOperationsService,
+  ],
+  exports: [
+    RealEstatePropertiesService,
+    RealEstateLeasingService,
+    RealEstateOperationsService,
+  ],
 })
 export class RealEstateModule {}

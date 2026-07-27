@@ -29,6 +29,7 @@ vi.mock("@unerp/database", () => ({
     },
     crmEventDeliveryLog: {
       findMany: vi.fn(),
+      findFirst: vi.fn(),
       create: vi.fn(),
       count: vi.fn(),
       update: vi.fn(),

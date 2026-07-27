@@ -162,7 +162,7 @@ for (const file of scriptsFiles) {
 }
 
 // Check root for stray files (e.g., test.js, tmp.ts, etc.)
-const allowedRootDirs = new Set(['.git', 'node_modules', 'var', 'dist', '.next', '.turbo', 'apps', 'packages', 'scripts', 'docs', 'load-tests']);
+const allowedRootDirs = new Set(['.git', 'node_modules', 'var', 'dist', '.next', '.turbo', 'apps', 'packages', 'scripts', 'docs', 'load-tests', 'docker']);
 const allowedRootFiles = new Set([
   'AGENTS.md', 'package.json', 'pnpm-workspace.yaml', 'pnpm-lock.yaml',
   'tsconfig.json', 'turbo.json', 'README.md', 'docker-compose.yml', 'docker-compose.dev.yml', 'Dockerfile',

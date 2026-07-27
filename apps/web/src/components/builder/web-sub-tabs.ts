@@ -11,6 +11,7 @@ import {
   ShoppingCart,
   Inbox,
   Settings,
+  FlaskConical,
 } from "lucide-react";
 import type { SubTab } from "@unerp/ui-layout";
 
@@ -59,6 +60,12 @@ export const WEB_SUB_TABS: SubTab[] = [
     label: "Submissions",
     href: "/builder/web/submissions",
     icon: Inbox,
+  },
+  {
+    id: "ab-testing",
+    label: "A/B Testing",
+    href: "/builder/web/ab-testing",
+    icon: FlaskConical,
   },
   {
     id: "settings",

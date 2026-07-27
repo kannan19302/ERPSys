@@ -1,4 +1,33 @@
+import { describe, it, expect, beforeAll, vi } from "vitest";
 import { Test, TestingModule } from "@nestjs/testing";
+
+vi.mock("@unerp/database", () => ({
+  prisma: {
+    salesTerritory: {
+      findMany: vi.fn().mockResolvedValue([]),
+      count: vi.fn().mockResolvedValue(0),
+    },
+    territoryQuota: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
+    territoryRule: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
+    territoryPlan: {
+      findMany: vi.fn().mockResolvedValue([]),
+      count: vi.fn().mockResolvedValue(0),
+    },
+    opportunity: {
+      findMany: vi.fn().mockResolvedValue([]),
+      count: vi.fn().mockResolvedValue(0),
+      aggregate: vi.fn().mockResolvedValue({ _sum: { amount: 0 } }),
+    },
+    namedAccount: {
+      count: vi.fn().mockResolvedValue(0),
+    },
+  },
+}));
+
 import {
   CrmTerritoryDeepService,
   createTerritoryPlanSchema,

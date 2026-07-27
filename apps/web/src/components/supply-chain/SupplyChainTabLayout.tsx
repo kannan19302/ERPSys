@@ -1,6 +1,20 @@
 "use client";
 
-import { Home, Package, TrendingUp, BarChart3, Truck } from "lucide-react";
+import {
+  Home,
+  Package,
+  TrendingUp,
+  BarChart3,
+  Truck,
+  Car,
+  FileText,
+  DollarSign,
+  Leaf,
+  Layers,
+  Brain,
+  Users,
+  Cpu,
+} from "lucide-react";
 import type { ModuleTab } from "@unerp/ui-layout";
 
 export {
@@ -186,5 +200,78 @@ export const SUPPLY_CHAIN_TABS: ModuleTab[] = [
     advanced: true,
     group: "Settings",
     description: "Supply chain configuration and defaults",
+  },
+  {
+    id: "fleet",
+    label: "Fleet Management",
+    href: "/supply-chain/fleet",
+    icon: Car,
+    advanced: true,
+    group: "Logistics & Trade",
+    description: "Vehicle tracking, maintenance, fuel logs, trip records",
+  },
+  {
+    id: "carrier-contracts",
+    label: "Carrier Contracts",
+    href: "/supply-chain/carrier-contracts",
+    icon: FileText,
+    advanced: true,
+    group: "Logistics & Trade",
+    description: "Carrier contract negotiation, rate cards, spot quotes",
+  },
+  {
+    id: "supply-chain-finance",
+    label: "SC Finance",
+    href: "/supply-chain/supply-chain-finance",
+    icon: DollarSign,
+    advanced: true,
+    group: "Finance",
+    description: "Invoice factoring, dynamic discounting, SCF programs",
+  },
+  {
+    id: "sustainability",
+    label: "Sustainability",
+    href: "/supply-chain/sustainability",
+    icon: Leaf,
+    advanced: true,
+    group: "Planning & Risk",
+    description: "Carbon tracking, sustainability targets, ESG reporting",
+  },
+  {
+    id: "meio",
+    label: "MEIO",
+    href: "/supply-chain/meio",
+    icon: Layers,
+    advanced: true,
+    group: "Planning & Risk",
+    description: "Multi-echelon inventory optimization and simulation",
+  },
+  {
+    id: "advanced-analytics",
+    label: "AI Analytics",
+    href: "/supply-chain/advanced-analytics",
+    icon: Brain,
+    advanced: true,
+    group: "Analytics",
+    description: "ML demand sensing, anomaly detection, predictive lead times",
+  },
+  {
+    id: "supplier-portal",
+    label: "Supplier Portal",
+    href: "/supply-chain/supplier-portal",
+    icon: Users,
+    advanced: true,
+    group: "Suppliers",
+    description: "Supplier onboarding, document exchange, PO collaboration",
+  },
+  {
+    id: "digital-twin",
+    label: "Digital Twin",
+    href: "/supply-chain/digital-twin",
+    icon: Cpu,
+    advanced: true,
+    group: "Control Tower",
+    description:
+      "Supply chain digital twin, what-if simulation, scenario comparison",
   },
 ];

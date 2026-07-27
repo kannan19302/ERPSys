@@ -10,6 +10,7 @@ vi.mock("@unerp/database", () => ({
       findFirst: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
+      count: vi.fn(),
     },
     salesPartnerTier: { findFirst: vi.fn(), findMany: vi.fn() },
     salesPartnerTierRequirement: {
@@ -24,6 +25,7 @@ vi.mock("@unerp/database", () => ({
       findFirst: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
+      count: vi.fn(),
     },
     salesPartnerCertification: { findMany: vi.fn(), create: vi.fn() },
     salesPartnerTraining: { findMany: vi.fn(), create: vi.fn() },

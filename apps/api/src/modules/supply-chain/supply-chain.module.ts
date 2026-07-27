@@ -1,3 +1,4 @@
+import { SupplyChainDeepController } from "./controllers/supply-chain-deep-suite.controller";
 import { Module } from "@nestjs/common";
 import { SupplyChainController } from "./supply-chain.controller";
 import { SupplyChainService } from "./supply-chain.service";
@@ -25,6 +26,14 @@ import { SupplyPlanningService } from "./services/supply-planning.service";
 import { LogisticsExecutionService } from "./services/logistics-execution.service";
 import { SupplierRiskService } from "./services/supplier-risk.service";
 import { ControlTowerAdvancedService } from "./services/control-tower-advanced.service";
+import { SupplyChainFleetService } from "./services/supply-chain-fleet.service";
+import { SupplyChainCarrierContractsService } from "./services/supply-chain-carrier-contracts.service";
+import { SupplyChainFinanceService } from "./services/supply-chain-finance.service";
+import { SupplyChainSustainabilityService } from "./services/supply-chain-sustainability.service";
+import { SupplyChainMEIOService } from "./services/supply-chain-meio.service";
+import { SupplyChainAdvancedAnalyticsService } from "./services/supply-chain-advanced-analytics.service";
+import { SupplyChainSupplierPortalService } from "./services/supply-chain-supplier-portal.service";
+import { SupplyChainDigitalTwinService } from "./services/supply-chain-digital-twin.service";
 import { VendorReturnsController } from "./controllers/vendor-returns.controller";
 import {
   CrossDockStationController,
@@ -53,11 +62,23 @@ import { SupplyPlanningController } from "./controllers/supply-planning.controll
 import { LogisticsExecutionController } from "./controllers/logistics-execution.controller";
 import { SupplierRiskController } from "./controllers/supplier-risk.controller";
 import { ControlTowerAdvancedController } from "./controllers/control-tower-advanced.controller";
+import { FleetManagementController } from "./controllers/fleet-management.controller";
+import { CarrierContractController } from "./controllers/carrier-contract.controller";
+import { SupplyChainFinanceController } from "./controllers/supply-chain-finance.controller";
+import { SustainabilityController } from "./controllers/sustainability.controller";
+import { MEIOController } from "./controllers/meio.controller";
+import { AdvancedAnalyticsController } from "./controllers/advanced-analytics.controller";
+import { SupplierPortalController } from "./controllers/supplier-portal.controller";
+import { DigitalTwinController } from "./controllers/digital-twin.controller";
 import { SupplyChainEventsService } from "./events/supply-chain-events.service";
 import { SupplyChainSettingsController } from "./settings.controller";
+import { ScmDeepExpansionController } from "./controllers/scm-deep-expansion.controller";
+import { ScmDeepExpansionService } from "./services/scm-deep-expansion.service";
 
 @Module({
   controllers: [
+    SupplyChainDeepController,
+    ScmDeepExpansionController,
     SupplyChainController,
     VendorReturnsController,
     CrossDockStationController,
@@ -83,9 +104,19 @@ import { SupplyChainSettingsController } from "./settings.controller";
     LogisticsExecutionController,
     SupplierRiskController,
     ControlTowerAdvancedController,
+    FleetManagementController,
+    CarrierContractController,
+    SupplyChainFinanceController,
+    SustainabilityController,
+    MEIOController,
+    AdvancedAnalyticsController,
+    SupplierPortalController,
+    DigitalTwinController,
     SupplyChainSettingsController,
   ],
   providers: [
+    SupplyChainDeepController,
+    ScmDeepExpansionService,
     SupplyChainService,
     DemandPlanningService,
     LogisticsTrackingService,
@@ -112,8 +143,17 @@ import { SupplyChainSettingsController } from "./settings.controller";
     LogisticsExecutionService,
     SupplierRiskService,
     ControlTowerAdvancedService,
+    SupplyChainFleetService,
+    SupplyChainCarrierContractsService,
+    SupplyChainFinanceService,
+    SupplyChainSustainabilityService,
+    SupplyChainMEIOService,
+    SupplyChainAdvancedAnalyticsService,
+    SupplyChainSupplierPortalService,
+    SupplyChainDigitalTwinService,
   ],
   exports: [
+    ScmDeepExpansionService,
     SupplyChainService,
     DemandPlanningService,
     LogisticsTrackingService,
@@ -139,6 +179,14 @@ import { SupplyChainSettingsController } from "./settings.controller";
     LogisticsExecutionService,
     SupplierRiskService,
     ControlTowerAdvancedService,
+    SupplyChainFleetService,
+    SupplyChainCarrierContractsService,
+    SupplyChainFinanceService,
+    SupplyChainSustainabilityService,
+    SupplyChainMEIOService,
+    SupplyChainAdvancedAnalyticsService,
+    SupplyChainSupplierPortalService,
+    SupplyChainDigitalTwinService,
   ],
 })
 export class SupplyChainModule {}

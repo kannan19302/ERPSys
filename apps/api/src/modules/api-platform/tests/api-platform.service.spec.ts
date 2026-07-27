@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ApiPlatformService } from '../api-platform.service';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { ApiPlatformService } from "../api-platform.service";
+import { prisma } from "@unerp/database";
 
-vi.mock('@unerp/database', () => ({
+vi.mock("@unerp/database", () => ({
   prisma: {
     apiKey: {
       findMany: vi.fn(),
@@ -9,19 +10,31 @@ vi.mock('@unerp/database', () => ({
       create: vi.fn(),
       update: vi.fn(),
     },
+    apiKeyScope: { create: vi.fn(), deleteMany: vi.fn() },
     webhookSubscription: {
       findMany: vi.fn(),
       findFirst: vi.fn(),
       create: vi.fn(),
+      update: vi.fn(),
       delete: vi.fn(),
     },
     webhookDeliveryLog: {
       findMany: vi.fn(),
+      findFirst: vi.fn(),
+      update: vi.fn(),
+    },
+    apiUsageMetric: { findMany: vi.fn(), create: vi.fn() },
+    endpointRegistry: {
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      findUnique: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
     },
   },
 }));
 
-describe('ApiPlatformService', () => {
+describe("ApiPlatformService", () => {
   let service: ApiPlatformService;
 
   beforeEach(() => {
@@ -29,54 +42,84 @@ describe('ApiPlatformService', () => {
     vi.clearAllMocks();
   });
 
-  it('should list API keys for a tenant', async () => {
-    const { prisma } = await import('@unerp/database');
+  it("should get API keys", async () => {
     const mockKeys = [
-      { id: 'key-1', tenantId: 't1', name: 'Test Key', prefix: 'ue_live_', status: 'ACTIVE', rateLimit: 120 },
+      {
+        id: "1",
+        name: "Test Key",
+        _count: { apiUsageMetrics: 5 },
+        tenantId: "t1",
+      },
     ];
-    vi.mocked(prisma.apiKey.findMany).mockResolvedValue(mockKeys as never);
-
-    const keys = await service.getApiKeys('t1');
-    expect(keys).toHaveLength(1);
-    expect(keys[0]?.prefix).toBe('ue_live_');
+    (prisma.apiKey.findMany as any).mockResolvedValue(mockKeys);
+    const result = await service.getApiKeys("t1");
+    expect(result).toEqual(mockKeys);
   });
 
-  it('should create an API key', async () => {
-    const { prisma } = await import('@unerp/database');
-    vi.mocked(prisma.apiKey.create).mockResolvedValue({ id: 'key-new', name: 'New Key', prefix: 'ue_live_', status: 'ACTIVE' } as never);
-
-    const key = await service.createApiKey('t1', { name: 'New Key' });
-    expect(key).toBeDefined();
-    expect(key.status).toBe('ACTIVE');
+  it("should create API key", async () => {
+    const mockKey = {
+      id: "1",
+      name: "Test",
+      prefix: "un_abc",
+      tenantId: "t1",
+      status: "ACTIVE",
+      rateLimit: 60,
+    };
+    (prisma.apiKey.create as any).mockResolvedValue(mockKey);
+    const result = await service.createApiKey("t1", { name: "Test" });
+    expect(result.name).toBe("Test");
+    expect(result.key).toBeDefined();
   });
 
-  it('should revoke an API key', async () => {
-    const { prisma } = await import('@unerp/database');
-    vi.mocked(prisma.apiKey.findFirst).mockResolvedValue({ id: 'key-1', tenantId: 't1', status: 'ACTIVE' } as never);
-    vi.mocked(prisma.apiKey.update).mockResolvedValue({ id: 'key-1', status: 'REVOKED' } as never);
-
-    const revoked = await service.revokeApiKey('t1', 'key-1');
-    expect(revoked.status).toBe('REVOKED');
+  it("should revoke API key", async () => {
+    (prisma.apiKey.findFirst as any).mockResolvedValue({
+      id: "1",
+      tenantId: "t1",
+    });
+    const mockUpdated = { id: "1", status: "REVOKED" };
+    (prisma.apiKey.update as any).mockResolvedValue(mockUpdated);
+    const result = await service.revokeApiKey("t1", "1");
+    expect(result.status).toBe("REVOKED");
   });
 
-  it('should list webhook subscriptions', async () => {
-    const { prisma } = await import('@unerp/database');
-    vi.mocked(prisma.webhookSubscription.findMany).mockResolvedValue([
-      { id: 'wh-1', tenantId: 't1', name: 'Invoice Hook', status: 'ACTIVE' },
-    ] as never);
-
-    const subs = await service.getWebhookSubscriptions('t1');
-    expect(subs).toHaveLength(1);
+  it("should get webhook subscriptions", async () => {
+    const mockWebhooks = [{ id: "1", name: "Test Webhook", tenantId: "t1" }];
+    (prisma.webhookSubscription.findMany as any).mockResolvedValue(
+      mockWebhooks,
+    );
+    const result = await service.getWebhookSubscriptions("t1");
+    expect(result).toEqual(mockWebhooks);
   });
 
-  it('should list webhook delivery logs', async () => {
-    const { prisma } = await import('@unerp/database');
-    vi.mocked(prisma.webhookDeliveryLog.findMany).mockResolvedValue([
-      { id: 'log-1', event: 'invoice.paid', status: 'SUCCESS', responseStatus: 200 },
-    ] as never);
+  it("should get usage metrics", async () => {
+    const mockMetrics = [
+      {
+        endpoint: "/api/test",
+        method: "GET",
+        statusCode: 200,
+        responseMs: 150,
+        tenantId: "t1",
+      },
+      {
+        endpoint: "/api/test",
+        method: "POST",
+        statusCode: 201,
+        responseMs: 200,
+        tenantId: "t1",
+      },
+    ];
+    (prisma.apiUsageMetric.findMany as any).mockResolvedValue(mockMetrics);
+    const result = await service.getUsageMetrics("t1");
+    expect(result.totalRequests).toBe(2);
+    expect(result.avgResponseMs).toBe(175);
+  });
 
-    const logs = await service.getWebhookDeliveryLogs('t1');
-    expect(logs).toHaveLength(1);
-    expect(logs[0]?.status).toBe('SUCCESS');
+  it("should get endpoints", async () => {
+    const mockEndpoints = [
+      { id: "1", path: "/api/test", method: "GET", tenantId: "t1" },
+    ];
+    (prisma.endpointRegistry.findMany as any).mockResolvedValue(mockEndpoints);
+    const result = await service.getEndpoints("t1");
+    expect(result).toEqual(mockEndpoints);
   });
 });

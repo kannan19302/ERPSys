@@ -253,11 +253,8 @@ export class BlockchainController {
   // ──────────────────────────────────────────────────────────────
 
   @Get("transactions")
-  @Permissions("blockchain.transactions.read")
+  @Permissions("blockchain.transactions.read", "blockchain.network.read")
   @ApiOperation({ summary: "List blockchain transaction records (paginated)" })
-  @Get("transactions")
-  @Permissions("blockchain.network.read")
-  @ApiOperation({ summary: "List blockchain transactions for the tenant" })
   async listTransactions(
     @Req() req: AuthenticatedRequest,
     @Query("entityType") entityType?: string,

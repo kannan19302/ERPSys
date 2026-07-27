@@ -37,8 +37,11 @@ export type UpdateTerritoryPlanInput = z.infer<
 export const createAccountTeamMemberSchema = z.object({
   customerId: z.string().min(1),
   userId: z.string().min(1),
-  role: z.enum(["LEAD", "MEMBER", "EXEC_SPONSOR", "TECHNICAL"]).optional(),
-  isPrimary: z.boolean().optional(),
+  role: z
+    .enum(["LEAD", "MEMBER", "EXEC_SPONSOR", "TECHNICAL"])
+    .optional()
+    .default("MEMBER"),
+  isPrimary: z.boolean().optional().default(false),
 });
 export const updateAccountTeamMemberSchema = createAccountTeamMemberSchema
   .partial()
@@ -53,7 +56,10 @@ export type UpdateAccountTeamMemberInput = z.infer<
 export const createNamedAccountSchema = z.object({
   customerId: z.string().min(1),
   name: z.string().min(1).max(200),
-  tier: z.enum(["STRATEGIC", "KEY", "STANDARD", "PROSPECT"]).optional(),
+  tier: z
+    .enum(["STRATEGIC", "KEY", "STANDARD", "PROSPECT"])
+    .optional()
+    .default("STANDARD"),
   status: z.enum(["ACTIVE", "AT_RISK", "CHURNED"]).optional(),
   targetRevenue: z.number().optional(),
   strategy: z.record(z.any()).optional(),

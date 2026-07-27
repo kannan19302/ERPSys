@@ -1,4 +1,31 @@
+import { describe, it, expect, beforeAll, vi } from "vitest";
 import { Test, TestingModule } from "@nestjs/testing";
+
+vi.mock("@unerp/database", () => ({
+  prisma: {
+    crmSavedReport: {
+      findMany: vi.fn().mockResolvedValue([]),
+      count: vi.fn().mockResolvedValue(0),
+    },
+    crmReportSchedule: {
+      count: vi.fn().mockResolvedValue(0),
+    },
+    systemReport: {
+      findMany: vi.fn().mockResolvedValue([]),
+      count: vi.fn().mockResolvedValue(0),
+      upsert: vi.fn().mockResolvedValue({}),
+    },
+    reportCategory: {
+      findMany: vi.fn().mockResolvedValue([]),
+      count: vi.fn().mockResolvedValue(0),
+      upsert: vi.fn().mockResolvedValue({}),
+    },
+    reportSchedule: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
+  },
+}));
+
 import {
   CrmReportingDeepService,
   createCrmSavedReportSchema,
