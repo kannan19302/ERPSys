@@ -22,20 +22,63 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@unerp/ui-tokens": ["../../ui-tokens/src/index.ts", "../../ui-tokens/dist/index.d.ts"],
-      "@unerp/ui-components": ["../../ui-components/src/index.ts", "../../ui-components/dist/index.d.ts"],
-      "@unerp/ui-theme": ["../../ui-theme/src/index.ts", "../../ui-theme/dist/index.d.ts"],
-      "@unerp/ui-layout": ["../../ui-layout/src/index.ts", "../../ui-layout/dist/index.d.ts"],
-      "@unerp/ui-charts": ["../../ui-charts/src/index.ts", "../../ui-charts/dist/index.d.ts"],
-      "@unerp/ui-data-grid": ["../../ui-data-grid/src/index.ts", "../../ui-data-grid/dist/index.d.ts"],
-      "@unerp/ui-dashboard": ["../../ui-dashboard/src/index.ts", "../../ui-dashboard/dist/index.d.ts"],
-      "@unerp/ui-notifications": ["../../ui-notifications/src/index.ts", "../../ui-notifications/dist/index.d.ts"],
-      "@unerp/ui-hooks": ["../../ui-hooks/src/index.ts", "../../ui-hooks/dist/index.d.ts"],
-      "@unerp/ui-utils": ["../../ui-utils/src/index.ts", "../../ui-utils/dist/index.d.ts"],
-      "@unerp/ui-icons": ["../../ui-icons/src/index.ts", "../../ui-icons/dist/index.d.ts"],
-      "@unerp/ui-form-engine": ["../../ui-form-engine/src/index.ts", "../../ui-form-engine/dist/index.d.ts"],
-      "@unerp/ui-workflow": ["../../ui-workflow/src/index.ts", "../../ui-workflow/dist/index.d.ts"],
-      "@unerp/shared": ["../../shared/src/index.ts", "../../shared/dist/index.d.ts"],
+      "@unerp/ui": ["../../ui/src/index.ts", "../../ui/dist/index.d.ts"],
+      "@unerp/ui-tokens": [
+        "../../ui-tokens/src/index.ts",
+        "../../ui-tokens/dist/index.d.ts"
+      ],
+      "@unerp/ui-components": [
+        "../../ui-components/src/index.ts",
+        "../../ui-components/dist/index.d.ts"
+      ],
+      "@unerp/ui-theme": [
+        "../../ui-theme/src/index.ts",
+        "../../ui-theme/dist/index.d.ts"
+      ],
+      "@unerp/ui-layout": [
+        "../../ui-layout/src/index.ts",
+        "../../ui-layout/dist/index.d.ts"
+      ],
+      "@unerp/ui-charts": [
+        "../../ui-charts/src/index.ts",
+        "../../ui-charts/dist/index.d.ts"
+      ],
+      "@unerp/ui-data-grid": [
+        "../../ui-data-grid/src/index.ts",
+        "../../ui-data-grid/dist/index.d.ts"
+      ],
+      "@unerp/ui-dashboard": [
+        "../../ui-dashboard/src/index.ts",
+        "../../ui-dashboard/dist/index.d.ts"
+      ],
+      "@unerp/ui-notifications": [
+        "../../ui-notifications/src/index.ts",
+        "../../ui-notifications/dist/index.d.ts"
+      ],
+      "@unerp/ui-hooks": [
+        "../../ui-hooks/src/index.ts",
+        "../../ui-hooks/dist/index.d.ts"
+      ],
+      "@unerp/ui-utils": [
+        "../../ui-utils/src/index.ts",
+        "../../ui-utils/dist/index.d.ts"
+      ],
+      "@unerp/ui-icons": [
+        "../../ui-icons/src/index.ts",
+        "../../ui-icons/dist/index.d.ts"
+      ],
+      "@unerp/ui-form-engine": [
+        "../../ui-form-engine/src/index.ts",
+        "../../ui-form-engine/dist/index.d.ts"
+      ],
+      "@unerp/ui-workflow": [
+        "../../ui-workflow/src/index.ts",
+        "../../ui-workflow/dist/index.d.ts"
+      ],
+      "@unerp/shared": [
+        "../../shared/src/index.ts",
+        "../../shared/dist/index.d.ts"
+      ],
       "@unerp/auth": ["../../auth/src/index.ts", "../../auth/dist/index.d.ts"]
     }
   }
