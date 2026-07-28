@@ -1,8 +1,8 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { PageHeader, Button, DataTable, Modal, Pagination, toast } from "@unerp/ui";
+import { PageHeader, DataTable, Pagination, useToast } from "@unerp/ui";
 import { RouteGuard } from "@unerp/framework";
-import { Star, MessageSquare } from "lucide-react";
+import { Star } from "lucide-react";
 import type { Column } from "@unerp/ui";
 
 interface Review {
@@ -32,23 +32,23 @@ export default function MarketplaceReviewsPage() {
   useEffect(() => { fetchReviews(); }, [fetchReviews]);
 
   const columns: Column<Review>[] = [
-    { id: "userName", header: "User", render: (r) => r.userName },
-    { id: "rating", header: "Rating", render: (r) => <span className="ui-flex-row ui-gap-1">{Array.from({ length: r.rating }, (_, i) => <Star key={i} size={14} className="u-text-warning" fill="currentColor" />)}</span> },
-    { id: "title", header: "Title", render: (r) => r.title ?? "-" },
-    { id: "body", header: "Review", render: (r) => <span className="u-text-muted u-line-clamp-2">{r.body ?? "-"}</span> },
-    { id: "createdAt", header: "Date", render: (r) => new Date(r.createdAt).toLocaleDateString() },
+    { key: "userName", header: "User", render: (r) => r.userName },
+    { key: "rating", header: "Rating", render: (r) => <span className="ui-flex-row ui-gap-1">{Array.from({ length: r.rating }, (_, i) => <Star key={i} size={14} className="u-text-warning" fill="currentColor" />)}</span> },
+    { key: "title", header: "Title", render: (r) => r.title ?? "-" },
+    { key: "body", header: "Review", render: (r) => <span className="u-text-muted u-line-clamp-2">{r.body ?? "-"}</span> },
+    { key: "createdAt", header: "Date", render: (r) => new Date(r.createdAt).toLocaleDateString() },
   ];
 
   return (
     <RouteGuard permission="marketplace.review.read">
       <div className="ui-stack-6">
-        <PageHeader title="App Reviews" description="Browse and moderate marketplace app reviews." icon={MessageSquare} breadcrumbs={[{ label: "Apps", href: "/apps" }, { label: "Marketplace", href: "/marketplace" }, { label: "Reviews" }]} />
+        <PageHeader title="App Reviews" description="Browse and moderate marketplace app reviews." breadcrumbs={[{ label: "Apps", href: "/apps" }, { label: "Marketplace", href: "/marketplace" }, { label: "Reviews" }]} />
         <div className="ui-form-group">
           <label className="ui-label">App ID</label>
           <input className="ui-input u-w-96" placeholder="Enter app ID to view reviews" value={appId} onChange={(e) => { setAppId(e.target.value); setPage(1); }} />
         </div>
-        <DataTable columns={columns} data={reviews} loading={loading} sortable />
-        {totalPages > 1 && <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />}
+        <DataTable columns={columns} data={reviews} loading={loading} />
+        {totalPages > 1 && <Pagination page={page} pageCount={totalPages} onChange={setPage} />}
       </div>
     </RouteGuard>
   );

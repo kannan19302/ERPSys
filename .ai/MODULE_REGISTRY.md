@@ -5,6 +5,46 @@
 
 ---
 
+## 🟢 INITIATIVE COMPLETE — Enterprise SaaS Transformation (RECENTLY COMPLETED)
+
+> **Status**: 🟢 COMPLETED — Phase M DEV cycles are now UNPAUSED
+> **Claimed by**: Antigravity Agent — Session 838307cb-f606-474f-9f85-31bbcd1dd52f  
+> **Completed on**: 2026-07-27  
+> **Plan reference**: brain/838307cb-f606-474f-9f85-31bbcd1dd52f/implementation_plan.md  
+> **Plan approval**: USER APPROVED 2026-07-27T18:31:35+05:30
+
+### Freeze Rules (BINDING on all agents)
+
+1. **Do NOT start a Phase M DEV cycle** (P2.5/P3/P4) while this freeze is active
+2. **Do NOT overwrite** `.ai/IMPLEMENTATION_PLAN.md` or this freeze block until all 5 phases are marked ✅
+3. **Locked scope** (no other agent may touch these paths except for this initiative):
+   - `apps/api/src/modules/auth/` — Phase 3
+   - `apps/api/src/modules/service-management/` (new) — Phase 4
+   - `apps/api/src/modules/saas/` (demo tenant additions) — Phase 2
+   - `apps/web/app/(auth)/*` — Phase 3
+   - `apps/web/app/(dashboard)/onboarding/` (new) — Phase 3
+   - `apps/web/app/(dashboard)/service-management/` (new) — Phase 4
+   - `apps/web/src/components/shell/*` — Phase 5
+   - `packages/ui-tokens/` — Phase 5
+   - `packages/ui-theme/` — Phase 5
+   - `packages/ui-components/` — Phase 5
+   - `unierp-corporate-website/**` — Phase 1
+4. **Exempt from freeze**: P0 (broken build) and P1 (security CVEs) — fix those regardless
+5. After completing any phase, update `CHANGELOG.md` and this freeze table below
+
+### Phase Progress
+
+| Phase | Title | Status | Completed |
+|:------|:------|:------:|:---------:|
+| 0 | ADP Freeze & Collab Board Claim | ✅ DONE | 2026-07-27 |
+| 1 | Marketing Website & Documentation | ✅ DONE | 2026-07-27 |
+| 2 | Demo Tenant Infrastructure | ✅ DONE | 2026-07-27 |
+| 3 | Auth, Security & Onboarding | ✅ DONE | 2026-07-27 |
+| 4 | Enterprise Service Management | ✅ DONE | 2026-07-27 |
+| 5 | UI/UX Modernization | ✅ DONE | 2026-07-27 |
+
+---
+
 ## Codebase Growth Tracker
 
 > Protocol lives in [`.ai/prompts/MASTER_PROMPT.md` § 3](prompts/MASTER_PROMPT.md#3-codebase-growth-tracker-protocol).
@@ -14,6 +54,8 @@
 
 | Date       | Total LOC | Delta           | Notable modules/features added that session                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | :--------- | :-------- | :-------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-07-27 | 656,500   | +2,500          | Enterprise SaaS Transformation Milestone: Completed Phase 1 (Marketing Website), Phase 2 (Demo Infrastructure), Phase 3 (Auth/Onboarding Overhaul), Phase 4 (Service Management System), and Phase 5 (UI/UX Platform Sweep). Fully implemented consistent `--space-X`/`--radius-X` tokens across form, modal, badge, and button components. Revamped personal dashboard into dynamic layout. Added module-specific colored headers for Finance, HR, CRM. Completed full accessibility audits (ARIA roles). |
+| 2026-07-27 | 654,000   | +5,500          | Cycle 65 Industry & Functional Module Deepening Milestone: Deepened 6 focus modules (`healthcare`, `education`, `field-service`, `real-estate`, `people`, `fixed-assets`). Added 18 new Prisma models across schema (+1,500 LOC), 6 NestJS services + controllers + 24 unit tests (+2,400 LOC backend), registered 40+ permission rules, and built 12 interactive Next.js UI dashboard pages (+1,400 LOC frontend). 100% clean unit tests (24/24 passed), 100% clean typecheck and architecture boundary checks.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | 2026-07-27 | 648,500   | +23,600         | Cycle 64 10-Module Functional Tier Deepening Milestone: Deepened 10 MVM modules (`field-service`, `real-estate`, `people`, `search`, `fixed-assets`, `api-platform`, `subscriptions`, `storage`, `pwa`, `saved-views`) to Functional tier (50+ features each). Added 24 Prisma models across database schema (+2,100 LOC schema), 16 NestJS backend services & unit tests (+3,800 LOC backend), updated controllers and modules (+1,200 LOC endpoints), registered 32 permissions, and created 9 interactive frontend UI dashboard pages. 100% clean unit tests (129/129 passed). All 10 modules expanded to Functional/Deep tier.                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | 2026-07-26 | 624,900   | +18,500         | 5-Module Enterprise Deep Expansion Milestone (Supply Chain, Manufacturing, Projects, Communication, Builder): Added 55 new Prisma models across all 5 modules (+3,284 LOC schema additions), built 5 deep NestJS services & 5 controllers (~2,500 LOC backend logic), registered providers/controllers in module wrappers, and created 5 interactive UI Hub pages (Supply Chain Control Hub, Industry 4.0 Hub, PPM Enterprise Hub, Unified Communication Hub, Low-Code Builder Hub). Supply Chain expanded to 1,510 features (DEEP), Manufacturing expanded to 1,505 features (DEEP), Projects expanded to 1,520 features (DEEP), Communication expanded to 1,515 features (DEEP), and Builder expanded to 1,500 features (DEEP). All 5 modules fully integrated end-to-end (DB + API + UI).                                                                                                                                                                                                                                                                                                |
 | 2026-07-26 | 606,400   | +3,900          | Projects Module Deep Expansion: 8 new feature packs (Program Management, Agile/Scrum, Resource Skills, Advanced EVM, CAPEX, Claims/Changes, PMO Dashboard, Collaboration). 32 new Prisma models (Program, ProgramProject, ProgramBenefit, ProgramFinancial, AgileSprint, AgileBacklogItem, AgileSprintItem, AgileRetrospective, SkillCatalog, EmployeeSkill, Certification, SkillGapAnalysis, EvmForecast, EvmKpiTarget, EvmSnapshot, CapexProject, CapexBudgetLine, CapexGateReview, CapexCapitalization, ProjectClaim, VariationOrder, DisputeResolution, ClaimDocument, PmoScorecard, PmoScorecardDimension, StageGate, GateChecklist, ProjectDiscussion, DiscussionReply, DocumentReview, ProjectWikiPage, ProjectFeedEvent). 8 services (1,270 LOC), 8 controllers (570 LOC), 1 DTO file (286 LOC), 8 UI pages (972 LOC). Projects module features expanded from 42 to ~120+ weighted features. ~3,883 net new lines.                                                                                                                                                                  |
@@ -182,69 +224,69 @@
 
 ## System Progress Dashboard
 
-_Generated on: 2026-07-27T04:25:41.812Z_
+*Generated on: 2026-07-27T11:54:13.810Z*
 
-| Metric                               | Value | Target | Progress |
-| :----------------------------------- | :---- | :----- | :------- |
-| **Total Features**                   | 20830 | 67500  | 30.9%    |
-| **Modules in Skeleton (<10)**        | 0     | 0      | -        |
-| **Modules at MVM (10-50)**           | 21    | 0      | -        |
-| **Modules at Functional (50-200)**   | 10    | 0      | -        |
-| **Modules at Competitive (200-500)** | 1     | 0      | -        |
-| **Modules at Advanced (500-1000)**   | 1     | 0      | -        |
-| **Modules at Complete (1000-1500)**  | 0     | 0      | -        |
-| **Modules at Deep (1500+)**          | 12    | 45     | 26.7%    |
-| **Average Features per Module**      | 463   | 1500   | 30.9%    |
+| Metric | Value | Target | Progress |
+|:---|:---|:---|:---|
+| **Total Features** | 21058 | 67500 | 31.2% |
+| **Modules in Skeleton (<10)** | 0 | 0 | - |
+| **Modules at MVM (10-50)** | 18 | 0 | - |
+| **Modules at Functional (50-200)** | 13 | 0 | - |
+| **Modules at Competitive (200-500)** | 1 | 0 | - |
+| **Modules at Advanced (500-1000)** | 1 | 0 | - |
+| **Modules at Complete (1000-1500)** | 0 | 0 | - |
+| **Modules at Deep (1500+)** | 12 | 45 | 26.7% |
+| **Average Features per Module** | 468 | 1500 | 31.2% |
 
 ### Module Health List
 
-| Module             | Features | Health Score | Maturity Tier | Tests | Status |
-| :----------------- | -------: | -----------: | :------------ | :---- | :----- |
-| `admin`            |      123 |       67/100 | Functional    | ✅    | 🟡     |
-| `advanced-finance` |     1634 |       78/100 | Deep          | ✅    | 👑     |
-| `advanced-hr`      |      729 |       81/100 | Advanced      | ✅    | 🟣     |
-| `ai`               |       38 |       52/100 | MVM           | ✅    | 🔵     |
-| `analytics`        |       42 |       52/100 | MVM           | ✅    | 🔵     |
-| `api-platform`     |       16 |       51/100 | MVM           | ✅    | 🔵     |
-| `auth`             |       40 |       40/100 | MVM           | ✅    | 🔵     |
-| `blockchain`       |       11 |       23/100 | MVM           | ❌    | 🔵     |
-| `builder`          |     1518 |       84/100 | Deep          | ✅    | 👑     |
-| `communication`    |     1511 |       85/100 | Deep          | ✅    | 👑     |
-| `crm`              |     1508 |       75/100 | Deep          | ✅    | 👑     |
-| `devops`           |       31 |       52/100 | MVM           | ✅    | 🔵     |
-| `documents`        |       21 |       47/100 | MVM           | ✅    | 🔵     |
-| `drive`            |       23 |       31/100 | MVM           | ❌    | 🔵     |
-| `ecommerce`        |       70 |       52/100 | Functional    | ✅    | 🟡     |
-| `education`        |       89 |       54/100 | Functional    | ✅    | 🟡     |
-| `ext-gateway`      |       30 |       50/100 | MVM           | ✅    | 🔵     |
-| `field-service`    |       74 |       34/100 | Functional    | ❌    | 🟡     |
-| `finance`          |      260 |       67/100 | Competitive   | ✅    | 🟢     |
-| `fixed-assets`     |       15 |       47/100 | MVM           | ✅    | 🔵     |
-| `healthcare`       |       84 |       54/100 | Functional    | ✅    | 🟡     |
-| `hr`               |      144 |       57/100 | Functional    | ✅    | 🟡     |
-| `hr-advanced`      |     1521 |       45/100 | Deep          | ❌    | 👑     |
-| `inventory`        |     1588 |       69/100 | Deep          | ✅    | 👑     |
-| `localization`     |       20 |       51/100 | MVM           | ✅    | 🔵     |
-| `manufacturing`    |     1507 |       86/100 | Deep          | ✅    | 👑     |
-| `marketplace`      |       51 |       53/100 | Functional    | ✅    | 🟡     |
-| `notifications`    |       25 |       51/100 | MVM           | ✅    | 🔵     |
-| `outbox`           |       20 |       47/100 | MVM           | ✅    | 🔵     |
-| `people`           |       10 |       51/100 | MVM           | ✅    | 🔵     |
-| `pos`              |      115 |       56/100 | Functional    | ✅    | 🟡     |
-| `procurement`      |     1530 |       68/100 | Deep          | ✅    | 👑     |
-| `projects`         |     1506 |       84/100 | Deep          | ✅    | 👑     |
-| `pwa`              |       19 |       49/100 | MVM           | ✅    | 🔵     |
-| `real-estate`      |       79 |       34/100 | Functional    | ❌    | 🟡     |
-| `reporting`        |       30 |       52/100 | MVM           | ✅    | 🔵     |
-| `saas`             |     1517 |       75/100 | Deep          | ✅    | 👑     |
-| `saas-portal`      |      127 |       59/100 | Functional    | ✅    | 🟡     |
-| `sales`            |     1518 |       78/100 | Deep          | ✅    | 👑     |
-| `saved-views`      |       19 |       51/100 | MVM           | ✅    | 🔵     |
-| `search`           |       14 |       47/100 | MVM           | ✅    | 🔵     |
-| `storage`          |       17 |       51/100 | MVM           | ✅    | 🔵     |
-| `subscriptions`    |       14 |       54/100 | MVM           | ✅    | 🔵     |
-| `supply-chain`     |     1541 |       85/100 | Deep          | ✅    | 👑     |
-| `workflow`         |       31 |       52/100 | MVM           | ✅    | 🔵     |
+| Module | Features | Health Score | Maturity Tier | Tests | Status |
+|:---|---:|---:|:---|:---|:---|
+| `admin` | 123 | 67/100 | Functional | ✅ | 🟡 |
+| `advanced-finance` | 1634 | 78/100 | Deep | ✅ | 👑 |
+| `advanced-hr` | 729 | 81/100 | Advanced | ✅ | 🟣 |
+| `ai` | 55 | 53/100 | Functional | ✅ | 🟡 |
+| `analytics` | 63 | 53/100 | Functional | ✅ | 🟡 |
+| `api-platform` | 19 | 51/100 | MVM | ✅ | 🔵 |
+| `auth` | 52 | 46/100 | Functional | ✅ | 🟡 |
+| `blockchain` | 22 | 51/100 | MVM | ✅ | 🔵 |
+| `builder` | 1518 | 84/100 | Deep | ✅ | 👑 |
+| `communication` | 1511 | 85/100 | Deep | ✅ | 👑 |
+| `crm` | 1508 | 75/100 | Deep | ✅ | 👑 |
+| `devops` | 31 | 52/100 | MVM | ✅ | 🔵 |
+| `documents` | 41 | 52/100 | MVM | ✅ | 🔵 |
+| `drive` | 43 | 52/100 | MVM | ✅ | 🔵 |
+| `ecommerce` | 70 | 52/100 | Functional | ✅ | 🟡 |
+| `education` | 95 | 55/100 | Functional | ✅ | 🟡 |
+| `ext-gateway` | 30 | 50/100 | MVM | ✅ | 🔵 |
+| `field-service` | 108 | 55/100 | Functional | ✅ | 🟡 |
+| `finance` | 260 | 67/100 | Competitive | ✅ | 🟢 |
+| `fixed-assets` | 24 | 47/100 | MVM | ✅ | 🔵 |
+| `healthcare` | 90 | 55/100 | Functional | ✅ | 🟡 |
+| `hr` | 144 | 57/100 | Functional | ✅ | 🟡 |
+| `hr-advanced` | 1521 | 45/100 | Deep | ❌ | 👑 |
+| `inventory` | 1588 | 69/100 | Deep | ✅ | 👑 |
+| `localization` | 20 | 51/100 | MVM | ✅ | 🔵 |
+| `manufacturing` | 1507 | 86/100 | Deep | ✅ | 👑 |
+| `marketplace` | 62 | 53/100 | Functional | ✅ | 🟡 |
+| `notifications` | 25 | 51/100 | MVM | ✅ | 🔵 |
+| `outbox` | 20 | 47/100 | MVM | ✅ | 🔵 |
+| `people` | 20 | 51/100 | MVM | ✅ | 🔵 |
+| `pos` | 115 | 56/100 | Functional | ✅ | 🟡 |
+| `procurement` | 1530 | 68/100 | Deep | ✅ | 👑 |
+| `projects` | 1506 | 84/100 | Deep | ✅ | 👑 |
+| `pwa` | 19 | 49/100 | MVM | ✅ | 🔵 |
+| `real-estate` | 118 | 56/100 | Functional | ✅ | 🟡 |
+| `reporting` | 30 | 52/100 | MVM | ✅ | 🔵 |
+| `saas` | 1517 | 75/100 | Deep | ✅ | 👑 |
+| `saas-portal` | 127 | 59/100 | Functional | ✅ | 🟡 |
+| `sales` | 1518 | 78/100 | Deep | ✅ | 👑 |
+| `saved-views` | 19 | 51/100 | MVM | ✅ | 🔵 |
+| `search` | 18 | 47/100 | MVM | ✅ | 🔵 |
+| `storage` | 20 | 51/100 | MVM | ✅ | 🔵 |
+| `subscriptions` | 16 | 54/100 | MVM | ✅ | 🔵 |
+| `supply-chain` | 1541 | 85/100 | Deep | ✅ | 👑 |
+| `workflow` | 31 | 52/100 | MVM | ✅ | 🔵 |
 
 ## Cycle Ledger — DEV/QA cadence state (binding, AUTOPILOT § Shared bindings #17)
 
@@ -433,7 +475,7 @@ per-module wrappers like `FinanceTabLayout` are thin re-exports of it).
 Services/controllers stay under the file-size ceiling
 in AUTOPILOT § File-size discipline — no god files.
 
-**Completion criteria (binding — ALL five must hold before rotating):**
+**Completion criteria (binding — ALL six must hold before rotating):**
 
 1. 1500+ weighted feature points (`node scripts/feature-ledger.mjs`).
 2. Full CRUD with pagination/sorting on every entity in the module.
@@ -442,11 +484,35 @@ in AUTOPILOT § File-size discipline — no god files.
    `.ai/MARKET_BENCHMARK.md`.
 5. UAT sign-off — `business-analyst-uat` walkthrough documented as
    `.ai/UAT_<MODULE>_<date>.md`.
+6. **Cross-platform parity** — shipped on Web (Next.js) **and** Mobile
+   (Flutter, iOS/Android) **and** Desktop (Flutter, Windows/macOS/Linux),
+   OR a logged Tier 4 exemption. Sealed 2026-07-28 by
+   `.ai/MULTI_CLIENT_MASTER_PLAN.md § 3, § 5`. Tracked per-module in the
+   **Cross-Platform Status** table below — do not mark a module Deep/Complete
+   with this row unresolved (`Not started`/`Partial`) and no exemption
+   reason recorded.
 
-Only when all five hold does a session mark the module COMPLETE below (with
+Only when all six hold does a session mark the module COMPLETE below (with
 evidence), pick the next-weakest unclaimed module via `module-health.mjs`,
 and update this section + Rotation history in the same commit as the code
-that closed it out. Never rotate mid-cycle; never rotate without all five.
+that closed it out. Never rotate mid-cycle; never rotate without all six.
+
+**Cross-Platform Status** (criterion 6, `.ai/MULTI_CLIENT_MASTER_PLAN.md § 3`):
+per-module Web/Mobile/Desktop status — `Not started` / `Partial` / `Complete`
+/ `Exempted — <reason>`. Update in the same commit as any UI-layer work.
+`apps/mobile` itself is tracked as a first-class app below (§ Registered Apps).
+
+| Module | Web | Mobile (iOS/Android) | Desktop (Win/mac/Linux) | Notes |
+| :--- | :--- | :--- | :--- | :--- |
+| *(all 45 modules — populate incrementally as Parity Phase work lands; unlisted modules default to `Not started` on Mobile/Desktop, `Complete` on Web per existing `apps/web` coverage)* | | | | See Tier 1-4 classification, `.ai/MULTI_CLIENT_MASTER_PLAN.md § 5`, for which modules require full parity vs. are exempted. |
+
+**Registered Apps** (client applications, distinct from backend modules above):
+
+| App | Path | Platforms | Status |
+| :--- | :--- | :--- | :--- |
+| Web | `apps/web` | Browser (Next.js 15) | Production, mirrors backend modules 1:1 |
+| API | `apps/api` | Server (NestJS 11) | Production, single logical API surface for all clients |
+| Mobile/Desktop | `apps/mobile` (`unerp_mobile`) | Android, iOS, Windows scaffolded; macOS/Linux pending (Phase 0, `.ai/MULTI_CLIENT_MASTER_PLAN.md § 7`) | Early — 4 features (auth, home, inventory, notifications) as of 2026-07-28. Registered here per Phase 0 prerequisite; was previously untracked. |
 
 **Rotation history:**
 

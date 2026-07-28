@@ -29,8 +29,10 @@ import { SaasPortalSsoSamlDeepService } from "./saas-portal-sso-saml-deep.servic
 import { SaasPortalSsoSamlDeepController } from "./saas-portal-sso-saml-deep.controller";
 import { SaasPortalAuditTrailDeepService } from "./saas-portal-audit-trail-deep.service";
 import { SaasPortalAuditTrailDeepController } from "./saas-portal-audit-trail-deep.controller";
+import { SaasPortalEnterpriseModule } from "./saas-portal-enterprise.module";
 
 @Module({
+  imports: [SaasPortalEnterpriseModule],
   controllers: [
     SaasPortalController,
     SaasPortalOrgHierarchyController,

@@ -19,8 +19,10 @@ import { FinanceExpansionService } from "./finance-expansion.service";
 import { FinanceExpansionController } from "./finance-expansion.controller";
 import { FinanceOperationsService } from "./finance-operations.service";
 import { FinanceOperationsController } from "./finance-operations.controller";
+import { FinanceEnterpriseModule } from "./finance-enterprise.module";
 
 @Module({
+  imports: [FinanceEnterpriseModule],
   controllers: [
     FinanceController,
     LeasesController,

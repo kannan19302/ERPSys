@@ -76,7 +76,12 @@ export default function LoginPage() {
   >("hcaptcha");
   const [captchaSiteKey, setCaptchaSiteKey] = useState("");
 
-  // Auto-resolve organization slug from email domain
+  // Tenant selection modal state
+  const [showTenantPicker, setShowTenantPicker] = useState(false);
+  const [availableTenants, setAvailableTenants] = useState<Array<{ id: string; name: string; slug: string; logoUrl?: string | null }>>([]);
+
+  // Auto-resolve organization slug from email domain locally as a fallback,
+  // but primary resolution happens on the backend now.
   useEffect(() => {
     if (email && email.includes("@")) {
       const domain = email.split("@")[1];
@@ -303,10 +308,27 @@ export default function LoginPage() {
           setCaptchaSiteKey(err.body.siteKey);
           setCaptchaToken(""); // reset token on request
         }
-        // Highlight organization slug field if user needs it
-        if (err.message.includes("Multiple accounts")) {
-          const orgInput = document.getElementById("org-slug-input");
-          if (orgInput) orgInput.focus();
+        // Handle multiple organizations
+        if (err.message.includes("Multiple organizations") || err.message.includes("Multiple accounts")) {
+          setLoading(true);
+          apiGet<{ tenants: Array<{ id: string; name: string; slug: string; logoUrl?: string | null }> }>(
+            `/auth/resolve-org?email=${encodeURIComponent(email)}`
+          )
+            .then((res) => {
+              if (res.tenants && res.tenants.length > 1) {
+                setAvailableTenants(res.tenants);
+                setShowTenantPicker(true);
+              } else {
+                setError(err.message);
+              }
+            })
+            .catch(() => {
+              setError(err.message);
+            })
+            .finally(() => {
+              setLoading(false);
+            });
+          return;
         }
       } else {
         setError(
@@ -461,50 +483,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="auth-container">
-      {/* Left Panel — Branding & Feature Carousel */}
-      <div className="auth-sidebar auth-sidebar-purple">
-        <div className={`auth-sidebar-shape ${styles.s2}`} />
-        <div className={`auth-sidebar-shape ${styles.s3}`} />
-
-        <div className="auth-sidebar-content">
-          <div className="auth-logo-area">
-            <div className="auth-logo-icon">
-              <Shield size={22} className={styles.s40} />
-            </div>
-            <div>
-              <h2 className={styles.s4}>UniERP</h2>
-              <p className={styles.s5}>Enterprise Platform</p>
-            </div>
-          </div>
-
-          <h1>
-            Run your entire
-            <br />
-            business from one place.
-          </h1>
-          <p>
-            A modular, multi-tenant workspace built for Finance, HR, CRM,
-            Inventory, Manufacturing, and visual app building.
-          </p>
-
-          <div className="auth-sidebar-features">
-            {FEATURES.map((feat, i) => (
-              <div
-                key={i}
-                className={`auth-sidebar-feature${i === activeFeature ? " active" : ""}`}
-                onClick={() => setActiveFeature(i)}
-              >
-                <h4>{feat.title}</h4>
-                <p>{feat.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Right Panel — Interactive Form */}
-      <div className="auth-main-panel">
+    <div className="auth-container centered">
+      {/* Centered Panel — Interactive Form */}
+      <div className="auth-main-panel centered-panel">
         <div className="auth-form-wrapper">
           {/* Centered Logo Branding Area */}
           <div className={styles.s6}>
@@ -741,36 +722,40 @@ export default function LoginPage() {
                   </div>
                 )}
 
-                {/* Organization Slug (Optional) — hidden in forgot password mode */}
-                {!forgotPasswordMode && (
-                  <div className="auth-field-group">
-                    <label className="auth-label">
-                      Organization Slug{" "}
-                      {isSsoConfigured && (
-                        <span className={styles.s23}>(SSO Enabled)</span>
-                      )}
-                    </label>
-                    <div className="auth-input-wrapper">
-                      <Building size={16} className="auth-input-icon" />
-                      <input
-                        type="text"
-                        id="org-slug-input"
-                        className="auth-input"
-                        placeholder="acme"
-                        value={tenantSlug}
-                        onChange={(e) => setTenantSlug(e.target.value)}
-                        style={{
-                          borderColor: isSsoConfigured
-                            ? "var(--color-success)"
-                            : undefined,
-                        }}
-                      />
+                {/* Tenant Picker Modal */}
+                {showTenantPicker && (
+                  <div className={styles.tenantPickerOverlay}>
+                    <div className={styles.tenantPickerModal}>
+                      <h3>Select Organization</h3>
+                      <p>Your email is associated with multiple organizations. Please select one to continue.</p>
+                      <div className={styles.tenantList}>
+                        {availableTenants.map((tenant) => (
+                          <button
+                            key={tenant.id}
+                            type="button"
+                            className={styles.tenantBtn}
+                            onClick={() => {
+                              setTenantSlug(tenant.slug);
+                              setShowTenantPicker(false);
+                              // Auto-submit form with the selected slug
+                              // (simulate submit event or call handleSubmit manually, but we need the synthetic event)
+                              // we can just wait for state update and call a ref, or just let user click login again.
+                              // For simplicity, just set the state, user can click "Sign In" again, or we can trigger it.
+                            }}
+                          >
+                            <Building size={16} />
+                            <span>{tenant.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        className={styles.closeModalBtn}
+                        onClick={() => setShowTenantPicker(false)}
+                      >
+                        Cancel
+                      </button>
                     </div>
-                    <p className={styles.s24}>
-                      {isSsoConfigured
-                        ? "This organization uses Single Sign-On. You will be authenticated via OIDC/SAML."
-                        : "Required if your email address is registered under multiple organizations."}
-                    </p>
                   </div>
                 )}
 

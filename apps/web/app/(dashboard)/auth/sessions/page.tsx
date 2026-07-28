@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { PageHeader, Button, DataTable, toast } from "@unerp/ui";
+import { PageHeader, Button, DataTable, useToast } from "@unerp/ui";
 import { RouteGuard } from "@unerp/framework";
 import { Monitor, XCircle } from "lucide-react";
 import type { Column } from "@unerp/ui";
@@ -11,6 +11,7 @@ interface Session {
 }
 
 export default function SessionsPage() {
+  const { toast } = useToast();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -24,26 +25,26 @@ export default function SessionsPage() {
 
   const handleRevoke = async (id: string) => {
     const res = await fetch(`/api/v1/auth/sessions/${id}`, { method: "DELETE" });
-    if (res.ok) { toast.success("Session revoked"); await fetchSessions(); }
-    else toast.error("Failed to revoke session");
+    if (res.ok) { toast({ title: "Session revoked", variant: "success" }); await fetchSessions(); }
+    else toast({ title: "Failed to revoke session", variant: "error" });
   };
 
   const columns: Column<Session>[] = [
-    { id: "device", header: "Device", render: (r) => <span className="ui-flex-row ui-gap-2 u-items-center"><Monitor size={14} />{r.device ?? "Unknown"}</span> },
-    { id: "browser", header: "Browser", render: (r) => r.browser ?? "-" },
-    { id: "ipAddress", header: "IP Address", render: (r) => r.ipAddress ?? "-" },
-    { id: "location", header: "Location", render: (r) => r.location ?? "-" },
-    { id: "startedAt", header: "Started", render: (r) => new Date(r.startedAt).toLocaleString() },
-    { id: "lastActivityAt", header: "Last Active", render: (r) => new Date(r.lastActivityAt).toLocaleString() },
-    { id: "isCurrent", header: "", render: (r) => r.isCurrent ? <span className="ui-badge ui-badge-info">Current</span> : null },
-    { id: "actions", header: "Actions", render: (r) => r.isCurrent ? null : <Button size="sm" variant="ghost" leftIcon={<XCircle size={14} />} onClick={(e) => { e.stopPropagation(); handleRevoke(r.id); }}>Revoke</Button> },
+    { key: "device", header: "Device", render: (r) => <span className="ui-flex-row ui-gap-2 u-items-center"><Monitor size={14} />{r.device ?? "Unknown"}</span> },
+    { key: "browser", header: "Browser", render: (r) => r.browser ?? "-" },
+    { key: "ipAddress", header: "IP Address", render: (r) => r.ipAddress ?? "-" },
+    { key: "location", header: "Location", render: (r) => r.location ?? "-" },
+    { key: "startedAt", header: "Started", render: (r) => new Date(r.startedAt).toLocaleString() },
+    { key: "lastActivityAt", header: "Last Active", render: (r) => new Date(r.lastActivityAt).toLocaleString() },
+    { key: "isCurrent", header: "", render: (r) => r.isCurrent ? <span className="ui-badge ui-badge-info">Current</span> : null },
+    { key: "actions", header: "Actions", render: (r) => r.isCurrent ? null : <Button size="sm" variant="ghost" leftIcon={<XCircle size={14} />} onClick={(e) => { e.stopPropagation(); handleRevoke(r.id); }}>Revoke</Button> },
   ];
 
   return (
     <RouteGuard permission="auth.session.read">
       <div className="ui-stack-6">
-        <PageHeader title="Active Sessions" description="Manage your active login sessions across devices." icon={Monitor} breadcrumbs={[{ label: "Apps", href: "/apps" }, { label: "Auth", href: "/auth" }, { label: "Sessions" }]} />
-        <DataTable columns={columns} data={sessions} loading={loading} sortable />
+        <PageHeader title="Active Sessions" description="Manage your active login sessions across devices." breadcrumbs={[{ label: "Apps", href: "/apps" }, { label: "Auth", href: "/auth" }, { label: "Sessions" }]} />
+        <DataTable columns={columns} data={sessions} loading={loading} />
       </div>
     </RouteGuard>
   );

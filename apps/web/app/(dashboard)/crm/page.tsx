@@ -211,6 +211,20 @@ export default function CrmPage() {
 
   return (
     <RouteGuard permission="crm.read">
+      <div className="ui-card mb-4">
+        <PageHeader
+          title={
+            <div className="flex items-center gap-2 text-[var(--color-warning)]">
+              <div className="p-2 bg-[var(--color-warning-light)] rounded-lg">
+                <Target size={20} />
+              </div>
+              <span className="text-[var(--color-text)]">Customer Relationship Management</span>
+            </div>
+          }
+          description="Manage leads, opportunities, and customer relationships."
+          breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'CRM' }]}
+        />
+      </div>
       <div style={{ position: "relative" }}>
         {loading ? (
           <div

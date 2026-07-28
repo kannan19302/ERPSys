@@ -47,6 +47,7 @@ model Tenant {
   loginHistories          LoginHistory[]
   authApiTokens           AuthApiToken[]
   userGroups              UserGroup[]
+  pushDeviceTokens        PushDeviceToken[]
   ipRestrictions          IpRestriction[]
   fixedAssets             FixedAsset[]
   fixedAssetCategories    FixedAssetCategory[]
@@ -73,6 +74,7 @@ model Tenant {
   apiKeys                 TenantApiKey[]
   auditLogs               TenantAuditLog[]
   supportTickets          TenantSupportTicket[]
+  serviceTickets          ServiceTicket[]
   domains                 TenantDomain[]
   ssoConfig               TenantSsoConfig?
   branding                TenantBranding?
@@ -181,6 +183,7 @@ model User {
   identities              UserIdentity[]
   apiTokens               AuthApiToken[]
   loginHistories          LoginHistory[]
+  pushDeviceTokens        PushDeviceToken[]
   profile                 UserProfile?
   directReports           UserProfile[]            @relation("UserProfileManager")
 
@@ -2674,6 +2677,31 @@ model Notification {
 
   @@index([tenantId, userId])
   @@map("notifications")
+}
+
+/// Push notification device tokens for Flutter mobile/desktop clients
+/// (.ai/MULTI_CLIENT_MASTER_PLAN.md § 7). One row per installed app
+/// instance; deviceId matches the UserSession.deviceId set at login so a
+/// push payload can be correlated back to "which device got notified".
+model PushDeviceToken {
+  id         String    @id @default(cuid())
+  tenantId   String    @map("tenant_id")
+  userId     String    @map("user_id")
+  deviceId   String    @map("device_id")
+  token      String // FCM/APNs/WNS registration token
+  platform   String // ios | android | windows | macos | linux
+  appVersion String?   @map("app_version")
+  isActive   Boolean   @default(true) @map("is_active")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  lastSeenAt DateTime  @default(now()) @map("last_seen_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, deviceId])
+  @@index([tenantId, userId])
+  @@map("push_device_tokens")
 }
 
 // ════════════════════════════════════════════════
@@ -12787,10 +12815,18 @@ model UserSession {
   refreshTokenHash String?   @unique @map("refresh_token_hash")
   refreshExpiresAt DateTime? @map("refresh_expires_at")
   rememberMe       Boolean   @default(false) @map("remember_me")
+  // Multi-client device identity (.ai/MULTI_CLIENT_MASTER_PLAN.md § 7) — set
+  // by Flutter mobile/desktop clients via X-Device-Id/X-Platform/X-App-Version
+  // headers; null for browser sessions. deviceId lets notifications bind a
+  // push token to a specific installed app instance.
+  deviceId         String?   @map("device_id")
+  platform         String?   @map("platform")
+  appVersion       String?   @map("app_version")
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([deviceId])
   @@map("user_sessions")
 }
 
@@ -38588,5 +38624,510 @@ model SavedViewPreference {
   @@index([tenantId, userId])
   @@map("saved_view_preferences")
 }
+
+// ═══════════════════════════════════════════════════════════════
+// CYCLE 65: HEALTHCARE MODULE DEEPENING
+// ═══════════════════════════════════════════════════════════════
+
+model HealthcareClinicalNote {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  patientId    String   @map("patient_id")
+  doctorId     String   @map("doctor_id")
+  subjective   String   @db.Text
+  objective    String   @db.Text
+  assessment   String   @db.Text
+  plan         String   @db.Text
+  icd10Codes   String[] @map("icd10_codes")
+  cptCodes     String[] @map("cpt_codes")
+  status       String   @default("DRAFT") // DRAFT, SIGNED, AMENDED
+  signedAt     DateTime? @map("signed_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, patientId])
+  @@index([tenantId, doctorId])
+  @@map("healthcare_clinical_notes")
+}
+
+model HealthcareTelemedicineSession {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  patientId    String   @map("patient_id")
+  doctorId     String   @map("doctor_id")
+  meetingId    String   @map("meeting_id")
+  joinUrl      String   @map("join_url")
+  scheduledAt  DateTime @map("scheduled_at")
+  durationMins Int      @default(30) @map("duration_mins")
+  status       String   @default("SCHEDULED") // SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED
+  recordingUrl String?  @map("recording_url")
+  notes        String?  @db.Text
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, patientId])
+  @@index([tenantId, status])
+  @@map("healthcare_telemedicine_sessions")
+}
+
+model HealthcareMedicalBill {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  patientId     String   @map("patient_id")
+  billNumber    String   @map("bill_number")
+  totalAmount   Decimal  @db.Decimal(15, 2) @map("total_amount")
+  insurancePay  Decimal  @default(0) @db.Decimal(15, 2) @map("insurance_pay")
+  patientPay    Decimal  @default(0) @db.Decimal(15, 2) @map("patient_pay")
+  status        String   @default("UNPAID") // UNPAID, PARTIAL, PAID, DISPUTED
+  dueDate       DateTime @map("due_date")
+  lineItems     Json     @default("[]") @map("line_items")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, billNumber])
+  @@index([tenantId])
+  @@index([tenantId, patientId])
+  @@index([tenantId, status])
+  @@map("healthcare_medical_bills")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CYCLE 65: EDUCATION MODULE DEEPENING
+// ═══════════════════════════════════════════════════════════════
+
+model EducationReportCard {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  studentId   String   @map("student_id")
+  academicYear String  @map("academic_year")
+  term        String
+  gpa         Decimal  @db.Decimal(4, 2)
+  comments    String?  @db.Text
+  publishedAt DateTime? @map("published_at")
+  gradesSummary Json   @default("[]") @map("grades_summary")
+  status      String   @default("DRAFT") // DRAFT, PUBLISHED
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, studentId])
+  @@map("education_report_cards")
+}
+
+model EducationScholarship {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  studentId   String   @map("student_id")
+  name        String
+  provider    String
+  amount      Decimal  @db.Decimal(15, 2)
+  academicYear String  @map("academic_year")
+  status      String   @default("ACTIVE") // ACTIVE, EXPIRED, SUSPENDED
+  disbursedAt DateTime? @map("disbursed_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, studentId])
+  @@map("education_scholarships")
+}
+
+model EducationAssignmentSubmission {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  assignmentId String   @map("assignment_id")
+  studentId    String   @map("student_id")
+  submissionUrl String? @map("submission_url")
+  content      String?  @db.Text
+  score        Decimal? @db.Decimal(5, 2)
+  feedback     String?  @db.Text
+  status       String   @default("SUBMITTED") // SUBMITTED, GRADED, LATE, REJECTED
+  submittedAt  DateTime @default(now()) @map("submitted_at")
+  gradedAt     DateTime? @map("graded_at")
+
+  @@index([tenantId])
+  @@index([tenantId, assignmentId])
+  @@index([tenantId, studentId])
+  @@map("education_assignment_submissions")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CYCLE 65: FIELD SERVICE MODULE DEEPENING
+// ═══════════════════════════════════════════════════════════════
+
+model FieldServiceWarranty {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  assetId      String   @map("asset_id")
+  warrantyNo   String   @map("warranty_no")
+  provider     String
+  startDate    DateTime @map("start_date")
+  endDate      DateTime @map("end_date")
+  coverageDetails String? @db.Text @map("coverage_details")
+  status       String   @default("ACTIVE") // ACTIVE, EXPIRED, CLAIMED
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, warrantyNo])
+  @@index([tenantId])
+  @@index([tenantId, assetId])
+  @@map("field_service_warranties")
+}
+
+model FieldServiceWorkOrderExpense {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  workOrderId String   @map("work_order_id")
+  techId      String   @map("tech_id")
+  category    String   // TRAVEL, PARTS, MEALS, MISC
+  amount      Decimal  @db.Decimal(15, 2)
+  receiptUrl  String?  @map("receipt_url")
+  status      String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, workOrderId])
+  @@map("field_service_work_order_expenses")
+}
+
+model FieldServiceInspectionChecklist {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  workOrderId String   @map("work_order_id")
+  title       String
+  items       Json     @default("[]")
+  completedBy String?  @map("completed_by")
+  completedAt DateTime? @map("completed_at")
+  status      String   @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, workOrderId])
+  @@map("field_service_inspection_checklists")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CYCLE 65: REAL ESTATE MODULE DEEPENING
+// ═══════════════════════════════════════════════════════════════
+
+model RealEstatePropertyInspection {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  propertyId  String   @map("property_id")
+  inspectorId String   @map("inspector_id")
+  type        String   @default("MOVE_IN") // MOVE_IN, MOVE_OUT, ROUTINE
+  checklist   Json     @default("[]")
+  passed      Boolean  @default(true)
+  notes       String?  @db.Text
+  inspectedAt DateTime @default(now()) @map("inspected_at")
+
+  @@index([tenantId])
+  @@index([tenantId, propertyId])
+  @@map("real_estate_property_inspections")
+}
+
+model RealEstateRentCollectionLog {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  leaseId     String   @map("lease_id")
+  tenantUser  String   @map("tenant_user")
+  amountPaid  Decimal  @db.Decimal(15, 2) @map("amount_paid")
+  paymentMethod String @map("payment_method")
+  transactionRef String? @map("transaction_ref")
+  paidAt      DateTime @default(now()) @map("paid_at")
+  lateFee     Decimal  @default(0) @db.Decimal(15, 2) @map("late_fee")
+
+  @@index([tenantId])
+  @@index([tenantId, leaseId])
+  @@map("real_estate_rent_collection_logs")
+}
+
+model RealEstateListingSyndicate {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  propertyId  String   @map("property_id")
+  platform    String   // ZILLOW, REDFIN, REALTOR, MLS
+  externalId  String?  @map("external_id")
+  status      String   @default("ACTIVE") // ACTIVE, PAUSED, REMOVED
+  lastSyncedAt DateTime? @map("last_synced_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, propertyId])
+  @@map("real_estate_listing_syndicates")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CYCLE 65: PEOPLE MODULE DEEPENING
+// ═══════════════════════════════════════════════════════════════
+
+model PeopleOnboardingTask {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  employeeId  String   @map("employee_id")
+  title       String
+  description String?
+  assigneeId  String?  @map("assignee_id")
+  dueDate     DateTime? @map("due_date")
+  status      String   @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED
+  completedAt DateTime? @map("completed_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, employeeId])
+  @@map("people_onboarding_tasks")
+}
+
+model PeopleTimeOffRequest {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  employeeId  String   @map("employee_id")
+  leaveType   String   @map("leave_type") // VACATION, SICK, PERSONAL, MATERNITY
+  startDate   DateTime @map("start_date")
+  endDate     DateTime @map("end_date")
+  days        Decimal  @db.Decimal(5, 2)
+  reason      String?
+  status      String   @default("PENDING") // PENDING, APPROVED, REJECTED, CANCELLED
+  approverId  String?  @map("approver_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, employeeId])
+  @@index([tenantId, status])
+  @@map("people_time_off_requests")
+}
+
+model PeoplePeerRecognition {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  giverId     String   @map("giver_id")
+  receiverId  String   @map("receiver_id")
+  badge       String   // TEAMWORK, INNOVATION, LEADERSHIP, HERO
+  message     String   @db.Text
+  points      Int      @default(10)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, receiverId])
+  @@map("people_peer_recognitions")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CYCLE 65: FIXED ASSETS MODULE DEEPENING
+// ═══════════════════════════════════════════════════════════════
+
+model FixedAssetInsurancePolicy {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  assetId      String   @map("asset_id")
+  policyNo     String   @map("policy_no")
+  insurer      String
+  coverageAmount Decimal @db.Decimal(15, 2) @map("coverage_amount")
+  premiumAmount  Decimal @db.Decimal(15, 2) @map("premium_amount")
+  startDate    DateTime @map("start_date")
+  endDate      DateTime @map("end_date")
+  status       String   @default("ACTIVE") // ACTIVE, EXPIRED, CLAIMED
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@unique([tenantId, policyNo])
+  @@index([tenantId])
+  @@index([tenantId, assetId])
+  @@map("fixed_asset_insurance_policies")
+}
+
+model FixedAssetRevaluation {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  assetId      String   @map("asset_id")
+  oldValue     Decimal  @db.Decimal(15, 2) @map("old_value")
+  newValue     Decimal  @db.Decimal(15, 2) @map("new_value")
+  revaluedBy   String   @map("revalued_by")
+  revaluedAt   DateTime @default(now()) @map("revalued_at")
+  reason       String   @db.Text
+
+  @@index([tenantId])
+  @@index([tenantId, assetId])
+  @@map("fixed_asset_revaluations")
+}
+
+model FixedAssetPhysicalAudit {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  auditName    String   @map("audit_name")
+  assetId      String   @map("asset_id")
+  expectedLocation String @map("expected_location")
+  foundLocation    String @map("found_location")
+  condition    String   @default("GOOD") // GOOD, DAMAGED, MISSING
+  auditedBy    String   @map("audited_by")
+  auditedAt    DateTime @default(now()) @map("audited_at")
+
+  @@index([tenantId])
+  @@index([tenantId, assetId])
+  @@map("fixed_asset_physical_audits")
+}
+
+// ════════════════════════════════════════════════
+// SERVICE MANAGEMENT MODULE
+// ════════════════════════════════════════════════
+
+model ServiceTicket {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  number      String
+  title       String
+  description String    @db.Text
+  type        String    // INCIDENT, REQUEST, PROBLEM, CHANGE
+  priority    String    // LOW, MEDIUM, HIGH, CRITICAL
+  status      String    // NEW, OPEN, PENDING, RESOLVED, CLOSED
+  source      String    // PORTAL, EMAIL, PHONE, CHAT, API
+  
+  categoryId  String?   @map("category_id")
+  assigneeId  String?   @map("assignee_id")
+  reporterId  String?   @map("reporter_id")
+  slaPolicyId String?   @map("sla_policy_id")
+  
+  dueDate     DateTime? @map("due_date")
+  resolvedAt  DateTime? @map("resolved_at")
+  closedAt    DateTime? @map("closed_at")
+  
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  tenant      Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  category    ServiceTicketCategory?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  slaPolicy   ServiceTicketSLAPolicy? @relation(fields: [slaPolicyId], references: [id], onDelete: SetNull)
+  
+  comments    ServiceTicketComment[]
+  activities  ServiceTicketActivity[]
+  breaches    ServiceTicketSLABreach[]
+  surveys     ServiceSurveyResponse[]
+
+  @@unique([tenantId, number])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, assigneeId])
+  @@map("sm_service_tickets")
+}
+
+model ServiceTicketCategory {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  description String?
+  parentId    String?  @map("parent_id")
+  isActive    Boolean  @default(true) @map("is_active")
+
+  parent      ServiceTicketCategory?  @relation("ServiceCategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children    ServiceTicketCategory[] @relation("ServiceCategoryHierarchy")
+  tickets     ServiceTicket[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("sm_ticket_categories")
+}
+
+model ServiceTicketSLAPolicy {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  description String?
+  
+  targets     Json
+
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  tickets     ServiceTicket[]
+  breaches    ServiceTicketSLABreach[]
+
+  @@index([tenantId])
+  @@map("sm_ticket_sla_policies")
+}
+
+model ServiceTicketSLABreach {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  ticketId    String   @map("ticket_id")
+  policyId    String   @map("policy_id")
+  breachType  String   // RESPONSE, RESOLUTION
+  targetTime  DateTime @map("target_time")
+  breachedAt  DateTime @default(now()) @map("breached_at")
+
+  ticket      ServiceTicket    @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  policy      ServiceTicketSLAPolicy  @relation(fields: [policyId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([ticketId])
+  @@map("sm_ticket_sla_breaches")
+}
+
+model ServiceTicketComment {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  ticketId    String   @map("ticket_id")
+  authorId    String?  @map("author_id") // Can be null for system comments
+  content     String   @db.Text
+  isInternal  Boolean  @default(false) @map("is_internal")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  ticket      ServiceTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([ticketId])
+  @@map("sm_ticket_comments")
+}
+
+model ServiceTicketActivity {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  ticketId    String   @map("ticket_id")
+  actorId     String?  @map("actor_id") // Null = system
+  action      String   // STATUS_CHANGE, ASSIGNMENT, PRIORITY_CHANGE, etc.
+  details     Json     @default("{}") // { old: X, new: Y }
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  ticket      ServiceTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([ticketId])
+  @@map("sm_ticket_activities")
+}
+
+model ServiceKnowledgeArticle {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  title       String
+  content     String   @db.Text
+  status      String   // DRAFT, PUBLISHED, ARCHIVED
+  authorId    String?  @map("author_id")
+  viewCount   Int      @default(0) @map("view_count")
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("sm_knowledge_articles")
+}
+
+model ServiceSurveyResponse {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  ticketId    String   @map("ticket_id")
+  rating      Int      // e.g. 1-5
+  feedback    String?  @db.Text
+  submittedAt DateTime @default(now()) @map("submitted_at")
+
+  ticket      ServiceTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, ticketId])
+  @@index([tenantId])
+  @@map("sm_survey_responses")
+}
+
 
 

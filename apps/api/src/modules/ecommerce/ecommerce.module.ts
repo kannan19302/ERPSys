@@ -7,6 +7,7 @@ import { EcommercePublicService } from "./ecommerce-public.service";
 import { EcommerceCheckoutService } from "./ecommerce-checkout.service";
 import { EcommerceExpansionController } from "./ecommerce-expansion.controller";
 import { EcommerceExpansionService } from "./ecommerce-expansion.service";
+import { EcommerceEnterpriseModule } from "./ecommerce-enterprise.module";
 import { MockPaymentGatewayService } from "./payments/mock-payment-gateway.service";
 import { StripePaymentGatewayService } from "./payments/stripe-payment-gateway.service";
 import { PlatformCredentialsModule } from "../../common/platform-credentials/platform-credentials.module";
@@ -21,7 +22,7 @@ import { PlatformCredentialsModule } from "../../common/platform-credentials/pla
  * Sales consumer handler processes the event asynchronously.
  */
 @Module({
-  imports: [OutboxModule, PlatformCredentialsModule],
+  imports: [OutboxModule, PlatformCredentialsModule, EcommerceEnterpriseModule],
   controllers: [EcommerceAdminController, EcommercePublicController, EcommerceExpansionController],
   providers: [
     EcommerceAdminService,

@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { PageHeader, Card, DataTable, type Column, Button, Spinner, useToast } from "@unerp/ui";
 import { useApiClient } from "@unerp/framework";
-import { Tag, Plus, Edit2, Trash2, FileText } from "lucide-react";
+import { Plus } from "lucide-react";
 
 interface Tag {
   id: string;
@@ -13,25 +13,25 @@ interface Tag {
 
 export default function TagsPage() {
   const client = useApiClient();
-  const { error: notifyError } = useToast();
+  const { toast } = useToast();
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     client.get<Tag[]>("/drive/tags")
       .then((res) => setTags(res as any || []))
-      .catch((e) => notifyError("Failed to load tags", e.message))
+      .catch((e) => toast({ title: "Failed to load tags", description: e.message, variant: "error" }))
       .finally(() => setLoading(false));
-  }, [client, notifyError]);
+  }, [client, toast]);
 
   const columns: Column<Tag>[] = [
-    { id: "name", header: "Tag", render: (r) => (
+    { key: "name", header: "Tag", render: (r) => (
       <span className="ui-hstack-2">
         <span style={{ width: 12, height: 12, borderRadius: "50%", backgroundColor: r.color, display: "inline-block" }} />
         {r.name}
       </span>
     )},
-    { id: "files", header: "Files", render: (r) => <span>{r.files?.length || 0}</span> },
+    { key: "files", header: "Files", render: (r) => <span>{r.files?.length || 0}</span> },
   ];
 
   if (loading) return <Spinner />;
@@ -40,8 +40,8 @@ export default function TagsPage() {
     <>
       <PageHeader title="File Tags" description="Manage tags for organizing and filtering files" />
       <Card>
-        <div className="ui-flex-end">
-          <Button leftIcon={Plus}>New Tag</Button>
+        <div className="ui-flex-end p-4">
+          <Button leftIcon={<Plus size={16} />}>New Tag</Button>
         </div>
         <DataTable columns={columns} data={tags} />
       </Card>

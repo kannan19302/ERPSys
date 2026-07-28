@@ -24,8 +24,12 @@ import { ProjectsCollaborationService } from "./services/projects-collaboration.
 
 import { PpmDeepExpansionController } from "./controllers/ppm-deep-expansion.controller";
 import { PpmDeepExpansionService } from "./services/ppm-deep-expansion.service";
+import { ProjectsEnterpriseModule } from "./projects-enterprise.module";
+import { ProjectsEnterpriseController } from "./projects-enterprise.controller";
+import { ProjectsEnterpriseService } from "./projects-enterprise.service";
 
 @Module({
+  imports: [ProjectsEnterpriseModule],
   controllers: [
     ProjectsDeepController,
     PpmDeepExpansionController,
@@ -39,6 +43,7 @@ import { PpmDeepExpansionService } from "./services/ppm-deep-expansion.service";
     ClaimsController,
     PmoController,
     CollaborationController,
+    ProjectsEnterpriseController,
   ],
   providers: [
     ProjectsDeepController,
@@ -54,6 +59,8 @@ import { PpmDeepExpansionService } from "./services/ppm-deep-expansion.service";
     ProjectsClaimsService,
     ProjectsPmoService,
     ProjectsCollaborationService,
+    ProjectsEnterpriseService,
+    ProjectsEnterpriseController,
   ],
   exports: [
     PpmDeepExpansionService,
@@ -69,6 +76,7 @@ import { PpmDeepExpansionService } from "./services/ppm-deep-expansion.service";
     ProjectsClaimsService,
     ProjectsPmoService,
     ProjectsCollaborationService,
+    ProjectsEnterpriseService,
   ],
 })
 export class ProjectsModule {}

@@ -11,6 +11,12 @@
 > re-reading it every cycle (see § DEV flow step 0, slim bootstrap). This
 > file defines the two operational flows.
 >
+> **⚡ [MULTI_CLIENT_MASTER_PLAN.md](MULTI_CLIENT_MASTER_PLAN.md) is a sealed,
+> permanent contract, same tier as `ARCHITECTURE_FOUNDATION.md`.** Every
+> module's growth now targets Web + Mobile (iOS/Android) + Desktop
+> (Windows/macOS/Linux) together, not web alone — see the 6th Module
+> Completion criterion below and § Phase M. No agent may edit that file.
+>
 > The ADP has exactly **two flows**. Everything else was retired on 2026-07-17;
 > the separate INTEGRATION flow was folded into the DEV flow on 2026-07-18
 > (cross-module workflow batches are now ordinary DEV work — see § DEV flow).
@@ -36,7 +42,7 @@ priority ladder, before the focus question, before anything.
 | Phase | Name                 | Entry condition                                                | What DEV cycles do                                                                                                                                                                                                                                                                                                                                                                                                        | Exit condition                                                                 |
 | :---- | :------------------- | :------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------- |
 | **F** | Foundation           | `.ai/FOUNDATION_HARDENING_ROADMAP.md` lift gate (§ 12) NOT met | Work foundation tracks in dependency order: 0 → A (#19) → B (#17) ∥ C (#21) → D (#22) → E (blockchain re-platform) → F/G/H/I. Velocity = **track items closed with their exit-gate proofs**, not feature count. The 40-feature target does NOT apply; the feature freeze DOES.                                                                                                                                            | All roadmap tracks closed, lift gate green, foundation **SEALED v1.0** (§ 12b) |
-| **M** | Module strengthening | Foundation SEALED                                              | Drive **every module to Complete (1500+ weighted features)**, in the fixed **focus order** below (not the old core→industry sort). Each module is built **horizontally** (§ Horizontal build order), not as independent vertical slices. Cross-module workflow batches (the old INTEGRATION flow) count as feature work here. Throughput floor applies: ≥ 5,000 net LOC OR ≥ 40 features per cycle (§ DEV flow velocity). | Every registered module at 1500+ with completion criteria met                  |
+| **M** | Module strengthening | Foundation SEALED, and Phase 0 prerequisites in `MULTI_CLIENT_MASTER_PLAN.md § 7` met | Drive **every module to Complete (1500+ weighted features) AND cross-platform parity** (Web + Mobile + Desktop, or a logged Tier 4 exemption — `MULTI_CLIENT_MASTER_PLAN.md § 3, § 5`), in the fixed **focus order** below (not the old core→industry sort). Each module is built **horizontally** (§ Horizontal build order), not as independent vertical slices — the UI layer now fans out across all three client surfaces together per feature slice, not web-only. Cross-module workflow batches (the old INTEGRATION flow) count as feature work here. Throughput floor applies: ≥ 5,000 net LOC OR ≥ 40 features per cycle (§ DEV flow velocity). | Every registered module at 1500+ **and** cross-platform-parity-or-exempted (criterion 6) |
 | **X** | Expansion            | All modules Complete                                           | Plan and build **new apps/modules** (PM-scoped, market-benchmarked, through the sealed kernel contracts only).                                                                                                                                                                                                                                                                                                            | Open-ended                                                                     |
 
 Phase determination is mechanical, not judgment: read
@@ -48,19 +54,27 @@ first in every phase.
 
 > **Module Completion Goal**: A module is COMPLETE when it has **1500+
 > weighted feature points** (verified by `node scripts/feature-ledger.mjs`),
-> full CRUD with pagination/sorting, 80%+ test coverage, and feature parity
-> or superiority vs. top 10 ERP market leaders.
+> full CRUD with pagination/sorting, 80%+ test coverage, feature parity
+> or superiority vs. top 10 ERP market leaders, **and** cross-platform
+> parity — shipped on Web + Mobile (iOS/Android) + Desktop (Windows/macOS/
+> Linux), or a logged Tier 4 exemption (6th criterion, binding, added by
+> `MULTI_CLIENT_MASTER_PLAN.md § 3` — sealed, see top of this file).
 >
 > **Module Maturity Tiers**: Skeleton (< 10) → MVM (10–50) → Functional (50–200)
 > → Competitive (200–500) → Advanced (500–1000) → Complete (1000–1500) →
 > Deep (1500+). All modules MUST reach MVM (50) before any module above 200
 > gets more features. See [instructions.md § 8](instructions.md#8-adp-performance-targets).
+> Each tier-to-tier transition, per module, is a **Parity Phase**
+> (`MULTI_CLIENT_MASTER_PLAN.md § 4`) — 45 modules × 6 transitions ≈ 270
+> Parity Phases, ~4 sprints each ≈ 1,080 sprints, computed live from
+> `MODULE_REGISTRY.md`, not a pre-authored list.
 
 ### Phase M focus order (binding — supersedes "core → industry")
 
 Phase M drives modules to Complete in this fixed sequence. A module only
-rotates to the next once ALL five completion criteria (§ 0 in
-MODULE_REGISTRY.md) hold, per binding #18:
+rotates to the next once ALL six completion criteria (§ 0 in
+MODULE_REGISTRY.md, criterion 6 = cross-platform parity per
+`MULTI_CLIENT_MASTER_PLAN.md § 3`) hold, per binding #18:
 
 **Finance → CRM → HR → Procurement → Supply Chain → Manufacturing →
 Projects → Connect/Collaboration → Builder/Platform → industry-specific
@@ -89,9 +103,17 @@ layers, in this order**:
    planned feature set, module-wide, before starting UI work. Services stay
    under the file-size ceiling (§ File-size discipline) — decompose by
    sub-domain as you go, never accumulate a god-service and split it later.
-3. **UI layer third.** Once the API surface for the module (or a coherent
-   sub-slice of it) exists, wire the frontend: tab-based pages per
-   § UI navigation discipline, calling the already-built endpoints.
+3. **UI layer third — fanned across all three client surfaces together.**
+   Once the API surface for the module (or a coherent sub-slice of it)
+   exists, wire the frontend **on Web, Mobile, and Desktop in the same
+   sprint** for each feature slice — not web first with mobile/desktop
+   catch-up later (`MULTI_CLIENT_MASTER_PLAN.md § 1, § 4`). Web: tab-based
+   pages per § UI navigation discipline. Mobile/Desktop: the generic
+   bundle-renderer (`MULTI_CLIENT_MASTER_PLAN.md § 6`) for list/detail-shaped
+   slices, or a native `apps/mobile/lib/features/<module>` screen where the
+   module's Tier classification (`MULTI_CLIENT_MASTER_PLAN.md § 5`) requires
+   it. Tier 4 modules are exempt from the mobile/desktop half of this step —
+   log the exemption in `MODULE_REGISTRY.md` rather than silently skipping it.
 
 This still happens across multiple cycles — a single cycle does not have to
 finish an entire layer for the whole module. But **within a cycle, do not

@@ -115,6 +115,30 @@ function DashboardContent() {
   const [customWidgets, setCustomWidgets] = useState<any[]>([]);
   const [loadingCustom, setLoadingCustom] = useState(false);
 
+  // Personal Dashboard Grid Layout
+  const defaultPersonalLayout = [
+    { i: 'welcome', x: 0, y: 0, w: 12, h: 2, static: true },
+    { i: 'kpis', x: 0, y: 2, w: 12, h: 4 },
+    { i: 'quick-access', x: 0, y: 6, w: 6, h: 6 },
+    { i: 'activity', x: 6, y: 6, w: 6, h: 6 },
+    { i: 'approvals', x: 0, y: 12, w: 6, h: 6 },
+    { i: 'analytics', x: 6, y: 12, w: 6, h: 6 },
+  ];
+  const [personalLayout, setPersonalLayout] = useState<any[]>(defaultPersonalLayout);
+  const [isEditingGrid, setIsEditingGrid] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('unerp.personal_dashboard_layout');
+    if (saved) {
+      try { setPersonalLayout(JSON.parse(saved)); } catch (e) {}
+    }
+  }, []);
+
+  const onLayoutChange = (layout: any[]) => {
+    setPersonalLayout(layout);
+    localStorage.setItem('unerp.personal_dashboard_layout', JSON.stringify(layout));
+  };
+
   // Global enterprise dashboard states
   const activeTab: "global" | "personal" =
     searchParams?.get("subtab") === "personal" ? "personal" : "global";
@@ -612,83 +636,134 @@ function DashboardContent() {
             </>
           )
         ) : (
-          <>
-            {/* Metrics Grid */}
-            <div className={styles.metricsGrid}>
-              {metrics.map((metric) => (
-                <MetricCard key={metric.title} {...metric} />
-              ))}
+          <div ref={containerRef} className={styles.personalDashboard}>
+            <div className="ui-flex-between mb-4">
+              <h2 className="ui-heading-md">Personal Workspace</h2>
+              <button 
+                onClick={() => setIsEditingGrid(!isEditingGrid)}
+                className={`ui-btn ${isEditingGrid ? 'ui-btn-primary' : 'ui-btn-ghost'}`}
+              >
+                {isEditingGrid ? 'Done Editing' : 'Edit Layout'}
+              </button>
             </div>
-
-            {/* Actions and Activity Logs */}
-            <div className={styles.contentGrid}>
-              {/* Quick Actions Panel */}
-              <Card padding="lg">
-                <h3 className={styles.sectionTitle}>Quick Actions</h3>
-                <div className="ui-stack-3">
-                  <button className={styles.quickAction}>
-                    <UserPlus size={18} className="ui-text-primary" />
-                    <div>
-                      <p className={styles.quickActionTitle}>
-                        Invite Team Member
-                      </p>
-                      <p className={styles.quickActionDescription}>
-                        Add administrators, managers, or viewers
-                      </p>
-                    </div>
-                  </button>
-
-                  <button className={styles.quickAction}>
-                    <FileText size={18} className="ui-text-primary" />
-                    <div>
-                      <p className={styles.quickActionTitle}>
-                        Create Customer Invoice
-                      </p>
-                      <p className={styles.quickActionDescription}>
-                        Record new sales and trigger billing events
-                      </p>
-                    </div>
-                  </button>
-
-                  <button className={styles.quickAction}>
-                    <PlusCircle size={18} className="ui-text-primary" />
-                    <div>
-                      <p className={styles.quickActionTitle}>
-                        Register New Product
-                      </p>
-                      <p className={styles.quickActionDescription}>
-                        Add products and define warehouse settings
-                      </p>
-                    </div>
-                  </button>
+            {mounted && (
+              <GridLayout
+                className="layout"
+                layout={personalLayout}
+                onLayoutChange={onLayoutChange}
+                // @ts-ignore
+                cols={12}
+                rowHeight={40}
+                width={width || 1200}
+                isDraggable={isEditingGrid}
+                isResizable={isEditingGrid}
+                margin={[16, 16]}
+              >
+                <div key="welcome" className={`${styles.widget} flex flex-col justify-center`}>
+                  <div className="p-6 bg-gradient-to-r from-[var(--color-primary-light)] to-[var(--color-bg-sunken)] rounded-lg h-full flex flex-col justify-center">
+                    <h3 className="ui-heading-lg mb-1">Good morning, {user?.firstName || 'Admin'}! 👋</h3>
+                    <p className="ui-text-secondary">Here is what's happening with your projects and tasks today.</p>
+                  </div>
                 </div>
-              </Card>
 
-              {/* Audit Activity Log */}
-              <Card padding="lg">
-                <h3 className={styles.sectionTitle}>Recent Activity Logs</h3>
-                <div className="ui-stack-4">
-                  {recentLogs.map((log) => (
-                    <div key={log.id} className="ui-flex-between">
-                      <div className={styles.logEntry}>
-                        <span className="ui-heading-sm">{log.action}</span>
-                        <span className="ui-text-caption ui-text-tertiary">
-                          By {log.user} • {log.time}
-                        </span>
+                <div key="kpis" className={styles.widget}>
+                  <div className={`h-full ${styles.metricsGrid}`}>
+                    {metrics.map((metric) => (
+                      <MetricCard key={metric.title} {...metric} />
+                    ))}
+                  </div>
+                </div>
+
+                <div key="quick-access" className={styles.widget}>
+                  <Card padding="lg" className="h-full overflow-hidden">
+                    <h3 className={styles.sectionTitle}>Module Quick Access</h3>
+                    <div className="ui-stack-3">
+                      <button className={styles.quickAction}>
+                        <UserPlus size={18} className="ui-text-primary" />
+                        <div>
+                          <p className={styles.quickActionTitle}>Invite Team Member</p>
+                          <p className={styles.quickActionDescription}>Add administrators, managers, or viewers</p>
+                        </div>
+                      </button>
+                      <button className={styles.quickAction}>
+                        <FileText size={18} className="ui-text-primary" />
+                        <div>
+                          <p className={styles.quickActionTitle}>Create Customer Invoice</p>
+                          <p className={styles.quickActionDescription}>Record new sales and trigger billing events</p>
+                        </div>
+                      </button>
+                      <button className={styles.quickAction}>
+                        <PlusCircle size={18} className="ui-text-primary" />
+                        <div>
+                          <p className={styles.quickActionTitle}>Register New Product</p>
+                          <p className={styles.quickActionDescription}>Add products and define warehouse settings</p>
+                        </div>
+                      </button>
+                    </div>
+                  </Card>
+                </div>
+
+                <div key="activity" className={styles.widget}>
+                  <Card padding="lg" className="h-full overflow-hidden">
+                    <h3 className={styles.sectionTitle}>Activity Feed</h3>
+                    <div className="ui-stack-4">
+                      {recentLogs.map((log) => (
+                        <div key={log.id} className="ui-flex-between">
+                          <div className={styles.logEntry}>
+                            <span className="ui-heading-sm">{log.action}</span>
+                            <span className="ui-text-caption ui-text-tertiary">
+                              By {log.user} • {log.time}
+                            </span>
+                          </div>
+                          <Badge variant={log.status === "SUCCESS" ? "success" : "warning"}>
+                            {log.status.toLowerCase()}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                </div>
+
+                <div key="approvals" className={styles.widget}>
+                  <Card padding="lg" className="h-full overflow-hidden">
+                    <h3 className={styles.sectionTitle}>Pending Approvals</h3>
+                    <div className="ui-stack-4">
+                      <div className="flex items-center justify-between p-3 bg-[var(--color-bg-sunken)] rounded-md border border-[var(--color-border)]">
+                        <div>
+                          <p className="font-medium">PO-2024-001</p>
+                          <p className="text-sm text-[var(--color-text-secondary)]">Procurement • $4,500.00</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <button className="ui-btn ui-btn-primary ui-btn-sm">Approve</button>
+                          <button className="ui-btn ui-btn-ghost ui-btn-sm">Reject</button>
+                        </div>
                       </div>
-                      <Badge
-                        variant={
-                          log.status === "SUCCESS" ? "success" : "warning"
-                        }
-                      >
-                        {log.status.toLowerCase()}
-                      </Badge>
+                      <div className="flex items-center justify-between p-3 bg-[var(--color-bg-sunken)] rounded-md border border-[var(--color-border)]">
+                        <div>
+                          <p className="font-medium">Time-Off Request</p>
+                          <p className="text-sm text-[var(--color-text-secondary)]">HR • Jane Doe (3 days)</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <button className="ui-btn ui-btn-primary ui-btn-sm">Approve</button>
+                          <button className="ui-btn ui-btn-ghost ui-btn-sm">Reject</button>
+                        </div>
+                      </div>
                     </div>
-                  ))}
+                  </Card>
                 </div>
-              </Card>
-            </div>
-          </>
+
+                <div key="analytics" className={styles.widget}>
+                  <Card padding="lg" className="h-full overflow-hidden">
+                    <h3 className={styles.sectionTitle}>Analytics Preview</h3>
+                    <div className="flex items-center justify-center h-[200px] text-[var(--color-text-secondary)]">
+                      <BarChart2 size={48} className="opacity-20 mr-4" />
+                      <span>Connect your data sources to view analytics</span>
+                    </div>
+                  </Card>
+                </div>
+              </GridLayout>
+            )}
+          </div>
         )}
       </div>
     </RouteGuard>

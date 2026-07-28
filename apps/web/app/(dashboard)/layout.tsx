@@ -664,32 +664,7 @@ export default function DashboardLayout({
               }}
               className={styles.s5}
             >
-              {showBreadcrumbs && breadcrumbsList.length > 0 && (
-                <nav className="ui-breadcrumb" aria-label="breadcrumb">
-                  {breadcrumbsList.map((crumb, idx) => {
-                    const isLast = idx === breadcrumbsList.length - 1;
-                    return (
-                      <React.Fragment key={crumb.href}>
-                        {idx > 0 && (
-                          <span className="ui-breadcrumb-separator">/</span>
-                        )}
-                        {isLast ? (
-                          <span className="ui-breadcrumb-active">
-                            {crumb.name}
-                          </span>
-                        ) : (
-                          <Link
-                            href={crumb.href}
-                            className="ui-breadcrumb-link"
-                          >
-                            {crumb.name}
-                          </Link>
-                        )}
-                      </React.Fragment>
-                    );
-                  })}
-                </nav>
-              )}
+
               {demoDataLoaded && (
                 <DemoBanner
                   currentModule={pathname.split("/")[1]}
@@ -721,7 +696,9 @@ export default function DashboardLayout({
                   </div>
                 </div>
               )}
-              {children}
+              <div key={pathname} className="animate-in fade-in slide-in-from-bottom-2 duration-500 ease-out fill-mode-both">
+                {children}
+              </div>
             </div>
           </main>
         </div>

@@ -1,11 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { PrismaService } from "@unerp/database";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class SaasEnterpriseScaleMasterService {
   private readonly logger = new Logger(SaasEnterpriseScaleMasterService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  private get db() { return prisma; }
 
   async processEnterpriseOp(tenantId: string, cmd: string, payload: any) {
     return {

@@ -7,6 +7,7 @@ import { InventoryQaService } from "./inventory-qa.service";
 import { InventoryEventHandler } from "./inventory.event-handler";
 import { CostingService } from "./costing.service";
 import { CostingController } from "./costing.controller";
+import { InventoryEnterpriseModule } from "./inventory-enterprise.module";
 
 import { RtvService } from "./rtv.service";
 import { RtvController } from "./rtv.controller";
@@ -42,6 +43,7 @@ import { InventoryIntelligenceController } from "./inventory-intelligence.contro
 import { InventoryDeepExpansionBulkController } from "./inventory-deep-expansion-bulk.controller";
 
 @Module({
+  imports: [InventoryEnterpriseModule],
   controllers: [
     InventoryController,
     CostingController,

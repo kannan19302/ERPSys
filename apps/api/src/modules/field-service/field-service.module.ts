@@ -6,8 +6,10 @@ import { FieldServiceLogisticsService } from "./field-service-logistics.service"
 import { FieldServiceTechMobileService } from "./field-service-tech-mobile.service";
 import { FieldServiceSchedulingService } from "./field-service-scheduling.service";
 import { FieldServicePartsService } from "./field-service-parts.service";
+import { FieldServiceEnterpriseModule } from "./field-service-enterprise.module";
 
 @Module({
+  imports: [FieldServiceEnterpriseModule],
   controllers: [FieldServiceController],
   providers: [
     FieldServiceTicketsService,

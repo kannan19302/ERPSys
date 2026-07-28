@@ -1,0 +1,30 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+  errors:
+    # AGENTS.md Critical Rule 1/2: strictness is mandatory, never silence a rule.
+    invalid_annotation_target: ignore
+    missing_required_param: error
+    missing_return: error
+    todo: warning
+  exclude:
+    - "**/*.g.dart"
+    - "build/**"
+
+linter:
+  rules:
+    always_declare_return_types: true
+    avoid_dynamic_calls: true
+    avoid_print: true # Rule 3 — never ship console logging; use AppLogger.
+    prefer_const_constructors: true
+    prefer_const_declarations: true
+    prefer_final_locals: true
+    prefer_single_quotes: true
+    require_trailing_commas: true
+    sort_constructors_first: true
+    unawaited_futures: true
+    use_super_parameters: true

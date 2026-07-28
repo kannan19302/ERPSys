@@ -70,7 +70,9 @@
   --elevation-1: 0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 1px 0 rgb(15 23 42 / 0.03);
   --elevation-2: 0 2px 6px -1px rgb(15 23 42 / 0.06), 0 1px 3px -1px rgb(15 23 42 / 0.05);
   --elevation-3: 0 8px 20px -4px rgb(15 23 42 / 0.09), 0 3px 8px -3px rgb(15 23 42 / 0.06);
-  --elevation-hover: 0 12px 28px -6px rgb(15 23 42 / 0.12), 0 4px 10px -3px rgb(15 23 42 / 0.07);
+  --elevation-4: 0 12px 28px -6px rgb(15 23 42 / 0.12), 0 4px 10px -3px rgb(15 23 42 / 0.07);
+  --elevation-5: 0 24px 36px -8px rgb(15 23 42 / 0.15), 0 8px 12px -4px rgb(15 23 42 / 0.09);
+  --elevation-hover: var(--elevation-4);
 
   /* ── Transitions ── */
   --duration-fast: 100ms;
@@ -93,6 +95,12 @@
   /* ── Layout ── */
   --sidebar-width: 260px;
   --sidebar-collapsed-width: 64px;
-  --header-height: 64px;
+  --header-height: 56px;
   --content-max-width: 1400px;
+}
+
+/* ── Smooth Theme Transitions ── */
+html {
+  transition: background-color var(--duration-slow) var(--ease-default),
+              color var(--duration-slow) var(--ease-default);
 }

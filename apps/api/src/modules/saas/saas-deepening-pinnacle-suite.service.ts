@@ -1,11 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { PrismaService } from "@unerp/database";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class SaasDeepeningPinnacleSuiteService {
   private readonly logger = new Logger(SaasDeepeningPinnacleSuiteService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  private get db() { return prisma; }
 
   async processPinnacleOp(tenantId: string, action: string, data: any) {
     return {

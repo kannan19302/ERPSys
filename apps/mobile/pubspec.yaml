@@ -1,0 +1,46 @@
+name: unerp_mobile
+description: UniERP client (Android, iOS, Windows, macOS, Linux) — one Clean Architecture Flutter codebase over the existing @unerp/api backend, growing in parity with apps/web per .ai/MULTI_CLIENT_MASTER_PLAN.md.
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+  flutter: ">=3.27.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management (Clean Architecture presentation layer)
+  flutter_riverpod: ^2.6.1
+
+  # Routing + guards
+  go_router: ^14.6.2
+
+  # Networking — talks to the existing NestJS REST API at /api/v1
+  dio: ^5.7.0
+  dio_cookie_manager: ^3.1.1
+  cookie_jar: ^4.0.8
+
+  # Persistence
+  flutter_secure_storage: ^9.2.2
+  shared_preferences: ^2.3.3
+  path_provider: ^2.1.5
+
+  # Platform / UX
+  connectivity_plus: ^6.1.0
+  package_info_plus: ^8.1.1
+  device_info_plus: ^11.1.1
+  intl: ^0.19.0
+  equatable: ^2.0.7
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  mocktail: ^1.0.4
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/

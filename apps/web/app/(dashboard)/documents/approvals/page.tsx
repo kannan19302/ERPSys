@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { PageHeader, Card, DataTable, type Column, Button, Spinner, useToast } from "@unerp/ui";
+import { PageHeader, Card, DataTable, type Column, Spinner, useToast } from "@unerp/ui";
 import { useApiClient } from "@unerp/framework";
 import { CheckCircle, XCircle, Clock } from "lucide-react";
 
@@ -16,16 +16,16 @@ interface Approval {
 
 export default function ApprovalsPage() {
   const client = useApiClient();
-  const { error: notifyError } = useToast();
+  const { toast } = useToast();
   const [approvals, setApprovals] = useState<Approval[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     client.get<Approval[]>("/documents/approvals")
       .then((res) => setApprovals(res as any || []))
-      .catch((e) => notifyError("Failed to load approvals", e.message))
+      .catch((e) => toast({ title: "Failed to load approvals", description: e.message, variant: "error" }))
       .finally(() => setLoading(false));
-  }, [client, notifyError]);
+  }, [client, toast]);
 
   const statusIcon = (status: string) => {
     if (status === "APPROVED") return <CheckCircle size={16} className="ui-text-success" />;
@@ -34,11 +34,11 @@ export default function ApprovalsPage() {
   };
 
   const columns: Column<Approval>[] = [
-    { id: "document", header: "Document", render: (r) => r.document?.name || "—" },
-    { id: "approverId", header: "Approver" },
-    { id: "status", header: "Status", render: (r) => <span className="ui-hstack-2">{statusIcon(r.status)} {r.status}</span> },
-    { id: "comment", header: "Comment", render: (r) => r.comment || <span className="ui-text-muted">—</span> },
-    { id: "createdAt", header: "Requested", sortable: true, render: (r) => new Date(r.createdAt).toLocaleDateString() },
+    { key: "document", header: "Document", render: (r) => r.document?.name || "—" },
+    { key: "approverId", header: "Approver", render: (r) => r.approverId },
+    { key: "status", header: "Status", render: (r) => <span className="ui-hstack-2">{statusIcon(r.status)} {r.status}</span> },
+    { key: "comment", header: "Comment", render: (r) => r.comment || <span className="ui-text-muted">—</span> },
+    { key: "createdAt", header: "Requested", sortable: true, render: (r) => new Date(r.createdAt).toLocaleDateString() },
   ];
 
   if (loading) return <Spinner />;

@@ -7,12 +7,13 @@ import { MarketplaceController } from './marketplace.controller';
 import { MarketplaceDeepController } from './marketplace-deep.controller';
 import { MarketplaceDeepService } from './marketplace-deep.service';
 import { MarketplaceService } from './marketplace.service';
+import { MarketplaceEnterpriseModule } from './marketplace-enterprise.module';
 import { StorefrontController } from './storefront.controller';
 import { StorefrontService } from './storefront.service';
 import { VendorService } from './vendor.service';
 
 @Module({
-  imports: [ExtensionGatewayClientModule],
+  imports: [ExtensionGatewayClientModule, MarketplaceEnterpriseModule],
   controllers: [MarketplaceController, DeveloperController, MarketplaceDeepController, StorefrontController],
   providers: [BundleStoreService, AppProvisioningService, VendorService, StorefrontService, MarketplaceService, MarketplaceDeepService],
   exports: [MarketplaceService, BundleStoreService, AppProvisioningService, VendorService, StorefrontService, MarketplaceDeepService],

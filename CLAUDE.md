@@ -47,7 +47,12 @@ with the top 10 ERP market leaders.
 ## Architecture governance (binding, permanent)
 
 Read `.ai/ARCHITECTURE_FOUNDATION.md` before selecting work (foundation SEALED
-v1.0 on 2026-07-18 — its 8 rules are permanent sealed contracts). Every change
+v1.0 on 2026-07-18 — its 8 rules are permanent sealed contracts). Also read
+`.ai/MULTI_CLIENT_MASTER_PLAN.md` (SEALED v1.0, 2026-07-28, same permanent
+status) — every module now targets Web + Mobile (iOS/Android) + Desktop
+(Windows/macOS/Linux) together, not web alone; this adds a 6th, binding
+module-completion criterion (cross-platform parity or a logged Tier 4
+exemption) on top of the 5 already in `MODULE_REGISTRY.md` § 0. Every change
 follows it plus `.ai/HANDBOOK.md` conventions and `AGENTS.md` Critical Rules:
 
 - `pnpm architecture:check` for every API change; `pnpm migration:discipline` for

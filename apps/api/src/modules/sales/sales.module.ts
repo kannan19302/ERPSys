@@ -77,9 +77,12 @@ import { SalesDeepeningMilestoneGateService } from "./sales-deepening-milestone-
 import { SalesDeepeningMilestoneGateController } from "./sales-deepening-milestone-gate.controller";
 import { SalesDeepeningApexFinalService } from "./sales-deepening-apex-final.service";
 import { SalesDeepeningApexFinalController } from "./sales-deepening-apex-final.controller";
+import { SalesEnterpriseController } from "./sales-enterprise.controller";
+import { SalesEnterpriseService } from "./sales-enterprise.service";
+import { SalesEnterpriseModule } from "./sales-enterprise.module";
 
 @Module({
-  imports: [OutboxModule],
+  imports: [OutboxModule, SalesEnterpriseModule],
   controllers: [
     SalesController,
     PricingController,
@@ -118,6 +121,7 @@ import { SalesDeepeningApexFinalController } from "./sales-deepening-apex-final.
     SalesDeepeningCrownSuiteController,
     SalesDeepeningMilestoneGateController,
     SalesDeepeningApexFinalController,
+    SalesEnterpriseController,
   ],
   providers: [
     SalesService,
@@ -158,6 +162,7 @@ import { SalesDeepeningApexFinalController } from "./sales-deepening-apex-final.
     SalesDeepeningCrownSuiteService,
     SalesDeepeningMilestoneGateService,
     SalesDeepeningApexFinalService,
+    SalesEnterpriseService,
   ],
   exports: [
     SalesService,
@@ -191,6 +196,7 @@ import { SalesDeepeningApexFinalController } from "./sales-deepening-apex-final.
     SalesDeepeningCrownSuiteService,
     SalesDeepeningMilestoneGateService,
     SalesDeepeningApexFinalService,
+    SalesEnterpriseService,
   ],
 })
 export class SalesModule implements OnModuleInit {

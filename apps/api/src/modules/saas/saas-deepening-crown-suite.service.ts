@@ -1,11 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { PrismaService } from "@unerp/database";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class SaasDeepeningCrownSuiteService {
   private readonly logger = new Logger(SaasDeepeningCrownSuiteService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  private get db() { return prisma; }
 
   async processCrownOp(tenantId: string, cmd: string, body: any) {
     return {

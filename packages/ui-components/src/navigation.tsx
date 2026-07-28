@@ -118,7 +118,8 @@ const PageBtn: FC<{
   disabled: boolean;
   active?: boolean;
   onClick: (target: number) => void;
-}> = ({ label, target, disabled, active = false, onClick }) => {
+  ariaLabel?: string;
+}> = ({ label, target, disabled, active = false, onClick, ariaLabel }) => {
   const btnClass = [styles.page_btn, active && styles.page_btn_active]
     .filter(Boolean)
     .join(" ");
@@ -129,6 +130,7 @@ const PageBtn: FC<{
       aria-current={active || undefined}
       onClick={() => onClick(target)}
       className={btnClass}
+      aria-label={ariaLabel}
     >
       {label}
     </button>
@@ -152,6 +154,7 @@ export const Pagination: FC<PaginationProps> = ({
         target={page - 1}
         disabled={page <= 1}
         onClick={onChange}
+        ariaLabel="Previous page"
       />
       {from > 1 && (
         <PageBtn label={1} target={1} disabled={false} onClick={onChange} />
@@ -181,6 +184,7 @@ export const Pagination: FC<PaginationProps> = ({
         target={page + 1}
         disabled={page >= pageCount}
         onClick={onChange}
+        ariaLabel="Next page"
       />
     </div>
   );

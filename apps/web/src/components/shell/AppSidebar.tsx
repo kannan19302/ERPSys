@@ -103,7 +103,7 @@ function SidebarNavigation({ appNav, pathname, collapsed }: { appNav: ModuleNav;
       >
         {Icon && (
           <Icon 
-            size={18} 
+            size={20} 
             style={{ 
               flexShrink: 0, 
               color: isActive ? 'var(--color-primary)' : 'inherit' 
@@ -142,7 +142,7 @@ export function AppSidebar({ collapsed, setCollapsed, appNav, pathname, user }: 
         >
           {!collapsed && (
             <div className={styles.logoWrapper}>
-              <appNav.icon size={18} className="ui-text-primary" />
+              <appNav.icon size={20} className="ui-text-primary" />
               <span>{appNav.title}</span>
             </div>
           )}
@@ -152,9 +152,19 @@ export function AppSidebar({ collapsed, setCollapsed, appNav, pathname, user }: 
             className={styles.toggleBtn}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            {collapsed ? <Menu size={18} /> : <ChevronLeft size={18} />}
+            {collapsed ? <Menu size={20} /> : <ChevronLeft size={20} />}
           </button>
         </div>
+
+        {/* Workspace Switcher */}
+        {!collapsed && (
+          <div className="px-3 py-2 border-b border-[var(--color-border)]">
+            <select className="w-full bg-[var(--color-bg-sunken)] border border-[var(--color-border)] text-sm rounded-md px-2 py-1.5 focus:outline-none focus:border-[var(--color-primary)]">
+              <option>Acme Corp (Primary)</option>
+              <option>Globex Inc</option>
+            </select>
+          </div>
+        )}
 
         {/* Navigation Items */}
         <nav
@@ -176,7 +186,7 @@ export function AppSidebar({ collapsed, setCollapsed, appNav, pathname, user }: 
               className={styles.toggleBtn}
               aria-label="Expand sidebar"
             >
-              <Menu size={18} />
+              <Menu size={20} />
             </button>
           ) : (
             <div className={styles.userContainer}>

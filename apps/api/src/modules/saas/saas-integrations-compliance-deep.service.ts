@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { PrismaService } from "@unerp/database";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class SaasIntegrationsComplianceDeepService {
@@ -7,7 +7,7 @@ export class SaasIntegrationsComplianceDeepService {
     SaasIntegrationsComplianceDeepService.name,
   );
 
-  constructor(private readonly prisma: PrismaService) {}
+  private get db() { return prisma; }
 
   // 1. Integrations & Webhooks (25 methods)
   async registerSaasWebhook(tenantId: string, webhookData: any) {

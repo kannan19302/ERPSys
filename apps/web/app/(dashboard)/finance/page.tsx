@@ -814,7 +814,14 @@ export default function FinanceDashboardPage() {
       <div className="ui-stack-2 ui-animate-in">
         {/* Compact PageHeader — Single "+ New Invoice" Button */}
         <PageHeader
-          title="Finance & Accounting"
+          title={
+            <div className="flex items-center gap-2 text-[var(--color-success)]">
+              <div className="p-2 bg-[var(--color-success-light)] rounded-lg">
+                <DollarSign size={20} />
+              </div>
+              <span className="text-[var(--color-text)]">Finance & Accounting</span>
+            </div>
+          }
           description="Executive dashboard — revenue, cash flow, receivables, compliance, and module workspaces."
           breadcrumbs={[
             { label: "Home", href: "/dashboard" },

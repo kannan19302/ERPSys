@@ -1,11 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { PrismaService } from "@unerp/database";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class SaasDeepeningApexUltimateService {
   private readonly logger = new Logger(SaasDeepeningApexUltimateService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  private get db() { return prisma; }
 
   async processApexUltimateOp(tenantId: string, cmd: string, body: any) {
     return {

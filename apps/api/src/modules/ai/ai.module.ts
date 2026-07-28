@@ -10,10 +10,11 @@ import { AiExpansionController } from './ai-expansion.controller';
 import { AiExpansionService } from './ai-expansion.service';
 import { AiDeepService } from './ai-deep.service';
 import { AiDeepController } from './ai-deep.controller';
+import { AiEnterpriseModule } from './ai-enterprise.module';
 import { ReportingQueryClientModule } from '../../common/integrations/reporting-query-client.module';
 
 @Module({
-  imports: [ReportingQueryClientModule],
+  imports: [ReportingQueryClientModule, AiEnterpriseModule],
   controllers: [AiController, AiAdminController, AiExpansionController, AiDeepController],
   providers: [AiService, AiCopilotService, AiAgentService, AiConfigService, OllamaProcessService, AiExpansionService, AiDeepService],
   exports: [AiService, AiCopilotService, AiAgentService, AiConfigService, OllamaProcessService, AiExpansionService, AiDeepService],

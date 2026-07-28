@@ -44,9 +44,10 @@ import { AbTestingController } from "./controllers/ab-testing.controller";
 
 import { BuilderDeepExpansionController } from "./controllers/builder-deep-expansion.controller";
 import { BuilderDeepExpansionService } from "./services/builder-deep-expansion.service";
+import { BuilderEnterpriseModule } from "./builder-enterprise.module";
 
 @Module({
-  imports: [AiClientModule],
+  imports: [AiClientModule, BuilderEnterpriseModule],
   controllers: [
     BuilderDeepController,
     BuilderDeepExpansionController,

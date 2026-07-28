@@ -8,6 +8,7 @@ import { CrmLeadsService } from "./crm-leads.service";
 import { CrmDealsService } from "./crm-deals.service";
 import { CrmActivitiesService } from "./crm-activities.service";
 import { CrmMarketingService } from "./crm-marketing.service";
+import { CrmEnterpriseModule } from "./crm-enterprise.module";
 import { CrmSalesOpsService } from "./crm-salesops.service";
 import { CrmConfigService } from "./crm-config.service";
 import { CrmCollaborationService } from "./crm-collaboration.service";
@@ -333,6 +334,7 @@ const CRM_SERVICES = [
 ];
 
 @Module({
+  imports: [CrmEnterpriseModule],
   controllers: [
     CrmController,
     CrmExpansionV1Controller,

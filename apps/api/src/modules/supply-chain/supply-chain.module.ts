@@ -74,8 +74,12 @@ import { SupplyChainEventsService } from "./events/supply-chain-events.service";
 import { SupplyChainSettingsController } from "./settings.controller";
 import { ScmDeepExpansionController } from "./controllers/scm-deep-expansion.controller";
 import { ScmDeepExpansionService } from "./services/scm-deep-expansion.service";
+import { SupplyChainEnterpriseController } from "./supply-chain-enterprise.controller";
+import { SupplyChainEnterpriseService } from "./supply-chain-enterprise.service";
+import { SupplyChainEnterpriseModule } from "./supply-chain-enterprise.module";
 
 @Module({
+  imports: [SupplyChainEnterpriseModule],
   controllers: [
     SupplyChainDeepController,
     ScmDeepExpansionController,
@@ -113,6 +117,7 @@ import { ScmDeepExpansionService } from "./services/scm-deep-expansion.service";
     SupplierPortalController,
     DigitalTwinController,
     SupplyChainSettingsController,
+    SupplyChainEnterpriseController,
   ],
   providers: [
     SupplyChainDeepController,
@@ -151,6 +156,7 @@ import { ScmDeepExpansionService } from "./services/scm-deep-expansion.service";
     SupplyChainAdvancedAnalyticsService,
     SupplyChainSupplierPortalService,
     SupplyChainDigitalTwinService,
+    SupplyChainEnterpriseService,
   ],
   exports: [
     ScmDeepExpansionService,
@@ -187,6 +193,7 @@ import { ScmDeepExpansionService } from "./services/scm-deep-expansion.service";
     SupplyChainAdvancedAnalyticsService,
     SupplyChainSupplierPortalService,
     SupplyChainDigitalTwinService,
+    SupplyChainEnterpriseService,
   ],
 })
 export class SupplyChainModule {}

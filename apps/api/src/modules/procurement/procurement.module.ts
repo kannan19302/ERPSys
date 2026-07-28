@@ -22,8 +22,12 @@ import { ProcurementSourcingService } from "./procurement-sourcing.service";
 import { ProcurementSourcingController } from "./procurement-sourcing.controller";
 import { ProcurementDeepExpansionBulkController } from "./procurement-deep-expansion-bulk.controller";
 import { ProcurementSettingsController } from "./settings.controller";
+import { ProcurementEnterpriseController } from "./procurement-enterprise.controller";
+import { ProcurementEnterpriseService } from "./procurement-enterprise.service";
+import { ProcurementEnterpriseModule } from "./procurement-enterprise.module";
 
 @Module({
+  imports: [ProcurementEnterpriseModule],
   controllers: [
     ProcurementController,
     ProcurementPublicController,
@@ -35,6 +39,7 @@ import { ProcurementSettingsController } from "./settings.controller";
     ProcurementSourcingController,
     ProcurementDeepExpansionBulkController,
     ProcurementSettingsController,
+    ProcurementEnterpriseController,
   ],
   providers: [
     ProcurementService,
@@ -50,6 +55,7 @@ import { ProcurementSettingsController } from "./settings.controller";
     ProcurementAnalyticsService,
     ProcurementApprovalsService,
     ProcurementSourcingService,
+    ProcurementEnterpriseService,
   ],
   exports: [
     ProcurementService,
@@ -65,6 +71,7 @@ import { ProcurementSettingsController } from "./settings.controller";
     ProcurementAnalyticsService,
     ProcurementApprovalsService,
     ProcurementSourcingService,
+    ProcurementEnterpriseService,
   ],
 })
 export class ProcurementModule {}

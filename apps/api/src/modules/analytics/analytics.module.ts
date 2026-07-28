@@ -20,8 +20,12 @@ import { AnalyticsAnomalyDetectionDeepService } from "./analytics-anomaly-detect
 import { AnalyticsAnomalyDetectionDeepController } from "./analytics-anomaly-detection-deep.controller";
 import { AnalyticsDeepService } from "./analytics-deep.service";
 import { AnalyticsDeepController } from "./analytics-deep.controller";
+import { AnalyticsEnterpriseModule } from "./analytics-enterprise.module";
+import { AnalyticsEnterpriseController } from "./analytics-enterprise.controller";
+import { AnalyticsEnterpriseService } from "./analytics-enterprise.service";
 
 @Module({
+  imports: [AnalyticsEnterpriseModule],
   controllers: [
     AnalyticsController,
     AnalyticsExpansionController,
@@ -33,6 +37,7 @@ import { AnalyticsDeepController } from "./analytics-deep.controller";
     AnalyticsRealtimeStreamDeepController,
     AnalyticsAnomalyDetectionDeepController,
     AnalyticsDeepController,
+    AnalyticsEnterpriseController,
   ],
   providers: [
     AnalyticsService,
@@ -45,6 +50,8 @@ import { AnalyticsDeepController } from "./analytics-deep.controller";
     AnalyticsRealtimeStreamDeepService,
     AnalyticsAnomalyDetectionDeepService,
     AnalyticsDeepService,
+    AnalyticsEnterpriseService,
+    AnalyticsEnterpriseController,
   ],
   exports: [
     AnalyticsService,
@@ -57,6 +64,7 @@ import { AnalyticsDeepController } from "./analytics-deep.controller";
     AnalyticsRealtimeStreamDeepService,
     AnalyticsAnomalyDetectionDeepService,
     AnalyticsDeepService,
+    AnalyticsEnterpriseService,
   ],
 })
 export class AnalyticsModule {}

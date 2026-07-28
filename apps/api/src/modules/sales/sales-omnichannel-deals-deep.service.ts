@@ -1,11 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { PrismaService } from "@unerp/database";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class SalesOmnichannelDealsDeepService {
   private readonly logger = new Logger(SalesOmnichannelDealsDeepService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  private get db() { return prisma; }
 
   // 1. Omnichannel Channel Orchestration & Partner Routing (25 methods)
   async registerSalesChannel(tenantId: string, channel: any) {

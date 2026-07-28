@@ -23,16 +23,16 @@ function formatBytes(bytes: number): string {
 
 export default function UsagePage() {
   const client = useApiClient();
-  const { error: notifyError } = useToast();
+  const { toast } = useToast();
   const [usage, setUsage] = useState<StorageUsage | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     client.get<StorageUsage>("/drive/usage")
       .then((res) => setUsage(res as any))
-      .catch((e) => notifyError("Failed to load usage data", e.message))
+      .catch((e) => toast({ title: "Failed to load usage data", description: e.message, variant: "error" }))
       .finally(() => setLoading(false));
-  }, [client, notifyError]);
+  }, [client, toast]);
 
   if (loading) return <Spinner />;
   if (!usage) return <div className="ui-text-muted">No usage data available</div>;
@@ -46,18 +46,18 @@ export default function UsagePage() {
   }));
 
   const breakdownColumns: Column<{ type: string; size: number; formatted: string }>[] = [
-    { id: "type", header: "Type", render: (r) => (
+    { key: "type", header: "Type", render: (r) => (
       <span className="ui-hstack-2">
         {r.type === "images" ? <Image size={16} /> : r.type === "videos" ? <Video size={16} /> : r.type === "pdfs" ? <FileText size={16} /> : <Archive size={16} />}
         {r.type}
       </span>
     )},
-    { id: "formatted", header: "Size", render: (r) => r.formatted },
+    { key: "formatted", header: "Size", render: (r) => r.formatted },
   ];
 
   const userColumns: Column<{ userId: string; size: number }>[] = [
-    { id: "userId", header: "User" },
-    { id: "size", header: "Storage Used", render: (r) => formatBytes(r.size) },
+    { key: "userId", header: "User", render: (r) => r.userId },
+    { key: "size", header: "Storage Used", render: (r) => formatBytes(r.size) },
   ];
 
   return (
@@ -65,25 +65,37 @@ export default function UsagePage() {
       <PageHeader title="Storage Usage" description="Drive storage consumption and quota overview" />
       <div className="ui-grid-3">
         <Card>
-          <div className="ui-hstack-2"><HardDrive size={20} /><strong>Total Used</strong></div>
-          <div className="ui-text-xl">{formatBytes(usage.totalSize)}</div>
-          <div className="ui-text-sm ui-text-muted">{usage.fileCount} files</div>
+          <div className="p-4">
+            <div className="ui-hstack-2"><HardDrive size={20} /><strong>Total Used</strong></div>
+            <div className="ui-text-xl font-bold mt-1">{formatBytes(usage.totalSize)}</div>
+            <div className="ui-text-sm ui-text-muted">{usage.fileCount} files</div>
+          </div>
         </Card>
         <Card>
-          <div className="ui-hstack-2"><HardDrive size={20} /><strong>Quota</strong></div>
-          <div className="ui-text-xl">{usagePercent}%</div>
-          <div className="ui-text-sm ui-text-muted">{formatBytes(usage.quota.used)} / {formatBytes(usage.quota.limit)}</div>
+          <div className="p-4">
+            <div className="ui-hstack-2"><HardDrive size={20} /><strong>Quota</strong></div>
+            <div className="ui-text-xl font-bold mt-1">{usagePercent}%</div>
+            <div className="ui-text-sm ui-text-muted">{formatBytes(usage.quota.used)} / {formatBytes(usage.quota.limit)}</div>
+          </div>
         </Card>
         <Card>
-          <div className="ui-hstack-2"><Trash2 size={20} /><strong>Trashed</strong></div>
-          <div className="ui-text-xl">{formatBytes(usage.trashedSize)}</div>
+          <div className="p-4">
+            <div className="ui-hstack-2"><Trash2 size={20} /><strong>Trashed</strong></div>
+            <div className="ui-text-xl font-bold mt-1">{formatBytes(usage.trashedSize)}</div>
+          </div>
         </Card>
       </div>
-      <Card title="By File Type">
-        <DataTable columns={breakdownColumns} data={breakdownItems} />
+      <Card>
+        <div className="p-4">
+          <h3 className="font-semibold mb-2">By File Type</h3>
+          <DataTable columns={breakdownColumns} data={breakdownItems} />
+        </div>
       </Card>
-      <Card title="Top Users">
-        <DataTable columns={userColumns} data={usage.topUsers} />
+      <Card>
+        <div className="p-4">
+          <h3 className="font-semibold mb-2">Top Users</h3>
+          <DataTable columns={userColumns} data={usage.topUsers} />
+        </div>
       </Card>
     </>
   );

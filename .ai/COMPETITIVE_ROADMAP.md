@@ -51,27 +51,41 @@ Baseline pulled from `MODULE_REGISTRY.md` § System Progress Dashboard and
 
 ## 2. Agile structure adopted
 
+> **Cross-platform update (`MULTI_CLIENT_MASTER_PLAN.md`, sealed 2026-07-28)**:
+> every module now targets Web + Mobile (iOS/Android) + Desktop (Windows/
+> macOS/Linux) together, not web alone. A new **Parity Phase** level sits
+> between Epic and PI (one module's transition across one maturity-tier
+> boundary, all 3 platforms); Sprint's Definition of Done below gains a
+> 3-platform requirement.
+
 | Level | Unit | Cadence | GitHub mapping |
 |---|---|---|---|
 | **Program** | Whole mission (Phase M → Phase X) | Ongoing | This doc + `MODULE_REGISTRY.md` |
-| **Epic** | One ERP module reaching Deep tier (1500+ features, parity/superiority vs top 10) | Multi-PI | One GitHub issue, `type:epic` + `module:<name>` labels |
-| **Program Increment (PI)** | A focus-module rotation slice, ~6 sprints | ~12 weeks equivalent-effort (compressed to calendar days at current AI velocity — see § 4) | Epic issue's PI checklist (issue body, updated each cycle) |
-| **Sprint** | One AUTOPILOT DEV cycle's batch, or a bundle of 2-3 same-day cycles | 1 "sprint" = 1 horizontal-layer batch (§ Horizontal build order) | `sprint:<n>` label + a milestone once one exists (see § 6 — Projects board not yet created) |
+| **Epic** | One ERP module reaching Deep tier (1500+ features, parity/superiority vs top 10, **and** cross-platform parity or logged exemption) | Multi-Parity-Phase | One GitHub issue, `type:epic` + `module:<name>` labels |
+| **Parity Phase** | One module's transition across one maturity-tier boundary (Skeleton→MVM→Functional→Competitive→Advanced→Complete→Deep), shipped across Web+Mobile+Desktop together | ~3-5 sprints | `MULTI_CLIENT_MASTER_PLAN.md § 4`; tracked as a checklist item inside the Epic issue, one per tier transition |
+| **Program Increment (PI)** | A focus-module rotation slice, ~6 sprints (spans one or more Parity Phases) | ~12 weeks equivalent-effort (compressed to calendar days at current AI velocity — see § 4) | Epic issue's PI checklist (issue body, updated each cycle) |
+| **Sprint** | One AUTOPILOT DEV cycle's batch, or a bundle of 2-3 same-day cycles | 1 "sprint" = 1 horizontal-layer batch (§ Horizontal build order), UI layer now spans Web+Mobile+Desktop in the same sprint | `sprint:<n>` label + a milestone once one exists (see § 6 — Projects board not yet created) |
 | **Story** | One feature/endpoint/UI-slice inside a sprint | Hours (AI-IDE build time) | GitHub issue, `type:story` + `sprint:<n>` + `module:<name>` labels, closed by the shipping commit |
 
 **Definition of Ready (Story)**: named in `.ai/MARKET_BENCHMARK.md` or the
-Epic's backlog, RICE-scored, DB/API/UI slice identified, no duplicate in
-`FEATURE_LEDGER.md`.
+Epic's backlog, RICE-scored, DB/API/UI slice identified (UI slice now means
+Web+Mobile+Desktop for Tier 1-3 modules per `MULTI_CLIENT_MASTER_PLAN.md § 5`),
+no duplicate in `FEATURE_LEDGER.md`.
 
 **Definition of Done (Story)**: DB migration (if any) + API + UI + tests
-shipped; `pnpm architecture:check` / `migration:discipline` clean; scoped
-typecheck green; CHANGELOG + MODULE_REGISTRY updated in the same commit;
-GitHub story issue closed by the commit that ships it.
+shipped; for Tier 1-3 modules "UI" means shipped on **all three** client
+surfaces (Web, Mobile, Desktop) — via the generic bundle renderer or a
+native Flutter feature per `MULTI_CLIENT_MASTER_PLAN.md § 5-6` — or, for a
+logged Tier 4 exemption, Web/Desktop only; `pnpm architecture:check` /
+`migration:discipline` clean; scoped typecheck green; CHANGELOG +
+MODULE_REGISTRY updated in the same commit; GitHub story issue closed by the
+commit that ships it.
 
 **Definition of Done (Epic)**: module hits 1500+ weighted features, 80%+ test
-coverage, full CRUD w/ pagination/sorting, and feature parity/superiority vs
-top 10 leaders per `MARKET_BENCHMARK.md` — the same 5 criteria already
-binding in `MODULE_REGISTRY.md` § 0.
+coverage, full CRUD w/ pagination/sorting, feature parity/superiority vs
+top 10 leaders per `MARKET_BENCHMARK.md`, **and cross-platform parity or a
+logged Tier 4 exemption** — the 6 criteria now binding in `MODULE_REGISTRY.md`
+§ 0 (criterion 6 added by `MULTI_CLIENT_MASTER_PLAN.md § 3`).
 
 ---
 
@@ -116,6 +130,22 @@ PI numbering above assumes ~1 PI per module-or-module-pair, sequenced by the
 existing binding focus order (AUTOPILOT § Phase M focus order) — it does not
 change that order, just puts sprint/PI numbers on it.
 
+### 3a. Parity Phase summary (cross-platform, `MULTI_CLIENT_MASTER_PLAN.md § 4`)
+
+Generated, not hand-maintained — re-derive from `MODULE_REGISTRY.md`'s
+Module Health List whenever this doc is regenerated. At seal time
+(2026-07-28): **45 modules × 6 maturity-tier transitions = 270 Parity
+Phases total**, ≈4 sprints each ≈ **1,080 sprints**. Per-module remaining
+Parity Phases = (target tier index − current tier index) using the order
+Skeleton(0)→MVM(1)→Functional(2)→Competitive(3)→Advanced(4)→Complete(5)→Deep(6).
+Client scope per module (full 3-platform parity vs. logged exemption) comes
+from the Tier 1-4 table in `MULTI_CLIENT_MASTER_PLAN.md § 5` — do not
+re-derive that classification here, it is sealed there.
+
+This does not replace the Epic backlog table above; it is the cross-platform
+lens on the same 45 rows. A module's Epic is not Done until both its feature
+count *and* its Parity Phase count reach target (§ 2 Definition of Done).
+
 ---
 
 ## 4. Time & cost projection
@@ -153,6 +183,16 @@ Notes:
 **Recommended planning number: Base scenario — ~7-10 months, ~$3,000–6,500
 in AI-IDE subscription spend**, reviewed every PI (~every 6 sprints) against
 actual `cycle-report.mjs` velocity and re-forecast in this document.
+
+**Cross-platform adjustment**: the scenarios above predate the
+`MULTI_CLIENT_MASTER_PLAN.md` seal, when the UI layer meant Web only.
+UI-layer sprints for Tier 1-3 modules (`MULTI_CLIENT_MASTER_PLAN.md § 5`)
+now ship Web+Mobile+Desktop together, which increases UI-layer effort per
+sprint (though the generic bundle renderer, § 6 there, keeps most Tier 2-3
+modules from needing a full native build-out). Treat the Base/Conservative
+scenarios above as the new realistic floor rather than the Base/Aggressive
+split until a few Parity Phases have shipped and velocity can be
+re-measured against the 3-platform Definition of Done.
 
 ---
 

@@ -1,11 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { PrismaService } from "@unerp/database";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class SaasRevenueChurnHealthDeepService {
   private readonly logger = new Logger(SaasRevenueChurnHealthDeepService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  private get db() { return prisma; }
 
   // 1. SaaS Revenue & MRR/ARR Analytics (25 methods)
   async getMrrAnalytics(tenantId: string, timeframe: string) {

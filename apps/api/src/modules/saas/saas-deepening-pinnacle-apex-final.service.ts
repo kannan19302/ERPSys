@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { PrismaService } from "@unerp/database";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class SaasDeepeningPinnacleApexFinalService {
@@ -7,7 +7,7 @@ export class SaasDeepeningPinnacleApexFinalService {
     SaasDeepeningPinnacleApexFinalService.name,
   );
 
-  constructor(private readonly prisma: PrismaService) {}
+  private get db() { return prisma; }
 
   async processPinnacleApexFinalOp(tenantId: string, cmd: string, body: any) {
     return {

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { PageHeader, Button, DataTable, Modal, toast } from "@unerp/ui";
+import { PageHeader, Button, DataTable, Modal, useToast } from "@unerp/ui";
 import { RouteGuard } from "@unerp/framework";
 import { FileCode, Plus, Trash2 } from "lucide-react";
 import type { Column } from "@unerp/ui";
@@ -10,6 +10,7 @@ interface Contract {
 }
 
 export default function ContractsPage() {
+  const { toast } = useToast();
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -25,31 +26,31 @@ export default function ContractsPage() {
 
   const handleCreate = async () => {
     const res = await fetch("/api/v1/blockchain/contracts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
-    if (res.ok) { toast.success("Contract registered"); setShowCreate(false); setForm({ name: "", address: "", network: "ethereum", version: "1.0.0" }); await fetchContracts(); }
-    else toast.error("Failed to register contract");
+    if (res.ok) { toast({ title: "Contract registered", variant: "success" }); setShowCreate(false); setForm({ name: "", address: "", network: "ethereum", version: "1.0.0" }); await fetchContracts(); }
+    else toast({ title: "Failed to register contract", variant: "error" });
   };
 
   const handleDelete = async (id: string) => {
     const res = await fetch(`/api/v1/blockchain/contracts/${id}`, { method: "DELETE" });
-    if (res.ok) { toast.success("Contract removed"); await fetchContracts(); }
-    else toast.error("Failed to delete contract");
+    if (res.ok) { toast({ title: "Contract removed", variant: "success" }); await fetchContracts(); }
+    else toast({ title: "Failed to delete contract", variant: "error" });
   };
 
   const columns: Column<Contract>[] = [
-    { id: "name", header: "Name", render: (r) => <span className="ui-flex-row ui-gap-2"><FileCode size={14} />{r.name}</span> },
-    { id: "address", header: "Address", render: (r) => <code className="u-text-xs">{r.address.substring(0, 20)}...</code> },
-    { id: "network", header: "Network", render: (r) => <span className="ui-badge">{r.network}</span> },
-    { id: "version", header: "Version", render: (r) => r.version },
-    { id: "deployedAt", header: "Deployed", render: (r) => new Date(r.deployedAt).toLocaleDateString() },
-    { id: "actions", header: "Actions", render: (r) => <Button size="sm" variant="ghost" leftIcon={<Trash2 size={14} />} onClick={(e) => { e.stopPropagation(); handleDelete(r.id); }}>Remove</Button> },
+    { key: "name", header: "Name", render: (r) => <span className="ui-flex-row ui-gap-2"><FileCode size={14} />{r.name}</span> },
+    { key: "address", header: "Address", render: (r) => <code className="u-text-xs">{r.address.substring(0, 20)}...</code> },
+    { key: "network", header: "Network", render: (r) => <span className="ui-badge">{r.network}</span> },
+    { key: "version", header: "Version", render: (r) => r.version },
+    { key: "deployedAt", header: "Deployed", render: (r) => new Date(r.deployedAt).toLocaleDateString() },
+    { key: "actions", header: "Actions", render: (r) => <Button size="sm" variant="ghost" leftIcon={<Trash2 size={14} />} onClick={(e) => { e.stopPropagation(); handleDelete(r.id); }}>Remove</Button> },
   ];
 
   return (
     <RouteGuard permission="blockchain.contract.read">
       <div className="ui-stack-6">
-        <PageHeader title="Smart Contract Registry" description="Register and manage blockchain smart contracts." icon={FileCode} breadcrumbs={[{ label: "Apps", href: "/apps" }, { label: "Blockchain", href: "/blockchain" }, { label: "Contracts" }]} />
+        <PageHeader title="Smart Contract Registry" description="Register and manage blockchain smart contracts." breadcrumbs={[{ label: "Apps", href: "/apps" }, { label: "Blockchain", href: "/blockchain" }, { label: "Contracts" }]} />
         <div><Button leftIcon={<Plus size={16} />} onClick={() => setShowCreate(true)}>Register Contract</Button></div>
-        <DataTable columns={columns} data={contracts} loading={loading} sortable />
+        <DataTable columns={columns} data={contracts} loading={loading} />
         <Modal open={showCreate} onClose={() => setShowCreate(false)} title="Register Smart Contract">
           <div className="ui-form-group">
             {["name", "address", "network", "version"].map((f) => (

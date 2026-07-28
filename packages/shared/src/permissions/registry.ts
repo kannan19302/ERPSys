@@ -7992,6 +7992,77 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
   p("storage", "buckets", "read", "endpoint", "View storage buckets"),
   p("pwa", "sync", "read", "endpoint", "View PWA sync queue"),
   p("saved-views", "shares", "read", "endpoint", "View saved view shares"),
+
+  // Cycle 65 Deepening Permissions
+  p("healthcare", "clinical-notes", "read", "endpoint", "View clinical notes"),
+  p("healthcare", "clinical-notes", "create", "endpoint", "Create clinical notes"),
+  p("healthcare", "telehealth", "read", "endpoint", "View telehealth sessions"),
+  p("healthcare", "telehealth", "create", "endpoint", "Create telehealth sessions"),
+  p("healthcare", "medical-bills", "read", "endpoint", "View medical bills"),
+  p("healthcare", "medical-bills", "create", "endpoint", "Create medical bills"),
+
+  p("education", "report-cards", "read", "endpoint", "View report cards"),
+  p("education", "report-cards", "create", "endpoint", "Create report cards"),
+  p("education", "scholarships", "read", "endpoint", "View scholarships"),
+  p("education", "scholarships", "create", "endpoint", "Create scholarships"),
+  p("education", "submissions", "read", "endpoint", "View assignment submissions"),
+  p("education", "submissions", "create", "endpoint", "Submit assignments"),
+
+  p("field-service", "warranties", "read", "endpoint", "View warranties"),
+  p("field-service", "warranties", "create", "endpoint", "Create warranties"),
+  p("field-service", "expenses", "read", "endpoint", "View work order expenses"),
+  p("field-service", "expenses", "create", "endpoint", "Create work order expenses"),
+  p("field-service", "checklists", "read", "endpoint", "View inspection checklists"),
+  p("field-service", "checklists", "create", "endpoint", "Create inspection checklists"),
+
+  p("real-estate", "inspections", "read", "endpoint", "View property inspections"),
+  p("real-estate", "inspections", "create", "endpoint", "Create property inspections"),
+  p("real-estate", "rent-collection", "read", "endpoint", "View rent collection logs"),
+  p("real-estate", "rent-collection", "create", "endpoint", "Log rent payments"),
+  p("real-estate", "syndicate", "read", "endpoint", "View listing syndication"),
+  p("real-estate", "syndicate", "create", "endpoint", "Syndicate property listings"),
+
+  p("people", "onboarding", "read", "endpoint", "View onboarding tasks"),
+  p("people", "onboarding", "create", "endpoint", "Create onboarding tasks"),
+  p("people", "time-off", "read", "endpoint", "View time off requests"),
+  p("people", "time-off", "create", "endpoint", "Create time off requests"),
+  p("people", "recognition", "read", "endpoint", "View peer recognition"),
+  p("people", "recognition", "create", "endpoint", "Send peer recognition"),
+
+  p("fixed-assets", "insurance", "read", "endpoint", "View asset insurance policies"),
+  p("fixed-assets", "insurance", "create", "endpoint", "Create asset insurance policies"),
+  p("fixed-assets", "revaluation", "read", "endpoint", "View asset revaluations"),
+  p("fixed-assets", "revaluation", "create", "endpoint", "Revalue assets"),
+  p("fixed-assets", "physical-audit", "read", "endpoint", "View physical audits"),
+  p("fixed-assets", "physical-audit", "create", "endpoint", "Perform physical audit"),
+
+  // Bulk Operations (extended)
+  admin("bulk-ops", "update", "endpoint", "Bulk update records", "Bulk Operations"),
+  admin("bulk-ops", "delete", "endpoint", "Bulk soft delete records", "Bulk Operations"),
+  admin("bulk-ops", "restore", "endpoint", "Bulk restore soft-deleted records", "Bulk Operations"),
+  admin("bulk-ops", "status", "endpoint", "Bulk status change on records", "Bulk Operations"),
+
+  // Import
+  admin("import", "create", "endpoint", "Import data (CSV/XLSX/JSON)", "Data Operations"),
+  admin("import", "view", "endpoint", "View import history and details", "Data Operations"),
+
+  // Data Quality (extended)
+  admin("data-quality", "deduplicate", "endpoint", "Find duplicate records", "Data Quality"),
+  admin("data-quality", "merge", "endpoint", "Merge duplicate records", "Data Quality"),
+  admin("data-quality", "validate", "endpoint", "Run data quality validation", "Data Quality"),
+  admin("data-quality", "normalize", "endpoint", "Normalize address/phone data", "Data Quality"),
+
+  // Enterprise Audit
+  admin("audit", "view", "endpoint", "View entity audit trail and user activity", "Security"),
+  admin("audit", "security", "endpoint", "View security audit events", "Security"),
+  admin("audit", "export", "endpoint", "Export audit logs", "Security"),
+  admin("audit", "compliance", "endpoint", "View compliance reports", "Security"),
+
+  // Export v2
+  admin("export-v2", "create", "endpoint", "Export data with templates", "Data Operations"),
+  admin("export-v2", "schedule", "endpoint", "Schedule recurring exports", "Data Operations"),
+  admin("export-v2", "view", "endpoint", "View export history", "Data Operations"),
+  admin("export-v2", "bulk", "endpoint", "Bulk export selected records", "Data Operations"),
 ];
 
 // ── Query helpers (role editor / access-control UI) ──

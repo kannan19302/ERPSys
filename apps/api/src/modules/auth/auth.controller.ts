@@ -3,6 +3,7 @@ import {
   Post,
   Get,
   Patch,
+  Delete,
   Param,
   Query,
   Body,
@@ -109,7 +110,11 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
-/** Pulls IP / user-agent off the request for the active-sessions record. */
+/**
+ * Pulls IP / user-agent off the request for the active-sessions record, plus
+ * the multi-client device headers Flutter mobile/desktop clients send
+ * (.ai/MULTI_CLIENT_MASTER_PLAN.md § 7) — browsers simply omit these.
+ */
 function sessionContext(req: Request) {
   return {
     ipAddress:
@@ -117,6 +122,9 @@ function sessionContext(req: Request) {
       req.ip ||
       null,
     userAgent: (req.headers["user-agent"] as string) || null,
+    deviceId: (req.headers["x-device-id"] as string) || null,
+    platform: (req.headers["x-platform"] as string) || null,
+    appVersion: (req.headers["x-app-version"] as string) || null,
   };
 }
 
@@ -416,6 +424,24 @@ export class AuthController {
       req.user.userId,
       req.user.tenantId,
       req.user.sid,
+    );
+  }
+
+  @ApiOperation({
+    summary: "Revoke one specific device/session (\"log out this device\")",
+  })
+  @Permissions("auth.update")
+  @Delete("sessions/:id")
+  @UseGuards(JwtAuthGuard, RbacGuard)
+  @HttpCode(HttpStatus.OK)
+  async revokeSession(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.authService.revokeOwnSessionById(
+      req.user.userId,
+      req.user.tenantId,
+      id,
     );
   }
 

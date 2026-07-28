@@ -2,7 +2,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { PageHeader, DataTable, Card } from "@unerp/ui";
 import { RouteGuard } from "@unerp/framework";
-import { BarChart3, TrendingUp, DollarSign, Download } from "lucide-react";
 import type { Column } from "@unerp/ui";
 
 interface AnalyticsRecord {
@@ -26,24 +25,24 @@ export default function AnalyticsPage() {
   useEffect(() => { fetchAnalytics(); }, [fetchAnalytics]);
 
   const columns: Column<AnalyticsRecord>[] = [
-    { id: "appId", header: "App ID", render: (r) => r.appId },
-    { id: "date", header: "Date", render: (r) => new Date(r.date).toLocaleDateString() },
-    { id: "installs", header: "Installs", render: (r) => r.installs },
-    { id: "uninstalls", header: "Uninstalls", render: (r) => r.uninstalls },
-    { id: "activeUsers", header: "Active Users", render: (r) => r.activeUsers },
-    { id: "revenue", header: "Revenue", render: (r) => `$${r.revenue.toFixed(2)}` },
+    { key: "appId", header: "App ID", render: (r) => r.appId },
+    { key: "date", header: "Date", render: (r) => new Date(r.date).toLocaleDateString() },
+    { key: "installs", header: "Installs", render: (r) => r.installs },
+    { key: "uninstalls", header: "Uninstalls", render: (r) => r.uninstalls },
+    { key: "activeUsers", header: "Active Users", render: (r) => r.activeUsers },
+    { key: "revenue", header: "Revenue", render: (r) => `$${r.revenue.toFixed(2)}` },
   ];
 
   return (
     <RouteGuard permission="marketplace.analytics.read">
       <div className="ui-stack-6">
-        <PageHeader title="Marketplace Analytics" description="Install trends, top apps, and revenue data." icon={BarChart3} breadcrumbs={[{ label: "Apps", href: "/apps" }, { label: "Marketplace", href: "/marketplace" }, { label: "Analytics" }]} />
+        <PageHeader title="Marketplace Analytics" description="Install trends, top apps, and revenue data." breadcrumbs={[{ label: "Apps", href: "/apps" }, { label: "Marketplace", href: "/marketplace" }, { label: "Analytics" }]} />
         <div className="ui-grid-3">
-          <Card title="Total Installs" icon={TrendingUp}>{data?.totals.installs ?? 0}</Card>
-          <Card title="Total Uninstalls" icon={Download}>{data?.totals.uninstalls ?? 0}</Card>
-          <Card title="Total Revenue" icon={DollarSign}>${(data?.totals.revenue ?? 0).toFixed(2)}</Card>
+          <Card><div className="p-4"><p className="text-sm font-medium text-muted-foreground">Total Installs</p><h3 className="text-2xl font-bold mt-1">{data?.totals.installs ?? 0}</h3></div></Card>
+          <Card><div className="p-4"><p className="text-sm font-medium text-muted-foreground">Total Uninstalls</p><h3 className="text-2xl font-bold mt-1">{data?.totals.uninstalls ?? 0}</h3></div></Card>
+          <Card><div className="p-4"><p className="text-sm font-medium text-muted-foreground">Total Revenue</p><h3 className="text-2xl font-bold mt-1">${(data?.totals.revenue ?? 0).toFixed(2)}</h3></div></Card>
         </div>
-        <DataTable columns={columns} data={data?.items ?? []} loading={loading} sortable />
+        <DataTable columns={columns} data={data?.items ?? []} loading={loading} />
       </div>
     </RouteGuard>
   );

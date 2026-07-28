@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { PrismaService } from "@unerp/database";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class SalesAdvancedEnterpriseCoreDeepService {
@@ -7,7 +7,7 @@ export class SalesAdvancedEnterpriseCoreDeepService {
     SalesAdvancedEnterpriseCoreDeepService.name,
   );
 
-  constructor(private readonly prisma: PrismaService) {}
+  private get db() { return prisma; }
 
   // Multi-tier enterprise sales methods generator helper pattern
   async executeSalesOperation(tenantId: string, opName: string, payload: any) {

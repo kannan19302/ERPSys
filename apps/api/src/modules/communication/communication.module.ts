@@ -29,9 +29,12 @@ import { AppSettingsService } from "../../common/settings/settings.service";
 
 import { CommDeepExpansionController } from "./controllers/comm-deep-expansion.controller";
 import { CommDeepExpansionService } from "./services/comm-deep-expansion.service";
+import { CommunicationEnterpriseModule } from "./communication-enterprise.module";
+import { CommunicationEnterpriseController } from "./communication-enterprise.controller";
+import { CommunicationEnterpriseService } from "./communication-enterprise.service";
 
 @Module({
-  imports: [DocumentStorageClientModule, RealtimeClientModule],
+  imports: [DocumentStorageClientModule, RealtimeClientModule, CommunicationEnterpriseModule],
   controllers: [
     CommunicationDeepController,
     CommDeepExpansionController,
@@ -46,6 +49,7 @@ import { CommDeepExpansionService } from "./services/comm-deep-expansion.service
     SearchController,
     RealTimeCollabController,
     SurveyController,
+    CommunicationEnterpriseController,
   ],
   providers: [
     CommunicationDeepController,
@@ -64,6 +68,8 @@ import { CommDeepExpansionService } from "./services/comm-deep-expansion.service
     CommunicationRealTimeCollabService,
     CommunicationSurveyService,
     AppSettingsService,
+    CommunicationEnterpriseService,
+    CommunicationEnterpriseController,
   ],
   exports: [
     CommDeepExpansionService,
@@ -79,6 +85,7 @@ import { CommDeepExpansionService } from "./services/comm-deep-expansion.service
     CommunicationSearchService,
     CommunicationRealTimeCollabService,
     CommunicationSurveyService,
+    CommunicationEnterpriseService,
   ],
 })
 export class CommunicationModule {}

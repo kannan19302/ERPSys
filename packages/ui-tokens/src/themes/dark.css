@@ -53,6 +53,23 @@
   --color-info-hover: #0ea5e9;
   --color-info-light: rgb(14 165 233 / 0.15);
   --color-info-text: #bae6fd;
+  
+  /* ── State Aliases (subtle/default/strong) ── */
+  --color-success-subtle: var(--color-success-light);
+  --color-success-default: var(--color-success);
+  --color-success-strong: var(--color-success-hover);
+  
+  --color-warning-subtle: var(--color-warning-light);
+  --color-warning-default: var(--color-warning);
+  --color-warning-strong: var(--color-warning-hover);
+  
+  --color-error-subtle: var(--color-danger-light);
+  --color-error-default: var(--color-danger);
+  --color-error-strong: var(--color-danger-hover);
+  
+  --color-info-subtle: var(--color-info-light);
+  --color-info-default: var(--color-info);
+  --color-info-strong: var(--color-info-hover);
 
   /* ── Sidebar ── */
   --color-sidebar-bg: #1a1b2e;

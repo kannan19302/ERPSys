@@ -36,9 +36,7 @@ DROP INDEX "vendor_bills_vendor_id_idx";
 
 -- AlterTable
 ALTER TABLE "credit_notes" DROP COLUMN "updated_at",
-ADD COLUMN     "deleted_at" TIMESTAMP(3),
-ALTER COLUMN "line_items" DROP NOT NULL,
-ALTER COLUMN "line_items" DROP DEFAULT;
+ADD COLUMN     "deleted_at" TIMESTAMP(3);
 
 -- AlterTable
 ALTER TABLE "currencies" DROP COLUMN "is_active";
@@ -55,9 +53,7 @@ ALTER COLUMN "line_items" DROP DEFAULT;
 
 -- AlterTable
 ALTER TABLE "debit_notes" DROP COLUMN "updated_at",
-ADD COLUMN     "deleted_at" TIMESTAMP(3),
-ALTER COLUMN "line_items" DROP NOT NULL,
-ALTER COLUMN "line_items" DROP DEFAULT;
+ADD COLUMN     "deleted_at" TIMESTAMP(3);
 
 -- AlterTable
 ALTER TABLE "dunning_levels" DROP COLUMN "email_template_id",

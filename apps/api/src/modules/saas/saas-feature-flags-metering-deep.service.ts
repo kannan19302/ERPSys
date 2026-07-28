@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { PrismaService } from "@unerp/database";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class SaasFeatureFlagsMeteringDeepService {
@@ -7,7 +7,7 @@ export class SaasFeatureFlagsMeteringDeepService {
     SaasFeatureFlagsMeteringDeepService.name,
   );
 
-  constructor(private readonly prisma: PrismaService) {}
+  private get db() { return prisma; }
 
   // 1. Feature Flag Management & Targeted Evaluation (30 methods)
   async createFeatureFlagRule(tenantId: string, ruleData: any) {

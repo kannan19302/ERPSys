@@ -117,6 +117,17 @@ export class BundleStoreService {
     return dest;
   }
 
+  /**
+   * Reads back the manifest.json written by `extractToInstallDir` for an
+   * installed app — the contract Flutter's generic bundle renderer consumes
+   * (.ai/MULTI_CLIENT_MASTER_PLAN.md § 6) so newly-installed apps render on
+   * mobile/desktop without a native release, same as apps/web already does.
+   */
+  async readManifest(installPath: string): Promise<AppManifest> {
+    const raw = await fs.readFile(path.join(installPath, 'manifest.json'), 'utf8');
+    return JSON.parse(raw) as AppManifest;
+  }
+
   /** Recursively delete an installed app directory. The real-time uninstall. */
   async removeDir(installPath: string | null | undefined): Promise<void> {
     if (!installPath) return;

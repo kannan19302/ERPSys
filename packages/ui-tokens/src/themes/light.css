@@ -54,6 +54,23 @@
   --color-info-hover: #0284c7;
   --color-info-light: #f0f9ff;
   --color-info-text: #075985;
+  
+  /* ── State Aliases (subtle/default/strong) ── */
+  --color-success-subtle: var(--color-success-light);
+  --color-success-default: var(--color-success);
+  --color-success-strong: var(--color-success-hover);
+  
+  --color-warning-subtle: var(--color-warning-light);
+  --color-warning-default: var(--color-warning);
+  --color-warning-strong: var(--color-warning-hover);
+  
+  --color-error-subtle: var(--color-danger-light);
+  --color-error-default: var(--color-danger);
+  --color-error-strong: var(--color-danger-hover);
+  
+  --color-info-subtle: var(--color-info-light);
+  --color-info-default: var(--color-info);
+  --color-info-strong: var(--color-info-hover);
 
   /* ── Sidebar ── */
   --color-sidebar-bg: #f8f9fa;

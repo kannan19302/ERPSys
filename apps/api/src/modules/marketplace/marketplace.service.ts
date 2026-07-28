@@ -504,6 +504,28 @@ export class MarketplaceService {
     return { success: true, filesRemoved };
   }
 
+  /**
+   * The raw bundle manifest for an installed app — Flutter mobile/desktop
+   * fetch this to build nav + generic-renderer routes at runtime
+   * (.ai/MULTI_CLIENT_MASTER_PLAN.md § 6, § 7). Same manifest.json apps/web's
+   * bundle renderer already reads off disk; no separate client contract.
+   */
+  async getInstalledAppManifest(tenantId: string, appSlug: string) {
+    const installed = await prisma.installedApp.findFirst({
+      where: { tenantId, appSlug, status: "ACTIVE" },
+    });
+    if (!installed) throw new NotFoundException("App not installed");
+    if (!installed.installPath) {
+      // Static catalog apps (source: CATALOG) have no extracted bundle dir —
+      // nothing for the generic renderer to fetch; native/web-only.
+      throw new NotFoundException(
+        "This app has no bundle manifest (not a marketplace bundle install)",
+      );
+    }
+    const manifest = await this.bundleStore.readManifest(installed.installPath);
+    return { manifest, installedVersion: installed.installedVersion };
+  }
+
   async getAppConfig(tenantId: string, appSlug: string) {
     const installed = await prisma.installedApp.findFirst({
       where: { tenantId, appSlug },

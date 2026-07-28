@@ -762,51 +762,9 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="auth-container">
-      {/* Left Panel — Value Propositions */}
-      <div className="auth-sidebar auth-sidebar-green">
-        <div className={`auth-sidebar-shape ${styles.s1}`} />
-        <div className={`auth-sidebar-shape ${styles.s2}`} />
-
-        <div className="auth-sidebar-content">
-          <div className="auth-logo-area">
-            <div className="auth-logo-icon">
-              <Building size={22} className={styles.sidebarIcon} />
-            </div>
-            <div>
-              <h2 className={styles.sidebarTitle}>UniERP</h2>
-              <p className={styles.sidebarSubtitle}>New Organization</p>
-            </div>
-          </div>
-
-          <h1>
-            Start running your
-            <br />
-            business in minutes.
-          </h1>
-          <p>
-            Create a secure multi-tenant sandbox and initialize your workspace
-            modules instantly.
-          </p>
-
-          <div className="auth-sidebar-features">
-            {VALUE_PROPS.map((prop, i) => (
-              <div
-                key={i}
-                className={`auth-sidebar-feature ${styles.featureItem}`}
-              >
-                <h4 className={styles.featureTitle}>
-                  <span>{prop.icon}</span> {prop.title}
-                </h4>
-                <p>{prop.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Right Panel — Setup Steps */}
-      <div className="auth-main-panel">
+    <div className="auth-container centered">
+      {/* Centered Panel — Interactive Form */}
+      <div className="auth-main-panel centered-panel">
         <div className="auth-form-wrapper">
           {/* Centered Logo Branding Area */}
           <div className={styles.brandArea}>

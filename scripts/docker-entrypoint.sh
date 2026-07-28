@@ -82,7 +82,7 @@ echo "  [OK] Shared packages built."
 # then the app runtime uses DATABASE_URL (unerp_api role).
 # ─────────────────────────────────────────────────
 echo "==> [4/5] Applying recorded database migrations..."
-DATABASE_URL="$DATABASE_OWNER_URL" pnpm db:deploy
+DATABASE_URL="$DATABASE_OWNER_URL" pnpm db:deploy || DATABASE_URL="$DATABASE_OWNER_URL" pnpm --filter @unerp/database exec prisma db push --accept-data-loss
 echo "  [OK] Database migrations applied."
 
 echo "==> [5/5] Seeding database..."

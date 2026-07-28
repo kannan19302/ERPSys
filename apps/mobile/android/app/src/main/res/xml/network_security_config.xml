@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Allows plaintext HTTP only to the Android-emulator loopback alias used by
+  `docker-compose.dev.yml`'s API container (10.0.2.2 -> host's localhost:3001).
+  Every other destination, and every release build pointed at a real host,
+  must use TLS — this mirrors the API's own `secure: NODE_ENV === 'production'`
+  cookie flag (apps/api/src/modules/auth/auth.controller.ts).
+-->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">10.0.2.2</domain>
+        <domain includeSubdomains="false">localhost</domain>
+    </domain-config>
+    <base-config cleartextTrafficPermitted="false" />
+</network-security-config>

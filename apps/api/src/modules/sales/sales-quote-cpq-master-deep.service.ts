@@ -1,11 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { PrismaService } from "@unerp/database";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class SalesQuoteCpqMasterDeepService {
   private readonly logger = new Logger(SalesQuoteCpqMasterDeepService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  private get db() { return prisma; }
 
   // 1. Guided CPQ & Bundle Engine (20 methods)
   async createBundleRule(tenantId: string, rule: any) {

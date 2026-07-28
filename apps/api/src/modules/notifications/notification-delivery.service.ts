@@ -31,6 +31,9 @@ export class NotificationDeliveryService {
       if (channel === 'ALL' || channel === 'EMAIL') {
         await this.deliverEmail(payload);
       }
+      if (channel === 'ALL' || channel === 'PUSH') {
+        await this.deliverPush(payload);
+      }
     } else {
       const { pinoLogger } = await import('../../common/services/logger.service');
       pinoLogger.info({
@@ -67,6 +70,31 @@ export class NotificationDeliveryService {
       subject: payload.title,
       tenantId: payload.tenantId,
     }, 'Email notification queued');
+  }
+
+  /**
+   * Fans a notification out to every active device token for this user
+   * (.ai/MULTI_CLIENT_MASTER_PLAN.md § 7) — doubles as a cache-invalidation
+   * signal for Flutter's read cache. Same "queued, not actually sent" fidelity
+   * as deliverEmail: no FCM/APNs/WNS integration exists yet, so this logs the
+   * fan-out per device rather than silently dropping it.
+   */
+  private async deliverPush(payload: NotificationPayload) {
+    const tokens = await prisma.pushDeviceToken.findMany({
+      where: { tenantId: payload.tenantId, userId: payload.userId, isActive: true },
+    });
+    if (!tokens.length) return;
+
+    const { pinoLogger } = await import('../../common/services/logger.service');
+    for (const t of tokens) {
+      pinoLogger.info({
+        channel: 'PUSH',
+        deviceId: t.deviceId,
+        platform: t.platform,
+        title: payload.title,
+        tenantId: payload.tenantId,
+      }, 'Push notification queued');
+    }
   }
 
   async getUserNotifications(tenantId: string, userId: string, unreadOnly = false) {

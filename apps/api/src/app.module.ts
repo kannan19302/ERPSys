@@ -96,6 +96,17 @@ import { ShipmentTrackingModule } from "./modules/inventory/shipment-tracking.mo
 import { SavedViewsModule } from "./modules/saved-views/saved-views.module";
 import { EducationModule } from "./modules/education/education.module";
 import { HealthcareModule } from "./modules/healthcare/healthcare.module";
+import { HealthcareEnterpriseModule } from "./modules/healthcare/healthcare-enterprise.module";
+import { EducationEnterpriseModule } from "./modules/education/education-enterprise.module";
+import { RealEstateEnterpriseModule } from "./modules/real-estate/real-estate-enterprise.module";
+import { FieldServiceEnterpriseModule } from "./modules/field-service/field-service-enterprise.module";
+import { PosEnterpriseModule } from "./modules/pos/pos-enterprise.module";
+import { WorkflowEnterpriseModule } from "./modules/workflow/workflow-enterprise.module";
+import { BuilderEnterpriseModule } from "./modules/builder/builder-enterprise.module";
+import { AiEnterpriseModule } from "./modules/ai/ai-enterprise.module";
+import { EcommerceEnterpriseModule } from "./modules/ecommerce/ecommerce-enterprise.module";
+import { MarketplaceEnterpriseModule } from "./modules/marketplace/marketplace-enterprise.module";
+import { SaasPortalEnterpriseModule } from "./modules/saas-portal/saas-portal-enterprise.module";
 import { RealEstateModule } from "./modules/real-estate/real-estate.module";
 import { FieldServiceModule } from "./modules/field-service/field-service.module";
 import { BlockchainModule } from "./modules/blockchain/blockchain.module";
@@ -187,6 +198,7 @@ import {
 
     // Phase 5 — POS & Retail
     PosModule,
+    PosEnterpriseModule,
 
     // Phase 6 — Advanced Finance
     AdvancedFinanceModule,
@@ -197,6 +209,7 @@ import {
 
     // Phase 8 — Workflow Engine
     WorkflowModule,
+    WorkflowEnterpriseModule,
 
     // Phase 9 — Notifications
     NotificationsModule,
@@ -210,15 +223,19 @@ import {
 
     // Phase 12 — Healthcare (first-party NestJS module)
     HealthcareModule,
+    HealthcareEnterpriseModule,
 
     // Phase 13 — Education (first-party NestJS module)
     EducationModule,
+    EducationEnterpriseModule,
 
     // Phase 14 — Real Estate (first-party NestJS module)
     RealEstateModule,
+    RealEstateEnterpriseModule,
 
     // Phase 15 — Field Service (first-party NestJS module)
     FieldServiceModule,
+    FieldServiceEnterpriseModule,
 
     // Phase 16 — API Platform & Integrations
     ApiPlatformModule,
@@ -239,21 +256,26 @@ import {
     SaasModule,
     PlatformCredentialsModule,
     SaasPortalModule,
+    SaasPortalEnterpriseModule,
 
     // Builder Studio
     BuilderModule,
+    BuilderEnterpriseModule,
 
     // AI Layer
     AiModule,
+    AiEnterpriseModule,
 
     // Drive — File Storage & Management
     DriveModule,
 
     // Module #33 — E-Commerce Storefront (depends on Sales for checkout order creation)
     EcommerceModule,
+    EcommerceEnterpriseModule,
 
     // Marketplace catalog, vendor publishing, and extension lifecycle
     MarketplaceModule,
+    MarketplaceEnterpriseModule,
     PeopleModule,
 
     // Module #35 — Fixed Asset Management

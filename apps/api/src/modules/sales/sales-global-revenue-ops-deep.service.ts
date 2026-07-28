@@ -1,11 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { PrismaService } from "@unerp/database";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class SalesGlobalRevenueOpsDeepService {
   private readonly logger = new Logger(SalesGlobalRevenueOpsDeepService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  private get db() { return prisma; }
 
   // 1. Global Revenue Ops & Multi-Currency Sales (25 methods)
   async getGlobalRevenueForecast(tenantId: string, currency?: string) {

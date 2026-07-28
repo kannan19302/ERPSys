@@ -113,6 +113,13 @@ export class MarketplaceController {
     return this.marketplaceService.uninstallApp(req.user.tenantId, slug);
   }
 
+  @ApiOperation({ summary: 'Get installed app bundle manifest (Flutter mobile/desktop generic renderer, .ai/MULTI_CLIENT_MASTER_PLAN.md § 6)' })
+  @Get('installed/:slug/manifest')
+  @Permissions('admin.platform.read')
+  async getInstalledAppManifest(@Req() req: AuthenticatedRequest, @Param('slug') slug: string) {
+    return this.marketplaceService.getInstalledAppManifest(req.user.tenantId, slug);
+  }
+
   @ApiOperation({ summary: 'Get app config' })
   @Get('installed/:slug/config')
   @Permissions('admin.platform.read')

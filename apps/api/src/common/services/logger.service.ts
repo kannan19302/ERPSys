@@ -28,10 +28,12 @@ export class AppLogger implements NestLoggerService {
     pinoLogger.info({ context: this.extractContext(optionalParams) }, message);
   }
 
-  error(message: string, ...optionalParams: unknown[]) {
+  error(message: any, ...optionalParams: unknown[]) {
     const trace = optionalParams[0];
     const context = optionalParams[1] || this.context;
-    pinoLogger.error({ context, trace }, message);
+    const msgStr = typeof message === 'string' ? message : (message?.message || JSON.stringify(message));
+    const errStack = message?.stack || trace;
+    pinoLogger.error({ context, trace: errStack, err: message }, msgStr);
   }
 
   warn(message: string, ...optionalParams: unknown[]) {

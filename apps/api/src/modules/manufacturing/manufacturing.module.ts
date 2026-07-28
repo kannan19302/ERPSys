@@ -26,8 +26,12 @@ import { ManufacturingDdmrpController } from "./manufacturing-ddmrp.controller";
 
 import { MfgDeepExpansionController } from "./controllers/mfg-deep-expansion.controller";
 import { MfgDeepExpansionService } from "./services/mfg-deep-expansion.service";
+import { ManufacturingEnterpriseModule } from "./manufacturing-enterprise.module";
+import { ManufacturingEnterpriseController } from "./manufacturing-enterprise.controller";
+import { ManufacturingEnterpriseService } from "./manufacturing-enterprise.service";
 
 @Module({
+  imports: [ManufacturingEnterpriseModule],
   controllers: [
     ManufacturingDeepController,
     MfgDeepExpansionController,
@@ -43,6 +47,7 @@ import { MfgDeepExpansionService } from "./services/mfg-deep-expansion.service";
     ManufacturingTpmController,
     ManufacturingContractMfgController,
     ManufacturingDdmrpController,
+    ManufacturingEnterpriseController,
   ],
   providers: [
     ManufacturingDeepController,
@@ -59,12 +64,15 @@ import { MfgDeepExpansionService } from "./services/mfg-deep-expansion.service";
     ManufacturingTpmService,
     ManufacturingContractMfgService,
     ManufacturingDdmrpService,
+    ManufacturingEnterpriseService,
+    ManufacturingEnterpriseController,
   ],
   exports: [
     MfgDeepExpansionService,
     ManufacturingService,
     SchedulingService,
     ManufacturingExpansionService,
+    ManufacturingEnterpriseService,
   ],
 })
 export class ManufacturingModule {}

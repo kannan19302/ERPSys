@@ -83,6 +83,10 @@ export interface SessionContext {
   ipAddress?: string | null;
   userAgent?: string | null;
   device?: string | null;
+  /** Multi-client device identity (Flutter mobile/desktop) — null for browser sessions. */
+  deviceId?: string | null;
+  platform?: string | null;
+  appVersion?: string | null;
 }
 
 /** Reduces a raw User-Agent string to a short "OS • Browser" label for the sessions UI. */
@@ -660,6 +664,9 @@ export class AuthService {
             refreshTokenHash: hashResetToken(refreshToken),
             refreshExpiresAt,
             rememberMe,
+            deviceId: context?.deviceId ?? null,
+            platform: context?.platform ?? null,
+            appVersion: context?.appVersion ?? null,
           },
         });
 
@@ -780,6 +787,7 @@ export class AuthService {
             expiresAt: refreshExpiresAt,
             lastActivityAt: new Date(),
             ipAddress: context?.ipAddress ?? undefined,
+            appVersion: context?.appVersion ?? undefined,
           },
         });
 
@@ -1604,6 +1612,9 @@ export class AuthService {
       startedAt: s.startedAt,
       lastActivityAt: s.lastActivityAt,
       isCurrent: s.id === currentSid,
+      deviceId: s.deviceId,
+      platform: s.platform,
+      appVersion: s.appVersion,
     }));
   }
 
@@ -1623,6 +1634,23 @@ export class AuthService {
       data: { isActive: false },
     });
     return { revoked: result.count };
+  }
+
+  /**
+   * Revokes one specific session belonging to the calling user — the
+   * "log out this device" action (.ai/MULTI_CLIENT_MASTER_PLAN.md § 7).
+   * Ownership-scoped by userId+tenantId so a session id alone is never
+   * enough to revoke someone else's session.
+   */
+  async revokeOwnSessionById(userId: string, tenantId: string, sid: string) {
+    const result = await prisma.userSession.updateMany({
+      where: { id: sid, userId, tenantId, isActive: true },
+      data: { isActive: false, refreshTokenHash: null },
+    });
+    if (result.count === 0) {
+      throw new NotFoundException("Session not found.");
+    }
+    return { revoked: true };
   }
 
   /* ─────────────────────────────────────────────────────────

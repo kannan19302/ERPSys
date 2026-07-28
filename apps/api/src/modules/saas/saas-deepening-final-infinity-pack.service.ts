@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { PrismaService } from "@unerp/database";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class SaasDeepeningFinalInfinityPackService {
@@ -7,7 +7,7 @@ export class SaasDeepeningFinalInfinityPackService {
     SaasDeepeningFinalInfinityPackService.name,
   );
 
-  constructor(private readonly prisma: PrismaService) {}
+  private get db() { return prisma; }
 
   async processFinalInfinityOp(tenantId: string, cmd: string, body: any) {
     return {
