@@ -3,6 +3,42 @@ import { prisma } from "@unerp/database";
 
 @Injectable()
 export class RealEstateMaintenanceService {
+  // RealEstateMaintenanceRequest only stores `propertyId`/`vendorId` scalars —
+  // the schema has no `property`/`vendor` relations to `include`, so
+  // summaries are batched in manually.
+  private async attachProperty<T extends { propertyId: string }>(
+    tenantId: string,
+    rows: T[],
+  ) {
+    const properties = await prisma.realEstateProperty.findMany({
+      where: { tenantId, id: { in: rows.map((r) => r.propertyId) } },
+      select: { id: true, name: true },
+    });
+    const byId = new Map(properties.map((p) => [p.id, p]));
+    return rows.map((r) => ({
+      ...r,
+      property: byId.get(r.propertyId) || null,
+    }));
+  }
+
+  private async attachVendor<T extends { vendorId: string | null }>(
+    tenantId: string,
+    rows: T[],
+  ) {
+    const vendorIds = rows
+      .map((r) => r.vendorId)
+      .filter((id): id is string => id !== null);
+    const vendors = await prisma.realEstateMaintenanceVendor.findMany({
+      where: { tenantId, id: { in: vendorIds } },
+      select: { id: true, name: true },
+    });
+    const byId = new Map(vendors.map((v) => [v.id, v]));
+    return rows.map((r) => ({
+      ...r,
+      vendor: r.vendorId ? byId.get(r.vendorId) || null : null,
+    }));
+  }
+
   async getRequests(tenantId: string, query: any = {}) {
     const where: any = { tenantId, isActive: true };
     if (query.propertyId) where.propertyId = query.propertyId;
@@ -13,40 +49,40 @@ export class RealEstateMaintenanceService {
     const page = parseInt(query.page) || 1;
     const limit = parseInt(query.limit) || 50;
     const skip = (page - 1) * limit;
-    const [data, total] = await Promise.all([
+    const [rows, total] = await Promise.all([
       prisma.realEstateMaintenanceRequest.findMany({
         where,
-        include: {
-          property: { select: { id: true, name: true } },
-          vendor: { select: { id: true, name: true } },
-        },
         orderBy: { createdAt: "desc" },
         skip,
         take: limit,
       }),
       prisma.realEstateMaintenanceRequest.count({ where }),
     ]);
+    const withProperty = await this.attachProperty(tenantId, rows);
+    const data = await this.attachVendor(tenantId, withProperty);
     return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
   async getRequestById(tenantId: string, id: string) {
     const r = await prisma.realEstateMaintenanceRequest.findFirst({
       where: { tenantId, id },
-      include: { property: true, vendor: true },
     });
     if (!r) throw new NotFoundException("Maintenance request not found");
-    return r;
+    const [withProperty] = await this.attachProperty(tenantId, [r]);
+    const [result] = await this.attachVendor(tenantId, [withProperty!]);
+    return result;
   }
 
   async createRequest(tenantId: string, data: any) {
-    return prisma.realEstateMaintenanceRequest.create({
+    const created = await prisma.realEstateMaintenanceRequest.create({
       data: {
         ...data,
         tenantId,
         scheduledDate: data.scheduledDate ? new Date(data.scheduledDate) : null,
       },
-      include: { property: { select: { id: true, name: true } } },
     });
+    const [result] = await this.attachProperty(tenantId, [created]);
+    return result;
   }
 
   async updateRequest(tenantId: string, id: string, data: any) {
@@ -62,11 +98,13 @@ export class RealEstateMaintenanceService {
     if (data.status === "COMPLETED" && !existing.completedDate) {
       updateData.completedDate = new Date();
     }
-    return prisma.realEstateMaintenanceRequest.update({
+    const updated = await prisma.realEstateMaintenanceRequest.update({
       where: { id },
       data: updateData,
-      include: { property: true, vendor: true },
     });
+    const [withProperty] = await this.attachProperty(tenantId, [updated]);
+    const [result] = await this.attachVendor(tenantId, [withProperty!]);
+    return result;
   }
 
   async deleteRequest(tenantId: string, id: string) {

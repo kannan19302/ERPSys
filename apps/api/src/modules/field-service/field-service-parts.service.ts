@@ -7,6 +7,42 @@ import { prisma } from "@unerp/database";
 
 @Injectable()
 export class FieldServicePartsService {
+  // FieldServicePartRequest/FieldServiceVanStock only store `technicianId`/
+  // `ticketId` scalars — the schema has no `technician`/`ticket` relations to
+  // `include`, so summaries are batched in manually.
+  private async attachTechnicians<T extends { technicianId: string }>(
+    tenantId: string,
+    rows: T[],
+  ) {
+    const technicians = await prisma.fieldServiceTechnician.findMany({
+      where: { tenantId, id: { in: rows.map((r) => r.technicianId) } },
+      select: { id: true, name: true },
+    });
+    const byId = new Map(technicians.map((t) => [t.id, t]));
+    return rows.map((r) => ({
+      ...r,
+      technician: byId.get(r.technicianId) || null,
+    }));
+  }
+
+  private async attachTickets<T extends { ticketId: string | null }>(
+    tenantId: string,
+    rows: T[],
+  ) {
+    const ticketIds = rows
+      .map((r) => r.ticketId)
+      .filter((id): id is string => id !== null);
+    const tickets = await prisma.fieldServiceTicket.findMany({
+      where: { tenantId, id: { in: ticketIds } },
+      select: { id: true, title: true },
+    });
+    const byId = new Map(tickets.map((t) => [t.id, t]));
+    return rows.map((r) => ({
+      ...r,
+      ticket: r.ticketId ? byId.get(r.ticketId) || null : null,
+    }));
+  }
+
   async getPartRequests(tenantId: string, query: any = {}) {
     const where: any = { tenantId, isActive: true };
     if (query.technicianId) where.technicianId = query.technicianId;
@@ -16,41 +52,41 @@ export class FieldServicePartsService {
     const page = parseInt(query.page) || 1;
     const limit = parseInt(query.limit) || 50;
     const skip = (page - 1) * limit;
-    const [data, total] = await Promise.all([
+    const [rows, total] = await Promise.all([
       prisma.fieldServicePartRequest.findMany({
         where,
-        include: {
-          technician: { select: { id: true, name: true } },
-          ticket: { select: { id: true, title: true } },
-        },
         orderBy: { createdAt: "desc" },
         skip,
         take: limit,
       }),
       prisma.fieldServicePartRequest.count({ where }),
     ]);
+    const withTech = await this.attachTechnicians(tenantId, rows);
+    const data = await this.attachTickets(tenantId, withTech);
     return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
   async getPartRequestById(tenantId: string, id: string) {
     const pr = await prisma.fieldServicePartRequest.findFirst({
       where: { tenantId, id },
-      include: { technician: true, ticket: true },
     });
     if (!pr) throw new NotFoundException("Part request not found");
-    return pr;
+    const [withTech] = await this.attachTechnicians(tenantId, [pr]);
+    const [result] = await this.attachTickets(tenantId, [withTech!]);
+    return result;
   }
 
   async createPartRequest(tenantId: string, data: any) {
-    return prisma.fieldServicePartRequest.create({
+    const created = await prisma.fieldServicePartRequest.create({
       data: {
         ...data,
         tenantId,
         totalPrice:
           Number(data.unitPrice || 0) * Number(data.quantityRequested || 1),
       },
-      include: { technician: { select: { id: true, name: true } } },
     });
+    const [result] = await this.attachTechnicians(tenantId, [created]);
+    return result;
   }
 
   async updatePartRequest(tenantId: string, id: string, data: any) {
@@ -98,20 +134,20 @@ export class FieldServicePartsService {
     const where: any = { tenantId, isActive: true };
     if (query.technicianId) where.technicianId = query.technicianId;
     if (query.itemId) where.itemId = query.itemId;
-    return prisma.fieldServiceVanStock.findMany({
+    const rows = await prisma.fieldServiceVanStock.findMany({
       where,
-      include: { technician: { select: { id: true, name: true } } },
       orderBy: { itemName: "asc" },
     });
+    return this.attachTechnicians(tenantId, rows);
   }
 
   async getVanStockById(tenantId: string, id: string) {
     const vs = await prisma.fieldServiceVanStock.findFirst({
       where: { tenantId, id },
-      include: { technician: true },
     });
     if (!vs) throw new NotFoundException("Van stock item not found");
-    return vs;
+    const [result] = await this.attachTechnicians(tenantId, [vs]);
+    return result;
   }
 
   async createVanStock(tenantId: string, data: any) {
@@ -168,14 +204,14 @@ export class FieldServicePartsService {
   }
 
   async getLowStockAlerts(tenantId: string) {
-    return prisma.fieldServiceVanStock.findMany({
+    const rows = await prisma.fieldServiceVanStock.findMany({
       where: {
         tenantId,
         isActive: true,
         quantityOnVan: { lte: prisma.fieldServiceVanStock.fields.reorderPoint },
       },
-      include: { technician: { select: { id: true, name: true } } },
       orderBy: { quantityOnVan: "asc" },
     });
+    return this.attachTechnicians(tenantId, rows);
   }
 }

@@ -69,9 +69,9 @@ export class EducationFeesService {
           })
         )._sum.amount || 0;
       const newStatus =
-        totalPaid >= invoice.totalAmount
+        Number(totalPaid) >= Number(invoice.totalAmount)
           ? "PAID"
-          : totalPaid > 0
+          : Number(totalPaid) > 0
             ? "PARTIAL"
             : "PENDING";
       await prisma.educationFeeInvoice.updateMany({

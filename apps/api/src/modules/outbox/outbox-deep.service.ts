@@ -208,7 +208,7 @@ export class OutboxDeepService {
         where: { id: existing.id },
         data: {
           status: dto.status,
-          config: dto.config || existing.config,
+          config: (dto.config || existing.config) as any,
           version: existing.version + 1,
         },
       });
@@ -218,7 +218,7 @@ export class OutboxDeepService {
         tenantId,
         dispatcherName,
         status: dto.status,
-        config: dto.config || {},
+        config: (dto.config || {}) as any,
       },
     });
   }

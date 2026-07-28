@@ -9,6 +9,7 @@ import {
   Req,
   Query,
 } from "@nestjs/common";
+import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import { ZodBody } from "../../common/decorators/zod-body.decorator";
 import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
@@ -17,6 +18,14 @@ import { Permissions } from "../../common/decorators/permissions.decorator";
 import { ApiPlatformService } from "./api-platform.service";
 import { ApiRateLimitsService } from "./api-rate-limits.service";
 import { ApiQuotasService } from "./api-quotas.service";
+import {
+  createRateLimitRuleSchema,
+  createApiKeySchema,
+  updateApiKeyScopesSchema,
+  createWebhookSchema,
+  updateWebhookSchema,
+  registerEndpointSchema,
+} from "./api-platform.dtos";
 
 interface AuthenticatedRequest extends Request {
   user: { tenantId: string; userId: string; email: string; roles: string[] };
@@ -45,7 +54,7 @@ export class ApiPlatformController {
   @ApiOperation({ summary: "Create API rate limit rule" })
   async createRateLimitRule(
     @Req() req: AuthenticatedRequest,
-    @ZodBody() body: any,
+    @ZodBody(createRateLimitRuleSchema) body: any,
   ) {
     return this.rateLimitsService.createRateLimitRule(req.user.tenantId, body);
   }

@@ -189,7 +189,10 @@ self.addEventListener('fetch', e => { e.respondWith(fetch(e.request)); });`;
   }
 
   async createSyncQueue(tenantId: string, dto: CreateSyncQueueDto) {
-    return prisma.pwaSyncQueue.create({ data: { ...dto, tenantId } });
+    // dto's `payload` is typed as plain Record<string, unknown> in
+    // @unerp/shared, which doesn't structurally match Prisma's JSON input
+    // type — the shapes agree at runtime, only the JSON typing disagrees.
+    return prisma.pwaSyncQueue.create({ data: { ...dto, tenantId } as any });
   }
 
   async updateSyncStatus(

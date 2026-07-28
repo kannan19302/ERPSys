@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
 import { prisma } from "@unerp/database";
 import { Prisma } from "@prisma/client";
 
@@ -48,7 +52,12 @@ export interface UpdateBiMetricDefinitionDto extends Partial<CreateBiMetricDefin
 export class AnalyticsDeepService {
   async getKpiDefinitions(
     tenantId: string,
-    params: { page?: number; limit?: number; search?: string; category?: string } = {},
+    params: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      category?: string;
+    } = {},
   ) {
     const page = params.page || 1;
     const limit = params.limit || 50;
@@ -62,14 +71,24 @@ export class AnalyticsDeepService {
     }
     if (params.category) where.category = params.category;
     const [data, total] = await Promise.all([
-      prisma.analyticsKpiDefinition.findMany({ where, skip, take: limit, orderBy: { createdAt: "desc" } }),
+      prisma.analyticsKpiDefinition.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+      }),
       prisma.analyticsKpiDefinition.count({ where }),
     ]);
-    return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit) } };
+    return {
+      data,
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
   }
 
   async getKpiDefinition(tenantId: string, id: string) {
-    const item = await prisma.analyticsKpiDefinition.findFirst({ where: { id, tenantId } });
+    const item = await prisma.analyticsKpiDefinition.findFirst({
+      where: { id, tenantId },
+    });
     if (!item) throw new NotFoundException("KPI definition not found");
     return item;
   }
@@ -93,35 +112,53 @@ export class AnalyticsDeepService {
     });
   }
 
-  async updateKpiDefinition(tenantId: string, id: string, dto: UpdateKpiDefinitionDto) {
-    const existing = await prisma.analyticsKpiDefinition.findFirst({ where: { id, tenantId } });
+  async updateKpiDefinition(
+    tenantId: string,
+    id: string,
+    dto: UpdateKpiDefinitionDto,
+  ) {
+    const existing = await prisma.analyticsKpiDefinition.findFirst({
+      where: { id, tenantId },
+    });
     if (!existing) throw new NotFoundException("KPI definition not found");
     return prisma.analyticsKpiDefinition.update({
       where: { id },
       data: {
         ...(dto.name !== undefined ? { name: dto.name } : {}),
         ...(dto.code !== undefined ? { code: dto.code } : {}),
-        ...(dto.description !== undefined ? { description: dto.description } : {}),
+        ...(dto.description !== undefined
+          ? { description: dto.description }
+          : {}),
         ...(dto.formula !== undefined ? { formula: dto.formula } : {}),
         ...(dto.target !== undefined ? { target: dto.target } : {}),
         ...(dto.unit !== undefined ? { unit: dto.unit } : {}),
-        ...(dto.visualization !== undefined ? { visualization: dto.visualization } : {}),
+        ...(dto.visualization !== undefined
+          ? { visualization: dto.visualization }
+          : {}),
         ...(dto.category !== undefined ? { category: dto.category } : {}),
-        ...(dto.sourceTable !== undefined ? { sourceTable: dto.sourceTable } : {}),
-        ...(dto.sourceColumn !== undefined ? { sourceColumn: dto.sourceColumn } : {}),
+        ...(dto.sourceTable !== undefined
+          ? { sourceTable: dto.sourceTable }
+          : {}),
+        ...(dto.sourceColumn !== undefined
+          ? { sourceColumn: dto.sourceColumn }
+          : {}),
         ...(dto.config !== undefined ? { config: dto.config as any } : {}),
       },
     });
   }
 
   async deleteKpiDefinition(tenantId: string, id: string) {
-    const existing = await prisma.analyticsKpiDefinition.findFirst({ where: { id, tenantId } });
+    const existing = await prisma.analyticsKpiDefinition.findFirst({
+      where: { id, tenantId },
+    });
     if (!existing) throw new NotFoundException("KPI definition not found");
     return prisma.analyticsKpiDefinition.delete({ where: { id } });
   }
 
   async getTrendAnalysis(tenantId: string, kpiDefinitionId: string) {
-    const kpi = await prisma.analyticsKpiDefinition.findFirst({ where: { id: kpiDefinitionId, tenantId } });
+    const kpi = await prisma.analyticsKpiDefinition.findFirst({
+      where: { id: kpiDefinitionId, tenantId },
+    });
     if (!kpi) throw new NotFoundException("KPI definition not found");
     const results = await prisma.analyticsTrendResult.findMany({
       where: { tenantId, kpiDefinitionId },
@@ -136,14 +173,20 @@ export class AnalyticsDeepService {
     kpiDefinitionId: string,
     period: "MONTHLY" | "QUARTERLY" | "YEARLY" = "MONTHLY",
   ) {
-    const kpi = await prisma.analyticsKpiDefinition.findFirst({ where: { id: kpiDefinitionId, tenantId } });
+    const kpi = await prisma.analyticsKpiDefinition.findFirst({
+      where: { id: kpiDefinitionId, tenantId },
+    });
     if (!kpi) throw new NotFoundException("KPI definition not found");
     const now = new Date();
     const periods: { start: Date; end: Date; label: string }[] = [];
     for (let i = 5; i >= 0; i--) {
       const start = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const end = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
-      periods.push({ start, end, label: `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, "0")}` });
+      periods.push({
+        start,
+        end,
+        label: `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, "0")}`,
+      });
     }
     const results = [];
     for (let i = 0; i < periods.length; i++) {
@@ -151,8 +194,8 @@ export class AnalyticsDeepService {
         where: {
           tenantId,
           kpiId: kpiDefinitionId,
-          periodStart: { gte: periods[i].start },
-          periodEnd: { lte: periods[i].end },
+          periodStart: { gte: periods[i]!.start },
+          periodEnd: { lte: periods[i]!.end },
         },
         _avg: { value: true },
       });
@@ -163,34 +206,42 @@ export class AnalyticsDeepService {
           where: {
             tenantId,
             kpiId: kpiDefinitionId,
-            periodStart: { gte: periods[i - 1].start },
-            periodEnd: { lte: periods[i - 1].end },
+            periodStart: { gte: periods[i - 1]!.start },
+            periodEnd: { lte: periods[i - 1]!.end },
           },
           _avg: { value: true },
         });
         previousValue = Number(prevValues._avg.value || 0);
       }
-      const changePercent = previousValue && previousValue !== 0
-        ? Math.round(((currentValue - previousValue) / previousValue) * 10000) / 100
-        : null;
-      const trend = changePercent !== null
-        ? (changePercent > 1 ? "UP" : changePercent < -1 ? "DOWN" : "FLAT")
-        : "FLAT";
+      const changePercent =
+        previousValue && previousValue !== 0
+          ? Math.round(
+              ((currentValue - previousValue) / previousValue) * 10000,
+            ) / 100
+          : null;
+      const trend =
+        changePercent !== null
+          ? changePercent > 1
+            ? "UP"
+            : changePercent < -1
+              ? "DOWN"
+              : "FLAT"
+          : "FLAT";
       const result = await prisma.analyticsTrendResult.upsert({
         where: {
           kpiDefinitionId_period_periodStart_periodEnd: {
             kpiDefinitionId,
             period,
-            periodStart: periods[i].start,
-            periodEnd: periods[i].end,
+            periodStart: periods[i]!.start,
+            periodEnd: periods[i]!.end,
           },
         },
         create: {
           tenantId,
           kpiDefinitionId,
           period,
-          periodStart: periods[i].start,
-          periodEnd: periods[i].end,
+          periodStart: periods[i]!.start,
+          periodEnd: periods[i]!.end,
           value: currentValue,
           previousValue,
           changePercent,
@@ -217,9 +268,16 @@ export class AnalyticsDeepService {
   }
 
   async createScheduledExport(tenantId: string, dto: Record<string, unknown>) {
-    const cronMap: Record<string, number> = { DAILY: 1, WEEKLY: 7, MONTHLY: 30, QUARTERLY: 90 };
+    const cronMap: Record<string, number> = {
+      DAILY: 1,
+      WEEKLY: 7,
+      MONTHLY: 30,
+      QUARTERLY: 90,
+    };
     const nextRunAt = new Date();
-    nextRunAt.setDate(nextRunAt.getDate() + (cronMap[String(dto.schedule)] || 1));
+    nextRunAt.setDate(
+      nextRunAt.getDate() + (cronMap[String(dto.schedule)] || 1),
+    );
     return prisma.analyticsScheduledExport.create({
       data: {
         tenantId,
@@ -235,8 +293,14 @@ export class AnalyticsDeepService {
     });
   }
 
-  async updateScheduledExport(tenantId: string, id: string, dto: Record<string, unknown>) {
-    const existing = await prisma.analyticsScheduledExport.findFirst({ where: { id, tenantId } });
+  async updateScheduledExport(
+    tenantId: string,
+    id: string,
+    dto: Record<string, unknown>,
+  ) {
+    const existing = await prisma.analyticsScheduledExport.findFirst({
+      where: { id, tenantId },
+    });
     if (!existing) throw new NotFoundException("Scheduled export not found");
     const data: Record<string, unknown> = {};
     if (dto.name !== undefined) data.name = dto.name;
@@ -244,18 +308,30 @@ export class AnalyticsDeepService {
     if (dto.format !== undefined) data.format = dto.format;
     if (dto.schedule !== undefined) {
       data.schedule = dto.schedule;
-      const cronMap: Record<string, number> = { DAILY: 1, WEEKLY: 7, MONTHLY: 30, QUARTERLY: 90 };
+      const cronMap: Record<string, number> = {
+        DAILY: 1,
+        WEEKLY: 7,
+        MONTHLY: 30,
+        QUARTERLY: 90,
+      };
       const nextRunAt = new Date();
-      nextRunAt.setDate(nextRunAt.getDate() + (cronMap[String(dto.schedule)] || 1));
+      nextRunAt.setDate(
+        nextRunAt.getDate() + (cronMap[String(dto.schedule)] || 1),
+      );
       data.nextRunAt = nextRunAt;
     }
     if (dto.recipients !== undefined) data.recipients = dto.recipients;
     if (dto.isActive !== undefined) data.isActive = dto.isActive;
-    return prisma.analyticsScheduledExport.update({ where: { id }, data: data as any });
+    return prisma.analyticsScheduledExport.update({
+      where: { id },
+      data: data as any,
+    });
   }
 
   async deleteScheduledExport(tenantId: string, id: string) {
-    const existing = await prisma.analyticsScheduledExport.findFirst({ where: { id, tenantId } });
+    const existing = await prisma.analyticsScheduledExport.findFirst({
+      where: { id, tenantId },
+    });
     if (!existing) throw new NotFoundException("Scheduled export not found");
     return prisma.analyticsScheduledExport.delete({ where: { id } });
   }
@@ -268,12 +344,18 @@ export class AnalyticsDeepService {
   }
 
   async getCrossFilterDashboard(tenantId: string, id: string) {
-    const item = await prisma.analyticsCrossFilterDashboard.findFirst({ where: { id, tenantId } });
+    const item = await prisma.analyticsCrossFilterDashboard.findFirst({
+      where: { id, tenantId },
+    });
     if (!item) throw new NotFoundException("Dashboard not found");
     return item;
   }
 
-  async createCrossFilterDashboard(tenantId: string, dto: CreateCrossFilterDashboardDto, userId: string) {
+  async createCrossFilterDashboard(
+    tenantId: string,
+    dto: CreateCrossFilterDashboardDto,
+    userId: string,
+  ) {
     return prisma.analyticsCrossFilterDashboard.create({
       data: {
         tenantId,
@@ -287,14 +369,22 @@ export class AnalyticsDeepService {
     });
   }
 
-  async updateCrossFilterDashboard(tenantId: string, id: string, dto: UpdateCrossFilterDashboardDto) {
-    const existing = await prisma.analyticsCrossFilterDashboard.findFirst({ where: { id, tenantId } });
+  async updateCrossFilterDashboard(
+    tenantId: string,
+    id: string,
+    dto: UpdateCrossFilterDashboardDto,
+  ) {
+    const existing = await prisma.analyticsCrossFilterDashboard.findFirst({
+      where: { id, tenantId },
+    });
     if (!existing) throw new NotFoundException("Dashboard not found");
     return prisma.analyticsCrossFilterDashboard.update({
       where: { id },
       data: {
         ...(dto.name !== undefined ? { name: dto.name } : {}),
-        ...(dto.description !== undefined ? { description: dto.description } : {}),
+        ...(dto.description !== undefined
+          ? { description: dto.description }
+          : {}),
         ...(dto.layout !== undefined ? { layout: dto.layout as any } : {}),
         ...(dto.filters !== undefined ? { filters: dto.filters as any } : {}),
         ...(dto.widgets !== undefined ? { widgets: dto.widgets as any } : {}),
@@ -303,14 +393,21 @@ export class AnalyticsDeepService {
   }
 
   async deleteCrossFilterDashboard(tenantId: string, id: string) {
-    const existing = await prisma.analyticsCrossFilterDashboard.findFirst({ where: { id, tenantId } });
+    const existing = await prisma.analyticsCrossFilterDashboard.findFirst({
+      where: { id, tenantId },
+    });
     if (!existing) throw new NotFoundException("Dashboard not found");
     return prisma.analyticsCrossFilterDashboard.delete({ where: { id } });
   }
 
   async getBiMetricCatalog(
     tenantId: string,
-    params: { page?: number; limit?: number; search?: string; category?: string } = {},
+    params: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      category?: string;
+    } = {},
   ) {
     const page = params.page || 1;
     const limit = params.limit || 50;
@@ -324,19 +421,32 @@ export class AnalyticsDeepService {
     }
     if (params.category) where.category = params.category;
     const [data, total] = await Promise.all([
-      prisma.analyticsBiMetricDefinition.findMany({ where, skip, take: limit, orderBy: { createdAt: "desc" } }),
+      prisma.analyticsBiMetricDefinition.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+      }),
       prisma.analyticsBiMetricDefinition.count({ where }),
     ]);
-    return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit) } };
+    return {
+      data,
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
   }
 
   async getBiMetricDefinition(tenantId: string, id: string) {
-    const item = await prisma.analyticsBiMetricDefinition.findFirst({ where: { id, tenantId } });
+    const item = await prisma.analyticsBiMetricDefinition.findFirst({
+      where: { id, tenantId },
+    });
     if (!item) throw new NotFoundException("BI metric definition not found");
     return item;
   }
 
-  async createBiMetricDefinition(tenantId: string, dto: CreateBiMetricDefinitionDto) {
+  async createBiMetricDefinition(
+    tenantId: string,
+    dto: CreateBiMetricDefinitionDto,
+  ) {
     return prisma.analyticsBiMetricDefinition.create({
       data: {
         tenantId,
@@ -355,30 +465,50 @@ export class AnalyticsDeepService {
     });
   }
 
-  async updateBiMetricDefinition(tenantId: string, id: string, dto: UpdateBiMetricDefinitionDto) {
-    const existing = await prisma.analyticsBiMetricDefinition.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException("BI metric definition not found");
+  async updateBiMetricDefinition(
+    tenantId: string,
+    id: string,
+    dto: UpdateBiMetricDefinitionDto,
+  ) {
+    const existing = await prisma.analyticsBiMetricDefinition.findFirst({
+      where: { id, tenantId },
+    });
+    if (!existing)
+      throw new NotFoundException("BI metric definition not found");
     return prisma.analyticsBiMetricDefinition.update({
       where: { id },
       data: {
         ...(dto.name !== undefined ? { name: dto.name } : {}),
         ...(dto.code !== undefined ? { code: dto.code } : {}),
-        ...(dto.description !== undefined ? { description: dto.description } : {}),
-        ...(dto.sourceTable !== undefined ? { sourceTable: dto.sourceTable } : {}),
-        ...(dto.sourceColumn !== undefined ? { sourceColumn: dto.sourceColumn } : {}),
-        ...(dto.aggregation !== undefined ? { aggregation: dto.aggregation } : {}),
+        ...(dto.description !== undefined
+          ? { description: dto.description }
+          : {}),
+        ...(dto.sourceTable !== undefined
+          ? { sourceTable: dto.sourceTable }
+          : {}),
+        ...(dto.sourceColumn !== undefined
+          ? { sourceColumn: dto.sourceColumn }
+          : {}),
+        ...(dto.aggregation !== undefined
+          ? { aggregation: dto.aggregation }
+          : {}),
         ...(dto.dataType !== undefined ? { dataType: dto.dataType } : {}),
         ...(dto.unit !== undefined ? { unit: dto.unit } : {}),
         ...(dto.category !== undefined ? { category: dto.category } : {}),
         ...(dto.formula !== undefined ? { formula: dto.formula } : {}),
-        ...(dto.metadata !== undefined ? { metadata: dto.metadata as any } : {}),
+        ...(dto.metadata !== undefined
+          ? { metadata: dto.metadata as any }
+          : {}),
       },
     });
   }
 
   async deleteBiMetricDefinition(tenantId: string, id: string) {
-    const existing = await prisma.analyticsBiMetricDefinition.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException("BI metric definition not found");
+    const existing = await prisma.analyticsBiMetricDefinition.findFirst({
+      where: { id, tenantId },
+    });
+    if (!existing)
+      throw new NotFoundException("BI metric definition not found");
     return prisma.analyticsBiMetricDefinition.delete({ where: { id } });
   }
 }

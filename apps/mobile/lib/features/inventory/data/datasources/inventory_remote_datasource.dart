@@ -15,6 +15,8 @@ abstract class InventoryRemoteDataSource {
   Future<ProductModel> updateProduct(String id, Map<String, dynamic> payload);
 
   Future<void> deleteProduct(String id);
+
+  Future<void> adjustStock(Map<String, dynamic> payload);
 }
 
 class InventoryRemoteDataSourceImpl implements InventoryRemoteDataSource {
@@ -55,4 +57,9 @@ class InventoryRemoteDataSourceImpl implements InventoryRemoteDataSource {
 
   @override
   Future<void> deleteProduct(String id) => _client.delete(ApiPaths.product(id));
+
+  @override
+  Future<void> adjustStock(Map<String, dynamic> payload) async {
+    await _client.patch(ApiPaths.stockAdjust, body: payload);
+  }
 }

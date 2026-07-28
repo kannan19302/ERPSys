@@ -529,7 +529,7 @@ export class SearchService {
         query: q.query,
         createdAt: q.createdAt,
       })),
-      dailyStats: searchAnalytics,
+      dailyStats: [],
     };
   }
 

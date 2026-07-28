@@ -3,22 +3,25 @@ import { PrismaService } from "@unerp/database";
 
 @Injectable()
 export class SlaManagementService {
-  constructor(@Optional() private readonly prisma?: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  async createSlaPolicy(tenantId: string, data: { name: string, description?: string, targets: any }) {
+  async createSlaPolicy(
+    tenantId: string,
+    data: { name: string; description?: string; targets: any },
+  ) {
     return this.prisma.serviceTicketSLAPolicy.create({
       data: {
         tenantId,
         name: data.name,
         description: data.description,
         targets: data.targets,
-      }
+      },
     });
   }
 
   async getPolicies(tenantId: string) {
     return this.prisma.serviceTicketSLAPolicy.findMany({
-      where: { tenantId }
+      where: { tenantId },
     });
   }
 

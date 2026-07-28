@@ -63,3 +63,13 @@ class DeleteProductUseCase extends UseCase<void, String> {
   @override
   Future<Result<void>> call(String id) => _repository.deleteProduct(id);
 }
+
+class AdjustStockUseCase extends UseCase<void, Map<String, dynamic>> {
+  const AdjustStockUseCase(this._repository);
+
+  final InventoryRepository _repository;
+
+  @override
+  Future<Result<void>> call(Map<String, dynamic> payload) =>
+      _repository.adjustStock(payload);
+}

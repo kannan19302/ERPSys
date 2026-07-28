@@ -11,17 +11,15 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
-import {
-  JwtAuthGuard,
-  PermissionsGuard,
-  Permissions,
-  CurrentUser,
-} from "@unerp/core";
+import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
+import { RbacGuard } from "../../common/guards/rbac.guard";
+import { Permissions } from "../../common/decorators/permissions.decorator";
+import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { SaasIntegrationsComplianceDeepService } from "./saas-integrations-compliance-deep.service";
 
 @ApiTags("SaaS Integrations & Compliance")
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, RbacGuard)
 @Controller("saas/integrations-compliance")
 export class SaasIntegrationsComplianceDeepController {
   constructor(

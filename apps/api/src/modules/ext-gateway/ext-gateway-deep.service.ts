@@ -50,7 +50,10 @@ export class ExtGatewayDeepService {
   }
 
   async createConnection(tenantId: string, dto: CreateConnectionDto) {
-    return prisma.extConnection.create({ data: { ...dto, tenantId } });
+    // dto's `metadata`/config fields are typed as plain Record<string, unknown>
+    // in @unerp/shared, which doesn't structurally match Prisma's JSON input
+    // type — the shapes agree at runtime, only the JSON typing disagrees.
+    return prisma.extConnection.create({ data: { ...dto, tenantId } as any });
   }
 
   async updateConnection(
@@ -59,7 +62,7 @@ export class ExtGatewayDeepService {
     dto: UpdateConnectionDto,
   ) {
     await this.getConnection(tenantId, id);
-    return prisma.extConnection.update({ where: { id }, data: dto });
+    return prisma.extConnection.update({ where: { id }, data: dto as any });
   }
 
   async deleteConnection(tenantId: string, id: string) {
@@ -415,7 +418,9 @@ export class ExtGatewayDeepService {
     tenantId: string,
     dto: CreateIntegrationTemplateDto,
   ) {
-    return prisma.extIntegrationTemplate.create({ data: { ...dto, tenantId } });
+    return prisma.extIntegrationTemplate.create({
+      data: { ...dto, tenantId } as any,
+    });
   }
 
   async updateIntegrationTemplate(
@@ -427,7 +432,10 @@ export class ExtGatewayDeepService {
       where: { id, tenantId },
     });
     if (!tpl) throw new NotFoundException("Integration template not found");
-    return prisma.extIntegrationTemplate.update({ where: { id }, data: dto });
+    return prisma.extIntegrationTemplate.update({
+      where: { id },
+      data: dto as any,
+    });
   }
 
   async deleteIntegrationTemplate(tenantId: string, id: string) {

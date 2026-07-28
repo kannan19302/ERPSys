@@ -95,10 +95,11 @@ export class EducationAttendanceService {
     for (const r of records) {
       if (!grouped[r.courseId])
         grouped[r.courseId] = { present: 0, absent: 0, late: 0, total: 0 };
-      grouped[r.courseId].total++;
-      if (r.status === "PRESENT") grouped[r.courseId].present++;
-      else if (r.status === "ABSENT") grouped[r.courseId].absent++;
-      else if (r.status === "LATE") grouped[r.courseId].late++;
+      const bucket = grouped[r.courseId]!;
+      bucket.total++;
+      if (r.status === "PRESENT") bucket.present++;
+      else if (r.status === "ABSENT") bucket.absent++;
+      else if (r.status === "LATE") bucket.late++;
     }
     return Object.entries(grouped).map(([courseId, stats]) => ({
       course: records.find((r) => r.courseId === courseId)?.course,

@@ -23,6 +23,10 @@ import {
 } from "@unerp/shared";
 import { PeopleService } from "./people.service";
 import { PeopleCompetenciesService } from "./people-competencies.service";
+import {
+  createCompetencySchema,
+  createSuccessionPlanSchema,
+} from "./people.dtos";
 import { PeopleSuccessionService } from "./people-succession.service";
 
 interface AuthenticatedRequest extends Request {
@@ -52,7 +56,7 @@ export class PeopleController {
   @Post("competencies")
   async createCompetency(
     @Req() req: AuthenticatedRequest,
-    @ZodBody() body: any,
+    @ZodBody(createCompetencySchema) body: any,
   ) {
     return this.competenciesService.createCompetency(req.user.tenantId, body);
   }
@@ -72,7 +76,7 @@ export class PeopleController {
   @Post("succession-plans")
   async createSuccessionPlan(
     @Req() req: AuthenticatedRequest,
-    @ZodBody() body: any,
+    @ZodBody(createSuccessionPlanSchema) body: any,
   ) {
     return this.successionService.createSuccessionPlan(req.user.tenantId, body);
   }

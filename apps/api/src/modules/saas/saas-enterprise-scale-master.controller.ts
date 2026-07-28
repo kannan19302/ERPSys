@@ -11,17 +11,15 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
-import {
-  JwtAuthGuard,
-  PermissionsGuard,
-  Permissions,
-  CurrentUser,
-} from "@unerp/core";
+import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
+import { RbacGuard } from "../../common/guards/rbac.guard";
+import { Permissions } from "../../common/decorators/permissions.decorator";
+import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { SaasEnterpriseScaleMasterService } from "./saas-enterprise-scale-master.service";
 
 @ApiTags("SaaS Enterprise Scale Master")
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, RbacGuard)
 @Controller("saas/enterprise-scale")
 export class SaasEnterpriseScaleMasterController {
   constructor(private readonly service: SaasEnterpriseScaleMasterService) {}

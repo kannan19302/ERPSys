@@ -239,8 +239,9 @@ export class RealEstateOperationsService {
       const dealValue = data.dealValue || 0;
       data.commissionRate = rate;
       data.splitAmount = data.amount;
-      if (plan.splitType === "PERCENTAGE" && plan.splits?.length) {
-        const split = plan.splits.find((s: any) => s.agent === data.agentName);
+      const splits = plan.splits as any[] | null;
+      if (plan.splitType === "PERCENTAGE" && splits?.length) {
+        const split = splits.find((s: any) => s.agent === data.agentName);
         if (split)
           data.splitAmount = Number(data.amount) * (split.percentage / 100);
       }
@@ -374,8 +375,8 @@ export class RealEstateOperationsService {
         message: "Need at least 2 valuations for comparison",
         valuations,
       };
-    const first = valuations[0];
-    const last = valuations[valuations.length - 1];
+    const first = valuations[0]!;
+    const last = valuations[valuations.length - 1]!;
     const change = Number(last.appraisedValue) - Number(first.appraisedValue);
     const percentChange = (change / Number(first.appraisedValue)) * 100;
     return {

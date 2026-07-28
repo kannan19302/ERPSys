@@ -11,17 +11,15 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
-import {
-  JwtAuthGuard,
-  PermissionsGuard,
-  Permissions,
-  CurrentUser,
-} from "@unerp/core";
+import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
+import { RbacGuard } from "../../common/guards/rbac.guard";
+import { Permissions } from "../../common/decorators/permissions.decorator";
+import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { SaasDeepeningPinnacleSuiteService } from "./saas-deepening-pinnacle-suite.service";
 
 @ApiTags("SaaS Deepening Pinnacle Suite")
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, RbacGuard)
 @Controller("saas/pinnacle-suite")
 export class SaasDeepeningPinnacleSuiteController {
   constructor(private readonly service: SaasDeepeningPinnacleSuiteService) {}

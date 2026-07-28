@@ -55,6 +55,15 @@ export const disposeFixedAssetSchema = z.object({
   approvedBy: z.string().min(1),
 });
 
+export const createDepreciationScheduleSchema = z.object({
+  assetId: z.string().min(1),
+  period: z.string().min(1),
+  startingBookValue: z.number(),
+  depreciationAmount: z.number(),
+  endingBookValue: z.number(),
+  accumulatedDepreciation: z.number(),
+});
+
 export const postDepreciationSchema = z.object({
   periodName: z
     .string()

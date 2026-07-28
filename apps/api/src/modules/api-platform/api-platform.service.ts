@@ -19,11 +19,25 @@ export class ApiPlatformService {
   // ─── API KEYS ───────────────────────────────────────
 
   async getApiKeys(tenantId: string) {
-    return prisma.apiKey.findMany({
+    // ApiKey has no `apiUsageMetrics` relation declared in the schema (only
+    // ApiUsageMetric's own scalar `apiKeyId`), so usage counts are computed
+    // separately and merged in.
+    const keys = await prisma.apiKey.findMany({
       where: { tenantId },
-      include: { _count: { select: { apiUsageMetrics: true } } },
       orderBy: { createdAt: "desc" },
     });
+    const usageCounts = await prisma.apiUsageMetric.groupBy({
+      by: ["apiKeyId"],
+      where: { tenantId, apiKeyId: { in: keys.map((k) => k.id) } },
+      _count: true,
+    });
+    const countByKeyId = new Map(
+      usageCounts.map((u) => [u.apiKeyId, u._count]),
+    );
+    return keys.map((k) => ({
+      ...k,
+      _count: { apiUsageMetrics: countByKeyId.get(k.id) || 0 },
+    }));
   }
 
   async createApiKey(

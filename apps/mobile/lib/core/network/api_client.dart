@@ -6,9 +6,9 @@ import '../contracts/paginated.dart';
 import '../error/exceptions.dart';
 import '../storage/cookie_store.dart';
 import '../storage/secure_session_store.dart';
-import 'interceptors/auth_interceptor.dart';
 import 'interceptors/csrf_interceptor.dart';
 import 'interceptors/error_interceptor.dart';
+import 'interceptors/jwt_auth_interceptor.dart';
 import 'interceptors/logging_interceptor.dart';
 import 'interceptors/request_id_interceptor.dart';
 import 'interceptors/retry_interceptor.dart';
@@ -64,7 +64,7 @@ class ApiClient {
       cookieManager,
       RequestIdInterceptor(clientId: installId),
       CsrfInterceptor(cookieStore: cookieStore, bootstrapClient: innerDio),
-      AuthInterceptor(
+      JwtAuthInterceptor(
         refreshClient: innerDio,
         sessionStore: sessionStore,
         cookieStore: cookieStore,

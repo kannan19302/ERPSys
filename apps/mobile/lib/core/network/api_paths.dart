@@ -44,6 +44,7 @@ class ApiPaths {
   static String product(String id) => '/inventory/products/$id';
   static const String warehouses = '/inventory/warehouses';
   static const String stockLevels = '/inventory/stock-levels';
+  static const String stockAdjust = '/inventory/stock-adjust';
   static const String productCategories = '/inventory/categories';
 
   // ── notifications ──

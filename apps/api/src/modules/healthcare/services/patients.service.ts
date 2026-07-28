@@ -7,7 +7,7 @@ export class HealthcarePatientsService {
     return prisma.healthcarePatient.findMany({
       where: { tenantId },
       include: {
-        allergies: true,
+        allergyRecords: true,
         vitals: { take: 5, orderBy: { recordedAt: "desc" } },
       },
       orderBy: { createdAt: "desc" },
@@ -17,7 +17,7 @@ export class HealthcarePatientsService {
     return prisma.healthcarePatient.findFirst({
       where: { tenantId, id },
       include: {
-        allergies: true,
+        allergyRecords: true,
         appointments: {
           include: { practitioner: true },
           orderBy: { startTime: "desc" },
@@ -38,7 +38,7 @@ export class HealthcarePatientsService {
   async create(tenantId: string, data: any) {
     return prisma.healthcarePatient.create({
       data: { ...data, tenantId },
-      include: { allergies: true },
+      include: { allergyRecords: true },
     });
   }
   async update(tenantId: string, id: string, data: any) {

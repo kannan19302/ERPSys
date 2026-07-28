@@ -80,6 +80,10 @@ class FakeInventoryRepository implements InventoryRepository {
     deleteCalls++;
     return deleteResult;
   }
+
+  @override
+  Future<Result<void>> adjustStock(Map<String, dynamic> payload) async =>
+      const Result<void>.ok(null);
 }
 
 void main() {

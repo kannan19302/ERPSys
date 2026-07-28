@@ -60,7 +60,6 @@ export class CrmActivityCaptureController {
       req.user.tenantId,
       body.messageId,
       body.recipient,
-      body.userAgent,
       body.ipAddress,
     );
   }
@@ -84,8 +83,6 @@ export class CrmActivityCaptureController {
       body.messageId,
       body.recipient,
       body.linkUrl,
-      body.userAgent,
-      body.ipAddress,
     );
   }
 

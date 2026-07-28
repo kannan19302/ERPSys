@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
 import { prisma } from "@unerp/database";
 import type {
   CreateIntentTrainingDataInput,
@@ -19,7 +23,9 @@ export class AiDeepService {
       include: { entities: true },
     });
     if (examples.length === 0) {
-      throw new BadRequestException("No training data available for intent classification");
+      throw new BadRequestException(
+        "No training data available for intent classification",
+      );
     }
     const text = dto.text.toLowerCase();
     const scores: Record<string, { count: number; confidence: number }> = {};
@@ -36,8 +42,9 @@ export class AiDeepService {
       if (!scores[ex.intent]) {
         scores[ex.intent] = { count: 0, confidence: 0 };
       }
-      scores[ex.intent].count++;
-      scores[ex.intent].confidence += score;
+      const bucket = scores[ex.intent]!;
+      bucket.count++;
+      bucket.confidence += score;
     }
     let bestIntent = "";
     let bestConfidence = 0;
@@ -52,13 +59,20 @@ export class AiDeepService {
       .filter((ex) => ex.intent === bestIntent)
       .flatMap((ex) => ex.entities)
       .map((e) => ({ entity: e.entity, value: e.value }))
-      .filter((e, i, arr) => arr.findIndex((x) => x.entity === e.entity && x.value === e.value) === i);
+      .filter(
+        (e, i, arr) =>
+          arr.findIndex((x) => x.entity === e.entity && x.value === e.value) ===
+          i,
+      );
     return {
       intent: bestIntent,
       confidence: Math.round(bestConfidence * 100) / 100,
       entities,
       allScores: Object.fromEntries(
-        Object.entries(scores).map(([k, v]) => [k, Math.round((v.confidence / v.count) * 100) / 100]),
+        Object.entries(scores).map(([k, v]) => [
+          k,
+          Math.round((v.confidence / v.count) * 100) / 100,
+        ]),
       ),
     };
   }
@@ -88,7 +102,10 @@ export class AiDeepService {
     };
   }
 
-  async createIntentTrainingData(tenantId: string, dto: CreateIntentTrainingDataInput) {
+  async createIntentTrainingData(
+    tenantId: string,
+    dto: CreateIntentTrainingDataInput,
+  ) {
     const { entities, ...rest } = dto;
     return prisma.aiIntentTrainingExample.create({
       data: {
@@ -107,7 +124,9 @@ export class AiDeepService {
     id: string,
     dto: UpdateIntentTrainingDataInput,
   ) {
-    const existing = await prisma.aiIntentTrainingExample.findFirst({ where: { id, tenantId } });
+    const existing = await prisma.aiIntentTrainingExample.findFirst({
+      where: { id, tenantId },
+    });
     if (!existing) throw new NotFoundException("Training example not found");
     const { entities, ...rest } = dto;
     if (entities) {
@@ -126,13 +145,18 @@ export class AiDeepService {
   }
 
   async deleteIntentTrainingData(tenantId: string, id: string) {
-    const existing = await prisma.aiIntentTrainingExample.findFirst({ where: { id, tenantId } });
+    const existing = await prisma.aiIntentTrainingExample.findFirst({
+      where: { id, tenantId },
+    });
     if (!existing) throw new NotFoundException("Training example not found");
     return prisma.aiIntentTrainingExample.delete({ where: { id } });
   }
 
   async searchConversations(tenantId: string, q: string) {
-    if (!q || q.length < 2) throw new BadRequestException("Search query must be at least 2 characters");
+    if (!q || q.length < 2)
+      throw new BadRequestException(
+        "Search query must be at least 2 characters",
+      );
     return prisma.aiConversation.findMany({
       where: {
         tenantId,
@@ -159,11 +183,18 @@ export class AiDeepService {
     return this.getIntentTrainingData(tenantId, params);
   }
 
-  async createNluTrainingData(tenantId: string, dto: CreateNluTrainingDataInput) {
+  async createNluTrainingData(
+    tenantId: string,
+    dto: CreateNluTrainingDataInput,
+  ) {
     return this.createIntentTrainingData(tenantId, dto);
   }
 
-  async updateNluTrainingData(tenantId: string, id: string, dto: UpdateNluTrainingDataInput) {
+  async updateNluTrainingData(
+    tenantId: string,
+    id: string,
+    dto: UpdateNluTrainingDataInput,
+  ) {
     return this.updateIntentTrainingData(tenantId, id, dto);
   }
 
@@ -205,7 +236,9 @@ export class AiDeepService {
   }
 
   async recordModelAccuracy(tenantId: string, dto: RecordAiModelAccuracyInput) {
-    const model = await prisma.aiModel.findFirst({ where: { id: dto.modelId, tenantId } });
+    const model = await prisma.aiModel.findFirst({
+      where: { id: dto.modelId, tenantId },
+    });
     if (!model) throw new NotFoundException("AI model not found");
     return prisma.aiModelAccuracyMetric.create({
       data: {
@@ -220,7 +253,9 @@ export class AiDeepService {
   }
 
   async getModelAccuracyMetrics(tenantId: string, modelId: string) {
-    const model = await prisma.aiModel.findFirst({ where: { id: modelId, tenantId } });
+    const model = await prisma.aiModel.findFirst({
+      where: { id: modelId, tenantId },
+    });
     if (!model) throw new NotFoundException("AI model not found");
     return prisma.aiModelAccuracyMetric.findMany({
       where: { tenantId, modelId },
@@ -230,7 +265,12 @@ export class AiDeepService {
 
   async getPromptsWithVariables(
     tenantId: string,
-    params: { page?: number; limit?: number; search?: string; category?: string } = {},
+    params: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      category?: string;
+    } = {},
   ) {
     const page = params.page || 1;
     const limit = params.limit || 50;
@@ -263,13 +303,17 @@ export class AiDeepService {
   }
 
   async updatePrompt(tenantId: string, id: string, dto: UpdateAiPromptInput) {
-    const existing = await prisma.aiPrompt.findFirst({ where: { id, tenantId } });
+    const existing = await prisma.aiPrompt.findFirst({
+      where: { id, tenantId },
+    });
     if (!existing) throw new NotFoundException("Prompt not found");
     return prisma.aiPrompt.update({ where: { id }, data: dto as any });
   }
 
   async deletePrompt(tenantId: string, id: string) {
-    const existing = await prisma.aiPrompt.findFirst({ where: { id, tenantId } });
+    const existing = await prisma.aiPrompt.findFirst({
+      where: { id, tenantId },
+    });
     if (!existing) throw new NotFoundException("Prompt not found");
     return prisma.aiPrompt.delete({ where: { id } });
   }

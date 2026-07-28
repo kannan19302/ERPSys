@@ -1,13 +1,12 @@
-{
+﻿{
   "name": "@unerp/ui-data-grid",
   "version": "0.1.0",
-  "description": "UniERP Design System — DataTable, KanbanBoard, ChangeHistory",
+  "description": "UniERP Design System â€” DataTable, KanbanBoard, ChangeHistory",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "development": "./src/index.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     }

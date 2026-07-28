@@ -1,13 +1,12 @@
-{
+﻿{
   "name": "@unerp/ui-hooks",
   "version": "0.1.0",
-  "description": "UniERP Design System — generic UI hooks (debounce, disclosure, pagination, media query)",
+  "description": "UniERP Design System â€” generic UI hooks (debounce, disclosure, pagination, media query)",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "development": "./src/index.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     }

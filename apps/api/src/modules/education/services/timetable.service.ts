@@ -5,7 +5,7 @@ import { prisma } from "@unerp/database";
 export class EducationTimetableService {
   async findAll(tenantId: string) {
     return prisma.educationTimetable.findMany({
-      where: { tenantId, isActive: true },
+      where: { tenantId },
       include: { course: true },
       orderBy: [{ weekday: "asc" }, { startTime: "asc" }],
     });
@@ -22,7 +22,6 @@ export class EducationTimetableService {
         tenantId,
         weekday: data.weekday,
         room: data.room,
-        isActive: true,
         startTime: { lt: data.endTime },
         endTime: { gt: data.startTime },
       },
@@ -41,21 +40,21 @@ export class EducationTimetableService {
     return this.findById(tenantId, id);
   }
   async delete(tenantId: string, id: string) {
-    return prisma.educationTimetable.updateMany({
+    // No soft-delete flag exists on this model — remove the slot outright.
+    return prisma.educationTimetable.deleteMany({
       where: { tenantId, id },
-      data: { isActive: false },
     });
   }
   async getByDay(tenantId: string, weekday: string) {
     return prisma.educationTimetable.findMany({
-      where: { tenantId, weekday, isActive: true },
+      where: { tenantId, weekday },
       include: { course: true },
       orderBy: { startTime: "asc" },
     });
   }
   async getByCourse(tenantId: string, courseId: string) {
     return prisma.educationTimetable.findMany({
-      where: { tenantId, courseId, isActive: true },
+      where: { tenantId, courseId },
       include: { course: true },
       orderBy: { weekday: "asc" },
     });

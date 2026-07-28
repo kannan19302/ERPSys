@@ -15,6 +15,8 @@ import { RbacGuard } from "../../common/guards/rbac.guard";
 import { Permissions } from "../../common/decorators/permissions.decorator";
 import { ZodBody } from "../../common/decorators/zod-body.decorator";
 import { FixedAssetsService } from "./fixed-assets.service";
+import { AssetDepreciationService } from "./asset-depreciation.service";
+import { AssetMaintenanceService } from "./asset-maintenance.service";
 import {
   CreateFixedAssetCategoryInput,
   CreateFixedAssetInput,
@@ -28,6 +30,7 @@ import {
   transferFixedAssetSchema,
   logFixedAssetMaintenanceSchema,
   disposeFixedAssetSchema,
+  createDepreciationScheduleSchema,
   postDepreciationSchema,
 } from "./fixed-assets.dtos";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
@@ -69,7 +72,7 @@ export class FixedAssetsController {
   @ApiOperation({ summary: "Create depreciation schedule entry" })
   async createDepreciationSchedule(
     @Req() req: AuthenticatedRequest,
-    @ZodBody() body: any,
+    @ZodBody(createDepreciationScheduleSchema) body: any,
   ) {
     return this.depreciationService.createSchedule(req.user.tenantId, body);
   }

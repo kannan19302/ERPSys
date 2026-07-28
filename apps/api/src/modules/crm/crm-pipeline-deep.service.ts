@@ -412,13 +412,13 @@ export class CrmPipelineDeepService {
 
     for (const opp of opps) {
       const amt = Number(opp.amount || 0);
-      if (amt < 5000) buckets[0].count++;
-      else if (amt < 10000) buckets[1].count++;
-      else if (amt < 25000) buckets[2].count++;
-      else if (amt < 50000) buckets[3].count++;
-      else if (amt < 100000) buckets[4].count++;
-      else if (amt < 250000) buckets[5].count++;
-      else buckets[6].count++;
+      if (amt < 5000) buckets[0]!.count++;
+      else if (amt < 10000) buckets[1]!.count++;
+      else if (amt < 25000) buckets[2]!.count++;
+      else if (amt < 50000) buckets[3]!.count++;
+      else if (amt < 100000) buckets[4]!.count++;
+      else if (amt < 250000) buckets[5]!.count++;
+      else buckets[6]!.count++;
     }
 
     return buckets;

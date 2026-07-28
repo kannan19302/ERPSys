@@ -18,9 +18,15 @@ export class ManufacturingEnterpriseService {
       },
     });
     const totalOrders = workOrders.length;
-    const completedOrders = workOrders.filter((wo) => wo.status === "COMPLETED").length;
-    const inProgressOrders = workOrders.filter((wo) => wo.status === "IN_PROGRESS").length;
-    const plannedOrders = workOrders.filter((wo) => wo.status === "PLANNED").length;
+    const completedOrders = workOrders.filter(
+      (wo) => wo.status === "COMPLETED",
+    ).length;
+    const inProgressOrders = workOrders.filter(
+      (wo) => wo.status === "IN_PROGRESS",
+    ).length;
+    const plannedOrders = workOrders.filter(
+      (wo) => wo.status === "PLANNED",
+    ).length;
     const totalQuantity = workOrders.reduce(
       (s, wo) => s + Number(wo.quantity),
       0,
@@ -31,7 +37,9 @@ export class ManufacturingEnterpriseService {
     );
     const yieldPct =
       totalQuantity > 0
-        ? Number((((totalQuantity - totalScrap) / totalQuantity) * 100).toFixed(1))
+        ? Number(
+            (((totalQuantity - totalScrap) / totalQuantity) * 100).toFixed(1),
+          )
         : 0;
     const machineOeeRecords = await prisma.machineOeeRecord.findMany({
       where: { tenantId, recordDate: { gte: start, lte: end } },
@@ -49,8 +57,10 @@ export class ManufacturingEnterpriseService {
       machineOeeRecords.length > 0
         ? Number(
             (
-              machineOeeRecords.reduce((s, r) => s + Number(r.availability || 0), 0) /
-              machineOeeRecords.length
+              machineOeeRecords.reduce(
+                (s, r) => s + Number(r.availability || 0),
+                0,
+              ) / machineOeeRecords.length
             ).toFixed(2),
           )
         : 0;
@@ -58,8 +68,10 @@ export class ManufacturingEnterpriseService {
       machineOeeRecords.length > 0
         ? Number(
             (
-              machineOeeRecords.reduce((s, r) => s + Number(r.performance || 0), 0) /
-              machineOeeRecords.length
+              machineOeeRecords.reduce(
+                (s, r) => s + Number(r.performance || 0),
+                0,
+              ) / machineOeeRecords.length
             ).toFixed(2),
           )
         : 0;
@@ -67,8 +79,10 @@ export class ManufacturingEnterpriseService {
       machineOeeRecords.length > 0
         ? Number(
             (
-              machineOeeRecords.reduce((s, r) => s + Number(r.quality || 0), 0) /
-              machineOeeRecords.length
+              machineOeeRecords.reduce(
+                (s, r) => s + Number(r.quality || 0),
+                0,
+              ) / machineOeeRecords.length
             ).toFixed(2),
           )
         : 0;
@@ -85,8 +99,7 @@ export class ManufacturingEnterpriseService {
         : 0;
     const totalChangeoverMinutes = workOrders.reduce(
       (s, wo) =>
-        s +
-        wo.operations.reduce((s2, op) => s2 + (op.durationMinutes || 0), 0),
+        s + wo.operations.reduce((s2, op) => s2 + (op.durationMinutes || 0), 0),
       0,
     );
     const throughput =
@@ -128,7 +141,9 @@ export class ManufacturingEnterpriseService {
         oeeScore: wo.oeeScore ? Number(wo.oeeScore) : null,
         startDate: wo.startDate,
         endDate: wo.endDate,
-        operationsCompleted: wo.operations.filter((op) => op.status === "COMPLETED").length,
+        operationsCompleted: wo.operations.filter(
+          (op) => op.status === "COMPLETED",
+        ).length,
         totalOperations: wo.operations.length,
       })),
       snapshotTrend: snapshots.map((s) => ({
@@ -141,7 +156,11 @@ export class ManufacturingEnterpriseService {
     };
   }
 
-  async getQualityAnalysis(tenantId: string, productId: string, period: string) {
+  async getQualityAnalysis(
+    tenantId: string,
+    productId: string,
+    period: string,
+  ) {
     const now = new Date();
     let startDate: Date;
     if (period === "WEEKLY") {
@@ -203,15 +222,11 @@ export class ManufacturingEnterpriseService {
     const cpkValues = spcCharts
       .filter((c) => c.samples.length > 1)
       .map((c) => {
-        const values = c.samples.flatMap((s) =>
-          (s.values as number[]) || [],
-        );
+        const values = c.samples.flatMap((s) => (s.values as number[]) || []);
         if (values.length < 2) return null;
-        const mean =
-          values.reduce((a, b) => a + b, 0) / values.length;
+        const mean = values.reduce((a, b) => a + b, 0) / values.length;
         const variance =
-          values.reduce((a, b) => a + (b - mean) ** 2, 0) /
-          (values.length - 1);
+          values.reduce((a, b) => a + (b - mean) ** 2, 0) / (values.length - 1);
         const stdDev = Math.sqrt(variance);
         const usl = Number(c.usl || 0);
         const lsl = Number(c.lsl || 0);
@@ -219,8 +234,10 @@ export class ManufacturingEnterpriseService {
           usl > lsl && stdDev > 0
             ? Number(((usl - lsl) / (6 * stdDev)).toFixed(4))
             : 0;
-        const cpu = stdDev > 0 ? Number(((usl - mean) / (3 * stdDev)).toFixed(4)) : 0;
-        const cpl = stdDev > 0 ? Number(((mean - lsl) / (3 * stdDev)).toFixed(4)) : 0;
+        const cpu =
+          stdDev > 0 ? Number(((usl - mean) / (3 * stdDev)).toFixed(4)) : 0;
+        const cpl =
+          stdDev > 0 ? Number(((mean - lsl) / (3 * stdDev)).toFixed(4)) : 0;
         const cpk = Math.min(cpu, cpl);
         return {
           chartId: c.id,
@@ -281,7 +298,10 @@ export class ManufacturingEnterpriseService {
           defectRate:
             Number(qc.checkedQty) > 0
               ? Number(
-                  ((Number(qc.failedQty) / Number(qc.checkedQty)) * 100).toFixed(2),
+                  (
+                    (Number(qc.failedQty) / Number(qc.checkedQty)) *
+                    100
+                  ).toFixed(2),
                 )
               : 0,
         })),
@@ -297,7 +317,14 @@ export class ManufacturingEnterpriseService {
 
   async getProductionPlanning(tenantId: string, horizon: string) {
     const now = new Date();
-    const horizonDays = horizon === "WEEKLY" ? 7 : horizon === "MONTHLY" ? 30 : horizon === "QUARTERLY" ? 90 : 180;
+    const horizonDays =
+      horizon === "WEEKLY"
+        ? 7
+        : horizon === "MONTHLY"
+          ? 30
+          : horizon === "QUARTERLY"
+            ? 90
+            : 180;
     const horizonEnd = new Date(now);
     horizonEnd.setDate(horizonEnd.getDate() + horizonDays);
     const workOrders = await prisma.workOrder.findMany({
@@ -326,15 +353,10 @@ export class ManufacturingEnterpriseService {
       0,
     );
     const loadByWorkstation = workstations.map((ws) => {
-      const wsOrders = workOrders.filter(
-        (wo) => wo.workstationId === ws.id,
-      );
+      const wsOrders = workOrders.filter((wo) => wo.workstationId === ws.id);
       const plannedHours = wsOrders.reduce((s, wo) => {
         const opHours =
-          wo.operations.reduce(
-            (s2, op) => s2 + op.durationMinutes + op.setupMinutes,
-            0,
-          ) / 60;
+          wo.operations.reduce((s2, op) => s2 + op.durationMinutes, 0) / 60;
         return s + opHours;
       }, 0);
       const availableCapacity = ws.capacityEntries.reduce(
@@ -345,7 +367,10 @@ export class ManufacturingEnterpriseService {
         (s, ce) => s + Number(ce.utilizedHours),
         0,
       );
-      const totalCapacity = availableCapacity > 0 ? availableCapacity : Number(ws.capacityHours) * horizonDays;
+      const totalCapacity =
+        availableCapacity > 0
+          ? availableCapacity
+          : Number(ws.capacityHours) * horizonDays;
       const loadPct =
         totalCapacity > 0
           ? Number(((plannedHours / totalCapacity) * 100).toFixed(1))
@@ -367,7 +392,9 @@ export class ManufacturingEnterpriseService {
         })),
       };
     });
-    const overloadedWorkstations = loadByWorkstation.filter((l) => l.isOverloaded);
+    const overloadedWorkstations = loadByWorkstation.filter(
+      (l) => l.isOverloaded,
+    );
     return {
       horizon,
       horizonDays,
@@ -423,13 +450,7 @@ export class ManufacturingEnterpriseService {
   ) {
     const bom = await prisma.bOM.findFirst({
       where: { tenantId, productId, isActive: true },
-      include: {
-        items: {
-          include: {
-            product: { select: { id: true, sku: true, name: true, unit: true, costPrice: true } },
-          },
-        },
-      },
+      include: { items: true },
       orderBy: { createdAt: "desc" },
     });
     if (!bom) return null;
@@ -438,24 +459,37 @@ export class ManufacturingEnterpriseService {
       orderBy: { createdAt: "desc" },
       take: 50,
     });
+    // BOMItem has no direct `product` relation in the schema — resolve the
+    // components separately and join in memory.
+    const componentProducts = await prisma.product.findMany({
+      where: { id: { in: bom.items.map((item) => item.productId) } },
+      select: { id: true, sku: true, name: true, unit: true, costPrice: true },
+    });
+    const componentsById = new Map(componentProducts.map((p) => [p.id, p]));
     const grossRequirements = demand;
     const bomItems = bom.items.map((item) => {
+      const component = componentsById.get(item.productId);
       const qtyNeeded = Number(item.quantity) * demand;
+      const unitCost = Number(component?.costPrice || 0);
       return {
         componentId: item.productId,
-        componentSku: item.product.sku,
-        componentName: item.product.name,
-        unit: item.product.unit,
+        componentSku: component?.sku,
+        componentName: component?.name,
+        unit: component?.unit,
         quantityPerUnit: Number(item.quantity),
         grossRequirement: qtyNeeded,
         componentType: item.type,
-        unitCost: Number(item.product.costPrice),
-        totalCost: Number((qtyNeeded * Number(item.product.costPrice)).toFixed(2)),
+        unitCost,
+        totalCost: Number((qtyNeeded * unitCost).toFixed(2)),
       };
     });
     const totalMaterialCost = bomItems.reduce((s, i) => s + i.totalCost, 0);
     const plannedOrders = mrpItems
-      .filter((mi) => mi.actionType === "CREATE_WORK_ORDER" || mi.actionType === "CREATE_PURCHASE_ORDER")
+      .filter(
+        (mi) =>
+          mi.actionType === "CREATE_WORK_ORDER" ||
+          mi.actionType === "CREATE_PURCHASE_ORDER",
+      )
       .map((mi) => ({
         productId: mi.productId,
         quantityNeeded: Number(mi.quantityNeeded),
@@ -481,8 +515,7 @@ export class ManufacturingEnterpriseService {
           0,
         ),
         netRequirements: mrpItems.reduce(
-          (s, mi) =>
-            s + Math.max(0, Number(mi.netQuantityRequired)),
+          (s, mi) => s + Math.max(0, Number(mi.netQuantityRequired)),
           0,
         ),
       },
@@ -504,28 +537,36 @@ export class ManufacturingEnterpriseService {
     const wo = await prisma.workOrder.findFirst({
       where: { id: workOrderId, tenantId },
       include: {
-        bom: {
-          include: {
-            items: {
-              include: {
-                product: { select: { costPrice: true, name: true } },
-              },
-            },
-          },
-        },
+        bom: { include: { items: true } },
         operations: true,
         componentConsumptions: true,
       },
     });
     if (!wo) return null;
+    // Neither BOMItem nor WorkOrderComponentConsumption relate directly to
+    // Product in the schema — resolve costs/names via a separate lookup.
+    const componentProductIds = [
+      ...(wo.bom?.items.map((item) => item.productId) || []),
+      ...wo.componentConsumptions.map((cc) => cc.productId),
+    ];
+    const componentProducts = await prisma.product.findMany({
+      where: { id: { in: componentProductIds } },
+      select: { id: true, name: true, costPrice: true },
+    });
+    const componentsById = new Map(componentProducts.map((p) => [p.id, p]));
     const standardMaterialCost =
       wo.bom?.items.reduce(
         (s, item) =>
-          s + Number(item.quantity) * Number(item.product.costPrice),
+          s +
+          Number(item.quantity) *
+            Number(componentsById.get(item.productId)?.costPrice || 0),
         0,
       ) || 0;
     const actualConsumption = wo.componentConsumptions.reduce(
-      (s, cc) => s + Number(cc.consumedQty) * Number(cc.unitCost || 0),
+      (s, cc) =>
+        s +
+        Number(cc.quantityConsumed) *
+          Number(componentsById.get(cc.productId)?.costPrice || 0),
       0,
     );
     const timeEntries = await prisma.manufacturingTimeEntry.findMany({
@@ -537,14 +578,11 @@ export class ManufacturingEnterpriseService {
     );
     const standardCost = Number(wo.standardCost || 0);
     const actualCost = Number(wo.actualCost || 0);
-    const costVariance = Number(wo.costVariance || (standardCost - actualCost));
+    const costVariance = Number(wo.costVariance || standardCost - actualCost);
     const materialVariance = standardMaterialCost - actualConsumption;
-    const laborVariance =
-      standardCost * 0.3 -
-      actualLaborHours * 0.5;
+    const laborVariance = standardCost * 0.3 - actualLaborHours * 0.5;
     const overheadCost = Number(wo.overheadCost || 0);
-    const overheadVariance =
-      standardCost * 0.2 - overheadCost;
+    const overheadVariance = standardCost * 0.2 - overheadCost;
     return {
       workOrderId,
       workOrderNumber: wo.workOrderNumber,
@@ -576,12 +614,18 @@ export class ManufacturingEnterpriseService {
           variance: Number(overheadVariance.toFixed(2)),
         },
       },
-      bomCostComparison: wo.bom?.items.map((item) => ({
-        componentName: item.product.name,
-        qtyPerUnit: Number(item.quantity),
-        unitCost: Number(item.product.costPrice),
-        extendedCost: Number((Number(item.quantity) * Number(item.product.costPrice)).toFixed(2)),
-      })) || [],
+      bomCostComparison:
+        wo.bom?.items.map((item) => {
+          const unitCost = Number(
+            componentsById.get(item.productId)?.costPrice || 0,
+          );
+          return {
+            componentName: componentsById.get(item.productId)?.name,
+            qtyPerUnit: Number(item.quantity),
+            unitCost,
+            extendedCost: Number((Number(item.quantity) * unitCost).toFixed(2)),
+          };
+        }) || [],
     };
   }
 
@@ -646,7 +690,8 @@ export class ManufacturingEnterpriseService {
       totalChecked > 0
         ? Number(
             (
-              Math.pow(totalPassed / totalChecked, qualityChecks.length || 1) * 100
+              Math.pow(totalPassed / totalChecked, qualityChecks.length || 1) *
+              100
             ).toFixed(1),
           )
         : 0;
@@ -676,9 +721,15 @@ export class ManufacturingEnterpriseService {
         rollThroughYield,
         defectDensity,
         scrapRate,
-        yieldPct: totalProduced > 0
-          ? Number((((totalProduced - totalScrapped) / totalProduced) * 100).toFixed(1))
-          : 0,
+        yieldPct:
+          totalProduced > 0
+            ? Number(
+                (
+                  ((totalProduced - totalScrapped) / totalProduced) *
+                  100
+                ).toFixed(1),
+              )
+            : 0,
       },
       workOrderYield: workOrders.map((wo) => ({
         id: wo.id,
@@ -782,8 +833,10 @@ export class ManufacturingEnterpriseService {
         mtbfRecords.length > 0
           ? Number(
               (
-                machineOeeRecs.reduce((s, r) => s + Number(r.actualRunTime || 0), 0) /
-                mtbfRecords.length
+                machineOeeRecs.reduce(
+                  (s, r) => s + Number(r.actualRunTime || 0),
+                  0,
+                ) / mtbfRecords.length
               ).toFixed(2),
             )
           : 0;
@@ -801,8 +854,10 @@ export class ManufacturingEnterpriseService {
             machineOeeRecs.length > 0
               ? Number(
                   (
-                    machineOeeRecs.reduce((s, r) => s + Number(r.availability || 0), 0) /
-                    machineOeeRecs.length
+                    machineOeeRecs.reduce(
+                      (s, r) => s + Number(r.availability || 0),
+                      0,
+                    ) / machineOeeRecs.length
                   ).toFixed(3),
                 )
               : 0,
@@ -810,8 +865,10 @@ export class ManufacturingEnterpriseService {
             machineOeeRecs.length > 0
               ? Number(
                   (
-                    machineOeeRecs.reduce((s, r) => s + Number(r.performance || 0), 0) /
-                    machineOeeRecs.length
+                    machineOeeRecs.reduce(
+                      (s, r) => s + Number(r.performance || 0),
+                      0,
+                    ) / machineOeeRecs.length
                   ).toFixed(3),
                 )
               : 0,
@@ -819,8 +876,10 @@ export class ManufacturingEnterpriseService {
             machineOeeRecs.length > 0
               ? Number(
                   (
-                    machineOeeRecs.reduce((s, r) => s + Number(r.quality || 0), 0) /
-                    machineOeeRecs.length
+                    machineOeeRecs.reduce(
+                      (s, r) => s + Number(r.quality || 0),
+                      0,
+                    ) / machineOeeRecs.length
                   ).toFixed(3),
                 )
               : 0,
@@ -866,7 +925,9 @@ export class ManufacturingEnterpriseService {
         ),
         totalMaintenanceOrders: maintenanceLogs.length,
         totalMaintenanceCost: Number(
-          maintenanceLogs.reduce((s, m) => s + Number(m.cost || 0), 0).toFixed(2),
+          maintenanceLogs
+            .reduce((s, m) => s + Number(m.cost || 0), 0)
+            .toFixed(2),
         ),
       },
       machines: machineOee,
@@ -880,7 +941,9 @@ export class ManufacturingEnterpriseService {
     };
   }
 
-  private groupDowntimeByCategory(downtimes: { category: string; duration?: number | null }[]) {
+  private groupDowntimeByCategory(
+    downtimes: { category: string; duration?: number | null }[],
+  ) {
     const byCat: Record<string, number> = {};
     for (const d of downtimes) {
       const cat = d.category || "UNKNOWN";
@@ -964,9 +1027,7 @@ export class ManufacturingEnterpriseService {
       materialConsumption: wo.componentConsumptions.map((cc) => ({
         productName: cc.product.name,
         sku: cc.product.sku,
-        plannedQty: Number(cc.plannedQty),
-        consumedQty: Number(cc.consumedQty),
-        unitCost: Number(cc.unitCost || 0),
+        consumedQty: Number(cc.quantityConsumed),
       })),
       labor: {
         totalEntries: timeEntries.length,
@@ -1007,13 +1068,14 @@ export class ManufacturingEnterpriseService {
         records: scrapRecords,
       },
       wip: {
-        totalProduced: Number(wo.quantity) - scrapRecords.reduce(
-          (s, sr) => s + Number(sr.scrappedQty),
-          0,
-        ),
+        totalProduced:
+          Number(wo.quantity) -
+          scrapRecords.reduce((s, sr) => s + Number(sr.scrappedQty), 0),
         remainingQty: Math.max(
           0,
-          Number(wo.quantity) - completedOps * (Number(wo.quantity) / Math.max(1, wo.operations.length)),
+          Number(wo.quantity) -
+            completedOps *
+              (Number(wo.quantity) / Math.max(1, wo.operations.length)),
         ),
       },
     };
@@ -1023,9 +1085,7 @@ export class ManufacturingEnterpriseService {
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const workOrders = await prisma.workOrder.findMany({ where: { tenantId } });
-    const monthOrders = workOrders.filter(
-      (wo) => wo.createdAt >= monthStart,
-    );
+    const monthOrders = workOrders.filter((wo) => wo.createdAt >= monthStart);
     const totalOrders = workOrders.length;
     const activeOrders = workOrders.filter(
       (wo) => wo.status === "IN_PROGRESS",
@@ -1050,7 +1110,9 @@ export class ManufacturingEnterpriseService {
     );
     const yieldPct =
       totalQuantity > 0
-        ? Number((((totalQuantity - totalScrap) / totalQuantity) * 100).toFixed(1))
+        ? Number(
+            (((totalQuantity - totalScrap) / totalQuantity) * 100).toFixed(1),
+          )
         : 0;
     const oeeRecords = await prisma.machineOeeRecord.findMany({
       where: { tenantId, recordDate: { gte: monthStart } },
@@ -1168,12 +1230,7 @@ export class ManufacturingEnterpriseService {
     );
     const totalDemand = workstations.reduce(
       (s, ws) =>
-        s +
-        ws.workOrders.reduce(
-          (s2, wo) =>
-            s2 + Number(wo.quantity) * 0.5,
-          0,
-        ),
+        s + ws.workOrders.reduce((s2, wo) => s2 + Number(wo.quantity) * 0.5, 0),
       0,
     );
     const bottleneckCapacity =
@@ -1190,8 +1247,10 @@ export class ManufacturingEnterpriseService {
         : 0;
     const bottleneck = workstations.find(
       (ws) =>
-        ws.capacityEntries.reduce((s, ce) => s + Number(ce.availableHours), 0) ===
-        bottleneckCapacity,
+        ws.capacityEntries.reduce(
+          (s, ce) => s + Number(ce.availableHours),
+          0,
+        ) === bottleneckCapacity,
     );
     return {
       period: { start: periodStart, end: periodEnd },
@@ -1246,10 +1305,16 @@ export class ManufacturingEnterpriseService {
           name: ws.name,
           utilizationPct: Number(
             (
-              (ws.workOrders.reduce((s, wo) => s + Number(wo.quantity) * 0.5, 0) /
+              (ws.workOrders.reduce(
+                (s, wo) => s + Number(wo.quantity) * 0.5,
+                0,
+              ) /
                 Math.max(
                   1,
-                  ws.capacityEntries.reduce((s, ce) => s + Number(ce.availableHours), 0),
+                  ws.capacityEntries.reduce(
+                    (s, ce) => s + Number(ce.availableHours),
+                    0,
+                  ),
                 )) *
               100
             ).toFixed(1),
@@ -1280,14 +1345,20 @@ export class ManufacturingEnterpriseService {
     }
     const boms = await prisma.bOM.findMany({
       where: { tenantId, productId, isActive: true },
-      include: {
-        items: {
-          include: {
-            product: { select: { costPrice: true, name: true, sku: true } },
-          },
+      include: { items: true },
+    });
+    // BOMItem has no direct `product` relation — resolve components separately.
+    const bomComponentProducts = await prisma.product.findMany({
+      where: {
+        id: {
+          in: boms.flatMap((bom) => bom.items.map((item) => item.productId)),
         },
       },
+      select: { id: true, costPrice: true, name: true, sku: true },
     });
+    const bomComponentsById = new Map(
+      bomComponentProducts.map((p) => [p.id, p]),
+    );
     const workOrders = await prisma.workOrder.findMany({
       where: {
         tenantId,
@@ -1296,7 +1367,9 @@ export class ManufacturingEnterpriseService {
       },
       include: {
         operations: true,
-        componentConsumptions: true,
+        componentConsumptions: {
+          include: { product: { select: { costPrice: true } } },
+        },
       },
     });
     const timeEntries = await prisma.manufacturingTimeEntry.findMany({
@@ -1313,7 +1386,9 @@ export class ManufacturingEnterpriseService {
       (s, wo) =>
         s +
         wo.componentConsumptions.reduce(
-          (s2, cc) => s2 + Number(cc.consumedQty) * Number(cc.unitCost || 0),
+          (s2, cc) =>
+            s2 +
+            Number(cc.quantityConsumed) * Number(cc.product.costPrice || 0),
           0,
         ),
       0,
@@ -1331,8 +1406,7 @@ export class ManufacturingEnterpriseService {
       totalQuantity > 0 ? totalMaterialCost / totalQuantity : 0;
     const unitLaborCost =
       totalQuantity > 0 ? totalLaborCost / totalQuantity : 0;
-    const unitOverhead =
-      totalQuantity > 0 ? totalOverhead / totalQuantity : 0;
+    const unitOverhead = totalQuantity > 0 ? totalOverhead / totalQuantity : 0;
     const unitCost = unitMaterialCost + unitLaborCost + unitOverhead;
     const bomStandardCost = boms[0] ? Number(boms[0].standardCost) : 0;
     return {
@@ -1352,31 +1426,39 @@ export class ManufacturingEnterpriseService {
         bomStandardCost: Number(bomStandardCost.toFixed(2)),
         costVariance:
           bomStandardCost > 0
-            ? Number(((unitCost - bomStandardCost) / bomStandardCost * 100).toFixed(1))
+            ? Number(
+                (
+                  ((unitCost - bomStandardCost) / bomStandardCost) *
+                  100
+                ).toFixed(1),
+              )
             : 0,
       },
       breakdown: {
         material: {
           total: Number(totalMaterialCost.toFixed(2)),
           perUnit: Number(unitMaterialCost.toFixed(2)),
-          pct: unitCost > 0
-            ? Number(((unitMaterialCost / unitCost) * 100).toFixed(1))
-            : 0,
+          pct:
+            unitCost > 0
+              ? Number(((unitMaterialCost / unitCost) * 100).toFixed(1))
+              : 0,
         },
         labor: {
           total: Number(totalLaborCost.toFixed(2)),
           perUnit: Number(unitLaborCost.toFixed(2)),
           hours: Number((totalLaborMinutes / 60).toFixed(2)),
-          pct: unitCost > 0
-            ? Number(((unitLaborCost / unitCost) * 100).toFixed(1))
-            : 0,
+          pct:
+            unitCost > 0
+              ? Number(((unitLaborCost / unitCost) * 100).toFixed(1))
+              : 0,
         },
         overhead: {
           total: Number(totalOverhead.toFixed(2)),
           perUnit: Number(unitOverhead.toFixed(2)),
-          pct: unitCost > 0
-            ? Number(((unitOverhead / unitCost) * 100).toFixed(1))
-            : 0,
+          pct:
+            unitCost > 0
+              ? Number(((unitOverhead / unitCost) * 100).toFixed(1))
+              : 0,
         },
       },
       bomCostBreakdown: boms.map((bom) => ({
@@ -1385,15 +1467,17 @@ export class ManufacturingEnterpriseService {
         standardCost: Number(bom.standardCost),
         materialCost: Number(bom.materialCost),
         overheadCost: Number(bom.overheadCost),
-        items: bom.items.map((item) => ({
-          componentName: item.product.name,
-          sku: item.product.sku,
-          qtyPerUnit: Number(item.quantity),
-          unitCost: Number(item.product.costPrice),
-          extendedCost: Number(
-            (Number(item.quantity) * Number(item.product.costPrice)).toFixed(2),
-          ),
-        })),
+        items: bom.items.map((item) => {
+          const component = bomComponentsById.get(item.productId);
+          const unitCost = Number(component?.costPrice || 0);
+          return {
+            componentName: component?.name,
+            sku: component?.sku,
+            qtyPerUnit: Number(item.quantity),
+            unitCost,
+            extendedCost: Number((Number(item.quantity) * unitCost).toFixed(2)),
+          };
+        }),
       })),
     };
   }
@@ -1439,10 +1523,7 @@ export class ManufacturingEnterpriseService {
     const recyclingRate =
       totalQuantity > 0
         ? Number(
-            (
-              ((totalQuantity - totalScrap) / totalQuantity) *
-              100
-            ).toFixed(1),
+            (((totalQuantity - totalScrap) / totalQuantity) * 100).toFixed(1),
           )
         : 0;
     const energyPerUnit =
@@ -1472,13 +1553,10 @@ export class ManufacturingEnterpriseService {
       },
       waste: {
         totalGenerated: Number(wasteGeneration.toFixed(2)),
-        byReason: scrapRecords.reduce<Record<string, number>>(
-          (acc, sr) => {
-            acc[sr.reason] = (acc[sr.reason] || 0) + Number(sr.scrappedQty);
-            return acc;
-          },
-          {},
-        ),
+        byReason: scrapRecords.reduce<Record<string, number>>((acc, sr) => {
+          acc[sr.reason] = (acc[sr.reason] || 0) + Number(sr.scrappedQty);
+          return acc;
+        }, {}),
       },
       recycling: {
         rate: recyclingRate,
@@ -1491,7 +1569,11 @@ export class ManufacturingEnterpriseService {
             : 0,
         yieldPct:
           totalQuantity > 0
-            ? Number((((totalQuantity - totalScrap) / totalQuantity) * 100).toFixed(1))
+            ? Number(
+                (((totalQuantity - totalScrap) / totalQuantity) * 100).toFixed(
+                  1,
+                ),
+              )
             : 0,
       },
     };

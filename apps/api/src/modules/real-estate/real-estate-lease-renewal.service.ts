@@ -7,6 +7,36 @@ import { prisma } from "@unerp/database";
 
 @Injectable()
 export class RealEstateLeaseRenewalService {
+  // RealEstateLeaseRenewal/RealEstateRentEscalation only store `leaseId`/
+  // `propertyId` scalars — there are no `lease`/`property` relations in the
+  // schema to `include`, so related summaries are batched in manually.
+  private async attachLease<T extends { leaseId: string }>(
+    tenantId: string,
+    rows: T[],
+  ) {
+    const leases = await prisma.realEstateLease.findMany({
+      where: { tenantId, id: { in: rows.map((r) => r.leaseId) } },
+      select: { id: true, tenantName: true, rentAmount: true, status: true },
+    });
+    const byId = new Map(leases.map((l) => [l.id, l]));
+    return rows.map((r) => ({ ...r, lease: byId.get(r.leaseId) || null }));
+  }
+
+  private async attachProperty<T extends { propertyId: string }>(
+    tenantId: string,
+    rows: T[],
+  ) {
+    const properties = await prisma.realEstateProperty.findMany({
+      where: { tenantId, id: { in: rows.map((r) => r.propertyId) } },
+      select: { id: true, name: true },
+    });
+    const byId = new Map(properties.map((p) => [p.id, p]));
+    return rows.map((r) => ({
+      ...r,
+      property: byId.get(r.propertyId) || null,
+    }));
+  }
+
   async getRenewals(tenantId: string, query: any = {}) {
     const where: any = { tenantId, isActive: true };
     if (query.leaseId) where.leaseId = query.leaseId;
@@ -15,40 +45,32 @@ export class RealEstateLeaseRenewalService {
     const page = parseInt(query.page) || 1;
     const limit = parseInt(query.limit) || 50;
     const skip = (page - 1) * limit;
-    const [data, total] = await Promise.all([
+    const [rows, total] = await Promise.all([
       prisma.realEstateLeaseRenewal.findMany({
         where,
-        include: {
-          lease: {
-            select: {
-              id: true,
-              tenantName: true,
-              rentAmount: true,
-              status: true,
-            },
-          },
-          property: { select: { id: true, name: true } },
-        },
         orderBy: { createdAt: "desc" },
         skip,
         take: limit,
       }),
       prisma.realEstateLeaseRenewal.count({ where }),
     ]);
+    const withLease = await this.attachLease(tenantId, rows);
+    const data = await this.attachProperty(tenantId, withLease);
     return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
   async getRenewalById(tenantId: string, id: string) {
     const r = await prisma.realEstateLeaseRenewal.findFirst({
       where: { tenantId, id },
-      include: { lease: true, property: true },
     });
     if (!r) throw new NotFoundException("Lease renewal not found");
-    return r;
+    const [withLease] = await this.attachLease(tenantId, [r]);
+    const [result] = await this.attachProperty(tenantId, [withLease!]);
+    return result;
   }
 
   async createRenewal(tenantId: string, data: any) {
-    return prisma.realEstateLeaseRenewal.create({
+    const created = await prisma.realEstateLeaseRenewal.create({
       data: {
         ...data,
         tenantId,
@@ -58,11 +80,10 @@ export class RealEstateLeaseRenewalService {
         approvedAt: data.approvedAt ? new Date(data.approvedAt) : null,
         executedAt: data.executedAt ? new Date(data.executedAt) : null,
       },
-      include: {
-        lease: { select: { id: true, tenantName: true } },
-        property: { select: { id: true, name: true } },
-      },
     });
+    const [withLease] = await this.attachLease(tenantId, [created]);
+    const [result] = await this.attachProperty(tenantId, [withLease!]);
+    return result;
   }
 
   async updateRenewal(tenantId: string, id: string, data: any) {
@@ -103,7 +124,6 @@ export class RealEstateLeaseRenewalService {
   async executeRenewal(tenantId: string, id: string) {
     const existing = await prisma.realEstateLeaseRenewal.findFirst({
       where: { tenantId, id },
-      include: { lease: true },
     });
     if (!existing) throw new NotFoundException("Lease renewal not found");
     if (existing.status !== "APPROVED")
@@ -134,18 +154,16 @@ export class RealEstateLeaseRenewalService {
     if (query.leaseId) where.leaseId = query.leaseId;
     if (query.propertyId) where.propertyId = query.propertyId;
     if (query.status) where.status = query.status;
-    return prisma.realEstateRentEscalation.findMany({
+    const rows = await prisma.realEstateRentEscalation.findMany({
       where,
-      include: {
-        lease: { select: { id: true, tenantName: true } },
-        property: { select: { id: true, name: true } },
-      },
       orderBy: { nextEscalationDate: "asc" },
     });
+    const withLease = await this.attachLease(tenantId, rows);
+    return this.attachProperty(tenantId, withLease);
   }
 
   async createRentEscalation(tenantId: string, data: any) {
-    return prisma.realEstateRentEscalation.create({
+    const created = await prisma.realEstateRentEscalation.create({
       data: {
         ...data,
         tenantId,
@@ -156,8 +174,9 @@ export class RealEstateLeaseRenewalService {
           ? new Date(data.lastEscalationDate)
           : null,
       },
-      include: { lease: { select: { id: true, tenantName: true } } },
     });
+    const [result] = await this.attachLease(tenantId, [created]);
+    return result;
   }
 
   async updateRentEscalation(tenantId: string, id: string, data: any) {
@@ -190,7 +209,6 @@ export class RealEstateLeaseRenewalService {
   async applyEscalation(tenantId: string, id: string) {
     const escalation = await prisma.realEstateRentEscalation.findFirst({
       where: { tenantId, id },
-      include: { lease: true },
     });
     if (!escalation) throw new NotFoundException("Rent escalation not found");
     if (escalation.status !== "ACTIVE")

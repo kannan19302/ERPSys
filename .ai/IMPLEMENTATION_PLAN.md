@@ -1,4 +1,4 @@
-# IMPLEMENTATION_PLAN.md — DEV Cycle 64 cont'd (Flutter Mobile — Cross-Platform Parity)
+# Implementation Plan — DEV Cycle 64 cont'd (Flutter Mobile — Cross-Platform Parity)
 
 - **Cycle**: 64 (continuation)
 - **Phase**: M (Module strengthening — cross-platform parity criterion #6)

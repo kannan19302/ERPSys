@@ -139,4 +139,15 @@ class InventoryRepositoryImpl implements InventoryRepository {
       return Result<void>.err(mapExceptionToFailure(error));
     }
   }
+
+  @override
+  Future<Result<void>> adjustStock(Map<String, dynamic> payload) async {
+    try {
+      await _remote.adjustStock(payload);
+      await _cache.clearTenant(_tenantId);
+      return const Result<void>.ok(null);
+    } on Object catch (error) {
+      return Result<void>.err(mapExceptionToFailure(error));
+    }
+  }
 }

@@ -1,6 +1,7 @@
 import 'dart:io' show Cookie, Directory;
 
 import 'package:cookie_jar/cookie_jar.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path_provider/path_provider.dart';
 
 import '../config/env.dart';
@@ -25,7 +26,16 @@ class CookieStore {
   static const String refreshCookieName = 'refresh_token';
 
   /// Cookies survive process death so a warm start can silently refresh.
+  ///
+  /// On web, `auth_token`/`refresh_token` are httpOnly and managed by the
+  /// browser itself (Dio's browser adapter sends them automatically with
+  /// `withCredentials`) — there's no filesystem for `path_provider`/
+  /// `FileStorage` to use, and no need for a persisted jar. An in-memory
+  /// [CookieJar] still lets [readCsrfToken] read the one cookie JS can see.
   static Future<CookieStore> create() async {
+    if (kIsWeb) {
+      return CookieStore(CookieJar(ignoreExpires: false), Uri.parse(Env.apiOrigin));
+    }
     final Directory supportDir = await getApplicationSupportDirectory();
     final PersistCookieJar jar = PersistCookieJar(
       ignoreExpires: false,
@@ -34,7 +44,7 @@ class CookieStore {
     return CookieStore(jar, Uri.parse(Env.apiOrigin));
   }
 
-  final PersistCookieJar _jar;
+  final CookieJar _jar;
   final Uri _origin;
 
   CookieJar get jar => _jar;

@@ -1,4 +1,3 @@
-import path from 'path';
 
 /** @type {import('next').NextConfig} */
 const apiBaseUrl = process.env.API_URL || 'http://localhost:3001';
@@ -14,44 +13,18 @@ const nextConfig = {
       poll: 1000,
       aggregateTimeout: 300,
     };
-    config.resolve = config.resolve || {};
-    config.resolve.alias = {
-      ...(config.resolve.alias || {}),
-      '@unerp/ui-tokens': path.resolve(process.cwd(), '../../packages/ui-tokens/src/index.ts'),
-      '@unerp/ui-theme': path.resolve(process.cwd(), '../../packages/ui-theme/src/index.ts'),
-      '@unerp/ui-components': path.resolve(process.cwd(), '../../packages/ui-components/src/index.ts'),
-      '@unerp/ui-layout': path.resolve(process.cwd(), '../../packages/ui-layout/src/index.ts'),
-      '@unerp/ui-charts': path.resolve(process.cwd(), '../../packages/ui-charts/src/index.ts'),
-      '@unerp/ui-data-grid': path.resolve(process.cwd(), '../../packages/ui-data-grid/src/index.ts'),
-      '@unerp/ui-dashboard': path.resolve(process.cwd(), '../../packages/ui-dashboard/src/index.ts'),
-      '@unerp/ui-notifications': path.resolve(process.cwd(), '../../packages/ui-notifications/src/index.ts'),
-      '@unerp/ui-hooks': path.resolve(process.cwd(), '../../packages/ui-hooks/src/index.ts'),
-      '@unerp/ui-utils': path.resolve(process.cwd(), '../../packages/ui-utils/src/index.ts'),
-      '@unerp/ui-icons': path.resolve(process.cwd(), '../../packages/ui-icons/src/index.ts'),
-      '@unerp/ui-form-engine': path.resolve(process.cwd(), '../../packages/ui-form-engine/src/index.ts'),
-      '@unerp/ui-workflow': path.resolve(process.cwd(), '../../packages/ui-workflow/src/index.ts'),
-      '@unerp/ui/styles': path.resolve(process.cwd(), '../../packages/ui/src/styles/globals.css'),
-      '@unerp/ui/tokens': path.resolve(process.cwd(), '../../packages/ui/src/tokens/design-tokens.css'),
-      '@unerp/ui': path.resolve(process.cwd(), '../../packages/ui/src/index.ts'),
-    };
     return config;
   },
   reactStrictMode: true,
+  // Only packages that ship TypeScript source (no pre-built dist) need
+  // transpilePackages. All @unerp/ui-* sub-packages now ship compiled
+  // dist/index.js, so they are removed from this list to avoid webpack
+  // re-transpiling the entire tree from source on every cold start.
+  // @unerp/ui, @unerp/framework, @unerp/shared, @unerp/auth remain here
+  // because they may import from other workspace packages that need resolution.
   transpilePackages: [
     '@unerp/ui',
-    '@unerp/ui-tokens',
-    '@unerp/ui-theme',
-    '@unerp/ui-components',
-    '@unerp/ui-layout',
-    '@unerp/ui-charts',
-    '@unerp/ui-data-grid',
-    '@unerp/ui-dashboard',
-    '@unerp/ui-notifications',
-    '@unerp/ui-hooks',
-    '@unerp/ui-utils',
-    '@unerp/ui-icons',
-    '@unerp/ui-form-engine',
-    '@unerp/ui-workflow',
+    '@unerp/framework',
     '@unerp/shared',
     '@unerp/auth',
   ],

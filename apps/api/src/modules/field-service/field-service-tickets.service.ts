@@ -198,7 +198,6 @@ export class FieldServiceTicketsService {
         where: {
           tenantId,
           completedDate: { not: null },
-          createdAt: { not: null },
         },
         _avg: { totalCost: true },
       }),
@@ -210,7 +209,7 @@ export class FieldServiceTicketsService {
       byPriority,
       byCategory,
       slaBreached,
-      avgResolutionCost: avgResolution._avg.totalCost || 0,
+      avgResolutionCost: avgResolution._avg?.totalCost || 0,
     };
   }
   async bulkUpdateTickets(tenantId: string, ids: string[], data: any) {

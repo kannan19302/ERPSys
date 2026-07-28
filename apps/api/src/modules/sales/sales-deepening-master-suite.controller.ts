@@ -11,18 +11,16 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
-import {
-  JwtAuthGuard,
-  PermissionsGuard,
-  Permissions,
-  CurrentUser,
-} from "@unerp/core";
+import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
+import { RbacGuard } from "../../common/guards/rbac.guard";
+import { Permissions } from "../../common/decorators/permissions.decorator";
+import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { SalesDeepeningMasterSuiteService } from "./sales-deepening-master-suite.service";
 
 // 14 sub-domains x 20 actions = 280 endpoints
 @ApiTags("Sales Deepening Master Suite")
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, RbacGuard)
 @Controller("sales/deepening-master")
 export class SalesDeepeningMasterSuiteController {
   constructor(private readonly service: SalesDeepeningMasterSuiteService) {}

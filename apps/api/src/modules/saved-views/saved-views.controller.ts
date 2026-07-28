@@ -159,7 +159,10 @@ export class SavedViewsController {
     @ZodBody(filterSchema) body: z.infer<typeof filterSchema>,
   ) {
     return this.deepService.addFilter(req.user.tenantId, req.user.userId, {
-      ...body,
+      viewId: body.viewId,
+      field: body.field,
+      value: body.value,
+      logic: body.logic,
       operator: body.operator ?? "=",
     });
   }

@@ -13,9 +13,14 @@ RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
 
 WORKDIR /app
 
-# Copy the entrypoint script
+# Copy the entrypoint scripts (default combined one, plus the split
+# api/web variants used by docker-compose.dev.yml's separate services).
 COPY scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+COPY scripts/docker-entrypoint-api.sh /usr/local/bin/docker-entrypoint-api.sh
+COPY scripts/docker-entrypoint-web.sh /usr/local/bin/docker-entrypoint-web.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh \
+    /usr/local/bin/docker-entrypoint-api.sh \
+    /usr/local/bin/docker-entrypoint-web.sh
 
 # Use tini as init to reap zombie processes from dev watchers
 ENTRYPOINT ["/sbin/tini", "--"]

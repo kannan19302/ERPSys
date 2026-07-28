@@ -84,6 +84,8 @@ import { InventoryDeepExpansionBulkController } from "./inventory-deep-expansion
     InventoryCycleCountingDeepService,
     InventoryAdvancedWmsService,
     InventorySupplyChainService,
+    InventoryQualityComplianceService,
+    InventoryIntelligenceService,
   ],
   exports: [
     InventoryService,

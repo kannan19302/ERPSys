@@ -3,6 +3,42 @@ import { prisma } from "@unerp/database";
 
 @Injectable()
 export class FieldServiceSchedulingService {
+  // FieldServiceSchedule/FieldServiceCalendarEvent only store `technicianId`/
+  // `ticketId` scalars — the schema has no `technician`/`ticket` relations to
+  // `include`, so callers here need it batched in manually.
+  private async attachTechnicians<T extends { technicianId: string }>(
+    tenantId: string,
+    rows: T[],
+  ) {
+    const technicians = await prisma.fieldServiceTechnician.findMany({
+      where: { tenantId, id: { in: rows.map((r) => r.technicianId) } },
+      select: { id: true, name: true },
+    });
+    const byId = new Map(technicians.map((t) => [t.id, t]));
+    return rows.map((r) => ({
+      ...r,
+      technician: byId.get(r.technicianId) || null,
+    }));
+  }
+
+  private async attachTickets<T extends { ticketId: string | null }>(
+    tenantId: string,
+    rows: T[],
+  ) {
+    const ticketIds = rows
+      .map((r) => r.ticketId)
+      .filter((id): id is string => id !== null);
+    const tickets = await prisma.fieldServiceTicket.findMany({
+      where: { tenantId, id: { in: ticketIds } },
+      select: { id: true, title: true },
+    });
+    const byId = new Map(tickets.map((t) => [t.id, t]));
+    return rows.map((r) => ({
+      ...r,
+      ticket: r.ticketId ? byId.get(r.ticketId) || null : null,
+    }));
+  }
+
   async getSchedules(tenantId: string, query: any = {}) {
     const where: any = { tenantId, isActive: true };
     if (query.technicianId) where.technicianId = query.technicianId;
@@ -21,33 +57,32 @@ export class FieldServiceSchedulingService {
     const page = parseInt(query.page) || 1;
     const limit = parseInt(query.limit) || 50;
     const skip = (page - 1) * limit;
-    const [data, total] = await Promise.all([
+    const [rows, total] = await Promise.all([
       prisma.fieldServiceSchedule.findMany({
         where,
-        include: {
-          technician: { select: { id: true, name: true } },
-          ticket: { select: { id: true, title: true } },
-        },
         orderBy: { scheduledDate: "asc" },
         skip,
         take: limit,
       }),
       prisma.fieldServiceSchedule.count({ where }),
     ]);
+    const withTech = await this.attachTechnicians(tenantId, rows);
+    const data = await this.attachTickets(tenantId, withTech);
     return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
   async getScheduleById(tenantId: string, id: string) {
     const s = await prisma.fieldServiceSchedule.findFirst({
       where: { tenantId, id },
-      include: { technician: true, ticket: true },
     });
     if (!s) throw new NotFoundException("Schedule entry not found");
-    return s;
+    const [withTech] = await this.attachTechnicians(tenantId, [s]);
+    const [result] = await this.attachTickets(tenantId, [withTech!]);
+    return result;
   }
 
   async createSchedule(tenantId: string, data: any) {
-    return prisma.fieldServiceSchedule.create({
+    const created = await prisma.fieldServiceSchedule.create({
       data: {
         ...data,
         tenantId,
@@ -55,8 +90,9 @@ export class FieldServiceSchedulingService {
         startTime: data.startTime ? new Date(data.startTime) : null,
         endTime: data.endTime ? new Date(data.endTime) : null,
       },
-      include: { technician: { select: { id: true, name: true } } },
     });
+    const [result] = await this.attachTechnicians(tenantId, [created]);
+    return result;
   }
 
   async updateSchedule(tenantId: string, id: string, data: any) {
@@ -69,11 +105,12 @@ export class FieldServiceSchedulingService {
       updateData.scheduledDate = new Date(data.scheduledDate);
     if (data.startTime) updateData.startTime = new Date(data.startTime);
     if (data.endTime) updateData.endTime = new Date(data.endTime);
-    return prisma.fieldServiceSchedule.update({
+    const updated = await prisma.fieldServiceSchedule.update({
       where: { id },
       data: updateData,
-      include: { technician: { select: { id: true, name: true } } },
     });
+    const [result] = await this.attachTechnicians(tenantId, [updated]);
+    return result;
   }
 
   async deleteSchedule(tenantId: string, id: string) {
@@ -98,23 +135,24 @@ export class FieldServiceSchedulingService {
       };
     if (query.toDate)
       where.endTime = { ...(where.endTime || {}), lte: new Date(query.toDate) };
-    return prisma.fieldServiceCalendarEvent.findMany({
+    const rows = await prisma.fieldServiceCalendarEvent.findMany({
       where,
-      include: { technician: { select: { id: true, name: true } } },
       orderBy: { startTime: "asc" },
     });
+    return this.attachTechnicians(tenantId, rows);
   }
 
   async createCalendarEvent(tenantId: string, data: any) {
-    return prisma.fieldServiceCalendarEvent.create({
+    const created = await prisma.fieldServiceCalendarEvent.create({
       data: {
         ...data,
         tenantId,
         startTime: new Date(data.startTime),
         endTime: new Date(data.endTime),
       },
-      include: { technician: { select: { id: true, name: true } } },
     });
+    const [result] = await this.attachTechnicians(tenantId, [created]);
+    return result;
   }
 
   async updateCalendarEvent(tenantId: string, id: string, data: any) {
@@ -146,25 +184,26 @@ export class FieldServiceSchedulingService {
     const start = new Date(startDate);
     const end = new Date(start);
     end.setDate(end.getDate() + 7);
-    const [schedules, events] = await Promise.all([
+    const [scheduleRows, eventRows] = await Promise.all([
       prisma.fieldServiceSchedule.findMany({
         where: {
           tenantId,
           scheduledDate: { gte: start, lt: end },
           isActive: true,
         },
-        include: {
-          technician: { select: { id: true, name: true } },
-          ticket: { select: { id: true, title: true } },
-        },
         orderBy: [{ scheduledDate: "asc" }, { startTime: "asc" }],
       }),
       prisma.fieldServiceCalendarEvent.findMany({
         where: { tenantId, startTime: { gte: start, lt: end }, isActive: true },
-        include: { technician: { select: { id: true, name: true } } },
         orderBy: { startTime: "asc" },
       }),
     ]);
+    const schedulesWithTech = await this.attachTechnicians(
+      tenantId,
+      scheduleRows,
+    );
+    const schedules = await this.attachTickets(tenantId, schedulesWithTech);
+    const events = await this.attachTechnicians(tenantId, eventRows);
     return { schedules, events, weekStart: start, weekEnd: end };
   }
 }

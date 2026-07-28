@@ -6,18 +6,26 @@ export class CommunicationEnterpriseService {
   async getUnifiedInbox(
     tenantId: string,
     userId: string,
-    filters: { types?: string[]; status?: string; limit?: number; offset?: number },
+    filters: {
+      types?: string[];
+      status?: string;
+      limit?: number;
+      offset?: number;
+    },
   ) {
     const limit = filters.limit || 50;
     const offset = filters.offset || 0;
-    const types = filters.types || ["MESSAGE", "MENTION", "TASK", "NOTIFICATION"];
+    const types = filters.types || [
+      "MESSAGE",
+      "MENTION",
+      "TASK",
+      "NOTIFICATION",
+    ];
     const results: Record<string, any> = {};
     if (types.includes("MESSAGE") || types.includes("MENTION")) {
       const messageWhere: any = {
         tenantId,
-        OR: [
-          { senderId: { not: userId } },
-        ],
+        OR: [{ senderId: { not: userId } }],
       };
       if (filters.status === "UNREAD") {
         messageWhere.readReceipts = { none: { userId } };
@@ -27,7 +35,11 @@ export class CommunicationEnterpriseService {
         orderBy: { createdAt: "desc" },
         take: limit,
         skip: offset,
-        include: { reactions: true, room: { select: { name: true } } },
+        include: {
+          reactions: true,
+          room: { select: { name: true } },
+          readReceipts: true,
+        },
       });
       results.messages = messages.map((m) => ({
         id: m.id,
@@ -85,7 +97,10 @@ export class CommunicationEnterpriseService {
     return {
       userId,
       filters,
-      totalItems: Object.values(results).reduce((s: number, arr: any) => s + (Array.isArray(arr) ? arr.length : 0), 0),
+      totalItems: Object.values(results).reduce(
+        (s: number, arr: any) => s + (Array.isArray(arr) ? arr.length : 0),
+        0,
+      ),
       ...results,
     };
   }
@@ -93,10 +108,19 @@ export class CommunicationEnterpriseService {
   async getMessageAnalytics(tenantId: string, dateRange: string) {
     const now = new Date();
     let startDate: Date;
-    if (dateRange === "WEEKLY") { startDate = new Date(now); startDate.setDate(startDate.getDate() - 7); }
-    else if (dateRange === "MONTHLY") { startDate = new Date(now); startDate.setMonth(startDate.getMonth() - 1); }
-    else if (dateRange === "QUARTERLY") { startDate = new Date(now); startDate.setMonth(startDate.getMonth() - 3); }
-    else { startDate = new Date(now); startDate.setFullYear(startDate.getFullYear() - 1); }
+    if (dateRange === "WEEKLY") {
+      startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - 7);
+    } else if (dateRange === "MONTHLY") {
+      startDate = new Date(now);
+      startDate.setMonth(startDate.getMonth() - 1);
+    } else if (dateRange === "QUARTERLY") {
+      startDate = new Date(now);
+      startDate.setMonth(startDate.getMonth() - 3);
+    } else {
+      startDate = new Date(now);
+      startDate.setFullYear(startDate.getFullYear() - 1);
+    }
     const rooms = await prisma.chatRoom.findMany({
       where: { tenantId, createdAt: { gte: startDate } },
       include: {
@@ -108,20 +132,27 @@ export class CommunicationEnterpriseService {
       },
     });
     const totalMessages = rooms.reduce((s, r) => s + r.messages.length, 0);
-    const totalReactions = rooms.reduce((s, r) => s + r.messages.reduce((s2, m) => s2 + m.reactions.length, 0), 0);
-    const busiestRoom = rooms.reduce((best, r) =>
-      r.messages.length > (best?.messages.length || 0) ? r : best,
-    rooms[0]);
+    const totalReactions = rooms.reduce(
+      (s, r) => s + r.messages.reduce((s2, m) => s2 + m.reactions.length, 0),
+      0,
+    );
+    const busiestRoom = rooms.reduce(
+      (best, r) =>
+        r.messages.length > (best?.messages.length || 0) ? r : best,
+      rooms[0],
+    );
     const uniqueSenders = new Set<string>();
     for (const r of rooms) {
       for (const m of r.messages) uniqueSenders.add(m.senderId);
     }
     const totalMembers = rooms.reduce((s, r) => s + r.members.length, 0);
-    const avgMessagesPerRoom = rooms.length > 0 ? Number((totalMessages / rooms.length).toFixed(1)) : 0;
+    const avgMessagesPerRoom =
+      rooms.length > 0 ? Number((totalMessages / rooms.length).toFixed(1)) : 0;
     const messagesByType: Record<string, number> = {};
     for (const r of rooms) {
       for (const m of r.messages) {
-        messagesByType[m.contentType] = (messagesByType[m.contentType] || 0) + 1;
+        messagesByType[m.contentType] =
+          (messagesByType[m.contentType] || 0) + 1;
       }
     }
     const messagesByRoom = rooms.map((r) => ({
@@ -142,7 +173,13 @@ export class CommunicationEnterpriseService {
         totalReactions,
         uniqueActiveUsers: uniqueSenders.size,
         avgMessagesPerRoom,
-        busiestRoom: busiestRoom ? { id: busiestRoom.id, name: busiestRoom.name, count: busiestRoom.messages.length } : null,
+        busiestRoom: busiestRoom
+          ? {
+              id: busiestRoom.id,
+              name: busiestRoom.name,
+              count: busiestRoom.messages.length,
+            }
+          : null,
       },
       messagesByType,
       rooms: messagesByRoom.sort((a, b) => b.messageCount - a.messageCount),
@@ -164,10 +201,19 @@ export class CommunicationEnterpriseService {
   async getFileSharingAnalytics(tenantId: string, dateRange: string) {
     const now = new Date();
     let startDate: Date;
-    if (dateRange === "WEEKLY") { startDate = new Date(now); startDate.setDate(startDate.getDate() - 7); }
-    else if (dateRange === "MONTHLY") { startDate = new Date(now); startDate.setMonth(startDate.getMonth() - 1); }
-    else if (dateRange === "QUARTERLY") { startDate = new Date(now); startDate.setMonth(startDate.getMonth() - 3); }
-    else { startDate = new Date(now); startDate.setFullYear(startDate.getFullYear() - 1); }
+    if (dateRange === "WEEKLY") {
+      startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - 7);
+    } else if (dateRange === "MONTHLY") {
+      startDate = new Date(now);
+      startDate.setMonth(startDate.getMonth() - 1);
+    } else if (dateRange === "QUARTERLY") {
+      startDate = new Date(now);
+      startDate.setMonth(startDate.getMonth() - 3);
+    } else {
+      startDate = new Date(now);
+      startDate.setFullYear(startDate.getFullYear() - 1);
+    }
     const files = await prisma.communicationFileShare.findMany({
       where: { tenantId, createdAt: { gte: startDate } },
       orderBy: { createdAt: "desc" },
@@ -186,8 +232,12 @@ export class CommunicationEnterpriseService {
     const topFiles = [...files].sort((a, b) => b.size - a.size).slice(0, 10);
     const fileSizeBuckets = {
       small: files.filter((f) => f.size < 100 * 1024).length,
-      medium: files.filter((f) => f.size >= 100 * 1024 && f.size < 5 * 1024 * 1024).length,
-      large: files.filter((f) => f.size >= 5 * 1024 * 1024 && f.size < 50 * 1024 * 1024).length,
+      medium: files.filter(
+        (f) => f.size >= 100 * 1024 && f.size < 5 * 1024 * 1024,
+      ).length,
+      large: files.filter(
+        (f) => f.size >= 5 * 1024 * 1024 && f.size < 50 * 1024 * 1024,
+      ).length,
       xlarge: files.filter((f) => f.size >= 50 * 1024 * 1024).length,
     };
     return {
@@ -204,7 +254,10 @@ export class CommunicationEnterpriseService {
         type,
         count: data.count,
         totalSizeMB: Number((data.totalSize / (1024 * 1024)).toFixed(2)),
-        pct: totalFiles > 0 ? Number(((data.count / totalFiles) * 100).toFixed(1)) : 0,
+        pct:
+          totalFiles > 0
+            ? Number(((data.count / totalFiles) * 100).toFixed(1))
+            : 0,
       })),
       sizeDistribution: fileSizeBuckets,
       topFiles: topFiles.map((f) => ({
@@ -231,15 +284,27 @@ export class CommunicationEnterpriseService {
   async getCollaborationInsights(tenantId: string, dateRange: string) {
     const now = new Date();
     let startDate: Date;
-    if (dateRange === "WEEKLY") { startDate = new Date(now); startDate.setDate(startDate.getDate() - 7); }
-    else if (dateRange === "MONTHLY") { startDate = new Date(now); startDate.setMonth(startDate.getMonth() - 1); }
-    else if (dateRange === "QUARTERLY") { startDate = new Date(now); startDate.setMonth(startDate.getMonth() - 3); }
-    else { startDate = new Date(now); startDate.setFullYear(startDate.getFullYear() - 1); }
+    if (dateRange === "WEEKLY") {
+      startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - 7);
+    } else if (dateRange === "MONTHLY") {
+      startDate = new Date(now);
+      startDate.setMonth(startDate.getMonth() - 1);
+    } else if (dateRange === "QUARTERLY") {
+      startDate = new Date(now);
+      startDate.setMonth(startDate.getMonth() - 3);
+    } else {
+      startDate = new Date(now);
+      startDate.setFullYear(startDate.getFullYear() - 1);
+    }
     const rooms = await prisma.chatRoom.findMany({
       where: { tenantId, createdAt: { gte: startDate } },
       include: {
         members: true,
-        messages: { where: { createdAt: { gte: startDate } }, select: { id: true, senderId: true } },
+        messages: {
+          where: { createdAt: { gte: startDate } },
+          select: { id: true, senderId: true },
+        },
       },
     });
     const channels = await prisma.chatChannel.findMany({
@@ -247,35 +312,42 @@ export class CommunicationEnterpriseService {
       include: { chatMembers: true },
     });
     const totalRooms = rooms.length + channels.length;
-    const totalMembers = rooms.reduce((s, r) => s + r.members.length, 0) +
+    const totalMembers =
+      rooms.reduce((s, r) => s + r.members.length, 0) +
       channels.reduce((s, c) => s + c.chatMembers.length, 0);
     const memberOverlap: Record<string, Set<string>> = {};
     for (const r of rooms) {
       for (const m of r.members) {
         if (!memberOverlap[m.userId]) memberOverlap[m.userId] = new Set();
-        memberOverlap[m.userId].add(r.id);
+        memberOverlap[m.userId]!.add(r.id);
       }
     }
     for (const c of channels) {
       for (const m of c.chatMembers) {
         if (!memberOverlap[m.userId]) memberOverlap[m.userId] = new Set();
-        memberOverlap[m.userId].add(c.id);
+        memberOverlap[m.userId]!.add(c.id);
       }
     }
-    const crossTeamConnections = Object.values(memberOverlap).filter((s) => s.size > 3).length;
+    const crossTeamConnections = Object.values(memberOverlap).filter(
+      (s) => s.size > 3,
+    ).length;
     const siloedUsers = Object.entries(memberOverlap)
       .filter(([, spaces]) => spaces.size <= 1)
       .map(([userId]) => userId);
     const totalMessages = rooms.reduce((s, r) => s + r.messages.length, 0);
-    const messagesPerMember = totalMembers > 0 ? Number((totalMessages / totalMembers).toFixed(1)) : 0;
-    const activeMembers = [...new Set(rooms.flatMap((r) => r.messages.map((m) => m.senderId)))].length;
+    const messagesPerMember =
+      totalMembers > 0 ? Number((totalMessages / totalMembers).toFixed(1)) : 0;
+    const activeMembers = [
+      ...new Set(rooms.flatMap((r) => r.messages.map((m) => m.senderId))),
+    ].length;
     return {
       dateRange,
       period: { start: startDate, end: now },
       network: {
         totalSpaces: totalRooms,
         totalMembers,
-        avgMembersPerSpace: totalRooms > 0 ? Number((totalMembers / totalRooms).toFixed(1)) : 0,
+        avgMembersPerSpace:
+          totalRooms > 0 ? Number((totalMembers / totalRooms).toFixed(1)) : 0,
         crossTeamConnections,
         siloedUsers: siloedUsers.length,
       },
@@ -283,14 +355,18 @@ export class CommunicationEnterpriseService {
         totalMessages,
         messagesPerMember,
         activeMembers,
-        engagementRate: totalMembers > 0 ? Number(((activeMembers / totalMembers) * 100).toFixed(1)) : 0,
+        engagementRate:
+          totalMembers > 0
+            ? Number(((activeMembers / totalMembers) * 100).toFixed(1))
+            : 0,
       },
       siloAnalysis: {
         hasSilos: siloedUsers.length > 0,
         siloCount: siloedUsers.length,
-        recommendation: siloedUsers.length > 0
-          ? "Encourage cross-team collaboration through shared channels and projects"
-          : "Good cross-team collaboration detected",
+        recommendation:
+          siloedUsers.length > 0
+            ? "Encourage cross-team collaboration through shared channels and projects"
+            : "Good cross-team collaboration detected",
       },
     };
   }
@@ -298,10 +374,19 @@ export class CommunicationEnterpriseService {
   async getMeetingEffectiveness(tenantId: string, dateRange: string) {
     const now = new Date();
     let startDate: Date;
-    if (dateRange === "WEEKLY") { startDate = new Date(now); startDate.setDate(startDate.getDate() - 7); }
-    else if (dateRange === "MONTHLY") { startDate = new Date(now); startDate.setMonth(startDate.getMonth() - 1); }
-    else if (dateRange === "QUARTERLY") { startDate = new Date(now); startDate.setMonth(startDate.getMonth() - 3); }
-    else { startDate = new Date(now); startDate.setFullYear(startDate.getFullYear() - 1); }
+    if (dateRange === "WEEKLY") {
+      startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - 7);
+    } else if (dateRange === "MONTHLY") {
+      startDate = new Date(now);
+      startDate.setMonth(startDate.getMonth() - 1);
+    } else if (dateRange === "QUARTERLY") {
+      startDate = new Date(now);
+      startDate.setMonth(startDate.getMonth() - 3);
+    } else {
+      startDate = new Date(now);
+      startDate.setFullYear(startDate.getFullYear() - 1);
+    }
     const videoCalls = await prisma.videoCallRoom.findMany({
       where: { tenantId, createdAt: { gte: startDate } },
       include: { participants: true },
@@ -314,18 +399,41 @@ export class CommunicationEnterpriseService {
     const totalDurationMin = videoCalls
       .filter((v) => v.startedAt && v.endedAt)
       .reduce((s, v) => {
-        return s + Math.round((v.endedAt!.getTime() - v.startedAt!.getTime()) / 60000);
+        return (
+          s +
+          Math.round((v.endedAt!.getTime() - v.startedAt!.getTime()) / 60000)
+        );
       }, 0);
-    const avgDuration = videoCalls.filter((v) => v.startedAt && v.endedAt).length > 0
-      ? Math.round(totalDurationMin / videoCalls.filter((v) => v.startedAt && v.endedAt).length)
-      : 0;
-    const totalAttendees = videoCalls.reduce((s, v) => s + v.participants.length, 0) +
-      events.reduce((s, e) => s + e.rsvps.filter((r) => r.status === "ACCEPTED").length, 0);
+    const avgDuration =
+      videoCalls.filter((v) => v.startedAt && v.endedAt).length > 0
+        ? Math.round(
+            totalDurationMin /
+              videoCalls.filter((v) => v.startedAt && v.endedAt).length,
+          )
+        : 0;
+    const totalAttendees =
+      videoCalls.reduce((s, v) => s + v.participants.length, 0) +
+      events.reduce(
+        (s, e) => s + e.rsvps.filter((r) => r.status === "ACCEPTED").length,
+        0,
+      );
     const totalRsvps = events.reduce((s, e) => s + e.rsvps.length, 0);
-    const avgAttendees = totalMeetings > 0 ? Math.round(totalAttendees / totalMeetings) : 0;
-    const attendanceRate = totalRsvps > 0
-      ? Number(((events.reduce((s, e) => s + e.rsvps.filter((r) => r.status === "ACCEPTED").length, 0) / totalRsvps) * 100).toFixed(1))
-      : 0;
+    const avgAttendees =
+      totalMeetings > 0 ? Math.round(totalAttendees / totalMeetings) : 0;
+    const attendanceRate =
+      totalRsvps > 0
+        ? Number(
+            (
+              (events.reduce(
+                (s, e) =>
+                  s + e.rsvps.filter((r) => r.status === "ACCEPTED").length,
+                0,
+              ) /
+                totalRsvps) *
+              100
+            ).toFixed(1),
+          )
+        : 0;
     const decisions = videoCalls.length;
     return {
       dateRange,
@@ -343,29 +451,40 @@ export class CommunicationEnterpriseService {
       videoCallMetrics: {
         total: videoCalls.length,
         byType: this.groupBy(videoCalls, "type"),
-        avgParticipants: videoCalls.length > 0
-          ? Number((videoCalls.reduce((s, v) => s + v.participants.length, 0) / videoCalls.length).toFixed(1))
-          : 0,
+        avgParticipants:
+          videoCalls.length > 0
+            ? Number(
+                (
+                  videoCalls.reduce((s, v) => s + v.participants.length, 0) /
+                  videoCalls.length
+                ).toFixed(1),
+              )
+            : 0,
         durationTrend: videoCalls
           .filter((v) => v.startedAt && v.endedAt)
           .map((v) => ({
             id: v.id,
             name: v.name,
-            durationMin: Math.round((v.endedAt!.getTime() - v.startedAt!.getTime()) / 60000),
+            durationMin: Math.round(
+              (v.endedAt!.getTime() - v.startedAt!.getTime()) / 60000,
+            ),
             participantCount: v.participants.length,
             date: v.startedAt,
           })),
       },
       eventMetrics: {
         total: events.length,
-        averageRsvps: events.length > 0 ? Number((totalRsvps / events.length).toFixed(1)) : 0,
+        averageRsvps:
+          events.length > 0
+            ? Number((totalRsvps / events.length).toFixed(1))
+            : 0,
         attendanceRate,
       },
       effectivenessScore: Math.round(
         (avgAttendees > 2 ? 30 : 10) +
-        (attendanceRate > 70 ? 30 : 10) +
-        (avgDuration < 60 ? 20 : 10) +
-        (decisions > 0 ? 20 : 0),
+          (attendanceRate > 70 ? 30 : 10) +
+          (avgDuration < 60 ? 20 : 10) +
+          (decisions > 0 ? 20 : 0),
       ),
     };
   }
@@ -470,10 +589,19 @@ export class CommunicationEnterpriseService {
   async getBotAnalytics(tenantId: string, dateRange: string) {
     const now = new Date();
     let startDate: Date;
-    if (dateRange === "WEEKLY") { startDate = new Date(now); startDate.setDate(startDate.getDate() - 7); }
-    else if (dateRange === "MONTHLY") { startDate = new Date(now); startDate.setMonth(startDate.getMonth() - 1); }
-    else if (dateRange === "QUARTERLY") { startDate = new Date(now); startDate.setMonth(startDate.getMonth() - 3); }
-    else { startDate = new Date(now); startDate.setFullYear(startDate.getFullYear() - 1); }
+    if (dateRange === "WEEKLY") {
+      startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - 7);
+    } else if (dateRange === "MONTHLY") {
+      startDate = new Date(now);
+      startDate.setMonth(startDate.getMonth() - 1);
+    } else if (dateRange === "QUARTERLY") {
+      startDate = new Date(now);
+      startDate.setMonth(startDate.getMonth() - 3);
+    } else {
+      startDate = new Date(now);
+      startDate.setFullYear(startDate.getFullYear() - 1);
+    }
     const bots = await prisma.chatbotDefinition.findMany({
       where: { tenantId, createdAt: { gte: startDate } },
       include: {
@@ -483,7 +611,10 @@ export class CommunicationEnterpriseService {
         botIntents: true,
       },
     });
-    const totalConversations = bots.reduce((s, b) => s + b.botConversations.length, 0);
+    const totalConversations = bots.reduce(
+      (s, b) => s + b.botConversations.length,
+      0,
+    );
     const totalResolved = bots.reduce(
       (s, b) => s + b.botConversations.filter((c) => c.resolved).length,
       0,
@@ -495,15 +626,22 @@ export class CommunicationEnterpriseService {
     const totalIntents = bots.reduce((s, b) => s + b.botIntents.length, 0);
     const avgSatisfaction = (() => {
       const allScores = bots.flatMap((b) =>
-        b.botConversations.map((c) => c.satisfaction).filter((s): s is number => s !== null),
+        b.botConversations
+          .map((c) => c.satisfaction)
+          .filter((s): s is number => s !== null),
       );
       return allScores.length > 0
-        ? Number((allScores.reduce((a, b) => a + b, 0) / allScores.length).toFixed(2))
+        ? Number(
+            (allScores.reduce((a, b) => a + b, 0) / allScores.length).toFixed(
+              2,
+            ),
+          )
         : 0;
     })();
-    const resolutionRate = totalConversations > 0
-      ? Number(((totalResolved / totalConversations) * 100).toFixed(1))
-      : 0;
+    const resolutionRate =
+      totalConversations > 0
+        ? Number(((totalResolved / totalConversations) * 100).toFixed(1))
+        : 0;
     const automationSavings = totalResolved * 15;
     return {
       dateRange,
@@ -527,23 +665,40 @@ export class CommunicationEnterpriseService {
         handoffs: b.botConversations.filter((c) => c.handedOff).length,
         intents: b.botIntents.length,
         avgSatisfaction: (() => {
-          const scores = b.botConversations.map((c) => c.satisfaction).filter((s): s is number => s !== null);
-          return scores.length > 0 ? Number((scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(2)) : 0;
+          const scores = b.botConversations
+            .map((c) => c.satisfaction)
+            .filter((s): s is number => s !== null);
+          return scores.length > 0
+            ? Number(
+                (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(2),
+              )
+            : 0;
         })(),
       })),
-      topIntents: [...bots.flatMap((b) =>
-        b.botIntents.map((i) => ({ botName: b.name, intentName: i.name })),
-      )].slice(0, 20),
+      topIntents: [
+        ...bots.flatMap((b) =>
+          b.botIntents.map((i) => ({ botName: b.name, intentName: i.name })),
+        ),
+      ].slice(0, 20),
     };
   }
 
   async getComplianceMonitoring(tenantId: string, dateRange: string) {
     const now = new Date();
     let startDate: Date;
-    if (dateRange === "WEEKLY") { startDate = new Date(now); startDate.setDate(startDate.getDate() - 7); }
-    else if (dateRange === "MONTHLY") { startDate = new Date(now); startDate.setMonth(startDate.getMonth() - 1); }
-    else if (dateRange === "QUARTERLY") { startDate = new Date(now); startDate.setMonth(startDate.getMonth() - 3); }
-    else { startDate = new Date(now); startDate.setFullYear(startDate.getFullYear() - 1); }
+    if (dateRange === "WEEKLY") {
+      startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - 7);
+    } else if (dateRange === "MONTHLY") {
+      startDate = new Date(now);
+      startDate.setMonth(startDate.getMonth() - 1);
+    } else if (dateRange === "QUARTERLY") {
+      startDate = new Date(now);
+      startDate.setMonth(startDate.getMonth() - 3);
+    } else {
+      startDate = new Date(now);
+      startDate.setFullYear(startDate.getFullYear() - 1);
+    }
     const policies = await prisma.commRetentionPolicy.findMany({
       where: { tenantId, isActive: true },
     });
@@ -557,22 +712,24 @@ export class CommunicationEnterpriseService {
     const files = await prisma.communicationFileShare.findMany({
       where: { tenantId, createdAt: { gte: startDate } },
     });
-    const retentionCompliance = policies.length > 0
-      ? policies.map((p) => {
-          const oldMessages = messages.filter((m) => {
-            const ageDays = (now.getTime() - m.createdAt.getTime()) / (1000 * 60 * 60 * 24);
-            return ageDays > p.retentionDays;
-          });
-          return {
-            policyId: p.id,
-            policyName: p.name,
-            retentionDays: p.retentionDays,
-            scope: p.scope,
-            expiredMessages: oldMessages.length,
-            compliant: oldMessages.length === 0,
-          };
-        })
-      : [];
+    const retentionCompliance =
+      policies.length > 0
+        ? policies.map((p) => {
+            const oldMessages = messages.filter((m) => {
+              const ageDays =
+                (now.getTime() - m.createdAt.getTime()) / (1000 * 60 * 60 * 24);
+              return ageDays > p.retentionDays;
+            });
+            return {
+              policyId: p.id,
+              policyName: p.name,
+              retentionDays: p.retentionDays,
+              scope: p.scope,
+              expiredMessages: oldMessages.length,
+              compliant: oldMessages.length === 0,
+            };
+          })
+        : [];
     return {
       dateRange,
       period: { start: startDate, end: now },
@@ -616,13 +773,17 @@ export class CommunicationEnterpriseService {
     const recentCalls = await prisma.videoCallRoom.findMany({
       where: { tenantId, createdAt: { gte: monthStart } },
     });
-    const bots = await prisma.chatbotDefinition.findMany({ where: { tenantId, isActive: true } });
+    const bots = await prisma.chatbotDefinition.findMany({
+      where: { tenantId, isActive: true },
+    });
     const totalMessages = recentMessages.length;
     const uniqueSenders = new Set(recentMessages.map((m) => m.senderId)).size;
-    const totalMembers = rooms.reduce((s, r) => s + r._count?.members || 0, 0);
-    const memberCount = await prisma.chatRoomMember.count({ where: { tenantId } });
+    const memberCount = await prisma.chatRoomMember.count({
+      where: { tenantId },
+    });
     const totalFileSize = recentFiles.reduce((s, f) => s + f.size, 0);
-    const avgMessagesPerDay = 30 > 0 ? Number((totalMessages / 30).toFixed(1)) : 0;
+    const avgMessagesPerDay =
+      30 > 0 ? Number((totalMessages / 30).toFixed(1)) : 0;
     return {
       totalRooms: rooms.length,
       totalChannels: channels.length,
@@ -635,7 +796,10 @@ export class CommunicationEnterpriseService {
       activeBots: bots.length,
       engagement: {
         avgMessagesPerDay,
-        messagesPerUser: uniqueSenders > 0 ? Number((totalMessages / uniqueSenders).toFixed(1)) : 0,
+        messagesPerUser:
+          uniqueSenders > 0
+            ? Number((totalMessages / uniqueSenders).toFixed(1))
+            : 0,
       },
       summary: [
         { label: "Messages", value: totalMessages, icon: "message" },

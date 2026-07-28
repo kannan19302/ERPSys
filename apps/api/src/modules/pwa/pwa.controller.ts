@@ -41,7 +41,7 @@ export class PwaController {
   @Get("pwa/manifest.json")
   @ApiOperation({ summary: "Get PWA manifest JSON (public)" })
   async getManifestJson(@Req() req: AuthReq, @Res() res: Response) {
-    const tenantId = (req.headers["x-tenant-id"] as string) || "default";
+    const tenantId = (req.headers.get("x-tenant-id") as string) || "default";
     const manifest = await this.pwaService.getManifestJson(tenantId);
     res.setHeader("Content-Type", "application/json");
     res.json(manifest);
@@ -50,7 +50,7 @@ export class PwaController {
   @Get("pwa/sw.js")
   @ApiOperation({ summary: "Get service worker script (public)" })
   async getServiceWorkerScript(@Req() req: AuthReq, @Res() res: Response) {
-    const tenantId = (req.headers["x-tenant-id"] as string) || "default";
+    const tenantId = (req.headers.get("x-tenant-id") as string) || "default";
     const script = await this.pwaService.getServiceWorkerScript(tenantId);
     res.setHeader("Content-Type", "application/javascript");
     res.setHeader("Service-Worker-Allowed", "/");
@@ -60,7 +60,7 @@ export class PwaController {
   @Get("pwa/cache-rules.json")
   @ApiOperation({ summary: "Get cache rules JSON (public)" })
   async getCacheRulesJson(@Req() req: AuthReq, @Res() res: Response) {
-    const tenantId = (req.headers["x-tenant-id"] as string) || "default";
+    const tenantId = (req.headers.get("x-tenant-id") as string) || "default";
     const rules = await this.pwaService.getCacheRulesJson(tenantId);
     res.json(rules);
   }

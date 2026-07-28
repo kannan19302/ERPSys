@@ -27,4 +27,6 @@ abstract class InventoryRepository {
   Future<Result<Product>> updateProduct(String id, Map<String, dynamic> payload);
 
   Future<Result<void>> deleteProduct(String id);
+
+  Future<Result<void>> adjustStock(Map<String, dynamic> payload);
 }

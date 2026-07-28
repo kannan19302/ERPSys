@@ -3,6 +3,23 @@ import { prisma } from "@unerp/database";
 
 @Injectable()
 export class RealEstateFinancialsService {
+  // RealEstatePropertyFinancial only stores `propertyId` — the schema has no
+  // `property` relation to `include`, so it's batched in manually.
+  private async attachProperty<T extends { propertyId: string }>(
+    tenantId: string,
+    rows: T[],
+  ) {
+    const properties = await prisma.realEstateProperty.findMany({
+      where: { tenantId, id: { in: rows.map((r) => r.propertyId) } },
+      select: { id: true, name: true, type: true },
+    });
+    const byId = new Map(properties.map((p) => [p.id, p]));
+    return rows.map((r) => ({
+      ...r,
+      property: byId.get(r.propertyId) || null,
+    }));
+  }
+
   async getFinancials(tenantId: string, query: any = {}) {
     const where: any = { tenantId, isActive: true };
     if (query.propertyId) where.propertyId = query.propertyId;
@@ -20,31 +37,31 @@ export class RealEstateFinancialsService {
     const page = parseInt(query.page) || 1;
     const limit = parseInt(query.limit) || 50;
     const skip = (page - 1) * limit;
-    const [data, total] = await Promise.all([
+    const [rows, total] = await Promise.all([
       prisma.realEstatePropertyFinancial.findMany({
         where,
-        include: { property: { select: { id: true, name: true, type: true } } },
         orderBy: [{ periodStart: "desc" }, { propertyId: "asc" }],
         skip,
         take: limit,
       }),
       prisma.realEstatePropertyFinancial.count({ where }),
     ]);
+    const data = await this.attachProperty(tenantId, rows);
     return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
   async getFinancialById(tenantId: string, id: string) {
     const f = await prisma.realEstatePropertyFinancial.findFirst({
       where: { tenantId, id },
-      include: { property: true },
     });
     if (!f) throw new NotFoundException("Property financial record not found");
-    return f;
+    const [result] = await this.attachProperty(tenantId, [f]);
+    return result;
   }
 
   async createFinancial(tenantId: string, data: any) {
     const calculated = this.calculateFinancials(data);
-    return prisma.realEstatePropertyFinancial.create({
+    const created = await prisma.realEstatePropertyFinancial.create({
       data: {
         ...data,
         tenantId,
@@ -52,8 +69,9 @@ export class RealEstateFinancialsService {
         periodStart: new Date(data.periodStart),
         periodEnd: new Date(data.periodEnd),
       },
-      include: { property: { select: { id: true, name: true } } },
     });
+    const [result] = await this.attachProperty(tenantId, [created]);
+    return result;
   }
 
   async updateFinancial(tenantId: string, id: string, data: any) {
@@ -67,11 +85,12 @@ export class RealEstateFinancialsService {
     if (data.periodEnd) updateData.periodEnd = new Date(data.periodEnd);
     const calculated = this.calculateFinancials({ ...existing, ...updateData });
     Object.assign(updateData, calculated);
-    return prisma.realEstatePropertyFinancial.update({
+    const updated = await prisma.realEstatePropertyFinancial.update({
       where: { id },
       data: updateData,
-      include: { property: { select: { id: true, name: true } } },
     });
+    const [result] = await this.attachProperty(tenantId, [updated]);
+    return result;
   }
 
   async deleteFinancial(tenantId: string, id: string) {
@@ -140,12 +159,15 @@ export class RealEstateFinancialsService {
       }),
       prisma.realEstatePropertyFinancial.findMany({
         where: { tenantId, isActive: true, status: "FINAL" },
-        include: { property: { select: { id: true, name: true, type: true } } },
         orderBy: { periodStart: "desc" },
       }),
     ]);
+    const financialsWithProperty = await this.attachProperty(
+      tenantId,
+      financials,
+    );
     const propertyLatest = new Map<string, any>();
-    for (const f of financials) {
+    for (const f of financialsWithProperty) {
       if (
         !propertyLatest.has(f.propertyId) ||
         f.periodStart > propertyLatest.get(f.propertyId).periodStart

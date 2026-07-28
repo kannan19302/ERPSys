@@ -31,20 +31,21 @@ export class ProjectsEnterpriseService {
         : 100;
     const budgetScore =
       totalBudget > 0
-        ? Math.round(
-            Math.max(0, 100 - (totalCost / totalBudget - 1) * 100),
-          )
+        ? Math.round(Math.max(0, 100 - (totalCost / totalBudget - 1) * 100))
         : 100;
-    const resourceAllocations =
-      await prisma.projectResourceAllocation.findMany({
+    const resourceAllocations = await prisma.projectResourceAllocation.findMany(
+      {
         where: {
           tenantId,
           projectId: { in: projects.map((p) => p.id) },
         },
-      });
+      },
+    );
     const allocated = resourceAllocations.length;
     const resourceScore = Math.round(
-      projects.length > 0 ? Math.min(100, (allocated / projects.length) * 20) : 100,
+      projects.length > 0
+        ? Math.min(100, (allocated / projects.length) * 20)
+        : 100,
     );
     const risks = await prisma.projectRisk.findMany({
       where: {
@@ -74,9 +75,10 @@ export class ProjectsEnterpriseService {
       scheduleSummary: { completed, active, onHold, scheduleScore },
       resourceSummary: {
         totalAllocations: allocated,
-        allocationRate: projects.length > 0
-          ? Number(((allocated / (projects.length * 3)) * 100).toFixed(1))
-          : 0,
+        allocationRate:
+          projects.length > 0
+            ? Number(((allocated / (projects.length * 3)) * 100).toFixed(1))
+            : 0,
         resourceScore,
       },
       riskSummary: {
@@ -141,9 +143,7 @@ export class ProjectsEnterpriseService {
     ];
     const resourceDetails = await Promise.all(
       uniqueResources.slice(0, 100).map(async (resId) => {
-        const resAllocs = allocations.filter(
-          (a) => a.resourceId === resId,
-        );
+        const resAllocs = allocations.filter((a) => a.resourceId === resId);
         const resHours = resAllocs.reduce(
           (s, a) => s + Number(a.allocatedHours || 0),
           0,
@@ -151,12 +151,9 @@ export class ProjectsEnterpriseService {
         const resActual = timesheets
           .filter((t) => t.employeeId === resId)
           .reduce((s, t) => s + Number(t.hours || 0), 0);
-        const maxHours =
-          [...Array(12)].reduce((s) => s + 160, 0);
+        const maxHours = [...Array(12)].reduce((s) => s + 160, 0);
         const allocationPct =
-          maxHours > 0
-            ? Number(((resHours / maxHours) * 100).toFixed(1))
-            : 0;
+          maxHours > 0 ? Number(((resHours / maxHours) * 100).toFixed(1)) : 0;
         return {
           resourceId: resId,
           allocatedHours: Number(resHours.toFixed(2)),
@@ -236,7 +233,8 @@ export class ProjectsEnterpriseService {
     const ac = latestMeasurement?.actualCost ?? actualCost;
     const spi = pv > 0 ? Number((ev / pv).toFixed(4)) : null;
     const cpi = ac > 0 ? Number((ev / ac).toFixed(4)) : null;
-    const eac = cpi && cpi > 0 ? Number((totalBudget / cpi).toFixed(2)) : totalBudget;
+    const eac =
+      cpi && cpi > 0 ? Number((totalBudget / cpi).toFixed(2)) : totalBudget;
     const etc = eac - ac;
     const tcpi =
       totalBudget - ev > 0
@@ -246,9 +244,7 @@ export class ProjectsEnterpriseService {
     const scheduleVariance = ev - pv;
     const costVariance = ev - ac;
     const percentComplete =
-      totalBudget > 0
-        ? Number(((ev / totalBudget) * 100).toFixed(1))
-        : 0;
+      totalBudget > 0 ? Number(((ev / totalBudget) * 100).toFixed(1)) : 0;
     return {
       projectId,
       asOf: asOfDate,
@@ -275,14 +271,31 @@ export class ProjectsEnterpriseService {
         percentComplete,
       },
       interpretation: {
-        scheduleStatus: spi !== null ? (spi >= 1 ? "AHEAD" : spi >= 0.9 ? "ON_TRACK" : "BEHIND") : "NODATA",
-        costStatus: cpi !== null ? (cpi >= 1 ? "UNDER_BUDGET" : cpi >= 0.9 ? "ON_BUDGET" : "OVER_BUDGET") : "NODATA",
+        scheduleStatus:
+          spi !== null
+            ? spi >= 1
+              ? "AHEAD"
+              : spi >= 0.9
+                ? "ON_TRACK"
+                : "BEHIND"
+            : "NODATA",
+        costStatus:
+          cpi !== null
+            ? cpi >= 1
+              ? "UNDER_BUDGET"
+              : cpi >= 0.9
+                ? "ON_BUDGET"
+                : "OVER_BUDGET"
+            : "NODATA",
         estimatedCompletionCost: Number(eac.toFixed(2)),
         varianceAtCompletion: Number(vac.toFixed(2)),
       },
       measurementHistory: baseline
         ? await prisma.evmMeasurement.findMany({
-            where: { baselineId: baseline.id, measurementDate: { lte: asOfDate } },
+            where: {
+              baselineId: baseline.id,
+              measurementDate: { lte: asOfDate },
+            },
             orderBy: { measurementDate: "asc" },
             take: 50,
           })
@@ -303,11 +316,11 @@ export class ProjectsEnterpriseService {
     });
     const invoices = await prisma.invoice.findMany({
       where: { projectId, tenantId },
-      select: { total: true, status: true },
+      select: { totalAmount: true, status: true },
     });
     const revenue = invoices
       .filter((i) => i.status === "PAID" || i.status === "SENT")
-      .reduce((s, i) => s + Number(i.total), 0);
+      .reduce((s, i) => s + Number(i.totalAmount), 0);
     const costByType: Record<string, number> = {};
     for (const entry of costEntries) {
       const t = entry.type;
@@ -316,7 +329,8 @@ export class ProjectsEnterpriseService {
     const totalCost = costEntries.reduce((s, e) => s + Number(e.amount), 0);
     const totalBudget = budgets.reduce((s, b) => s + Number(b.allocated), 0);
     const margin = revenue - totalCost;
-    const marginPct = revenue > 0 ? Number(((margin / revenue) * 100).toFixed(1)) : 0;
+    const marginPct =
+      revenue > 0 ? Number(((margin / revenue) * 100).toFixed(1)) : 0;
     const budgetUtilization =
       totalBudget > 0
         ? Number(((totalCost / totalBudget) * 100).toFixed(1))
@@ -324,9 +338,8 @@ export class ProjectsEnterpriseService {
     const costBreakdown = Object.entries(costByType).map(([type, amount]) => ({
       type,
       amount: Number(amount.toFixed(2)),
-      pctOfTotal: totalCost > 0
-        ? Number(((amount / totalCost) * 100).toFixed(1))
-        : 0,
+      pctOfTotal:
+        totalCost > 0 ? Number(((amount / totalCost) * 100).toFixed(1)) : 0,
     }));
     return {
       projectId,
@@ -341,10 +354,7 @@ export class ProjectsEnterpriseService {
       status: project.status,
       profitabilityIndex:
         totalCost > 0 ? Number((revenue / totalCost).toFixed(3)) : 0,
-      roi:
-        totalCost > 0
-          ? Number(((margin / totalCost) * 100).toFixed(1))
-          : 0,
+      roi: totalCost > 0 ? Number(((margin / totalCost) * 100).toFixed(1)) : 0,
     };
   }
 
@@ -401,7 +411,12 @@ export class ProjectsEnterpriseService {
     const riskExposure = risks
       .filter((r) => r.status === "OPEN")
       .reduce((score, r) => {
-        const p = r.probability === "HIGH" ? 0.8 : r.probability === "MEDIUM" ? 0.5 : 0.2;
+        const p =
+          r.probability === "HIGH"
+            ? 0.8
+            : r.probability === "MEDIUM"
+              ? 0.5
+              : 0.2;
         const i = r.impact === "HIGH" ? 0.9 : r.impact === "MEDIUM" ? 0.5 : 0.1;
         return score + p * i * 100;
       }, 0);
@@ -484,8 +499,10 @@ export class ProjectsEnterpriseService {
         total: changeRequests.length,
         pending: changeRequests.filter((c) => c.status === "PENDING").length,
         approved: changeRequests.filter((c) => c.status === "APPROVED").length,
-        totalScheduleImpact: changeRequests
-          .reduce((s, c) => s + (c.requestedScheduleDays || 0), 0),
+        totalScheduleImpact: changeRequests.reduce(
+          (s, c) => s + (c.requestedScheduleDays || 0),
+          0,
+        ),
         totalCostImpact: Number(
           changeRequests
             .reduce((s, c) => s + Number(c.requestedAmount || 0), 0)
@@ -523,16 +540,21 @@ export class ProjectsEnterpriseService {
       0,
     );
     if (groupBy === "project") {
-      const byProject: Record<string, { hours: number; allocated: number; count: number }> = {};
+      const byProject: Record<
+        string,
+        { hours: number; allocated: number; count: number }
+      > = {};
       for (const ts of timesheets) {
         const pid = ts.task.projectId;
-        if (!byProject[pid]) byProject[pid] = { hours: 0, allocated: 0, count: 0 };
+        if (!byProject[pid])
+          byProject[pid] = { hours: 0, allocated: 0, count: 0 };
         byProject[pid].hours += Number(ts.hours);
         byProject[pid].count++;
       }
       for (const a of allocations) {
-        if (!byProject[a.projectId]) byProject[a.projectId] = { hours: 0, allocated: 0, count: 0 };
-        byProject[a.projectId].allocated += Number(a.allocatedHours || 0);
+        if (!byProject[a.projectId])
+          byProject[a.projectId] = { hours: 0, allocated: 0, count: 0 };
+        byProject[a.projectId]!.allocated += Number(a.allocatedHours || 0);
       }
       return {
         period: { start: periodStart, end: periodEnd },
@@ -549,16 +571,21 @@ export class ProjectsEnterpriseService {
         })),
       };
     }
-    const byResource: Record<string, { hours: number; allocated: number; count: number }> = {};
+    const byResource: Record<
+      string,
+      { hours: number; allocated: number; count: number }
+    > = {};
     for (const ts of timesheets) {
       const eid = ts.employeeId;
-      if (!byResource[eid]) byResource[eid] = { hours: 0, allocated: 0, count: 0 };
+      if (!byResource[eid])
+        byResource[eid] = { hours: 0, allocated: 0, count: 0 };
       byResource[eid].hours += Number(ts.hours);
       byResource[eid].count++;
     }
     for (const a of allocations) {
-      if (!byResource[a.resourceId]) byResource[a.resourceId] = { hours: 0, allocated: 0, count: 0 };
-      byResource[a.resourceId].allocated += Number(a.allocatedHours || 0);
+      if (!byResource[a.resourceId])
+        byResource[a.resourceId] = { hours: 0, allocated: 0, count: 0 };
+      byResource[a.resourceId]!.allocated += Number(a.allocatedHours || 0);
     }
     return {
       period: { start: periodStart, end: periodEnd },
@@ -603,7 +630,10 @@ export class ProjectsEnterpriseService {
     const results = await Promise.all(
       portfolios.map(async (pf) => {
         const projects = pf.projects;
-        const totalBudget = projects.reduce((s, p) => s + Number(p.budget || 0), 0);
+        const totalBudget = projects.reduce(
+          (s, p) => s + Number(p.budget || 0),
+          0,
+        );
         const totalCost = projects.reduce(
           (s, p) => s + Number(p.estimatedCost || 0),
           0,
@@ -617,10 +647,7 @@ export class ProjectsEnterpriseService {
             ),
           0,
         );
-        const riskCount = projects.reduce(
-          (s, p) => s + p.risks.length,
-          0,
-        );
+        const riskCount = projects.reduce((s, p) => s + p.risks.length, 0);
         const optimizationScore =
           totalBudget > 0
             ? Math.round(
@@ -634,7 +661,9 @@ export class ProjectsEnterpriseService {
             : 50;
         const recommendedActions: string[] = [];
         if (totalCost > totalBudget)
-          recommendedActions.push("Reduce cost overrun - review project budgets");
+          recommendedActions.push(
+            "Reduce cost overrun - review project budgets",
+          );
         if (riskCount > projects.length)
           recommendedActions.push(
             `Mitigate ${riskCount - projects.length} excess risks`,
@@ -697,9 +726,7 @@ export class ProjectsEnterpriseService {
       (m) => !m.isCompleted && m.dueDate >= now,
     ).length;
     const onTimePct =
-      total > 0
-        ? Number(((completed / total) * 100).toFixed(1))
-        : 0;
+      total > 0 ? Number(((completed / total) * 100).toFixed(1)) : 0;
     const avgSlippageDays =
       milestones.length > 0
         ? milestones
@@ -780,13 +807,9 @@ export class ProjectsEnterpriseService {
         },
       },
     });
-    const totalTimesheets = tasks.reduce(
-      (s, t) => s + t.timesheets.length,
-      0,
-    );
+    const totalTimesheets = tasks.reduce((s, t) => s + t.timesheets.length, 0);
     const totalHours = tasks.reduce(
-      (s, t) =>
-        s + t.timesheets.reduce((s2, ts) => s2 + Number(ts.hours), 0),
+      (s, t) => s + t.timesheets.reduce((s2, ts) => s2 + Number(ts.hours), 0),
       0,
     );
     const taskCount = tasks.length;
@@ -829,10 +852,7 @@ export class ProjectsEnterpriseService {
     };
   }
 
-  async getProjectFinancialForecast(
-    tenantId: string,
-    projectId: string,
-  ) {
+  async getProjectFinancialForecast(tenantId: string, projectId: string) {
     const project = await prisma.project.findFirst({
       where: { id: projectId, tenantId, deletedAt: null },
     });
@@ -849,7 +869,10 @@ export class ProjectsEnterpriseService {
     });
     const totalBudget = budgets.reduce((s, b) => s + Number(b.allocated), 0);
     const totalCost = costEntries.reduce((s, e) => s + Number(e.amount), 0);
-    const totalRevenue = invoices.reduce((s, i) => s + Number(i.total), 0);
+    const totalRevenue = invoices.reduce(
+      (s, i) => s + Number(i.totalAmount),
+      0,
+    );
     const actualCostMonthly: Record<string, number> = {};
     for (const entry of costEntries) {
       const key = `${entry.date.getFullYear()}-${String(entry.date.getMonth() + 1).padStart(2, "0")}`;
@@ -860,30 +883,28 @@ export class ProjectsEnterpriseService {
       ([month, amount]) => ({ month, amount: Number(amount.toFixed(2)) }),
     );
     const avgMonthlyCost =
-      monthlyCosts.length > 0
-        ? totalCost / monthlyCosts.length
-        : 0;
+      monthlyCosts.length > 0 ? totalCost / monthlyCosts.length : 0;
     const remainingBudget = Math.max(0, totalBudget - totalCost);
     const monthsRemaining = project.endDate
       ? Math.max(
           1,
           Math.round(
-            (project.endDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24 * 30),
+            (project.endDate.getTime() - Date.now()) /
+              (1000 * 60 * 60 * 24 * 30),
           ),
         )
       : 12;
-    const eac = Number((totalCost + avgMonthlyCost * monthsRemaining).toFixed(2));
+    const eac = Number(
+      (totalCost + avgMonthlyCost * monthsRemaining).toFixed(2),
+    );
     const etc = Number((eac - totalCost).toFixed(2));
-    const estimatedRevenueRemaining =
-      project.contractValue
-        ? Math.max(0, Number(project.contractValue) - totalRevenue)
-        : 0;
+    const estimatedRevenueRemaining = project.contractValue
+      ? Math.max(0, Number(project.contractValue) - totalRevenue)
+      : 0;
     const estimatedTotalRevenue = Number(
       (totalRevenue + estimatedRevenueRemaining * 0.7).toFixed(2),
     );
-    const forecastMargin = Number(
-      (estimatedTotalRevenue - eac).toFixed(2),
-    );
+    const forecastMargin = Number((estimatedTotalRevenue - eac).toFixed(2));
     return {
       projectId,
       projectName: project.name,
@@ -900,12 +921,13 @@ export class ProjectsEnterpriseService {
         forecastMargin,
         forecastMarginPct:
           estimatedTotalRevenue > 0
-            ? Number(((forecastMargin / estimatedTotalRevenue) * 100).toFixed(1))
+            ? Number(
+                ((forecastMargin / estimatedTotalRevenue) * 100).toFixed(1),
+              )
             : 0,
         monthsRemaining,
         avgMonthlyCost: Number(avgMonthlyCost.toFixed(2)),
-        projectedOverUnder:
-          eac > totalBudget ? "OVER_BUDGET" : "UNDER_BUDGET",
+        projectedOverUnder: eac > totalBudget ? "OVER_BUDGET" : "UNDER_BUDGET",
         varianceAtCompletion: Number((totalBudget - eac).toFixed(2)),
       },
       monthlyCostTrend: monthlyCosts,
@@ -938,9 +960,15 @@ export class ProjectsEnterpriseService {
     const projectIds = projects.map((p) => p.id);
     const [allTasks, allMilestones, allRisks, allTimesheets] =
       await Promise.all([
-        prisma.task.findMany({ where: { tenantId, projectId: { in: projectIds } } }),
-        prisma.milestone.findMany({ where: { tenantId, projectId: { in: projectIds } } }),
-        prisma.projectRisk.findMany({ where: { tenantId, projectId: { in: projectIds } } }),
+        prisma.task.findMany({
+          where: { tenantId, projectId: { in: projectIds } },
+        }),
+        prisma.milestone.findMany({
+          where: { tenantId, projectId: { in: projectIds } },
+        }),
+        prisma.projectRisk.findMany({
+          where: { tenantId, projectId: { in: projectIds } },
+        }),
         prisma.timesheet.findMany({
           where: { tenantId, task: { projectId: { in: projectIds } } },
         }),
@@ -1028,7 +1056,11 @@ export class ProjectsEnterpriseService {
       id: m.id,
       name: m.name,
       type: "MILESTONE" as const,
-      status: m.isCompleted ? "COMPLETED" : m.dueDate < new Date() ? "OVERDUE" : "PENDING",
+      status: m.isCompleted
+        ? "COMPLETED"
+        : m.dueDate < new Date()
+          ? "OVERDUE"
+          : "PENDING",
       dueDate: m.dueDate,
     }));
     const allNodes = [...networkNodes, ...milestoneNodes];

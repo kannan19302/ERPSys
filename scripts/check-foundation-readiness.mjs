@@ -64,6 +64,7 @@ const allowedAiFiles = new Set([
   'TRACK_A_CANDIDATE_RECONCILIATION_2026-07-18.sql',
   'AUTH_BILLING_PROGRAM.md',
   'COMPETITIVE_ROADMAP.md',
+  'MULTI_CLIENT_MASTER_PLAN.md',
 ]);
 const generatedAiFiles = new Set(['FEATURE_LEDGER.md']); // gitignored generator output
 for (const entry of readdirSync(path.join(root, '.ai'), { withFileTypes: true })) {

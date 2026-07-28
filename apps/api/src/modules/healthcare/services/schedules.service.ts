@@ -68,8 +68,8 @@ export class HealthcareSchedulesService {
     const slots: { start: string; end: string; available: boolean }[] = [];
     const [startH, startM] = schedule.startTime.split(":").map(Number);
     const [endH, endM] = schedule.endTime.split(":").map(Number);
-    const startMin = startH * 60 + startM;
-    const endMin = endH * 60 + endM;
+    const startMin = (startH ?? 0) * 60 + (startM ?? 0);
+    const endMin = (endH ?? 0) * 60 + (endM ?? 0);
     for (
       let m = startMin;
       m + schedule.slotDurationMin <= endMin;
