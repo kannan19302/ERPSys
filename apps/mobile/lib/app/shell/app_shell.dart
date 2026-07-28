@@ -8,12 +8,10 @@ import '../../features/notifications/presentation/providers/notifications_provid
 /// Shell wrapping every authenticated route. Same [navigationShell] and
 /// destination set on every platform — only the chrome changes: bottom nav
 /// on phone width, a persistent sidebar (`NavigationRail`) from tablet width
-/// up. See .ai/MULTI_CLIENT_MASTER_PLAN.md § 1 — one Flutter codebase, one
-/// route table, adaptive presentation, not separate mobile/desktop apps.
+/// up.
 ///
-/// Kept to 3 destinations (Hick's Law — AGENTS.md Rule 5): more than that on a
-/// phone-width nav bar hurts recognition speed, so anything beyond
-/// Home/Products/Notifications lives behind Home's quick actions instead.
+/// On phone the bottom nav scrolls horizontally for the extra destinations;
+/// on tablet/desktop the sidebar shows all modules vertically.
 class AppShell extends ConsumerWidget {
   const AppShell({required this.navigationShell, super.key});
 
@@ -29,6 +27,21 @@ class AppShell extends ConsumerWidget {
       icon: Icons.inventory_2_outlined,
       selectedIcon: Icons.inventory_2,
       label: 'Products',
+    ),
+    _Destination(
+      icon: Icons.point_of_sale_outlined,
+      selectedIcon: Icons.point_of_sale,
+      label: 'Sales',
+    ),
+    _Destination(
+      icon: Icons.account_balance_outlined,
+      selectedIcon: Icons.account_balance,
+      label: 'Finance',
+    ),
+    _Destination(
+      icon: Icons.people_outline,
+      selectedIcon: Icons.people,
+      label: 'People',
     ),
     _Destination(
       icon: Icons.notifications_outlined,
@@ -79,26 +92,26 @@ class _MobileShell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: navigationShell,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: navigationShell.currentIndex,
-        onDestinationSelected: onSelect,
-        destinations: <Widget>[
-          for (final _Destination d in destinations)
-            NavigationDestination(
-              icon: d.withUnreadBadge(unread),
-              selectedIcon: Icon(d.selectedIcon),
-              label: d.label,
-            ),
-        ],
+      bottomNavigationBar: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: NavigationBar(
+          selectedIndex: navigationShell.currentIndex,
+          onDestinationSelected: onSelect,
+          height: 64,
+          destinations: <Widget>[
+            for (final _Destination d in destinations)
+              NavigationDestination(
+                icon: d.withUnreadBadge(unread),
+                selectedIcon: Icon(d.selectedIcon),
+                label: d.label,
+              ),
+          ],
+        ),
       ),
     );
   }
 }
 
-/// Persistent sidebar for tablet/desktop window widths — the extra width
-/// benefits list-heavy modules with a resizable multi-pane (list + detail)
-/// layout in future Tier 1 features; this shell just supplies the sidebar
-/// chrome those feature pages render inside.
 class _DesktopShell extends StatelessWidget {
   const _DesktopShell({
     required this.navigationShell,
@@ -121,6 +134,7 @@ class _DesktopShell extends StatelessWidget {
             selectedIndex: navigationShell.currentIndex,
             onDestinationSelected: onSelect,
             labelType: NavigationRailLabelType.all,
+            minExtendedWidth: 80,
             destinations: <NavigationRailDestination>[
               for (final _Destination d in destinations)
                 NavigationRailDestination(
@@ -149,7 +163,6 @@ class _Destination {
   final IconData selectedIcon;
   final String label;
 
-  /// Alerts destination shows the unread count; other destinations ignore it.
   Widget withUnreadBadge(int unread) {
     if (label != 'Alerts') return Icon(icon);
     return Badge(

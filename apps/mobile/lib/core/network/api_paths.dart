@@ -148,6 +148,7 @@ class ApiPaths {
   static const String paymentRuns = '/finance/payment-runs';
   static String paymentRun(String id) => '/finance/payment-runs/$id';
   static const String budgets = '/finance/budgets';
+  static String budget(String id) => '/finance/budgets/$id';
   static String budgetVsActuals(String id) => '/finance/budgets/$id/vs-actuals';
   static const String bankReconciliationImport = '/finance/bank-reconciliation/import';
   static const String bankReconciliationTransactions = '/finance/bank-reconciliation/transactions';

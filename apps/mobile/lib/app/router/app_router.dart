@@ -10,15 +10,29 @@ import '../../features/auth/presentation/pages/splash_page.dart';
 import '../../features/auth/presentation/pages/verify_email_pending_page.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
 import '../../features/auth/presentation/providers/auth_state.dart';
+import '../../features/crm/presentation/pages/customer_detail_page.dart';
+import '../../features/crm/presentation/pages/customer_list_page.dart';
+import '../../features/crm/presentation/pages/lead_list_page.dart';
+import '../../features/finance/presentation/pages/invoice_detail_page.dart';
+import '../../features/finance/presentation/pages/invoice_list_page.dart';
+import '../../features/finance/presentation/pages/payment_list_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
+import '../../features/hr/presentation/pages/employee_detail_page.dart';
+import '../../features/hr/presentation/pages/employee_list_page.dart';
+import '../../features/hr/presentation/pages/leave_request_list_page.dart';
 import '../../features/inventory/presentation/pages/product_detail_page.dart';
 import '../../features/inventory/presentation/pages/product_list_page.dart';
 import '../../features/notifications/presentation/pages/notifications_page.dart';
 import '../../features/onboarding/presentation/pages/onboarding_page.dart';
+import '../../features/procurement/presentation/pages/purchase_order_detail_page.dart';
+import '../../features/procurement/presentation/pages/purchase_order_list_page.dart';
+import '../../features/procurement/presentation/pages/vendor_list_page.dart';
+import '../../features/sales/presentation/pages/quotation_detail_page.dart';
+import '../../features/sales/presentation/pages/quotation_list_page.dart';
+import '../../features/sales/presentation/pages/sales_order_detail_page.dart';
+import '../../features/sales/presentation/pages/sales_order_list_page.dart';
 import '../shell/app_shell.dart';
 
-/// Route graph, gated centrally by [AuthState.status] via `redirect` — no
-/// individual page needs to guard itself.
 final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
   final GoRouter router = GoRouter(
     initialLocation: HomePage.routePath,
@@ -30,8 +44,6 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
       final bool onSplash = location == '/splash';
       final bool onLogin = location == LoginPage.routePath;
       final bool onMfa = location == MfaChallengePage.routePath;
-      // Unauthenticated dead ends reachable only from the login/register
-      // flow — never redirected away from once the user lands there.
       final bool onRegister = location == RegisterPage.routePath;
       final bool onVerifyPending = location == VerifyEmailPendingPage.routePath;
 
@@ -45,7 +57,6 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
         if (onLogin || onRegister || onVerifyPending) return null;
         return LoginPage.routePath;
       }
-      // Authenticated: never let the user land back on an auth screen.
       if (onLogin || onMfa || onSplash || onRegister || onVerifyPending) {
         return HomePage.routePath;
       }
@@ -66,8 +77,6 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
       GoRoute(
         path: VerifyEmailPendingPage.routePath,
         name: VerifyEmailPendingPage.routeName,
-        // `extra` only survives in-app navigation (not a cold deep link /
-        // hot restart) — redirect to login rather than crash if it's gone.
         redirect: (_, GoRouterState state) =>
             state.extra is RegisteredAccount ? null : LoginPage.routePath,
         builder: (_, GoRouterState state) => VerifyEmailPendingPage(
@@ -118,6 +127,122 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
           StatefulShellBranch(
             routes: <RouteBase>[
               GoRoute(
+                path: QuotationListPage.routePath,
+                name: QuotationListPage.routeName,
+                builder: (_, __) => const QuotationListPage(),
+                routes: <RouteBase>[
+                  GoRoute(
+                    path: 'quotation/:id',
+                    name: QuotationDetailPage.routeName,
+                    builder: (_, GoRouterState state) => QuotationDetailPage(
+                      quotationId: state.pathParameters['id']!,
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'orders',
+                    name: SalesOrderListPage.routeName,
+                    builder: (_, __) => const SalesOrderListPage(),
+                    routes: <RouteBase>[
+                      GoRoute(
+                        path: 'order/:id',
+                        name: SalesOrderDetailPage.routeName,
+                        builder: (_, GoRouterState state) => SalesOrderDetailPage(
+                          orderId: state.pathParameters['id']!,
+                        ),
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'customers',
+                    name: CustomerListPage.routeName,
+                    builder: (_, __) => const CustomerListPage(),
+                    routes: <RouteBase>[
+                      GoRoute(
+                        path: ':id',
+                        name: CustomerDetailPage.routeName,
+                        builder: (_, GoRouterState state) => CustomerDetailPage(
+                          customerId: state.pathParameters['id']!,
+                        ),
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'leads',
+                    name: LeadListPage.routeName,
+                    builder: (_, __) => const LeadListPage(),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: InvoiceListPage.routePath,
+                name: InvoiceListPage.routeName,
+                builder: (_, __) => const InvoiceListPage(),
+                routes: <RouteBase>[
+                  GoRoute(
+                    path: ':id',
+                    name: InvoiceDetailPage.routeName,
+                    builder: (_, GoRouterState state) => InvoiceDetailPage(
+                      invoiceId: state.pathParameters['id']!,
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'payments',
+                    name: PaymentListPage.routeName,
+                    builder: (_, __) => const PaymentListPage(),
+                  ),
+                  GoRoute(
+                    path: 'purchase-orders',
+                    name: PurchaseOrderListPage.routeName,
+                    builder: (_, __) => const PurchaseOrderListPage(),
+                    routes: <RouteBase>[
+                      GoRoute(
+                        path: ':id',
+                        name: PurchaseOrderDetailPage.routeName,
+                        builder: (_, GoRouterState state) => PurchaseOrderDetailPage(
+                          poId: state.pathParameters['id']!,
+                        ),
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'vendors',
+                    name: VendorListPage.routeName,
+                    builder: (_, __) => const VendorListPage(),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: EmployeeListPage.routePath,
+                name: EmployeeListPage.routeName,
+                builder: (_, __) => const EmployeeListPage(),
+                routes: <RouteBase>[
+                  GoRoute(
+                    path: ':id',
+                    name: EmployeeDetailPage.routeName,
+                    builder: (_, GoRouterState state) => EmployeeDetailPage(
+                      employeeId: state.pathParameters['id']!,
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'leave',
+                    name: LeaveRequestListPage.routeName,
+                    builder: (_, __) => const LeaveRequestListPage(),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
                 path: NotificationsPage.routePath,
                 name: NotificationsPage.routeName,
                 builder: (_, __) => const NotificationsPage(),
@@ -133,7 +258,6 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
   return router;
 });
 
-/// Bridges Riverpod state changes into go_router's `Listenable` refresh hook.
 class _AuthRefreshListenable extends ChangeNotifier {
   _AuthRefreshListenable(Ref ref) {
     ref.listen<AuthState>(
