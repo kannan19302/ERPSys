@@ -1,20 +1,26 @@
-# IMPLEMENTATION_PLAN.md — DEV Cycle 66 (Phase M)
+# IMPLEMENTATION_PLAN.md — DEV Cycle 64 cont'd (Flutter Mobile — Cross-Platform Parity)
 
-- **Cycle**: 66
-- **Phase**: M (Module strengthening)
-- **Selected Scope**: Deepening 6 target modules across Industry and Functional tiers (**Healthcare**, **Education**, **Field Service**, **Real Estate**, **People**, **Fixed Assets**).
-- **Rationale**: Elevate weakest modules toward MVM/Functional/Competitive parity per program ladder focus order.
-- **Velocity Target**: Ship ≥ 5,000 net LOC OR ≥ 40 distinct features.
+- **Cycle**: 64 (continuation)
+- **Phase**: M (Module strengthening — cross-platform parity criterion #6)
+- **Scope**: Complete Flutter (apps/mobile) Clean Architecture feature layers for 7 remaining backend modules: Supply Chain, POS, Manufacturing, Projects, Documents, Communication, Workflow
+- **Why**: P2 unfinished work from prior session — entities + models exist; need remote data sources, repository impls, use cases, providers, and UI pages to reach endpoint parity with the NestJS backend
+- **Duplicate-check**: 5 modules already built (sales, crm, finance, hr, procurement) — these 7 are the remainder. No overlap with any active claim.
+- **Throughput floor target**: ≥ 5,000 net LOC
 
-## Planned Slices
-1. **DB Layer**: Land 18 new Prisma models (`HealthcareClinicalNote`, `HealthcareTelemedicineSession`, `HealthcareMedicalBill`, `EducationReportCard`, `EducationScholarship`, `EducationAssignmentSubmission`, `FieldServiceWarranty`, `FieldServiceWorkOrderExpense`, `FieldServiceChecklist`, `RealEstatePropertyInspection`, `RealEstateRentCollectionLog`, `RealEstateListingSyndicate`, `PeopleOnboardingTask`, `PeopleTimeOffRequest`, `PeoplePeerRecognition`, `FixedAssetInsurancePolicy`, `FixedAssetRevaluation`, `FixedAssetPhysicalAudit`).
-2. **Shared Layer**: Add 40+ permission codes to `registry.ts` and Zod validation schemas.
-3. **API Layer**: 6 NestJS services + controllers adding 40+ REST endpoints.
-4. **Test Layer**: 6 Vitest spec files covering all service methods.
-5. **UI Layer**: 12 interactive Next.js dashboard pages wired with module tab layouts.
+## Planned Work
 
-## Verification & Rollback
-- `pnpm typecheck`
-- `pnpm architecture:check`
-- `pnpm --filter @unerp/api test`
-- Rollback: Revert `schema.prisma` and module code; additive schema is non-breaking.
+1. **Supply Chain**: Remote DS, repo impl, use cases, providers, list/detail pages (shipments, carriers, routes)
+2. **POS**: Remote DS, repo impl, use cases, providers, list pages (registers, orders, sessions)
+3. **Manufacturing**: Remote DS, repo impl, use cases, providers, list/detail pages (work orders, BOMs, production plans)
+4. **Projects**: Remote DS, repo impl, use cases, providers, pages (+ router wiring — projects already has entities/models)
+5. **Documents**: Remote DS, repo impl, use cases, providers, pages
+6. **Communication**: Remote DS, repo impl, use cases, providers, pages
+7. **Workflow**: Remote DS, repo impl, use cases, providers, pages
+8. **Router & Shell**: Verify all new module routes registered in `app_router.dart`
+
+## Verification
+- `flutter analyze` — 0 errors
+- `flutter pub get` succeeds
+
+## Rollback
+- `git revert` the cycle commit; additive only (new files, no destructive changes)

@@ -48,6 +48,36 @@ class AppShell extends ConsumerWidget {
       selectedIcon: Icons.notifications,
       label: 'Alerts',
     ),
+    _Destination(
+      icon: Icons.local_shipping_outlined,
+      selectedIcon: Icons.local_shipping,
+      label: 'Supply Chain',
+    ),
+    _Destination(
+      icon: Icons.shopping_cart_outlined,
+      selectedIcon: Icons.shopping_cart,
+      label: 'POS',
+    ),
+    _Destination(
+      icon: Icons.precision_manufacturing_outlined,
+      selectedIcon: Icons.precision_manufacturing,
+      label: 'Manufacturing',
+    ),
+    _Destination(
+      icon: Icons.work_outline,
+      selectedIcon: Icons.work,
+      label: 'Projects',
+    ),
+    _Destination(
+      icon: Icons.description_outlined,
+      selectedIcon: Icons.description,
+      label: 'Documents',
+    ),
+    _Destination(
+      icon: Icons.alt_route_outlined,
+      selectedIcon: Icons.alt_route,
+      label: 'Workflow',
+    ),
   ];
 
   void _onSelect(int index) => navigationShell.goBranch(

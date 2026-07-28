@@ -31,6 +31,12 @@ import '../../features/sales/presentation/pages/quotation_detail_page.dart';
 import '../../features/sales/presentation/pages/quotation_list_page.dart';
 import '../../features/sales/presentation/pages/sales_order_detail_page.dart';
 import '../../features/sales/presentation/pages/sales_order_list_page.dart';
+import '../../features/supply_chain/presentation/pages/shipment_list_page.dart';
+import '../../features/pos/presentation/pages/pos_order_list_page.dart';
+import '../../features/manufacturing/presentation/pages/work_order_list_page.dart';
+import '../../features/projects/presentation/pages/project_list_page.dart';
+import '../../features/documents/presentation/pages/documents_list_page.dart';
+import '../../features/workflow/presentation/pages/workflow_list_page.dart';
 import '../shell/app_shell.dart';
 
 final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
@@ -246,6 +252,66 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
                 path: NotificationsPage.routePath,
                 name: NotificationsPage.routeName,
                 builder: (_, __) => const NotificationsPage(),
+              ),
+            ],
+          ),
+          // ── Supply Chain ──────────────────────────────────────────────
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: ShipmentListPage.routePath,
+                name: ShipmentListPage.routeName,
+                builder: (_, __) => const ShipmentListPage(),
+              ),
+            ],
+          ),
+          // ── POS ───────────────────────────────────────────────────────
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: PosOrderListPage.routePath,
+                name: PosOrderListPage.routeName,
+                builder: (_, __) => const PosOrderListPage(),
+              ),
+            ],
+          ),
+          // ── Manufacturing ─────────────────────────────────────────────
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: WorkOrderListPage.routePath,
+                name: WorkOrderListPage.routeName,
+                builder: (_, __) => const WorkOrderListPage(),
+              ),
+            ],
+          ),
+          // ── Projects ──────────────────────────────────────────────────
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: ProjectListPage.routePath,
+                name: ProjectListPage.routeName,
+                builder: (_, __) => const ProjectListPage(),
+              ),
+            ],
+          ),
+          // ── Documents ─────────────────────────────────────────────────
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: DocumentsListPage.routePath,
+                name: DocumentsListPage.routeName,
+                builder: (_, __) => const DocumentsListPage(),
+              ),
+            ],
+          ),
+          // ── Communication & Workflow ──────────────────────────────────
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: '/workflow/workflows',
+                name: WorkflowListPage.routeName,
+                builder: (_, __) => const WorkflowListPage(),
               ),
             ],
           ),
