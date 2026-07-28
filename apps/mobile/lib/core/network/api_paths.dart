@@ -3,6 +3,8 @@
 /// Paths are relative to `Env.apiBaseUrl` (`<origin>/api/v1`). Each constant
 /// names the controller it maps to so a backend rename is easy to trace. No
 /// endpoint here is new — all of them already exist in `apps/api/src/modules`.
+///
+/// Generated 2026-07-28 — covers all 44 + backend API modules.
 class ApiPaths {
   const ApiPaths._();
 
@@ -453,4 +455,260 @@ class ApiPaths {
   static String escalationRule(String id) => '/workflow/escalation-rules/$id';
   static const String workflowAuditLog = '/workflow/audit-log';
   static const String workflowDashboardStats = '/workflow/dashboard/stats';
+
+  // ── analytics (apps/api/src/modules/analytics/analytics.controller.ts) ──
+  static const String analyticsKpi = '/analytics/kpis';
+  static String analyticsKpiDetail(String id) => '/analytics/kpis/$id';
+  static const String analyticsDashboards = '/analytics/dashboards';
+  static String analyticsDashboard(String id) => '/analytics/dashboards/$id';
+  static const String analyticsReports = '/analytics/reports';
+  static String analyticsReport(String id) => '/analytics/reports/$id';
+  static const String analyticsPipelines = '/analytics/pipelines';
+  static const String analyticsPredictive = '/analytics/predictive';
+  static const String analyticsExports = '/analytics/exports';
+
+  // ── reporting (apps/api/src/modules/reporting/reporting.controller.ts) ──
+  static const String reportTemplates = '/reporting/templates';
+  static String reportTemplate(String id) => '/reporting/templates/$id';
+  static String reportTemplateGenerate(String id) => '/reporting/templates/$id/generate';
+  static const String reportJobs = '/reporting/jobs';
+  static String reportJob(String id) => '/reporting/jobs/$id';
+  static const String reportExports = '/reporting/exports';
+  static String reportExport(String id) => '/reporting/exports/$id';
+  static const String reportCompliance = '/reporting/compliance';
+
+  // ── ai (apps/api/src/modules/ai/ai.controller.ts) ──
+  static const String aiModels = '/ai/models';
+  static String aiModel(String id) => '/ai/models/$id';
+  static const String aiPrompts = '/ai/prompts';
+  static String aiPrompt(String id) => '/ai/prompts/$id';
+  static const String aiTrainingData = '/ai/training';
+  static String aiTrainingDataItem(String id) => '/ai/training/$id';
+  static const String aiPredict = '/ai/predict';
+
+  // ── healthcare (apps/api/src/modules/healthcare/healthcare.controller.ts) ──
+  static const String patients = '/healthcare/patients';
+  static String patient(String id) => '/healthcare/patients/$id';
+  static const String appointments = '/healthcare/appointments';
+  static String appointment(String id) => '/healthcare/appointments/$id';
+  static const String prescriptions = '/healthcare/prescriptions';
+  static String prescription(String id) => '/healthcare/prescriptions/$id';
+  static const String labOrders = '/healthcare/lab-orders';
+  static String labOrder(String id) => '/healthcare/lab-orders/$id';
+  static const String medicalRecords = '/healthcare/medical-records';
+  static String medicalRecord(String id) => '/healthcare/medical-records/$id';
+  static const String insuranceClaims = '/healthcare/insurance-claims';
+  static String insuranceClaim(String id) => '/healthcare/insurance-claims/$id';
+
+  // ── education (apps/api/src/modules/education/education.controller.ts) ──
+  static const String students = '/education/students';
+  static String student(String id) => '/education/students/$id';
+  static const String courses = '/education/courses';
+  static String course(String id) => '/education/courses/$id';
+  static const String enrollments = '/education/enrollments';
+  static String enrollment(String id) => '/education/enrollments/$id';
+  static const String gradebook = '/education/gradebook';
+  static const String educationFees = '/education/fees';
+  static String educationFeeInvoice(String id) => '/education/fees/$id';
+  static const String attendanceRecords = '/education/attendance';
+  static const String exams = '/education/exams';
+  static String examResult(String id) => '/education/exams/$id/results';
+
+  // ── real-estate (apps/api/src/modules/real-estate/real-estate.controller.ts) ──
+  static const String properties = '/real-estate/properties';
+  static String property(String id) => '/real-estate/properties/$id';
+  static const String leases = '/real-estate/leases';
+  static String lease(String id) => '/real-estate/leases/$id';
+  static const String realEstateTenants = '/real-estate/tenants';
+  static String realEstateTenantDetail(String id) => '/real-estate/tenants/$id';
+  static const String maintenanceOrders = '/real-estate/maintenance-orders';
+  static String maintenanceOrder(String id) => '/real-estate/maintenance-orders/$id';
+  static const String propertyValuations = '/real-estate/valuations';
+
+  // ── field-service (apps/api/src/modules/field-service/field-service.controller.ts) ──
+  static const String serviceTickets = '/field-service/tickets';
+  static String serviceTicket(String id) => '/field-service/tickets/$id';
+  static const String technicians = '/field-service/technicians';
+  static String technician(String id) => '/field-service/technicians/$id';
+  static const String serviceSchedules = '/field-service/schedules';
+  static String serviceSchedule(String id) => '/field-service/schedules/$id';
+  static const String serviceContracts = '/field-service/contracts';
+  static String serviceContract(String id) => '/field-service/contracts/$id';
+
+  // ── people (apps/api/src/modules/people/people.controller.ts) ──
+  static const String peopleDirectory = '/people/directory';
+  static String person(String id) => '/people/directory/$id';
+  static const String peopleTeams = '/people/teams';
+  static String peopleTeam(String id) => '/people/teams/$id';
+  static const String peopleOnboardingTasks = '/people/onboarding-tasks';
+  static String peopleOnboardingTask(String id) => '/people/onboarding-tasks/$id';
+  static const String peopleRecognition = '/people/recognition';
+  static String peopleRecognitionEntry(String id) => '/people/recognition/$id';
+
+  // ── fixed-assets (apps/api/src/modules/fixed-assets/fixed-assets.controller.ts) ──
+  static const String fixedAssets = '/fixed-assets/assets';
+  static String fixedAsset(String id) => '/fixed-assets/assets/$id';
+  static const String assetDepreciation = '/fixed-assets/depreciation';
+  static const String assetMaintenance = '/fixed-assets/maintenance';
+  static String assetMaintenanceSchedule(String id) => '/fixed-assets/maintenance/$id';
+  static const String assetDisposals = '/fixed-assets/disposals';
+  static String assetDisposal(String id) => '/fixed-assets/disposals/$id';
+
+  // ── advanced-finance (apps/api/src/modules/advanced-finance/advanced-finance.controller.ts) ──
+  static const String multiCurrencyRates = '/advanced-finance/currency-rates';
+  static const String consolidationReports = '/advanced-finance/consolidation';
+  static const String intercompanyAgreements = '/advanced-finance/intercompany-agreements';
+  static const String costAllocations = '/advanced-finance/cost-allocations';
+  static const String revenueRecognition = '/advanced-finance/revenue-recognition';
+  static const String fixedAssetAccounting = '/advanced-finance/fixed-asset-accounting';
+  static String fixedAssetAcct(String id) => '/advanced-finance/fixed-asset-accounting/$id';
+  static const String budgetVersions = '/advanced-finance/budget-versions';
+  static const String financialCloseTasks = '/advanced-finance/close-tasks';
+  static const String auditTrails = '/advanced-finance/audit-trails';
+
+  // ── advanced-hr (apps/api/src/modules/advanced-hr/advanced-hr.controller.ts) ──
+  static const String compensationBands = '/advanced-hr/compensation-bands';
+  static const String benefitsAdministration = '/advanced-hr/benefits';
+  static String benefitPlan(String id) => '/advanced-hr/benefits/$id';
+  static const String successionPlans = '/advanced-hr/succession';
+  static String successionPlan(String id) => '/advanced-hr/succession/$id';
+  static const String workforceAnalytics = '/advanced-hr/workforce-analytics';
+  static const String learningPaths = '/advanced-hr/learning-paths';
+  static String learningPath(String id) => '/advanced-hr/learning-paths/$id';
+
+  // ── blockchain (apps/api/src/modules/blockchain/blockchain.controller.ts) ──
+  static const String blockchainExplorer = '/blockchain/explorer';
+  static const String blockchainContracts = '/blockchain/contracts';
+  static String blockchainContract(String id) => '/blockchain/contracts/$id';
+  static const String blockchainAudit = '/blockchain/audit';
+  static const String blockchainNetworkHealth = '/blockchain/network-health';
+
+  // ── marketplace (apps/api/src/modules/marketplace/marketplace.controller.ts) ──
+  static const String marketplaceApps = '/marketplace/apps';
+  static String marketplaceApp(String id) => '/marketplace/apps/$id';
+  static const String marketplaceReviews = '/marketplace/reviews';
+  static String marketplaceReview(String id) => '/marketplace/reviews/$id';
+  static const String marketplaceVersions = '/marketplace/versions';
+  static const String marketplaceSubmissions = '/marketplace/submissions';
+  static String marketplaceSubmission(String id) => '/marketplace/submissions/$id';
+
+  // ── api-platform (apps/api/src/modules/api-platform/api-platform.controller.ts) ──
+  static const String apiKeys = '/api-platform/keys';
+  static String apiKey(String id) => '/api-platform/keys/$id';
+  static const String webhooks = '/api-platform/webhooks';
+  static String webhook(String id) => '/api-platform/webhooks/$id';
+  static const String apiUsageLogs = '/api-platform/usage-logs';
+  static const String apiRateLimits = '/api-platform/rate-limits';
+
+  // ── builder (apps/api/src/modules/builder/builder.controller.ts) ──
+  static const String builderForms = '/builder/forms';
+  static String builderForm(String id) => '/builder/forms/$id';
+  static const String builderPages = '/builder/pages';
+  static String builderPage(String id) => '/builder/pages/$id';
+  static const String builderWorkflows = '/builder/workflows';
+  static String builderWorkflow(String id) => '/builder/workflows/$id';
+  static const String builderTemplates = '/builder/templates';
+  static String builderTemplate(String id) => '/builder/templates/$id';
+
+  // ── ecommerce (apps/api/src/modules/ecommerce/ecommerce.controller.ts) ──
+  static const String ecommerceProducts = '/ecommerce/products';
+  static String ecommerceProduct(String id) => '/ecommerce/products/$id';
+  static const String ecommerceCategories = '/ecommerce/categories';
+  static String ecommerceCategory(String id) => '/ecommerce/categories/$id';
+  static const String ecommerceOrders = '/ecommerce/orders';
+  static String ecommerceOrder(String id) => '/ecommerce/orders/$id';
+  static const String ecommerceCart = '/ecommerce/cart';
+  static const String ecommerceCheckout = '/ecommerce/checkout';
+
+  // ── service-management (apps/api/src/modules/service-management/sm.controller.ts) ──
+  static const String serviceCatalogs = '/service-management/catalogs';
+  static String serviceCatalog(String id) => '/service-management/catalogs/$id';
+  static const String serviceRequests = '/service-management/requests';
+  static String serviceRequest(String id) => '/service-management/requests/$id';
+  static const String serviceContractsMgmt = '/service-management/contracts';
+  static String serviceContractMgmt(String id) => '/service-management/contracts/$id';
+  static const String serviceLevelAgreements = '/service-management/slas';
+  static String serviceLevelAgreement(String id) => '/service-management/slas/$id';
+
+  // ── saas (apps/api/src/modules/saas/saas.controller.ts) ──
+  static const String saasPlans = '/saas/plans';
+  static String saasPlan(String id) => '/saas/plans/$id';
+  static const String saasSubscriptions = '/saas/subscriptions';
+  static String saasSubscription(String id) => '/saas/subscriptions/$id';
+  static const String saasInvoices = '/saas/invoices';
+  static String saasInvoice(String id) => '/saas/invoices/$id';
+  static const String saasUsage = '/saas/usage';
+  static const String saasQuotas = '/saas/quotas';
+  static const String saasTenants = '/saas/tenants';
+  static String saasTenant(String id) => '/saas/tenants/$id';
+  static const String saasMetering = '/saas/metering';
+  static const String saasWhiteLabel = '/saas/white-label';
+  static const String saasResellers = '/saas/resellers';
+
+  // ── saas-portal (apps/api/src/modules/saas-portal/saas-portal.controller.ts) ──
+  static const String portalBilling = '/saas-portal/billing';
+  static const String portalPlans = '/saas-portal/plans';
+  static const String portalSupport = '/saas-portal/support';
+  static String portalTicket(String id) => '/saas-portal/support/$id';
+
+  // ── saved-views (apps/api/src/modules/saved-views/saved-views.controller.ts) ──
+  static const String savedViews = '/saved-views';
+  static String savedView(String id) => '/saved-views/$id';
+  static const String savedViewShares = '/saved-views/shares';
+
+  // ── search (apps/api/src/modules/search/search.controller.ts) ──
+  static const String searchQuery = '/search';
+  static const String searchIndexConfig = '/search/index-config';
+  static const String searchSynonyms = '/search/synonyms';
+  static String searchSynonym(String id) => '/search/synonyms/$id';
+
+  // ── storage (apps/api/src/modules/storage/storage.controller.ts) ──
+  static const String storageBuckets = '/storage/buckets';
+  static String storageBucket(String id) => '/storage/buckets/$id';
+  static const String storageFiles = '/storage/files';
+  static String storageFile(String id) => '/storage/files/$id';
+  static const String storagePolicies = '/storage/policies';
+  static String storagePolicy(String id) => '/storage/policies/$id';
+
+  // ── subscriptions (apps/api/src/modules/subscriptions/subscriptions.controller.ts) ──
+  static const String subscriptionPlans = '/subscriptions/plans';
+  static String subscriptionPlan(String id) => '/subscriptions/plans/$id';
+  static const String subscriptionBilling = '/subscriptions/billing';
+  static String subscriptionBillingCycle(String id) => '/subscriptions/billing/$id';
+  static const String subscriptionUsage = '/subscriptions/usage';
+  static const String subscriptionChurn = '/subscriptions/churn';
+  static const String subscriptionAnalytics = '/subscriptions/analytics';
+
+  // ── pwa (apps/api/src/modules/pwa/pwa.controller.ts) ──
+  static const String pwaPushSubscriptions = '/pwa/push-subscriptions';
+  static const String pwaManifest = '/pwa/manifest';
+  static const String pwaServiceWorker = '/pwa/service-worker';
+  static const String pwaOfflineQueue = '/pwa/offline-queue';
+  static String pwaOfflineQueueItem(String id) => '/pwa/offline-queue/$id';
+
+  // ── localization (apps/api/src/modules/localization/localization.controller.ts) ──
+  static const String localizationTranslations = '/localization/translations';
+  static const String localizationLanguages = '/localization/languages';
+  static const String localizationRegions = '/localization/regions';
+
+  // ── admin (apps/api/src/modules/admin/admin.controller.ts) ──
+  static const String adminUsers = '/admin/users';
+  static String adminUser(String id) => '/admin/users/$id';
+  static const String adminRoles = '/admin/roles';
+  static String adminRole(String id) => '/admin/roles/$id';
+  static const String adminSettings = '/admin/settings';
+  static const String adminAuditLog = '/admin/audit-log';
+  static const String adminSystemHealth = '/admin/system-health';
+
+  // ── drive (apps/api/src/modules/drive/drive.controller.ts) ──
+  static const String driveFiles = '/drive/files';
+  static String driveFile(String id) => '/drive/files/$id';
+  static const String driveFolders = '/drive/folders';
+  static String driveFolder(String id) => '/drive/folders/$id';
+  static String driveFolderShare(String id) => '/drive/folders/$id/share';
+  static const String driveTrash = '/drive/trash';
+  static String driveTrashRestore(String id) => '/drive/trash/$id/restore';
+  static const String driveStorageUsage = '/drive/storage-usage';
+  static const String driveTags = '/drive/tags';
+  static String driveTag(String id) => '/drive/tags/$id';
 }

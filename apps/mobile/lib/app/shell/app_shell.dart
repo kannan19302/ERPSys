@@ -78,6 +78,78 @@ class AppShell extends ConsumerWidget {
       selectedIcon: Icons.alt_route,
       label: 'Workflow',
     ),
+    // ── Analytics ────────────────────────────────────────────────────
+    _Destination(
+      icon: Icons.analytics_outlined,
+      selectedIcon: Icons.analytics,
+      label: 'Analytics',
+    ),
+    // ── AI ───────────────────────────────────────────────────────────
+    _Destination(
+      icon: Icons.auto_awesome_outlined,
+      selectedIcon: Icons.auto_awesome,
+      label: 'AI',
+    ),
+    // ── Builder ──────────────────────────────────────────────────────
+    _Destination(
+      icon: Icons.build_outlined,
+      selectedIcon: Icons.build,
+      label: 'Builder',
+    ),
+    // ── Communication ────────────────────────────────────────────────
+    _Destination(
+      icon: Icons.chat_outlined,
+      selectedIcon: Icons.chat,
+      label: 'Chat',
+    ),
+    // ── E-Commerce ───────────────────────────────────────────────────
+    _Destination(
+      icon: Icons.store_outlined,
+      selectedIcon: Icons.store,
+      label: 'E-Commerce',
+    ),
+    // ── Admin ────────────────────────────────────────────────────────
+    _Destination(
+      icon: Icons.admin_panel_settings_outlined,
+      selectedIcon: Icons.admin_panel_settings,
+      label: 'Admin',
+    ),
+    // ── SaaS ─────────────────────────────────────────────────────────
+    _Destination(
+      icon: Icons.cloud_outlined,
+      selectedIcon: Icons.cloud,
+      label: 'SaaS',
+    ),
+    // ── Healthcare ───────────────────────────────────────────────────
+    _Destination(
+      icon: Icons.local_hospital_outlined,
+      selectedIcon: Icons.local_hospital,
+      label: 'Health',
+    ),
+    // ── Education ────────────────────────────────────────────────────
+    _Destination(
+      icon: Icons.school_outlined,
+      selectedIcon: Icons.school,
+      label: 'Education',
+    ),
+    // ── Field Service ────────────────────────────────────────────────
+    _Destination(
+      icon: Icons.build_circle_outlined,
+      selectedIcon: Icons.build_circle,
+      label: 'Field Svc',
+    ),
+    // ── Real Estate ──────────────────────────────────────────────────
+    _Destination(
+      icon: Icons.business_outlined,
+      selectedIcon: Icons.business,
+      label: 'Real Estate',
+    ),
+    // ── Service Management ───────────────────────────────────────────
+    _Destination(
+      icon: Icons.support_agent_outlined,
+      selectedIcon: Icons.support_agent,
+      label: 'Services',
+    ),
   ];
 
   void _onSelect(int index) => navigationShell.goBranch(
