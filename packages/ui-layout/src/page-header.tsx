@@ -1,7 +1,7 @@
 import { type FC, type ReactNode } from "react";
 
 export interface PageHeaderProps {
-  title: string;
+  title: ReactNode;
   description?: string;
   actions?: ReactNode;
   breadcrumbs?: Array<{ label: string; href?: string }>;

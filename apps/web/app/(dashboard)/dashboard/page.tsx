@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useApiQuery } from "../../../src/lib/hooks/useApi";
-import GridLayout, { useContainerWidth } from "react-grid-layout";
+import GridLayout, { useContainerWidth, type Layout } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import { RouteGuard, useApiClient } from "@unerp/framework";
@@ -117,26 +117,33 @@ function DashboardContent() {
 
   // Personal Dashboard Grid Layout
   const defaultPersonalLayout = [
-    { i: 'welcome', x: 0, y: 0, w: 12, h: 2, static: true },
-    { i: 'kpis', x: 0, y: 2, w: 12, h: 4 },
-    { i: 'quick-access', x: 0, y: 6, w: 6, h: 6 },
-    { i: 'activity', x: 6, y: 6, w: 6, h: 6 },
-    { i: 'approvals', x: 0, y: 12, w: 6, h: 6 },
-    { i: 'analytics', x: 6, y: 12, w: 6, h: 6 },
+    { i: "welcome", x: 0, y: 0, w: 12, h: 2, static: true },
+    { i: "kpis", x: 0, y: 2, w: 12, h: 4 },
+    { i: "quick-access", x: 0, y: 6, w: 6, h: 6 },
+    { i: "activity", x: 6, y: 6, w: 6, h: 6 },
+    { i: "approvals", x: 0, y: 12, w: 6, h: 6 },
+    { i: "analytics", x: 6, y: 12, w: 6, h: 6 },
   ];
-  const [personalLayout, setPersonalLayout] = useState<any[]>(defaultPersonalLayout);
+  const [personalLayout, setPersonalLayout] = useState<any[]>(
+    defaultPersonalLayout,
+  );
   const [isEditingGrid, setIsEditingGrid] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem('unerp.personal_dashboard_layout');
+    const saved = localStorage.getItem("unerp.personal_dashboard_layout");
     if (saved) {
-      try { setPersonalLayout(JSON.parse(saved)); } catch (e) {}
+      try {
+        setPersonalLayout(JSON.parse(saved));
+      } catch (e) {}
     }
   }, []);
 
-  const onLayoutChange = (layout: any[]) => {
-    setPersonalLayout(layout);
-    localStorage.setItem('unerp.personal_dashboard_layout', JSON.stringify(layout));
+  const onLayoutChange = (layout: Layout) => {
+    setPersonalLayout([...layout]);
+    localStorage.setItem(
+      "unerp.personal_dashboard_layout",
+      JSON.stringify(layout),
+    );
   };
 
   // Global enterprise dashboard states
@@ -639,11 +646,11 @@ function DashboardContent() {
           <div ref={containerRef} className={styles.personalDashboard}>
             <div className="ui-flex-between mb-4">
               <h2 className="ui-heading-md">Personal Workspace</h2>
-              <button 
+              <button
                 onClick={() => setIsEditingGrid(!isEditingGrid)}
-                className={`ui-btn ${isEditingGrid ? 'ui-btn-primary' : 'ui-btn-ghost'}`}
+                className={`ui-btn ${isEditingGrid ? "ui-btn-primary" : "ui-btn-ghost"}`}
               >
-                {isEditingGrid ? 'Done Editing' : 'Edit Layout'}
+                {isEditingGrid ? "Done Editing" : "Edit Layout"}
               </button>
             </div>
             {mounted && (
@@ -659,10 +666,18 @@ function DashboardContent() {
                 isResizable={isEditingGrid}
                 margin={[16, 16]}
               >
-                <div key="welcome" className={`${styles.widget} flex flex-col justify-center`}>
+                <div
+                  key="welcome"
+                  className={`${styles.widget} flex flex-col justify-center`}
+                >
                   <div className="p-6 bg-gradient-to-r from-[var(--color-primary-light)] to-[var(--color-bg-sunken)] rounded-lg h-full flex flex-col justify-center">
-                    <h3 className="ui-heading-lg mb-1">Good morning, {user?.firstName || 'Admin'}! 👋</h3>
-                    <p className="ui-text-secondary">Here is what's happening with your projects and tasks today.</p>
+                    <h3 className="ui-heading-lg mb-1">
+                      Good morning, {user?.firstName || "Admin"}! 👋
+                    </h3>
+                    <p className="ui-text-secondary">
+                      Here is what's happening with your projects and tasks
+                      today.
+                    </p>
                   </div>
                 </div>
 
@@ -681,22 +696,34 @@ function DashboardContent() {
                       <button className={styles.quickAction}>
                         <UserPlus size={18} className="ui-text-primary" />
                         <div>
-                          <p className={styles.quickActionTitle}>Invite Team Member</p>
-                          <p className={styles.quickActionDescription}>Add administrators, managers, or viewers</p>
+                          <p className={styles.quickActionTitle}>
+                            Invite Team Member
+                          </p>
+                          <p className={styles.quickActionDescription}>
+                            Add administrators, managers, or viewers
+                          </p>
                         </div>
                       </button>
                       <button className={styles.quickAction}>
                         <FileText size={18} className="ui-text-primary" />
                         <div>
-                          <p className={styles.quickActionTitle}>Create Customer Invoice</p>
-                          <p className={styles.quickActionDescription}>Record new sales and trigger billing events</p>
+                          <p className={styles.quickActionTitle}>
+                            Create Customer Invoice
+                          </p>
+                          <p className={styles.quickActionDescription}>
+                            Record new sales and trigger billing events
+                          </p>
                         </div>
                       </button>
                       <button className={styles.quickAction}>
                         <PlusCircle size={18} className="ui-text-primary" />
                         <div>
-                          <p className={styles.quickActionTitle}>Register New Product</p>
-                          <p className={styles.quickActionDescription}>Add products and define warehouse settings</p>
+                          <p className={styles.quickActionTitle}>
+                            Register New Product
+                          </p>
+                          <p className={styles.quickActionDescription}>
+                            Add products and define warehouse settings
+                          </p>
                         </div>
                       </button>
                     </div>
@@ -715,7 +742,11 @@ function DashboardContent() {
                               By {log.user} • {log.time}
                             </span>
                           </div>
-                          <Badge variant={log.status === "SUCCESS" ? "success" : "warning"}>
+                          <Badge
+                            variant={
+                              log.status === "SUCCESS" ? "success" : "warning"
+                            }
+                          >
                             {log.status.toLowerCase()}
                           </Badge>
                         </div>
@@ -731,21 +762,33 @@ function DashboardContent() {
                       <div className="flex items-center justify-between p-3 bg-[var(--color-bg-sunken)] rounded-md border border-[var(--color-border)]">
                         <div>
                           <p className="font-medium">PO-2024-001</p>
-                          <p className="text-sm text-[var(--color-text-secondary)]">Procurement • $4,500.00</p>
+                          <p className="text-sm text-[var(--color-text-secondary)]">
+                            Procurement • $4,500.00
+                          </p>
                         </div>
                         <div className="flex gap-2">
-                          <button className="ui-btn ui-btn-primary ui-btn-sm">Approve</button>
-                          <button className="ui-btn ui-btn-ghost ui-btn-sm">Reject</button>
+                          <button className="ui-btn ui-btn-primary ui-btn-sm">
+                            Approve
+                          </button>
+                          <button className="ui-btn ui-btn-ghost ui-btn-sm">
+                            Reject
+                          </button>
                         </div>
                       </div>
                       <div className="flex items-center justify-between p-3 bg-[var(--color-bg-sunken)] rounded-md border border-[var(--color-border)]">
                         <div>
                           <p className="font-medium">Time-Off Request</p>
-                          <p className="text-sm text-[var(--color-text-secondary)]">HR • Jane Doe (3 days)</p>
+                          <p className="text-sm text-[var(--color-text-secondary)]">
+                            HR • Jane Doe (3 days)
+                          </p>
                         </div>
                         <div className="flex gap-2">
-                          <button className="ui-btn ui-btn-primary ui-btn-sm">Approve</button>
-                          <button className="ui-btn ui-btn-ghost ui-btn-sm">Reject</button>
+                          <button className="ui-btn ui-btn-primary ui-btn-sm">
+                            Approve
+                          </button>
+                          <button className="ui-btn ui-btn-ghost ui-btn-sm">
+                            Reject
+                          </button>
                         </div>
                       </div>
                     </div>
