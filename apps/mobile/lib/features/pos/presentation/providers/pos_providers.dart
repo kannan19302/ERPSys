@@ -271,3 +271,10 @@ class PosShiftsController extends Notifier<PosListState<PosShift>> {
     return result;
   }
 }
+
+final FutureProviderFamily<PosShift, String> posShiftDetailProvider =
+    FutureProvider.family<PosShift, String>((Ref ref, String id) async {
+  final result = await GetPosShiftUseCase(
+    ref.watch(posRepositoryProvider))(id);
+  return result.fold((f) => throw f, (v) => v);
+});

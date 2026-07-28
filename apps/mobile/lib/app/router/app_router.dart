@@ -32,12 +32,17 @@ import '../../features/sales/presentation/pages/quotation_list_page.dart';
 import '../../features/sales/presentation/pages/sales_order_detail_page.dart';
 import '../../features/sales/presentation/pages/sales_order_list_page.dart';
 import '../../features/supply_chain/presentation/pages/shipment_list_page.dart';
+import '../../features/supply_chain/presentation/pages/shipment_detail_page.dart';
 import '../../features/supply_chain/presentation/pages/carrier_list_page.dart';
+import '../../features/supply_chain/presentation/pages/carrier_detail_page.dart';
 import '../../features/supply_chain/presentation/pages/demand_forecast_list_page.dart';
 import '../../features/supply_chain/presentation/pages/reorder_suggestion_list_page.dart';
 import '../../features/pos/presentation/pages/pos_order_list_page.dart';
+import '../../features/pos/presentation/pages/pos_order_detail_page.dart';
 import '../../features/pos/presentation/pages/pos_register_list_page.dart';
+import '../../features/pos/presentation/pages/pos_register_detail_page.dart';
 import '../../features/pos/presentation/pages/pos_shift_list_page.dart';
+import '../../features/pos/presentation/pages/pos_shift_detail_page.dart';
 import '../../features/manufacturing/presentation/pages/work_order_list_page.dart';
 import '../../features/manufacturing/presentation/pages/work_order_detail_page.dart';
 import '../../features/manufacturing/presentation/pages/bom_list_page.dart';
@@ -45,6 +50,7 @@ import '../../features/manufacturing/presentation/pages/bom_detail_page.dart';
 import '../../features/manufacturing/presentation/pages/mrp_run_list_page.dart';
 import '../../features/manufacturing/presentation/pages/mrp_run_detail_page.dart';
 import '../../features/projects/presentation/pages/project_list_page.dart';
+import '../../features/projects/presentation/pages/project_detail_page.dart';
 import '../../features/projects/presentation/pages/milestone_list_page.dart';
 import '../../features/projects/presentation/pages/task_list_page.dart';
 import '../../features/documents/presentation/pages/documents_list_page.dart';
@@ -398,9 +404,25 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
                 builder: (_, __) => const ShipmentListPage(),
                 routes: <RouteBase>[
                   GoRoute(
+                    path: ':id',
+                    name: ShipmentDetailPage.routeName,
+                    builder: (_, GoRouterState state) => ShipmentDetailPage(
+                      shipmentId: state.pathParameters['id']!,
+                    ),
+                  ),
+                  GoRoute(
                     path: 'carriers',
                     name: CarrierListPage.routeName,
                     builder: (_, __) => const CarrierListPage(),
+                    routes: <RouteBase>[
+                      GoRoute(
+                        path: ':id',
+                        name: CarrierDetailPage.routeName,
+                        builder: (_, GoRouterState state) => CarrierDetailPage(
+                          carrierId: state.pathParameters['id']!,
+                        ),
+                      ),
+                    ],
                   ),
                   GoRoute(
                     path: 'demand-forecast',
@@ -425,14 +447,39 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
                 builder: (_, __) => const PosOrderListPage(),
                 routes: <RouteBase>[
                   GoRoute(
+                    path: ':id',
+                    name: PosOrderDetailPage.routeName,
+                    builder: (_, GoRouterState state) => PosOrderDetailPage(
+                      orderId: state.pathParameters['id']!,
+                    ),
+                  ),
+                  GoRoute(
                     path: 'registers',
                     name: PosRegisterListPage.routeName,
                     builder: (_, __) => const PosRegisterListPage(),
+                    routes: <RouteBase>[
+                      GoRoute(
+                        path: ':id',
+                        name: PosRegisterDetailPage.routeName,
+                        builder: (_, GoRouterState state) => PosRegisterDetailPage(
+                          registerId: state.pathParameters['id']!,
+                        ),
+                      ),
+                    ],
                   ),
                   GoRoute(
                     path: 'shifts',
                     name: PosShiftListPage.routeName,
                     builder: (_, __) => const PosShiftListPage(),
+                    routes: <RouteBase>[
+                      GoRoute(
+                        path: ':id',
+                        name: PosShiftDetailPage.routeName,
+                        builder: (_, GoRouterState state) => PosShiftDetailPage(
+                          shiftId: state.pathParameters['id']!,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -493,6 +540,13 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
                 name: ProjectListPage.routeName,
                 builder: (_, __) => const ProjectListPage(),
                 routes: <RouteBase>[
+                  GoRoute(
+                    path: ':id',
+                    name: ProjectDetailPage.routeName,
+                    builder: (_, GoRouterState state) => ProjectDetailPage(
+                      projectId: state.pathParameters['id']!,
+                    ),
+                  ),
                   GoRoute(
                     path: 'milestones',
                     name: MilestoneListPage.routeName,

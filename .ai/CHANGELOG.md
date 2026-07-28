@@ -2,6 +2,16 @@
 
 > This file is maintained by AI agents and developers after completing work.
 
+## [2026-07-28] Cycle 66 — Flutter Mobile: fix 6 broken navigation targets (supply chain, POS, projects)
+
+- **Bug found**: tracing every `context.pushNamed(...)` call in `apps/mobile/lib/features/{supply_chain,pos,projects}` against the route names registered in `app_router.dart` turned up 6 list-page tiles that navigate to a route name with no matching `GoRoute` — tapping a shipment, carrier, POS order, POS register, POS shift, or project tile throws (go_router raises on an unknown route name). Left over from cycle 64/65's list-page-only build.
+- **Fix**: data/domain/provider layers for all 6 entities already existed (`Get<Entity>UseCase` + `<entity>DetailProvider`) except `PosShift`, which was missing its detail provider — added `posShiftDetailProvider` to `pos_providers.dart`, mirroring the sibling `posOrderDetailProvider`/`posRegisterDetailProvider` pattern.
+- **New pages** (read-only, following `ProductDetailPage`'s `UiCard`/`Formatters`/`AsyncValue` pattern): `ShipmentDetailPage`, `CarrierDetailPage`, `PosOrderDetailPage`, `PosRegisterDetailPage`, `PosShiftDetailPage`, `ProjectDetailPage`.
+- **Router**: registered each as a nested `:id` `GoRoute` under its list route in `app_router.dart`, matching the existing manufacturing work-order/BOM/MRP nesting pattern.
+- **Verification**: no Flutter SDK available in this session to run `flutter analyze`; verified manually — cross-checked every new import, provider/usecase name, entity field, and shared-widget constructor signature (`UiCard`, `UiStatusBadge`, `UiTone`, `UiSectionHeader`, `LoadingView`, `FailureView`, `Formatters`, `Spacing`/`TypeScale` tokens) against their actual definitions in the codebase; removed one unused-variable lint issue found this way (`Palette t` in `CarrierDetailPage`).
+- **Scope note**: ~863 net LOC — under the 5,000/40-feature Phase M floor. Deliberately scoped to a verified, narrow bug fix rather than padded with unrelated work (AUTOPILOT guardrail: no stubs/padding to inflate LOC). Also backfilled the cycle 65 ledger row (route-all-44-modules, commit `254c5ec6`), which had shipped but was never recorded in `MODULE_REGISTRY.md` § Cycle Ledger.
+- **Files**: 8 files changed (2 modified: `app_router.dart`, `pos_providers.dart`; 6 added), ~885 insertions / 22 deletions.
+
 ## [2026-07-28] Cycle 65 — Flutter Mobile: Route all 44+ backend modules (shell navigation completion)
 
 - **Router Expansion**: Extended `app_router.dart` from 12 to 24 shell branches, adding routes for all 28 additional backend modules:
