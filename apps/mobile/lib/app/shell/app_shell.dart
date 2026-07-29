@@ -232,19 +232,36 @@ class _DesktopShell extends StatelessWidget {
     return Scaffold(
       body: Row(
         children: <Widget>[
-          NavigationRail(
-            selectedIndex: navigationShell.currentIndex,
-            onDestinationSelected: onSelect,
-            labelType: NavigationRailLabelType.all,
-            minExtendedWidth: 80,
-            destinations: <NavigationRailDestination>[
-              for (final _Destination d in destinations)
-                NavigationRailDestination(
-                  icon: d.withUnreadBadge(unread),
-                  selectedIcon: Icon(d.selectedIcon),
-                  label: Text(d.label),
+          // NavigationRail lays its destinations out in a fixed-height Column
+          // with no built-in scrolling, so once there are more modules than
+          // fit the window height it overflows (RenderFlex) instead of
+          // scrolling. Wrapping it in a scroll view that's forced to at least
+          // fill the available height keeps the rail full-height on tall
+          // windows while letting it scroll on short ones.
+          LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: IntrinsicHeight(
+                    child: NavigationRail(
+                      selectedIndex: navigationShell.currentIndex,
+                      onDestinationSelected: onSelect,
+                      labelType: NavigationRailLabelType.all,
+                      minExtendedWidth: 80,
+                      destinations: <NavigationRailDestination>[
+                        for (final _Destination d in destinations)
+                          NavigationRailDestination(
+                            icon: d.withUnreadBadge(unread),
+                            selectedIcon: Icon(d.selectedIcon),
+                            label: Text(d.label),
+                          ),
+                      ],
+                    ),
+                  ),
                 ),
-            ],
+              );
+            },
           ),
           const VerticalDivider(width: 1),
           Expanded(child: navigationShell),

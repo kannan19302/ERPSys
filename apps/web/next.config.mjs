@@ -16,17 +16,39 @@ const nextConfig = {
     return config;
   },
   reactStrictMode: true,
-  // Only packages that ship TypeScript source (no pre-built dist) need
-  // transpilePackages. All @unerp/ui-* sub-packages now ship compiled
-  // dist/index.js, so they are removed from this list to avoid webpack
-  // re-transpiling the entire tree from source on every cold start.
-  // @unerp/ui, @unerp/framework, @unerp/shared, @unerp/auth remain here
-  // because they may import from other workspace packages that need resolution.
+  // transpilePackages: only include packages that:
+  //   1. Ship TypeScript source (need webpack transpilation)
+  //   2. Have NO CSS module imports (safe for edge runtime / middleware)
+  //
+  // @unerp/ui and @unerp/framework CANNOT be here because their dist/index.js
+  // re-exports @unerp/ui-components which requires CSS module .css files.
+  // The Next.js edge runtime (middleware) cannot handle CSS modules, causing
+  // the middleware compilation to hang indefinitely.
+  //
+  // Instead, @unerp/ui and @unerp/framework are treated as server externals:
+  // Next.js will use their pre-built dist/index.js without bundling.
   transpilePackages: [
-    '@unerp/ui',
-    '@unerp/framework',
     '@unerp/shared',
     '@unerp/auth',
+  ],
+  // Tell Next.js to NOT bundle these workspace packages on the server/edge:
+  // use their pre-built dist/ files directly via require().
+  serverExternalPackages: [
+    '@unerp/ui',
+    '@unerp/ui-tokens',
+    '@unerp/ui-theme',
+    '@unerp/ui-components',
+    '@unerp/ui-layout',
+    '@unerp/ui-charts',
+    '@unerp/ui-data-grid',
+    '@unerp/ui-dashboard',
+    '@unerp/ui-notifications',
+    '@unerp/ui-hooks',
+    '@unerp/ui-utils',
+    '@unerp/ui-icons',
+    '@unerp/ui-form-engine',
+    '@unerp/ui-workflow',
+    '@unerp/framework',
   ],
   experimental: {
     // NOTE: '@unerp/ui' was previously listed here alongside being in
@@ -40,7 +62,7 @@ const nextConfig = {
     // (and on the built-in /_error /500 page, which shares the root layout's
     // provider tree). optimizePackageImports is meant for large third-party
     // barrel packages like lucide-react — leave local workspace packages to
-    // transpilePackages only.
+    // serverExternalPackages.
     optimizePackageImports: ['lucide-react'],
   },
   async rewrites() {
