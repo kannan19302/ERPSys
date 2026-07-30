@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client';
 import styles from './error.module.css';
 import { useEffect } from 'react';

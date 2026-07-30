@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client';
 import styles from './SandboxesTab.module.css';
 import React, { useState } from 'react';

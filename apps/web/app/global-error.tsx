@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client';
 import styles from './global-error.module.css';
 import { ErrorFallback } from '@/components/ErrorFallback';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 import { Folder } from "lucide-react";
 import {

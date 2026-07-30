@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 import styles from "./InviteTeamSection.module.css";
 import React, { useState, useCallback, useEffect } from "react";

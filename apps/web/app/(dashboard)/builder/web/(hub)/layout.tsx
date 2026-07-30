@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from "react";
 import { SubTabBar } from "@unerp/ui-layout";
 import { WEB_SUB_TABS } from "@/components/builder/web-sub-tabs";

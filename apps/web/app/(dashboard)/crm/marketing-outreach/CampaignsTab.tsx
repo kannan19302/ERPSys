@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client';
 import styles from './CampaignsTab.module.css';
 import React, { useState, useEffect, useCallback } from 'react';

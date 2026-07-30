@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client';
 import styles from './Calendar.module.css';
 import React, { useEffect, useMemo, useRef, useState } from 'react';

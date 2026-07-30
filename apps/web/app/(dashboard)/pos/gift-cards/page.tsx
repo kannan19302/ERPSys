@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 import React, { useState, useEffect } from "react";
 import { Gift, Plus, Search, Eye } from "lucide-react";

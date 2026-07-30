@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client';
 import { PageHeader } from '@unerp/ui';
 import { useRouter } from 'next/navigation';

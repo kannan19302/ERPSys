@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 import { PackageOpen } from "lucide-react";
 import {

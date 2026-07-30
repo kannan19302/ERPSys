@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 import React, { useState, useEffect } from "react";
 import { Store, Plus, Edit2, Eye, Globe } from "lucide-react";

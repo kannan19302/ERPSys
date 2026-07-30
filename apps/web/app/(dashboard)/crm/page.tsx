@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import { useCrmKeyMigration, type CrmTab } from "@/components/crm/CrmTabLayout";

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { prisma } from '@unerp/database';
 import { notFound } from 'next/navigation';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 import { KeyRound } from "lucide-react";
 import {

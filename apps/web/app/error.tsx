@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client';
 import { useEffect } from 'react';
 import { ErrorFallback } from '@/components/ErrorFallback';

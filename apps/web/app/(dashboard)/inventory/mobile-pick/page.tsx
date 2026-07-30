@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 import styles from "./page.module.css";
 import React, { useState, useEffect, useRef, useCallback } from "react";

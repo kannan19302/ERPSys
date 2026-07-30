@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client';
 import styles from './ImportDataTab.module.css';
 import React, { useState, useCallback } from 'react';

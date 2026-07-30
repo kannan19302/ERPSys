@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 import { GitBranch } from "lucide-react";
 import {

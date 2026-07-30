@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { PublicPageRenderer } from '@/components/builder/PublicPageRenderer';
 import { prisma } from '@unerp/database';

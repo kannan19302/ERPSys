@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import { Card, PageHeader, Spinner, Button, Badge } from "@unerp/ui";

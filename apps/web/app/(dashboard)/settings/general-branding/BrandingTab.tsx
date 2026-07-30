@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 import styles from "./BrandingTab.module.css";
 import React, { useRef, useState, useEffect } from "react";

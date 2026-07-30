@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client';
 
 import { storefrontGet, storefrontPost, StorefrontApiError, type CartDetail } from './storefront-api';

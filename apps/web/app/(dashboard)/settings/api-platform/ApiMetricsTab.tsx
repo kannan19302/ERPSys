@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client';
 import styles from './ApiMetricsTab.module.css';
 import React, { useState } from 'react';

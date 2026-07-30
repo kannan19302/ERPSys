@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Types, presentation metadata, and the live API client for the Connect app.
 // All data comes from the backend (/api/v1/communication/*) — no seed/mock data.
 

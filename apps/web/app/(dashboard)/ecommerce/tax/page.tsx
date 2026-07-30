@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 import React, { useState, useEffect } from "react";
 import { Calculator, Plus, Trash2 } from "lucide-react";

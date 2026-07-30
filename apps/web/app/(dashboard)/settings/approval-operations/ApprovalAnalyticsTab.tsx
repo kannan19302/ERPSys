@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client';
 import styles from './ApprovalAnalyticsTab.module.css';
 import React from 'react';

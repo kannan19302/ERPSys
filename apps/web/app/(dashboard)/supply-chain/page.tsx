@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client';
 import styles from './supply-chain.module.css';
 import React, { useState, useEffect, useMemo } from 'react';

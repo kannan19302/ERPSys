@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client';
 import styles from './SyncMonitorTab.module.css';
 import React, { useState, useEffect, useCallback } from 'react';

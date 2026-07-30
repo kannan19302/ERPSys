@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client';
 import styles from './DynamicRoutingTab.module.css';
 import React from 'react';

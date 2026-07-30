@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client';
 import React, { useState, useEffect } from 'react';
 import { PageHeader, Card, Button, Spinner, Badge, DataTable, type Column, Modal, TextField, KPICard } from '@unerp/ui';

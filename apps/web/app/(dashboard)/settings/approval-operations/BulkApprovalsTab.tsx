@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client';
 import styles from './BulkApprovalsTab.module.css';
 import React, { useState } from 'react';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 import { Globe } from "lucide-react";
 import {

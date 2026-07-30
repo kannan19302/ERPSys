@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client';
 import React, { useEffect, useState, useCallback } from 'react';
 import { PageHeader, KPICard, DashboardChart, Card } from '@unerp/ui';

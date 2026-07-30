@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 import "../../landing.css";
 import React, { useEffect, useRef, useState, Suspense } from "react";

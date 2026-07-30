@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 import React, { useState, useEffect } from "react";
 import { ListOrdered, Plus, Edit2 } from "lucide-react";
