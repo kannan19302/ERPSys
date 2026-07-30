@@ -69,7 +69,7 @@ const allowedAiFiles = new Set([
 const generatedAiFiles = new Set(['FEATURE_LEDGER.md']); // gitignored generator output
 for (const entry of readdirSync(path.join(root, '.ai'), { withFileTypes: true })) {
   if (entry.isDirectory()) {
-    if (entry.name !== 'locks') failures.push(`.ai/ contains unexpected directory: ${entry.name}`);
+    if (entry.name !== 'locks' && entry.name !== 'cycle-notes') failures.push(`.ai/ contains unexpected directory: ${entry.name}`);
     continue;
   }
   if (!allowedAiFiles.has(entry.name) && !generatedAiFiles.has(entry.name)) {
