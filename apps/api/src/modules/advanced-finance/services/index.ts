@@ -41,3 +41,4 @@ export { EsgAccountingService } from "./esg-accounting.service";
 export { TaxProvisioningService } from "./tax-provisioning.service";
 export { ApAutomationService } from "./ap-automation.service";
 export { AiAnalyticsService } from "./ai-analytics.service";
+export { ArCreditManagementService } from "./ar-credit-management.service";

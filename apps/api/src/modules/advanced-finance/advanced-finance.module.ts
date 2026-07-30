@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
 import { AdvancedFinanceController } from "./advanced-finance.controller";
-import { ArApDeepController } from "./ar-ap-deep.controller";
+
 import { FinanceExpansionDeepController } from "./finance-expansion-deep.controller";
 import { FinanceMoreDeepController } from "./finance-more-deep.controller";
 import { FinanceTaxJournalDeepController } from "./finance-tax-journal-deep.controller";
@@ -21,6 +21,7 @@ import { EsgAccountingController } from "./esg-accounting.controller";
 import { TaxProvisioningController } from "./tax-provisioning.controller";
 import { ApAutomationController } from "./ap-automation.controller";
 import { AiAnalyticsController } from "./ai-analytics.controller";
+import { ArCreditManagementController } from "./ar-credit-management.controller";
 import { AdvancedFinanceService } from "./advanced-finance.service";
 import { FinanceExpansionDeepService } from "./services/finance-expansion-deep.service";
 import {
@@ -77,6 +78,7 @@ import { EsgAccountingService } from "./services/esg-accounting.service";
 import { TaxProvisioningService } from "./services/tax-provisioning.service";
 import { ApAutomationService } from "./services/ap-automation.service";
 import { AiAnalyticsService } from "./services/ai-analytics.service";
+import { ArCreditManagementService } from "./services/ar-credit-management.service";
 
 const domainServices = [
   GlAccountingService,
@@ -135,12 +137,13 @@ const domainServices = [
   TaxProvisioningService,
   ApAutomationService,
   AiAnalyticsService,
+  ArCreditManagementService,
 ];
 
 @Module({
   controllers: [
     AdvancedFinanceController,
-    ArApDeepController,
+
     FinanceExpansionDeepController,
     FinanceMoreDeepController,
     FinanceTaxJournalDeepController,
@@ -161,6 +164,7 @@ const domainServices = [
     TaxProvisioningController,
     ApAutomationController,
     AiAnalyticsController,
+    ArCreditManagementController,
   ],
   providers: [AdvancedFinanceService, ...domainServices],
   exports: [AdvancedFinanceService, ...domainServices],
