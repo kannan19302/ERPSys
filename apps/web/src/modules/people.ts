@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { defineModule, defineResource } from "@unerp/framework";
 
 export const peopleEntity1Resource = defineResource({

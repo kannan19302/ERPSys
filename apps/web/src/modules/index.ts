@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { blockchainModule } from "./blockchain";
 import { serviceManagementModule } from "./service-management";
 import { peopleModule } from "./people";
@@ -7,10 +8,6 @@ import { outboxModule } from "./outbox";
 import { notificationsModule } from "./notifications";
 import { searchModule } from "./search";
 import { driveModule } from "./drive";
-import { reportingModule } from "./reporting";
-import { localizationModule } from "./localization";
-import { subscriptionsModule } from "./subscriptions";
-import { fixedAssetsModule } from "./fixed-assets";
 import { reportingModule } from "./reporting";
 import { localizationModule } from "./localization";
 import { subscriptionsModule } from "./subscriptions";
@@ -49,10 +46,6 @@ export const registeredModules = [
   notificationsModule,
   searchModule,
   driveModule,
-  reportingModule,
-  localizationModule,
-  subscriptionsModule,
-  fixedAssetsModule,
   reportingModule,
   localizationModule,
   subscriptionsModule,

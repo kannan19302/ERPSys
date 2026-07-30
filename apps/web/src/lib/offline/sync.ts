@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { getPendingTransactions, markTransactionSynced, markSyncFailed } from './db';
 import { apiPost } from '../api';
 

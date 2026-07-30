@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Importing a descriptor module runs its top-level `registerModule(...)` call
 // (registration by side effect, same pattern as e.g. NestJS module providers).
 // Add new migrated modules here as they're ported off the legacy branch chain

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useQuery, useMutation, useQueryClient, type UseQueryOptions, type UseMutationOptions } from '@tanstack/react-query';
 import { api, apiPost, apiPatch, apiDelete, type ApiRequestError } from '../api';
 

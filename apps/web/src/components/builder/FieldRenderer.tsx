@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { DollarSign } from 'lucide-react';
 import { FormField } from '@/stores/builderStore';

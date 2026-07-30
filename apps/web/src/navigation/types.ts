@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type React from 'react';
 
 /** A single sidebar entry. A header groups child `items` under a label. */

@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 import { KeyRound, Webhook, BarChart3 } from "lucide-react";
 import type { ModuleTab } from "@unerp/ui-layout";

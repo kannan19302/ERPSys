@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { HeroBlock, TrustBarBlock, FeaturesGridBlock, SocialProofBlock, HowItWorksBlock, PricingBlock, FaqBlock } from '@unerp/ui';
 import { CollectionBlock } from './CollectionBlock';

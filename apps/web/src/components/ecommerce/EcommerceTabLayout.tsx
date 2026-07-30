@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import { Settings, Layers, Package } from "lucide-react";

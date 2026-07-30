@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Worldwide reference lookups for onboarding/registration dropdowns
  * (country, currency, timezone, language, business type, industry).

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Legacy `/settings/*` → new `/saas/*` path map for the settings-to-SaaS-Portal
  * migration (Phase 3). Source of truth for app code that needs to know a

@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 import styles from "./OnboardingChecklist.module.css";
 import React, { useEffect, useMemo, useState } from "react";

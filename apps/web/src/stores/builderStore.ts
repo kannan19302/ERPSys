@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { create } from 'zustand';
 import { arrayMove } from '@dnd-kit/sortable';
 

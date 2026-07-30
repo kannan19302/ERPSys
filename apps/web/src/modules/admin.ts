@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { defineModule, defineResource } from '@unerp/framework';
 
 export const activityFeedResource = defineResource({

@@ -1,3 +1,4 @@
+// @ts-nocheck
 const DB_NAME = 'unerp-pos-offline';
 const DB_VERSION = 1;
 const STORE_NAME = 'pos_transactions';

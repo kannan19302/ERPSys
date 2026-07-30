@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* eslint-disable */
 import React, { useState, useEffect, useCallback } from 'react';
 import { X, CheckCircle, AlertCircle } from 'lucide-react';

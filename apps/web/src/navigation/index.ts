@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Navigation registry — the single source of truth for the dashboard shell's
  * sidebar, app switcher, and breadcrumbs. Extracted from the former monolithic

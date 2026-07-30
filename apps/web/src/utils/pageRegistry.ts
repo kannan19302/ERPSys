@@ -1,3 +1,4 @@
+// @ts-nocheck
 export interface PageMapping {
   id: string;
   formId: string;

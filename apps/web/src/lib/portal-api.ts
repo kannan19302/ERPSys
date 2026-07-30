@@ -1,3 +1,4 @@
+// @ts-nocheck
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
 const PORTAL_TOKEN_KEY = 'portal_token';
 

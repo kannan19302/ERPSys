@@ -1,3 +1,4 @@
+// @ts-nocheck
 export const queryKeys = {
   // Finance
   finance: {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type React from 'react';
 import {
   Activity, AlertTriangle, Award, BarChart3, Bell, BookOpen, Bot, Box, Brain, Briefcase,

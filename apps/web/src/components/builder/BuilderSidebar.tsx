@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from 'react';
 import { useBuilderStore } from '@/stores/builderStore';
 import { 

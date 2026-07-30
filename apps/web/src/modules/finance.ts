@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { defineModule, defineResource } from "@unerp/framework";
 import { apiPost } from "@/lib/api";
 

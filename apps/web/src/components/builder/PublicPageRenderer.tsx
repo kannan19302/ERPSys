@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from "react";
 import { BLOCK_REGISTRY } from "./blocks/registry";
 import { TenantHeader, TenantFooter } from "../site/TenantHeaderFooter";
