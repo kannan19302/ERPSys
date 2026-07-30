@@ -1,4 +1,3 @@
-import { CommunicationDeepController } from "./controllers/communication-deep-suite.controller";
 import { Module } from "@nestjs/common";
 import { CommunicationController } from "./communication.controller";
 import { CommunicationService } from "./communication.service";
@@ -34,9 +33,12 @@ import { CommunicationEnterpriseController } from "./communication-enterprise.co
 import { CommunicationEnterpriseService } from "./communication-enterprise.service";
 
 @Module({
-  imports: [DocumentStorageClientModule, RealtimeClientModule, CommunicationEnterpriseModule],
+  imports: [
+    DocumentStorageClientModule,
+    RealtimeClientModule,
+    CommunicationEnterpriseModule,
+  ],
   controllers: [
-    CommunicationDeepController,
     CommDeepExpansionController,
     CommunicationController,
     CommunicationExpansionController,
@@ -52,8 +54,6 @@ import { CommunicationEnterpriseService } from "./communication-enterprise.servi
     CommunicationEnterpriseController,
   ],
   providers: [
-    CommunicationDeepController,
-    CommDeepExpansionService,
     CommDeepExpansionService,
     CommunicationService,
     CommunicationAdminService,
@@ -69,7 +69,6 @@ import { CommunicationEnterpriseService } from "./communication-enterprise.servi
     CommunicationSurveyService,
     AppSettingsService,
     CommunicationEnterpriseService,
-    CommunicationEnterpriseController,
   ],
   exports: [
     CommDeepExpansionService,

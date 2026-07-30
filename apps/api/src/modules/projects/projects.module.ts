@@ -1,4 +1,3 @@
-import { ProjectsDeepController } from "./controllers/projects-deep-suite.controller";
 import { Module } from "@nestjs/common";
 import { ProjectsController } from "./projects.controller";
 import { ProjectsService } from "./projects.service";
@@ -28,10 +27,18 @@ import { ProjectsEnterpriseModule } from "./projects-enterprise.module";
 import { ProjectsEnterpriseController } from "./projects-enterprise.controller";
 import { ProjectsEnterpriseService } from "./projects-enterprise.service";
 
+import { WbsController } from "./controllers/wbs.controller";
+import { ProjectsWbsService } from "./services/projects-wbs.service";
+import { ProjectBaselineController } from "./controllers/project-baseline.controller";
+import { ProjectsBaselineService } from "./services/projects-baseline.service";
+import { RiskRegisterController } from "./controllers/risk-register.controller";
+import { ProjectsRiskRegisterService } from "./services/projects-risk-register.service";
+import { TimesheetApprovalController } from "./controllers/timesheet-approval.controller";
+import { ProjectsTimesheetService } from "./services/projects-timesheet.service";
+
 @Module({
   imports: [ProjectsEnterpriseModule],
   controllers: [
-    ProjectsDeepController,
     PpmDeepExpansionController,
     ProjectsController,
     ProjectsExpansionController,
@@ -44,9 +51,12 @@ import { ProjectsEnterpriseService } from "./projects-enterprise.service";
     PmoController,
     CollaborationController,
     ProjectsEnterpriseController,
+    WbsController,
+    ProjectBaselineController,
+    RiskRegisterController,
+    TimesheetApprovalController,
   ],
   providers: [
-    ProjectsDeepController,
     PpmDeepExpansionService,
     ProjectsService,
     ProjectSchedulingService,
@@ -61,6 +71,10 @@ import { ProjectsEnterpriseService } from "./projects-enterprise.service";
     ProjectsCollaborationService,
     ProjectsEnterpriseService,
     ProjectsEnterpriseController,
+    ProjectsWbsService,
+    ProjectsBaselineService,
+    ProjectsRiskRegisterService,
+    ProjectsTimesheetService,
   ],
   exports: [
     PpmDeepExpansionService,
@@ -77,6 +91,10 @@ import { ProjectsEnterpriseService } from "./projects-enterprise.service";
     ProjectsPmoService,
     ProjectsCollaborationService,
     ProjectsEnterpriseService,
+    ProjectsWbsService,
+    ProjectsBaselineService,
+    ProjectsRiskRegisterService,
+    ProjectsTimesheetService,
   ],
 })
 export class ProjectsModule {}
