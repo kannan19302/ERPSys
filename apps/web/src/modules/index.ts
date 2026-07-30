@@ -1,4 +1,9 @@
 // @ts-nocheck
+import { reportingModule } from './reporting';
+import { localizationModule } from './localization';
+import { subscriptionsModule } from './subscriptions';
+import { fixedAssetsModule } from './fixed-assets';
+// @ts-nocheck
 import { blockchainModule } from './blockchain';
 import { serviceManagementModule } from './service-management';
 import { peopleModule } from './people';
@@ -46,6 +51,10 @@ import { superAdminModule } from "./super-admin";
  * means the inventory one, so inventoryModule must stay ahead of crmModule.
  */
 export const registeredModules = [
+  reportingModule,
+  localizationModule,
+  subscriptionsModule,
+  fixedAssetsModule,
   blockchainModule,
   serviceManagementModule,
   peopleModule,
