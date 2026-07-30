@@ -1,12 +1,15 @@
-import { inventoryModule } from './inventory';
-import { crmModule } from './crm';
-import { financeModule } from './finance';
-import { advancedFinanceModule } from './advanced-finance';
-import { financeAuditModule } from './finance-audit';
-import { hrModule } from './hr';
-import { ecommerceModule } from './ecommerce';
-import { adminModule } from './admin';
-import { superAdminModule } from './super-admin';
+import { devopsModule } from "./devops";
+import { extGatewayModule } from "./ext-gateway";
+import { apiPlatformModule } from "./api-platform";
+import { inventoryModule } from "./inventory";
+import { crmModule } from "./crm";
+import { financeModule } from "./finance";
+import { advancedFinanceModule } from "./advanced-finance";
+import { financeAuditModule } from "./finance-audit";
+import { hrModule } from "./hr";
+import { ecommerceModule } from "./ecommerce";
+import { adminModule } from "./admin";
+import { superAdminModule } from "./super-admin";
 
 /**
  * Every module the app registers with the framework registry. A module that is
@@ -20,6 +23,9 @@ import { superAdminModule } from './super-admin';
  * means the inventory one, so inventoryModule must stay ahead of crmModule.
  */
 export const registeredModules = [
+  devopsModule,
+  extGatewayModule,
+  apiPlatformModule,
   inventoryModule,
   crmModule,
   financeModule,

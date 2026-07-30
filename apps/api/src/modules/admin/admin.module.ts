@@ -32,6 +32,12 @@ import { ErrorReportsController } from "./error-reports.controller";
 import { ErrorReportsService } from "./error-reports.service";
 import { TenantLifecycleController } from "./tenant-lifecycle/tenant-lifecycle.controller";
 import { TenantLifecycleService } from "./tenant-lifecycle/tenant-lifecycle.service";
+import { AdminDeepController } from "./admin-deep.controller";
+import { AdminDeepService } from "./admin-deep.service";
+import { AdminDeepV2Controller } from "./admin-deep-v2.controller";
+import { AdminDeepV2Service } from "./admin-deep-v2.service";
+import { AdminDeepV3Controller } from "./admin-deep-v3.controller";
+import { AdminDeepV3Service } from "./admin-deep-v3.service";
 import { PlatformCredentialsModule } from "../../common/platform-credentials/platform-credentials.module";
 
 @Module({
@@ -53,6 +59,9 @@ import { PlatformCredentialsModule } from "../../common/platform-credentials/pla
     SubscriptionController,
     ErrorReportsController,
     TenantLifecycleController,
+    AdminDeepController,
+    AdminDeepV2Controller,
+    AdminDeepV3Controller,
   ],
   providers: [
     AdminService,
@@ -72,6 +81,9 @@ import { PlatformCredentialsModule } from "../../common/platform-credentials/pla
     SubscriptionService,
     ErrorReportsService,
     TenantLifecycleService,
+    AdminDeepService,
+    AdminDeepV2Service,
+    AdminDeepV3Service,
   ],
   exports: [
     AdminService,
@@ -88,7 +100,11 @@ import { PlatformCredentialsModule } from "../../common/platform-credentials/pla
     BulkOperationsService,
     DataQualityService,
     SubscriptionService,
+    ErrorReportsService,
     TenantLifecycleService,
+    AdminDeepService,
+    AdminDeepV2Service,
+    AdminDeepV3Service,
   ],
 })
 export class AdminModule {}
