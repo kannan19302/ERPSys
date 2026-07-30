@@ -1,3 +1,4 @@
+import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -10,6 +11,7 @@ import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/ui_card.dart';
 import '../../domain/entities/sales.dart';
 import '../providers/sales_providers.dart';
+import '../../../../core/usecase/result.dart';
 
 class QuotationDetailPage extends ConsumerWidget {
   const QuotationDetailPage({required this.quotationId, super.key});
@@ -46,7 +48,7 @@ class QuotationDetailPage extends ConsumerWidget {
               : const ServerFailure('Could not load quotation.'),
           onRetry: () => ref.invalidate(quotationDetailProvider(quotationId)),
         ),
-        data: (Quotation quotation) => _QuotationDetail(quotation: quotation),
+        data: (Quotation quotation) => _QuotationDetail(quotation: quotation, ref: ref),
       ),
     );
   }
@@ -83,13 +85,14 @@ class QuotationDetailPage extends ConsumerWidget {
   }
 }
 
-class _QuotationDetail extends StatelessWidget {
-  const _QuotationDetail({required this.quotation});
+class _QuotationDetail extends ConsumerWidget {
+  const _QuotationDetail({required this.quotation, required this.ref});
 
   final Quotation quotation;
+  final WidgetRef ref;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final Palette t = context.tokens;
 
     return ListView(
@@ -161,7 +164,7 @@ class _QuotationDetail extends StatelessWidget {
             children: <Widget>[
               Expanded(
                 child: FilledButton(
-                  onPressed: () => _submitQuotation(context),
+                  onPressed: () => _submitQuotation(context, ref),
                   child: const Text('Submit'),
                 ),
               ),
@@ -174,7 +177,7 @@ class _QuotationDetail extends StatelessWidget {
             children: <Widget>[
               Expanded(
                 child: FilledButton(
-                  onPressed: () => _acceptQuotation(context),
+                  onPressed: () => _acceptQuotation(context, ref),
                   child: const Text('Accept'),
                 ),
               ),
@@ -193,12 +196,28 @@ class _QuotationDetail extends StatelessWidget {
         _ => UiTone.neutral,
       };
 
-  void _submitQuotation(BuildContext context) {
-    // TODO: wire up through provider
+  Future<void> _submitQuotation(BuildContext context, WidgetRef ref) async {
+    final Result<Quotation> result =
+        await ref.read(quotationsProvider.notifier).submit(quotation.id);
+    if (!context.mounted) return;
+    result.fold(
+      (failure) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(failure.message))),
+      (_) => ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Quotation submitted'))),
+    );
   }
 
-  void _acceptQuotation(BuildContext context) {
-    // TODO: wire up through provider
+  Future<void> _acceptQuotation(BuildContext context, WidgetRef ref) async {
+    final Result<Quotation> result =
+        await ref.read(quotationsProvider.notifier).accept(quotation.id);
+    if (!context.mounted) return;
+    result.fold(
+      (failure) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(failure.message))),
+      (_) => ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Quotation accepted'))),
+    );
   }
 }
 

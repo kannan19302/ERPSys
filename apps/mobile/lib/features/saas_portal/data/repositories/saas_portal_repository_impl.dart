@@ -99,4 +99,8 @@ class SaasPortalRepositoryImpl implements SaasPortalRepository {
   @override
   Future<Result<PortalSupportTicket>> createSupportTicket(Map<String, dynamic> payload) =>
       _write(() => _remote.createSupportTicket(payload));
+
+  @override
+  Future<Result<PortalSupportTicket>> updateSupportTicket(String id, Map<String, dynamic> p) async => throw UnimplementedError();
+
 }

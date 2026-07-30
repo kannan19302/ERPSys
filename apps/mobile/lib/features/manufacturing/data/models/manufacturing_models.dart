@@ -253,6 +253,7 @@ class WorkstationModel extends Workstation {
     super.location,
     super.status,
     super.capacity,
+    super.utilization,
     super.createdAt,
     super.updatedAt,
   });
@@ -269,6 +270,7 @@ class WorkstationModel extends Workstation {
       location: json['location'] as String?,
       status: json['status'] as String? ?? 'AVAILABLE',
       capacity: asDouble(json['capacity']),
+      utilization: asDouble(json['utilization']),
       createdAt: DateTime.tryParse('${json['createdAt']}'),
       updatedAt: DateTime.tryParse('${json['updatedAt']}'),
     );
@@ -281,6 +283,7 @@ class WorkstationModel extends Workstation {
         'location': location,
         'status': status,
         'capacity': capacity,
+        'utilization': utilization,
         'createdAt': createdAt?.toIso8601String(),
         'updatedAt': updatedAt?.toIso8601String(),
       };
@@ -424,6 +427,53 @@ class QualityInspectionModel extends QualityInspection {
       };
 }
 
+class EngineeringChangeOrderModel extends EngineeringChangeOrder {
+  const EngineeringChangeOrderModel({
+    required super.id,
+    required super.name,
+    super.bomId,
+    super.bomName,
+    super.description,
+    super.reason,
+    super.status,
+    super.effectiveDate,
+    super.approvedBy,
+    super.createdAt,
+  });
+
+  factory EngineeringChangeOrderModel.fromJson(Map<String, dynamic> json) {
+    final Object? id = json['id'];
+    if (id is! String) {
+      throw const ParseException('EngineeringChangeOrder is missing its id');
+    }
+    return EngineeringChangeOrderModel(
+      id: id,
+      name: json['name'] as String? ?? '',
+      bomId: json['bomId'] as String?,
+      bomName: json['bomName'] as String?,
+      description: json['description'] as String?,
+      reason: json['reason'] as String?,
+      status: json['status'] as String? ?? 'DRAFT',
+      effectiveDate: DateTime.tryParse('${json['effectiveDate']}'),
+      approvedBy: json['approvedBy'] as String?,
+      createdAt: DateTime.tryParse('${json['createdAt']}'),
+    );
+  }
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+        'name': name,
+        'bomId': bomId,
+        'bomName': bomName,
+        'description': description,
+        'reason': reason,
+        'status': status,
+        'effectiveDate': effectiveDate?.toIso8601String(),
+        'approvedBy': approvedBy,
+        'createdAt': createdAt?.toIso8601String(),
+      };
+}
+
 double asDouble(Object? value) => switch (value) {
       final num v => v.toDouble(),
       final String v => double.tryParse(v) ?? 0,
@@ -442,3 +492,5 @@ double? asDoubleOrNull(Object? value) => switch (value) {
       final String v => double.tryParse(v),
       _ => null,
     };
+
+String? asStringOrNull(Object? value) => value is String ? value : null;

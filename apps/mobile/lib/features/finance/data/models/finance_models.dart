@@ -32,18 +32,24 @@ class InvoiceModel extends Invoice {
       customerName: json['customerName'] as String? ?? '',
       invoiceNumber: json['invoiceNumber'] as String? ?? '',
       status: json['status'] as String? ?? 'DRAFT',
-      items: json['items'] is List
-          ? (json['items'] as List)
+      items: json['lineItems'] is List
+          ? (json['lineItems'] as List)
               .map((Object? e) => InvoiceLineItemModel.fromJson(e as Map<String, dynamic>))
               .toList()
-          : const <InvoiceLineItemModel>[],
+          : json['items'] is List
+              ? (json['items'] as List)
+                  .map((Object? e) => InvoiceLineItemModel.fromJson(e as Map<String, dynamic>))
+                  .toList()
+              : const <InvoiceLineItemModel>[],
       subtotal: asDouble(json['subtotal']),
-      taxTotal: asDouble(json['taxTotal']),
-      discountTotal: asDouble(json['discountTotal']),
+      taxTotal: asDouble(json['taxAmount'] ?? json['taxTotal']),
+      discountTotal: asDouble(json['discountAmount'] ?? json['discountTotal']),
       totalAmount: asDouble(json['totalAmount']),
       currency: json['currency'] as String? ?? 'USD',
       dueDate: DateTime.parse(json['dueDate'] as String),
-      invoiceDate: DateTime.parse(json['invoiceDate'] as String),
+      invoiceDate: DateTime.parse(
+        (json['issueDate'] ?? json['invoiceDate']) as String,
+      ),
       notes: json['notes'] as String?,
       createdAt: DateTime.tryParse('${json['createdAt']}'),
       updatedAt: DateTime.tryParse('${json['updatedAt']}'),
@@ -94,8 +100,8 @@ class InvoiceLineItemModel extends InvoiceLineItem {
       productName: json['productName'] as String?,
       description: json['description'] as String?,
       quantity: asDouble(json['quantity']),
-      rate: asDouble(json['rate']),
-      amount: asDouble(json['amount']),
+      rate: asDouble(json['unitPrice'] ?? json['rate']),
+      amount: asDouble(json['totalAmount'] ?? json['amount']),
       taxRate: asDouble(json['taxRate']),
       taxAmount: asDouble(json['taxAmount']),
     );
@@ -107,8 +113,8 @@ class InvoiceLineItemModel extends InvoiceLineItem {
         'productName': productName,
         'description': description,
         'quantity': quantity,
-        'rate': rate,
-        'amount': amount,
+        'unitPrice': rate,
+        'totalAmount': amount,
         'taxRate': taxRate,
         'taxAmount': taxAmount,
       };
@@ -142,7 +148,9 @@ class PaymentModel extends Payment {
       customerName: json['customerName'] as String?,
       amount: asDouble(json['amount']),
       currency: json['currency'] as String?,
-      paymentDate: DateTime.parse(json['paymentDate'] as String),
+      paymentDate: DateTime.parse(
+        (json['paidAt'] ?? json['paymentDate']) as String,
+      ),
       method: json['method'] as String? ?? 'BANK_TRANSFER',
       reference: json['reference'] as String?,
       status: json['status'] as String?,
@@ -340,6 +348,226 @@ class BudgetModel extends Budget {
         'spentAmount': spentAmount,
         'remainingAmount': remainingAmount,
         'status': status,
+        'createdAt': createdAt?.toIso8601String(),
+      };
+}
+
+class TaxFilingModel extends TaxFiling {
+  const TaxFilingModel({
+    required super.id,
+    required super.taxType,
+    required super.period,
+    required super.returnType,
+    required super.totalTax,
+    required super.status,
+    required super.dueAt,
+    super.filedAt,
+    super.notes,
+    super.createdAt,
+  });
+
+  factory TaxFilingModel.fromJson(Map<String, dynamic> json) {
+    final Object? id = json['id'];
+    if (id is! String) {
+      throw const ParseException('TaxFiling is missing its id');
+    }
+    return TaxFilingModel(
+      id: id,
+      taxType: json['taxType'] as String? ?? '',
+      period: json['period'] as String? ?? '',
+      returnType: json['returnType'] as String? ?? '',
+      totalTax: asDouble(json['totalTax']),
+      status: json['status'] as String? ?? 'DRAFT',
+      dueAt: DateTime.parse(json['dueAt'] as String),
+      filedAt: json['filedAt'] != null ? DateTime.tryParse('${json['filedAt']}') : null,
+      notes: json['notes'] as String?,
+      createdAt: DateTime.tryParse('${json['createdAt']}'),
+    );
+  }
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+        'taxType': taxType,
+        'period': period,
+        'returnType': returnType,
+        'totalTax': totalTax,
+        'status': status,
+        'dueAt': dueAt.toIso8601String(),
+        'filedAt': filedAt?.toIso8601String(),
+        'notes': notes,
+        'createdAt': createdAt?.toIso8601String(),
+      };
+}
+
+class ChartOfAccountModel extends ChartOfAccount {
+  const ChartOfAccountModel({
+    required super.id,
+    required super.code,
+    required super.name,
+    required super.type,
+    super.parentId,
+    super.isActive,
+    super.balance,
+    super.createdAt,
+  });
+
+  factory ChartOfAccountModel.fromJson(Map<String, dynamic> json) {
+    final Object? id = json['id'];
+    if (id is! String) {
+      throw const ParseException('ChartOfAccount is missing its id');
+    }
+    return ChartOfAccountModel(
+      id: id,
+      code: json['code'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      type: json['type'] as String? ?? '',
+      parentId: json['parentId'] as String?,
+      isActive: json['isActive'] as bool? ?? true,
+      balance: asDouble(json['balance']),
+      createdAt: DateTime.tryParse('${json['createdAt']}'),
+    );
+  }
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+        'code': code,
+        'name': name,
+        'type': type,
+        'parentId': parentId,
+        'isActive': isActive,
+        'balance': balance,
+        'createdAt': createdAt?.toIso8601String(),
+      };
+}
+
+class JournalEntryLineItemModel extends JournalEntryLineItem {
+  const JournalEntryLineItemModel({
+    required super.id,
+    required super.accountId,
+    super.accountName,
+    super.debit,
+    super.credit,
+    super.description,
+  });
+
+  factory JournalEntryLineItemModel.fromJson(Map<String, dynamic> json) {
+    final Object? id = json['id'];
+    if (id is! String) {
+      throw const ParseException('JournalEntryLineItem is missing its id');
+    }
+    return JournalEntryLineItemModel(
+      id: id,
+      accountId: json['accountId'] as String? ?? '',
+      accountName: json['accountName'] as String?,
+      debit: asDouble(json['debit']),
+      credit: asDouble(json['credit']),
+      description: json['description'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+        'accountId': accountId,
+        'accountName': accountName,
+        'debit': debit,
+        'credit': credit,
+        'description': description,
+      };
+}
+
+class JournalEntryModel extends JournalEntry {
+  const JournalEntryModel({
+    required super.id,
+    required super.entryNumber,
+    required super.date,
+    super.description,
+    super.reference,
+    super.totalDebit,
+    super.totalCredit,
+    super.status,
+    super.createdAt,
+    super.lineItems,
+  });
+
+  factory JournalEntryModel.fromJson(Map<String, dynamic> json) {
+    final Object? id = json['id'];
+    if (id is! String) {
+      throw const ParseException('JournalEntry is missing its id');
+    }
+    return JournalEntryModel(
+      id: id,
+      entryNumber: json['entryNumber'] as String? ?? '',
+      date: DateTime.parse(json['date'] as String),
+      description: json['description'] as String?,
+      reference: json['reference'] as String?,
+      totalDebit: asDouble(json['totalDebit']),
+      totalCredit: asDouble(json['totalCredit']),
+      status: json['status'] as String? ?? 'DRAFT',
+      createdAt: DateTime.tryParse('${json['createdAt']}'),
+      lineItems: json['lineItems'] is List
+          ? (json['lineItems'] as List)
+              .map((Object? e) => JournalEntryLineItemModel.fromJson(e as Map<String, dynamic>))
+              .toList()
+          : const <JournalEntryLineItemModel>[],
+    );
+  }
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+        'entryNumber': entryNumber,
+        'date': date.toIso8601String(),
+        'description': description,
+        'reference': reference,
+        'totalDebit': totalDebit,
+        'totalCredit': totalCredit,
+        'status': status,
+        'createdAt': createdAt?.toIso8601String(),
+        'lineItems': lineItems
+            .map((JournalEntryLineItem i) => (i as JournalEntryLineItemModel).toJson())
+            .toList(),
+      };
+}
+
+class BankAccountModel extends BankAccount {
+  const BankAccountModel({
+    required super.id,
+    required super.name,
+    required super.accountNumber,
+    required super.bankName,
+    super.branch,
+    super.currency,
+    super.balance,
+    super.isActive,
+    super.createdAt,
+  });
+
+  factory BankAccountModel.fromJson(Map<String, dynamic> json) {
+    final Object? id = json['id'];
+    if (id is! String) {
+      throw const ParseException('BankAccount is missing its id');
+    }
+    return BankAccountModel(
+      id: id,
+      name: json['name'] as String? ?? '',
+      accountNumber: json['accountNumber'] as String? ?? '',
+      bankName: json['bankName'] as String? ?? '',
+      branch: json['branch'] as String?,
+      currency: json['currency'] as String? ?? 'USD',
+      balance: asDouble(json['balance']),
+      isActive: json['isActive'] as bool? ?? true,
+      createdAt: DateTime.tryParse('${json['createdAt']}'),
+    );
+  }
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+        'name': name,
+        'accountNumber': accountNumber,
+        'bankName': bankName,
+        'branch': branch,
+        'currency': currency,
+        'balance': balance,
+        'isActive': isActive,
         'createdAt': createdAt?.toIso8601String(),
       };
 }

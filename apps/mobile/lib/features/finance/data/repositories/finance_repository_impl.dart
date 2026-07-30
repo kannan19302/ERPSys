@@ -19,6 +19,10 @@ class FinanceRepositoryImpl implements FinanceRepository {
 
   static const String _invoicesNamespace = 'finance.invoices';
   static const String _paymentsNamespace = 'finance.payments';
+  static const String _taxFilingsNamespace = 'finance.tax-filings';
+  static const String _chartOfAccountsNamespace = 'finance.chart-of-accounts';
+  static const String _journalEntriesNamespace = 'finance.journal-entries';
+  static const String _bankAccountsNamespace = 'finance.bank-accounts';
 
   final FinanceRemoteDataSource _remote;
   final ResponseCache _cache;
@@ -267,6 +271,17 @@ class FinanceRepositoryImpl implements FinanceRepository {
     }
   }
 
+  @override
+  Future<Result<void>> deleteTaxRate(String id) async {
+    try {
+      await _remote.deleteTaxRate(id);
+      await _cache.clearTenant(_tenantId);
+      return const Result<void>.ok(null);
+    } on Object catch (error) {
+      return Result<void>.err(mapExceptionToFailure(error));
+    }
+  }
+
   // ── Budgets ──────────────────────────────────────────────────────────────
 
   @override
@@ -291,6 +306,17 @@ class FinanceRepositoryImpl implements FinanceRepository {
   }
 
   @override
+  Future<Result<void>> deleteBudget(String id) async {
+    try {
+      await _remote.deleteBudget(id);
+      await _cache.clearTenant(_tenantId);
+      return const Result<void>.ok(null);
+    } on Object catch (error) {
+      return Result<void>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
   Future<Result<Map<String, dynamic>>> getBudgetVsActuals(String id) async {
     try {
       return Result<Map<String, dynamic>>.ok(
@@ -298,6 +324,286 @@ class FinanceRepositoryImpl implements FinanceRepository {
       );
     } on Object catch (error) {
       return Result<Map<String, dynamic>>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  // ── Tax Filings ──────────────────────────────────────────────────────────
+
+  @override
+  Future<Result<Paginated<TaxFiling>>> listTaxFilings(ListQuery query) async {
+    try {
+      final Paginated<TaxFilingModel> page = await _remote.listTaxFilings(query);
+      return Result<Paginated<TaxFiling>>.ok(
+        Paginated<TaxFiling>(data: page.data, meta: page.meta),
+      );
+    } on Object catch (error) {
+      return Result<Paginated<TaxFiling>>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<TaxFiling>> getTaxFiling(String id) async {
+    try {
+      return Result<TaxFiling>.ok(await _remote.getTaxFiling(id));
+    } on Object catch (error) {
+      return Result<TaxFiling>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<TaxFiling>> createTaxFiling(Map<String, dynamic> payload) async {
+    try {
+      return Result<TaxFiling>.ok(await _remote.createTaxFiling(payload));
+    } on Object catch (error) {
+      return Result<TaxFiling>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<TaxFiling>> updateTaxFiling(
+    String id,
+    Map<String, dynamic> payload,
+  ) async {
+    try {
+      final TaxFiling updated = await _remote.updateTaxFiling(id, payload);
+      await _cache.clearTenant(_tenantId);
+      return Result<TaxFiling>.ok(updated);
+    } on Object catch (error) {
+      return Result<TaxFiling>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<void>> deleteTaxFiling(String id) async {
+    try {
+      await _remote.deleteTaxFiling(id);
+      await _cache.clearTenant(_tenantId);
+      return const Result<void>.ok(null);
+    } on Object catch (error) {
+      return Result<void>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<TaxFiling>> submitTaxFiling(String id) async {
+    try {
+      final TaxFiling submitted = await _remote.submitTaxFiling(id);
+      await _cache.clearTenant(_tenantId);
+      return Result<TaxFiling>.ok(submitted);
+    } on Object catch (error) {
+      return Result<TaxFiling>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  // ── Chart of Accounts ────────────────────────────────────────────────────
+
+  @override
+  Future<Result<Paginated<ChartOfAccount>>> listChartOfAccounts(
+    ListQuery query,
+  ) async {
+    try {
+      final Paginated<ChartOfAccountModel> page =
+          await _remote.listChartOfAccounts(query);
+      return Result<Paginated<ChartOfAccount>>.ok(
+        Paginated<ChartOfAccount>(data: page.data, meta: page.meta),
+      );
+    } on Object catch (error) {
+      return Result<Paginated<ChartOfAccount>>.err(
+        mapExceptionToFailure(error),
+      );
+    }
+  }
+
+  @override
+  Future<Result<ChartOfAccount>> getChartOfAccount(String id) async {
+    try {
+      return Result<ChartOfAccount>.ok(await _remote.getChartOfAccount(id));
+    } on Object catch (error) {
+      return Result<ChartOfAccount>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<ChartOfAccount>> createChartOfAccount(
+    Map<String, dynamic> payload,
+  ) async {
+    try {
+      return Result<ChartOfAccount>.ok(
+        await _remote.createChartOfAccount(payload),
+      );
+    } on Object catch (error) {
+      return Result<ChartOfAccount>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<ChartOfAccount>> updateChartOfAccount(
+    String id,
+    Map<String, dynamic> payload,
+  ) async {
+    try {
+      final ChartOfAccount updated =
+          await _remote.updateChartOfAccount(id, payload);
+      await _cache.clearTenant(_tenantId);
+      return Result<ChartOfAccount>.ok(updated);
+    } on Object catch (error) {
+      return Result<ChartOfAccount>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<void>> deleteChartOfAccount(String id) async {
+    try {
+      await _remote.deleteChartOfAccount(id);
+      await _cache.clearTenant(_tenantId);
+      return const Result<void>.ok(null);
+    } on Object catch (error) {
+      return Result<void>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  // ── Journal Entries ──────────────────────────────────────────────────────
+
+  @override
+  Future<Result<Paginated<JournalEntry>>> listJournalEntries(
+    ListQuery query,
+  ) async {
+    try {
+      final Paginated<JournalEntryModel> page =
+          await _remote.listJournalEntries(query);
+      return Result<Paginated<JournalEntry>>.ok(
+        Paginated<JournalEntry>(data: page.data, meta: page.meta),
+      );
+    } on Object catch (error) {
+      return Result<Paginated<JournalEntry>>.err(
+        mapExceptionToFailure(error),
+      );
+    }
+  }
+
+  @override
+  Future<Result<JournalEntry>> getJournalEntry(String id) async {
+    try {
+      return Result<JournalEntry>.ok(await _remote.getJournalEntry(id));
+    } on Object catch (error) {
+      return Result<JournalEntry>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<JournalEntry>> createJournalEntry(
+    Map<String, dynamic> payload,
+  ) async {
+    try {
+      return Result<JournalEntry>.ok(
+        await _remote.createJournalEntry(payload),
+      );
+    } on Object catch (error) {
+      return Result<JournalEntry>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<JournalEntry>> updateJournalEntry(
+    String id,
+    Map<String, dynamic> payload,
+  ) async {
+    try {
+      final JournalEntry updated =
+          await _remote.updateJournalEntry(id, payload);
+      await _cache.clearTenant(_tenantId);
+      return Result<JournalEntry>.ok(updated);
+    } on Object catch (error) {
+      return Result<JournalEntry>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<void>> deleteJournalEntry(String id) async {
+    try {
+      await _remote.deleteJournalEntry(id);
+      await _cache.clearTenant(_tenantId);
+      return const Result<void>.ok(null);
+    } on Object catch (error) {
+      return Result<void>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<JournalEntry>> postJournalEntry(String id) async {
+    try {
+      final JournalEntry posted = await _remote.postJournalEntry(id);
+      await _cache.clearTenant(_tenantId);
+      return Result<JournalEntry>.ok(posted);
+    } on Object catch (error) {
+      return Result<JournalEntry>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  // ── Bank Accounts ────────────────────────────────────────────────────────
+
+  @override
+  Future<Result<Paginated<BankAccount>>> listBankAccounts(
+    ListQuery query,
+  ) async {
+    try {
+      final Paginated<BankAccountModel> page =
+          await _remote.listBankAccounts(query);
+      return Result<Paginated<BankAccount>>.ok(
+        Paginated<BankAccount>(data: page.data, meta: page.meta),
+      );
+    } on Object catch (error) {
+      return Result<Paginated<BankAccount>>.err(
+        mapExceptionToFailure(error),
+      );
+    }
+  }
+
+  @override
+  Future<Result<BankAccount>> getBankAccount(String id) async {
+    try {
+      return Result<BankAccount>.ok(await _remote.getBankAccount(id));
+    } on Object catch (error) {
+      return Result<BankAccount>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<BankAccount>> createBankAccount(
+    Map<String, dynamic> payload,
+  ) async {
+    try {
+      return Result<BankAccount>.ok(
+        await _remote.createBankAccount(payload),
+      );
+    } on Object catch (error) {
+      return Result<BankAccount>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<BankAccount>> updateBankAccount(
+    String id,
+    Map<String, dynamic> payload,
+  ) async {
+    try {
+      final BankAccount updated =
+          await _remote.updateBankAccount(id, payload);
+      await _cache.clearTenant(_tenantId);
+      return Result<BankAccount>.ok(updated);
+    } on Object catch (error) {
+      return Result<BankAccount>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<void>> deleteBankAccount(String id) async {
+    try {
+      await _remote.deleteBankAccount(id);
+      await _cache.clearTenant(_tenantId);
+      return const Result<void>.ok(null);
+    } on Object catch (error) {
+      return Result<void>.err(mapExceptionToFailure(error));
     }
   }
 
@@ -348,59 +654,4 @@ class FinanceRepositoryImpl implements FinanceRepository {
     }
   }
 
-  // ── Journal Entries ──────────────────────────────────────────────────────
-
-  @override
-  Future<Result<Paginated<Map<String, dynamic>>>> listJournalEntries(
-    ListQuery query,
-  ) async {
-    try {
-      return Result<Paginated<Map<String, dynamic>>>.ok(
-        await _remote.listJournalEntries(query),
-      );
-    } on Object catch (error) {
-      return Result<Paginated<Map<String, dynamic>>>.err(
-        mapExceptionToFailure(error),
-      );
-    }
-  }
-
-  @override
-  Future<Result<Map<String, dynamic>>> createJournalEntry(
-    Map<String, dynamic> payload,
-  ) async {
-    try {
-      return Result<Map<String, dynamic>>.ok(
-        await _remote.createJournalEntry(payload),
-      );
-    } on Object catch (error) {
-      return Result<Map<String, dynamic>>.err(mapExceptionToFailure(error));
-    }
-  }
-
-  @override
-  Future<Result<Map<String, dynamic>>> postJournalEntry(String id) async {
-    try {
-      return Result<Map<String, dynamic>>.ok(
-        await _remote.postJournalEntry(id),
-      );
-    } on Object catch (error) {
-      return Result<Map<String, dynamic>>.err(mapExceptionToFailure(error));
-    }
-  }
-
-  // ── Chart of Accounts ────────────────────────────────────────────────────
-
-  @override
-  Future<Result<List<Map<String, dynamic>>>> getChartOfAccounts() async {
-    try {
-      return Result<List<Map<String, dynamic>>>.ok(
-        await _remote.getChartOfAccounts(),
-      );
-    } on Object catch (error) {
-      return Result<List<Map<String, dynamic>>>.err(
-        mapExceptionToFailure(error),
-      );
-    }
-  }
 }

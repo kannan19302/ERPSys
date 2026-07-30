@@ -46,6 +46,13 @@ class DeleteBomUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deleteBom(id);
 }
 
+class ExplodeBomUseCase extends UseCase<Bom, String> {
+  const ExplodeBomUseCase(this._repository);
+  final ManufacturingRepository _repository;
+  @override
+  Future<Result<Bom>> call(String id) => _repository.getBom(id);
+}
+
 // ── Work Order ──
 
 class ListWorkOrdersUseCase extends UseCase<Cacheable<Paginated<WorkOrder>>, ListQuery> {
@@ -151,6 +158,73 @@ class GetWorkstationUseCase extends UseCase<Workstation, String> {
   Future<Result<Workstation>> call(String id) => _repository.getWorkstation(id);
 }
 
+class SaveWorkstationParams {
+  const SaveWorkstationParams({required this.payload, this.id});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SaveWorkstationUseCase extends UseCase<Workstation, SaveWorkstationParams> {
+  const SaveWorkstationUseCase(this._repository);
+  final ManufacturingRepository _repository;
+  @override
+  Future<Result<Workstation>> call(SaveWorkstationParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createWorkstation(params.payload)
+        : _repository.updateWorkstation(id, params.payload);
+  }
+}
+
+class DeleteWorkstationUseCase extends UseCase<void, String> {
+  const DeleteWorkstationUseCase(this._repository);
+  final ManufacturingRepository _repository;
+  @override
+  Future<Result<void>> call(String id) => _repository.deleteWorkstation(id);
+}
+
+// ── Routing ──
+
+class ListRoutingsUseCase extends UseCase<Cacheable<Paginated<Routing>>, ListQuery> {
+  const ListRoutingsUseCase(this._repository);
+  final ManufacturingRepository _repository;
+  @override
+  Future<Result<Cacheable<Paginated<Routing>>>> call(ListQuery params) =>
+      _repository.listRoutings(params);
+}
+
+class GetRoutingUseCase extends UseCase<Routing, String> {
+  const GetRoutingUseCase(this._repository);
+  final ManufacturingRepository _repository;
+  @override
+  Future<Result<Routing>> call(String id) => _repository.getRouting(id);
+}
+
+class SaveRoutingParams {
+  const SaveRoutingParams({required this.payload, this.id});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SaveRoutingUseCase extends UseCase<Routing, SaveRoutingParams> {
+  const SaveRoutingUseCase(this._repository);
+  final ManufacturingRepository _repository;
+  @override
+  Future<Result<Routing>> call(SaveRoutingParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createRouting(params.payload)
+        : _repository.updateRouting(id, params.payload);
+  }
+}
+
+class DeleteRoutingUseCase extends UseCase<void, String> {
+  const DeleteRoutingUseCase(this._repository);
+  final ManufacturingRepository _repository;
+  @override
+  Future<Result<void>> call(String id) => _repository.deleteRouting(id);
+}
+
 // ── Quality Inspection ──
 
 class ListQualityInspectionsUseCase extends UseCase<Cacheable<Paginated<QualityInspection>>, ListQuery> {
@@ -167,4 +241,81 @@ class GetQualityInspectionUseCase extends UseCase<QualityInspection, String> {
   @override
   Future<Result<QualityInspection>> call(String id) =>
       _repository.getQualityInspection(id);
+}
+
+class SaveQualityInspectionParams {
+  const SaveQualityInspectionParams({required this.payload, this.id});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SaveQualityInspectionUseCase extends UseCase<QualityInspection, SaveQualityInspectionParams> {
+  const SaveQualityInspectionUseCase(this._repository);
+  final ManufacturingRepository _repository;
+  @override
+  Future<Result<QualityInspection>> call(SaveQualityInspectionParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createQualityInspection(params.payload)
+        : _repository.updateQualityInspection(id, params.payload);
+  }
+}
+
+class DeleteQualityInspectionUseCase extends UseCase<void, String> {
+  const DeleteQualityInspectionUseCase(this._repository);
+  final ManufacturingRepository _repository;
+  @override
+  Future<Result<void>> call(String id) => _repository.deleteQualityInspection(id);
+}
+
+// ── Engineering Change Order ──
+
+class ListEngineeringChangeOrdersUseCase extends UseCase<Cacheable<Paginated<EngineeringChangeOrder>>, ListQuery> {
+  const ListEngineeringChangeOrdersUseCase(this._repository);
+  final ManufacturingRepository _repository;
+  @override
+  Future<Result<Cacheable<Paginated<EngineeringChangeOrder>>>> call(ListQuery params) =>
+      _repository.listEngineeringChangeOrders(params);
+}
+
+class GetEngineeringChangeOrderUseCase extends UseCase<EngineeringChangeOrder, String> {
+  const GetEngineeringChangeOrderUseCase(this._repository);
+  final ManufacturingRepository _repository;
+  @override
+  Future<Result<EngineeringChangeOrder>> call(String id) =>
+      _repository.getEngineeringChangeOrder(id);
+}
+
+class SaveEngineeringChangeOrderParams {
+  const SaveEngineeringChangeOrderParams({required this.payload, this.id});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SaveEngineeringChangeOrderUseCase extends UseCase<EngineeringChangeOrder, SaveEngineeringChangeOrderParams> {
+  const SaveEngineeringChangeOrderUseCase(this._repository);
+  final ManufacturingRepository _repository;
+  @override
+  Future<Result<EngineeringChangeOrder>> call(SaveEngineeringChangeOrderParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createEngineeringChangeOrder(params.payload)
+        : _repository.updateEngineeringChangeOrder(id, params.payload);
+  }
+}
+
+class DeleteEngineeringChangeOrderUseCase extends UseCase<void, String> {
+  const DeleteEngineeringChangeOrderUseCase(this._repository);
+  final ManufacturingRepository _repository;
+  @override
+  Future<Result<void>> call(String id) =>
+      _repository.deleteEngineeringChangeOrder(id);
+}
+
+class ApproveEngineeringChangeOrderUseCase extends UseCase<EngineeringChangeOrder, String> {
+  const ApproveEngineeringChangeOrderUseCase(this._repository);
+  final ManufacturingRepository _repository;
+  @override
+  Future<Result<EngineeringChangeOrder>> call(String id) =>
+      _repository.approveEngineeringChangeOrder(id);
 }

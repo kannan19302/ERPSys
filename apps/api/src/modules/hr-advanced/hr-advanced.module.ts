@@ -41,12 +41,6 @@ import { HrRecruitmentOnboardingService } from "./hr-recruitment-onboarding.serv
 import { HrRecruitmentOnboardingController } from "./hr-recruitment-onboarding.controller";
 import { HrSelfServiceAiService } from "./hr-self-service-ai.service";
 import { HrSelfServiceAiController } from "./hr-self-service-ai.controller";
-
-import { HrDeepExpansionService } from "./hr-deep-expansion.service";
-import { HrDeepExpansionController } from "./hr-deep-expansion.controller";
-import { HrDeepExpansionMegaController } from "./hr-deep-expansion-mega.controller";
-import { HrDeepExpansionBulkController } from "./hr-deep-expansion-bulk.controller";
-
 @Module({
   controllers: [
     HrAdvancedController,
@@ -70,9 +64,6 @@ import { HrDeepExpansionBulkController } from "./hr-deep-expansion-bulk.controll
     HrEmployeeRelationsController,
     HrRecruitmentOnboardingController,
     HrSelfServiceAiController,
-    HrDeepExpansionController,
-    HrDeepExpansionMegaController,
-    HrDeepExpansionBulkController,
   ],
   providers: [
     HrAdvancedService,
@@ -96,7 +87,6 @@ import { HrDeepExpansionBulkController } from "./hr-deep-expansion-bulk.controll
     HrEmployeeRelationsService,
     HrRecruitmentOnboardingService,
     HrSelfServiceAiService,
-    HrDeepExpansionService,
   ],
   exports: [
     HrAdvancedService,
@@ -120,7 +110,6 @@ import { HrDeepExpansionBulkController } from "./hr-deep-expansion-bulk.controll
     HrEmployeeRelationsService,
     HrRecruitmentOnboardingService,
     HrSelfServiceAiService,
-    HrDeepExpansionService,
   ],
 })
 export class HrAdvancedModule {}

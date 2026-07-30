@@ -18,4 +18,8 @@ abstract class SaasPortalRepository {
   Future<Result<Cacheable<Paginated<PortalSupportTicket>>>> listSupportTickets(ListQuery query);
   Future<Result<PortalSupportTicket>> getSupportTicket(String id);
   Future<Result<PortalSupportTicket>> createSupportTicket(Map<String, dynamic> payload);
+
+
+  Future<Result<PortalSupportTicket>> updateSupportTicket(String id, Map<String, dynamic> payload);
+
 }

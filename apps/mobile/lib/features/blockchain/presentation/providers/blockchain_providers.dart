@@ -1,3 +1,5 @@
+import '../../../../core/error/exceptions.dart';
+import '../../../../core/usecase/result.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -225,3 +227,6 @@ final FutureProviderFamily<BlockchainTransaction, String> blockchainTransactionD
     ref.watch(blockchainRepositoryProvider))(id);
   return result.fold((f) => throw f, (v) => v);
 });
+
+final FutureProviderFamily<BlockchainContract, String> blockchainContractDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
+extension SaveBlockchainContract on BlockchainContractListController { Future<Result<BlockchainContract>> save(Map<String, dynamic> payload, {String? id}) async => throw UnimplementedError(); }

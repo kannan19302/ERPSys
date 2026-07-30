@@ -239,3 +239,113 @@ class CreateActivityUseCase
   Future<Result<Activity>> call(Map<String, dynamic> params) =>
       _repository.createActivity(params);
 }
+
+class GetActivityUseCase extends UseCase<Activity, String> {
+  const GetActivityUseCase(this._repository);
+
+  final CrmRepository _repository;
+
+  @override
+  Future<Result<Activity>> call(String id) => _repository.getActivity(id);
+}
+
+class UpdateActivityUseCase extends UseCase<Activity, SaveCustomerParams> {
+  const UpdateActivityUseCase(this._repository);
+
+  final CrmRepository _repository;
+
+  @override
+  Future<Result<Activity>> call(SaveCustomerParams params) =>
+      _repository.updateActivity(params.id!, params.payload);
+}
+
+class DeleteActivityUseCase extends UseCase<void, String> {
+  const DeleteActivityUseCase(this._repository);
+
+  final CrmRepository _repository;
+
+  @override
+  Future<Result<void>> call(String id) => _repository.deleteActivity(id);
+}
+
+// ── Email Templates ─────────────────────────────────────────────────────────
+
+class ListEmailTemplatesUseCase
+    extends UseCase<Paginated<EmailTemplate>, ListQuery> {
+  const ListEmailTemplatesUseCase(this._repository);
+
+  final CrmRepository _repository;
+
+  @override
+  Future<Result<Paginated<EmailTemplate>>> call(ListQuery params) =>
+      _repository.listEmailTemplates(params);
+}
+
+class GetEmailTemplateUseCase extends UseCase<EmailTemplate, String> {
+  const GetEmailTemplateUseCase(this._repository);
+
+  final CrmRepository _repository;
+
+  @override
+  Future<Result<EmailTemplate>> call(String id) =>
+      _repository.getEmailTemplate(id);
+}
+
+class SaveEmailTemplateUseCase
+    extends UseCase<EmailTemplate, SaveCustomerParams> {
+  const SaveEmailTemplateUseCase(this._repository);
+
+  final CrmRepository _repository;
+
+  @override
+  Future<Result<EmailTemplate>> call(SaveCustomerParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createEmailTemplate(params.payload)
+        : _repository.updateEmailTemplate(id, params.payload);
+  }
+}
+
+class DeleteEmailTemplateUseCase extends UseCase<void, String> {
+  const DeleteEmailTemplateUseCase(this._repository);
+
+  final CrmRepository _repository;
+
+  @override
+  Future<Result<void>> call(String id) =>
+      _repository.deleteEmailTemplate(id);
+}
+
+// ── Lead Sources ────────────────────────────────────────────────────────────
+
+class ListLeadSourcesUseCase
+    extends UseCase<Paginated<LeadSource>, ListQuery> {
+  const ListLeadSourcesUseCase(this._repository);
+
+  final CrmRepository _repository;
+
+  @override
+  Future<Result<Paginated<LeadSource>>> call(ListQuery params) =>
+      _repository.listLeadSources(params);
+}
+
+class CreateLeadSourceUseCase
+    extends UseCase<LeadSource, Map<String, dynamic>> {
+  const CreateLeadSourceUseCase(this._repository);
+
+  final CrmRepository _repository;
+
+  @override
+  Future<Result<LeadSource>> call(Map<String, dynamic> params) =>
+      _repository.createLeadSource(params);
+}
+
+class DeleteLeadSourceUseCase extends UseCase<void, String> {
+  const DeleteLeadSourceUseCase(this._repository);
+
+  final CrmRepository _repository;
+
+  @override
+  Future<Result<void>> call(String id) =>
+      _repository.deleteLeadSource(id);
+}

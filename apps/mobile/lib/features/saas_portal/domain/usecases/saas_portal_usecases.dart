@@ -27,6 +27,24 @@ class ListPortalPlansUseCase extends UseCase<Cacheable<Paginated<PortalPlan>>, L
       _repository.listPlans(params);
 }
 
+class SavePortalSupportTicketParams {
+  const SavePortalSupportTicketParams({required this.payload, this.id});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SavePortalSupportTicketUseCase extends UseCase<PortalSupportTicket, SavePortalSupportTicketParams> {
+  const SavePortalSupportTicketUseCase(this._repository);
+  final SaasPortalRepository _repository;
+  @override
+  Future<Result<PortalSupportTicket>> call(SavePortalSupportTicketParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createSupportTicket(params.payload)
+        : _repository.updateSupportTicket(id, params.payload);
+  }
+}
+
 class ListPortalSupportTicketsUseCase extends UseCase<Cacheable<Paginated<PortalSupportTicket>>, ListQuery> {
   const ListPortalSupportTicketsUseCase(this._repository);
   final SaasPortalRepository _repository;
@@ -49,3 +67,4 @@ class CreatePortalSupportTicketUseCase extends UseCase<PortalSupportTicket, Map<
   Future<Result<PortalSupportTicket>> call(Map<String, dynamic> payload) =>
       _repository.createSupportTicket(payload);
 }
+

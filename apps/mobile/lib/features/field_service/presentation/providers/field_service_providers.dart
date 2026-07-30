@@ -1,3 +1,4 @@
+import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -235,4 +236,56 @@ class TechnicianListController extends Notifier<TechnicianListState> {
     if (result.isOk) await refresh();
     return result;
   }
+}
+
+final FutureProviderFamily<Technician, String> technicianDetailProvider = FutureProvider.family<Technician, String>((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<ServiceSchedule, String> serviceScheduleDetailProvider = FutureProvider.family<ServiceSchedule, String>((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<ServiceContract, String> serviceContractDetailProvider = FutureProvider.family<ServiceContract, String>((ref, id) async => throw UnimplementedError());
+
+extension SaveTechnician on TechnicianListController {
+  Future<Result<Technician>> save(Map<String, dynamic> payload, {String? id}) async => throw UnimplementedError();
+}
+extension SaveServiceTicket on ServiceTicketListController {
+  Future<Result<ServiceTicket>> save(Map<String, dynamic> payload, {String? id}) async => throw UnimplementedError();
+}
+extension SaveServiceSchedule on ServiceScheduleListController {
+  Future<Result<ServiceSchedule>> save(Map<String, dynamic> payload, {String? id}) async => throw UnimplementedError();
+}
+
+final NotifierProvider<ServiceScheduleListController, ServiceScheduleListState>
+    serviceScheduleListControllerProvider =
+    NotifierProvider<ServiceScheduleListController, ServiceScheduleListState>(
+  ServiceScheduleListController.new,
+);
+
+class ServiceScheduleListController extends Notifier<ServiceScheduleListState> {
+  @override
+  ServiceScheduleListState build() => const ServiceScheduleListState();
+}
+
+class ServiceScheduleListState extends Equatable {
+  const ServiceScheduleListState({this.items = const []});
+  final List<ServiceSchedule> items;
+  @override
+  List<Object?> get props => [items];
+}
+
+
+final NotifierProvider<ServiceContractListController, ServiceContractListState>
+    serviceContractListControllerProvider =
+    NotifierProvider<ServiceContractListController, ServiceContractListState>(
+  ServiceContractListController.new,
+);
+
+class ServiceContractListController extends Notifier<ServiceContractListState> {
+  @override
+  ServiceContractListState build() => const ServiceContractListState();
+  Future<Result<ServiceContract>> save(Map<String, dynamic> payload, {String? id}) async => throw UnimplementedError();
+}
+
+class ServiceContractListState extends Equatable {
+  const ServiceContractListState({this.items = const []});
+  final List<ServiceContract> items;
+  @override
+  List<Object?> get props => [items];
 }

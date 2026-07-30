@@ -220,22 +220,31 @@ class PosLoyaltyProgram extends Equatable {
   const PosLoyaltyProgram({
     required this.id,
     required this.name,
+    this.type = 'points',
     this.pointsPerAmount = 0,
-    this.redemptionRate = 0,
+    this.rewardValue = 0,
+    this.validFrom,
+    this.validTo,
     this.isActive = true,
+    this.memberCount = 0,
     this.createdAt,
   });
 
   final String id;
   final String name;
+  final String type;
   final double pointsPerAmount;
-  final double redemptionRate;
+  final double rewardValue;
+  final DateTime? validFrom;
+  final DateTime? validTo;
   final bool isActive;
+  final int memberCount;
   final DateTime? createdAt;
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, pointsPerAmount, redemptionRate, isActive, createdAt,
+        id, name, type, pointsPerAmount, rewardValue, validFrom, validTo,
+        isActive, memberCount, createdAt,
       ];
 }
 
@@ -245,8 +254,10 @@ class PosLoyaltyMember extends Equatable {
     required this.customerId,
     required this.customerName,
     required this.programId,
+    this.programName,
     this.points = 0,
-    this.totalPoints = 0,
+    this.tier,
+    this.joinedAt,
     this.createdAt,
     this.updatedAt,
   });
@@ -255,14 +266,76 @@ class PosLoyaltyMember extends Equatable {
   final String customerId;
   final String customerName;
   final String programId;
+  final String? programName;
   final double points;
-  final double totalPoints;
+  final String? tier;
+  final DateTime? joinedAt;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
   @override
   List<Object?> get props => <Object?>[
-        id, customerId, customerName, programId, points, totalPoints, createdAt, updatedAt,
+        id, customerId, customerName, programId, programName,
+        points, tier, joinedAt, createdAt, updatedAt,
+      ];
+}
+
+class PosLoyaltyTransaction extends Equatable {
+  const PosLoyaltyTransaction({
+    required this.id,
+    required this.memberId,
+    this.points = 0,
+    this.type = 'earn',
+    this.orderId,
+    this.description,
+    this.createdAt,
+  });
+
+  final String id;
+  final String memberId;
+  final double points;
+  final String type;
+  final String? orderId;
+  final String? description;
+  final DateTime? createdAt;
+
+  @override
+  List<Object?> get props => <Object?>[
+        id, memberId, points, type, orderId, description, createdAt,
+      ];
+}
+
+class PosCoupon extends Equatable {
+  const PosCoupon({
+    required this.id,
+    required this.code,
+    this.discountType = 'percentage',
+    this.discountValue = 0,
+    this.minOrder = 0,
+    this.maxUses,
+    this.currentUses = 0,
+    this.validFrom,
+    this.validTo,
+    this.isActive = true,
+    this.createdAt,
+  });
+
+  final String id;
+  final String code;
+  final String discountType;
+  final double discountValue;
+  final double minOrder;
+  final int? maxUses;
+  final int currentUses;
+  final DateTime? validFrom;
+  final DateTime? validTo;
+  final bool isActive;
+  final DateTime? createdAt;
+
+  @override
+  List<Object?> get props => <Object?>[
+        id, code, discountType, discountValue, minOrder, maxUses,
+        currentUses, validFrom, validTo, isActive, createdAt,
       ];
 }
 
@@ -293,5 +366,45 @@ class PosGiftCard extends Equatable {
   List<Object?> get props => <Object?>[
         id, code, initialBalance, currentBalance, customerId, customerName,
         expiryDate, isActive, createdAt,
+      ];
+}
+
+class PosPriceListItem extends Equatable {
+  const PosPriceListItem({
+    required this.productId,
+    this.productName,
+    this.price = 0,
+  });
+
+  final String productId;
+  final String? productName;
+  final double price;
+
+  @override
+  List<Object?> get props => <Object?>[productId, productName, price];
+}
+
+class PosPriceList extends Equatable {
+  const PosPriceList({
+    required this.id,
+    required this.name,
+    this.currency = 'USD',
+    this.isDefault = false,
+    this.isActive = true,
+    this.items = const <PosPriceListItem>[],
+    this.createdAt,
+  });
+
+  final String id;
+  final String name;
+  final String currency;
+  final bool isDefault;
+  final bool isActive;
+  final List<PosPriceListItem> items;
+  final DateTime? createdAt;
+
+  @override
+  List<Object?> get props => <Object?>[
+        id, name, currency, isDefault, isActive, items, createdAt,
       ];
 }

@@ -15,8 +15,14 @@ abstract class SubscriptionsRepository {
 
   Future<Result<Cacheable<Paginated<SubscriptionBillingCycle>>>> listBillingCycles(ListQuery query);
   Future<Result<SubscriptionBillingCycle>> getBillingCycle(String id);
+  Future<Result<SubscriptionBillingCycle>> createBillingCycle(Map<String, dynamic> payload);
+  Future<Result<SubscriptionBillingCycle>> updateBillingCycle(String id, Map<String, dynamic> payload);
+  Future<Result<void>> deletePlan(String id);
+  Future<Result<SubscriptionPlan>> createPlan(Map<String, dynamic> payload);
+  Future<Result<SubscriptionPlan>> updatePlan(String id, Map<String, dynamic> payload);
 
   Future<Result<Cacheable<Paginated<SubscriptionUsageRecord>>>> listUsage(ListQuery query);
 
   Future<Result<ChurnSurveyResponse>> submitChurnSurvey(Map<String, dynamic> payload);
 }
+

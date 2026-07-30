@@ -50,11 +50,21 @@ abstract class CrmRemoteDataSource {
 
   Future<ActivityModel> createActivity(Map<String, dynamic> payload);
 
+  Future<ActivityModel> getActivity(String id);
+
+  Future<ActivityModel> updateActivity(String id, Map<String, dynamic> payload);
+
+  Future<void> deleteActivity(String id);
+
   Future<Paginated<LeadSourceModel>> listLeadSources(ListQuery query);
 
   Future<LeadSourceModel> createLeadSource(Map<String, dynamic> payload);
 
+  Future<void> deleteLeadSource(String id);
+
   Future<Paginated<EmailTemplateModel>> listEmailTemplates(ListQuery query);
+
+  Future<EmailTemplateModel> getEmailTemplate(String id);
 
   Future<EmailTemplateModel> createEmailTemplate(Map<String, dynamic> payload);
 
@@ -204,6 +214,23 @@ class CrmRemoteDataSourceImpl implements CrmRemoteDataSource {
       );
 
   @override
+  Future<ActivityModel> getActivity(String id) async =>
+      ActivityModel.fromJson(await _client.getObject(ApiPaths.crmActivity(id)));
+
+  @override
+  Future<ActivityModel> updateActivity(
+    String id,
+    Map<String, dynamic> payload,
+  ) async =>
+      ActivityModel.fromJson(
+        await _client.patch(ApiPaths.crmActivity(id), body: payload),
+      );
+
+  @override
+  Future<void> deleteActivity(String id) =>
+      _client.delete(ApiPaths.crmActivity(id));
+
+  @override
   Future<Paginated<LeadSourceModel>> listLeadSources(ListQuery query) =>
       _client.getPaginated<LeadSourceModel>(
         ApiPaths.leadSources,
@@ -212,9 +239,19 @@ class CrmRemoteDataSourceImpl implements CrmRemoteDataSource {
       );
 
   @override
+  Future<void> deleteLeadSource(String id) =>
+      _client.delete(ApiPaths.leadSources);
+
+  @override
   Future<LeadSourceModel> createLeadSource(Map<String, dynamic> payload) async =>
       LeadSourceModel.fromJson(
         await _client.post(ApiPaths.leadSources, body: payload),
+      );
+
+  @override
+  Future<EmailTemplateModel> getEmailTemplate(String id) async =>
+      EmailTemplateModel.fromJson(
+        await _client.getObject(ApiPaths.emailTemplate(id)),
       );
 
   @override

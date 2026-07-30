@@ -1,3 +1,4 @@
+import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -145,9 +146,14 @@ class WorkOrderListController extends Notifier<WorkOrderListState> {
     if (result.isOk) await refresh();
     return result;
   }
-}
 
-final FutureProviderFamily<WorkOrder, String> workOrderDetailProvider =
+  Future<Result<void>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveWorkOrderUseCase(
+      ref.read(manufacturingRepositoryProvider))(SaveWorkOrderParams(payload: payload, id: id));
+    if (result.isOk) await refresh();
+    return result.fold((f) => Result<void>.err(f), (_) => const Result<void>.ok(null));
+  }
+} FutureProviderFamily<WorkOrder, String> workOrderDetailProvider =
     FutureProvider.family<WorkOrder, String>((Ref ref, String id) async {
   final result = await GetWorkOrderUseCase(
     ref.watch(manufacturingRepositoryProvider))(id);
@@ -273,6 +279,13 @@ class BomListController extends Notifier<BomListState> {
     if (result.isOk) await refresh();
     return result;
   }
+
+  Future<Result<void>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveBomUseCase(
+      ref.read(manufacturingRepositoryProvider))(SaveBomParams(payload: payload, id: id));
+    if (result.isOk) await refresh();
+    return result.fold((f) => Result<void>.err(f), (_) => const Result<void>.ok(null));
+  }
 }
 
 final FutureProviderFamily<Bom, String> bomDetailProvider =
@@ -378,6 +391,13 @@ class MrpRunListController extends Notifier<MrpRunListState> {
       ),
     );
   }
+
+  Future<Result<void>> save(Map<String, dynamic> payload) async {
+    final result = await CreateMrpRunUseCase(
+      ref.read(manufacturingRepositoryProvider))(payload);
+    if (result.isOk) await refresh();
+    return result.fold((f) => Result<void>.err(f), (_) => const Result<void>.ok(null));
+  }
 }
 
 final FutureProviderFamily<MrpRun, String> mrpRunDetailProvider =
@@ -479,6 +499,13 @@ class WorkstationListController extends Notifier<WorkstationListState> {
   }
 }
 
+final FutureProviderFamily<Workstation, String> workstationDetailProvider =
+    FutureProvider.family<Workstation, String>((Ref ref, String id) async {
+  final result = await GetWorkstationUseCase(
+    ref.watch(manufacturingRepositoryProvider))(id);
+  return result.fold((f) => throw f, (v) => v);
+});
+
 // ── Quality Inspection List ──
 
 class QualityInspectionListState extends Equatable {
@@ -569,4 +596,237 @@ class QualityInspectionListController extends Notifier<QualityInspectionListStat
       ),
     );
   }
+
+  Future<Result<void>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveQualityInspectionUseCase(
+      ref.read(manufacturingRepositoryProvider))(SaveQualityInspectionParams(payload: payload, id: id));
+    if (result.isOk) await refresh();
+    return result.fold((f) => Result<void>.err(f), (_) => const Result<void>.ok(null));
+  }
 }
+
+final FutureProviderFamily<QualityInspection, String> qualityInspectionDetailProvider =
+    FutureProvider.family<QualityInspection, String>((Ref ref, String id) async {
+  final result = await GetQualityInspectionUseCase(
+    ref.watch(manufacturingRepositoryProvider))(id);
+  return result.fold((f) => throw f, (v) => v);
+});
+
+// ── Routing List ──
+
+class RoutingListState extends Equatable {
+  const RoutingListState({
+    this.items = const <Routing>[],
+    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.query = const ListQuery(sort: '-createdAt'),
+    this.isLoading = true,
+    this.isLoadingMore = false,
+    this.failure,
+    this.loadMoreFailure,
+  });
+
+  final List<Routing> items;
+  final PaginationMeta meta;
+  final ListQuery query;
+  final bool isLoading;
+  final bool isLoadingMore;
+  final Failure? failure;
+  final Failure? loadMoreFailure;
+
+  RoutingListState copyWith({
+    List<Routing>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
+  }) =>
+      RoutingListState(
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
+        isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+        failure: clearFailures ? null : (failure ?? this.failure),
+        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+      );
+
+  @override
+  List<Object?> get props => <Object?>[
+        items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure,
+      ];
+}
+
+final NotifierProvider<RoutingListController, RoutingListState>
+    routingListControllerProvider =
+    NotifierProvider<RoutingListController, RoutingListState>(
+  RoutingListController.new,
+);
+
+class RoutingListController extends Notifier<RoutingListState> {
+  @override
+  RoutingListState build() {
+    ref.watch(activeTenantIdProvider);
+    Future<void>.microtask(refresh);
+    return const RoutingListState();
+  }
+
+  ListRoutingsUseCase get _listUseCase =>
+      ListRoutingsUseCase(ref.read(manufacturingRepositoryProvider));
+
+  Future<void> refresh() async {
+    final query = state.query.copyWith(page: 1);
+    state = state.copyWith(isLoading: true, clearFailures: true);
+    final result = await _listUseCase(query);
+    state = result.fold(
+      (f) => state.copyWith(isLoading: false, failure: f, items: const []),
+      (page) => state.copyWith(
+        items: page.value.data, meta: page.value.meta, query: query,
+        isLoading: false, clearFailures: true,
+      ),
+    );
+  }
+
+  Future<void> loadMore() async {
+    if (state.isLoadingMore || !state.meta.hasMore) return;
+    state = state.copyWith(isLoadingMore: true, clearFailures: true);
+    final next = state.query.copyWith(page: state.meta.page + 1);
+    final result = await _listUseCase(next);
+    state = result.fold(
+      (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
+      (page) => state.copyWith(
+        items: [...state.items, ...page.value.data], meta: page.value.meta,
+        query: next, isLoadingMore: false, clearFailures: true,
+      ),
+    );
+  }
+
+  Future<Result<void>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveRoutingUseCase(
+      ref.read(manufacturingRepositoryProvider))(SaveRoutingParams(payload: payload, id: id));
+    if (result.isOk) await refresh();
+    return result.fold((f) => Result<void>.err(f), (_) => const Result<void>.ok(null));
+  }
+}
+
+final FutureProviderFamily<Routing, String> routingDetailProvider =
+    FutureProvider.family<Routing, String>((Ref ref, String id) async {
+  final result = await GetRoutingUseCase(
+    ref.watch(manufacturingRepositoryProvider))(id);
+  return result.fold((f) => throw f, (v) => v);
+});
+
+// ── Engineering Change Order List ──
+
+class EngineeringChangeOrderListState extends Equatable {
+  const EngineeringChangeOrderListState({
+    this.items = const <EngineeringChangeOrder>[],
+    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.query = const ListQuery(sort: '-createdAt'),
+    this.isLoading = true,
+    this.isLoadingMore = false,
+    this.failure,
+    this.loadMoreFailure,
+  });
+
+  final List<EngineeringChangeOrder> items;
+  final PaginationMeta meta;
+  final ListQuery query;
+  final bool isLoading;
+  final bool isLoadingMore;
+  final Failure? failure;
+  final Failure? loadMoreFailure;
+
+  EngineeringChangeOrderListState copyWith({
+    List<EngineeringChangeOrder>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
+  }) =>
+      EngineeringChangeOrderListState(
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
+        isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+        failure: clearFailures ? null : (failure ?? this.failure),
+        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+      );
+
+  @override
+  List<Object?> get props => <Object?>[
+        items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure,
+      ];
+}
+
+final NotifierProvider<EngineeringChangeOrderListController, EngineeringChangeOrderListState>
+    engineeringChangeOrderListControllerProvider =
+    NotifierProvider<EngineeringChangeOrderListController, EngineeringChangeOrderListState>(
+  EngineeringChangeOrderListController.new,
+);
+
+class EngineeringChangeOrderListController extends Notifier<EngineeringChangeOrderListState> {
+  @override
+  EngineeringChangeOrderListState build() {
+    ref.watch(activeTenantIdProvider);
+    Future<void>.microtask(refresh);
+    return const EngineeringChangeOrderListState();
+  }
+
+  ListEngineeringChangeOrdersUseCase get _listUseCase =>
+      ListEngineeringChangeOrdersUseCase(ref.read(manufacturingRepositoryProvider));
+
+  Future<void> refresh() async {
+    final query = state.query.copyWith(page: 1);
+    state = state.copyWith(isLoading: true, clearFailures: true);
+    final result = await _listUseCase(query);
+    state = result.fold(
+      (f) => state.copyWith(isLoading: false, failure: f, items: const []),
+      (page) => state.copyWith(
+        items: page.value.data, meta: page.value.meta, query: query,
+        isLoading: false, clearFailures: true,
+      ),
+    );
+  }
+
+  Future<void> loadMore() async {
+    if (state.isLoadingMore || !state.meta.hasMore) return;
+    state = state.copyWith(isLoadingMore: true, clearFailures: true);
+    final next = state.query.copyWith(page: state.meta.page + 1);
+    final result = await _listUseCase(next);
+    state = result.fold(
+      (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
+      (page) => state.copyWith(
+        items: [...state.items, ...page.value.data], meta: page.value.meta,
+        query: next, isLoadingMore: false, clearFailures: true,
+      ),
+    );
+  }
+
+  Future<Result<void>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveEngineeringChangeOrderUseCase(
+      ref.read(manufacturingRepositoryProvider))(SaveEngineeringChangeOrderParams(payload: payload, id: id));
+    if (result.isOk) await refresh();
+    return result.fold((f) => Result<void>.err(f), (_) => const Result<void>.ok(null));
+  }
+
+  Future<Result<void>> approve(String id) async {
+    final result = await ApproveEngineeringChangeOrderUseCase(
+      ref.read(manufacturingRepositoryProvider))(id);
+    if (result.isOk) await refresh();
+    return result.fold((f) => Result<void>.err(f), (_) => const Result<void>.ok(null));
+  }
+}
+
+final FutureProviderFamily<EngineeringChangeOrder, String> engineeringChangeOrderDetailProvider =
+    FutureProvider.family<EngineeringChangeOrder, String>((Ref ref, String id) async {
+  final result = await GetEngineeringChangeOrderUseCase(
+    ref.watch(manufacturingRepositoryProvider))(id);
+  return result.fold((f) => throw f, (v) => v);
+});

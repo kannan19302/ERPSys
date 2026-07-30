@@ -1,4 +1,3 @@
-import { ManufacturingDeepController } from "./controllers/manufacturing-deep-suite.controller";
 import { Module } from "@nestjs/common";
 import { ManufacturingController } from "./manufacturing.controller";
 import { ManufacturingService } from "./manufacturing.service";
@@ -29,12 +28,14 @@ import { MfgDeepExpansionService } from "./services/mfg-deep-expansion.service";
 import { ManufacturingEnterpriseModule } from "./manufacturing-enterprise.module";
 import { ManufacturingEnterpriseController } from "./manufacturing-enterprise.controller";
 import { ManufacturingEnterpriseService } from "./manufacturing-enterprise.service";
+import { ManufacturingMpsService } from "./manufacturing-mps.service";
+import { ManufacturingMpsController } from "./manufacturing-mps.controller";
+import { ManufacturingJobCostService } from "./manufacturing-job-cost.service";
+import { ManufacturingJobCostController } from "./manufacturing-job-cost.controller";
 
 @Module({
   imports: [ManufacturingEnterpriseModule],
   controllers: [
-    ManufacturingDeepController,
-    MfgDeepExpansionController,
     ManufacturingController,
     SchedulingController,
     ManufacturingExpansionController,
@@ -48,11 +49,11 @@ import { ManufacturingEnterpriseService } from "./manufacturing-enterprise.servi
     ManufacturingContractMfgController,
     ManufacturingDdmrpController,
     ManufacturingEnterpriseController,
+    MfgDeepExpansionController,
+    ManufacturingMpsController,
+    ManufacturingJobCostController,
   ],
   providers: [
-    ManufacturingDeepController,
-    MfgDeepExpansionService,
-    MfgDeepExpansionService,
     ManufacturingService,
     SchedulingService,
     ManufacturingExpansionService,
@@ -66,13 +67,18 @@ import { ManufacturingEnterpriseService } from "./manufacturing-enterprise.servi
     ManufacturingDdmrpService,
     ManufacturingEnterpriseService,
     ManufacturingEnterpriseController,
+    MfgDeepExpansionService,
+    ManufacturingMpsService,
+    ManufacturingJobCostService,
   ],
   exports: [
-    MfgDeepExpansionService,
     ManufacturingService,
     SchedulingService,
     ManufacturingExpansionService,
     ManufacturingEnterpriseService,
+    MfgDeepExpansionService,
+    ManufacturingMpsService,
+    ManufacturingJobCostService,
   ],
 })
 export class ManufacturingModule {}

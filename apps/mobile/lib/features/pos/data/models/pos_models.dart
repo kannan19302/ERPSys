@@ -334,9 +334,13 @@ class PosLoyaltyProgramModel extends PosLoyaltyProgram {
   const PosLoyaltyProgramModel({
     required super.id,
     required super.name,
+    super.type,
     super.pointsPerAmount,
-    super.redemptionRate,
+    super.rewardValue,
+    super.validFrom,
+    super.validTo,
     super.isActive,
+    super.memberCount,
     super.createdAt,
   });
 
@@ -348,9 +352,13 @@ class PosLoyaltyProgramModel extends PosLoyaltyProgram {
     return PosLoyaltyProgramModel(
       id: id,
       name: json['name'] as String? ?? '',
+      type: json['type'] as String? ?? 'points',
       pointsPerAmount: asDouble(json['pointsPerAmount']),
-      redemptionRate: asDouble(json['redemptionRate']),
+      rewardValue: asDouble(json['rewardValue']),
+      validFrom: DateTime.tryParse('${json['validFrom']}'),
+      validTo: DateTime.tryParse('${json['validTo']}'),
       isActive: json['isActive'] as bool? ?? true,
+      memberCount: asInt(json['memberCount']),
       createdAt: DateTime.tryParse('${json['createdAt']}'),
     );
   }
@@ -358,9 +366,13 @@ class PosLoyaltyProgramModel extends PosLoyaltyProgram {
   Map<String, dynamic> toJson() => <String, dynamic>{
         'id': id,
         'name': name,
+        'type': type,
         'pointsPerAmount': pointsPerAmount,
-        'redemptionRate': redemptionRate,
+        'rewardValue': rewardValue,
+        'validFrom': validFrom?.toIso8601String(),
+        'validTo': validTo?.toIso8601String(),
         'isActive': isActive,
+        'memberCount': memberCount,
         'createdAt': createdAt?.toIso8601String(),
       };
 }
@@ -371,8 +383,10 @@ class PosLoyaltyMemberModel extends PosLoyaltyMember {
     required super.customerId,
     required super.customerName,
     required super.programId,
+    super.programName,
     super.points,
-    super.totalPoints,
+    super.tier,
+    super.joinedAt,
     super.createdAt,
     super.updatedAt,
   });
@@ -387,8 +401,10 @@ class PosLoyaltyMemberModel extends PosLoyaltyMember {
       customerId: json['customerId'] as String? ?? '',
       customerName: json['customerName'] as String? ?? '',
       programId: json['programId'] as String? ?? '',
+      programName: json['programName'] as String?,
       points: asDouble(json['points']),
-      totalPoints: asDouble(json['totalPoints']),
+      tier: json['tier'] as String?,
+      joinedAt: DateTime.tryParse('${json['joinedAt']}'),
       createdAt: DateTime.tryParse('${json['createdAt']}'),
       updatedAt: DateTime.tryParse('${json['updatedAt']}'),
     );
@@ -399,10 +415,100 @@ class PosLoyaltyMemberModel extends PosLoyaltyMember {
         'customerId': customerId,
         'customerName': customerName,
         'programId': programId,
+        'programName': programName,
         'points': points,
-        'totalPoints': totalPoints,
+        'tier': tier,
+        'joinedAt': joinedAt?.toIso8601String(),
         'createdAt': createdAt?.toIso8601String(),
         'updatedAt': updatedAt?.toIso8601String(),
+      };
+}
+
+class PosLoyaltyTransactionModel extends PosLoyaltyTransaction {
+  const PosLoyaltyTransactionModel({
+    required super.id,
+    required super.memberId,
+    super.points,
+    super.type,
+    super.orderId,
+    super.description,
+    super.createdAt,
+  });
+
+  factory PosLoyaltyTransactionModel.fromJson(Map<String, dynamic> json) {
+    final Object? id = json['id'];
+    if (id is! String) {
+      throw const ParseException('PosLoyaltyTransaction is missing its id');
+    }
+    return PosLoyaltyTransactionModel(
+      id: id,
+      memberId: json['memberId'] as String? ?? '',
+      points: asDouble(json['points']),
+      type: json['type'] as String? ?? 'earn',
+      orderId: json['orderId'] as String?,
+      description: json['description'] as String?,
+      createdAt: DateTime.tryParse('${json['createdAt']}'),
+    );
+  }
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+        'memberId': memberId,
+        'points': points,
+        'type': type,
+        'orderId': orderId,
+        'description': description,
+        'createdAt': createdAt?.toIso8601String(),
+      };
+}
+
+class PosCouponModel extends PosCoupon {
+  const PosCouponModel({
+    required super.id,
+    required super.code,
+    super.discountType,
+    super.discountValue,
+    super.minOrder,
+    super.maxUses,
+    super.currentUses,
+    super.validFrom,
+    super.validTo,
+    super.isActive,
+    super.createdAt,
+  });
+
+  factory PosCouponModel.fromJson(Map<String, dynamic> json) {
+    final Object? id = json['id'];
+    if (id is! String) {
+      throw const ParseException('PosCoupon is missing its id');
+    }
+    return PosCouponModel(
+      id: id,
+      code: json['code'] as String? ?? '',
+      discountType: json['discountType'] as String? ?? 'percentage',
+      discountValue: asDouble(json['discountValue']),
+      minOrder: asDouble(json['minOrder']),
+      maxUses: asIntOrNull(json['maxUses']),
+      currentUses: asInt(json['currentUses']),
+      validFrom: DateTime.tryParse('${json['validFrom']}'),
+      validTo: DateTime.tryParse('${json['validTo']}'),
+      isActive: json['isActive'] as bool? ?? true,
+      createdAt: DateTime.tryParse('${json['createdAt']}'),
+    );
+  }
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+        'code': code,
+        'discountType': discountType,
+        'discountValue': discountValue,
+        'minOrder': minOrder,
+        'maxUses': maxUses,
+        'currentUses': currentUses,
+        'validFrom': validFrom?.toIso8601String(),
+        'validTo': validTo?.toIso8601String(),
+        'isActive': isActive,
+        'createdAt': createdAt?.toIso8601String(),
       };
 }
 
@@ -450,6 +556,67 @@ class PosGiftCardModel extends PosGiftCard {
       };
 }
 
+class PosPriceListItemModel extends PosPriceListItem {
+  const PosPriceListItemModel({
+    required super.productId,
+    super.productName,
+    super.price,
+  });
+
+  factory PosPriceListItemModel.fromJson(Map<String, dynamic> json) => PosPriceListItemModel(
+    productId: json['productId'] as String? ?? '',
+    productName: json['productName'] as String?,
+    price: asDouble(json['price']),
+  );
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'productId': productId,
+    'productName': productName,
+    'price': price,
+  };
+}
+
+class PosPriceListModel extends PosPriceList {
+  const PosPriceListModel({
+    required super.id,
+    required super.name,
+    super.currency,
+    super.isDefault,
+    super.isActive,
+    super.items,
+    super.createdAt,
+  });
+
+  factory PosPriceListModel.fromJson(Map<String, dynamic> json) {
+    final Object? id = json['id'];
+    if (id is! String) {
+      throw const ParseException('PosPriceList is missing its id');
+    }
+    return PosPriceListModel(
+      id: id,
+      name: json['name'] as String? ?? '',
+      currency: json['currency'] as String? ?? 'USD',
+      isDefault: json['isDefault'] as bool? ?? false,
+      isActive: json['isActive'] as bool? ?? true,
+      items: (json['items'] as List<dynamic>?)
+              ?.map((Object? e) => PosPriceListItemModel.fromJson(e as Map<String, dynamic>))
+              .toList(growable: false) ??
+          const <PosPriceListItem>[],
+      createdAt: DateTime.tryParse('${json['createdAt']}'),
+    );
+  }
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+        'name': name,
+        'currency': currency,
+        'isDefault': isDefault,
+        'isActive': isActive,
+        'items': items.map((PosPriceListItem e) => (e as PosPriceListItemModel).toJson()).toList(),
+        'createdAt': createdAt?.toIso8601String(),
+      };
+}
+
 double asDouble(Object? value) => switch (value) {
       final num v => v.toDouble(),
       final String v => double.tryParse(v) ?? 0,
@@ -466,5 +633,12 @@ int asInt(Object? value) => switch (value) {
 double? asDoubleOrNull(Object? value) => switch (value) {
       final num v => v.toDouble(),
       final String v => double.tryParse(v),
+      _ => null,
+    };
+
+int? asIntOrNull(Object? value) => switch (value) {
+      final int v => v,
+      final num v => v.toInt(),
+      final String v => int.tryParse(v),
       _ => null,
     };

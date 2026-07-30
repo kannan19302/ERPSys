@@ -1,9 +1,11 @@
+import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/contracts/paginated.dart';
 import '../../../../core/di/providers.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/usecase/result.dart';
 import '../../../../core/usecase/usecase.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../data/datasources/saas_portal_remote_data_source.dart';
@@ -204,4 +206,13 @@ class PortalSupportTicketListController extends Notifier<PortalSupportTicketList
       refresh();
     });
   }
+
+  Future<Result<PortalSupportTicket>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SavePortalSupportTicketUseCase(
+      ref.read(saasPortalRepositoryProvider))(
+      SavePortalSupportTicketParams(id: id, payload: payload));
+    if (result.isOk) await refresh();
+    return result;
+  }
 }
+

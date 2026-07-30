@@ -131,3 +131,12 @@ class ListPipelinesUseCase extends UseCase<Cacheable<Paginated<AnalyticsPipeline
   Future<Result<Cacheable<Paginated<AnalyticsPipeline>>>> call(ListQuery params) =>
       _repository.listPipelines(params);
 }
+
+
+class GetPipelineUseCase extends UseCase<AnalyticsPipeline, String> {
+  GetPipelineUseCase(this.repository);
+  final AnalyticsRepository repository;
+  @override
+  Future<Result<AnalyticsPipeline>> call(String params) async => throw UnimplementedError();
+}
+

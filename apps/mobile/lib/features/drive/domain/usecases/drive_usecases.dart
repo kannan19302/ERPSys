@@ -138,3 +138,17 @@ class DeleteDriveTagUseCase extends UseCase<void, String> {
   @override
   Future<Result<void>> call(String id) => _repository.deleteTag(id);
 }
+
+class GetDriveFileUseCase extends UseCase<DriveFile, String> {
+  const GetDriveFileUseCase(this._repository);
+  final DriveRepository _repository;
+  @override
+  Future<Result<DriveFile>> call(String id) => _repository.getFile(id);
+}
+
+class GetDriveFolderUseCase extends UseCase<DriveFolder, String> {
+  const GetDriveFolderUseCase(this._repository);
+  final DriveRepository _repository;
+  @override
+  Future<Result<DriveFolder>> call(String id) => _repository.getFolder(id);
+}

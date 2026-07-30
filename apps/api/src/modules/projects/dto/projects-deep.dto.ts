@@ -374,3 +374,149 @@ export const UpdateWikiSchema = z.object({
   title: z.string().optional(),
   content: z.string().optional(),
 });
+
+// ── Pack 9: WBS Gantt ──
+export const CreateWbsElementSchema = z.object({
+  projectId: z.string(),
+  name: z.string().min(1),
+  description: z.string().optional(),
+  wbsCode: z.string().min(1),
+  parentId: z.string().optional(),
+  status: z.enum(["PLANNED", "IN_PROGRESS", "COMPLETED", "DELAYED"]).optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  durationDays: z.number().int().positive().optional(),
+  assignedToId: z.string().optional(),
+  costBudget: z.number().positive().optional(),
+  deliverables: z.string().optional(),
+});
+
+export const UpdateWbsElementSchema = z.object({
+  name: z.string().optional(),
+  description: z.string().optional(),
+  status: z.enum(["PLANNED", "IN_PROGRESS", "COMPLETED", "DELAYED"]).optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  durationDays: z.number().int().positive().optional(),
+  assignedToId: z.string().optional(),
+  costBudget: z.number().positive().optional(),
+  deliverables: z.string().optional(),
+  progressPercent: z.number().int().min(0).max(100).optional(),
+});
+
+// ── Pack 10: Project Baseline & Milestone Variance ──
+export const CreateBaselineSchema = z.object({
+  projectId: z.string(),
+  name: z.string().min(1),
+  baselineType: z.enum(["ORIGINAL", "REVISED", "TARGET"]).optional(),
+  budgetBaseline: z.number().positive().optional(),
+  scheduleBaselineStart: z.string().optional(),
+  scheduleBaselineEnd: z.string().optional(),
+  scopeBaseline: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+export const CreateMilestoneVarianceSchema = z.object({
+  projectId: z.string(),
+  baselineId: z.string(),
+  milestoneId: z.string(),
+  plannedDate: z.string(),
+  actualDate: z.string().optional(),
+  plannedCost: z.number().positive().optional(),
+  actualCost: z.number().positive().optional(),
+  varianceReason: z.string().optional(),
+  impact: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]).optional(),
+});
+
+export const CreateMilestoneSchema = z.object({
+  projectId: z.string(),
+  name: z.string().min(1),
+  dueDate: z.string(),
+  description: z.string().optional(),
+  status: z.enum(["PENDING", "IN_PROGRESS", "COMPLETED", "DELAYED"]).optional(),
+  assigneeId: z.string().optional(),
+});
+
+// ── Pack 11: Timesheet Approval & Utilization Rate ──
+export const SubmitTimesheetSchema = z.object({
+  timesheetId: z.string(),
+});
+
+export const ApproveTimesheetSchema = z.object({
+  timesheetId: z.string(),
+  notes: z.string().optional(),
+});
+
+export const RejectTimesheetSchema = z.object({
+  timesheetId: z.string(),
+  reason: z.string().min(1),
+});
+
+export const CreatePpmTimesheetSchema = z.object({
+  userId: z.string(),
+  weekStart: z.string(),
+  weekEnd: z.string(),
+  entries: z
+    .array(
+      z.object({
+        projectId: z.string().optional(),
+        taskId: z.string().optional(),
+        date: z.string(),
+        hours: z.number().positive(),
+        isBillable: z.boolean().optional(),
+        description: z.string().optional(),
+        activityType: z.string().optional(),
+      }),
+    )
+    .optional(),
+  notes: z.string().optional(),
+});
+
+// ── Pack 12: Risk Register Probability Impact Matrix ──
+export const CreateRiskMatrixSchema = z.object({
+  projectId: z.string(),
+  probabilityThresholds: z
+    .array(
+      z.object({
+        level: z.number().int().min(1).max(5),
+        label: z.string().min(1),
+        minValue: z.number().min(0).max(1),
+        maxValue: z.number().min(0).max(1),
+        color: z.string().optional(),
+      }),
+    )
+    .optional(),
+  impactThresholds: z
+    .array(
+      z.object({
+        level: z.number().int().min(1).max(5),
+        label: z.string().min(1),
+        minValue: z.number().min(0).max(1),
+        maxValue: z.number().min(0).max(1),
+        color: z.string().optional(),
+      }),
+    )
+    .optional(),
+});
+
+export const CreateRiskEntrySchema = z.object({
+  projectId: z.string(),
+  title: z.string().min(1),
+  description: z.string().optional(),
+  category: z.string().optional(),
+  probability: z.number().min(0).max(1),
+  impact: z.number().min(0).max(1),
+  owner: z.string().optional(),
+  mitigationPlan: z.string().optional(),
+  contingencyPlan: z.string().optional(),
+});
+
+export const AssessRiskSchema = z.object({
+  probability: z.number().min(0).max(1),
+  impact: z.number().min(0).max(1),
+  mitigationPlan: z.string().optional(),
+  contingencyPlan: z.string().optional(),
+  owner: z.string().optional(),
+  status: z.enum(["IDENTIFIED", "ASSESSED", "MITIGATED", "CLOSED"]).optional(),
+  residualRisk: z.number().min(0).max(1).optional(),
+});

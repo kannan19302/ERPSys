@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import '../../logging/app_logger.dart';
 import '../../storage/cookie_store.dart';
@@ -110,7 +111,12 @@ class AuthInterceptor extends QueuedInterceptor {
   }
 
   Future<bool> _performRefresh() async {
-    if (!await _cookieStore.hasRefreshCookie()) {
+    // `refresh_token` is httpOnly, so on web no JS-visible cookie jar — dio's
+    // included — can ever see it; hasRefreshCookie() would always report false
+    // there and skip the refresh call even though the browser holds a valid
+    // cookie and will attach it automatically. Only gate on it off web, where
+    // the app's own jar genuinely mirrors what will be sent.
+    if (!kIsWeb && !await _cookieStore.hasRefreshCookie()) {
       _log.info('No refresh cookie held — session cannot be renewed silently');
       return false;
     }

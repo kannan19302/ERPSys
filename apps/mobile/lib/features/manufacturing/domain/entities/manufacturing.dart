@@ -172,6 +172,7 @@ class Workstation extends Equatable {
     this.location,
     this.status = 'AVAILABLE',
     this.capacity = 0,
+    this.utilization = 0,
     this.createdAt,
     this.updatedAt,
   });
@@ -182,12 +183,21 @@ class Workstation extends Equatable {
   final String? location;
   final String status;
   final double capacity;
+  final double utilization;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
+  Workstation copyWith({double? utilization}) =>
+      Workstation(
+        id: id, name: name, code: code, location: location,
+        status: status, capacity: capacity,
+        utilization: utilization ?? this.utilization,
+        createdAt: createdAt, updatedAt: updatedAt,
+      );
+
   @override
   List<Object?> get props => <Object?>[
-        id, name, code, location, status, capacity, createdAt, updatedAt,
+        id, name, code, location, status, capacity, utilization, createdAt, updatedAt,
       ];
 }
 
@@ -278,5 +288,37 @@ class QualityInspection extends Equatable {
   List<Object?> get props => <Object?>[
         id, inspectionNumber, productId, productName, workOrderId, type, status,
         inspectedBy, totalQty, passedQty, failedQty, createdAt,
+      ];
+}
+
+class EngineeringChangeOrder extends Equatable {
+  const EngineeringChangeOrder({
+    required this.id,
+    required this.name,
+    this.bomId,
+    this.bomName,
+    this.description,
+    this.reason,
+    this.status = 'DRAFT',
+    this.effectiveDate,
+    this.approvedBy,
+    this.createdAt,
+  });
+
+  final String id;
+  final String name;
+  final String? bomId;
+  final String? bomName;
+  final String? description;
+  final String? reason;
+  final String status;
+  final DateTime? effectiveDate;
+  final String? approvedBy;
+  final DateTime? createdAt;
+
+  @override
+  List<Object?> get props => <Object?>[
+        id, name, bomId, bomName, description, reason, status,
+        effectiveDate, approvedBy, createdAt,
       ];
 }

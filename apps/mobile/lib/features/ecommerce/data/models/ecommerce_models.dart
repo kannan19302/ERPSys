@@ -43,10 +43,10 @@ class EcommerceProductModel extends EcommerceProduct {
     if (id is! String) throw const ParseException('EcommerceProduct missing id');
     return EcommerceProductModel(
       id: id,
-      name: json['name'] as String? ?? '',
+      name: (json['name'] ?? json['productName']) as String? ?? '',
       slug: json['slug'] as String?,
       description: json['description'] as String?,
-      price: asDouble(json['price']),
+      price: asDouble(json['price'] ?? json['effectivePrice'] ?? json['basePrice']),
       comparePrice: asDouble(json['comparePrice']),
       currency: json['currency'] as String? ?? 'USD',
       categoryId: json['categoryId'] as String?,
@@ -56,8 +56,9 @@ class EcommerceProductModel extends EcommerceProduct {
               .toList(growable: false) ??
           const [],
       inventory: asInt(json['inventory']),
-      sku: json['sku'] as String?,
-      status: json['status'] as String? ?? 'ACTIVE',
+      sku: (json['sku'] ?? json['productSku']) as String?,
+      status: json['status'] as String? ??
+          (json['isPublished'] == true ? 'ACTIVE' : 'INACTIVE'),
       rating: asDouble(json['rating']),
       reviewCount: asInt(json['reviewCount']),
       createdAt: DateTime.tryParse('${json['createdAt']}'),

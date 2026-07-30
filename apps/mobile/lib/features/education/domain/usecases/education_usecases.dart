@@ -115,3 +115,92 @@ class ListExamsUseCase extends UseCase<Cacheable<Paginated<Exam>>, ListQuery> {
   Future<Result<Cacheable<Paginated<Exam>>>> call(ListQuery params) =>
       _repository.listExams(params);
 }
+
+class GetExamUseCase extends UseCase<Exam, String> {
+  const GetExamUseCase(this._repository);
+  final EducationRepository _repository;
+  @override
+  Future<Result<Exam>> call(String id) => _repository.getExam(id);
+}
+
+class SaveExamParams {
+  const SaveExamParams({required this.payload, this.id});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SaveExamUseCase extends UseCase<Exam, SaveExamParams> {
+  const SaveExamUseCase(this._repository);
+  final EducationRepository _repository;
+  @override
+  Future<Result<Exam>> call(SaveExamParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createExam(params.payload)
+        : _repository.updateExam(id, params.payload);
+  }
+}
+
+class DeleteExamUseCase extends UseCase<void, String> {
+  const DeleteExamUseCase(this._repository);
+  final EducationRepository _repository;
+  @override
+  Future<Result<void>> call(String id) => _repository.deleteExam(id);
+}
+
+class GetEnrollmentUseCase extends UseCase<Enrollment, String> {
+  const GetEnrollmentUseCase(this._repository);
+  final EducationRepository _repository;
+  @override
+  Future<Result<Enrollment>> call(String id) => _repository.getEnrollment(id);
+}
+
+class SaveEnrollmentParams {
+  const SaveEnrollmentParams({required this.payload, this.id});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SaveEnrollmentUseCase extends UseCase<Enrollment, SaveEnrollmentParams> {
+  const SaveEnrollmentUseCase(this._repository);
+  final EducationRepository _repository;
+  @override
+  Future<Result<Enrollment>> call(SaveEnrollmentParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createEnrollment(params.payload)
+        : _repository.updateEnrollment(id, params.payload);
+  }
+}
+
+class DeleteEnrollmentUseCase extends UseCase<void, String> {
+  const DeleteEnrollmentUseCase(this._repository);
+  final EducationRepository _repository;
+  @override
+  Future<Result<void>> call(String id) => _repository.deleteEnrollment(id);
+}
+
+class GetGradeEntryUseCase extends UseCase<GradeEntry, String> {
+  const GetGradeEntryUseCase(this._repository);
+  final EducationRepository _repository;
+  @override
+  Future<Result<GradeEntry>> call(String id) => _repository.getGradeEntry(id);
+}
+
+class SaveGradeEntryParams {
+  const SaveGradeEntryParams({required this.payload, this.id});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SaveGradeEntryUseCase extends UseCase<GradeEntry, SaveGradeEntryParams> {
+  const SaveGradeEntryUseCase(this._repository);
+  final EducationRepository _repository;
+  @override
+  Future<Result<GradeEntry>> call(SaveGradeEntryParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createGradeEntry(params.payload)
+        : _repository.updateGradeEntry(id, params.payload);
+  }
+}

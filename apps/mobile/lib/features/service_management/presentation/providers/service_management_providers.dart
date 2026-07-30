@@ -1,3 +1,4 @@
+import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -122,6 +123,13 @@ class ServiceCatalogListController extends Notifier<ServiceCatalogListState> {
     refresh();
   }
 
+  Future<Result<ServiceCatalog>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveServiceCatalogUseCase(ref.read(serviceManagementRepositoryProvider))(
+      SaveServiceCatalogParams(payload: payload, id: id));
+    if (result.isOk) await refresh();
+    return result;
+  }
+
   Future<Result<void>> delete(String id) async {
     final result = await DeleteServiceCatalogUseCase(
       ref.read(serviceManagementRepositoryProvider))(id);
@@ -225,6 +233,19 @@ class ServiceRequestListController extends Notifier<ServiceRequestListState> {
     state = state.copyWith(query: state.query.copyWith(sort: sort, page: 1));
     refresh();
   }
+
+  Future<Result<ServiceRequest>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveServiceRequestUseCase(ref.read(serviceManagementRepositoryProvider))(
+      SaveServiceRequestParams(payload: payload, id: id));
+    if (result.isOk) await refresh();
+    return result;
+  }
+
+  Future<Result<void>> delete(String id) async {
+    final result = await DeleteServiceRequestUseCase(ref.read(serviceManagementRepositoryProvider))(id);
+    if (result.isOk) await refresh();
+    return result;
+  }
 }
 
 class ServiceContractListState extends Equatable {
@@ -310,14 +331,48 @@ class ServiceContractListController extends Notifier<ServiceContractListState> {
     );
   }
 
-  void search(String term) {
+void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
       state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
+
+  Future<Result<ServiceLevelAgreement>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveServiceSlaUseCase(ref.read(serviceManagementRepositoryProvider))(
+      SaveServiceSlaParams(payload: payload, id: id));
+    if (result.isOk) await refresh();
+    return result;
+  }
+
+  Future<Result<void>> delete(String id) async {
+    final result = await DeleteServiceSlaUseCase(ref.read(serviceManagementRepositoryProvider))(id);
+    if (result.isOk) await refresh();
+    return result;
+  }
 }
+
+final FutureProviderFamily<ServiceCatalog, String> serviceCatalogDetailProvider =
+    FutureProvider.family<ServiceCatalog, String>((Ref ref, String id) async {
+  final result = await GetServiceCatalogUseCase(
+    ref.watch(serviceManagementRepositoryProvider))(id);
+  return result.fold((f) => throw f, (c) => c);
+});
+
+final FutureProviderFamily<ServiceRequest, String> serviceRequestDetailProvider =
+    FutureProvider.family<ServiceRequest, String>((Ref ref, String id) async {
+  final result = await GetServiceRequestUseCase(
+    ref.watch(serviceManagementRepositoryProvider))(id);
+  return result.fold((f) => throw f, (r) => r);
+});
+
+final FutureProviderFamily<ServiceLevelAgreement, String> serviceSlaDetailProvider =
+    FutureProvider.family<ServiceLevelAgreement, String>((Ref ref, String id) async {
+  final result = await GetServiceSlaUseCase(
+    ref.watch(serviceManagementRepositoryProvider))(id);
+  return result.fold((f) => throw f, (s) => s);
+});
 
 class ServiceSlaListState extends Equatable {
   const ServiceSlaListState({

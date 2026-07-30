@@ -27,4 +27,13 @@ abstract class AdminRepository {
 
   Future<Result<Cacheable<Paginated<AdminAuditLog>>>> listAuditLogs(ListQuery query);
   Future<Result<SystemHealth>> getSystemHealth();
+
+  Future<Result<Cacheable<Paginated<AdminApiKey>>>> listApiKeys(ListQuery query);
+  Future<Result<AdminApiKey>> getApiKey(String id);
+  Future<Result<AdminApiKey>> createApiKey(Map<String, dynamic> payload);
+  Future<Result<void>> deleteApiKey(String id);
+
+  Future<Result<Cacheable<Paginated<AdminTenant>>>> listTenants(ListQuery query);
+  Future<Result<AdminTenant>> getTenant(String id);
+  Future<Result<AdminTenant>> createTenant(Map<String, dynamic> payload);
 }

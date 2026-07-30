@@ -88,3 +88,65 @@ class ListReportComplianceUseCase extends UseCase<Cacheable<Paginated<ReportComp
   Future<Result<Cacheable<Paginated<ReportCompliance>>>> call(ListQuery params) =>
       _repository.listCompliance(params);
 }
+
+class SaveReportJobUseCaseParams {
+  const SaveReportJobUseCaseParams({required this.payload, this.id});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SaveReportJobUseCase extends UseCase<ReportJob, SaveReportJobUseCaseParams> {
+  const SaveReportJobUseCase(this._repository);
+  final ReportingRepository _repository;
+  @override
+  Future<Result<ReportJob>> call(SaveReportJobUseCaseParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createJob(params.payload)
+        : _repository.updateJob(id, params.payload);
+  }
+}
+
+class SaveExportParams {
+  const SaveExportParams({required this.payload, this.id});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SaveExportUseCase extends UseCase<ReportExport, SaveExportParams> {
+  const SaveExportUseCase(this._repository);
+  final ReportingRepository _repository;
+  @override
+  Future<Result<ReportExport>> call(SaveExportParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createExport(params.payload)
+        : _repository.updateExport(id, params.payload);
+  }
+}
+
+class GetReportComplianceUseCase extends UseCase<ReportCompliance, String> {
+  const GetReportComplianceUseCase(this._repository);
+  final ReportingRepository _repository;
+  @override
+  Future<Result<ReportCompliance>> call(String id) => _repository.getCompliance(id);
+}
+
+class SaveComplianceParams {
+  const SaveComplianceParams({required this.payload, this.id});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SaveComplianceUseCase extends UseCase<ReportCompliance, SaveComplianceParams> {
+  const SaveComplianceUseCase(this._repository);
+  final ReportingRepository _repository;
+  @override
+  Future<Result<ReportCompliance>> call(SaveComplianceParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createCompliance(params.payload)
+        : _repository.updateCompliance(id, params.payload);
+  }
+}
+

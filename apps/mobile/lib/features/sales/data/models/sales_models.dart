@@ -166,11 +166,15 @@ class DeliveryNoteModel extends DeliveryNote {
   const DeliveryNoteModel({
     required super.id,
     required super.salesOrderId,
+    required super.customerId,
     required super.customerName,
     required super.status,
     required super.items,
     super.deliveryDate,
+    super.shippingAddress,
+    super.notes,
     super.createdAt,
+    super.updatedAt,
   });
 
   factory DeliveryNoteModel.fromJson(Map<String, dynamic> json) {
@@ -184,22 +188,30 @@ class DeliveryNoteModel extends DeliveryNote {
     return DeliveryNoteModel(
       id: id,
       salesOrderId: json['salesOrderId'] as String? ?? '',
+      customerId: json['customerId'] as String? ?? '',
       customerName: json['customerName'] as String? ?? '',
       status: json['status'] as String? ?? 'DRAFT',
       items: items,
       deliveryDate: DateTime.tryParse('${json['deliveryDate']}'),
+      shippingAddress: json['shippingAddress'] as String?,
+      notes: json['notes'] as String?,
       createdAt: DateTime.tryParse('${json['createdAt']}'),
+      updatedAt: DateTime.tryParse('${json['updatedAt']}'),
     );
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
         'id': id,
         'salesOrderId': salesOrderId,
+        'customerId': customerId,
         'customerName': customerName,
         'status': status,
         'items': items.map((DeliveryNoteItem e) => (e as DeliveryNoteItemModel).toJson()).toList(),
         'deliveryDate': deliveryDate?.toIso8601String(),
+        'shippingAddress': shippingAddress,
+        'notes': notes,
         'createdAt': createdAt?.toIso8601String(),
+        'updatedAt': updatedAt?.toIso8601String(),
       };
 }
 
@@ -209,6 +221,8 @@ class DeliveryNoteItemModel extends DeliveryNoteItem {
     required super.productId,
     required super.productName,
     required super.quantity,
+    super.rate,
+    super.amount,
   });
 
   factory DeliveryNoteItemModel.fromJson(Map<String, dynamic> json) => DeliveryNoteItemModel(
@@ -216,6 +230,8 @@ class DeliveryNoteItemModel extends DeliveryNoteItem {
         productId: json['productId'] as String? ?? '',
         productName: json['productName'] as String? ?? '',
         quantity: asDouble(json['quantity']),
+        rate: asDoubleOrNull(json['rate']),
+        amount: asDoubleOrNull(json['amount']),
       );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -223,6 +239,8 @@ class DeliveryNoteItemModel extends DeliveryNoteItem {
         'productId': productId,
         'productName': productName,
         'quantity': quantity,
+        'rate': rate,
+        'amount': amount,
       };
 }
 
@@ -230,12 +248,16 @@ class SalesReturnModel extends SalesReturn {
   const SalesReturnModel({
     required super.id,
     required super.salesOrderId,
+    required super.customerId,
     required super.customerName,
     required super.status,
     required super.reason,
+    required super.reasonType,
     required super.items,
     required super.totalAmount,
+    super.notes,
     super.createdAt,
+    super.updatedAt,
   });
 
   factory SalesReturnModel.fromJson(Map<String, dynamic> json) {
@@ -249,24 +271,32 @@ class SalesReturnModel extends SalesReturn {
     return SalesReturnModel(
       id: id,
       salesOrderId: json['salesOrderId'] as String? ?? '',
+      customerId: json['customerId'] as String? ?? '',
       customerName: json['customerName'] as String? ?? '',
       status: json['status'] as String? ?? 'PENDING',
       reason: json['reason'] as String? ?? '',
+      reasonType: json['reasonType'] as String? ?? 'RETURN',
       items: items,
       totalAmount: asDouble(json['totalAmount']),
+      notes: json['notes'] as String?,
       createdAt: DateTime.tryParse('${json['createdAt']}'),
+      updatedAt: DateTime.tryParse('${json['updatedAt']}'),
     );
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
         'id': id,
         'salesOrderId': salesOrderId,
+        'customerId': customerId,
         'customerName': customerName,
         'status': status,
         'reason': reason,
+        'reasonType': reasonType,
         'items': items.map((SalesReturnItem e) => (e as SalesReturnItemModel).toJson()).toList(),
         'totalAmount': totalAmount,
+        'notes': notes,
         'createdAt': createdAt?.toIso8601String(),
+        'updatedAt': updatedAt?.toIso8601String(),
       };
 }
 
@@ -355,12 +385,23 @@ class OpportunityModel extends Opportunity {
   const OpportunityModel({
     required super.id,
     required super.title,
+    required super.customerId,
     required super.customerName,
     required super.stage,
+    super.company,
+    super.contactId,
+    super.contactName,
+    super.pipelineId,
+    super.pipelineName,
     super.expectedRevenue,
     super.probability,
     super.closeDate,
     super.status,
+    super.notes,
+    super.assignedTo,
+    super.currency,
+    super.createdAt,
+    super.updatedAt,
   });
 
   factory OpportunityModel.fromJson(Map<String, dynamic> json) {
@@ -371,24 +412,46 @@ class OpportunityModel extends Opportunity {
     return OpportunityModel(
       id: id,
       title: json['title'] as String? ?? '',
+      customerId: json['customerId'] as String? ?? '',
       customerName: json['customerName'] as String? ?? '',
       stage: json['stage'] as String? ?? '',
+      company: json['company'] as String?,
+      contactId: json['contactId'] as String?,
+      contactName: json['contactName'] as String?,
+      pipelineId: json['pipelineId'] as String?,
+      pipelineName: json['pipelineName'] as String?,
       expectedRevenue: asDoubleOrNull(json['expectedRevenue']),
       probability: asDoubleOrNull(json['probability']),
       closeDate: DateTime.tryParse('${json['closeDate']}'),
       status: json['status'] as String?,
+      notes: json['notes'] as String?,
+      assignedTo: json['assignedTo'] as String?,
+      currency: json['currency'] as String?,
+      createdAt: DateTime.tryParse('${json['createdAt']}'),
+      updatedAt: DateTime.tryParse('${json['updatedAt']}'),
     );
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
         'id': id,
         'title': title,
+        'customerId': customerId,
         'customerName': customerName,
         'stage': stage,
+        'company': company,
+        'contactId': contactId,
+        'contactName': contactName,
+        'pipelineId': pipelineId,
+        'pipelineName': pipelineName,
         'expectedRevenue': expectedRevenue,
         'probability': probability,
         'closeDate': closeDate?.toIso8601String(),
         'status': status,
+        'notes': notes,
+        'assignedTo': assignedTo,
+        'currency': currency,
+        'createdAt': createdAt?.toIso8601String(),
+        'updatedAt': updatedAt?.toIso8601String(),
       };
 }
 

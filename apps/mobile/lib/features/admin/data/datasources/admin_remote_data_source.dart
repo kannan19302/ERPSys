@@ -21,6 +21,15 @@ abstract class AdminRemoteDataSource {
 
   Future<Paginated<AdminAuditLogModel>> listAuditLogs(ListQuery query);
   Future<SystemHealthModel> getSystemHealth();
+
+  Future<Paginated<AdminApiKeyModel>> listApiKeys(ListQuery query);
+  Future<AdminApiKeyModel> getApiKey(String id);
+  Future<AdminApiKeyModel> createApiKey(Map<String, dynamic> payload);
+  Future<void> deleteApiKey(String id);
+
+  Future<Paginated<AdminTenantModel>> listTenants(ListQuery query);
+  Future<AdminTenantModel> getTenant(String id);
+  Future<AdminTenantModel> createTenant(Map<String, dynamic> payload);
 }
 
 class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
@@ -95,4 +104,38 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
   Future<SystemHealthModel> getSystemHealth() async =>
       SystemHealthModel.fromJson(
         await _client.getObject(ApiPaths.adminSystemHealth));
+
+  @override
+  Future<Paginated<AdminApiKeyModel>> listApiKeys(ListQuery query) =>
+      _client.getPaginated<AdminApiKeyModel>(
+        ApiPaths.adminApiKeys, query, AdminApiKeyModel.fromJson);
+
+  @override
+  Future<AdminApiKeyModel> getApiKey(String id) async =>
+      AdminApiKeyModel.fromJson(
+        await _client.getObject(ApiPaths.adminApiKey(id)));
+
+  @override
+  Future<AdminApiKeyModel> createApiKey(Map<String, dynamic> payload) async =>
+      AdminApiKeyModel.fromJson(
+        await _client.post(ApiPaths.adminApiKeys, body: payload));
+
+  @override
+  Future<void> deleteApiKey(String id) =>
+      _client.delete(ApiPaths.adminApiKey(id));
+
+  @override
+  Future<Paginated<AdminTenantModel>> listTenants(ListQuery query) =>
+      _client.getPaginated<AdminTenantModel>(
+        ApiPaths.adminTenants, query, AdminTenantModel.fromJson);
+
+  @override
+  Future<AdminTenantModel> getTenant(String id) async =>
+      AdminTenantModel.fromJson(
+        await _client.getObject(ApiPaths.adminTenant(id)));
+
+  @override
+  Future<AdminTenantModel> createTenant(Map<String, dynamic> payload) async =>
+      AdminTenantModel.fromJson(
+        await _client.post(ApiPaths.adminTenants, body: payload));
 }

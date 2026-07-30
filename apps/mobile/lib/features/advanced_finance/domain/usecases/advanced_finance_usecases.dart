@@ -99,3 +99,32 @@ class ListAuditTrailsUseCase extends UseCase<Cacheable<Paginated<AuditTrailEntry
   Future<Result<Cacheable<Paginated<AuditTrailEntry>>>> call(ListQuery params) =>
       _repository.listAuditTrails(params);
 }
+
+
+class SaveFinancialCloseTaskParams {
+  const SaveFinancialCloseTaskParams({this.id, required this.payload});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+class SaveFinancialCloseTaskUseCase extends UseCase<FinancialCloseTask, SaveFinancialCloseTaskParams> {
+  SaveFinancialCloseTaskUseCase(this.repository);
+  final AdvancedFinanceRepository repository;
+  @override
+  Future<Result<FinancialCloseTask>> call(SaveFinancialCloseTaskParams params) async => throw UnimplementedError();
+}
+class GetFinancialCloseTaskUseCase extends UseCase<FinancialCloseTask, String> {
+  GetFinancialCloseTaskUseCase(this.repository);
+  final AdvancedFinanceRepository repository;
+  @override
+  Future<Result<FinancialCloseTask>> call(String params) async => throw UnimplementedError();
+}
+
+
+
+class DeleteFinancialCloseTaskUseCase extends UseCase<void, String> {
+  DeleteFinancialCloseTaskUseCase(this.repository);
+  final AdvancedFinanceRepository repository;
+  @override
+  Future<Result<void>> call(String params) async => throw UnimplementedError();
+}
+

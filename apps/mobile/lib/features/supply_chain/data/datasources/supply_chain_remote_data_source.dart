@@ -25,6 +25,31 @@ abstract class SupplyChainRemoteDataSource {
   Future<ReorderSuggestionModel> calculateReorder(Map<String, dynamic> payload);
   Future<ReorderSuggestionModel> generateReorderOrders(Map<String, dynamic> payload);
   Future<ReorderSuggestionModel> approveReorderSuggestion(String id);
+
+  Future<Paginated<SupplyChainRouteModel>> listSupplyChainRoutes(ListQuery query);
+  Future<SupplyChainRouteModel> getSupplyChainRoute(String id);
+  Future<SupplyChainRouteModel> createSupplyChainRoute(Map<String, dynamic> payload);
+  Future<SupplyChainRouteModel> updateSupplyChainRoute(String id, Map<String, dynamic> payload);
+  Future<void> deleteSupplyChainRoute(String id);
+
+  Future<Paginated<DockAppointmentModel>> listDockAppointments(ListQuery query);
+  Future<DockAppointmentModel> getDockAppointment(String id);
+  Future<DockAppointmentModel> createDockAppointment(Map<String, dynamic> payload);
+  Future<DockAppointmentModel> updateDockAppointment(String id, Map<String, dynamic> payload);
+  Future<void> deleteDockAppointment(String id);
+  Future<DockAppointmentModel> checkinDockAppointment(String id);
+  Future<DockAppointmentModel> completeDockAppointment(String id);
+
+  Future<Paginated<WarehouseTransferModel>> listWarehouseTransfers(ListQuery query);
+  Future<WarehouseTransferModel> getWarehouseTransfer(String id);
+  Future<WarehouseTransferModel> createWarehouseTransfer(Map<String, dynamic> payload);
+  Future<WarehouseTransferModel> updateWarehouseTransfer(String id, Map<String, dynamic> payload);
+  Future<void> deleteWarehouseTransfer(String id);
+  Future<WarehouseTransferModel> approveWarehouseTransfer(String id);
+  Future<WarehouseTransferModel> completeWarehouseTransfer(String id);
+
+  Future<Paginated<TrackingEventModel>> listTrackingEvents(ListQuery query);
+  Future<TrackingEventModel> createTrackingEvent(Map<String, dynamic> payload);
 }
 
 class SupplyChainRemoteDataSourceImpl implements SupplyChainRemoteDataSource {
@@ -124,4 +149,106 @@ class SupplyChainRemoteDataSourceImpl implements SupplyChainRemoteDataSource {
   Future<ReorderSuggestionModel> approveReorderSuggestion(String id) async =>
       ReorderSuggestionModel.fromJson(
         await _client.post(ApiPaths.reorderSuggestionApprove(id)));
+
+  @override
+  Future<Paginated<SupplyChainRouteModel>> listSupplyChainRoutes(ListQuery query) =>
+      _client.getPaginated<SupplyChainRouteModel>(
+        ApiPaths.supplyChainRoutes, query, SupplyChainRouteModel.fromJson);
+
+  @override
+  Future<SupplyChainRouteModel> getSupplyChainRoute(String id) async =>
+      SupplyChainRouteModel.fromJson(
+        await _client.getObject(ApiPaths.supplyChainRoute(id)));
+
+  @override
+  Future<SupplyChainRouteModel> createSupplyChainRoute(Map<String, dynamic> payload) async =>
+      SupplyChainRouteModel.fromJson(
+        await _client.post(ApiPaths.supplyChainRoutes, body: payload));
+
+  @override
+  Future<SupplyChainRouteModel> updateSupplyChainRoute(String id, Map<String, dynamic> payload) async =>
+      SupplyChainRouteModel.fromJson(
+        await _client.patch(ApiPaths.supplyChainRoute(id), body: payload));
+
+  @override
+  Future<void> deleteSupplyChainRoute(String id) =>
+      _client.delete(ApiPaths.supplyChainRoute(id));
+
+  @override
+  Future<Paginated<DockAppointmentModel>> listDockAppointments(ListQuery query) =>
+      _client.getPaginated<DockAppointmentModel>(
+        ApiPaths.dockAppointments, query, DockAppointmentModel.fromJson);
+
+  @override
+  Future<DockAppointmentModel> getDockAppointment(String id) async =>
+      DockAppointmentModel.fromJson(
+        await _client.getObject(ApiPaths.dockAppointment(id)));
+
+  @override
+  Future<DockAppointmentModel> createDockAppointment(Map<String, dynamic> payload) async =>
+      DockAppointmentModel.fromJson(
+        await _client.post(ApiPaths.dockAppointments, body: payload));
+
+  @override
+  Future<DockAppointmentModel> updateDockAppointment(String id, Map<String, dynamic> payload) async =>
+      DockAppointmentModel.fromJson(
+        await _client.patch(ApiPaths.dockAppointment(id), body: payload));
+
+  @override
+  Future<void> deleteDockAppointment(String id) =>
+      _client.delete(ApiPaths.dockAppointment(id));
+
+  @override
+  Future<DockAppointmentModel> checkinDockAppointment(String id) async =>
+      DockAppointmentModel.fromJson(
+        await _client.post(ApiPaths.dockAppointmentCheckin(id)));
+
+  @override
+  Future<DockAppointmentModel> completeDockAppointment(String id) async =>
+      DockAppointmentModel.fromJson(
+        await _client.post(ApiPaths.dockAppointmentComplete(id)));
+
+  @override
+  Future<Paginated<WarehouseTransferModel>> listWarehouseTransfers(ListQuery query) =>
+      _client.getPaginated<WarehouseTransferModel>(
+        ApiPaths.warehouseTransfers, query, WarehouseTransferModel.fromJson);
+
+  @override
+  Future<WarehouseTransferModel> getWarehouseTransfer(String id) async =>
+      WarehouseTransferModel.fromJson(
+        await _client.getObject(ApiPaths.warehouseTransfer(id)));
+
+  @override
+  Future<WarehouseTransferModel> createWarehouseTransfer(Map<String, dynamic> payload) async =>
+      WarehouseTransferModel.fromJson(
+        await _client.post(ApiPaths.warehouseTransfers, body: payload));
+
+  @override
+  Future<WarehouseTransferModel> updateWarehouseTransfer(String id, Map<String, dynamic> payload) async =>
+      WarehouseTransferModel.fromJson(
+        await _client.patch(ApiPaths.warehouseTransfer(id), body: payload));
+
+  @override
+  Future<void> deleteWarehouseTransfer(String id) =>
+      _client.delete(ApiPaths.warehouseTransfer(id));
+
+  @override
+  Future<WarehouseTransferModel> approveWarehouseTransfer(String id) async =>
+      WarehouseTransferModel.fromJson(
+        await _client.post(ApiPaths.warehouseTransferApprove(id)));
+
+  @override
+  Future<WarehouseTransferModel> completeWarehouseTransfer(String id) async =>
+      WarehouseTransferModel.fromJson(
+        await _client.post(ApiPaths.warehouseTransferComplete(id)));
+
+  @override
+  Future<Paginated<TrackingEventModel>> listTrackingEvents(ListQuery query) =>
+      _client.getPaginated<TrackingEventModel>(
+        '/supply-chain/tracking-events', query, TrackingEventModel.fromJson);
+
+  @override
+  Future<TrackingEventModel> createTrackingEvent(Map<String, dynamic> payload) async =>
+      TrackingEventModel.fromJson(
+        await _client.post('/supply-chain/tracking-events', body: payload));
 }

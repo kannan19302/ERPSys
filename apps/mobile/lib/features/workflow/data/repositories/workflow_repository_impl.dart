@@ -179,4 +179,26 @@ class WorkflowRepositoryImpl implements WorkflowRepository {
   @override
   Future<Result<void>> deleteSlaRule(String id) =>
       _delete(() => _remote.deleteSlaRule(id));
+
+  @override
+  Future<Result<WorkflowDefinition>> createDefinition(Map<String, dynamic> p) async => throw UnimplementedError();
+
+  @override
+  Future<Result<WorkflowTask>> createTask(Map<String, dynamic> p) async => throw UnimplementedError();
+
+  @override
+  Future<Result<WorkflowTask>> createWorkflowTask(Map<String, dynamic> p) async => throw UnimplementedError();
+
+  @override
+  Future<Result<WorkflowTask>> getWorkflowTask(String id) async => throw UnimplementedError();
+
+  @override
+  Future<Result<WorkflowDefinition>> updateDefinition(String id, Map<String, dynamic> p) async => throw UnimplementedError();
+
+  @override
+  Future<Result<WorkflowTask>> updateTask(String id, Map<String, dynamic> p) async => throw UnimplementedError();
+
+  @override
+  Future<Result<WorkflowTask>> updateWorkflowTask(String id, Map<String, dynamic> p) async => throw UnimplementedError();
+
 }

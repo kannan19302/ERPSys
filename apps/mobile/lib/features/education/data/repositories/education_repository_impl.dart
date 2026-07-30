@@ -183,4 +183,20 @@ class EducationRepositoryImpl implements EducationRepository {
   @override
   Future<Result<Exam>> createExam(Map<String, dynamic> p) =>
       _write(() => _remote.createExam(p));
+
+  @override
+  Future<Result<Exam>> getExam(String id) async => throw UnimplementedError();
+
+  @override
+  Future<Result<Exam>> updateExam(String id, Map<String, dynamic> p) async => throw UnimplementedError();
+
+  @override
+  Future<Result<void>> deleteExam(String id) async => throw UnimplementedError();
+
+  @override
+  Future<Result<GradeEntry>> getGradeEntry(String id) async => throw UnimplementedError();
+
+  @override
+  Future<Result<Enrollment>> updateEnrollment(String id, Map<String, dynamic> p) async => throw UnimplementedError();
+
 }

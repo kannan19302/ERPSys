@@ -1,78 +1,121 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
 import type {
   CreateBuilderFormInput,
   UpdateBuilderFormInput,
-} from '@unerp/shared';
+} from "@unerp/shared";
+
+// Some historical rows have `fields` double-encoded (a JSON string stored
+// inside the Json column instead of the array itself) — normalise on the way
+// out so API consumers always see a real array regardless of how it was written.
+function normalizeFields<T extends { fields?: unknown }>(form: T): T {
+  if (typeof form.fields === "string") {
+    try {
+      return { ...form, fields: JSON.parse(form.fields) };
+    } catch {
+      return { ...form, fields: [] };
+    }
+  }
+  return form;
+}
 
 @Injectable()
 export class BuilderFormsService {
-  async getForms(tenantId: string, params: { page?: number; limit?: number; search?: string; module?: string } = {}) {
+  async getForms(
+    tenantId: string,
+    params: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      module?: string;
+    } = {},
+  ) {
     const page = params.page || 1;
     const limit = params.limit || 50;
     const skip = (page - 1) * limit;
     const where: any = { tenantId };
     if (params.search) {
       where.OR = [
-        { name: { contains: params.search, mode: 'insensitive' } },
-        { slug: { contains: params.search, mode: 'insensitive' } },
+        { name: { contains: params.search, mode: "insensitive" } },
+        { slug: { contains: params.search, mode: "insensitive" } },
       ];
     }
-    if (params.module && params.module !== 'All Modules') {
-      where.module = { equals: params.module, mode: 'insensitive' };
+    if (params.module && params.module !== "All Modules") {
+      where.module = { equals: params.module, mode: "insensitive" };
     }
     const [data, total] = await Promise.all([
-      prisma.builderForm.findMany({ where, skip, take: limit, orderBy: { createdAt: 'desc' } }),
+      prisma.builderForm.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+      }),
       prisma.builderForm.count({ where }),
     ]);
 
     // Fetch schema registries to associate count
-    const schemas = (await prisma.schemaRegistry.findMany({
-      where: { tenantId },
-      select: {
-        id: true,
-        slug: true,
-        _count: {
-          select: { customRecords: true }
-        }
-      }
-    })) || [];
-    const schemaMap = new Map(schemas.map(s => [s.slug, s._count.customRecords]));
+    const schemas =
+      (await prisma.schemaRegistry.findMany({
+        where: { tenantId },
+        select: {
+          id: true,
+          slug: true,
+          _count: {
+            select: { customRecords: true },
+          },
+        },
+      })) || [];
+    const schemaMap = new Map(
+      schemas.map((s) => [s.slug, s._count.customRecords]),
+    );
 
-    const formsWithSubmissions = data.map(form => {
+    const formsWithSubmissions = data.map((form) => {
       const submissions = schemaMap.get(form.slug) || 0;
       return {
-        ...form,
-        submissions
+        ...normalizeFields(form),
+        submissions,
       };
     });
 
-    return { data: formsWithSubmissions, meta: { page, limit, total, totalPages: Math.ceil(total / limit) } };
+    return {
+      data: formsWithSubmissions,
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
   }
 
   async getFormStats(tenantId: string) {
     const [total, published, draft] = await Promise.all([
       prisma.builderForm.count({ where: { tenantId } }),
-      prisma.builderForm.count({ where: { tenantId, status: { in: ['PUBLISHED', 'Published'] } } }),
-      prisma.builderForm.count({ where: { tenantId, status: { in: ['DRAFT', 'Draft'] } } }),
+      prisma.builderForm.count({
+        where: { tenantId, status: { in: ["PUBLISHED", "Published"] } },
+      }),
+      prisma.builderForm.count({
+        where: { tenantId, status: { in: ["DRAFT", "Draft"] } },
+      }),
     ]);
 
-    const schemas = (await prisma.schemaRegistry.findMany({
-      where: { tenantId },
-      select: {
-        id: true,
-        slug: true,
-        _count: {
-          select: { customRecords: true }
-        }
-      }
-    })) || [];
+    const schemas =
+      (await prisma.schemaRegistry.findMany({
+        where: { tenantId },
+        select: {
+          id: true,
+          slug: true,
+          _count: {
+            select: { customRecords: true },
+          },
+        },
+      })) || [];
 
-    const builderFormSlugs = (await prisma.builderForm.findMany({
-      where: { tenantId },
-      select: { slug: true }
-    })) || [];
-    const slugSet = new Set(builderFormSlugs.map(f => f.slug));
+    const builderFormSlugs =
+      (await prisma.builderForm.findMany({
+        where: { tenantId },
+        select: { slug: true },
+      })) || [];
+    const slugSet = new Set(builderFormSlugs.map((f) => f.slug));
 
     let totalSubmissions = 0;
     for (const schema of schemas) {
@@ -93,18 +136,16 @@ export class BuilderFormsService {
     const form = await prisma.builderForm.findFirst({
       where: { id, tenantId },
     });
-    if (!form) throw new NotFoundException('Form not found');
-    return form;
+    if (!form) throw new NotFoundException("Form not found");
+    return normalizeFields(form);
   }
 
-  async createForm(
-    tenantId: string,
-    dto: CreateBuilderFormInput
-  ) {
+  async createForm(tenantId: string, dto: CreateBuilderFormInput) {
     const existing = await prisma.builderForm.findFirst({
       where: { tenantId, slug: dto.slug },
     });
-    if (existing) throw new BadRequestException('A form with this slug already exists');
+    if (existing)
+      throw new BadRequestException("A form with this slug already exists");
 
     return prisma.builderForm.create({
       data: {
@@ -113,7 +154,7 @@ export class BuilderFormsService {
         slug: dto.slug,
         description: dto.description || null,
         icon: dto.icon || null,
-        module: dto.module || 'Sales',
+        module: dto.module || "Sales",
         fields: (dto.fields || []) as any,
         settings: (dto.settings || {}) as any,
       },
@@ -121,8 +162,10 @@ export class BuilderFormsService {
   }
 
   async updateForm(tenantId: string, id: string, dto: UpdateBuilderFormInput) {
-    const form = await prisma.builderForm.findFirst({ where: { id, tenantId } });
-    if (!form) throw new NotFoundException('Form not found');
+    const form = await prisma.builderForm.findFirst({
+      where: { id, tenantId },
+    });
+    if (!form) throw new NotFoundException("Form not found");
 
     return prisma.builderForm.update({
       where: { id },
@@ -139,69 +182,77 @@ export class BuilderFormsService {
   }
 
   async deleteForm(tenantId: string, id: string) {
-    const form = await prisma.builderForm.findFirst({ where: { id, tenantId } });
-    if (!form) throw new NotFoundException('Form not found');
+    const form = await prisma.builderForm.findFirst({
+      where: { id, tenantId },
+    });
+    if (!form) throw new NotFoundException("Form not found");
     return prisma.builderForm.delete({ where: { id } });
   }
 
   async publishBuilderForm(tenantId: string, id: string) {
-    const form = await prisma.builderForm.findFirst({ where: { id, tenantId } });
-    if (!form) throw new NotFoundException('Form not found');
+    const form = await prisma.builderForm.findFirst({
+      where: { id, tenantId },
+    });
+    if (!form) throw new NotFoundException("Form not found");
 
-    let schema = await prisma.schemaRegistry.findFirst({ where: { tenantId, slug: form.slug } });
+    let schema = await prisma.schemaRegistry.findFirst({
+      where: { tenantId, slug: form.slug },
+    });
     if (!schema) {
       schema = await prisma.schemaRegistry.create({
         data: {
           tenantId,
-          module: form.module || 'custom',
+          module: form.module || "custom",
           name: form.name,
           slug: form.slug,
           description: form.description,
           fields: form.fields || [],
           settings: form.settings || {},
-          status: 'ACTIVE'
-        }
+          status: "ACTIVE",
+        },
       });
     } else {
       schema = await prisma.schemaRegistry.update({
         where: { id: schema.id },
         data: {
-          module: form.module || 'custom',
+          module: form.module || "custom",
           fields: form.fields || [],
           settings: form.settings || {},
-        }
+        },
       });
     }
 
-    let page = await prisma.pageRegistry.findFirst({ where: { tenantId, slug: form.slug } });
+    let page = await prisma.pageRegistry.findFirst({
+      where: { tenantId, slug: form.slug },
+    });
     if (!page) {
       page = await prisma.pageRegistry.create({
         data: {
           tenantId,
           schemaId: schema.id,
-          module: form.module || 'custom',
+          module: form.module || "custom",
           slug: form.slug,
           title: form.name,
-          type: 'FORM',
+          type: "FORM",
           layout: { fields: form.fields || [], settings: form.settings || {} },
-          status: 'PUBLISHED'
-        }
+          status: "PUBLISHED",
+        },
       });
     } else {
       page = await prisma.pageRegistry.update({
         where: { id: page.id },
         data: {
           schemaId: schema.id,
-          module: form.module || 'custom',
+          module: form.module || "custom",
           layout: { fields: form.fields || [], settings: form.settings || {} },
-          status: 'PUBLISHED'
-        }
+          status: "PUBLISHED",
+        },
       });
     }
 
     await prisma.builderForm.update({
       where: { id },
-      data: { status: 'PUBLISHED' }
+      data: { status: "PUBLISHED" },
     });
 
     return { form, schema, page };

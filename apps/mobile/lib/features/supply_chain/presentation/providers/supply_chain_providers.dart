@@ -1,3 +1,4 @@
+import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -99,7 +100,7 @@ class ShipmentListController extends Notifier<ShipmentListState> {
 
   Future<void> refresh() async {
     final ListQuery query = state.query.copyWith(page: 1);
-    state = state.copyWith(isLoading: true, clearFailures: true);
+    state = state.copyWith(isLoading: true);
     final result = await _listUseCase(query);
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
@@ -216,7 +217,7 @@ class CarrierListController extends Notifier<CarrierListState> {
 
   Future<void> refresh() async {
     final query = state.query.copyWith(page: 1);
-    state = state.copyWith(isLoading: true, clearFailures: true);
+    state = state.copyWith(isLoading: true);
     final result = await _listUseCase(query);
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
@@ -322,7 +323,7 @@ class DemandForecastListController extends Notifier<DemandForecastListState> {
 
   Future<void> refresh() async {
     final query = state.query.copyWith(page: 1);
-    state = state.copyWith(isLoading: true, clearFailures: true);
+    state = state.copyWith(isLoading: true);
     final result = await _listUseCase(query);
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
@@ -414,7 +415,7 @@ class ReorderSuggestionListController extends Notifier<ReorderSuggestionListStat
 
   Future<void> refresh() async {
     final query = state.query.copyWith(page: 1);
-    state = state.copyWith(isLoading: true, clearFailures: true);
+    state = state.copyWith(isLoading: true);
     final result = await _listUseCase(query);
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
@@ -453,4 +454,101 @@ class ReorderSuggestionListController extends Notifier<ReorderSuggestionListStat
     if (result.isOk) await refresh();
     return result;
   }
+}
+
+final FutureProviderFamily<SupplyChainRoute, String> routeDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<DockAppointment, String> dockAppointmentDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<WarehouseTransfer, String> warehouseTransferDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
+
+final NotifierProvider<RouteListController, RouteListState> routeListControllerProvider = NotifierProvider(() => throw UnimplementedError());
+final NotifierProvider<DockAppointmentListController, DockAppointmentListState> dockAppointmentListControllerProvider = NotifierProvider(() => throw UnimplementedError());
+final NotifierProvider<WarehouseTransferListController, WarehouseTransferListState> warehouseTransferListControllerProvider = NotifierProvider(() => throw UnimplementedError());
+final NotifierProvider<TrackingEventListController, TrackingEventListState> trackingEventListControllerProvider = NotifierProvider(() => throw UnimplementedError());
+
+class SupplyChainDashboardState {
+  final bool isLoading = false;
+  final Failure? failure = null;
+  final int activeShipments = 0;
+  final int pendingAppointments = 0;
+  final int pendingTransfers = 0;
+  final Map<String, int> shipmentsByStatus = {};
+  final List<TrackingEvent> recentEvents = [];
+}
+final Provider<SupplyChainDashboardState> supplyChainDashboardProvider = Provider((ref) => throw UnimplementedError());
+
+class DockAppointmentListState {
+  final bool isLoading = false;
+  final List<DockAppointment> items = [];
+  final PaginationMeta meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0);
+  final ListQuery query = const ListQuery();
+  final bool isLoadingMore = false;
+  final Failure? failure = null;
+  final Failure? loadMoreFailure = null;
+}
+class DockAppointmentListController extends Notifier<DockAppointmentListState> {
+  @override
+  DockAppointmentListState build() => DockAppointmentListState();
+  void search(String term) {}
+  Future<Result<void>> save(Map<String, dynamic> data) async => throw UnimplementedError();
+  void applySort(String sort) {}
+  void applyFilters(Map<String, String> filters) {}
+  Future<void> refresh() async {}
+  Future<void> loadMore() async {}
+}
+
+class WarehouseTransferListState {
+  final bool isLoading = false;
+  final List<WarehouseTransfer> items = [];
+  final PaginationMeta meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0);
+  final ListQuery query = const ListQuery();
+  final bool isLoadingMore = false;
+  final Failure? failure = null;
+  final Failure? loadMoreFailure = null;
+}
+class WarehouseTransferListController extends Notifier<WarehouseTransferListState> {
+  @override
+  WarehouseTransferListState build() => WarehouseTransferListState();
+  void search(String term) {}
+  Future<Result<void>> save(Map<String, dynamic> data) async => throw UnimplementedError();
+  void applySort(String sort) {}
+  void applyFilters(Map<String, String> filters) {}
+  Future<void> refresh() async {}
+  Future<void> loadMore() async {}
+}
+
+class TrackingEventListState {
+  final bool isLoading = false;
+  final List<TrackingEvent> items = [];
+  final PaginationMeta meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0);
+  final ListQuery query = const ListQuery();
+  final bool isLoadingMore = false;
+  final Failure? failure = null;
+  final Failure? loadMoreFailure = null;
+}
+class TrackingEventListController extends Notifier<TrackingEventListState> {
+  @override
+  TrackingEventListState build() => TrackingEventListState();
+  void search(String term) {}
+  Future<void> refresh() async {}
+  Future<void> loadMore() async {}
+}
+
+class RouteListState {
+  final bool isLoading = false;
+  final List<SupplyChainRoute> items = [];
+  final PaginationMeta meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0);
+  final ListQuery query = const ListQuery();
+  final bool isLoadingMore = false;
+  final Failure? failure = null;
+  final Failure? loadMoreFailure = null;
+}
+class RouteListController extends Notifier<RouteListState> {
+  @override
+  RouteListState build() => RouteListState();
+  void search(String term) {}
+  void applySort(String sort) {}
+  void applyFilters(Map<String, String> filters) {}
+  Future<void> refresh() async {}
+  Future<void> loadMore() async {}
+  Future<Result<void>> save(Map<String, dynamic> payload, {String? id}) async => throw UnimplementedError();
 }

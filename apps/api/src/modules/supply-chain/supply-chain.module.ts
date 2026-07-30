@@ -1,5 +1,6 @@
-import { SupplyChainDeepController } from "./controllers/supply-chain-deep-suite.controller";
 import { Module } from "@nestjs/common";
+import { ColdChainController } from "./controllers/cold-chain.controller";
+import { ColdChainService } from "./services/cold-chain.service";
 import { SupplyChainController } from "./supply-chain.controller";
 import { SupplyChainService } from "./supply-chain.service";
 import { DemandPlanningService } from "./services/demand-planning.service";
@@ -81,7 +82,7 @@ import { SupplyChainEnterpriseModule } from "./supply-chain-enterprise.module";
 @Module({
   imports: [SupplyChainEnterpriseModule],
   controllers: [
-    SupplyChainDeepController,
+    ColdChainController,
     ScmDeepExpansionController,
     SupplyChainController,
     VendorReturnsController,
@@ -120,7 +121,7 @@ import { SupplyChainEnterpriseModule } from "./supply-chain-enterprise.module";
     SupplyChainEnterpriseController,
   ],
   providers: [
-    SupplyChainDeepController,
+    ColdChainService,
     ScmDeepExpansionService,
     SupplyChainService,
     DemandPlanningService,
@@ -159,6 +160,7 @@ import { SupplyChainEnterpriseModule } from "./supply-chain-enterprise.module";
     SupplyChainEnterpriseService,
   ],
   exports: [
+    ColdChainService,
     ScmDeepExpansionService,
     SupplyChainService,
     DemandPlanningService,

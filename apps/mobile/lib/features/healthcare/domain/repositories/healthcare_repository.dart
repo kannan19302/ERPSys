@@ -25,6 +25,7 @@ abstract class HealthcareRepository {
   Future<Result<Cacheable<Paginated<Prescription>>>> listPrescriptions(ListQuery query);
   Future<Result<Prescription>> getPrescription(String id);
   Future<Result<Prescription>> createPrescription(Map<String, dynamic> payload);
+  Future<Result<Prescription>> updatePrescription(String id, Map<String, dynamic> payload);
 
   Future<Result<Cacheable<Paginated<LabOrder>>>> listLabOrders(ListQuery query);
   Future<Result<LabOrder>> getLabOrder(String id);

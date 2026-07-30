@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import '../config/env.dart';
 import '../contracts/paginated.dart';
@@ -48,20 +49,23 @@ class ApiClient {
           status != null && status >= 200 && status < 300,
     );
 
-    final CookieManager cookieManager = CookieManager(cookieStore.jar);
+    // The browser manages cookies itself (via `withCredentials`) — dio_cookie_manager
+    // asserts against being used on web, so it's only wired in on native platforms.
+    final CookieManager? cookieManager =
+        kIsWeb ? null : CookieManager(cookieStore.jar);
 
     // Bare client used for the CSRF priming call and for replaying a request
     // after a refresh; it shares the cookie jar but not the auth/retry chain,
     // which would otherwise recurse.
     final Dio innerDio = Dio(options)
       ..interceptors.addAll(<Interceptor>[
-        cookieManager,
+        if (cookieManager != null) cookieManager,
         RequestIdInterceptor(clientId: installId),
       ]);
 
     final Dio dio = Dio(options);
     dio.interceptors.addAll(<Interceptor>[
-      cookieManager,
+      if (cookieManager != null) cookieManager,
       RequestIdInterceptor(clientId: installId),
       CsrfInterceptor(cookieStore: cookieStore, bootstrapClient: innerDio),
       JwtAuthInterceptor(

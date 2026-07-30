@@ -1,3 +1,4 @@
+import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -157,3 +158,4 @@ final FutureProviderFamily<Person, String> personDetailProvider =
     ref.watch(peopleRepositoryProvider))(id);
   return result.fold((f) => throw f, (p) => p);
 });
+

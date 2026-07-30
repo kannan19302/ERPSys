@@ -1,9 +1,11 @@
+import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../app/theme/design_tokens.dart';
 import '../../../../core/widgets/paginated_list_view.dart';
 import '../../../../core/widgets/state_views.dart';
-
+import '../../../../core/widgets/ui_card.dart';
 import '../../domain/entities/procurement.dart';
 import '../providers/procurement_providers.dart';
 
@@ -18,6 +20,14 @@ class VendorListPage extends ConsumerStatefulWidget {
 class _VendorListPageState extends ConsumerState<VendorListPage> {
   final TextEditingController _search = TextEditingController();
 
+  static const Map<String, String> _sortOptions = <String, String>{
+    '-createdAt': 'Newest first',
+    'createdAt': 'Oldest first',
+    'name': 'Name (A-Z)',
+    '-name': 'Name (Z-A)',
+    '-totalPurchases': 'Highest purchases',
+  };
+
   @override
   void dispose() {
     _search.dispose();
@@ -28,9 +38,26 @@ class _VendorListPageState extends ConsumerState<VendorListPage> {
   Widget build(BuildContext context) {
     final state = ref.watch(vendorListControllerProvider);
     final controller = ref.read(vendorListControllerProvider.notifier);
-    final palette = context.tokens;
     return Scaffold(
-      appBar: AppBar(title: const Text('Vendors')),
+      appBar: AppBar(
+        title: const Text('Vendors'),
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.swap_vert),
+            tooltip: 'Sort',
+            initialValue: state.query.sort,
+            onSelected: controller.applySort,
+            itemBuilder: (_) => _sortOptions.entries
+                .map((e) => PopupMenuItem<String>(value: e.key, child: Text(e.value)))
+                .toList(),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => context.pushNamed('vendor-new'),
+        icon: const Icon(Icons.add),
+        label: const Text('New Vendor'),
+      ),
       body: Column(
         children: [
           Padding(
@@ -58,7 +85,7 @@ class _VendorListPageState extends ConsumerState<VendorListPage> {
                 state.isLoading
                     ? 'Loading...'
                     : '${state.meta.total} vendor${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs),
+                style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs),
               ),
             ]),
           ),
@@ -82,23 +109,33 @@ class _VendorListPageState extends ConsumerState<VendorListPage> {
       onRefresh: controller.refresh,
       onLoadMore: controller.loadMore,
       emptyTitle: 'No vendors found',
-      emptyMessage: 'Vendors created in UniERP will appear here.',
-      itemBuilder: (_, Vendor v, __) => Card(
-        margin: EdgeInsets.zero,
-        child: Padding(
-          padding: const EdgeInsets.all(Spacing.x3),
-          child: Column(
+      emptyMessage: state.query.search?.isNotEmpty ?? false
+          ? 'Nothing matches "${state.query.search}".'
+          : 'Vendors created in UniERP will appear here.',
+      itemBuilder: (_, Vendor v, __) => UiCard(
+        onTap: () => context.pushNamed('vendor-detail', pathParameters: <String, String>{'id': v.id}),
+        padding: const EdgeInsets.all(Spacing.x3),
+        child: Row(children: [
+          Container(
+            height: Spacing.x10, width: Spacing.x10,
+            decoration: BoxDecoration(color: context.tokens.bgSunken, borderRadius: Radii.control),
+            alignment: Alignment.center,
+            child: Icon(Icons.business_outlined, size: TypeScale.xl, color: context.tokens.textSecondary),
+          ),
+          const SizedBox(width: Spacing.x3),
+          Expanded(child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(v.name, style: Theme.of(context).textTheme.titleSmall),
-              if (v.email != null) Text(v.email!, style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs)),
-              if (v.phone != null) ...[
-                const SizedBox(height: Spacing.x1),
-                Text(v.phone!, style: TextStyle(fontSize: TypeScale.xs)),
-              ],
+              Text(v.name, maxLines: 1, overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelLarge),
+              if (v.email != null)
+                Text(v.email!, maxLines: 1, overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: context.tokens.textTertiary, fontSize: TypeScale.xs)),
             ],
-          ),
-        ),
+          )),
+          const SizedBox(width: Spacing.x2),
+          UiStatusBadge(label: v.status, tone: v.status == 'ACTIVE' ? UiTone.success : UiTone.neutral),
+        ]),
       ),
     );
   }

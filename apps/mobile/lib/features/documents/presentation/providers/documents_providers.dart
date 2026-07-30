@@ -1,3 +1,4 @@
+import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -159,8 +160,7 @@ class DocumentListController extends Notifier<DocumentListState> {
   }
 }
 
-final FutureProviderFamily<Document, String> documentDetailProvider =
-    FutureProvider.family<Document, String>((Ref ref, String id) async {
+final documentDetailProvider = FutureProvider.family<Document, String>((Ref ref, String id) async {
   final result = await GetDocumentUseCase(
     ref.watch(documentsRepositoryProvider))(id);
   return result.fold((f) => throw f, (d) => d);
@@ -280,7 +280,22 @@ class FolderListController extends Notifier<FolderListState> {
     if (result.isOk) await refresh();
     return result;
   }
+
+  Future<Result<DocumentFolder>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveFolderUseCase(
+      ref.read(documentsRepositoryProvider))(
+      SaveFolderParams(id: id, payload: payload),
+    );
+    if (result.isOk) await refresh();
+    return result;
+  }
 }
+
+final documentTemplateDetailProvider = FutureProvider.family<DocumentTemplate, String>((Ref ref, String id) async {
+  final result = await GetTemplateUseCase(
+    ref.watch(documentsRepositoryProvider))(id);
+  return result.fold((f) => throw f, (t) => t);
+});
 
 final FutureProviderFamily<DocumentFolder, String> folderDetailProvider =
     FutureProvider.family<DocumentFolder, String>((Ref ref, String id) async {

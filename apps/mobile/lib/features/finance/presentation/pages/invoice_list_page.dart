@@ -1,3 +1,4 @@
+import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -190,7 +191,8 @@ class _InvoiceTile extends StatelessWidget {
 
     final (String statusLabel, UiTone tone) = switch (invoice.status) {
       'PAID' => ('Paid', UiTone.success),
-      'SUBMITTED' => ('Submitted', UiTone.info),
+      'PARTIALLY_PAID' => ('Partially paid', UiTone.info),
+      'SENT' => ('Sent', UiTone.info),
       'OVERDUE' => ('Overdue', UiTone.danger),
       'CANCELLED' => ('Cancelled', UiTone.neutral),
       _ => ('Draft', UiTone.warning),

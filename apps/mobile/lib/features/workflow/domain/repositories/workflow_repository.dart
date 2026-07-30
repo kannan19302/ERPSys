@@ -29,9 +29,20 @@ abstract class WorkflowRepository {
   Future<Result<WorkflowTask>> rejectWorkflowTask(String id);
   Future<Result<WorkflowTask>> delegateWorkflowTask(String id, Map<String, dynamic> payload);
   Future<Result<WorkflowTask>> escalateWorkflowTask(String id);
+  Future<Result<WorkflowTask>> createWorkflowTask(Map<String, dynamic> payload);
+  Future<Result<WorkflowTask>> updateWorkflowTask(String id, Map<String, dynamic> payload);
 
   Future<Result<Cacheable<Paginated<SlaRule>>>> listSlaRules(ListQuery query);
   Future<Result<SlaRule>> createSlaRule(Map<String, dynamic> payload);
   Future<Result<SlaRule>> updateSlaRule(String id, Map<String, dynamic> payload);
   Future<Result<void>> deleteSlaRule(String id);
+
+
+
+  Future<Result<WorkflowDefinition>> createDefinition(Map<String, dynamic> payload);
+  Future<Result<WorkflowDefinition>> updateDefinition(String id, Map<String, dynamic> payload);
+  Future<Result<WorkflowTask>> createTask(Map<String, dynamic> payload);
+  Future<Result<WorkflowTask>> updateTask(String id, Map<String, dynamic> payload);
+  Future<Result<WorkflowTask>> getWorkflowTask(String id);
+
 }

@@ -1,4 +1,3 @@
-import { BuilderDeepController } from "./controllers/builder-deep-suite.controller";
 import { Module } from "@nestjs/common";
 import { BuilderController } from "./builder.controller";
 import { BuilderService } from "./builder.service";
@@ -49,7 +48,6 @@ import { BuilderEnterpriseModule } from "./builder-enterprise.module";
 @Module({
   imports: [AiClientModule, BuilderEnterpriseModule],
   controllers: [
-    BuilderDeepController,
     BuilderDeepExpansionController,
     BuilderController,
     WebPublicController,
@@ -66,7 +64,6 @@ import { BuilderEnterpriseModule } from "./builder-enterprise.module";
     AbTestingController,
   ],
   providers: [
-    BuilderDeepController,
     BuilderDeepExpansionService,
     BuilderService,
     WebCollectionsService,

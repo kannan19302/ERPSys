@@ -1,7 +1,11 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 
 @Injectable()
 export class ManufacturingService {
@@ -17,7 +21,7 @@ export class ManufacturingService {
       include: {
         items: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -28,7 +32,7 @@ export class ManufacturingService {
         items: true,
       },
     });
-    if (!bom) throw new NotFoundException('BOM not found');
+    if (!bom) throw new NotFoundException("BOM not found");
     return bom;
   }
 
@@ -43,12 +47,13 @@ export class ManufacturingService {
       standardCost?: number;
       routingJson?: string;
       items: Array<{ productId: string; quantity: number; type?: string }>;
-    }
+    },
   ) {
     const existing = await prisma.bOM.findFirst({
       where: { tenantId, code: dto.code },
     });
-    if (existing) throw new BadRequestException(`BOM code ${dto.code} already exists.`);
+    if (existing)
+      throw new BadRequestException(`BOM code ${dto.code} already exists.`);
 
     return prisma.$transaction(async (tx) => {
       const bom = await tx.bOM.create({
@@ -71,7 +76,7 @@ export class ManufacturingService {
             bomId: bom.id,
             productId: item.productId,
             quantity: new Prisma.Decimal(item.quantity),
-            type: item.type || 'COMPONENT',
+            type: item.type || "COMPONENT",
           },
         });
       }
@@ -91,7 +96,7 @@ export class ManufacturingService {
         bom: true,
         workstation: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -103,15 +108,20 @@ export class ManufacturingService {
       quantity: number;
       startDate?: string;
       workstationId?: string;
-    }
+    },
   ) {
-    const bom = await prisma.bOM.findFirst({ where: { id: dto.bomId, tenantId } });
-    if (!bom) throw new NotFoundException('BOM not found');
+    const bom = await prisma.bOM.findFirst({
+      where: { id: dto.bomId, tenantId },
+    });
+    if (!bom) throw new NotFoundException("BOM not found");
 
     const existing = await prisma.workOrder.findFirst({
       where: { tenantId, workOrderNumber: dto.workOrderNumber },
     });
-    if (existing) throw new BadRequestException(`Work order ${dto.workOrderNumber} already exists.`);
+    if (existing)
+      throw new BadRequestException(
+        `Work order ${dto.workOrderNumber} already exists.`,
+      );
 
     // 1. Calculate Standard Cost
     const standardCost = Number(bom.standardCost) * dto.quantity;
@@ -129,28 +139,36 @@ export class ManufacturingService {
           where: {
             tenantId,
             workstationId: dto.workstationId,
-            status: { in: ['PLANNED', 'IN_PROGRESS'] },
+            status: { in: ["PLANNED", "IN_PROGRESS"] },
           },
         });
 
         const workstationHoursAllocated = existingWO.reduce(
           (sum, wo) => sum + Number(wo.quantity) * 2, // assume 2 hours per unit average
-          0
+          0,
         );
 
         // Adjust hours based on shifts if configured
         let dailyCapacity = 8.0; // default 8 hours
         if (workstation.shifts.length > 0) {
           dailyCapacity = workstation.shifts.reduce((sum, shift) => {
-            const [startHour, startMin] = (shift.startTime || '08:00').split(':').map(Number);
-            const [endHour, endMin] = (shift.endTime || '16:00').split(':').map(Number);
-            const duration = (endHour || 16) - (startHour || 8) + ((endMin || 0) - (startMin || 0)) / 60;
+            const [startHour, startMin] = (shift.startTime || "08:00")
+              .split(":")
+              .map(Number);
+            const [endHour, endMin] = (shift.endTime || "16:00")
+              .split(":")
+              .map(Number);
+            const duration =
+              (endHour || 16) -
+              (startHour || 8) +
+              ((endMin || 0) - (startMin || 0)) / 60;
             return sum + duration;
           }, 0);
         }
 
         if (workstationHoursAllocated > Number(workstation.capacityHours)) {
-          const hoursExceeded = workstationHoursAllocated - Number(workstation.capacityHours);
+          const hoursExceeded =
+            workstationHoursAllocated - Number(workstation.capacityHours);
           const daysToShift = Math.ceil(hoursExceeded / dailyCapacity);
           finalStartDate.setDate(finalStartDate.getDate() + daysToShift);
         }
@@ -165,7 +183,7 @@ export class ManufacturingService {
           workOrderNumber: dto.workOrderNumber,
           quantity: new Prisma.Decimal(dto.quantity),
           startDate: finalStartDate,
-          status: 'DRAFT',
+          status: "DRAFT",
           workstationId: dto.workstationId || null,
           standardCost: new Prisma.Decimal(standardCost),
         },
@@ -174,16 +192,21 @@ export class ManufacturingService {
       // Generate sequential operation steps from BOM routingJson
       const routing = Array.isArray(bom.routingJson) ? bom.routingJson : [];
       let seq = 1;
-      for (const step of routing as Array<{ sequence?: number; name?: string; workstationCode?: string; durationMinutes?: number }>) {
+      for (const step of routing as Array<{
+        sequence?: number;
+        name?: string;
+        workstationCode?: string;
+        durationMinutes?: number;
+      }>) {
         await tx.workOrderOperation.create({
           data: {
             tenantId,
             workOrderId: wo.id,
             sequence: step.sequence || seq++,
             name: step.name || `Operation ${seq}`,
-            workstationCode: step.workstationCode || 'WS-ASM',
+            workstationCode: step.workstationCode || "WS-ASM",
             durationMinutes: step.durationMinutes || 30,
-            status: 'PENDING',
+            status: "PENDING",
           },
         });
       }
@@ -194,12 +217,12 @@ export class ManufacturingService {
 
   async startWorkOrder(tenantId: string, id: string) {
     const wo = await prisma.workOrder.findFirst({ where: { id, tenantId } });
-    if (!wo) throw new NotFoundException('Work order not found');
+    if (!wo) throw new NotFoundException("Work order not found");
 
     return prisma.workOrder.update({
       where: { id },
       data: {
-        status: 'IN_PROGRESS',
+        status: "IN_PROGRESS",
         startDate: new Date(),
       },
     });
@@ -216,39 +239,47 @@ export class ManufacturingService {
         },
       },
     });
-    if (!wo) throw new NotFoundException('Work order not found');
+    if (!wo) throw new NotFoundException("Work order not found");
 
     // Cost Variance & Roll-Up Calculation upon completion
     let actualCost = wo.actualCost;
     let costVariance = wo.costVariance;
 
-    if (status === 'COMPLETED') {
+    if (status === "COMPLETED") {
       const materialBase = Number(wo.bom.materialCost) * Number(wo.quantity);
       // Actual costing includes logged scrap penalty (+20% of standard cost per scrap)
-      const scrapPenalty = wo.scrapQuantity ? Number(wo.scrapQuantity) * Number(wo.bom.standardCost) * 0.2 : 0;
+      const scrapPenalty = wo.scrapQuantity
+        ? Number(wo.scrapQuantity) * Number(wo.bom.standardCost) * 0.2
+        : 0;
       actualCost = new Prisma.Decimal(materialBase + scrapPenalty);
-      costVariance = new Prisma.Decimal(Number(actualCost) - Number(wo.standardCost || 0));
+      costVariance = new Prisma.Decimal(
+        Number(actualCost) - Number(wo.standardCost || 0),
+      );
     }
 
     const updated = await prisma.workOrder.update({
       where: { id },
       data: {
         status,
-        endDate: status === 'COMPLETED' ? new Date() : undefined,
+        endDate: status === "COMPLETED" ? new Date() : undefined,
         actualCost,
         costVariance,
       },
     });
 
-    if (status === 'COMPLETED' && this.eventEmitter) {
-      const warehouse = await prisma.warehouse.findFirst({ where: { tenantId } });
+    if (status === "COMPLETED" && this.eventEmitter) {
+      const warehouse = await prisma.warehouse.findFirst({
+        where: { tenantId },
+      });
       const warehouseId = warehouse ? warehouse.id : null;
 
       // Filter input components vs co/by products
-      const components = wo.bom.items.filter(item => item.type === 'COMPONENT');
-      const outputs = wo.bom.items.filter(item => item.type !== 'COMPONENT');
+      const components = wo.bom.items.filter(
+        (item) => item.type === "COMPONENT",
+      );
+      const outputs = wo.bom.items.filter((item) => item.type !== "COMPONENT");
 
-      this.eventEmitter.emit('manufacturing.workorder.completed', {
+      this.eventEmitter.emit("manufacturing.workorder.completed", {
         tenantId,
         workOrderId: id,
         productId: wo.bom.productId,
@@ -272,10 +303,10 @@ export class ManufacturingService {
   async logScrapAndOee(
     tenantId: string,
     id: string,
-    dto: { oeeScore: number; scrapQuantity: number; lotNumber?: string }
+    dto: { oeeScore: number; scrapQuantity: number; lotNumber?: string },
   ) {
     const wo = await prisma.workOrder.findFirst({ where: { id, tenantId } });
-    if (!wo) throw new NotFoundException('Work order not found');
+    if (!wo) throw new NotFoundException("Work order not found");
 
     const standardCostVal = Number(wo.standardCost || 0);
     // Recalculate actual costs with new scrap details
@@ -308,7 +339,7 @@ export class ManufacturingService {
           },
         },
       },
-      orderBy: { runDate: 'desc' },
+      orderBy: { runDate: "desc" },
     });
   }
 
@@ -317,7 +348,7 @@ export class ManufacturingService {
     const run = await prisma.mRPRun.create({
       data: {
         tenantId,
-        status: 'RUNNING',
+        status: "RUNNING",
         runBy,
       },
     });
@@ -327,7 +358,7 @@ export class ManufacturingService {
       const orders = await prisma.salesOrder.findMany({
         where: {
           tenantId,
-          status: { in: ['CONFIRMED', 'PROCESSING'] },
+          status: { in: ["CONFIRMED", "PROCESSING"] },
         },
         include: {
           lineItems: true,
@@ -343,7 +374,10 @@ export class ManufacturingService {
           const stockRecords = await prisma.inventoryItem.findMany({
             where: { tenantId, productId: item.productId },
           });
-          const stockQty = stockRecords.reduce((sum, r) => sum + Number(r.quantity), 0);
+          const stockQty = stockRecords.reduce(
+            (sum, r) => sum + Number(r.quantity),
+            0,
+          );
           const demanded = Number(item.quantity);
 
           if (stockQty < demanded) {
@@ -363,23 +397,26 @@ export class ManufacturingService {
                   mrpRunId: run.id,
                   productId: item.productId,
                   bomId: bom.id,
-                  demandSource: 'SALES_ORDER',
+                  demandSource: "SALES_ORDER",
                   demandSourceId: order.id,
                   quantityNeeded: new Prisma.Decimal(demanded),
                   quantityInStock: new Prisma.Decimal(stockQty),
                   netQuantityRequired: new Prisma.Decimal(netReq),
-                  actionType: 'CREATE_WORK_ORDER',
+                  actionType: "CREATE_WORK_ORDER",
                 },
               });
 
               // 2. Explode BOM components requirements
               for (const comp of bom.items) {
-                if (comp.type !== 'COMPONENT') continue; // skip co/by products
+                if (comp.type !== "COMPONENT") continue; // skip co/by products
 
                 const compStockRecords = await prisma.inventoryItem.findMany({
                   where: { tenantId, productId: comp.productId },
                 });
-                const compStockQty = compStockRecords.reduce((sum, r) => sum + Number(r.quantity), 0);
+                const compStockQty = compStockRecords.reduce(
+                  (sum, r) => sum + Number(r.quantity),
+                  0,
+                );
                 const compDemanded = Number(comp.quantity) * netReq;
 
                 if (compStockQty < compDemanded) {
@@ -387,7 +424,11 @@ export class ManufacturingService {
 
                   // Check if component itself has a BOM
                   const subBom = await prisma.bOM.findFirst({
-                    where: { tenantId, productId: comp.productId, isActive: true },
+                    where: {
+                      tenantId,
+                      productId: comp.productId,
+                      isActive: true,
+                    },
                   });
 
                   await prisma.mRPPlannedItem.create({
@@ -396,12 +437,14 @@ export class ManufacturingService {
                       mrpRunId: run.id,
                       productId: comp.productId,
                       bomId: subBom ? subBom.id : null,
-                      demandSource: 'SAFETY_STOCK',
+                      demandSource: "SAFETY_STOCK",
                       demandSourceId: bom.id,
                       quantityNeeded: new Prisma.Decimal(compDemanded),
                       quantityInStock: new Prisma.Decimal(compStockQty),
                       netQuantityRequired: new Prisma.Decimal(compNetReq),
-                      actionType: subBom ? 'CREATE_WORK_ORDER' : 'CREATE_PURCHASE_ORDER',
+                      actionType: subBom
+                        ? "CREATE_WORK_ORDER"
+                        : "CREATE_PURCHASE_ORDER",
                     },
                   });
                 }
@@ -413,12 +456,12 @@ export class ManufacturingService {
                   tenantId,
                   mrpRunId: run.id,
                   productId: item.productId,
-                  demandSource: 'SALES_ORDER',
+                  demandSource: "SALES_ORDER",
                   demandSourceId: order.id,
                   quantityNeeded: new Prisma.Decimal(demanded),
                   quantityInStock: new Prisma.Decimal(stockQty),
                   netQuantityRequired: new Prisma.Decimal(netReq),
-                  actionType: 'CREATE_PURCHASE_ORDER',
+                  actionType: "CREATE_PURCHASE_ORDER",
                 },
               });
             }
@@ -428,13 +471,13 @@ export class ManufacturingService {
 
       return prisma.mRPRun.update({
         where: { id: run.id },
-        data: { status: 'COMPLETED' },
+        data: { status: "COMPLETED" },
         include: { plannedItems: { include: { product: true } } },
       });
     } catch {
       return prisma.mRPRun.update({
         where: { id: run.id },
-        data: { status: 'FAILED' },
+        data: { status: "FAILED" },
       });
     }
   }
@@ -444,12 +487,14 @@ export class ManufacturingService {
       where: { id: plannedItemId, tenantId },
       include: { product: true },
     });
-    if (!plannedItem) throw new NotFoundException('Planned replenishment item not found');
-    if (plannedItem.status === 'PROCESSED') throw new BadRequestException('Item already processed');
+    if (!plannedItem)
+      throw new NotFoundException("Planned replenishment item not found");
+    if (plannedItem.status === "PROCESSED")
+      throw new BadRequestException("Item already processed");
 
-    let resultReference = '';
+    let resultReference = "";
 
-    if (plannedItem.actionType === 'CREATE_WORK_ORDER' && plannedItem.bomId) {
+    if (plannedItem.actionType === "CREATE_WORK_ORDER" && plannedItem.bomId) {
       const woCount = await prisma.workOrder.count({ where: { tenantId } });
       const wo = await prisma.workOrder.create({
         data: {
@@ -457,8 +502,11 @@ export class ManufacturingService {
           bomId: plannedItem.bomId,
           workOrderNumber: `WO-MRP-${woCount + 101}`,
           quantity: plannedItem.netQuantityRequired,
-          status: 'PLANNED',
-          standardCost: new Prisma.Decimal(Number(plannedItem.netQuantityRequired) * Number(plannedItem.product.costPrice)),
+          status: "PLANNED",
+          standardCost: new Prisma.Decimal(
+            Number(plannedItem.netQuantityRequired) *
+              Number(plannedItem.product.costPrice),
+          ),
         },
       });
       resultReference = `Work Order: ${wo.workOrderNumber}`;
@@ -466,12 +514,12 @@ export class ManufacturingService {
       // CREATE_PURCHASE_ORDER
       // Find a vendor
       const vendor = await prisma.vendor.findFirst({ where: { tenantId } });
-      const vendorId = vendor ? vendor.id : 'default-vendor-id';
+      const vendorId = vendor ? vendor.id : "default-vendor-id";
 
       const poCount = await prisma.purchaseOrder.count({ where: { tenantId } });
       // Create a draft PO
       const org = await prisma.organization.findFirst({ where: { tenantId } });
-      const orgId = org ? org.id : 'default-org-id';
+      const orgId = org ? org.id : "default-org-id";
 
       const po = await prisma.purchaseOrder.create({
         data: {
@@ -479,9 +527,15 @@ export class ManufacturingService {
           orgId,
           vendorId,
           poNumber: `PO-MRP-${poCount + 101}`,
-          status: 'DRAFT',
-          totalAmount: new Prisma.Decimal(Number(plannedItem.netQuantityRequired) * Number(plannedItem.product.costPrice)),
-          subtotal: new Prisma.Decimal(Number(plannedItem.netQuantityRequired) * Number(plannedItem.product.costPrice)),
+          status: "DRAFT",
+          totalAmount: new Prisma.Decimal(
+            Number(plannedItem.netQuantityRequired) *
+              Number(plannedItem.product.costPrice),
+          ),
+          subtotal: new Prisma.Decimal(
+            Number(plannedItem.netQuantityRequired) *
+              Number(plannedItem.product.costPrice),
+          ),
           notes: `Auto-generated via MRP for Product SKU: ${plannedItem.product.sku}`,
         },
       });
@@ -495,7 +549,10 @@ export class ManufacturingService {
           description: plannedItem.product.name,
           quantity: plannedItem.netQuantityRequired,
           unitPrice: plannedItem.product.costPrice,
-          totalAmount: new Prisma.Decimal(Number(plannedItem.netQuantityRequired) * Number(plannedItem.product.costPrice)),
+          totalAmount: new Prisma.Decimal(
+            Number(plannedItem.netQuantityRequired) *
+              Number(plannedItem.product.costPrice),
+          ),
         },
       });
 
@@ -504,7 +561,7 @@ export class ManufacturingService {
 
     await prisma.mRPPlannedItem.update({
       where: { id: plannedItemId },
-      data: { status: 'PROCESSED' },
+      data: { status: "PROCESSED" },
     });
 
     return { success: true, reference: resultReference };
@@ -517,13 +574,13 @@ export class ManufacturingService {
   async getQualityPlans(tenantId: string) {
     return prisma.qualityInspectionPlan.findMany({
       where: { tenantId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
   async createQualityPlan(
     tenantId: string,
-    dto: { productId: string; name: string; code: string; checks: string }
+    dto: { productId: string; name: string; code: string; checks: string },
   ) {
     return prisma.qualityInspectionPlan.create({
       data: {
@@ -532,7 +589,7 @@ export class ManufacturingService {
         name: dto.name,
         code: dto.code,
         checks: JSON.parse(dto.checks),
-        status: 'ACTIVE',
+        status: "ACTIVE",
       },
     });
   }
@@ -550,7 +607,7 @@ export class ManufacturingService {
       passedQty: number;
       inspectedBy: string;
       checklistJson: string;
-    }
+    },
   ) {
     const rejectedQty = dto.inspectedQty - dto.passedQty;
 
@@ -572,17 +629,18 @@ export class ManufacturingService {
     });
 
     // If status is FAILED or has rejected items, auto-log a Non-Conformance Report (NCR)
-    if (dto.status === 'FAILED' || rejectedQty > 0) {
+    if (dto.status === "FAILED" || rejectedQty > 0) {
       await prisma.nonConformanceReport.create({
         data: {
           tenantId,
           qualityInspectionId: qi.id,
-          workOrderId: dto.referenceType === 'Work Order' ? dto.referenceId : null,
+          workOrderId:
+            dto.referenceType === "Work Order" ? dto.referenceId : null,
           productId: dto.productId,
           title: `NCR: Failed Audit ${dto.inspectionNumber}`,
           description: `Automatic NCR triggered by failed inspection audit checks on ${qi.referenceType} (ID: ${qi.referenceId}). Total rejected quantity: ${rejectedQty}`,
-          disposition: 'REWORK',
-          status: 'OPEN',
+          disposition: "REWORK",
+          status: "OPEN",
           loggedBy: dto.inspectedBy,
         },
       });
@@ -598,7 +656,7 @@ export class ManufacturingService {
         product: true,
         workOrder: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -611,7 +669,7 @@ export class ManufacturingService {
       description?: string;
       disposition: string;
       loggedBy?: string;
-    }
+    },
   ) {
     return prisma.nonConformanceReport.create({
       data: {
@@ -621,8 +679,8 @@ export class ManufacturingService {
         title: dto.title,
         description: dto.description || null,
         disposition: dto.disposition,
-        loggedBy: dto.loggedBy || 'System QC',
-        status: 'OPEN',
+        loggedBy: dto.loggedBy || "System QC",
+        status: "OPEN",
       },
     });
   }
@@ -630,19 +688,19 @@ export class ManufacturingService {
   async resolveNCR(
     tenantId: string,
     id: string,
-    dto: { disposition: string; status: string; resolvedBy?: string }
+    dto: { disposition: string; status: string; resolvedBy?: string },
   ) {
     const existing = await prisma.nonConformanceReport.findFirst({
       where: { id, tenantId },
     });
-    if (!existing) throw new NotFoundException('NCR not found');
+    if (!existing) throw new NotFoundException("NCR not found");
 
     return prisma.nonConformanceReport.update({
       where: { id },
       data: {
         disposition: dto.disposition,
         status: dto.status,
-        resolvedBy: dto.resolvedBy || 'QC Manager',
+        resolvedBy: dto.resolvedBy || "QC Manager",
         resolvedAt: new Date(),
       },
     });
@@ -655,14 +713,19 @@ export class ManufacturingService {
   async getWorkstations(tenantId: string) {
     return prisma.workstation.findMany({
       where: { tenantId },
-      orderBy: { code: 'asc' },
+      orderBy: { code: "asc" },
     });
   }
 
   async createWorkstation(
     tenantId: string,
     orgId: string,
-    dto: { name: string; code: string; capacityHours: number; hourlyOverheadRate: number }
+    dto: {
+      name: string;
+      code: string;
+      capacityHours: number;
+      hourlyOverheadRate: number;
+    },
   ) {
     return prisma.workstation.create({
       data: {
@@ -680,13 +743,19 @@ export class ManufacturingService {
     return prisma.machineDowntimeLog.findMany({
       where: { tenantId },
       include: { workstation: true },
-      orderBy: { startTime: 'desc' },
+      orderBy: { startTime: "desc" },
     });
   }
 
   async logDowntime(
     tenantId: string,
-    dto: { workstationId: string; downtimeCode: string; startTime: string; endTime?: string; notes?: string }
+    dto: {
+      workstationId: string;
+      downtimeCode: string;
+      startTime: string;
+      endTime?: string;
+      notes?: string;
+    },
   ) {
     const start = new Date(dto.startTime);
     const end = dto.endTime ? new Date(dto.endTime) : null;
@@ -712,13 +781,19 @@ export class ManufacturingService {
     return prisma.maintenanceRequest.findMany({
       where: { tenantId },
       include: { workstation: true },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
   async createMaintenanceRequest(
     tenantId: string,
-    dto: { workstationId: string; type: string; priority: string; title: string; description?: string }
+    dto: {
+      workstationId: string;
+      type: string;
+      priority: string;
+      title: string;
+      description?: string;
+    },
   ) {
     return prisma.maintenanceRequest.create({
       data: {
@@ -728,7 +803,7 @@ export class ManufacturingService {
         priority: dto.priority,
         title: dto.title,
         description: dto.description || null,
-        status: 'REQUESTED',
+        status: "REQUESTED",
       },
     });
   }
@@ -744,13 +819,19 @@ export class ManufacturingService {
         vendor: true,
         product: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
   async createSubcontractingOrder(
     tenantId: string,
-    dto: { vendorId: string; productId: string; quantity: number; unitCost: number; deliveryDate?: string }
+    dto: {
+      vendorId: string;
+      productId: string;
+      quantity: number;
+      unitCost: number;
+      deliveryDate?: string;
+    },
   ) {
     const total = dto.quantity * dto.unitCost;
 
@@ -762,13 +843,17 @@ export class ManufacturingService {
         quantity: new Prisma.Decimal(dto.quantity),
         unitCost: new Prisma.Decimal(dto.unitCost),
         totalCost: new Prisma.Decimal(total),
-        status: 'SENT',
+        status: "SENT",
         deliveryDate: dto.deliveryDate ? new Date(dto.deliveryDate) : null,
       },
     });
   }
 
-  async updateSubcontractingStatus(tenantId: string, id: string, status: string) {
+  async updateSubcontractingStatus(
+    tenantId: string,
+    id: string,
+    status: string,
+  ) {
     return prisma.subcontractingOrder.updateMany({
       where: { id, tenantId },
       data: { status },
@@ -776,7 +861,9 @@ export class ManufacturingService {
   }
 
   async getWorkstationLoadBalancing(tenantId: string) {
-    const workstations = await prisma.workstation.findMany({ where: { tenantId } });
+    const workstations = await prisma.workstation.findMany({
+      where: { tenantId },
+    });
     const loadList = [];
 
     for (const ws of workstations) {
@@ -784,13 +871,13 @@ export class ManufacturingService {
         where: {
           tenantId,
           workstationId: ws.id,
-          status: { in: ['PLANNED', 'IN_PROGRESS'] },
+          status: { in: ["PLANNED", "IN_PROGRESS"] },
         },
       });
 
       const allocatedHours = activeWO.reduce(
         (sum, w) => sum + Number(w.quantity) * 1.5, // 1.5 hours standard per unit
-        0
+        0,
       );
 
       const capacity = Number(ws.capacityHours);
@@ -800,7 +887,7 @@ export class ManufacturingService {
         workstation: ws.name,
         capacityHours: capacity,
         allocatedHours,
-        status: rate > 90 ? 'OVERLOADED' : 'HEALTHY',
+        status: rate > 90 ? "OVERLOADED" : "HEALTHY",
         utilizationRate: rate,
       });
     }
@@ -808,9 +895,27 @@ export class ManufacturingService {
     // Fallback if no workstations seeded yet
     if (loadList.length === 0) {
       return [
-        { workstation: 'CNC Cutting Machine', capacityHours: 80, allocatedHours: 0, status: 'HEALTHY', utilizationRate: 0 },
-        { workstation: 'Assembly Line A', capacityHours: 120, allocatedHours: 0, status: 'HEALTHY', utilizationRate: 0 },
-        { workstation: 'Packaging Station', capacityHours: 60, allocatedHours: 0, status: 'HEALTHY', utilizationRate: 0 }
+        {
+          workstation: "CNC Cutting Machine",
+          capacityHours: 80,
+          allocatedHours: 0,
+          status: "HEALTHY",
+          utilizationRate: 0,
+        },
+        {
+          workstation: "Assembly Line A",
+          capacityHours: 120,
+          allocatedHours: 0,
+          status: "HEALTHY",
+          utilizationRate: 0,
+        },
+        {
+          workstation: "Packaging Station",
+          capacityHours: 60,
+          allocatedHours: 0,
+          status: "HEALTHY",
+          utilizationRate: 0,
+        },
       ];
     }
 
@@ -826,7 +931,7 @@ export class ManufacturingService {
       where: { id, tenantId },
       include: { items: true },
     });
-    if (!bom) throw new NotFoundException('BOM not found');
+    if (!bom) throw new NotFoundException("BOM not found");
 
     const getChildren = async (currentBomId: string): Promise<unknown[]> => {
       const items = await prisma.bOMItem.findMany({
@@ -834,15 +939,17 @@ export class ManufacturingService {
       });
       const result = [];
       for (const item of items) {
-        const product = await prisma.product.findFirst({ where: { id: item.productId, tenantId } });
+        const product = await prisma.product.findFirst({
+          where: { id: item.productId, tenantId },
+        });
         const childBom = await prisma.bOM.findFirst({
           where: { productId: item.productId, tenantId, isActive: true },
         });
         result.push({
           id: item.id,
           productId: item.productId,
-          productName: product?.name || 'Unknown Component',
-          sku: product?.sku || '',
+          productName: product?.name || "Unknown Component",
+          sku: product?.sku || "",
           quantity: Number(item.quantity),
           type: item.type,
           hasSubAssembly: !!childBom,
@@ -870,20 +977,25 @@ export class ManufacturingService {
   async getWorkOrderOperations(tenantId: string, workOrderId: string) {
     return prisma.workOrderOperation.findMany({
       where: { tenantId, workOrderId },
-      orderBy: { sequence: 'asc' },
+      orderBy: { sequence: "asc" },
     });
   }
 
-  async startOperationStep(tenantId: string, workOrderId: string, operationId: string, operatorId?: string) {
+  async startOperationStep(
+    tenantId: string,
+    workOrderId: string,
+    operationId: string,
+    operatorId?: string,
+  ) {
     const op = await prisma.workOrderOperation.findFirst({
       where: { id: operationId, workOrderId, tenantId },
     });
-    if (!op) throw new NotFoundException('Operation step not found');
+    if (!op) throw new NotFoundException("Operation step not found");
 
     return prisma.workOrderOperation.update({
       where: { id: operationId },
       data: {
-        status: 'RUNNING',
+        status: "RUNNING",
         startedAt: new Date(),
         operatorId: operatorId || null,
       },
@@ -894,17 +1006,21 @@ export class ManufacturingService {
     tenantId: string,
     workOrderId: string,
     operationId: string,
-    dto: { scrapQuantity?: number; lotNumberConsumed?: string; componentProductId?: string }
+    dto: {
+      scrapQuantity?: number;
+      lotNumberConsumed?: string;
+      componentProductId?: string;
+    },
   ) {
     const op = await prisma.workOrderOperation.findFirst({
       where: { id: operationId, workOrderId, tenantId },
     });
-    if (!op) throw new NotFoundException('Operation step not found');
+    if (!op) throw new NotFoundException("Operation step not found");
 
     const updated = await prisma.workOrderOperation.update({
       where: { id: operationId },
       data: {
-        status: 'COMPLETED',
+        status: "COMPLETED",
         completedAt: new Date(),
       },
     });
@@ -933,7 +1049,7 @@ export class ManufacturingService {
           where: { id: tool.id },
           data: {
             currentCycles: nextCycles,
-            status: autoCalibration ? 'NEEDS_CALIBRATION' : tool.status,
+            status: autoCalibration ? "NEEDS_CALIBRATION" : tool.status,
           },
         });
 
@@ -942,11 +1058,11 @@ export class ManufacturingService {
             data: {
               tenantId,
               workstationId: workstation.id,
-              type: 'PREVENTIVE',
-              priority: 'HIGH',
+              type: "PREVENTIVE",
+              priority: "HIGH",
               title: `Auto Calibration: ${tool.name}`,
               description: `Tool ${tool.code} on ${workstation.name} exceeded its limit of ${tool.maxCycles} cycles.`,
-              status: 'REQUESTED',
+              status: "REQUESTED",
             },
           });
         }
@@ -960,7 +1076,7 @@ export class ManufacturingService {
     return prisma.equipmentTool.findMany({
       where: { tenantId },
       include: { workstation: true },
-      orderBy: { code: 'asc' },
+      orderBy: { code: "asc" },
     });
   }
 
@@ -968,13 +1084,19 @@ export class ManufacturingService {
     return prisma.workstationShift.findMany({
       where: { tenantId },
       include: { workstation: true },
-      orderBy: { name: 'asc' },
+      orderBy: { name: "asc" },
     });
   }
 
   async createWorkstationShift(
     tenantId: string,
-    dto: { workstationId: string; name: string; startTime: string; endTime: string; daysOfWeek: number[] }
+    dto: {
+      workstationId: string;
+      name: string;
+      startTime: string;
+      endTime: string;
+      daysOfWeek: number[];
+    },
   ) {
     return prisma.workstationShift.create({
       data: {
@@ -998,19 +1120,29 @@ export class ManufacturingService {
   async issueSubcontractingMaterials(
     tenantId: string,
     orderId: string,
-    materials: Array<{ productId: string; quantity: number; warehouseId: string }>
+    materials: Array<{
+      productId: string;
+      quantity: number;
+      warehouseId: string;
+    }>,
   ) {
     return prisma.$transaction(async (tx) => {
       for (const mat of materials) {
         const existing = await tx.subcontractingMaterial.findFirst({
-          where: { tenantId, subcontractingOrderId: orderId, productId: mat.productId },
+          where: {
+            tenantId,
+            subcontractingOrderId: orderId,
+            productId: mat.productId,
+          },
         });
 
         if (existing) {
           await tx.subcontractingMaterial.update({
             where: { id: existing.id },
             data: {
-              issuedQty: new Prisma.Decimal(Number(existing.issuedQty) + mat.quantity),
+              issuedQty: new Prisma.Decimal(
+                Number(existing.issuedQty) + mat.quantity,
+              ),
             },
           });
         } else {
@@ -1026,13 +1158,19 @@ export class ManufacturingService {
         }
 
         const invItem = await tx.inventoryItem.findFirst({
-          where: { tenantId, productId: mat.productId, warehouseId: mat.warehouseId },
+          where: {
+            tenantId,
+            productId: mat.productId,
+            warehouseId: mat.warehouseId,
+          },
         });
         if (invItem) {
           await tx.inventoryItem.update({
             where: { id: invItem.id },
             data: {
-              quantity: new Prisma.Decimal(Math.max(0, Number(invItem.quantity) - mat.quantity)),
+              quantity: new Prisma.Decimal(
+                Math.max(0, Number(invItem.quantity) - mat.quantity),
+              ),
             },
           });
         }
@@ -1040,7 +1178,7 @@ export class ManufacturingService {
 
       await tx.subcontractingOrder.update({
         where: { id: orderId },
-        data: { status: 'MATERIALS_SHIPPED' },
+        data: { status: "MATERIALS_SHIPPED" },
       });
 
       return { success: true };
@@ -1050,18 +1188,24 @@ export class ManufacturingService {
   async reconcileSubcontractingMaterials(
     tenantId: string,
     orderId: string,
-    materials: Array<{ productId: string; quantity: number }>
+    materials: Array<{ productId: string; quantity: number }>,
   ) {
     return prisma.$transaction(async (tx) => {
       for (const mat of materials) {
         const existing = await tx.subcontractingMaterial.findFirst({
-          where: { tenantId, subcontractingOrderId: orderId, productId: mat.productId },
+          where: {
+            tenantId,
+            subcontractingOrderId: orderId,
+            productId: mat.productId,
+          },
         });
         if (existing) {
           await tx.subcontractingMaterial.update({
             where: { id: existing.id },
             data: {
-              consumedQty: new Prisma.Decimal(Number(existing.consumedQty) + mat.quantity),
+              consumedQty: new Prisma.Decimal(
+                Number(existing.consumedQty) + mat.quantity,
+              ),
             },
           });
         }
@@ -1074,14 +1218,17 @@ export class ManufacturingService {
     return prisma.engineeringChangeOrder.findMany({
       where: { tenantId },
       include: { bom: true },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
-  async submitECO(tenantId: string, dto: { bomId: string; changeDescription: string; requestedBy: string }) {
+  async submitECO(
+    tenantId: string,
+    dto: { bomId: string; changeDescription: string; requestedBy: string },
+  ) {
     await prisma.bOM.update({
       where: { id: dto.bomId },
-      data: { status: 'UNDER_REVIEW' },
+      data: { status: "UNDER_REVIEW" },
     });
 
     return prisma.engineeringChangeOrder.create({
@@ -1090,29 +1237,34 @@ export class ManufacturingService {
         bomId: dto.bomId,
         changeDescription: dto.changeDescription,
         requestedBy: dto.requestedBy,
-        status: 'PENDING',
+        status: "PENDING",
       },
     });
   }
 
-  async resolveECO(tenantId: string, ecoId: string, status: string, approvedBy?: string) {
+  async resolveECO(
+    tenantId: string,
+    ecoId: string,
+    status: string,
+    approvedBy?: string,
+  ) {
     const eco = await prisma.engineeringChangeOrder.findFirst({
       where: { id: ecoId, tenantId },
     });
-    if (!eco) throw new NotFoundException('ECO not found');
+    if (!eco) throw new NotFoundException("ECO not found");
 
     await prisma.engineeringChangeOrder.update({
       where: { id: ecoId },
       data: {
         status,
-        approvedBy: approvedBy || 'QC Manager',
+        approvedBy: approvedBy || "QC Manager",
       },
     });
 
     await prisma.bOM.update({
       where: { id: eco.bomId },
       data: {
-        status: status === 'APPROVED' ? 'APPROVED' : 'APPROVED',
+        status: status === "APPROVED" ? "APPROVED" : "APPROVED",
       },
     });
 
@@ -1149,66 +1301,104 @@ export class ManufacturingService {
         finishedProductLot: c.workOrder.lotNumber,
         quantityConsumed: Number(c.quantityConsumed),
       })),
-      upstream: workOrder ? {
-        workOrderNumber: workOrder.workOrderNumber,
-        quantityProduced: Number(workOrder.quantity),
-        components: workOrder.componentConsumptions.map((c) => ({
-          productId: c.productId,
-          productName: c.product.name,
-          sku: c.product.sku,
-          consumedLot: c.lotNumber,
-          quantityConsumed: Number(c.quantityConsumed),
-        })),
-      } : null,
+      upstream: workOrder
+        ? {
+            workOrderNumber: workOrder.workOrderNumber,
+            quantityProduced: Number(workOrder.quantity),
+            components: workOrder.componentConsumptions.map((c) => ({
+              productId: c.productId,
+              productName: c.product.name,
+              sku: c.product.sku,
+              consumedLot: c.lotNumber,
+              quantityConsumed: Number(c.quantityConsumed),
+            })),
+          }
+        : null,
     };
   }
 
   async getDetailedOEEAnalytics(tenantId: string) {
-    const downtimeLogs = await prisma.machineDowntimeLog.findMany({ where: { tenantId } });
-    const workstations = await prisma.workstation.findMany({ where: { tenantId } });
+    const downtimeLogs = await prisma.machineDowntimeLog.findMany({
+      where: { tenantId },
+    });
+    const workstations = await prisma.workstation.findMany({
+      where: { tenantId },
+    });
 
-    const totalCapacityHours = workstations.reduce((sum, w) => sum + Number(w.capacityHours), 0) || 240;
-    const totalDowntimeMinutes = downtimeLogs.reduce((sum, d) => sum + (d.durationMinutes || 0), 0);
+    const totalCapacityHours =
+      workstations.reduce((sum, w) => sum + Number(w.capacityHours), 0) || 240;
+    const totalDowntimeMinutes = downtimeLogs.reduce(
+      (sum, d) => sum + (d.durationMinutes || 0),
+      0,
+    );
     const totalDowntimeHours = totalDowntimeMinutes / 60;
 
-    const availability = totalCapacityHours > 0 
-      ? Math.max(0, Math.min(100, ((totalCapacityHours - totalDowntimeHours) / totalCapacityHours) * 100))
-      : 95;
+    const availability =
+      totalCapacityHours > 0
+        ? Math.max(
+            0,
+            Math.min(
+              100,
+              ((totalCapacityHours - totalDowntimeHours) / totalCapacityHours) *
+                100,
+            ),
+          )
+        : 95;
 
     const completedWOs = await prisma.workOrder.findMany({
-      where: { tenantId, status: 'COMPLETED' },
+      where: { tenantId, status: "COMPLETED" },
       include: { bom: true },
     });
-    
+
     let totalStandardMinutes = 0;
     let totalActualMinutes = 0;
 
     for (const wo of completedWOs) {
-      const routing = Array.isArray(wo.bom.routingJson) ? wo.bom.routingJson : [];
-      const stdDuration = (routing as any[]).reduce((sum, step) => sum + Number(step.durationMinutes || 0), 0);
+      const routing = Array.isArray(wo.bom.routingJson)
+        ? wo.bom.routingJson
+        : [];
+      const stdDuration = (routing as any[]).reduce(
+        (sum, step) => sum + Number(step.durationMinutes || 0),
+        0,
+      );
       totalStandardMinutes += stdDuration * Number(wo.quantity);
 
       if (wo.startDate && wo.endDate) {
-        const actualMin = Math.round((wo.endDate.getTime() - wo.startDate.getTime()) / 60000);
+        const actualMin = Math.round(
+          (wo.endDate.getTime() - wo.startDate.getTime()) / 60000,
+        );
         totalActualMinutes += actualMin;
       } else {
         totalActualMinutes += stdDuration * Number(wo.quantity) * 1.05;
       }
     }
 
-    const performance = totalActualMinutes > 0 
-      ? Math.max(0, Math.min(100, (totalStandardMinutes / totalActualMinutes) * 100))
-      : 92;
+    const performance =
+      totalActualMinutes > 0
+        ? Math.max(
+            0,
+            Math.min(100, (totalStandardMinutes / totalActualMinutes) * 100),
+          )
+        : 92;
 
-    const qualityInspections = await prisma.qualityInspection.findMany({ where: { tenantId } });
-    const totalInspected = qualityInspections.reduce((sum, qi) => sum + Number(qi.inspectedQty), 0);
-    const totalPassed = qualityInspections.reduce((sum, qi) => sum + Number(qi.passedQty), 0);
+    const qualityInspections = await prisma.qualityInspection.findMany({
+      where: { tenantId },
+    });
+    const totalInspected = qualityInspections.reduce(
+      (sum, qi) => sum + Number(qi.inspectedQty),
+      0,
+    );
+    const totalPassed = qualityInspections.reduce(
+      (sum, qi) => sum + Number(qi.passedQty),
+      0,
+    );
 
-    const quality = totalInspected > 0 
-      ? (totalPassed / totalInspected) * 100
-      : 98;
+    const quality =
+      totalInspected > 0 ? (totalPassed / totalInspected) * 100 : 98;
 
-    const overallOEE = Math.round((availability * performance * quality) / 10000);
+    const overallOEE = Math.round(
+      (availability * performance * quality) / 10000,
+    );
 
     return {
       availability: Math.round(availability),
@@ -1217,11 +1407,119 @@ export class ManufacturingService {
       oee: overallOEE,
       downtimeLogs: downtimeLogs.map((log) => ({
         id: log.id,
-        workstationName: workstations.find(w => w.id === log.workstationId)?.name || 'Unknown',
+        workstationName:
+          workstations.find((w) => w.id === log.workstationId)?.name ||
+          "Unknown",
         downtimeCode: log.downtimeCode,
         durationMinutes: log.durationMinutes,
         startTime: log.startTime,
       })),
     };
+  }
+
+  // ==========================================
+  // MRP II DEEP ENDPOINTS
+  // ==========================================
+
+  async getMrpParameters(tenantId: string) {
+    const products = await prisma.product.findMany({
+      where: { tenantId, isActive: true },
+      select: {
+        id: true,
+        name: true,
+        sku: true,
+        leadTimeDays: true,
+        minOrderQty: true,
+        maxOrderQty: true,
+      },
+      take: 100,
+    });
+    return products;
+  }
+
+  async updateMrpParameter(
+    tenantId: string,
+    productId: string,
+    dto: {
+      leadTimeDays?: number;
+      minOrderQty?: number;
+      maxOrderQty?: number;
+    },
+  ) {
+    const product = await prisma.product.findFirst({
+      where: { id: productId, tenantId },
+    });
+    if (!product) throw new NotFoundException("Product not found");
+
+    return prisma.product.update({
+      where: { id: productId },
+      data: {
+        leadTimeDays: dto.leadTimeDays,
+        minOrderQty: dto.minOrderQty,
+        maxOrderQty: dto.maxOrderQty,
+      },
+    });
+  }
+
+  async getMrpDashboard(tenantId: string) {
+    const [plannedItems, workOrders, productCount] = await Promise.all([
+      prisma.mRPPlannedItem.findMany({
+        where: { tenantId, status: "PENDING" },
+        include: { product: true, mrpRun: true },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+      }),
+      prisma.workOrder.count({
+        where: { tenantId, status: { in: ["PLANNED", "IN_PROGRESS"] } },
+      }),
+      prisma.product.count({ where: { tenantId, isActive: true } }),
+    ]);
+
+    const pendingWorkOrders = plannedItems.filter(
+      (i) => i.actionType === "CREATE_WORK_ORDER",
+    ).length;
+    const pendingPurchaseOrders = plannedItems.filter(
+      (i) => i.actionType === "CREATE_PURCHASE_ORDER",
+    ).length;
+
+    return {
+      totalPlannedItems: plannedItems.length,
+      pendingWorkOrders,
+      pendingPurchaseOrders,
+      activeWorkOrders: workOrders,
+      totalProducts: productCount,
+      recentPlannedItems: plannedItems.slice(0, 20),
+    };
+  }
+
+  async createMrpScenario(
+    tenantId: string,
+    dto: {
+      name: string;
+      horizonDays?: number;
+      demandMultiplier?: number;
+    },
+  ) {
+    return prisma.mRPRun.create({
+      data: {
+        tenantId,
+        status: "PENDING",
+        runBy: dto.name,
+      },
+    });
+  }
+
+  async getMrpScenarios(tenantId: string) {
+    return prisma.mRPRun.findMany({
+      where: { tenantId },
+      include: {
+        plannedItems: {
+          include: { product: true },
+          take: 20,
+        },
+      },
+      orderBy: { runDate: "desc" },
+      take: 30,
+    });
   }
 }

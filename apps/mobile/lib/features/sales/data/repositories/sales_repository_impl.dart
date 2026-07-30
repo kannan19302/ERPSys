@@ -272,6 +272,51 @@ class SalesRepositoryImpl implements SalesRepository {
   }
 
   @override
+  Future<Result<DeliveryNote>> createDeliveryNote(Map<String, dynamic> payload) async {
+    try {
+      final DeliveryNote created = await _remote.createDeliveryNote(payload);
+      await _cache.clearTenant(_tenantId);
+      return Result<DeliveryNote>.ok(created);
+    } on Object catch (error) {
+      return Result<DeliveryNote>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<DeliveryNote>> updateDeliveryNote(
+    String id,
+    Map<String, dynamic> payload,
+  ) async {
+    try {
+      final DeliveryNote updated = await _remote.updateDeliveryNote(id, payload);
+      await _cache.clearTenant(_tenantId);
+      return Result<DeliveryNote>.ok(updated);
+    } on Object catch (error) {
+      return Result<DeliveryNote>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<void>> deleteDeliveryNote(String id) async {
+    try {
+      await _remote.deleteDeliveryNote(id);
+      await _cache.clearTenant(_tenantId);
+      return const Result<void>.ok(null);
+    } on Object catch (error) {
+      return Result<void>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<DeliveryNote>> submitDeliveryNote(String id) async {
+    try {
+      return Result<DeliveryNote>.ok(await _remote.submitDeliveryNote(id));
+    } on Object catch (error) {
+      return Result<DeliveryNote>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
   Future<Result<Paginated<SalesReturn>>> listSalesReturns(ListQuery query) async {
     try {
       final Paginated<SalesReturnModel> page = await _remote.listSalesReturns(query);
@@ -287,6 +332,46 @@ class SalesRepositoryImpl implements SalesRepository {
   Future<Result<SalesReturn>> getSalesReturn(String id) async {
     try {
       return Result<SalesReturn>.ok(await _remote.getSalesReturn(id));
+    } on Object catch (error) {
+      return Result<SalesReturn>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<SalesReturn>> createSalesReturn(Map<String, dynamic> payload) async {
+    try {
+      final SalesReturn created = await _remote.createSalesReturn(payload);
+      await _cache.clearTenant(_tenantId);
+      return Result<SalesReturn>.ok(created);
+    } on Object catch (error) {
+      return Result<SalesReturn>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<void>> deleteSalesReturn(String id) async {
+    try {
+      await _remote.deleteSalesReturn(id);
+      await _cache.clearTenant(_tenantId);
+      return const Result<void>.ok(null);
+    } on Object catch (error) {
+      return Result<void>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<SalesReturn>> approveSalesReturn(String id) async {
+    try {
+      return Result<SalesReturn>.ok(await _remote.approveSalesReturn(id));
+    } on Object catch (error) {
+      return Result<SalesReturn>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<SalesReturn>> rejectSalesReturn(String id) async {
+    try {
+      return Result<SalesReturn>.ok(await _remote.rejectSalesReturn(id));
     } on Object catch (error) {
       return Result<SalesReturn>.err(mapExceptionToFailure(error));
     }
@@ -310,6 +395,69 @@ class SalesRepositoryImpl implements SalesRepository {
       );
     } on Object catch (error) {
       return Result<Paginated<Opportunity>>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<Opportunity>> getOpportunity(String id) async {
+    try {
+      return Result<Opportunity>.ok(await _remote.getOpportunity(id));
+    } on Object catch (error) {
+      return Result<Opportunity>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<Opportunity>> createOpportunity(Map<String, dynamic> payload) async {
+    try {
+      final Opportunity created = await _remote.createOpportunity(payload);
+      await _cache.clearTenant(_tenantId);
+      return Result<Opportunity>.ok(created);
+    } on Object catch (error) {
+      return Result<Opportunity>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<Opportunity>> updateOpportunity(
+    String id,
+    Map<String, dynamic> payload,
+  ) async {
+    try {
+      final Opportunity updated = await _remote.updateOpportunity(id, payload);
+      await _cache.clearTenant(_tenantId);
+      return Result<Opportunity>.ok(updated);
+    } on Object catch (error) {
+      return Result<Opportunity>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<void>> deleteOpportunity(String id) async {
+    try {
+      await _remote.deleteOpportunity(id);
+      await _cache.clearTenant(_tenantId);
+      return const Result<void>.ok(null);
+    } on Object catch (error) {
+      return Result<void>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<Opportunity>> updateOpportunityStage(String id, String stage) async {
+    try {
+      return Result<Opportunity>.ok(await _remote.updateOpportunityStage(id, stage));
+    } on Object catch (error) {
+      return Result<Opportunity>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<SalesPipeline>> getSalesPipeline(String id) async {
+    try {
+      return Result<SalesPipeline>.ok(await _remote.getSalesPipeline(id));
+    } on Object catch (error) {
+      return Result<SalesPipeline>.err(mapExceptionToFailure(error));
     }
   }
 

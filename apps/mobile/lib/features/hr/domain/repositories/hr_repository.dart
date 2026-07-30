@@ -89,6 +89,24 @@ abstract class HrRepository {
     Map<String, dynamic> payload,
   );
 
+  // Performance reviews
+  Future<Result<Cacheable<Paginated<PerformanceReview>>>>
+      listPerformanceReviews(ListQuery query);
+  Future<Result<PerformanceReview>> getPerformanceReview(String id);
+  Future<Result<PerformanceReview>> createPerformanceReview(
+    Map<String, dynamic> payload,
+  );
+  Future<Result<PerformanceReview>> updatePerformanceReview(
+    String id,
+    Map<String, dynamic> payload,
+  );
+  Future<Result<PerformanceReview>> submitPerformanceReview(String id);
+
+  // Leave allocations
+  Future<Result<Cacheable<Paginated<LeaveAllocation>>>> listLeaveAllocations(
+    ListQuery query,
+  );
+
   // Org chart & dashboard
   Future<Result<List<OrgChartNode>>> getOrgChart();
   Future<Result<HrDashboardStats>> getHrDashboard();

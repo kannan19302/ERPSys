@@ -147,3 +147,12 @@ class SaveSaasTenantUseCase extends UseCase<SaasTenant, SaveSaasTenantParams> {
         : _repository.updateTenant(id, params.payload);
   }
 }
+
+
+class DeleteSaasTenantUseCase extends UseCase<void, String> {
+  DeleteSaasTenantUseCase(this.repository);
+  final SaasRepository repository;
+  @override
+  Future<Result<void>> call(String params) async => Result.ok(null);
+}
+
