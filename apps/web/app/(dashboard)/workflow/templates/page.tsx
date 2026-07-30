@@ -1,0 +1,81 @@
+"use client";
+import React, { useState, useEffect, useCallback } from "react";
+import { PageHeader, Button, Spinner, DataTable, type Column } from "@unerp/ui";
+import { apiGet, apiDelete } from "@/lib/api";
+import { FileText, Plus, Edit3, Trash2 } from "lucide-react";
+
+export default function WorkflowTemplatesPage() {
+  const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    try {
+      const data = await apiGet("/workflow/templates");
+      setItems(Array.isArray(data) ? data : []);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const columns: Column<Record<string, unknown>>[] = [
+    { key: "name", header: "Name", sortable: true },
+    { key: "description", header: "Description" },
+    { key: "category", header: "Category" },
+    { key: "triggerType", header: "Trigger" },
+    {
+      key: "actions",
+      header: "Actions",
+      render: (_v: any, row: any) => (
+        <div className="ui-flex" style={{ gap: "var(--space-2)" }}>
+          <button
+            className="ui-btn-icon"
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+          >
+            <Edit3 size={16} />
+          </button>
+          <button
+            className="ui-btn-icon"
+            onClick={(e) => {
+              e.stopPropagation();
+              apiDelete(`/workflow/templates/${row.id}`).then(load);
+            }}
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
+      ),
+    },
+  ];
+
+  if (loading) return <Spinner />;
+
+  return (
+    <div>
+      <PageHeader
+        title="Workflow Templates"
+        description="Reusable workflow templates"
+      />
+      <div className="ui-card" style={{ marginTop: "var(--space-6)" }}>
+        <div
+          className="ui-flex"
+          style={{
+            justifyContent: "space-between",
+            marginBottom: "var(--space-4)",
+          }}
+        >
+          <h3 className="ui-heading-sm">
+            <FileText size={20} /> Templates ({items.length})
+          </h3>
+          <Button leftIcon={<Plus size={16} />}>New Template</Button>
+        </div>
+        <DataTable columns={columns} data={items} />
+      </div>
+    </div>
+  );
+}

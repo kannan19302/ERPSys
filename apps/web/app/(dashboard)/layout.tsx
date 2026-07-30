@@ -449,6 +449,9 @@ export default function DashboardLayout({
           builder: "builder",
           ecommerce: "ecommerce",
           ai: "ai",
+          documents: "documents",
+          workflow: "workflow",
+          storage: "drive",
         };
         try {
           const slugMap = await client.get<{
@@ -664,7 +667,6 @@ export default function DashboardLayout({
               }}
               className={styles.s5}
             >
-
               {demoDataLoaded && (
                 <DemoBanner
                   currentModule={pathname.split("/")[1]}
@@ -696,7 +698,10 @@ export default function DashboardLayout({
                   </div>
                 </div>
               )}
-              <div key={pathname} className="animate-in fade-in slide-in-from-bottom-2 duration-500 ease-out fill-mode-both">
+              <div
+                key={pathname}
+                className="animate-in fade-in slide-in-from-bottom-2 duration-500 ease-out fill-mode-both"
+              >
                 {children}
               </div>
             </div>
