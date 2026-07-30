@@ -1,3 +1,5 @@
+import { SubscriptionsGeneratedController } from "./subscriptions-generated.controller";
+import { SubscriptionsGeneratedService } from "./subscriptions-generated.service";
 import { Module } from "@nestjs/common";
 import { SubscriptionsController } from "./subscriptions.controller";
 import { SubscriptionsDeepController } from "./subscriptions-deep.controller";
@@ -14,11 +16,13 @@ import { SubscriptionAutoScaleService } from "./subscription-auto-scale.service"
 
 @Module({
   controllers: [
+    SubscriptionsGeneratedController,
     SubscriptionsController,
     SubscriptionsDeepController,
     SubscriptionsBulkController,
   ],
   providers: [
+    SubscriptionsGeneratedService,
     SubscriptionsService,
     SubscriptionPlansService,
     SubscriptionUsageService,
@@ -30,6 +34,7 @@ import { SubscriptionAutoScaleService } from "./subscription-auto-scale.service"
     SubscriptionAutoScaleService,
   ],
   exports: [
+    SubscriptionsGeneratedService,
     SubscriptionsService,
     SubscriptionPlansService,
     SubscriptionUsageService,

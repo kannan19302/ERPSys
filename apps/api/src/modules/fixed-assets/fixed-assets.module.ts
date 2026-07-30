@@ -1,3 +1,5 @@
+import { FixedAssetsGeneratedController } from "./fixed-assets-generated.controller";
+import { FixedAssetsGeneratedService } from "./fixed-assets-generated.service";
 import { Module } from "@nestjs/common";
 import { FixedAssetsController } from "./fixed-assets.controller";
 import { FixedAssetsDeepController } from "./fixed-assets-deep.controller";
@@ -20,11 +22,13 @@ import { AssetOperationsService } from "./asset-operations.service";
 
 @Module({
   controllers: [
+    FixedAssetsGeneratedController,
     FixedAssetsController,
     FixedAssetsDeepController,
     FixedAssetsBulkController,
   ],
   providers: [
+    FixedAssetsGeneratedService,
     FixedAssetsService,
     AssetDepreciationService,
     AssetMaintenanceService,
@@ -42,6 +46,7 @@ import { AssetOperationsService } from "./asset-operations.service";
     AssetOperationsService,
   ],
   exports: [
+    FixedAssetsGeneratedService,
     FixedAssetsService,
     AssetDepreciationService,
     AssetMaintenanceService,

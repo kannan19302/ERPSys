@@ -1,3 +1,5 @@
+import { ReportingGeneratedController } from "./reporting-generated.controller";
+import { ReportingGeneratedService } from "./reporting-generated.service";
 import { Module } from "@nestjs/common";
 import { ReportingController } from "./reporting.controller";
 import { ReportingService } from "./reporting.service";
@@ -35,6 +37,7 @@ import { ReportingColumnPreferencesService } from "./reporting-column-preference
 
 @Module({
   controllers: [
+    ReportingGeneratedController,
     ReportingController,
     ScheduledReportsController,
     ReportingEngineController,
@@ -49,6 +52,7 @@ import { ReportingColumnPreferencesService } from "./reporting-column-preference
     ReportingBulkController,
   ],
   providers: [
+    ReportingGeneratedService,
     ReportingService,
     ScheduledReportsService,
     ReportingEngineService,
@@ -71,6 +75,7 @@ import { ReportingColumnPreferencesService } from "./reporting-column-preference
     ReportingColumnPreferencesService,
   ],
   exports: [
+    ReportingGeneratedService,
     ReportingService,
     ScheduledReportsService,
     ReportingEngineService,
