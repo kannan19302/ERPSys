@@ -2292,11 +2292,21 @@ model Document {
   starred         Boolean   @default(false) @map("starred")
   legalHold       Boolean   @default(false) @map("legal_hold")
 
-  folder     Folder?           @relation(fields: [folderId], references: [id])
-  versions   DocumentVersion[]
-  signatures Signature[]
-  shares     DocumentShare[]
-  approvals  DocumentApproval[]
+  folder           Folder?                 @relation(fields: [folderId], references: [id])
+  versions         DocumentVersion[]
+  signatures       Signature[]
+  shares           DocumentShare[]
+  approvals        DocumentApproval[]
+  annotations      DocumentAnnotation[]
+  comments         DocumentComment[]
+  tagAssignments   DocumentTagAssignment[]
+  locks            DocumentLock[]
+  workflows        DocumentWorkflow[]
+  exports          DocumentExport[]
+  auditLogs        DocumentAuditLog[]
+  favorites        DocumentFavorite[]
+  recentItems      DocumentRecentItem[]
+  watermarks       DocumentWatermark[]
 
   @@index([tenantId])
   @@map("documents")
@@ -30224,9 +30234,18 @@ model WorkflowDefinition {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  steps      WorkflowDefinitionStep[]
-  executions WorkflowExecution[]
-  tenant     Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  steps               WorkflowDefinitionStep[]
+  executions          WorkflowExecution[]
+  versions            WorkflowVersion[]
+  conditions          WorkflowCondition[]
+  loops               WorkflowLoop[]
+  parentSubprocesses  WorkflowSubprocess[]  @relation("ParentSubprocess")
+  childSubprocesses   WorkflowSubprocess[]  @relation("ChildSubprocess")
+  errorHandlers       WorkflowErrorHandler[]
+  notifications       WorkflowNotification[]
+  webhooks            WorkflowWebhook[]
+  tagAssignments      WorkflowTagAssignment[]
+  tenant              Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([tenantId, slug])
@@ -39973,8 +39992,9 @@ model DocumentTag {
   tenantId  String   @map("tenant_id")
   name      String
   color     String?  @default("#1976D2")
-  createdBy String   @map("created_by")
-  createdAt DateTime @default(now()) @map("created_at")
+  createdBy     String                    @map("created_by")
+  createdAt     DateTime                  @default(now()) @map("created_at")
+  tagAssignments DocumentTagAssignment[]
 
   @@unique([tenantId, name])
   @@map("document_tags")
@@ -40532,8 +40552,9 @@ model WorkflowTag {
   tenantId  String   @map("tenant_id")
   name      String
   color     String?  @default("#1976D2")
-  createdBy String   @map("created_by")
-  createdAt DateTime @default(now()) @map("created_at")
+  createdBy      String                   @map("created_by")
+  createdAt      DateTime                 @default(now()) @map("created_at")
+  tagAssignments WorkflowTagAssignment[]
 
   @@unique([tenantId, name])
   @@map("workflow_tags")
