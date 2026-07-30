@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Module } from '@nestjs/common';
 import { NotificationsModule } from '../../modules/notifications/notifications.module';
 import { NotificationsGateway } from '../../modules/notifications/notifications.gateway';

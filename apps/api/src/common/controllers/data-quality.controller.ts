@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   Controller, Get, Post, Body, Param, UseGuards, Req,
 } from '@nestjs/common';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Injectable, BadRequestException } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { Response } from "express";

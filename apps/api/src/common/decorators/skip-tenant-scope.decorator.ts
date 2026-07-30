@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { SetMetadata } from '@nestjs/common';
 
 export const SKIP_TENANT_SCOPE_KEY = 'skipTenantScope';

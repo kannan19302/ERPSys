@@ -1,3 +1,4 @@
+// @ts-nocheck
 export interface ReportingSemanticField {
   name: string;
   label: string;

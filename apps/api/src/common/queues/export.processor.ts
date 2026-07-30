@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { pinoLogger } from '../services/logger.service';

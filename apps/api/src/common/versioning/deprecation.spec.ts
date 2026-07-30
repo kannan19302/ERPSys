@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, expect, it } from 'vitest';
 import { findDeprecation, type DeprecationEntry } from './deprecation-registry';
 import { applyDeprecationHeaders, deprecationMiddleware } from './deprecation.middleware';

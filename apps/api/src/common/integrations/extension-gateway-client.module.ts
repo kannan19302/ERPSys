@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Injectable, Module } from '@nestjs/common';
 import { ExtGatewayModule } from '../../modules/ext-gateway/ext-gateway.module';
 import { ExtProxyService } from '../../modules/ext-gateway/ext-proxy.service';

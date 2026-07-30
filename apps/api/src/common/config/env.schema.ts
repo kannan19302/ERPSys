@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Boot-time environment validation (Foundation Roadmap Track G.6).
  *

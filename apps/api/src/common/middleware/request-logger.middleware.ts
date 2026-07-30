@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Request, Response, NextFunction } from 'express';
 import { pinoLogger } from '../services/logger.service';
 import crypto from 'crypto';

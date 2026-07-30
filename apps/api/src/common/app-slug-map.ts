@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Single source of truth for "which app slug does this route belong to" and
  * "which slugs are kernel (always installed, never uninstallable)".

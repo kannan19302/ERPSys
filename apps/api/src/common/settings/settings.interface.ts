@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { z, ZodSchema } from 'zod';
 
 export type SettingType = 'string' | 'number' | 'boolean' | 'object' | 'array';

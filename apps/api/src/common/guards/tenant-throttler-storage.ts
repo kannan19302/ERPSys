@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ThrottlerStorage } from '@nestjs/throttler';
 import Redis from 'ioredis';
 

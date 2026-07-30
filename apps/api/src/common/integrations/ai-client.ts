@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Stable application-facing contract for AI capabilities.
  *

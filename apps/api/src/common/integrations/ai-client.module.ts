@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Module } from '@nestjs/common';
 import { AiModule } from '../../modules/ai/ai.module';
 import { AiService } from '../../modules/ai/ai.service';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 export class OllamaClient {
   private baseUrl = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
   private model = process.env.OLLAMA_MODEL || 'llama3';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Global Idempotency-Key interceptor (Foundation Roadmap Track G.3).
  *

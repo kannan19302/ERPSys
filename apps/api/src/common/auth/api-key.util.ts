@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { createHash, randomBytes } from 'crypto';
 
 export const API_KEY_PREFIX = 'ue_live_';

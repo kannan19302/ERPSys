@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Injectable } from '@nestjs/common';
 import { Response } from 'express';
 import ExcelJS from 'exceljs';

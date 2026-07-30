@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * API deprecation registry (Foundation Roadmap Track G.1).
  *

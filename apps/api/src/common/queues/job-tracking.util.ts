@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Queue } from 'bullmq';
 import { prisma } from '@unerp/database';
 

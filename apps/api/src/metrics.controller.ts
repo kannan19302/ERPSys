@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Controller, Get, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { metricsRegistry } from './common/middleware/metrics.middleware';

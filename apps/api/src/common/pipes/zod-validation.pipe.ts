@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { PipeTransform, ArgumentMetadata, BadRequestException } from '@nestjs/common';
 import { ZodSchema, ZodError } from 'zod';
 

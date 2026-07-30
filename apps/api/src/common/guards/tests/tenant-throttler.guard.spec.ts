@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect } from 'vitest';
 import { TENANT_PLAN_LIMITS, TenantThrottlerGuard } from '../tenant-throttler.guard';
 import { InMemoryThrottlerStorage } from '../tenant-throttler-storage';

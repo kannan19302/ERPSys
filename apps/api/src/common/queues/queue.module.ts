@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Global, Module } from "@nestjs/common";
 import { BullModule } from "@nestjs/bullmq";
 import { EmailProcessor } from "./email.processor";

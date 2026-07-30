@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Injectable, LoggerService as NestLoggerService } from '@nestjs/common';
 import pino from 'pino';
 

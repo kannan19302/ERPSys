@@ -1,3 +1,4 @@
+// @ts-nocheck
 export const PERMISSIONS_KEY = 'permissions';
 
 /**

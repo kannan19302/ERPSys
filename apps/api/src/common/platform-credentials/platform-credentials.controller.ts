@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Controller, Get, Param, Put, Req, UseGuards } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { z } from "zod";

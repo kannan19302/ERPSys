@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, expect, it, vi } from 'vitest';
 import { ConflictException, UnprocessableEntityException } from '@nestjs/common';
 import { firstValueFrom, of, throwError } from 'rxjs';

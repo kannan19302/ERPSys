@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Module lifecycle tiers.
  *

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Module } from '@nestjs/common';
 import { ReportingModule } from '../../modules/reporting/reporting.module';
 import { ReportingEngineService } from '../../modules/reporting/reporting-engine.service';

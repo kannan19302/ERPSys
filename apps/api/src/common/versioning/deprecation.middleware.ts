@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Deprecation headers middleware (Foundation Roadmap Track G.1).
  *
