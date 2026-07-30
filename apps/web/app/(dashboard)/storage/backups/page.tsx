@@ -33,19 +33,12 @@ export default function StorageBackupsPage() {
     {
       key: "type",
       header: "Type",
-      render: (v: any) => <StatusBadge status="info" label={v || "FULL"} />,
+      render: (v: any) => <StatusBadge status={v || "FULL"} />,
     },
     {
       key: "status",
       header: "Status",
-      render: (v: any) => (
-        <StatusBadge
-          status={
-            v === "COMPLETED" ? "success" : v === "FAILED" ? "error" : "warning"
-          }
-          label={v}
-        />
-      ),
+      render: (v: any) => <StatusBadge status={v} />,
     },
     { key: "createdAt", header: "Created" },
     {

@@ -35,14 +35,7 @@ export default function StorageSnapshotsPage() {
     {
       key: "status",
       header: "Status",
-      render: (v: any) => (
-        <StatusBadge
-          status={
-            v === "COMPLETED" ? "success" : v === "FAILED" ? "error" : "warning"
-          }
-          label={v}
-        />
-      ),
+      render: (v: any) => <StatusBadge status={v} />,
     },
     {
       key: "actions",

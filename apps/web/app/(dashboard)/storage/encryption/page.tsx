@@ -37,12 +37,7 @@ export default function StorageEncryptionPage() {
     {
       key: "status",
       header: "Status",
-      render: (v: any) => (
-        <StatusBadge
-          status={v === "ENCRYPTED" ? "success" : "warning"}
-          label={v}
-        />
-      ),
+      render: (v: any) => <StatusBadge status={v} />,
     },
     { key: "createdAt", header: "Created" },
     {

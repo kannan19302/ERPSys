@@ -451,7 +451,6 @@ export default function DashboardLayout({
           ai: "ai",
           documents: "documents",
           workflow: "workflow",
-          storage: "drive",
         };
         try {
           const slugMap = await client.get<{

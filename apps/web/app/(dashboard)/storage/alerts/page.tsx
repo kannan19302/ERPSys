@@ -35,12 +35,7 @@ export default function StorageAlertsPage() {
     {
       key: "enabled",
       header: "Enabled",
-      render: (v: any) => (
-        <StatusBadge
-          status={v ? "success" : "muted"}
-          label={v ? "ON" : "OFF"}
-        />
-      ),
+      render: (v: any) => <StatusBadge status={v ? "ACTIVE" : "INACTIVE"} />,
     },
     {
       key: "actions",
