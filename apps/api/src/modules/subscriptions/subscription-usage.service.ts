@@ -32,4 +32,12 @@ export class SubscriptionUsageService {
       },
     });
   }
+
+  async getUsageGroupByMetric(tenantId: string) {
+    return prisma.subscriptionUsage.groupBy({
+      by: ["metricName"],
+      where: { tenantId },
+      _sum: { quantity: true },
+    });
+  }
 }

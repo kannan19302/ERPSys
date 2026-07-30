@@ -4,8 +4,13 @@ import { Prisma } from "@prisma/client";
 
 @Injectable()
 export class AssetDocumentService {
-  async getDocuments(tenantId: string, assetId: string, documentType?: string) {
-    const where: Prisma.FixedAssetDocumentWhereInput = { tenantId, assetId };
+  async getDocuments(
+    tenantId: string,
+    assetId?: string,
+    documentType?: string,
+  ) {
+    const where: Prisma.FixedAssetDocumentWhereInput = { tenantId };
+    if (assetId) where.assetId = assetId;
     if (documentType) where.documentType = documentType;
     return prisma.fixedAssetDocument.findMany({
       where,
@@ -27,6 +32,28 @@ export class AssetDocumentService {
   ) {
     return prisma.fixedAssetDocument.create({
       data: { tenantId, assetId, ...dto },
+    });
+  }
+
+  async createDocument(
+    tenantId: string,
+    body: {
+      assetId: string;
+      fileName: string;
+      fileType: string;
+      fileUrl: string;
+      category?: string;
+    },
+  ) {
+    return prisma.fixedAssetDocument.create({
+      data: { ...body, tenantId } as any,
+    });
+  }
+
+  async updateDocument(id: string) {
+    return prisma.fixedAssetDocument.update({
+      where: { id },
+      data: { tenantId: undefined },
     });
   }
 

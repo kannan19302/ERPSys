@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { FixedAssetsController } from "./fixed-assets.controller";
 import { FixedAssetsDeepController } from "./fixed-assets-deep.controller";
+import { FixedAssetsBulkController } from "./fixed-assets-bulk.controller";
 import { FixedAssetsService } from "./fixed-assets.service";
 import { AssetDepreciationService } from "./asset-depreciation.service";
 import { AssetMaintenanceService } from "./asset-maintenance.service";
@@ -18,7 +19,11 @@ import { AssetDocumentService } from "./asset-document.service";
 import { AssetOperationsService } from "./asset-operations.service";
 
 @Module({
-  controllers: [FixedAssetsController, FixedAssetsDeepController],
+  controllers: [
+    FixedAssetsController,
+    FixedAssetsDeepController,
+    FixedAssetsBulkController,
+  ],
   providers: [
     FixedAssetsService,
     AssetDepreciationService,

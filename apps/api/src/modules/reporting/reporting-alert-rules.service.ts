@@ -64,4 +64,18 @@ export class ReportingAlertRulesService {
     await prisma.reportAlertRule.delete({ where: { id } });
     return { success: true };
   }
+
+  async createRuleSimple(tenantId: string, body: any) {
+    return prisma.reportAlertRule.create({
+      data: { ...body, tenantId } as any,
+    });
+  }
+
+  async updateRuleById(id: string, body: any) {
+    return prisma.reportAlertRule.update({ where: { id }, data: body as any });
+  }
+
+  async deleteRuleById(id: string) {
+    return prisma.reportAlertRule.delete({ where: { id } });
+  }
 }

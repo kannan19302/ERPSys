@@ -20,6 +20,16 @@ export class SubscriptionPlansService {
     });
   }
 
+  async getPlanGroups(tenantId: string) {
+    return prisma.subscriptionPlanGroup.findMany({ where: { tenantId } });
+  }
+
+  async createPlan(tenantId: string, body: any) {
+    return prisma.subscriptionPlan.create({
+      data: { ...body, tenantId } as any,
+    });
+  }
+
   async updatePlanTier(tenantId: string, id: string, data: any) {
     const existing = await prisma.subscriptionPlanTier.findFirst({
       where: { tenantId, id },

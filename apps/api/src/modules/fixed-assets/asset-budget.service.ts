@@ -4,9 +4,14 @@ import { Prisma } from "@prisma/client";
 
 @Injectable()
 export class AssetBudgetService {
-  async getAllocations(tenantId: string, fiscalYear?: number) {
+  async getAllocations(
+    tenantId: string,
+    fiscalYear?: number,
+    assetId?: string,
+  ) {
     const where: Prisma.FixedAssetBudgetAllocationWhereInput = { tenantId };
     if (fiscalYear) where.fiscalYear = fiscalYear;
+    if (assetId) where.assetId = assetId;
     return prisma.fixedAssetBudgetAllocation.findMany({
       where,
       orderBy: { fiscalYear: "desc" },
@@ -49,6 +54,35 @@ export class AssetBudgetService {
       data.spentAmount = new Prisma.Decimal(dto.spentAmount);
     if (dto.notes !== undefined) data.notes = dto.notes;
     return prisma.fixedAssetBudgetAllocation.update({ where: { id }, data });
+  }
+
+  async createAllocationSimple(
+    tenantId: string,
+    body: {
+      assetId: string;
+      fiscalYear: string;
+      allocatedAmount: number;
+      spentAmount?: number;
+      description?: string;
+    },
+  ) {
+    return prisma.fixedAssetBudgetAllocation.create({
+      data: { ...body, tenantId } as any,
+    });
+  }
+
+  async updateAllocationById(
+    id: string,
+    body: { allocatedAmount?: number; spentAmount?: number },
+  ) {
+    return prisma.fixedAssetBudgetAllocation.update({
+      where: { id },
+      data: body as any,
+    });
+  }
+
+  async deleteAllocation(id: string) {
+    return prisma.fixedAssetBudgetAllocation.delete({ where: { id } });
   }
 
   async getBudgetSummary(tenantId: string, fiscalYear?: number) {

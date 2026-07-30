@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { LocalizationController } from "./localization.controller";
 import { LocalizationDeepController } from "./localization-deep.controller";
+import { LocalizationBulkController } from "./localization-bulk.controller";
 import { LocalizationService } from "./localization.service";
 import { LocalizationContextService } from "./localization-context.service";
 import { LocalizationGlossaryService } from "./localization-glossary.service";
@@ -12,7 +13,11 @@ import { LocalizationContentScheduleService } from "./localization-content-sched
 import { LocalizationRegionValidationService } from "./localization-region-validation.service";
 
 @Module({
-  controllers: [LocalizationController, LocalizationDeepController],
+  controllers: [
+    LocalizationController,
+    LocalizationDeepController,
+    LocalizationBulkController,
+  ],
   providers: [
     LocalizationService,
     LocalizationContextService,

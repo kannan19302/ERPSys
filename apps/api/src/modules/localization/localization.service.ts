@@ -373,6 +373,105 @@ export class LocalizationService {
 
   // ─── PRIVATE ────────────────────────────────────────
 
+  // ─── BULK OPERATIONS ────────────────────────────
+
+  async getLocalesSimple(tenantId: string) {
+    return prisma.locale.findMany({ where: { tenantId } });
+  }
+
+  async createLocaleSimple(tenantId: string, body: any) {
+    return prisma.locale.create({ data: { ...body, tenantId } as any });
+  }
+
+  async getTranslationsWithDetails(tenantId: string) {
+    return prisma.translationEntry.findMany({
+      where: { tenantId },
+      include: { locale: true, key: true },
+    });
+  }
+
+  async bulkImportTranslations(
+    tenantId: string,
+    entries: Array<{ key: string; localeCode: string; value: string }>,
+  ) {
+    const results: any[] = [];
+    for (const entry of entries || []) {
+      let key = await prisma.translationKey.findFirst({
+        where: { tenantId, key: entry.key },
+      });
+      if (!key)
+        key = await prisma.translationKey.create({
+          data: { tenantId, key: entry.key },
+        });
+      const locale = await prisma.locale.findFirst({
+        where: { tenantId, code: entry.localeCode },
+      });
+      if (!locale) {
+        results.push({
+          key: entry.key,
+          locale: entry.localeCode,
+          status: "error",
+          message: "Locale not found",
+        });
+        continue;
+      }
+      await prisma.translationEntry.upsert({
+        where: {
+          translationKeyId_localeId: {
+            translationKeyId: key.id,
+            localeId: locale.id,
+          },
+        } as any,
+        create: {
+          tenantId,
+          translationKeyId: key.id,
+          localeId: locale.id,
+          value: entry.value,
+        },
+        update: { value: entry.value },
+      });
+      results.push({
+        key: entry.key,
+        locale: entry.localeCode,
+        status: "imported",
+      });
+    }
+    return {
+      results,
+      imported: results.filter((r: any) => r.status === "imported").length,
+    };
+  }
+
+  async createGlossaryTerm(tenantId: string, body: any) {
+    return prisma.translationGlossaryTerm.create({
+      data: { ...body, tenantId } as any,
+    });
+  }
+
+  async getFormattingRulesSimple(tenantId: string) {
+    return prisma.localeFormattingRule.findMany({ where: { tenantId } });
+  }
+
+  async createFormattingRule(tenantId: string, body: any) {
+    return prisma.localeFormattingRule.create({
+      data: { ...body, tenantId } as any,
+    });
+  }
+
+  async getLocalizationStats(tenantId: string) {
+    const [locales, keys, entries, imports] = await Promise.all([
+      prisma.locale.count({ where: { tenantId } }),
+      prisma.translationKey.count({ where: { tenantId } }),
+      prisma.translationEntry.count({ where: { tenantId } }),
+      prisma.translationImport.count({ where: { tenantId } }),
+    ]);
+    return { locales, keys, entries, imports };
+  }
+
+  async deleteTranslationEntry(id: string) {
+    return prisma.translationEntry.delete({ where: { id } });
+  }
+
   private async getLocaleById(tenantId: string, id: string) {
     const locale = await prisma.locale.findFirst({ where: { id, tenantId } });
     if (!locale) throw new NotFoundException("Locale not found");

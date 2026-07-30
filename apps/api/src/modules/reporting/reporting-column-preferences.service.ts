@@ -42,4 +42,12 @@ export class ReportingColumnPreferencesService {
     });
     return { success: true };
   }
+
+  async upsertPreferencesSimple(tenantId: string, userId: string, body: any) {
+    return prisma.reportColumnPreference.upsert({
+      where: { userId_reportId: { userId, reportId: body.reportId } } as any,
+      create: { ...body, userId, tenantId },
+      update: { columns: body.columns },
+    } as any);
+  }
 }

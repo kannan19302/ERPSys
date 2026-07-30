@@ -139,6 +139,12 @@ export class SubscriptionCouponService {
     });
   }
 
+  async createCouponSimple(tenantId: string, body: any) {
+    return prisma.subscriptionCoupon.create({
+      data: { ...body, tenantId } as any,
+    });
+  }
+
   async getRedemptions(tenantId: string, couponId?: string) {
     const where: Record<string, unknown> = { tenantId };
     if (couponId) where.couponId = couponId;

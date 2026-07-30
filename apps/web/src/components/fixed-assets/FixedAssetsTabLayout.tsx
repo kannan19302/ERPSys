@@ -1,5 +1,16 @@
 "use client";
-import { PackageOpen, TrendingDown, Trash2, BarChart3 } from "lucide-react";
+import {
+  PackageOpen,
+  TrendingDown,
+  Trash2,
+  BarChart3,
+  Wrench,
+  Shield,
+  Folders,
+  GanttChartSquare,
+  ClipboardCheck,
+  Repeat,
+} from "lucide-react";
 import type { ModuleTab } from "@unerp/ui-layout";
 export {
   ModuleTabLayout as FixedAssetsTabLayout,
@@ -18,6 +29,13 @@ export const FIXED_ASSETS_TABS: ModuleTab[] = [
     description: "Fixed asset registry",
   },
   {
+    id: "categories",
+    label: "Categories",
+    href: "/fixed-assets/categories",
+    icon: Folders,
+    description: "Asset categories",
+  },
+  {
     id: "depreciation",
     label: "Depreciation",
     href: "/fixed-assets/depreciation",
@@ -30,6 +48,43 @@ export const FIXED_ASSETS_TABS: ModuleTab[] = [
     href: "/fixed-assets/disposals",
     icon: Trash2,
     description: "Asset disposals",
+  },
+  {
+    id: "maintenance",
+    label: "Maintenance",
+    href: "/fixed-assets/maintenance",
+    icon: Wrench,
+    description: "Asset maintenance",
+  },
+  {
+    id: "insurance",
+    label: "Insurance",
+    href: "/fixed-assets/insurance",
+    icon: Shield,
+    description: "Asset insurance",
+  },
+  {
+    id: "groups",
+    label: "Groups",
+    href: "/fixed-assets/groups",
+    icon: GanttChartSquare,
+    description: "Asset groups",
+  },
+  {
+    id: "audits",
+    label: "Audits",
+    href: "/fixed-assets/audits",
+    icon: ClipboardCheck,
+    description: "Physical audits",
+  },
+  {
+    id: "transfers",
+    label: "Transfers",
+    href: "/fixed-assets/transfers",
+    icon: Repeat,
+    description: "Asset transfers",
+    advanced: true,
+    group: "Operations",
   },
   {
     id: "reports",

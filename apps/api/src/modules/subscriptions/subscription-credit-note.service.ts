@@ -64,6 +64,12 @@ export class SubscriptionCreditNoteService {
     });
   }
 
+  async createCreditNoteSimple(tenantId: string, body: any) {
+    return prisma.subscriptionCreditNote.create({
+      data: { ...body, tenantId } as any,
+    });
+  }
+
   async getCreditNoteSummary(tenantId: string) {
     const [pending, applied, voided, total] = await Promise.all([
       prisma.subscriptionCreditNote.aggregate({

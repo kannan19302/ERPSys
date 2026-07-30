@@ -21,6 +21,7 @@ import { ReportingInteractiveViewerDeepController } from "./reporting-interactiv
 import { ReportingDataDrilldownDeepService } from "./reporting-data-drilldown-deep.service";
 import { ReportingDataDrilldownDeepController } from "./reporting-data-drilldown-deep.controller";
 import { ReportingAdminDeepController } from "./reporting-admin-deep.controller";
+import { ReportingBulkController } from "./reporting-bulk.controller";
 import { ReportingBookmarksService } from "./reporting-bookmarks.service";
 import { ReportingSharesService } from "./reporting-shares.service";
 import { ReportingVersionsService } from "./reporting-versions.service";
@@ -45,6 +46,7 @@ import { ReportingColumnPreferencesService } from "./reporting-column-preference
     ReportingInteractiveViewerDeepController,
     ReportingDataDrilldownDeepController,
     ReportingAdminDeepController,
+    ReportingBulkController,
   ],
   providers: [
     ReportingService,

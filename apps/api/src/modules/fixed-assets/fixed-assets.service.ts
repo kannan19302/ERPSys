@@ -625,4 +625,29 @@ export class FixedAssetsService {
       take: 50,
     });
   }
+
+  async getAssetsByCategory(tenantId: string) {
+    return prisma.fixedAssetCategory.findMany({
+      where: { tenantId },
+      include: { _count: { select: { assets: true } } },
+    });
+  }
+
+  async getAssetsByStatus(tenantId: string) {
+    return prisma.fixedAsset.groupBy({
+      by: ["status"],
+      where: { tenantId },
+      _count: true,
+      _sum: { purchaseValue: true },
+    });
+  }
+
+  async getAssetsByLocation(tenantId: string) {
+    return prisma.fixedAsset.groupBy({
+      by: ["locationId"],
+      where: { tenantId },
+      _count: true,
+      _sum: { currentValue: true },
+    });
+  }
 }

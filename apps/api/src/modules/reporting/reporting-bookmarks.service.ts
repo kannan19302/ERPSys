@@ -45,4 +45,12 @@ export class ReportingBookmarksService {
     await prisma.reportBookmark.delete({ where: { id } });
     return { success: true };
   }
+
+  async createBookmarkSimple(tenantId: string, body: any) {
+    return prisma.reportBookmark.create({ data: { ...body, tenantId } as any });
+  }
+
+  async deleteBookmarkById(id: string) {
+    return prisma.reportBookmark.delete({ where: { id } });
+  }
 }

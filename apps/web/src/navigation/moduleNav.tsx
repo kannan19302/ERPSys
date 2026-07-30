@@ -87,6 +87,12 @@ import {
   AlertTriangle,
   Phone,
   RotateCcw,
+  TrendingDown,
+  Repeat,
+  Bookmark,
+  Languages,
+  Download,
+  TicketPercent,
 } from "lucide-react";
 import type { SidebarItem } from "./types";
 import { getModuleDescriptor } from "@unerp/shared/module-registry";
@@ -1876,6 +1882,109 @@ export const getAppSpecificNavigation = (
     };
   }
 
+  if (pathname.startsWith("/fixed-assets")) {
+    return {
+      title: "Fixed Assets",
+      icon: Building,
+      items: [
+        { name: "Asset Registry", href: "/fixed-assets", icon: Home },
+        {
+          name: "Categories",
+          href: "/fixed-assets/categories",
+          icon: FolderOpen,
+        },
+        {
+          name: "Depreciation",
+          href: "/fixed-assets/depreciation",
+          icon: TrendingDown,
+        },
+        { name: "Disposals", href: "/fixed-assets/disposals", icon: Trash2 },
+        {
+          name: "Maintenance",
+          href: "/fixed-assets/maintenance",
+          icon: Wrench,
+        },
+        { name: "Insurance", href: "/fixed-assets/insurance", icon: Shield },
+        { name: "Groups", href: "/fixed-assets/groups", icon: FolderOpen },
+        { name: "Audits", href: "/fixed-assets/audits", icon: ClipboardCheck },
+        { name: "Transfers", href: "/fixed-assets/transfers", icon: Repeat },
+        { name: "Reports", href: "/fixed-assets/reports", icon: BarChart3 },
+      ],
+    };
+  }
+  if (pathname.startsWith("/reporting")) {
+    return {
+      title: "Reporting",
+      icon: BarChart3,
+      items: [
+        { name: "Reports", href: "/reporting", icon: Home },
+        { name: "Templates", href: "/reporting/templates", icon: FileText },
+        { name: "Scheduled Jobs", href: "/reporting/jobs", icon: Clock },
+        { name: "Exports", href: "/reporting/exports", icon: Download },
+        { name: "Viewer", href: "/reporting/viewer", icon: Eye },
+        { name: "Drilldown", href: "/reporting/drilldown", icon: Activity },
+        {
+          name: "Compliance",
+          href: "/reporting/compliance",
+          icon: ShieldCheck,
+        },
+        { name: "Bookmarks", href: "/reporting/bookmarks", icon: Bookmark },
+        { name: "Alerts", href: "/reporting/alerts", icon: Bell },
+      ],
+    };
+  }
+  if (pathname.startsWith("/localization")) {
+    return {
+      title: "Localization",
+      icon: Globe,
+      items: [
+        { name: "Locales", href: "/localization", icon: Home },
+        {
+          name: "Translations",
+          href: "/localization/translations",
+          icon: Languages,
+        },
+        { name: "Glossary", href: "/localization/glossary", icon: BookOpen },
+        { name: "Context", href: "/localization/context", icon: GitBranch },
+        {
+          name: "Machine Translation",
+          href: "/localization/machine-translation",
+          icon: Cpu,
+        },
+        { name: "Regions", href: "/localization/regions", icon: MapPin },
+        {
+          name: "Content Schedule",
+          href: "/localization/content-schedule",
+          icon: Calendar,
+        },
+        { name: "Fallback", href: "/localization/fallback", icon: FileText },
+      ],
+    };
+  }
+  if (pathname.startsWith("/subscriptions")) {
+    return {
+      title: "Subscriptions",
+      icon: CreditCard,
+      items: [
+        { name: "Subscriptions", href: "/subscriptions", icon: Home },
+        { name: "Plans", href: "/subscriptions/plans", icon: Layers },
+        { name: "Tiers", href: "/subscriptions/tiers", icon: BarChart3 },
+        {
+          name: "Coupons",
+          href: "/subscriptions/coupons",
+          icon: TicketPercent,
+        },
+        { name: "Dunning", href: "/subscriptions/dunning", icon: Bell },
+        {
+          name: "Credit Notes",
+          href: "/subscriptions/credit-notes",
+          icon: FileText,
+        },
+        { name: "Usage", href: "/subscriptions/usage", icon: Activity },
+        { name: "Migrations", href: "/subscriptions/migrations", icon: Repeat },
+      ],
+    };
+  }
   if (pathname.startsWith("/ai")) {
     return {
       title: "AI Copilot",
