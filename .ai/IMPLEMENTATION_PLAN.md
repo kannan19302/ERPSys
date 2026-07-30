@@ -1,167 +1,196 @@
-# Implementation Plan — Phase M: Stub-to-Real Migration & Deepening
+# Implementation Plan — Stub Finisher + Infrastructure Repair + Land on main
 
-## Cycle Info
+## Two Parts
 
-- **Cycle**: Phase M, large horizontal batch
-- **Phase**: M (Module Strengthening — foundation SEALED v1.0 on 2026-07-18)
-- **Target**: ≥ 70,000 net LOC
-- **Strategy**: Replace 6,410 stub endpoints + 950 HR GET-only stubs with real vertical slices following AUTOPILOT § Horizontal build order
+### Part A — Blocking (do first)
 
-## Scope & Why
+#### A1. Restore docker-entrypoint scripts
 
-Five `*-deep-suite.controller.ts` files and three `hr-deep-expansion*` controllers are 100% stubs — they return `{success, module, featureId, subDomain}` with zero Prisma, zero business logic, zero DTOs, zero tests, zero UI. They inflate feature counts by ~7,360 fake endpoints across 104k lines, violate AUTOPILOT § File-size discipline (each stub is 17k-21k lines), and mask the modules' real feature depth.
+`scripts/docker-entrypoint-api.sh` and `scripts/docker-entrypoint-web.sh` were deleted from the working tree after commit `e1a66da5` but never committed. They still exist in HEAD and are well-designed:
 
-The Prisma schema already has 1,757 models including comprehensive coverage for all 5 modules (Manufacturing: 41 models, Projects: 88, Supply Chain: 59, Communication: 84, Builder: 161) plus HR. Each module ALSO has real controllers (Manufacturing: 154 real endpoints, Supply Chain: 343, Projects: 153, Communication: 255, Builder: 318) — the stubs are padding on top.
+- `docker-entrypoint-api.sh`: install deps, generate Prisma, build shared packages, migrate+seed, start only API dev server; writes `.shared-packages-built` marker.
+- `docker-entrypoint-web.sh`: poll for `.shared-packages-built` marker, then start only Web dev server.
 
-**Strategy**: Per AUTOPILOT § Phase M focus order (Supply Chain → Manufacturing → Projects → Communication → Builder), work each module horizontally:
+**Decision: Restore them** (superior split-container design; full combined script exists as fallback in `scripts/docker-entrypoint.sh`).
 
-1. Deepen each subDomain stub group into a real service + controller + Prisma queries
-2. Add Zod-validated DTOs, proper RBAC permissions, Swagger docs
-3. Add Vitest unit tests for each new service
-4. Add UI pages using ModuleTabLayout/SubTabBar
-5. Remove the stub file only after its last replacement ships
+Command: `git checkout HEAD -- scripts/docker-entrypoint-api.sh scripts/docker-entrypoint-web.sh`
 
-## Module-by-Module Plan (Focus Order)
+**Verify**: `pnpm docker:up` — confirm docker-compose builds without COPY error.
 
-### 1. Supply Chain (5th in Phase M focus)
+#### A2. Run scripts + commit dirty .ai/ state
 
-**Stub**: `supply-chain-deep-suite.controller.ts` — 18,182 lines, 1,210 stub endpoints
-**Real endpoints today**: 343
-**SubDomains to replace** (grouped by the 30 existing real controller patterns):
+Current dirty `git status`:
 
-- Demand Sensing & AI Forecasting → deepen `demand-planning.controller.ts`/service
-- Multi-Echelon Inventory Optimization → deepen `meio.controller.ts`/service
-- Digital Twin & Control Tower → deepen `digital-twin.controller.ts`/service
-- Fleet Telematics → deepen `fleet-management.controller.ts`/service
-- Supplier Portal → deepen `supplier-portal.controller.ts`/service
-- Supply Chain Finance → deepen `supply-chain-finance.controller.ts`/service
-- Sustainability/Carbon → deepen `sustainability.controller.ts`/service
-- Freight/Rate Audit → deepen `freight-management`/`carrier-contract`
-- Customs/Global Trade → deepen `customs-document`/`global-trade`
-- Cross-Dock/Cold Chain → deepen `cross-dock.controller.ts`/service
-- Route Optimization → deepen `route-optimization.controller.ts`/service
-- Supplier performance/quality/risk → deepen existing controllers
-- Supply Planning/Budget → deepen existing controllers
-- Analytics/Advanced Analytics → deepen existing controllers
-- Container Tracking → deepen existing controller
+```
+ M .ai/CHANGELOG.md     (Cycle Ledger row #69 from this morning)
+ M .ai/MODULE_REGISTRY.md
+ D scripts/docker-entrypoint-api.sh  (will be restored in A1)
+ D scripts/docker-entrypoint-web.sh
+```
 
-**Delivery**: 25+ new service methods with full CRUD across existing controllers, 150+ new real endpoints. Prisma schema models already exist.
+Steps:
 
-### 2. Manufacturing (6th in Phase M focus)
+1. Restore entrypoints (A1)
+2. Run `node scripts/feature-ledger.mjs` — regenerates `.ai/FEATURE_LEDGER.md` with honest post-stub-removal counts (down from ~21,265 to ~13,905)
+3. Run `node scripts/module-health.mjs` — regenerates System Progress Dashboard with corrected health scores
+4. `git add .ai/ scripts/`
+5. `git commit -m "chore(cycle): run feature-ledger + module-health, restore deleted entrypoint scripts"`
 
-**Stub**: `manufacturing-deep-suite.controller.ts` — 19,951 lines, 1,365 stub endpoints
-**Real endpoints today**: 154
-**SubDomains to replace** (using 41 existing models):
+#### A3. Merge v1.0 into main
 
-- MPS/MRP II → deepen `manufacturing.controller.ts` (BOM/WorkOrder already real)
-- APS/Capacity Scheduling → deepen `scheduling.controller.ts`
-- SPC Charts/Quality → deepen `manufacturing-advanced-quality.controller.ts`
-- FMEA/APQP/PPAP → create new SPC-quality sub-services
-- TPM/OEE → deepen `manufacturing-tpm.controller.ts`
-- Lean/Kanban → deepen `manufacturing-lean.controller.ts`
-- DDMRP → deepen `manufacturing-ddmrp.controller.ts`
-- Energy Monitoring → deepen `manufacturing-energy.controller.ts`
-- Tooling → deepen `manufacturing-tooling.controller.ts`
-- Contract Manufacturing → deepen `manufacturing-contract-mfg.controller.ts`
-- Enterprise ERP integration → use `manufacturing-enterprise` module
+```
+git fetch origin main
+git merge origin/main --no-ff -m "chore: sync v1.0 into main"
+git push origin main
+```
 
-**Delivery**: 150+ new real endpoints across existing controllers. Schema models exist.
+No force-push. If merge conflicts, resolve by keeping v1.0's version (it's ahead).
 
-### 3. Projects (7th in Phase M focus)
+---
 
-**Stub**: `projects-deep-suite.controller.ts` — 20,087 lines, 1,365 stub endpoints
-**Real endpoints today**: 153
-**SubDomains to replace** (using 88 existing models):
+### Part B — Replace remaining 2,400 stub endpoints
 
-- WBS/Gantt → add to `projects.controller.ts`
-- EVM → deepen `advanced-evm.controller.ts`
-- PPM/PMO → deepen `pmo.controller.ts`
-- Agile/Scrum → deepen `agile.controller.ts`
-- Resource Skills → deepen `resource-skills.controller.ts`
-- CAPEX → deepen `capex.controller.ts`
-- Claims/Variations → deepen `claims.controller.ts`
-- Collaboration → deepen `collaboration.controller.ts`
-- Program Management → deepen `program-management.controller.ts`
-- Timesheets → add to existing project scheduling
+**Remaining stub controllers** (all follow the `featN` pattern returning `{ success: true, feature: N }`):
 
-**Delivery**: 150+ new real endpoints. Schema models exist.
+| File                                         | Module                   | Stubs     | Lines       |
+| -------------------------------------------- | ------------------------ | --------- | ----------- |
+| `sales/sales-deep.controller.ts`             | Sales                    | 680       | ~9,000      |
+| `procurement/procurement-deep.controller.ts` | Procurement              | 670       | ~8,900      |
+| `advanced-hr/hr-deep.controller.ts`          | Advanced HR              | 620       | ~8,200      |
+| `crm/crm-deep.controller.ts`                 | CRM                      | 230       | ~3,200      |
+| `advanced-finance/ar-ap-deep.controller.ts`  | Advanced Finance (AR/AP) | 200       | ~2,800      |
+| **Total**                                    | 5 controllers            | **2,400** | **~32,100** |
 
-### 4. Communication (8th in Phase M focus)
+**Strategy**: Same approach as cycle e1a66da5 — group stubs by meaningful sub-domain, add real endpoints to existing controllers or create new focused controllers, delete stub file only after last endpoint replaced.
 
-**Stub**: `communication-deep-suite.controller.ts` — 18,491 lines, 1,265 stub endpoints
-**Real endpoints today**: 255
-**SubDomains to replace** (using 84 existing models):
+#### B1. Sales — 680 stubs (sales-deep.controller.ts)
 
-- Omnichannel Email → deepen `omnichannel.controller.ts`
-- Video Conferencing → deepen `video-deep.controller.ts`
-- VoIP/SIP → deepen `voip.controller.ts`
-- Knowledge Base → deepen `knowledge-base.controller.ts`
-- Real-Time Chat → deepen `real-time-collab.controller.ts`
-- Helpdesk → deepen `helpdesk.controller.ts`
-- Enterprise Search → deepen `search.controller.ts`
-- Surveys → deepen `survey.controller.ts`
-- Notifications/Push → add to `communication.controller.ts`
-- Chatbots/AI → add to `communication-bots.service.ts`
+**Existing real controllers** (39 files): `sales.controller.ts`, `sales-advanced-pricing.controller.ts`, `sales-analytics.controller.ts`, `sales-commissions.controller.ts`, `sales-contracts.controller.ts`, `sales-cpq.controller.ts`, `sales-customer-success.controller.ts`, `sales-deepening-*.controller.ts` (10 already-real files), `sales-documents-deep.controller.ts`, `sales-enterprise.controller.ts`, `sales-expansion.controller.ts`, `sales-forecasting.controller.ts`, `sales-gamification-deep.controller.ts`, `sales-global-revenue-ops-deep.controller.ts`, `sales-intelligence-signals.controller.ts`, `sales-omnichannel-deals-deep.controller.ts`, `sales-partners.controller.ts`, `sales-playbooks-deep.controller.ts`, `sales-promotions.controller.ts`, `sales-quote-cpq-master-deep.controller.ts`, `sales-returns-deep.controller.ts`, `sales-spiff.controller.ts`, `sales-subscription.controller.ts`, `sales-territory.controller.ts`, `pricing.controller.ts`, `settings.controller.ts`, etc.
 
-**Delivery**: 150+ new real endpoints. Schema models exist.
+**Sub-domains to real-ify** (add real endpoints to existing controllers):
 
-### 5. Builder Studio (9th in Phase M focus)
+- Sales Embeddings/Context AI → `sales.controller.ts` (Customer/Lead/Opportunity models)
+- Sales Partners commissions/SPIFF → `sales-partners.controller.ts`, `sales-spiff.controller.ts`, `sales-commissions.controller.ts`
+- Subscription billing → `sales-subscription.controller.ts`
+- CPQ (configure-price-quote) → `sales-cpq.controller.ts`, `sales-quote-cpq-master-deep.controller.ts`
+- Forecasting + Signals → `sales-forecasting.controller.ts`, `sales-analytics.controller.ts`, `sales-intelligence-signals.controller.ts`
+- Territory management → `sales-territory.controller.ts`
+- Gamification → `sales-gamification-deep.controller.ts`
+- Returns → `sales-returns-deep.controller.ts`
+- Contracts → `sales-contracts.controller.ts`
+- Customer Success → `sales-customer-success.controller.ts`
+- Partner management → `sales-partners.controller.ts`
+- Pricing → `pricing.controller.ts`, `sales-advanced-pricing.controller.ts`
 
-**Stub**: `builder-deep-suite.controller.ts` — 17,615 lines, 1,205 stub endpoints
-**Real endpoints today**: 318
-**SubDomains to replace** (using 161 existing models):
+**Delete**: `sales-deep.controller.ts` after all 680 endpoints replaced.
 
-- Custom Data Models → deepen existing builder services
-- BPMN Engine → deepen `bpmn.controller.ts`
-- Rules Engine → deepen `rules-engine.controller.ts`
-- API Builder → deepen `api-builder.controller.ts`
-- ETL Pipelines → deepen `etl.controller.ts`
-- Document Templates → add to `builder-forms.service.ts`
-- Form Builder → deepen `advanced-forms.controller.ts`
-- Mobile Studio → deepen `mobile-builder.controller.ts`
-- Theme Manager → deepen `theme-manager.controller.ts`
-- A/B Testing → deepen `ab-testing.controller.ts`
+#### B2. Procurement — 670 stubs (procurement-deep.controller.ts)
 
-**Delivery**: 150+ new real endpoints. Schema models exist.
+**Existing real controllers** (7 files): `procurement.controller.ts`, `procurement.public.controller.ts`, `procurement-enterprise.controller.ts`, `procurement-expansion.controller.ts`, `procurement-intelligence.controller.ts`, `procurement-scheduling.controller.ts`, `procurement-sourcing.controller.ts`, `contracts.controller.ts`, `settings.controller.ts`
 
-### 6. HR-Advanced Audit
+**Sub-domains to real-ify**:
 
-**Stub files**: `hr-deep-expansion.controller.ts` (313L, 100 GET stubs), `hr-deep-expansion-bulk.controller.ts` (2,263L, 750 GET stubs), `hr-deep-expansion-mega.controller.ts` (313L, 100 GET stubs)
+- Global trade/compliance (rulings, HTS) → `procurement-intelligence.controller.ts`
+- Strategic sourcing (awards, negotiations) → `procurement-sourcing.controller.ts`
+- Supply planning (Io, demand sensing, S&OP) → `procurement-scheduling.controller.ts`
+- Control tower analytics (alerts, kpis) → `procurement-intelligence.controller.ts`
+- Carrier management (lane rates, booking) → new `procurement-carrier.controller.ts`
+- Supplier risk assessment → `procurement-enterprise.controller.ts`
+- Vendor Managed Inventory → `procurement-expansion.controller.ts`
+- Logistics provider invoices → new procurement-finance sub-service
+- Budget integration → `controller.ts`
 
-- **Total**: 950 GET-only stubs, 2,889 lines
-- **Real HR endpoints**: 117 in main controller, plus dozens across 9 deep controllers
-- **Plan**: Verify each stub endpoint maps to an existing deep service (benefits, payroll, workforce, talent, etc.). If already covered, remove stub; if not, add real methods to existing services. Remove all 3 stub files.
+**Delete**: `procurement-deep.controller.ts` after all 670 endpoints replaced.
+
+#### B3. Advanced HR — 620 stubs (hr-deep.controller.ts in advanced-hr module)
+
+**Existing real controllers** (9 files): `advanced-hr.controller.ts`, `advanced-hr-benefits-admin-deep.controller.ts`, `advanced-hr-compensation-bands-deep.controller.ts`, `advanced-hr-exit-interview-deep.controller.ts`, `advanced-hr-learning-paths-deep.controller.ts`, `advanced-hr-org-chart-deep.controller.ts`, `advanced-hr-succession-planning-deep.controller.ts`, `advanced-hr-workforce-analytics-deep.controller.ts`
+
+**Sub-domains to real-ify**:
+
+- Global payroll deepening → `hr-payroll-deep.controller.ts` (in hr-advanced module)
+- Time & attendance → `hr-time-attendance-deep.controller.ts`
+- Workforce analytics → `advanced-hr-workforce-analytics-deep.controller.ts`
+- Talent acquisition → `hr-talent-acquisition-deep.controller.ts`
+- Learning/development → `advanced-hr-learning-paths-deep.controller.ts`
+- Performance appraisals → `hr-performance-appraisals-deep.controller.ts`
+- Benefits → `advanced-hr-benefits-admin-deep.controller.ts`
+- Compensation → `advanced-hr-compensation-bands-deep.controller.ts`
+- Employee relations → `hr-employee-relations.controller.ts`
+- Org chart & succession → `advanced-hr-org-chart-deep.controller.ts`, `advanced-hr-succession-planning-deep.controller.ts`
+- Exit → `advanced-hr-exit-interview-deep.controller.ts`
+- HR operations → `hr-operations.controller.ts`
+- Compliance → `hr-compliance-safety-deep.controller.ts`
+
+**Delete**: `hr-deep.controller.ts` (in advanced-hr module) after all 620 endpoints replaced.
+
+#### B4. CRM — 230 stubs (crm-deep.controller.ts)
+
+**Existing real controllers** (81 files): `crm.controller.ts`, `crm-*.controller.ts` for every CRM sub-domain (ABM, activities, AI, analytics, cadences, coaching, commissions, communication, competitors, contracts, CPQ, customer experience, customer journey, data management, deal analytics, deal desk, deal room, enrichment, enterprise, expansion, forecasting, gamification, guided selling, incentive, intelligence, knowledge base, lead enrichment, lead routing, lead scoring, mailbox, marketing, partners, pipeline, portal, quotes, renewals, reporting, revenue, routing, sales operations, segments, SLA, support, territory, win/loss, etc.)
+
+**Strategy**: Since 81 real controllers already exist covering every CRM sub-domain, this is primarily deepening existing controllers with more CRUD endpoints. Each group of stubs maps to an existing controller.
+
+**Delete**: `crm-deep.controller.ts` after all 230 endpoints replaced.
+
+#### B5. Advanced Finance (AR/AP) — 200 stubs (ar-ap-deep.controller.ts)
+
+**Existing real controllers** (22 files): `advanced-finance.controller.ts`, `ap-automation.controller.ts`, `budget-deep.controller.ts`, `close-management.controller.ts`, `consolidation-v2.controller.ts`, `e-invoice.controller.ts`, `esg-accounting.controller.ts`, `finance-expansion-deep.controller.ts`, `finance-more-deep.controller.ts`, `finance-tax-journal-deep.controller.ts`, `financial-instruments.controller.ts`, `fixed-asset-deep.controller.ts`, `global-tax-deep.controller.ts`, `netting-deep.controller.ts`, `risk-management.controller.ts`, `subscription-billing.controller.ts`, `tax-provisioning.controller.ts`, `treasury-deep.controller.ts`, `working-capital.controller.ts`, `ai-analytics.controller.ts`, `asc606-deep.controller.ts`
+
+**Sub-domains to real-ify**:
+
+- AR aging/cash apps → add to `advanced-finance.controller.ts`
+- Payables automation → `ap-automation.controller.ts`
+- Invoice matching (PO match) → `ap-automation.controller.ts`
+- Collections → add collections endpoint
+- Customer credit → add credit management
+- Payment runs → add to payment-batch endpoints
+- AR/AP netting → `netting-deep.controller.ts`
+- Multi-currency FX → add FX endpoints
+- Vendor statement → add statement endpoints
+- Bad debt → add provisioning endpoints
+- Deductions/disputes → `close-management.controller.ts`
+
+**Delete**: `ar-ap-deep.controller.ts` after all 200 endpoints replaced.
+
+---
 
 ## Acceptance Criteria
 
-1. All 5 deep-suite stub files deleted from repo (after replacement ships)
-2. HR 3 stub expansion files deleted or replaced
-3. No Zod `z.any()` in new DTO code
-4. Every new endpoint has permission string registered in shared permission set
-5. Every new service has a `.spec.ts` test (happy path + tenant isolation + RBAC denial)
-6. `pnpm typecheck` clean across api and web
-7. `pnpm architecture:check` passes (no cross-module imports)
-8. Feature ledger shows CORRECTED count (stubs removed = count goes down, then real features added)
+1. All 5 deep stub files deleted from repo (after their last endpoint is replaced)
+2. `pnpm typecheck` — clean on api + web
+3. `pnpm architecture:check` — 0 new violations
+4. `pnpm migration:discipline` — pass (no manual migration edits)
+5. `node scripts/check-schema-lints.mjs` — pass
+6. `pnpm test` — all existing + new tests pass
+7. Feature ledger reports corrected feature count (no false stub inflation)
+8. All new endpoints have Zod DTOs, RBAC permission strings registered in `packages/shared/src/permissions/registry.ts`, and unit tests
 
 ## Gate Tier
 
-**MILESTONE** — touches 6 modules, data-affecting, RBAC-affecting, multi-controller refactor. Full suite:
+MILESTONE — touches 5 modules, RBAC-affecting, data-affecting. Full suite:
 
 - `pnpm --filter @unerp/api typecheck`
 - `pnpm --filter @unerp/web typecheck`
 - `pnpm architecture:check`
 - `pnpm foundation:check`
-- Vitest for touched modules
+- `pnpm migration:discipline`
+- `pnpm test -- --run` (headless unit tests)
 - `node scripts/pre-push-gate.mjs`
 
-## Rollback
+## Commit Strategy
 
-If any gate fails, revert the failing module's commit and fix. Each module commits independently so a failure in one does not block others.
+Each module commits independently so a failure in one does not block others:
+
+1. `feat(sales): replace 680 deep stubs with real endpoints`
+2. `feat(procurement): replace 670 deep stubs with real endpoints`
+3. `feat(advanced-hr): replace 620 deep stubs with real endpoints`
+4. `feat(crm): replace 230 deep stubs with real endpoints`
+5. `feat(advanced-finance): replace 200 AR/AP stubs with real endpoints`
 
 ## Duplicate Check
 
-The `.ai/FEATURE_LEDGER.md` will be regenerated at Record step. The stubs register as individual features; removing them corrects the count. Before building any new endpoint, verify it's not already covered by the existing real controllers.
+Before building each new endpoint, verify it's not already covered by existing real endpoints in the same module. Regenerate `.ai/FEATURE_LEDGER.md` after each module to track true feature count.
 
-## Throughput Floor
+## Rollback
 
-Target: ≥ 70,000 net LOC. Split across 6 modules with ~12k-15k LOC of real code per module (services + controllers + DTOs + tests + UI pages). This exceeds the 5k floor handily.
+If a gate fails on a module commit, revert that single commit and fix before proceeding to the next module.
