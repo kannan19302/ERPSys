@@ -8968,9 +8968,10 @@ model Subscription {
   createdAt          DateTime  @default(now()) @map("created_at")
   updatedAt          DateTime  @updatedAt @map("updated_at")
 
-  lines    SubscriptionLine[]
-  invoices SubscriptionInvoice[]
-  usage    SubscriptionUsage[]
+  lines             SubscriptionLine[]
+  invoices          SubscriptionInvoice[]
+  usage             SubscriptionUsage[]
+  couponRedemptions SubscriptionCouponRedemption[]
 
   @@index([tenantId])
   @@index([tenantId, status])
@@ -38441,6 +38442,8 @@ model SubscriptionPlanTier {
   overageRate  Decimal  @default(0) @map("overage_rate")
   features     Json     @default("[]")
   isActive     Boolean  @default(true) @map("is_active")
+  planGroupId  String?  @map("plan_group_id")
+  planGroup    SubscriptionPlanGroup? @relation(fields: [planGroupId], references: [id])
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
@@ -39129,5 +39132,792 @@ model ServiceSurveyResponse {
   @@map("sm_survey_responses")
 }
 
+// ════════════════════════════════════════════════
+// T4-FINANCE-ADJ: FIXED ASSETS EXPANSION
+// ════════════════════════════════════════════════
 
+model FixedAssetComponent {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  assetId     String   @map("asset_id")
+  name        String
+  serialNo    String?  @map("serial_no")
+  partNo      String?  @map("part_no")
+  quantity    Int      @default(1)
+  unitCost    Decimal  @default(0) @map("unit_cost")
+  installedAt DateTime @default(now()) @map("installed_at")
+  warrantyExpiry DateTime? @map("warranty_expiry")
+  status      String   @default("ACTIVE") // ACTIVE, REPLACED, RETIRED
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  replacements FixedAssetComponentReplacement[]
+
+  @@index([tenantId])
+  @@index([tenantId, assetId])
+  @@map("fixed_asset_components")
+}
+
+model FixedAssetComponentReplacement {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  componentId String   @map("component_id")
+  replacedAt  DateTime @map("replaced_at")
+  oldSerialNo String?  @map("old_serial_no")
+  newSerialNo String?  @map("new_serial_no")
+  cost        Decimal  @default(0)
+  reason      String?  @db.Text
+  performedBy String?  @map("performed_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  component FixedAssetComponent @relation(fields: [componentId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, componentId])
+  @@map("fixed_asset_component_replacements")
+}
+
+model FixedAssetWarranty {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  assetId         String    @map("asset_id")
+  warrantyProvider String   @map("warranty_provider")
+  warrantyType    String    @default("MANUFACTURER") // MANUFACTURER, EXTENDED, SERVICE_CONTRACT
+  startDate       DateTime  @map("start_date")
+  endDate         DateTime  @map("end_date")
+  coverageDetails String?   @map("coverage_details") @db.Text
+  contractValue   Decimal?  @map("contract_value")
+  claimPhone      String?   @map("claim_phone")
+  claimEmail      String?   @map("claim_email")
+  status          String    @default("ACTIVE") // ACTIVE, EXPIRED, CLAIMED
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  claims FixedAssetWarrantyClaim[]
+
+  @@index([tenantId])
+  @@index([tenantId, assetId])
+  @@map("fixed_asset_warranties")
+}
+
+model FixedAssetWarrantyClaim {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  warrantyId   String   @map("warranty_id")
+  claimDate    DateTime @map("claim_date")
+  description  String   @db.Text
+  claimAmount  Decimal  @default(0) @map("claim_amount")
+  approvedAmount Decimal? @map("approved_amount")
+  status       String   @default("SUBMITTED") // SUBMITTED, IN_REVIEW, APPROVED, REJECTED, CLOSED
+  resolution   String?  @db.Text
+  resolvedAt   DateTime? @map("resolved_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  warranty FixedAssetWarranty @relation(fields: [warrantyId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, warrantyId])
+  @@map("fixed_asset_warranty_claims")
+}
+
+model FixedAssetImpairment {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  assetId         String   @map("asset_id")
+  impairmentDate  DateTime @map("impairment_date")
+  carryingAmount  Decimal  @map("carrying_amount")
+  recoverableAmount Decimal @map("recoverable_amount")
+  impairmentLoss  Decimal  @map("impairment_loss")
+  impairmentType  String   @default("INDICATOR") // INDICATOR, REVERSAL
+  reason          String   @db.Text
+  approvedBy      String?  @map("approved_by")
+  journalId       String?  @map("journal_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, assetId])
+  @@map("fixed_asset_impairments")
+}
+
+model FixedAssetConditionAssessment {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  assetId         String   @map("asset_id")
+  assessmentDate  DateTime @map("assessment_date")
+  conditionScore  Int      @map("condition_score") // 1-10
+  conditionRating String   @map("condition_rating") // EXCELLENT, GOOD, FAIR, POOR, CRITICAL
+  assessedBy      String   @map("assessed_by")
+  notes           String?  @db.Text
+  remainingLifeEstimate Int? @map("remaining_life_estimate") // months
+  replacementCostEstimate Decimal? @map("replacement_cost_estimate")
+  nextAssessmentDate DateTime? @map("next_assessment_date")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, assetId])
+  @@map("fixed_asset_condition_assessments")
+}
+
+model FixedAssetDocument {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  assetId     String   @map("asset_id")
+  documentType String  @map("document_type") // PURCHASE_INVOICE, WARRANTY_CERT, INSURANCE_POLICY, APPRAISAL, PHOTO, MANUAL
+  title       String
+  fileName    String   @map("file_name")
+  fileUrl     String   @map("file_url")
+  fileSize    Int      @default(0) @map("file_size")
+  uploadedBy  String?  @map("uploaded_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, assetId])
+  @@map("fixed_asset_documents")
+}
+
+model FixedAssetUtilizationMetric {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  assetId     String   @map("asset_id")
+  metricDate  DateTime @map("metric_date")
+  metricType  String   @map("metric_type") // UPTIME_PCT, UTILIZATION_PCT, DOWNTIME_HOURS, OUTPUT_UNITS, REVENUE_GENERATED
+  value       Decimal
+  unit        String   @default("PERCENT")
+  recordedBy  String?  @map("recorded_by")
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, assetId])
+  @@index([tenantId, assetId, metricDate])
+  @@map("fixed_asset_utilization_metrics")
+}
+
+model FixedAssetGroup {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  description String?  @db.Text
+  parentId    String?  @map("parent_id")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  parent   FixedAssetGroup?    @relation("AssetGroupHierarchy", fields: [parentId], references: [id])
+  children FixedAssetGroup[]   @relation("AssetGroupHierarchy")
+  members  FixedAssetGroupMember[]
+
+  @@index([tenantId])
+  @@unique([tenantId, name])
+  @@map("fixed_asset_groups")
+}
+
+model FixedAssetGroupMember {
+  id        String @id @default(cuid())
+  tenantId  String @map("tenant_id")
+  groupId   String @map("group_id")
+  assetId   String @map("asset_id")
+
+  group FixedAssetGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, groupId, assetId])
+  @@index([tenantId])
+  @@index([tenantId, groupId])
+  @@map("fixed_asset_group_members")
+}
+
+model FixedAssetBudgetAllocation {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  orgId           String   @map("org_id")
+  fiscalYear      Int      @map("fiscal_year")
+  categoryId      String?  @map("category_id")
+  allocatedAmount Decimal  @map("allocated_amount")
+  spentAmount     Decimal  @default(0) @map("spent_amount")
+  notes           String?  @db.Text
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, fiscalYear])
+  @@map("fixed_asset_budget_allocations")
+}
+
+// ════════════════════════════════════════════════
+// T4-FINANCE-ADJ: SUBSCRIPTIONS EXPANSION
+// ════════════════════════════════════════════════
+
+model SubscriptionCoupon {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  code         String
+  description  String?
+  discountType String   @map("discount_type") // PERCENTAGE, FIXED_AMOUNT, FREE_MONTHS
+  discountValue Decimal @map("discount_value")
+  maxRedemptions Int?   @map("max_redemptions")
+  currentRedemptions Int @default(0) @map("current_redemptions")
+  appliesTo    String   @default("ALL") // ALL, NEW_CUSTOMERS, PLAN_SPECIFIC
+  planId       String?  @map("plan_id")
+  validFrom    DateTime @map("valid_from")
+  validUntil   DateTime? @map("valid_until")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  redemptions SubscriptionCouponRedemption[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@map("subscription_coupons")
+}
+
+model SubscriptionCouponRedemption {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  couponId       String   @map("coupon_id")
+  subscriptionId String   @map("subscription_id")
+  discountAmount Decimal  @map("discount_amount")
+  redeemedAt     DateTime @default(now()) @map("redeemed_at")
+
+  coupon       SubscriptionCoupon @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  subscription Subscription        @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, couponId])
+  @@map("subscription_coupon_redemptions")
+}
+
+model SubscriptionPlanGroup {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  description String?
+  sortOrder   Int      @default(0) @map("sort_order")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  plans SubscriptionPlanTier[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("subscription_plan_groups")
+}
+
+model SubscriptionMigration {
+  id                String    @id @default(cuid())
+  tenantId          String    @map("tenant_id")
+  subscriptionId    String    @map("subscription_id")
+  fromPlanTierId    String?   @map("from_plan_tier_id")
+  toPlanTierId      String    @map("to_plan_tier_id")
+  migrationType     String    @map("migration_type") // UPGRADE, DOWNGRADE, CROSSGRADE
+  effectiveDate     DateTime  @map("effective_date")
+  proratedCredit    Decimal?  @map("prorated_credit")
+  proratedCharge    Decimal?  @map("prorated_charge")
+  previousUnitAmount Decimal? @map("previous_unit_amount")
+  newUnitAmount     Decimal?  @map("new_unit_amount")
+  reason            String?   @db.Text
+  initiatedBy       String?   @map("initiated_by")
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, subscriptionId])
+  @@map("subscription_migrations")
+}
+
+model SubscriptionBillingRun {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  runDate        DateTime @default(now()) @map("run_date")
+  periodLabel    String   @map("period_label") // e.g. 2026-07
+  totalSubsProcessed Int  @default(0) @map("total_subs_processed")
+  totalBilled    Int      @default(0) @map("total_billed")
+  totalAmount    Decimal  @default(0) @map("total_amount")
+  totalFailed    Int      @default(0) @map("total_failed")
+  totalTrials    Int      @default(0) @map("total_trials")
+  status         String   @default("COMPLETED") // COMPLETED, PARTIAL, FAILED
+  errorLog       String?  @map("error_log") @db.Text
+  completedAt    DateTime @default(now()) @map("completed_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  lines SubscriptionBillingRunLine[]
+
+  @@index([tenantId])
+  @@index([tenantId, runDate])
+  @@map("subscription_billing_runs")
+}
+
+model SubscriptionBillingRunLine {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  billingRunId    String   @map("billing_run_id")
+  subscriptionId  String   @map("subscription_id")
+  invoiceNumber   String?  @map("invoice_number")
+  amount          Decimal
+  status          String   @default("BILLED") // BILLED, FAILED, SKIPPED
+  errorMessage    String?  @map("error_message")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  billingRun SubscriptionBillingRun @relation(fields: [billingRunId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, billingRunId])
+  @@map("subscription_billing_run_lines")
+}
+
+model SubscriptionDunningRule {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  name            String
+  invoiceStatus   String   @map("invoice_status") // OVERDUE_7D, OVERDUE_15D, OVERDUE_30D, OVERDUE_60D
+  daysOverdue     Int      @map("days_overdue")
+  action          String   @default("SEND_REMINDER") // SEND_REMINDER, APPLY_LATE_FEE, SUSPEND_SERVICE, CANCEL
+  lateFeeType     String?  @map("late_fee_type") // PERCENTAGE, FIXED_AMOUNT
+  lateFeeValue    Decimal? @map("late_fee_value")
+  sendEmail       Boolean  @default(true) @map("send_email")
+  emailTemplateId String?  @map("email_template_id")
+  isActive        Boolean  @default(true) @map("is_active")
+  sortOrder       Int      @default(0) @map("sort_order")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@unique([tenantId, name])
+  @@map("subscription_dunning_rules")
+}
+
+model SubscriptionCreditNote {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  subscriptionId  String   @map("subscription_id")
+  invoiceId       String?  @map("invoice_id")
+  creditNoteNo    String   @map("credit_note_no")
+  amount          Decimal
+  reason          String   @db.Text
+  reasonCategory  String   @map("reason_category") // PRORATED_REFUND, SERVICE_ISSUE, CUSTOMER_GOODWILL, PLAN_DOWNGRADE
+  status          String   @default("PENDING") // PENDING, APPLIED, VOIDED
+  appliedAt       DateTime? @map("applied_at")
+  createdBy       String?  @map("created_by")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, subscriptionId])
+  @@unique([tenantId, creditNoteNo])
+  @@map("subscription_credit_notes")
+}
+
+model SubscriptionAutoScaleRule {
+  id                  String   @id @default(cuid())
+  tenantId            String   @map("tenant_id")
+  name                String
+  subscriptionId      String?  @map("subscription_id") // null = applies to all
+  metricName          String   @map("metric_name") // API_CALLS, STORAGE_GB, SEATS
+  thresholdType       String   @map("threshold_type") // ABOVE, BELOW
+  thresholdValue      Decimal  @map("threshold_value")
+  scaleAction         String   @map("scale_action") // INCREASE_UNITS, DECREASE_UNITS, UPGRADE_PLAN, DOWNGRADE_PLAN
+  scaleAmount         Int      @default(1) @map("scale_amount")
+  coolDownMinutes     Int      @default(1440) @map("cool_down_minutes")
+  lastTriggeredAt     DateTime? @map("last_triggered_at")
+  isActive            Boolean  @default(true) @map("is_active")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, subscriptionId])
+  @@map("subscription_auto_scale_rules")
+}
+
+model SubscriptionAnalyticsSnapshot {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  snapshotDate    DateTime @map("snapshot_date")
+  totalActive     Int      @default(0) @map("total_active")
+  totalTrialing   Int      @default(0) @map("total_trialing")
+  totalPaused     Int      @default(0) @map("total_paused")
+  totalCanceled   Int      @default(0) @map("total_canceled")
+  totalExpired    Int      @default(0) @map("total_expired")
+  mrr             Decimal  @default(0)
+  arr             Decimal  @default(0)
+  newSubs         Int      @default(0) @map("new_subs")
+  churnedSubs     Int      @default(0) @map("churned_subs")
+  upgrades        Int      @default(0)
+  downgrades      Int      @default(0)
+  totalRevenue    Decimal  @default(0) @map("total_revenue")
+  avgRevenuePerSub Decimal @default(0) @map("avg_revenue_per_sub")
+  churnRatePct    Decimal  @default(0) @map("churn_rate_pct")
+  monthOverMonthGrowth Decimal @default(0) @map("month_over_month_growth")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, snapshotDate])
+  @@map("subscription_analytics_snapshots")
+}
+
+// ════════════════════════════════════════════════
+// T4-FINANCE-ADJ: LOCALIZATION EXPANSION
+// ════════════════════════════════════════════════
+
+model LocaleTranslationContext {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String   // e.g. "finance.invoice", "hr.employee"
+  description String?  @db.Text
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("locale_translation_contexts")
+}
+
+model LocaleGlossaryEntry {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  term        String
+  contextId   String?  @map("context_id")
+  definition  String   @db.Text
+  translation String?  @db.Text // translation in default locale
+  usage       String?  @db.Text
+  status      String   @default("ACTIVE") // ACTIVE, ARCHIVED
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@unique([tenantId, term])
+  @@map("locale_glossary_entries")
+}
+
+model LocaleTranslationMemoryEntry {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  sourceText      String   @map("source_text") @db.Text
+  sourceLocale    String   @map("source_locale")
+  targetLocale    String   @map("target_locale")
+  translatedText  String   @map("translated_text") @db.Text
+  contextId       String?  @map("context_id")
+  matchType       String   @default("EXACT") // EXACT, FUZZY, AI
+  matchScore      Decimal  @default(100) @map("match_score")
+  usageCount      Int      @default(1) @map("usage_count")
+  approved        Boolean  @default(false)
+  createdBy       String?  @map("created_by")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, sourceLocale, targetLocale])
+  @@index([tenantId, contextId])
+  @@map("locale_translation_memory_entries")
+}
+
+model LocaleMachineTranslationConfig {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  provider    String   // GOOGLE, DEEPL, AZURE, AMAZON, CUSTOM
+  apiKey      String?  @map("api_key") @db.Text
+  fromLocale  String?  @map("from_locale")
+  toLocales   Json     @default("[]") @map("to_locales")
+  modelName   String?  @map("model_name")
+  maxCharsPerMonth Int @default(1000000) @map("max_chars_per_month")
+  charsUsedThisMonth Int @default(0) @map("chars_used_this_month")
+  isActive    Boolean  @default(false) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, provider])
+  @@index([tenantId])
+  @@map("locale_machine_translation_configs")
+}
+
+model LocaleApprovalWorkflow {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  description String?  @db.Text
+  rules       Json     @default("{}") // { requireReviewer: bool, requireApprover: bool, autoApproveThreshold: int }
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("locale_approval_workflows")
+}
+
+model LocaleTranslationReview {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  translationId   String    @map("translation_id")
+  reviewerId      String    @map("reviewer_id")
+  status          String    @default("PENDING") // PENDING, APPROVED, REJECTED, CHANGES_REQUESTED
+  comment         String?   @db.Text
+  reviewedAt      DateTime? @map("reviewed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, translationId])
+  @@map("locale_translation_reviews")
+}
+
+model LocaleFallbackChain {
+  id            String @id @default(cuid())
+  tenantId      String @map("tenant_id")
+  localeCode    String @map("locale_code")
+  fallbackOrder Json   @default("[]") @map("fallback_order") // ["en", "es", ...]
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, localeCode])
+  @@index([tenantId])
+  @@map("locale_fallback_chains")
+}
+
+model LocaleContentSchedule {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  name        String
+  contentKey  String    @map("content_key")
+  sourceLocale String   @map("source_locale")
+  targetLocales Json   @default("[]") @map("target_locales")
+  cronExpression String @map("cron_expression")
+  lastRunAt   DateTime? @map("last_run_at")
+  nextRunAt   DateTime? @map("next_run_at")
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("locale_content_schedules")
+}
+
+model RegionValidationRule {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  regionCode      String   @map("region_code") // US, EU, APAC, CUSTOM
+  entityType      String   @map("entity_type") // INVOICE, TAX, ADDRESS, PHONE, DATE
+  validationRules Json     @default("{}") @map("validation_rules")
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, regionCode, entityType])
+  @@index([tenantId])
+  @@map("region_validation_rules")
+}
+
+// ════════════════════════════════════════════════
+// T4-FINANCE-ADJ: REPORTING EXPANSION
+// ════════════════════════════════════════════════
+
+model ReportBookmark {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  userId    String   @map("user_id")
+  reportId  String   @map("report_id")
+  label     String
+  filterState Json?  @default("{}") @map("filter_state")
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, userId])
+  @@map("report_bookmarks")
+}
+
+model ReportShare {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  reportId    String    @map("report_id")
+  sharedById  String    @map("shared_by_id")
+  sharedWithUserId String? @map("shared_with_user_id")
+  role        String    @default("VIEWER") // VIEWER, EDITOR
+  shareLink   String?   @map("share_link")
+  expiresAt   DateTime? @map("expires_at")
+  isPublic    Boolean   @default(false) @map("is_public")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, reportId])
+  @@index([tenantId, sharedWithUserId])
+  @@map("report_shares")
+}
+
+model ReportVersion {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  reportId    String   @map("report_id")
+  version     Int      @default(1)
+  queryConfig Json     @default("{}") @map("query_config")
+  snapshot    Json?    @default("{}") // cached results at version creation
+  createdBy   String?  @map("created_by")
+  changeNotes String?  @map("change_notes") @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, reportId])
+  @@unique([tenantId, reportId, version])
+  @@map("report_versions")
+}
+
+model ReportExecutionLog {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  reportId        String    @map("report_id")
+  executedBy      String?   @map("executed_by")
+  executionType   String    @default("MANUAL") // MANUAL, SCHEDULED, API
+  status          String    @default("PENDING") // PENDING, RUNNING, COMPLETED, FAILED
+  rowCount        Int?      @map("row_count")
+  executionTimeMs Int?      @map("execution_time_ms")
+  exportFormats   Json?     @default("[]") @map("export_formats")
+  errorMessage    String?   @map("error_message") @db.Text
+  startedAt       DateTime? @map("started_at")
+  completedAt     DateTime? @map("completed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, reportId])
+  @@index([tenantId, status])
+  @@map("report_execution_logs")
+}
+
+model ReportDrillPathConfig {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  reportId        String   @map("report_id")
+  fieldName       String   @map("field_name")
+  targetReportId  String?  @map("target_report_id")
+  drillType       String   @default("DETAIL") // DETAIL, RELATED, CUSTOM
+  customUrl       String?  @map("custom_url")
+  paramMapping    Json     @default("{}") @map("param_mapping")
+  sortOrder       Int      @default(0) @map("sort_order")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, reportId])
+  @@map("report_drill_path_configs")
+}
+
+model ReportDataSource {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  type        String   @default("MODULE") // MODULE, CUSTOM_TABLE, SQL_VIEW, API, CSV_UPLOAD
+  moduleName  String?  @map("module_name") // finance, inventory, etc.
+  tableName   String?  @map("table_name")
+  connectionString String? @map("connection_string") @db.Text
+  credentials Json?    @default("{}")
+  schema      Json?    @default("[]") // field definitions
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("report_data_sources")
+}
+
+model ReportCacheConfig {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  reportId        String   @map("report_id")
+  ttlMinutes      Int      @default(60) @map("ttl_minutes")
+  invalidateOnUpdate Boolean @default(true) @map("invalidate_on_update")
+  lastCachedAt    DateTime? @map("last_cached_at")
+  cacheSizeBytes  Int?     @default(0) @map("cache_size_bytes")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, reportId])
+  @@index([tenantId])
+  @@map("report_cache_configs")
+}
+
+model ReportAlertRule {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  reportId    String   @map("report_id")
+  name        String
+  condition   Json     @default("{}") // { field: "totalRevenue", operator: "GREATER_THAN", value: 100000 }
+  channel     String   @default("IN_APP") // IN_APP, EMAIL, WEBHOOK, SLACK
+  recipientIds Json   @default("[]") @map("recipient_ids")
+  isActive    Boolean  @default(true) @map("is_active")
+  lastTriggeredAt DateTime? @map("last_triggered_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, reportId])
+  @@map("report_alert_rules")
+}
+
+model ReportScheduleInstance {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  scheduleJobId   String    @map("schedule_job_id") // FK to reporting scheduled jobs
+  scheduledAt     DateTime  @map("scheduled_at")
+  startedAt       DateTime? @map("started_at")
+  completedAt     DateTime? @map("completed_at")
+  status          String    @default("PENDING") // PENDING, RUNNING, COMPLETED, FAILED, SKIPPED
+  rowCount        Int?      @map("row_count")
+  exportFormats   Json?     @default("[]") @map("export_formats")
+  errorMessage    String?   @map("error_message") @db.Text
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, scheduleJobId])
+  @@index([tenantId, status])
+  @@map("report_schedule_instances")
+}
+
+model ReportAuditLog {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  reportId    String   @map("report_id")
+  userId      String   @map("user_id")
+  action      String   // CREATED, UPDATED, DELETED, EXPORTED, SHARED, VIEWED, SCHEDULED
+  details     String?  @db.Text
+  ipAddress   String?  @map("ip_address")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, reportId])
+  @@index([tenantId, userId])
+  @@map("report_audit_logs")
+}
+
+model ReportFilterPreset {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  reportId    String   @map("report_id")
+  name        String
+  filterState Json     @default("{}") @map("filter_state")
+  isDefault   Boolean  @default(false) @map("is_default")
+  createdBy   String?  @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, reportId])
+  @@unique([tenantId, reportId, name])
+  @@map("report_filter_presets")
+}
+
+model ReportColumnPreference {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  userId       String   @map("user_id")
+  reportId     String   @map("report_id")
+  columnConfig Json     @default("[]") @map("column_config") // [{field, visible, width, sortOrder}]
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, userId, reportId])
+  @@index([tenantId])
+  @@index([tenantId, userId])
+  @@map("report_column_preferences")
+}
 

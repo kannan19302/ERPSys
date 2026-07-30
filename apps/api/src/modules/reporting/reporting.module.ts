@@ -20,6 +20,17 @@ import { ReportingInteractiveViewerDeepService } from "./reporting-interactive-v
 import { ReportingInteractiveViewerDeepController } from "./reporting-interactive-viewer-deep.controller";
 import { ReportingDataDrilldownDeepService } from "./reporting-data-drilldown-deep.service";
 import { ReportingDataDrilldownDeepController } from "./reporting-data-drilldown-deep.controller";
+import { ReportingAdminDeepController } from "./reporting-admin-deep.controller";
+import { ReportingBookmarksService } from "./reporting-bookmarks.service";
+import { ReportingSharesService } from "./reporting-shares.service";
+import { ReportingVersionsService } from "./reporting-versions.service";
+import { ReportingExecutionLogsService } from "./reporting-execution-logs.service";
+import { ReportingDataSourcesService } from "./reporting-data-sources.service";
+import { ReportingCacheConfigService } from "./reporting-cache-config.service";
+import { ReportingAlertRulesService } from "./reporting-alert-rules.service";
+import { ReportingAuditLogsService } from "./reporting-audit-logs.service";
+import { ReportingFilterPresetsService } from "./reporting-filter-presets.service";
+import { ReportingColumnPreferencesService } from "./reporting-column-preferences.service";
 
 @Module({
   controllers: [
@@ -33,6 +44,7 @@ import { ReportingDataDrilldownDeepController } from "./reporting-data-drilldown
     ReportingDistributionListsDeepController,
     ReportingInteractiveViewerDeepController,
     ReportingDataDrilldownDeepController,
+    ReportingAdminDeepController,
   ],
   providers: [
     ReportingService,
@@ -45,6 +57,16 @@ import { ReportingDataDrilldownDeepController } from "./reporting-data-drilldown
     ReportingDistributionListsDeepService,
     ReportingInteractiveViewerDeepService,
     ReportingDataDrilldownDeepService,
+    ReportingBookmarksService,
+    ReportingSharesService,
+    ReportingVersionsService,
+    ReportingExecutionLogsService,
+    ReportingDataSourcesService,
+    ReportingCacheConfigService,
+    ReportingAlertRulesService,
+    ReportingAuditLogsService,
+    ReportingFilterPresetsService,
+    ReportingColumnPreferencesService,
   ],
   exports: [
     ReportingService,
