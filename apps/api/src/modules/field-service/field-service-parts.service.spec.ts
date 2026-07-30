@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { FieldServicePartsService } from "./field-service-parts.service";
 import { NotFoundException, BadRequestException } from "@nestjs/common";

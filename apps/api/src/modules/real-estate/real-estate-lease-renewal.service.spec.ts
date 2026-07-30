@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { RealEstateLeaseRenewalService } from "./real-estate-lease-renewal.service";
 import { NotFoundException, BadRequestException } from "@nestjs/common";

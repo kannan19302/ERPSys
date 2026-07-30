@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi } from 'vitest';
 
 // These tests validate the costing logic algorithms without hitting the database

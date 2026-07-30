@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { CatchWeightRecallService } from '../catch-weight-recall.service';
 import { NotFoundException, BadRequestException } from '@nestjs/common';

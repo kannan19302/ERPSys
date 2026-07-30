@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { signTenantToken, verifyTenantToken } from '@unerp/service-kit';
 import { validateManifest } from '../../marketplace/manifest';

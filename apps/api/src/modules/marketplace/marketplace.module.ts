@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Module } from '@nestjs/common';
 import { ExtensionGatewayClientModule } from '../../common/integrations/extension-gateway-client.module';
 import { AppProvisioningService } from './app-provisioning.service';

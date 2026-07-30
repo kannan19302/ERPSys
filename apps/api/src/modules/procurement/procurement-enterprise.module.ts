@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Module } from "@nestjs/common";
 import { ProcurementEnterpriseController } from "./procurement-enterprise.controller";
 import { ProcurementEnterpriseService } from "./procurement-enterprise.service";

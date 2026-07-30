@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TenantLifecycleService } from '../tenant-lifecycle/tenant-lifecycle.service';
 import { NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';

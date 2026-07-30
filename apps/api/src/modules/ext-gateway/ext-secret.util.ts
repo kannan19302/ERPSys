@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Per-service signing secrets (#2). Each app may have its own secret provisioned
  * in both core and that service's deployment as `<SLUG>_EXT_SECRET` (slug

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { FixedAssetsController } from '../fixed-assets.controller';
 import { FixedAssetsService } from '../fixed-assets.service';

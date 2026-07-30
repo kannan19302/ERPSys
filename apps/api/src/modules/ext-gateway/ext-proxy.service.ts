@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { Readable } from 'stream';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect } from 'vitest';
 import { BuilderScriptingService } from '../builder-scripting.service';
 

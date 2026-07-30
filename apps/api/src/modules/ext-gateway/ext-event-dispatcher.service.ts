@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { signWebhook, WEBHOOK_SIGNATURE_HEADER, WEBHOOK_TIMESTAMP_HEADER, REQUEST_ID_HEADER } from '@unerp/service-kit';

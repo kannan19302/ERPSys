@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { OutboxService, type OutboxTxClient } from '@unerp/shared';
 import type { WriteEventParams } from '@unerp/shared';

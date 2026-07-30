@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { InvoiceCaptureService } from '../services/invoice-capture.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';

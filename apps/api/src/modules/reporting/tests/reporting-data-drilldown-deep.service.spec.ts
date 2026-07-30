@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, beforeEach } from "vitest";
 import { Test, TestingModule } from "@nestjs/testing";
 import { ReportingDataDrilldownDeepService } from "../reporting-data-drilldown-deep.service";

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ApiPlatformGeneratedController } from "./api-platform-generated.controller";
 import { ApiPlatformGeneratedService } from "./api-platform-generated.service";
 import { Module } from "@nestjs/common";

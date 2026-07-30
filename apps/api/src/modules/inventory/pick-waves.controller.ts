@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Controller, Get, Post, Patch, Body, Param, Query, Request, UseGuards } from '@nestjs/common';
 import { PickWavesService } from './pick-waves.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';

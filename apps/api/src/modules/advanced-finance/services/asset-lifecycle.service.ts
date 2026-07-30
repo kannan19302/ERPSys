@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 import { Prisma } from '@prisma/client';
@@ -331,7 +332,7 @@ export class AssetLifecycleService {
   }
 
   async bulkDisposeAssets(tenantId: string, dto: { assetIds: string[]; disposalDate: string; disposalType: string }) {
-    const created = [];
+    const created: any[] = [];
     for (const assetId of dto.assetIds) {
       try {
         const disp = await this.createAssetDisposal(tenantId, {

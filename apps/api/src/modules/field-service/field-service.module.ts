@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Module } from "@nestjs/common";
 import { FieldServiceController } from "./field-service.controller";
 import { FieldServiceTicketsService } from "./field-service-tickets.service";

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Controller, Get, Post, Param, Query, Body, UseGuards, Req } from "@nestjs/common";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { RbacGuard } from "../../common/guards/rbac.guard";

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Injectable } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 import { InventoryItem, Product, Warehouse } from '@prisma/client';

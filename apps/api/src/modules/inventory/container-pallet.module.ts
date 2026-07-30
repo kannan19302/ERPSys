@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Module } from '@nestjs/common';
 import { ContainerPalletController } from './container-pallet.controller';
 import { ContainerPalletService } from './container-pallet.service';

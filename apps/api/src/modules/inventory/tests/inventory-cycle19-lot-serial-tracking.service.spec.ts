@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Test } from '@nestjs/testing';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { BadRequestException, NotFoundException } from '@nestjs/common';

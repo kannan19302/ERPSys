@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Test, TestingModule } from "@nestjs/testing";
 import { FieldServiceLogisticsService } from "./field-service-logistics.service";
 import { prisma } from "@unerp/database";

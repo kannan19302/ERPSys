@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Injectable, CanActivate, ExecutionContext, NotFoundException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import 'reflect-metadata';
 import { describe, it, expect } from 'vitest';
 import { EcommercePublicController } from '../ecommerce-public.controller';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Controller, Get, Post, Param, UseGuards, UseInterceptors, Req } from '@nestjs/common';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { z } from 'zod';

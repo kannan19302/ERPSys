@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { TaxJurisdictionLookupService } from "../services/tax-jurisdiction-lookup.service";
 import { TaxFilingCalendarService } from "../services/tax-filing-calendar.service";

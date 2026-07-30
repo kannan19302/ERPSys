@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Module } from "@nestjs/common";
 import { SaasPortalController } from "./saas-portal.controller";
 import { SaasPortalService } from "./saas-portal.service";

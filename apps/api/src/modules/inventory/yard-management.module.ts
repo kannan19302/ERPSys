@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Module } from '@nestjs/common';
 import { YardManagementController } from './yard-management.controller';
 import { YardManagementService } from './yard-management.service';

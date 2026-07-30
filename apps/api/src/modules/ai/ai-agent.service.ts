@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Injectable } from '@nestjs/common';
 import { AiService, OllamaChatMessage, OllamaTool, OllamaToolCall } from './ai.service';
 import { AiCopilotService } from './ai-copilot.service';

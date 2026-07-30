@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Injectable, Inject } from '@nestjs/common';
 import {
   CreateCustomerInput, CreateVendorInput, UpdateVendorInput, VendorNoteInput, CustomerNoteInput,

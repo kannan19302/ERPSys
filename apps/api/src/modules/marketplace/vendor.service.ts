@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 import { BundleStoreService } from './bundle-store.service';

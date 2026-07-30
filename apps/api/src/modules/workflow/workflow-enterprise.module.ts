@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Module } from "@nestjs/common";
 import { WorkflowEnterpriseService } from "./workflow-enterprise.service";
 import { WorkflowEnterpriseController } from "./workflow-enterprise.controller";

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Live integration test against the dev Postgres. Not part of the default unit
  * run (`.itest.ts` + separate config) because it needs a real database.

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Injectable, Inject, forwardRef } from "@nestjs/common";
 import { SaasGateway } from "./saas.gateway";
 

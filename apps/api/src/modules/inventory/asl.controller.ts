@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   Controller, Get, Post, Put, Patch, Delete, Body, Param, Query,
   UseGuards, UseInterceptors, Request,

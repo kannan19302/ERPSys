@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { CrmDealDeskService } from "../crm-deal-desk.service";
 

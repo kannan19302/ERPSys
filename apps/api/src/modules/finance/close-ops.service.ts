@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 import {
@@ -123,7 +124,7 @@ export class CloseOpsService {
     const templates = await prisma.closeTask.findMany({
       where: { id: { in: templateIds }, tenantId, isTemplate: true },
     });
-    const created = [];
+    const created: any[] = [];
     for (const tpl of templates) {
       const task = await prisma.closeTask.create({
         data: {

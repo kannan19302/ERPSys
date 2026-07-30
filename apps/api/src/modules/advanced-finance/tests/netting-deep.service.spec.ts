@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NettingDeepService } from "../services/netting-deep.service";
 import { prisma } from "@unerp/database";

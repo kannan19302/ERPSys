@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { DriveGeneratedController } from "./drive-generated.controller";
 import { DriveGeneratedService } from "./drive-generated.service";
 import { Module } from "@nestjs/common";

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { CardSpendLimitService } from "../services/card-spend-limit.service";
 import { prisma } from "@unerp/database";

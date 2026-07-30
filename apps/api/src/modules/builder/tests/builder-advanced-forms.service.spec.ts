@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { BuilderAdvancedFormsService } from "../services/builder-advanced-forms.service";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 

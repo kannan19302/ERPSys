@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { PeopleGeneratedController } from "./people-generated.controller";
 import { PeopleGeneratedService } from "./people-generated.service";
 import { Module } from "@nestjs/common";

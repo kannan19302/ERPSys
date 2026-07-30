@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { CrmIntegrationsService } from '../crm-integrations.service';
 

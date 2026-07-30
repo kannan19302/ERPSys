@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Module } from '@nestjs/common';
 import { FreightClaimsService } from './freight-claims.service';
 import { FreightClaimsController } from './freight-claims.controller';

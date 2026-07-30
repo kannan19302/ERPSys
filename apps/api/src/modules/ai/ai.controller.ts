@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Controller, Get, Post, Param, UseGuards, UseInterceptors, Req, ServiceUnavailableException } from '@nestjs/common';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';

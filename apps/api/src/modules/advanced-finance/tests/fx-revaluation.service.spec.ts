@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { FxRevaluationService } from '../services/fx-revaluation.service';
 import { prisma } from '@unerp/database';

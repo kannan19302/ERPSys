@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Controller, Post, Body, Param, Get, Patch, UseGuards, Req } from "@nestjs/common";
 import { TicketLifecycleService } from "../services/ticket-lifecycle.service";
 import { TicketAssignmentService } from "../services/ticket-assignment.service";

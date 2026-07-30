@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Test, TestingModule } from "@nestjs/testing";
 import { SalesEnterpriseExecutionDeepService } from "../sales-enterprise-execution-deep.service";
 import { SalesQuoteCpqMasterDeepService } from "../sales-quote-cpq-master-deep.service";

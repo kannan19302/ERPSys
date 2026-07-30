@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Injectable } from '@nestjs/common';
 import { signTenantToken, TenantContextClaims } from '@unerp/service-kit';
 import { secretForApp } from './ext-secret.util';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Injectable } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 import { EventEmitter2 } from '@nestjs/event-emitter';

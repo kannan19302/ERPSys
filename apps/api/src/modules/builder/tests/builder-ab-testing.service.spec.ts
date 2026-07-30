@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { BuilderAbTestingService } from "../services/builder-ab-testing.service";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 

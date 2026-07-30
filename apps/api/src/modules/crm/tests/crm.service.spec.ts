@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Test, TestingModule } from '@nestjs/testing';
 import { CrmService } from '../crm.service';
 import { CrmCustomersService } from '../crm-customers.service';

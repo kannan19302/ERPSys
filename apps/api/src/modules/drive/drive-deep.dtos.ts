@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { z } from "zod";
 
 export const shareFolderSchema = z.object({

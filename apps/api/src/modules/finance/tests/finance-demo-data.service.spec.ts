@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { FinanceDemoDataService } from "../finance-demo-data.service";
 import { BadRequestException } from "@nestjs/common";

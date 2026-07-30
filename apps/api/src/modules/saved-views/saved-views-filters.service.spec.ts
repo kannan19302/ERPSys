@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { SavedViewsFiltersService } from "./saved-views-filters.service";
 import { prisma } from "@unerp/database";

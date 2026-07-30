@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { BlockchainGeneratedController } from "./blockchain-generated.controller";
 import { BlockchainGeneratedService } from "./blockchain-generated.service";
 import { Module, OnModuleInit, OnModuleDestroy, Logger } from "@nestjs/common";

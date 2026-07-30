@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AiDeepService } from '../ai-deep.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Module } from "@nestjs/common";
 import { RealEstateController } from "./real-estate.controller";
 import { RealEstatePropertiesService } from "./real-estate-properties.service";

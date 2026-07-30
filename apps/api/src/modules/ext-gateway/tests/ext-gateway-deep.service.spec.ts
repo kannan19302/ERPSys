@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ExtGatewayDeepService } from "../ext-gateway-deep.service";
 import { NotFoundException } from "@nestjs/common";

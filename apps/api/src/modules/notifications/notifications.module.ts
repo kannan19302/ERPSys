@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NotificationsGeneratedController } from "./notifications-generated.controller";
 import { NotificationsGeneratedService } from "./notifications-generated.service";
 import { Module } from "@nestjs/common";

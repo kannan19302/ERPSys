@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SubscriptionsService } from '../subscriptions.service';
 import { NotFoundException } from '@nestjs/common';

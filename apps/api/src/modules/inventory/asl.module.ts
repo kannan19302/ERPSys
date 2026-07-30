@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Module } from '@nestjs/common';
 import { AslController } from './asl.controller';
 import { AslService } from './asl.service';

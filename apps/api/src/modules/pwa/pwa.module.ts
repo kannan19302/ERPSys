@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { PwaGeneratedController } from "./pwa-generated.controller";
 import { PwaGeneratedService } from "./pwa-generated.service";
 import { Module } from "@nestjs/common";

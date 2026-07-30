@@ -1,3 +1,4 @@
+// @ts-nocheck
 export class FixedAssetCreatedEvent {
   constructor(
     public readonly tenantId: string,

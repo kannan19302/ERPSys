@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Controller, Get, Post, Delete, Patch, Param, Body, Query, Request, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';

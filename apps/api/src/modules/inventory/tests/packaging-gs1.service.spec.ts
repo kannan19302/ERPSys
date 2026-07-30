@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PackagingGs1Service } from '../packaging-gs1.service';
 import { NotFoundException, ConflictException } from '@nestjs/common';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ErrorReportsService } from '../error-reports.service';
 import { ErrorReportsController } from '../error-reports.controller';

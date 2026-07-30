@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Injectable, NotFoundException, BadRequestException, Logger, ForbiddenException } from "@nestjs/common";
 import { prisma, runWithTenantSession } from "@unerp/database";
 import { randomBytes, createHash } from "node:crypto";

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { BadRequestException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 

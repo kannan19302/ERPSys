@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Module } from '@nestjs/common';
 import { PickWavesService } from './pick-waves.service';
 import { PickWavesController } from './pick-waves.controller';

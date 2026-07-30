@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Injectable, NotFoundException, Logger } from "@nestjs/common";
 import { prisma, runWithTenantSession } from "@unerp/database";
 

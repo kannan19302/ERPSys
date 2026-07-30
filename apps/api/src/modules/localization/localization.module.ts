@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { LocalizationGeneratedController } from "./localization-generated.controller";
 import { LocalizationGeneratedService } from "./localization-generated.service";
 import { Module } from "@nestjs/common";

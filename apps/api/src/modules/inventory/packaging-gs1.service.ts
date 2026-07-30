@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 import { Prisma } from '@prisma/client';

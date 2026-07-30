@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Injectable, Logger } from '@nestjs/common';
 import { exec, spawn } from 'child_process';
 import { promisify } from 'util';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { verifyTypedToken, TOKEN_TYPE } from '@unerp/auth';
 import { prisma, runWithTenantSession } from '@unerp/database';

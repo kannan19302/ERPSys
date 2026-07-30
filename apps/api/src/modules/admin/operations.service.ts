@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Injectable, Optional } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';

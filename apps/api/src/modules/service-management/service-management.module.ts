@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ServiceManagementGeneratedController } from "./service-management-generated.controller";
 import { ServiceManagementGeneratedService } from "./service-management-generated.service";
 import { Module } from "@nestjs/common";

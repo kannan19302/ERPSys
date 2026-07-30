@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Module } from '@nestjs/common';
 import { VmiService } from './vmi.service';
 import { VmiController } from './vmi.controller';

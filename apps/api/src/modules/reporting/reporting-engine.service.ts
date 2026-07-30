@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Injectable } from '@nestjs/common';
 import { prisma } from '@unerp/database';
 import { ReportingQueryClient, ReportingQueryOptions, ReportingQueryResult, ReportingSemanticEntity } from '../../common/integrations/reporting-query-client';

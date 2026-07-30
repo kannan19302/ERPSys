@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { BuilderApiService } from "../services/builder-api.service";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 

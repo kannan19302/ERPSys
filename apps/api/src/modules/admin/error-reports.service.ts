@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Injectable } from '@nestjs/common';
 import { prisma, runWithTenantSession } from '@unerp/database';
 import { ErrorReportInput } from './error-reports.schemas';

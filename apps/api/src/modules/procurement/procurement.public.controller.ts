@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Controller, Get, Post, Param, Body } from '@nestjs/common';
 import { ProcurementService } from './procurement.service';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';

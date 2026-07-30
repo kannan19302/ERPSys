@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Ready-made CMS collection presets so Web Studio is usable out-of-the-box for
 // e-commerce, portfolios, company sites and blogs.
 

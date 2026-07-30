@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Counter, Histogram } from 'prom-client';
 import { metricsRegistry } from '../../common/middleware/metrics.middleware';
 

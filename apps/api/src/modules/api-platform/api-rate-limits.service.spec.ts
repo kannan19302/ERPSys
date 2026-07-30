@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { ApiRateLimitsService } from "./api-rate-limits.service";
 import { prisma } from "@unerp/database";

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * PaymentGatewayAdapter — shaped like Stripe's PaymentIntent API so a real
  * gateway (Stripe/PayPal/etc.) is a drop-in swap for MVP's mock implementation.

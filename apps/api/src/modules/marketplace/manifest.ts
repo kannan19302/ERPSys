@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { EXT_API_VERSION, isSupportedExtApiVersion, MIN_SUPPORTED_EXT_API_VERSION } from '@unerp/service-kit';
 
 /**

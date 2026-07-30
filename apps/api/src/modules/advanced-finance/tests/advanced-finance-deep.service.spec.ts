@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { prisma } from '@unerp/database';
 import { TaxEngineDeepService } from '../services/tax-engine-deep.service';

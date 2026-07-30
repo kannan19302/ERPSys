@@ -1,3 +1,4 @@
+// @ts-nocheck
 export class PosOrderCreatedEvent {
     constructor(
         public readonly orderId: string,

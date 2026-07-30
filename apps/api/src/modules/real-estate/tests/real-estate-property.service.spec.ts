@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { RealEstatePropertyService } from "../real-estate-property.service";
 

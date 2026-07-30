@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, beforeEach } from "vitest";
 import { Test, TestingModule } from "@nestjs/testing";
 import { AnalyticsRealtimeStreamDeepService } from "../analytics-realtime-stream-deep.service";

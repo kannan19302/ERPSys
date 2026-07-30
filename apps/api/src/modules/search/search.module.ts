@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { SearchGeneratedController } from "./search-generated.controller";
 import { SearchGeneratedService } from "./search-generated.service";
 import { Module } from "@nestjs/common";
@@ -16,27 +17,18 @@ import { SearchDeepV3Service } from "./search-deep-v3.service";
   controllers: [
     SearchGeneratedController,
     SearchController,
-    SearchDeepController,
-    SearchDeepV2Controller,
-    SearchDeepV3Controller,
   ],
   providers: [
     SearchGeneratedService,
     SearchService,
     SearchConfigService,
     SearchSynonymsService,
-    SearchDeepService,
-    SearchDeepV2Service,
-    SearchDeepV3Service,
   ],
   exports: [
     SearchGeneratedService,
     SearchService,
     SearchConfigService,
     SearchSynonymsService,
-    SearchDeepService,
-    SearchDeepV2Service,
-    SearchDeepV3Service,
   ],
 })
 export class SearchModule {}

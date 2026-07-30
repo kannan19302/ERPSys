@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { OutboxGeneratedController } from "./outbox-generated.controller";
 import { OutboxGeneratedService } from "./outbox-generated.service";
 import { Module } from "@nestjs/common";

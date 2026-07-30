@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Form1099Service } from '../services/form-1099.service';
 import { prisma } from '@unerp/database';

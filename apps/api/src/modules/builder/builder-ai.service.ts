@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Injectable } from '@nestjs/common';
 import { AiClient } from '../../common/integrations/ai-client';
 

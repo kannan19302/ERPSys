@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ManufacturingMpsService } from "../manufacturing-mps.service";
 

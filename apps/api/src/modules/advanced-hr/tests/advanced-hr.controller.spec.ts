@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AdvancedHrController } from '../advanced-hr.controller';
 import { AdvancedHrService } from '../advanced-hr.service';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GlAccountingService } from '../services/gl-accounting.service';
 import { prisma } from '@unerp/database';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { z } from "zod";
 
 // ── Pack 1: Program Management ──

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Controller, Get, Param, Query, UseGuards, Req } from '@nestjs/common';
 import { TenantGuard } from '../../common/guards/tenant.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';

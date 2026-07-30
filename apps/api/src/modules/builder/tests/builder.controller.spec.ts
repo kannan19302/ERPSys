@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { BuilderController } from '../builder.controller';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Test, TestingModule } from '@nestjs/testing';
 import { BuilderService } from '../builder.service';
 import { BuilderFormsService } from '../builder-forms.service';

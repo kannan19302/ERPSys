@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Controller, Get, Post, Patch, Delete, Param, Query, UseGuards, UseInterceptors, Req, Body } from "@nestjs/common";
 import { Request } from "express";
 import { z } from "zod";

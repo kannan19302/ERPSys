@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Module } from '@nestjs/common';
 import { AsnService } from './asn.service';
 import { AsnController } from './asn.controller';

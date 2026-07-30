@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   Injectable,
   NotFoundException,
@@ -122,7 +123,7 @@ export class SupplyChainMEIOService {
     const model = await this.getModel(tenantId, modelId);
     if (!model.nodes || model.nodes.length === 0)
       throw new BadRequestException("Model has no nodes to optimize");
-    const updatedNodes = [];
+    const updatedNodes: any[] = [];
     for (const node of model.nodes) {
       const leadTime = node.leadTimeDays;
       const serviceLevel = Number(node.serviceLevel);

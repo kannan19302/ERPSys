@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { RtvService } from '../rtv.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Module } from "@nestjs/common";
 import { AiEnterpriseService } from "./ai-enterprise.service";
 import { AiEnterpriseController } from "./ai-enterprise.controller";

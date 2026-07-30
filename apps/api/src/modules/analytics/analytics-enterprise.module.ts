@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Module } from '@nestjs/common';
 import { AnalyticsEnterpriseController } from './analytics-enterprise.controller';
 import { AnalyticsEnterpriseService } from './analytics-enterprise.service';

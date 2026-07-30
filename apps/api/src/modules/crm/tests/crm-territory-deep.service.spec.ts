@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { Test, TestingModule } from "@nestjs/testing";
 

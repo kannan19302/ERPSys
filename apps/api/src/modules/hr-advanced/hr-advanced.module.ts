@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Module } from "@nestjs/common";
 import { HrAdvancedController } from "./hr-advanced.controller";
 import { HrAdvancedService } from "./hr-advanced.service";

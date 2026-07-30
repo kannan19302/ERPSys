@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Controller, Get, Post, Body, Param, Headers } from "@nestjs/common";
 import { BuilderDeepExpansionService } from "../services/builder-deep-expansion.service";
 

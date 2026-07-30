@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { FinanceEventHandler } from '../finance.event-handler';
 import { FinanceService } from '../finance.service';

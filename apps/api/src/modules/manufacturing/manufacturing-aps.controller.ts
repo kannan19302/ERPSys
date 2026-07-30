@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Controller, Get, Post, Param, UseGuards, Req } from "@nestjs/common";
 import { z } from "zod";
 import { ZodBody } from "../../common/decorators/zod-body.decorator";

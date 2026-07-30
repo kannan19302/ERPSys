@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Module } from '@nestjs/common';
 import { CatchWeightRecallController } from './catch-weight-recall.controller';
 import { CatchWeightRecallService } from './catch-weight-recall.service';

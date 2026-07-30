@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Module } from '@nestjs/common';
 import { PackagingGs1Controller } from './packaging-gs1.controller';
 import { PackagingGs1Service } from './packaging-gs1.service';

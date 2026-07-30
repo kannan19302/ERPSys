@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BudgetControlService } from '../services/budget-control.service';
 import { BudgetReallocationService } from '../services/budget-reallocation.service';

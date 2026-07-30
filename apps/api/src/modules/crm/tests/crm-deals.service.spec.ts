@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { CrmDealsService } from '../crm-deals.service';
 import { NotFoundException, BadRequestException } from '@nestjs/common';

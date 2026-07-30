@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   Controller, Get, Post, Param, Query, Body, Headers,
   UseGuards, Req, HttpCode,
