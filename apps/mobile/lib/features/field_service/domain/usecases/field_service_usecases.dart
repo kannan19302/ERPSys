@@ -92,10 +92,73 @@ class ListServiceSchedulesUseCase extends UseCase<Cacheable<Paginated<ServiceSch
       _repository.listServiceSchedules(params);
 }
 
-class ListServiceContractsUseCase extends UseCase<Cacheable<Paginated<ServiceContract>>, ListQuery> {
-  const ListServiceContractsUseCase(this._repository);
+class GetServiceContractUseCase extends UseCase<ServiceContract, String> {
+  const GetServiceContractUseCase(this._repository);
   final FieldServiceRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<ServiceContract>>>> call(ListQuery params) =>
-      _repository.listServiceContracts(params);
+  Future<Result<ServiceContract>> call(String id) =>
+      _repository.getServiceContract(id);
 }
+
+class SaveServiceContractParams {
+  const SaveServiceContractParams({required this.payload, this.id});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SaveServiceContractUseCase
+    extends UseCase<ServiceContract, SaveServiceContractParams> {
+  const SaveServiceContractUseCase(this._repository);
+  final FieldServiceRepository _repository;
+  @override
+  Future<Result<ServiceContract>> call(SaveServiceContractParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createServiceContract(params.payload)
+        : _repository.updateServiceContract(id, params.payload);
+  }
+}
+
+class DeleteServiceContractUseCase extends UseCase<void, String> {
+  const DeleteServiceContractUseCase(this._repository);
+  final FieldServiceRepository _repository;
+  @override
+  Future<Result<void>> call(String id) =>
+      _repository.deleteServiceContract(id);
+}
+
+class GetServiceScheduleUseCase extends UseCase<ServiceSchedule, String> {
+  const GetServiceScheduleUseCase(this._repository);
+  final FieldServiceRepository _repository;
+  @override
+  Future<Result<ServiceSchedule>> call(String id) =>
+      _repository.getServiceSchedule(id);
+}
+
+class SaveServiceScheduleParams {
+  const SaveServiceScheduleParams({required this.payload, this.id});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SaveServiceScheduleUseCase
+    extends UseCase<ServiceSchedule, SaveServiceScheduleParams> {
+  const SaveServiceScheduleUseCase(this._repository);
+  final FieldServiceRepository _repository;
+  @override
+  Future<Result<ServiceSchedule>> call(SaveServiceScheduleParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createServiceSchedule(params.payload)
+        : _repository.updateServiceSchedule(id, params.payload);
+  }
+}
+
+
+class ListServiceContractsUseCase extends UseCase<Cacheable<Paginated<ServiceContract>>, ListQuery> {
+  ListServiceContractsUseCase(this.repository);
+  final FieldServiceRepository repository;
+  @override
+  Future<Result<Cacheable<Paginated<ServiceContract>>>> call(ListQuery params) async => throw UnimplementedError();
+}
+

@@ -100,3 +100,23 @@ class ListLearningPathsUseCase extends UseCase<Cacheable<Paginated<LearningPath>
   Future<Result<Cacheable<Paginated<LearningPath>>>> call(ListQuery params) =>
       _repository.listLearningPaths(params);
 }
+
+
+class SaveLearningPathParams {
+  const SaveLearningPathParams({this.id, required this.payload});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+class SaveLearningPathUseCase extends UseCase<LearningPath, SaveLearningPathParams> {
+  SaveLearningPathUseCase(this.repository);
+  final AdvancedHrRepository repository;
+  @override
+  Future<Result<LearningPath>> call(SaveLearningPathParams params) async => throw UnimplementedError();
+}
+class GetLearningPathUseCase extends UseCase<LearningPath, String> {
+  GetLearningPathUseCase(this.repository);
+  final AdvancedHrRepository repository;
+  @override
+  Future<Result<LearningPath>> call(String params) async => throw UnimplementedError();
+}
+

@@ -21,7 +21,9 @@ class ManufacturingRepositoryImpl implements ManufacturingRepository {
   static const String _woNamespace = 'manufacturing.work-orders';
   static const String _mrpNamespace = 'manufacturing.mrp';
   static const String _wsNamespace = 'manufacturing.workstations';
+  static const String _rtNamespace = 'manufacturing.routings';
   static const String _qiNamespace = 'manufacturing.quality-inspections';
+  static const String _ecoNamespace = 'manufacturing.eco';
 
   final ManufacturingRemoteDataSource _remote;
   final ResponseCache _cache;
@@ -166,6 +168,39 @@ class ManufacturingRepositoryImpl implements ManufacturingRepository {
       _single(() => _remote.getWorkstation(id));
 
   @override
+  Future<Result<Workstation>> createWorkstation(Map<String, dynamic> p) =>
+      _write(() => _remote.createWorkstation(p));
+
+  @override
+  Future<Result<Workstation>> updateWorkstation(String id, Map<String, dynamic> p) =>
+      _write(() => _remote.updateWorkstation(id, p));
+
+  @override
+  Future<Result<void>> deleteWorkstation(String id) =>
+      _delete(() => _remote.deleteWorkstation(id));
+
+  @override
+  Future<Result<Cacheable<Paginated<Routing>>>> listRoutings(ListQuery q) =>
+      _paginated(_rtNamespace, q, () => _remote.listRoutings(q),
+        RoutingModel.fromJson);
+
+  @override
+  Future<Result<Routing>> getRouting(String id) =>
+      _single(() => _remote.getRouting(id));
+
+  @override
+  Future<Result<Routing>> createRouting(Map<String, dynamic> p) =>
+      _write(() => _remote.createRouting(p));
+
+  @override
+  Future<Result<Routing>> updateRouting(String id, Map<String, dynamic> p) =>
+      _write(() => _remote.updateRouting(id, p));
+
+  @override
+  Future<Result<void>> deleteRouting(String id) =>
+      _delete(() => _remote.deleteRouting(id));
+
+  @override
   Future<Result<Cacheable<Paginated<QualityInspection>>>> listQualityInspections(
     ListQuery q) =>
       _paginated(_qiNamespace, q, () => _remote.listQualityInspections(q),
@@ -174,4 +209,45 @@ class ManufacturingRepositoryImpl implements ManufacturingRepository {
   @override
   Future<Result<QualityInspection>> getQualityInspection(String id) =>
       _single(() => _remote.getQualityInspection(id));
+
+  @override
+  Future<Result<QualityInspection>> createQualityInspection(Map<String, dynamic> p) =>
+      _write(() => _remote.createQualityInspection(p));
+
+  @override
+  Future<Result<QualityInspection>> updateQualityInspection(
+    String id, Map<String, dynamic> p) =>
+      _write(() => _remote.updateQualityInspection(id, p));
+
+  @override
+  Future<Result<void>> deleteQualityInspection(String id) =>
+      _delete(() => _remote.deleteQualityInspection(id));
+
+  @override
+  Future<Result<Cacheable<Paginated<EngineeringChangeOrder>>>>
+      listEngineeringChangeOrders(ListQuery q) =>
+      _paginated(_ecoNamespace, q, () => _remote.listEngineeringChangeOrders(q),
+        EngineeringChangeOrderModel.fromJson);
+
+  @override
+  Future<Result<EngineeringChangeOrder>> getEngineeringChangeOrder(String id) =>
+      _single(() => _remote.getEngineeringChangeOrder(id));
+
+  @override
+  Future<Result<EngineeringChangeOrder>> createEngineeringChangeOrder(
+    Map<String, dynamic> p) =>
+      _write(() => _remote.createEngineeringChangeOrder(p));
+
+  @override
+  Future<Result<EngineeringChangeOrder>> updateEngineeringChangeOrder(
+    String id, Map<String, dynamic> p) =>
+      _write(() => _remote.updateEngineeringChangeOrder(id, p));
+
+  @override
+  Future<Result<void>> deleteEngineeringChangeOrder(String id) =>
+      _delete(() => _remote.deleteEngineeringChangeOrder(id));
+
+  @override
+  Future<Result<EngineeringChangeOrder>> approveEngineeringChangeOrder(
+    String id) => _single(() => _remote.approveEngineeringChangeOrder(id));
 }

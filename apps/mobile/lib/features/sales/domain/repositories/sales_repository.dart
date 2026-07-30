@@ -47,13 +47,41 @@ abstract class SalesRepository {
 
   Future<Result<DeliveryNote>> getDeliveryNote(String id);
 
+  Future<Result<DeliveryNote>> createDeliveryNote(Map<String, dynamic> payload);
+
+  Future<Result<DeliveryNote>> updateDeliveryNote(String id, Map<String, dynamic> payload);
+
+  Future<Result<void>> deleteDeliveryNote(String id);
+
+  Future<Result<DeliveryNote>> submitDeliveryNote(String id);
+
   Future<Result<Paginated<SalesReturn>>> listSalesReturns(ListQuery query);
 
   Future<Result<SalesReturn>> getSalesReturn(String id);
 
+  Future<Result<SalesReturn>> createSalesReturn(Map<String, dynamic> payload);
+
+  Future<Result<void>> deleteSalesReturn(String id);
+
+  Future<Result<SalesReturn>> approveSalesReturn(String id);
+
+  Future<Result<SalesReturn>> rejectSalesReturn(String id);
+
   Future<Result<List<SalesPipeline>>> listPipelines();
 
   Future<Result<Paginated<Opportunity>>> listOpportunities(ListQuery query);
+
+  Future<Result<Opportunity>> getOpportunity(String id);
+
+  Future<Result<Opportunity>> createOpportunity(Map<String, dynamic> payload);
+
+  Future<Result<Opportunity>> updateOpportunity(String id, Map<String, dynamic> payload);
+
+  Future<Result<void>> deleteOpportunity(String id);
+
+  Future<Result<Opportunity>> updateOpportunityStage(String id, String stage);
+
+  Future<Result<SalesPipeline>> getSalesPipeline(String id);
 
   Future<Result<List<SalesActivity>>> listSalesActivity();
 

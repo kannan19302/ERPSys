@@ -1,3 +1,4 @@
+import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -140,6 +141,15 @@ class KpiListController extends Notifier<KpiListState> {
     if (result.isOk) await refresh();
     return result;
   }
+
+  Future<Result<AnalyticsKpi>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveKpiUseCase(
+      ref.read(analyticsRepositoryProvider))(
+      SaveKpiParams(id: id, payload: payload),
+    );
+    if (result.isOk) await refresh();
+    return result;
+  }
 }
 
 final FutureProviderFamily<AnalyticsKpi, String> analyticsKpiDetailProvider =
@@ -248,6 +258,15 @@ class DashboardListController extends Notifier<DashboardListState> {
   Future<Result<void>> delete(String id) async {
     final result = await DeleteDashboardUseCase(
       ref.read(analyticsRepositoryProvider))(id);
+    if (result.isOk) await refresh();
+    return result;
+  }
+
+  Future<Result<AnalyticsDashboard>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveDashboardUseCase(
+      ref.read(analyticsRepositoryProvider))(
+      SaveDashboardParams(id: id, payload: payload),
+    );
     if (result.isOk) await refresh();
     return result;
   }
@@ -362,6 +381,15 @@ class ReportListController extends Notifier<ReportListState> {
     if (result.isOk) await refresh();
     return result;
   }
+
+  Future<Result<AnalyticsReport>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveReportUseCase(
+      ref.read(analyticsRepositoryProvider))(
+      SaveReportParams(id: id, payload: payload),
+    );
+    if (result.isOk) await refresh();
+    return result;
+  }
 }
 
 final FutureProviderFamily<AnalyticsReport, String> analyticsReportDetailProvider =
@@ -467,3 +495,10 @@ class PipelineListController extends Notifier<PipelineListState> {
     });
   }
 }
+
+final FutureProviderFamily<AnalyticsPipeline, String> analyticsPipelineDetailProvider =
+    FutureProvider.family<AnalyticsPipeline, String>((Ref ref, String id) async {
+  final result = await GetPipelineUseCase(
+    ref.watch(analyticsRepositoryProvider))(id);
+  return result.fold((f) => throw f, (v) => v);
+});

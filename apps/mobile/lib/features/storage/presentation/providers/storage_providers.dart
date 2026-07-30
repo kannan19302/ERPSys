@@ -1,3 +1,4 @@
+import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -123,6 +124,14 @@ class BucketListController extends Notifier<BucketListState> {
     if (result.isOk) await refresh();
     return result;
   }
+
+  Future<Result<StorageBucket>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveBucketUseCase(
+      ref.read(storageRepositoryProvider))(
+      SaveBucketParams(id: id, payload: payload));
+    if (result.isOk) await refresh();
+    return result;
+  }
 }
 
 class FileListState extends Equatable {
@@ -222,6 +231,14 @@ class FileListController extends Notifier<FileListState> {
     if (result.isOk) await refresh();
     return result;
   }
+
+  Future<Result<StorageFile>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveFileUseCase(
+      ref.read(storageRepositoryProvider))(
+      SaveFileParams(id: id, payload: payload));
+    if (result.isOk) await refresh();
+    return result;
+  }
 }
 
 final FutureProviderFamily<StorageBucket, String> storageBucketDetailProvider =
@@ -237,3 +254,4 @@ final FutureProviderFamily<StorageFile, String> storageFileDetailProvider =
     ref.watch(storageRepositoryProvider))(id);
   return result.fold((f) => throw f, (v) => v);
 });
+

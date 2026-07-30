@@ -42,3 +42,23 @@ class ListBlockchainNetworkHealthUseCase extends UseCase<Cacheable<Paginated<Blo
   Future<Result<Cacheable<Paginated<BlockchainNetworkHealth>>>> call(ListQuery params) =>
       _repository.listNetworkHealth(params);
 }
+
+
+class SaveBlockchainContractParams {
+  const SaveBlockchainContractParams({this.id, required this.payload});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+class SaveBlockchainContractUseCase extends UseCase<BlockchainContract, SaveBlockchainContractParams> {
+  SaveBlockchainContractUseCase(this.repository);
+  final BlockchainRepository repository;
+  @override
+  Future<Result<BlockchainContract>> call(SaveBlockchainContractParams params) async => throw UnimplementedError();
+}
+class GetBlockchainContractUseCase extends UseCase<BlockchainContract, String> {
+  GetBlockchainContractUseCase(this.repository);
+  final BlockchainRepository repository;
+  @override
+  Future<Result<BlockchainContract>> call(String params) async => throw UnimplementedError();
+}
+

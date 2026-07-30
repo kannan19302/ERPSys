@@ -1,3 +1,4 @@
+import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 
 import 'package:equatable/equatable.dart';
@@ -182,6 +183,15 @@ class CustomersController extends Notifier<CrmListState<Customer>> {
     if (result.isOk) await refresh();
     return result;
   }
+
+  Future<Result<Customer>> save(Map<String, dynamic> payload, {String? id}) async {
+    final Result<Customer> result =
+        await SaveCustomerUseCase(ref.read(crmRepositoryProvider))(
+      SaveCustomerParams(id: id, payload: payload),
+    );
+    if (result.isOk) await refresh();
+    return result;
+  }
 }
 
 final FutureProviderFamily<Customer, String> customerDetailProvider =
@@ -267,7 +277,45 @@ class ContactsController extends Notifier<CrmListState<Contact>> {
       refresh();
     });
   }
+
+  void applySort(String sort) {
+    state = state.copyWith(query: state.query.copyWith(sort: sort, page: 1));
+    refresh();
+  }
+
+  void applyFilters(Map<String, String> filters) {
+    state = state.copyWith(
+      query: state.query.copyWith(filters: filters, page: 1),
+    );
+    refresh();
+  }
+
+  Future<Result<void>> delete(String id) async {
+    final Result<void> result =
+        await DeleteContactUseCase(ref.read(crmRepositoryProvider))(id);
+    if (result.isOk) await refresh();
+    return result;
+  }
+
+  Future<Result<Contact>> save(Map<String, dynamic> payload, {String? id}) async {
+    final Result<Contact> result =
+        await SaveContactUseCase(ref.read(crmRepositoryProvider))(
+      SaveCustomerParams(id: id, payload: payload),
+    );
+    if (result.isOk) await refresh();
+    return result;
+  }
 }
+
+final FutureProviderFamily<Contact, String> contactDetailProvider =
+    FutureProvider.family<Contact, String>((Ref ref, String id) async {
+  final Result<Contact> result =
+      await GetContactUseCase(ref.watch(crmRepositoryProvider))(id);
+  return result.fold(
+    (Failure failure) => throw failure,
+    (Contact c) => c,
+  );
+});
 
 // ── Leads ──────────────────────────────────────────────────────────────────
 
@@ -382,6 +430,15 @@ class LeadsController extends Notifier<CrmListState<Lead>> {
     if (result.isOk) await refresh();
     return result;
   }
+
+  Future<Result<Lead>> save(Map<String, dynamic> payload, {String? id}) async {
+    final Result<Lead> result =
+        await SaveLeadUseCase(ref.read(crmRepositoryProvider))(
+      SaveCustomerParams(id: id, payload: payload),
+    );
+    if (result.isOk) await refresh();
+    return result;
+  }
 }
 
 final FutureProviderFamily<Lead, String> leadDetailProvider =
@@ -396,15 +453,291 @@ final FutureProviderFamily<Lead, String> leadDetailProvider =
 
 // ── Activities ─────────────────────────────────────────────────────────────
 
-final FutureProvider<List<Activity>> crmActivitiesProvider =
-    FutureProvider<List<Activity>>((Ref ref) async {
-  ref.watch(activeTenantIdProvider);
-  final Result<Paginated<Activity>> result =
-      await ListActivitiesUseCase(ref.watch(crmRepositoryProvider))(
-    const ListQuery(limit: 50, sort: '-createdAt'),
-  );
+final NotifierProvider<ActivitiesController, CrmListState<Activity>>
+    activitiesProvider =
+    NotifierProvider<ActivitiesController, CrmListState<Activity>>(
+  ActivitiesController.new,
+);
+
+class ActivitiesController extends Notifier<CrmListState<Activity>> {
+  Timer? _searchDebounce;
+
+  @override
+  CrmListState<Activity> build() {
+    ref.watch(activeTenantIdProvider);
+    ref.onDispose(() => _searchDebounce?.cancel());
+    Future<void>.microtask(refresh);
+    return const CrmListState<Activity>();
+  }
+
+  ListActivitiesUseCase get _list =>
+      ListActivitiesUseCase(ref.read(crmRepositoryProvider));
+
+  Future<void> refresh() async {
+    final ListQuery query = state.query.copyWith(page: 1);
+    state = state.copyWith(isLoading: true, clearFailures: true);
+
+    final Result<Paginated<Activity>> result = await _list(query);
+
+    state = result.fold(
+      (Failure failure) => state.copyWith(
+        isLoading: false, failure: failure, items: const <Activity>[],
+      ),
+      (Paginated<Activity> page) => state.copyWith(
+        items: page.data,
+        meta: page.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
+      ),
+    );
+  }
+
+  Future<void> loadMore() async {
+    if (state.isLoadingMore || !state.meta.hasMore) return;
+
+    state = state.copyWith(isLoadingMore: true, clearFailures: true);
+    final ListQuery next = state.query.copyWith(page: state.meta.page + 1);
+    final Result<Paginated<Activity>> result = await _list(next);
+
+    state = result.fold(
+      (Failure failure) =>
+          state.copyWith(isLoadingMore: false, loadMoreFailure: failure),
+      (Paginated<Activity> page) => state.copyWith(
+        items: <Activity>[...state.items, ...page.data],
+        meta: page.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
+      ),
+    );
+  }
+
+  void search(String term) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 350), () {
+      state = state.copyWith(
+        query: state.query.copyWith(search: term, page: 1),
+      );
+      refresh();
+    });
+  }
+
+  void applySort(String sort) {
+    state = state.copyWith(query: state.query.copyWith(sort: sort, page: 1));
+    refresh();
+  }
+
+  void applyFilters(Map<String, String> filters) {
+    state = state.copyWith(
+      query: state.query.copyWith(filters: filters, page: 1),
+    );
+    refresh();
+  }
+
+  Future<Result<Activity>> create(Map<String, dynamic> payload) async {
+    final Result<Activity> result =
+        await CreateActivityUseCase(ref.read(crmRepositoryProvider))(payload);
+    if (result.isOk) await refresh();
+    return result;
+  }
+
+  Future<Result<void>> delete(String id) async {
+    final Result<void> result =
+        await DeleteActivityUseCase(ref.read(crmRepositoryProvider))(id);
+    if (result.isOk) await refresh();
+    return result;
+  }
+}
+
+final FutureProviderFamily<Activity, String> activityDetailProvider =
+    FutureProvider.family<Activity, String>((Ref ref, String id) async {
+  final Result<Activity> result =
+      await GetActivityUseCase(ref.watch(crmRepositoryProvider))(id);
   return result.fold(
     (Failure failure) => throw failure,
-    (Paginated<Activity> page) => page.data,
+    (Activity a) => a,
   );
 });
+
+// ── Email Templates ────────────────────────────────────────────────────────
+
+final NotifierProvider<EmailTemplatesController, CrmListState<EmailTemplate>>
+    emailTemplatesProvider =
+    NotifierProvider<EmailTemplatesController, CrmListState<EmailTemplate>>(
+  EmailTemplatesController.new,
+);
+
+class EmailTemplatesController extends Notifier<CrmListState<EmailTemplate>> {
+  Timer? _searchDebounce;
+
+  @override
+  CrmListState<EmailTemplate> build() {
+    ref.watch(activeTenantIdProvider);
+    ref.onDispose(() => _searchDebounce?.cancel());
+    Future<void>.microtask(refresh);
+    return const CrmListState<EmailTemplate>();
+  }
+
+  ListEmailTemplatesUseCase get _list =>
+      ListEmailTemplatesUseCase(ref.read(crmRepositoryProvider));
+
+  Future<void> refresh() async {
+    final ListQuery query = state.query.copyWith(page: 1);
+    state = state.copyWith(isLoading: true, clearFailures: true);
+
+    final Result<Paginated<EmailTemplate>> result = await _list(query);
+
+    state = result.fold(
+      (Failure failure) => state.copyWith(
+        isLoading: false, failure: failure, items: const <EmailTemplate>[],
+      ),
+      (Paginated<EmailTemplate> page) => state.copyWith(
+        items: page.data,
+        meta: page.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
+      ),
+    );
+  }
+
+  Future<void> loadMore() async {
+    if (state.isLoadingMore || !state.meta.hasMore) return;
+
+    state = state.copyWith(isLoadingMore: true, clearFailures: true);
+    final ListQuery next = state.query.copyWith(page: state.meta.page + 1);
+    final Result<Paginated<EmailTemplate>> result = await _list(next);
+
+    state = result.fold(
+      (Failure failure) =>
+          state.copyWith(isLoadingMore: false, loadMoreFailure: failure),
+      (Paginated<EmailTemplate> page) => state.copyWith(
+        items: <EmailTemplate>[...state.items, ...page.data],
+        meta: page.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
+      ),
+    );
+  }
+
+  void search(String term) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 350), () {
+      state = state.copyWith(
+        query: state.query.copyWith(search: term, page: 1),
+      );
+      refresh();
+    });
+  }
+
+  void applyFilters(Map<String, String> filters) {
+    state = state.copyWith(
+      query: state.query.copyWith(filters: filters, page: 1),
+    );
+    refresh();
+  }
+
+  Future<Result<EmailTemplate>> save(Map<String, dynamic> payload, {String? id}) async {
+    final Result<EmailTemplate> result =
+        await SaveEmailTemplateUseCase(ref.read(crmRepositoryProvider))(
+      SaveCustomerParams(id: id, payload: payload),
+    );
+    if (result.isOk) await refresh();
+    return result;
+  }
+
+  Future<Result<void>> delete(String id) async {
+    final Result<void> result =
+        await DeleteEmailTemplateUseCase(ref.read(crmRepositoryProvider))(id);
+    if (result.isOk) await refresh();
+    return result;
+  }
+}
+
+final FutureProviderFamily<EmailTemplate, String> emailTemplateDetailProvider =
+    FutureProvider.family<EmailTemplate, String>((Ref ref, String id) async {
+  final Result<EmailTemplate> result =
+      await GetEmailTemplateUseCase(ref.watch(crmRepositoryProvider))(id);
+  return result.fold(
+    (Failure failure) => throw failure,
+    (EmailTemplate t) => t,
+  );
+});
+
+// ── Lead Sources ───────────────────────────────────────────────────────────
+
+final NotifierProvider<LeadSourcesController, CrmListState<LeadSource>>
+    leadSourcesProvider =
+    NotifierProvider<LeadSourcesController, CrmListState<LeadSource>>(
+  LeadSourcesController.new,
+);
+
+class LeadSourcesController extends Notifier<CrmListState<LeadSource>> {
+  @override
+  CrmListState<LeadSource> build() {
+    ref.watch(activeTenantIdProvider);
+    Future<void>.microtask(refresh);
+    return const CrmListState<LeadSource>();
+  }
+
+  ListLeadSourcesUseCase get _list =>
+      ListLeadSourcesUseCase(ref.read(crmRepositoryProvider));
+
+  Future<void> refresh() async {
+    final ListQuery query = state.query.copyWith(page: 1);
+    state = state.copyWith(isLoading: true, clearFailures: true);
+
+    final Result<Paginated<LeadSource>> result = await _list(query);
+
+    state = result.fold(
+      (Failure failure) => state.copyWith(
+        isLoading: false, failure: failure, items: const <LeadSource>[],
+      ),
+      (Paginated<LeadSource> page) => state.copyWith(
+        items: page.data,
+        meta: page.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
+      ),
+    );
+  }
+
+  Future<void> loadMore() async {
+    if (state.isLoadingMore || !state.meta.hasMore) return;
+
+    state = state.copyWith(isLoadingMore: true, clearFailures: true);
+    final ListQuery next = state.query.copyWith(page: state.meta.page + 1);
+    final Result<Paginated<LeadSource>> result = await _list(next);
+
+    state = result.fold(
+      (Failure failure) =>
+          state.copyWith(isLoadingMore: false, loadMoreFailure: failure),
+      (Paginated<LeadSource> page) => state.copyWith(
+        items: <LeadSource>[...state.items, ...page.data],
+        meta: page.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
+      ),
+    );
+  }
+
+  Future<Result<LeadSource>> create(String name) async {
+    final Result<LeadSource> result =
+        await CreateLeadSourceUseCase(ref.read(crmRepositoryProvider))(
+      <String, dynamic>{'name': name},
+    );
+    if (result.isOk) await refresh();
+    return result;
+  }
+
+  Future<Result<void>> delete(String id) async {
+    final Result<void> result =
+        await DeleteLeadSourceUseCase(ref.read(crmRepositoryProvider))(id);
+    if (result.isOk) await refresh();
+    return result;
+  }
+}

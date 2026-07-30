@@ -24,15 +24,17 @@ class PosRepositoryImpl implements PosRepository {
   static const String _discountNamespace = 'pos.discounts';
   static const String _loyaltyProgramNamespace = 'pos.loyalty-programs';
   static const String _loyaltyMemberNamespace = 'pos.loyalty-members';
+  static const String _loyaltyTxNamespace = 'pos.loyalty-transactions';
+  static const String _couponNamespace = 'pos.coupons';
   static const String _giftCardNamespace = 'pos.gift-cards';
+  static const String _priceListNamespace = 'pos.price-lists';
 
   final PosRemoteDataSource _remote;
   final ResponseCache _cache;
   final String _tenantId;
 
   Future<Result<Cacheable<Paginated<T>>>> _paginated<T>(
-    String namespace,
-    ListQuery query,
+    String namespace, ListQuery query,
     Future<Paginated<T>> Function() fetch,
     T Function(Map<String, dynamic>) fromJson,
   ) async {
@@ -42,22 +44,16 @@ class PosRepositoryImpl implements PosRepository {
           .map((dynamic e) => (e as dynamic).toJson() as Map<String, dynamic>)
           .toList(growable: false);
       await _cache.write(_tenantId, namespace, query.cacheKey, <String, Object?>{
-        'data': jsonItems,
-        'meta': page.meta.toJson(),
+        'data': jsonItems, 'meta': page.meta.toJson(),
       });
-      return Result<Cacheable<Paginated<T>>>.ok(
-        Cacheable<Paginated<T>>(value: page),
-      );
+      return Result<Cacheable<Paginated<T>>>.ok(Cacheable<Paginated<T>>(value: page));
     } on NetworkException catch (error) {
       final cached = _cache.read<Map<String, dynamic>>(_tenantId, namespace, query.cacheKey);
       if (cached == null) {
         return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
       }
       return Result<Cacheable<Paginated<T>>>.ok(
-        Cacheable<Paginated<T>>(
-          value: Paginated<T>.fromJson(cached.value, fromJson),
-          cachedAt: cached.cachedAt,
-        ),
+        Cacheable<Paginated<T>>(value: Paginated<T>.fromJson(cached.value, fromJson), cachedAt: cached.cachedAt),
       );
     } on Object catch (error) {
       return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
@@ -65,146 +61,91 @@ class PosRepositoryImpl implements PosRepository {
   }
 
   Future<Result<T>> _single<T>(Future<T> Function() fetch) async {
-    try {
-      return Result<T>.ok(await fetch());
-    } on Object catch (error) {
-      return Result<T>.err(mapExceptionToFailure(error));
-    }
+    try { return Result<T>.ok(await fetch()); }
+    on Object catch (error) { return Result<T>.err(mapExceptionToFailure(error)); }
   }
 
   Future<Result<void>> _delete(Future<void> Function() action) async {
-    try {
-      await action();
-      await _cache.clearTenant(_tenantId);
-      return const Result<void>.ok(null);
-    } on Object catch (error) {
-      return Result<void>.err(mapExceptionToFailure(error));
-    }
+    try { await action(); await _cache.clearTenant(_tenantId); return const Result<void>.ok(null); }
+    on Object catch (error) { return Result<void>.err(mapExceptionToFailure(error)); }
   }
 
   Future<Result<T>> _write<T>(Future<T> Function() action) async {
-    try {
-      final T result = await action();
-      await _cache.clearTenant(_tenantId);
-      return Result<T>.ok(result);
-    } on Object catch (error) {
-      return Result<T>.err(mapExceptionToFailure(error));
-    }
+    try { final r = await action(); await _cache.clearTenant(_tenantId); return Result<T>.ok(r); }
+    on Object catch (error) { return Result<T>.err(mapExceptionToFailure(error)); }
   }
 
-  @override
-  Future<Result<Cacheable<Paginated<PosOrder>>>> listPosOrders(ListQuery q) =>
-      _paginated(_orderNamespace, q, () => _remote.listPosOrders(q),
-        PosOrderModel.fromJson);
+  @override Future<Result<Cacheable<Paginated<PosOrder>>>> listPosOrders(ListQuery q) =>
+      _paginated(_orderNamespace, q, () => _remote.listPosOrders(q), PosOrderModel.fromJson);
+  @override Future<Result<PosOrder>> getPosOrder(String id) => _single(() => _remote.getPosOrder(id));
+  @override Future<Result<PosOrder>> createPosOrder(Map<String, dynamic> p) => _write(() => _remote.createPosOrder(p));
+  @override Future<Result<PosOrder>> updatePosOrder(String id, Map<String, dynamic> p) => _write(() => _remote.updatePosOrder(id, p));
+  @override Future<Result<void>> deletePosOrder(String id) => _delete(() => _remote.deletePosOrder(id));
+  @override Future<Result<PosOrder>> voidPosOrder(String id) => _single(() => _remote.voidPosOrder(id));
+  @override Future<Result<PosOrder>> holdPosOrder(String id) => _single(() => _remote.holdPosOrder(id));
 
-  @override
-  Future<Result<PosOrder>> getPosOrder(String id) =>
-      _single(() => _remote.getPosOrder(id));
+  @override Future<Result<Cacheable<Paginated<PosRegister>>>> listPosRegisters(ListQuery q) =>
+      _paginated(_registerNamespace, q, () => _remote.listPosRegisters(q), PosRegisterModel.fromJson);
+  @override Future<Result<PosRegister>> getPosRegister(String id) => _single(() => _remote.getPosRegister(id));
+  @override Future<Result<PosRegister>> createPosRegister(Map<String, dynamic> p) => _write(() => _remote.createPosRegister(p));
+  @override Future<Result<PosRegister>> updatePosRegister(String id, Map<String, dynamic> p) => _write(() => _remote.updatePosRegister(id, p));
+  @override Future<Result<void>> deletePosRegister(String id) => _delete(() => _remote.deletePosRegister(id));
+  @override Future<Result<PosRegister>> openPosRegister(String id) => _single(() => _remote.openPosRegister(id));
+  @override Future<Result<PosRegister>> closePosRegister(String id) => _single(() => _remote.closePosRegister(id));
 
-  @override
-  Future<Result<PosOrder>> createPosOrder(Map<String, dynamic> p) =>
-      _write(() => _remote.createPosOrder(p));
+  @override Future<Result<Cacheable<Paginated<PosShift>>>> listPosShifts(ListQuery q) =>
+      _paginated(_shiftNamespace, q, () => _remote.listPosShifts(q), PosShiftModel.fromJson);
+  @override Future<Result<PosShift>> getPosShift(String id) => _single(() => _remote.getPosShift(id));
+  @override Future<Result<PosShift>> createPosShift(Map<String, dynamic> p) => _write(() => _remote.createPosShift(p));
+  @override Future<Result<PosShift>> closePosShift(String id) => _single(() => _remote.closePosShift(id));
 
-  @override
-  Future<Result<PosOrder>> updatePosOrder(String id, Map<String, dynamic> p) =>
-      _write(() => _remote.updatePosOrder(id, p));
+  @override Future<Result<Cacheable<Paginated<PosTerminal>>>> listPosTerminals(ListQuery q) =>
+      _paginated(_terminalNamespace, q, () => _remote.listPosTerminals(q), PosTerminalModel.fromJson);
+  @override Future<Result<PosTerminal>> getPosTerminal(String id) => _single(() => _remote.getPosTerminal(id));
+  @override Future<Result<PosTerminal>> createPosTerminal(Map<String, dynamic> p) => _write(() => _remote.createPosTerminal(p));
+  @override Future<Result<PosTerminal>> updatePosTerminal(String id, Map<String, dynamic> p) => _write(() => _remote.updatePosTerminal(id, p));
+  @override Future<Result<void>> deletePosTerminal(String id) => _delete(() => _remote.deletePosTerminal(id));
 
-  @override
-  Future<Result<void>> deletePosOrder(String id) =>
-      _delete(() => _remote.deletePosOrder(id));
+  @override Future<Result<Cacheable<Paginated<PosDiscount>>>> listPosDiscounts(ListQuery q) =>
+      _paginated(_discountNamespace, q, () => _remote.listPosDiscounts(q), PosDiscountModel.fromJson);
+  @override Future<Result<PosDiscount>> getPosDiscount(String id) => _single(() => _remote.getPosDiscount(id));
+  @override Future<Result<PosDiscount>> createPosDiscount(Map<String, dynamic> p) => _write(() => _remote.createPosDiscount(p));
+  @override Future<Result<PosDiscount>> updatePosDiscount(String id, Map<String, dynamic> p) => _write(() => _remote.updatePosDiscount(id, p));
+  @override Future<Result<void>> deletePosDiscount(String id) => _delete(() => _remote.deletePosDiscount(id));
 
-  @override
-  Future<Result<PosOrder>> voidPosOrder(String id) =>
-      _single(() => _remote.voidPosOrder(id));
+  @override Future<Result<Cacheable<Paginated<PosLoyaltyProgram>>>> listPosLoyaltyPrograms(ListQuery q) =>
+      _paginated(_loyaltyProgramNamespace, q, () => _remote.listPosLoyaltyPrograms(q), PosLoyaltyProgramModel.fromJson);
+  @override Future<Result<PosLoyaltyProgram>> getPosLoyaltyProgram(String id) => _single(() => _remote.getPosLoyaltyProgram(id));
+  @override Future<Result<PosLoyaltyProgram>> createPosLoyaltyProgram(Map<String, dynamic> p) => _write(() => _remote.createPosLoyaltyProgram(p));
+  @override Future<Result<PosLoyaltyProgram>> updatePosLoyaltyProgram(String id, Map<String, dynamic> p) => _write(() => _remote.updatePosLoyaltyProgram(id, p));
+  @override Future<Result<void>> deletePosLoyaltyProgram(String id) => _delete(() => _remote.deletePosLoyaltyProgram(id));
 
-  @override
-  Future<Result<PosOrder>> holdPosOrder(String id) =>
-      _single(() => _remote.holdPosOrder(id));
+  @override Future<Result<Cacheable<Paginated<PosLoyaltyMember>>>> listPosLoyaltyMembers(ListQuery q) =>
+      _paginated(_loyaltyMemberNamespace, q, () => _remote.listPosLoyaltyMembers(q), PosLoyaltyMemberModel.fromJson);
+  @override Future<Result<PosLoyaltyMember>> getPosLoyaltyMember(String id) => _single(() => _remote.getPosLoyaltyMember(id));
+  @override Future<Result<PosLoyaltyMember>> createPosLoyaltyMember(Map<String, dynamic> p) => _write(() => _remote.createPosLoyaltyMember(p));
 
-  @override
-  Future<Result<Cacheable<Paginated<PosRegister>>>> listPosRegisters(ListQuery q) =>
-      _paginated(_registerNamespace, q, () => _remote.listPosRegisters(q),
-        PosRegisterModel.fromJson);
+  @override Future<Result<Cacheable<Paginated<PosLoyaltyTransaction>>>> listPosLoyaltyTransactions(ListQuery q) =>
+      _paginated(_loyaltyTxNamespace, q, () => _remote.listPosLoyaltyTransactions(q), PosLoyaltyTransactionModel.fromJson);
+  @override Future<Result<PosLoyaltyTransaction>> createPosLoyaltyTransaction(Map<String, dynamic> p) => _write(() => _remote.createPosLoyaltyTransaction(p));
 
-  @override
-  Future<Result<PosRegister>> getPosRegister(String id) =>
-      _single(() => _remote.getPosRegister(id));
+  @override Future<Result<Cacheable<Paginated<PosCoupon>>>> listPosCoupons(ListQuery q) =>
+      _paginated(_couponNamespace, q, () => _remote.listPosCoupons(q), PosCouponModel.fromJson);
+  @override Future<Result<PosCoupon>> getPosCoupon(String id) => _single(() => _remote.getPosCoupon(id));
+  @override Future<Result<PosCoupon>> createPosCoupon(Map<String, dynamic> p) => _write(() => _remote.createPosCoupon(p));
+  @override Future<Result<PosCoupon>> updatePosCoupon(String id, Map<String, dynamic> p) => _write(() => _remote.updatePosCoupon(id, p));
+  @override Future<Result<void>> deletePosCoupon(String id) => _delete(() => _remote.deletePosCoupon(id));
 
-  @override
-  Future<Result<PosRegister>> createPosRegister(Map<String, dynamic> p) =>
-      _write(() => _remote.createPosRegister(p));
+  @override Future<Result<Cacheable<Paginated<PosGiftCard>>>> listPosGiftCards(ListQuery q) =>
+      _paginated(_giftCardNamespace, q, () => _remote.listPosGiftCards(q), PosGiftCardModel.fromJson);
+  @override Future<Result<PosGiftCard>> getPosGiftCard(String id) => _single(() => _remote.getPosGiftCard(id));
+  @override Future<Result<PosGiftCard>> createPosGiftCard(Map<String, dynamic> p) => _write(() => _remote.createPosGiftCard(p));
+  @override Future<Result<void>> deletePosGiftCard(String id) => _delete(() => _remote.deletePosGiftCard(id));
 
-  @override
-  Future<Result<PosRegister>> updatePosRegister(String id, Map<String, dynamic> p) =>
-      _write(() => _remote.updatePosRegister(id, p));
-
-  @override
-  Future<Result<void>> deletePosRegister(String id) =>
-      _delete(() => _remote.deletePosRegister(id));
-
-  @override
-  Future<Result<PosRegister>> openPosRegister(String id) =>
-      _single(() => _remote.openPosRegister(id));
-
-  @override
-  Future<Result<PosRegister>> closePosRegister(String id) =>
-      _single(() => _remote.closePosRegister(id));
-
-  @override
-  Future<Result<Cacheable<Paginated<PosShift>>>> listPosShifts(ListQuery q) =>
-      _paginated(_shiftNamespace, q, () => _remote.listPosShifts(q),
-        PosShiftModel.fromJson);
-
-  @override
-  Future<Result<PosShift>> getPosShift(String id) =>
-      _single(() => _remote.getPosShift(id));
-
-  @override
-  Future<Result<PosShift>> createPosShift(Map<String, dynamic> p) =>
-      _write(() => _remote.createPosShift(p));
-
-  @override
-  Future<Result<PosShift>> closePosShift(String id) =>
-      _single(() => _remote.closePosShift(id));
-
-  @override
-  Future<Result<Cacheable<Paginated<PosTerminal>>>> listPosTerminals(ListQuery q) =>
-      _paginated(_terminalNamespace, q, () => _remote.listPosTerminals(q),
-        PosTerminalModel.fromJson);
-
-  @override
-  Future<Result<PosTerminal>> getPosTerminal(String id) =>
-      _single(() => _remote.getPosTerminal(id));
-
-  @override
-  Future<Result<PosTerminal>> createPosTerminal(Map<String, dynamic> p) =>
-      _write(() => _remote.createPosTerminal(p));
-
-  @override
-  Future<Result<PosTerminal>> updatePosTerminal(String id, Map<String, dynamic> p) =>
-      _write(() => _remote.updatePosTerminal(id, p));
-
-  @override
-  Future<Result<void>> deletePosTerminal(String id) =>
-      _delete(() => _remote.deletePosTerminal(id));
-
-  @override
-  Future<Result<Cacheable<Paginated<PosDiscount>>>> listPosDiscounts(ListQuery q) =>
-      _paginated(_discountNamespace, q, () => _remote.listPosDiscounts(q),
-        PosDiscountModel.fromJson);
-
-  @override
-  Future<Result<Cacheable<Paginated<PosLoyaltyProgram>>>> listPosLoyaltyPrograms(ListQuery q) =>
-      _paginated(_loyaltyProgramNamespace, q, () => _remote.listPosLoyaltyPrograms(q),
-        PosLoyaltyProgramModel.fromJson);
-
-  @override
-  Future<Result<Cacheable<Paginated<PosLoyaltyMember>>>> listPosLoyaltyMembers(ListQuery q) =>
-      _paginated(_loyaltyMemberNamespace, q, () => _remote.listPosLoyaltyMembers(q),
-        PosLoyaltyMemberModel.fromJson);
-
-  @override
-  Future<Result<Cacheable<Paginated<PosGiftCard>>>> listPosGiftCards(ListQuery q) =>
-      _paginated(_giftCardNamespace, q, () => _remote.listPosGiftCards(q),
-        PosGiftCardModel.fromJson);
+  @override Future<Result<Cacheable<Paginated<PosPriceList>>>> listPosPriceLists(ListQuery q) =>
+      _paginated(_priceListNamespace, q, () => _remote.listPosPriceLists(q), PosPriceListModel.fromJson);
+  @override Future<Result<PosPriceList>> getPosPriceList(String id) => _single(() => _remote.getPosPriceList(id));
+  @override Future<Result<PosPriceList>> createPosPriceList(Map<String, dynamic> p) => _write(() => _remote.createPosPriceList(p));
+  @override Future<Result<PosPriceList>> updatePosPriceList(String id, Map<String, dynamic> p) => _write(() => _remote.updatePosPriceList(id, p));
+  @override Future<Result<void>> deletePosPriceList(String id) => _delete(() => _remote.deletePosPriceList(id));
 }

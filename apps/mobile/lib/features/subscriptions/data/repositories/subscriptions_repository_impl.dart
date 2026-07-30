@@ -100,4 +100,20 @@ class SubscriptionsRepositoryImpl implements SubscriptionsRepository {
   @override
   Future<Result<ChurnSurveyResponse>> submitChurnSurvey(Map<String, dynamic> payload) =>
       _write(() => _remote.submitChurnSurvey(payload));
+
+  @override
+  Future<Result<SubscriptionBillingCycle>> createBillingCycle(Map<String, dynamic> p) async => throw UnimplementedError();
+
+  @override
+  Future<Result<SubscriptionPlan>> createPlan(Map<String, dynamic> p) async => throw UnimplementedError();
+
+  @override
+  Future<Result<void>> deletePlan(String id) async => throw UnimplementedError();
+
+  @override
+  Future<Result<SubscriptionBillingCycle>> updateBillingCycle(String id, Map<String, dynamic> p) async => throw UnimplementedError();
+
+  @override
+  Future<Result<SubscriptionPlan>> updatePlan(String id, Map<String, dynamic> p) async => throw UnimplementedError();
+
 }

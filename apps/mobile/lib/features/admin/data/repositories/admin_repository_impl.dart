@@ -21,6 +21,8 @@ class AdminRepositoryImpl implements AdminRepository {
   static const String _roleNamespace = 'admin.roles';
   static const String _settingNamespace = 'admin.settings';
   static const String _auditNamespace = 'admin.audit-logs';
+  static const String _apiKeyNamespace = 'admin.api-keys';
+  static const String _tenantNamespace = 'admin.tenants';
 
   final AdminRemoteDataSource _remote;
   final ResponseCache _cache;
@@ -147,4 +149,34 @@ class AdminRepositoryImpl implements AdminRepository {
   @override
   Future<Result<SystemHealth>> getSystemHealth() =>
       _single(() => _remote.getSystemHealth());
+
+  @override
+  Future<Result<Cacheable<Paginated<AdminApiKey>>>> listApiKeys(ListQuery q) =>
+      _paginated(_apiKeyNamespace, q, () => _remote.listApiKeys(q),
+        AdminApiKeyModel.fromJson);
+
+  @override
+  Future<Result<AdminApiKey>> getApiKey(String id) =>
+      _single(() => _remote.getApiKey(id));
+
+  @override
+  Future<Result<AdminApiKey>> createApiKey(Map<String, dynamic> p) =>
+      _write(() => _remote.createApiKey(p));
+
+  @override
+  Future<Result<void>> deleteApiKey(String id) =>
+      _delete(() => _remote.deleteApiKey(id));
+
+  @override
+  Future<Result<Cacheable<Paginated<AdminTenant>>>> listTenants(ListQuery q) =>
+      _paginated(_tenantNamespace, q, () => _remote.listTenants(q),
+        AdminTenantModel.fromJson);
+
+  @override
+  Future<Result<AdminTenant>> getTenant(String id) =>
+      _single(() => _remote.getTenant(id));
+
+  @override
+  Future<Result<AdminTenant>> createTenant(Map<String, dynamic> p) =>
+      _write(() => _remote.createTenant(p));
 }

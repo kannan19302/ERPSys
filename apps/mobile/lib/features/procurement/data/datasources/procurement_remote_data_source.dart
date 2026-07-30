@@ -30,13 +30,29 @@ abstract class ProcurementRemoteDataSource {
   Future<Paginated<SupplierQuotationModel>> listSupplierQuotations(ListQuery query);
   Future<SupplierQuotationModel> getSupplierQuotation(String id);
   Future<SupplierQuotationModel> createSupplierQuotation(Map<String, dynamic> payload);
+  Future<SupplierQuotationModel> updateSupplierQuotation(String id, Map<String, dynamic> payload);
   Future<SupplierQuotationModel> approveSupplierQuotation(String id);
   Future<SupplierQuotationModel> rejectSupplierQuotation(String id);
+  Future<SupplierQuotationModel> convertSupplierQuotation(String id);
 
   Future<Paginated<PurchaseRequisitionModel>> listPurchaseRequisitions(ListQuery query);
   Future<PurchaseRequisitionModel> getPurchaseRequisition(String id);
   Future<PurchaseRequisitionModel> createPurchaseRequisition(Map<String, dynamic> payload);
+  Future<PurchaseRequisitionModel> updatePurchaseRequisition(String id, Map<String, dynamic> payload);
   Future<PurchaseRequisitionModel> approvePurchaseRequisition(String id);
+
+  Future<Paginated<PurchaseReceiptModel>> listPurchaseReceipts(ListQuery query);
+  Future<PurchaseReceiptModel> getPurchaseReceipt(String id);
+  Future<PurchaseReceiptModel> createPurchaseReceipt(Map<String, dynamic> payload);
+  Future<PurchaseReceiptModel> updatePurchaseReceipt(String id, Map<String, dynamic> payload);
+
+  Future<Paginated<SupplierContractModel>> listSupplierContracts(ListQuery query);
+  Future<SupplierContractModel> getSupplierContract(String id);
+  Future<SupplierContractModel> createSupplierContract(Map<String, dynamic> payload);
+  Future<SupplierContractModel> updateSupplierContract(String id, Map<String, dynamic> payload);
+  Future<void> deleteSupplierContract(String id);
+
+  Future<ProcurementDashboardStatsModel> getProcurementDashboard();
 }
 
 class ProcurementRemoteDataSourceImpl implements ProcurementRemoteDataSource {
@@ -151,6 +167,12 @@ class ProcurementRemoteDataSourceImpl implements ProcurementRemoteDataSource {
         await _client.post(ApiPaths.supplierQuotations, body: payload));
 
   @override
+  Future<SupplierQuotationModel> updateSupplierQuotation(
+    String id, Map<String, dynamic> payload) async =>
+      SupplierQuotationModel.fromJson(
+        await _client.patch(ApiPaths.supplierQuotation(id), body: payload));
+
+  @override
   Future<SupplierQuotationModel> approveSupplierQuotation(String id) async =>
       SupplierQuotationModel.fromJson(
         await _client.post(ApiPaths.supplierQuotationApprove(id)));
@@ -159,6 +181,11 @@ class ProcurementRemoteDataSourceImpl implements ProcurementRemoteDataSource {
   Future<SupplierQuotationModel> rejectSupplierQuotation(String id) async =>
       SupplierQuotationModel.fromJson(
         await _client.post(ApiPaths.supplierQuotationReject(id)));
+
+  @override
+  Future<SupplierQuotationModel> convertSupplierQuotation(String id) async =>
+      SupplierQuotationModel.fromJson(
+        await _client.post(ApiPaths.supplierQuotationConvert(id)));
 
   @override
   Future<Paginated<PurchaseRequisitionModel>> listPurchaseRequisitions(
@@ -178,7 +205,66 @@ class ProcurementRemoteDataSourceImpl implements ProcurementRemoteDataSource {
         await _client.post(ApiPaths.purchaseRequisitions, body: payload));
 
   @override
+  Future<PurchaseRequisitionModel> updatePurchaseRequisition(
+    String id, Map<String, dynamic> payload) async =>
+      PurchaseRequisitionModel.fromJson(
+        await _client.patch(ApiPaths.purchaseRequisition(id), body: payload));
+
+  @override
   Future<PurchaseRequisitionModel> approvePurchaseRequisition(String id) async =>
       PurchaseRequisitionModel.fromJson(
         await _client.post(ApiPaths.purchaseRequisitionApprove(id)));
+
+  @override
+  Future<Paginated<PurchaseReceiptModel>> listPurchaseReceipts(ListQuery query) =>
+      _client.getPaginated<PurchaseReceiptModel>(
+        ApiPaths.purchaseReceipts, query, PurchaseReceiptModel.fromJson);
+
+  @override
+  Future<PurchaseReceiptModel> getPurchaseReceipt(String id) async =>
+      PurchaseReceiptModel.fromJson(
+        await _client.getObject(ApiPaths.purchaseReceipt(id)));
+
+  @override
+  Future<PurchaseReceiptModel> createPurchaseReceipt(
+    Map<String, dynamic> payload) async =>
+      PurchaseReceiptModel.fromJson(
+        await _client.post(ApiPaths.purchaseReceipts, body: payload));
+
+  @override
+  Future<PurchaseReceiptModel> updatePurchaseReceipt(
+    String id, Map<String, dynamic> payload) async =>
+      PurchaseReceiptModel.fromJson(
+        await _client.patch(ApiPaths.purchaseReceipt(id), body: payload));
+
+  @override
+  Future<Paginated<SupplierContractModel>> listSupplierContracts(ListQuery query) =>
+      _client.getPaginated<SupplierContractModel>(
+        ApiPaths.supplierContracts, query, SupplierContractModel.fromJson);
+
+  @override
+  Future<SupplierContractModel> getSupplierContract(String id) async =>
+      SupplierContractModel.fromJson(
+        await _client.getObject(ApiPaths.supplierContract(id)));
+
+  @override
+  Future<SupplierContractModel> createSupplierContract(
+    Map<String, dynamic> payload) async =>
+      SupplierContractModel.fromJson(
+        await _client.post(ApiPaths.supplierContracts, body: payload));
+
+  @override
+  Future<SupplierContractModel> updateSupplierContract(
+    String id, Map<String, dynamic> payload) async =>
+      SupplierContractModel.fromJson(
+        await _client.patch(ApiPaths.supplierContract(id), body: payload));
+
+  @override
+  Future<void> deleteSupplierContract(String id) =>
+      _client.delete(ApiPaths.supplierContract(id));
+
+  @override
+  Future<ProcurementDashboardStatsModel> getProcurementDashboard() async =>
+      ProcurementDashboardStatsModel.fromJson(
+        await _client.getObject(ApiPaths.purchaseOrders + '/dashboard'));
 }

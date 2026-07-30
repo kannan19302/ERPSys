@@ -34,6 +34,42 @@ class GetSubscriptionBillingCycleUseCase extends UseCase<SubscriptionBillingCycl
   Future<Result<SubscriptionBillingCycle>> call(String id) => _repository.getBillingCycle(id);
 }
 
+class SaveSubscriptionPlanParams {
+  const SaveSubscriptionPlanParams({required this.payload, this.id});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SaveSubscriptionPlanUseCase extends UseCase<SubscriptionPlan, SaveSubscriptionPlanParams> {
+  const SaveSubscriptionPlanUseCase(this._repository);
+  final SubscriptionsRepository _repository;
+  @override
+  Future<Result<SubscriptionPlan>> call(SaveSubscriptionPlanParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createPlan(params.payload)
+        : _repository.updatePlan(id, params.payload);
+  }
+}
+
+class SaveSubscriptionBillingCycleUseCase extends UseCase<SubscriptionBillingCycle, SaveBillingCycleParams> {
+  const SaveSubscriptionBillingCycleUseCase(this._repository);
+  final SubscriptionsRepository _repository;
+  @override
+  Future<Result<SubscriptionBillingCycle>> call(SaveBillingCycleParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createBillingCycle(params.payload)
+        : _repository.updateBillingCycle(id, params.payload);
+  }
+}
+
+class SaveBillingCycleParams {
+  const SaveBillingCycleParams({required this.payload, this.id});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
 class ListSubscriptionUsageUseCase extends UseCase<Cacheable<Paginated<SubscriptionUsageRecord>>, ListQuery> {
   const ListSubscriptionUsageUseCase(this._repository);
   final SubscriptionsRepository _repository;
@@ -49,3 +85,4 @@ class SubmitChurnSurveyUseCase extends UseCase<ChurnSurveyResponse, Map<String, 
   Future<Result<ChurnSurveyResponse>> call(Map<String, dynamic> payload) =>
       _repository.submitChurnSurvey(payload);
 }
+

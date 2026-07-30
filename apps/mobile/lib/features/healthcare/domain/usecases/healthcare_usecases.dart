@@ -108,6 +108,60 @@ class ListMedicalRecordsUseCase extends UseCase<Cacheable<Paginated<MedicalRecor
       _repository.listMedicalRecords(params);
 }
 
+class GetPrescriptionUseCase extends UseCase<Prescription, String> {
+  const GetPrescriptionUseCase(this._repository);
+  final HealthcareRepository _repository;
+  @override
+  Future<Result<Prescription>> call(String id) =>
+      _repository.getPrescription(id);
+}
+
+class SavePrescriptionParams {
+  const SavePrescriptionParams({required this.payload, this.id});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SavePrescriptionUseCase
+    extends UseCase<Prescription, SavePrescriptionParams> {
+  const SavePrescriptionUseCase(this._repository);
+  final HealthcareRepository _repository;
+  @override
+  Future<Result<Prescription>> call(SavePrescriptionParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createPrescription(params.payload)
+        : _repository.updatePrescription(id, params.payload);
+  }
+}
+
+class GetLabOrderUseCase extends UseCase<LabOrder, String> {
+  const GetLabOrderUseCase(this._repository);
+  final HealthcareRepository _repository;
+  @override
+  Future<Result<LabOrder>> call(String id) =>
+      _repository.getLabOrder(id);
+}
+
+class SaveLabOrderParams {
+  const SaveLabOrderParams({required this.payload, this.id});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SaveLabOrderUseCase
+    extends UseCase<LabOrder, SaveLabOrderParams> {
+  const SaveLabOrderUseCase(this._repository);
+  final HealthcareRepository _repository;
+  @override
+  Future<Result<LabOrder>> call(SaveLabOrderParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createLabOrder(params.payload)
+        : _repository.updateLabOrderResult(id, params.payload);
+  }
+}
+
 class ListInsuranceClaimsUseCase extends UseCase<Cacheable<Paginated<InsuranceClaim>>, ListQuery> {
   const ListInsuranceClaimsUseCase(this._repository);
   final HealthcareRepository _repository;

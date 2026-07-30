@@ -43,9 +43,18 @@ class ApiPaths {
   static const String productStats = '/inventory/products/stats';
   static String product(String id) => '/inventory/products/$id';
   static const String warehouses = '/inventory/warehouses';
+  static String warehouse(String id) => '/inventory/warehouses/$id';
   static const String stockLevels = '/inventory/stock-levels';
+  static String stockLevel(String id) => '/inventory/stock-levels/$id';
   static const String stockAdjust = '/inventory/stock-adjust';
   static const String productCategories = '/inventory/categories';
+  static String productCategory(String id) => '/inventory/categories/$id';
+  static const String stockMovements = '/inventory/stock-movements';
+  static String stockMovement(String id) => '/inventory/stock-movements/$id';
+  static const String reorderRules = '/inventory/reorder-rules';
+  static String reorderRule(String id) => '/inventory/reorder-rules/$id';
+  static const String inventoryAdjustments = '/inventory/adjustments';
+  static String inventoryAdjustment(String id) => '/inventory/adjustments/$id';
 
   // ── notifications ──
   // Feed: apps/api/src/modules/communication/communication.controller.ts
@@ -116,6 +125,7 @@ class ApiPaths {
   static const String crmPipelines = '/crm/pipelines';
   static String crmPipeline(String id) => '/crm/pipelines/$id';
   static const String crmActivities = '/crm/activities';
+  static String crmActivity(String id) => '/crm/activities/$id';
   static const String leadSources = '/crm/sources';
   static const String emailTemplates = '/crm/email-templates';
   static String emailTemplate(String id) => '/crm/email-templates/$id';
@@ -175,6 +185,9 @@ class ApiPaths {
   static String journalEntry(String id) => '/finance/journal-entries/$id';
   static String journalEntryPost(String id) => '/finance/journal-entries/$id/post';
   static const String chartOfAccounts = '/finance/chart-of-accounts';
+  static String chartOfAccount(String id) => '/finance/chart-of-accounts/$id';
+  static const String bankAccounts = '/finance/bank-accounts';
+  static String bankAccount(String id) => '/finance/bank-accounts/$id';
 
   // ── hr (apps/api/src/modules/hr/hr.controller.ts) ──
   static const String employees = '/hr/employees';
@@ -377,18 +390,18 @@ class ApiPaths {
   static String projectPortfolioMembers(String id) => '/projects/portfolios/$id/members';
   static const String projectDashboard = '/projects/dashboard/project-summary';
 
-  // ── documents (apps/api/src/modules/documents/drive.controller.ts) ──
-  static const String folders = '/documents/folders';
-  static String folder(String id) => '/documents/folders/$id';
-  static String folderShare(String id) => '/documents/folders/$id/share';
-  static const String documents = '/documents/documents';
-  static String document(String id) => '/documents/documents/$id';
-  static String documentVersions(String id) => '/documents/documents/$id/versions';
-  static String documentShare(String id) => '/documents/documents/$id/share';
-  static String documentSign(String id) => '/documents/documents/$id/sign';
-  static String documentApprove(String id) => '/documents/documents/$id/approve';
-  static String documentStar(String id) => '/documents/documents/$id/star';
-  static String documentLegalHold(String id) => '/documents/documents/$id/legal-hold';
+  // ── documents (apps/api/src/modules/documents/drive.controller.ts, mounted at /drive) ──
+  static const String folders = '/drive/folders';
+  static String folder(String id) => '/drive/folders/$id';
+  static String folderShare(String id) => '/drive/folders/$id/share';
+  static const String documents = '/drive/documents';
+  static String document(String id) => '/drive/documents/$id';
+  static String documentVersions(String id) => '/drive/documents/$id/versions';
+  static String documentShare(String id) => '/drive/documents/$id/share';
+  static String documentSign(String id) => '/drive/documents/$id/sign';
+  static String documentApprove(String id) => '/drive/documents/$id/approve';
+  static String documentStar(String id) => '/drive/documents/$id/star';
+  static String documentLegalHold(String id) => '/drive/documents/$id/legal-hold';
   static const String documentTemplates = '/documents/templates';
   static String documentTemplateGenerate(String id) => '/documents/templates/$id/generate';
   static const String documentCategories = '/documents/categories';
@@ -487,54 +500,64 @@ class ApiPaths {
   static String aiTrainingDataItem(String id) => '/ai/training/$id';
   static const String aiPredict = '/ai/predict';
 
-  // ── healthcare (apps/api/src/modules/healthcare/healthcare.controller.ts) ──
-  static const String patients = '/healthcare/patients';
-  static String patient(String id) => '/healthcare/patients/$id';
-  static const String appointments = '/healthcare/appointments';
-  static String appointment(String id) => '/healthcare/appointments/$id';
-  static const String prescriptions = '/healthcare/prescriptions';
-  static String prescription(String id) => '/healthcare/prescriptions/$id';
-  static const String labOrders = '/healthcare/lab-orders';
-  static String labOrder(String id) => '/healthcare/lab-orders/$id';
+  // ── healthcare (apps/api/src/modules/healthcare/healthcare.controller.ts, mounted at ext/healthcare) ──
+  static const String patients = '/ext/healthcare/patients';
+  static String patient(String id) => '/ext/healthcare/patients/$id';
+  static const String appointments = '/ext/healthcare/appointments';
+  static String appointment(String id) => '/ext/healthcare/appointments/$id';
+  static const String prescriptions = '/ext/healthcare/prescriptions';
+  static String prescription(String id) => '/ext/healthcare/prescriptions/$id';
+  // lab-orders lives on healthcare-deep.controller.ts, mounted at ext/healthcare/deep.
+  static const String labOrders = '/ext/healthcare/deep/lab-orders';
+  static String labOrder(String id) => '/ext/healthcare/deep/lab-orders/$id';
+  // NOTE: no standalone medical-records/insurance-claims list endpoint exists on
+  // the API today (medical records are only reachable nested under
+  // patients/:patientId/medical-records) — these two remain unimplemented gaps.
   static const String medicalRecords = '/healthcare/medical-records';
   static String medicalRecord(String id) => '/healthcare/medical-records/$id';
   static const String insuranceClaims = '/healthcare/insurance-claims';
   static String insuranceClaim(String id) => '/healthcare/insurance-claims/$id';
 
-  // ── education (apps/api/src/modules/education/education.controller.ts) ──
-  static const String students = '/education/students';
-  static String student(String id) => '/education/students/$id';
-  static const String courses = '/education/courses';
-  static String course(String id) => '/education/courses/$id';
+  // ── education (apps/api/src/modules/education/education.controller.ts, mounted at ext/education) ──
+  static const String students = '/ext/education/students';
+  static String student(String id) => '/ext/education/students/$id';
+  static const String courses = '/ext/education/courses';
+  static String course(String id) => '/ext/education/courses/$id';
+  // NOTE: no standalone enrollments/gradebook list endpoint exists — enrollments
+  // are only reachable nested under a course (education-deep.controller.ts
+  // `courses/:courseId/enrollments`, mounted at ext/education/deep) and
+  // gradebooks are plural ("gradebooks") there too. These two remain gaps.
   static const String enrollments = '/education/enrollments';
   static String enrollment(String id) => '/education/enrollments/$id';
   static const String gradebook = '/education/gradebook';
-  static const String educationFees = '/education/fees';
-  static String educationFeeInvoice(String id) => '/education/fees/$id';
-  static const String attendanceRecords = '/education/attendance';
-  static const String exams = '/education/exams';
-  static String examResult(String id) => '/education/exams/$id/results';
+  static const String educationFees = '/ext/education/fee-structures';
+  static String educationFeeInvoice(String id) => '/ext/education/fee-structures/$id';
+  static const String attendanceRecords = '/ext/education/attendance';
+  // NOTE: "exams" only exists on education-deep.controller.ts (ext/education/deep).
+  static const String exams = '/ext/education/deep/exams';
+  static String examResult(String id) => '/ext/education/deep/exams/$id/results';
 
-  // ── real-estate (apps/api/src/modules/real-estate/real-estate.controller.ts) ──
-  static const String properties = '/real-estate/properties';
-  static String property(String id) => '/real-estate/properties/$id';
-  static const String leases = '/real-estate/leases';
-  static String lease(String id) => '/real-estate/leases/$id';
-  static const String realEstateTenants = '/real-estate/tenants';
-  static String realEstateTenantDetail(String id) => '/real-estate/tenants/$id';
-  static const String maintenanceOrders = '/real-estate/maintenance-orders';
-  static String maintenanceOrder(String id) => '/real-estate/maintenance-orders/$id';
-  static const String propertyValuations = '/real-estate/valuations';
+  // ── real-estate (apps/api/src/modules/real-estate/real-estate.controller.ts, mounted at ext/real-estate) ──
+  static const String properties = '/ext/real-estate/properties';
+  static String property(String id) => '/ext/real-estate/properties/$id';
+  static const String leases = '/ext/real-estate/leases';
+  static String lease(String id) => '/ext/real-estate/leases/$id';
+  static const String realEstateTenants = '/ext/real-estate/tenants';
+  static String realEstateTenantDetail(String id) => '/ext/real-estate/tenants/$id';
+  // Backend segment is "maintenance", not "maintenance-orders".
+  static const String maintenanceOrders = '/ext/real-estate/maintenance';
+  static String maintenanceOrder(String id) => '/ext/real-estate/maintenance/$id';
+  static const String propertyValuations = '/ext/real-estate/valuations';
 
-  // ── field-service (apps/api/src/modules/field-service/field-service.controller.ts) ──
-  static const String serviceTickets = '/field-service/tickets';
-  static String serviceTicket(String id) => '/field-service/tickets/$id';
-  static const String technicians = '/field-service/technicians';
-  static String technician(String id) => '/field-service/technicians/$id';
-  static const String serviceSchedules = '/field-service/schedules';
-  static String serviceSchedule(String id) => '/field-service/schedules/$id';
-  static const String serviceContracts = '/field-service/contracts';
-  static String serviceContract(String id) => '/field-service/contracts/$id';
+  // ── field-service (apps/api/src/modules/field-service/field-service.controller.ts, mounted at ext/field-service) ──
+  static const String serviceTickets = '/ext/field-service/tickets';
+  static String serviceTicket(String id) => '/ext/field-service/tickets/$id';
+  static const String technicians = '/ext/field-service/technicians';
+  static String technician(String id) => '/ext/field-service/technicians/$id';
+  static const String serviceSchedules = '/ext/field-service/schedules';
+  static String serviceSchedule(String id) => '/ext/field-service/schedules/$id';
+  static const String serviceContracts = '/ext/field-service/contracts';
+  static String serviceContract(String id) => '/ext/field-service/contracts/$id';
 
   // ── people (apps/api/src/modules/people/people.controller.ts) ──
   static const String peopleDirectory = '/people/directory';
@@ -612,8 +635,8 @@ class ApiPaths {
   static String builderTemplate(String id) => '/builder/templates/$id';
 
   // ── ecommerce (apps/api/src/modules/ecommerce/ecommerce.controller.ts) ──
-  static const String ecommerceProducts = '/ecommerce/products';
-  static String ecommerceProduct(String id) => '/ecommerce/products/$id';
+  static const String ecommerceProducts = '/ecommerce/listings';
+  static String ecommerceProduct(String id) => '/ecommerce/listings/$id';
   static const String ecommerceCategories = '/ecommerce/categories';
   static String ecommerceCategory(String id) => '/ecommerce/categories/$id';
   static const String ecommerceOrders = '/ecommerce/orders';
@@ -700,6 +723,10 @@ class ApiPaths {
   static const String adminSettings = '/admin/settings';
   static const String adminAuditLog = '/admin/audit-log';
   static const String adminSystemHealth = '/admin/system-health';
+  static const String adminApiKeys = '/admin/api-keys';
+  static String adminApiKey(String id) => '/admin/api-keys/$id';
+  static const String adminTenants = '/admin/tenants';
+  static String adminTenant(String id) => '/admin/tenants/$id';
 
   // ── drive (apps/api/src/modules/drive/drive.controller.ts) ──
   static const String driveFiles = '/drive/files';

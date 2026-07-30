@@ -80,3 +80,5 @@ class ReportingRemoteDataSourceImpl implements ReportingRemoteDataSource {
       _client.getPaginated<ReportComplianceModel>(
         ApiPaths.reportCompliance, query, ReportComplianceModel.fromJson);
 }
+
+

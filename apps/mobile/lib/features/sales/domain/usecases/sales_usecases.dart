@@ -162,6 +162,38 @@ class GetDeliveryNoteUseCase extends UseCase<DeliveryNote, String> {
   Future<Result<DeliveryNote>> call(String id) => _repository.getDeliveryNote(id);
 }
 
+class SaveDeliveryNoteUseCase extends UseCase<DeliveryNote, SaveSalesParams> {
+  const SaveDeliveryNoteUseCase(this._repository);
+
+  final SalesRepository _repository;
+
+  @override
+  Future<Result<DeliveryNote>> call(SaveSalesParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createDeliveryNote(params.payload)
+        : _repository.updateDeliveryNote(id, params.payload);
+  }
+}
+
+class DeleteDeliveryNoteUseCase extends UseCase<void, String> {
+  const DeleteDeliveryNoteUseCase(this._repository);
+
+  final SalesRepository _repository;
+
+  @override
+  Future<Result<void>> call(String id) => _repository.deleteDeliveryNote(id);
+}
+
+class SubmitDeliveryNoteUseCase extends UseCase<DeliveryNote, String> {
+  const SubmitDeliveryNoteUseCase(this._repository);
+
+  final SalesRepository _repository;
+
+  @override
+  Future<Result<DeliveryNote>> call(String id) => _repository.submitDeliveryNote(id);
+}
+
 class ListSalesReturnsUseCase
     extends UseCase<Paginated<SalesReturn>, ListQuery> {
   const ListSalesReturnsUseCase(this._repository);
@@ -180,6 +212,43 @@ class GetSalesReturnUseCase extends UseCase<SalesReturn, String> {
 
   @override
   Future<Result<SalesReturn>> call(String id) => _repository.getSalesReturn(id);
+}
+
+class SaveSalesReturnUseCase extends UseCase<SalesReturn, SaveSalesParams> {
+  const SaveSalesReturnUseCase(this._repository);
+
+  final SalesRepository _repository;
+
+  @override
+  Future<Result<SalesReturn>> call(SaveSalesParams params) =>
+      _repository.createSalesReturn(params.payload);
+}
+
+class DeleteSalesReturnUseCase extends UseCase<void, String> {
+  const DeleteSalesReturnUseCase(this._repository);
+
+  final SalesRepository _repository;
+
+  @override
+  Future<Result<void>> call(String id) => _repository.deleteSalesReturn(id);
+}
+
+class SalesReturnApproveUseCase extends UseCase<SalesReturn, String> {
+  const SalesReturnApproveUseCase(this._repository);
+
+  final SalesRepository _repository;
+
+  @override
+  Future<Result<SalesReturn>> call(String id) => _repository.approveSalesReturn(id);
+}
+
+class SalesReturnRejectUseCase extends UseCase<SalesReturn, String> {
+  const SalesReturnRejectUseCase(this._repository);
+
+  final SalesRepository _repository;
+
+  @override
+  Future<Result<SalesReturn>> call(String id) => _repository.rejectSalesReturn(id);
 }
 
 class ListOpportunitiesUseCase
@@ -202,6 +271,58 @@ class GetSalesPipelineUseCase
   @override
   Future<Result<List<SalesPipeline>>> call(NoParams params) =>
       _repository.listPipelines();
+}
+
+class GetSalesPipelineDetailUseCase extends UseCase<SalesPipeline, String> {
+  const GetSalesPipelineDetailUseCase(this._repository);
+
+  final SalesRepository _repository;
+
+  @override
+  Future<Result<SalesPipeline>> call(String id) =>
+      _repository.getSalesPipeline(id);
+}
+
+class GetOpportunityUseCase extends UseCase<Opportunity, String> {
+  const GetOpportunityUseCase(this._repository);
+
+  final SalesRepository _repository;
+
+  @override
+  Future<Result<Opportunity>> call(String id) => _repository.getOpportunity(id);
+}
+
+class SaveOpportunityUseCase extends UseCase<Opportunity, SaveSalesParams> {
+  const SaveOpportunityUseCase(this._repository);
+
+  final SalesRepository _repository;
+
+  @override
+  Future<Result<Opportunity>> call(SaveSalesParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createOpportunity(params.payload)
+        : _repository.updateOpportunity(id, params.payload);
+  }
+}
+
+class DeleteOpportunityUseCase extends UseCase<void, String> {
+  const DeleteOpportunityUseCase(this._repository);
+
+  final SalesRepository _repository;
+
+  @override
+  Future<Result<void>> call(String id) => _repository.deleteOpportunity(id);
+}
+
+class UpdateOpportunityStageUseCase extends UseCase<Opportunity, Map<String, dynamic>> {
+  const UpdateOpportunityStageUseCase(this._repository);
+
+  final SalesRepository _repository;
+
+  @override
+  Future<Result<Opportunity>> call(Map<String, dynamic> params) =>
+      _repository.updateOpportunityStage(params['id'] as String, params['stage'] as String);
 }
 
 class ListSalesActivityUseCase

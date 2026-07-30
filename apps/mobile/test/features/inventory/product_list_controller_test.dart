@@ -1,5 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:unerp_mobile/core/di/providers.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:cookie_jar/cookie_jar.dart';
+import 'package:unerp_mobile/core/storage/cookie_store.dart';
+import 'package:unerp_mobile/core/network/api_client.dart';
+import 'package:dio/dio.dart';
+
 import 'package:unerp_mobile/core/contracts/paginated.dart';
 import 'package:unerp_mobile/core/error/failures.dart';
 import 'package:unerp_mobile/core/usecase/result.dart';
@@ -43,11 +51,11 @@ Paginated<Product> _page(List<Product> items, {int page = 1, bool hasMore = fals
 /// Records every query it receives so tests can assert server-side paging,
 /// search, and sort were requested rather than done client-side (AGENTS.md
 /// Rule 25).
-class FakeInventoryRepository implements InventoryRepository {
+class FakeInventoryRepository extends Mock implements InventoryRepository {
   final List<ListQuery> receivedQueries = <ListQuery>[];
   Future<Result<Cacheable<Paginated<Product>>>> Function(ListQuery)? listHandler;
   int deleteCalls = 0;
-  Result<void> deleteResult = const Result<void>.ok(null);
+  Result<void> deleteResult = Result<void>.ok(null);
 
   @override
   Future<Result<Cacheable<Paginated<Product>>>> listProducts(ListQuery query) async {
@@ -61,19 +69,19 @@ class FakeInventoryRepository implements InventoryRepository {
   }
 
   @override
-  Future<Result<Product>> getProduct(String id) async => const Result<Product>.ok(_productA);
+  Future<Result<Product>> getProduct(String id) async => Result<Product>.ok(_productA);
 
   @override
   Future<Result<InventoryStats>> stats() async =>
-      const Result<InventoryStats>.ok(InventoryStats.zero());
+      Result<InventoryStats>.ok(InventoryStats.zero());
 
   @override
   Future<Result<Product>> createProduct(Map<String, dynamic> payload) async =>
-      const Result<Product>.ok(_productA);
+      Result<Product>.ok(_productA);
 
   @override
   Future<Result<Product>> updateProduct(String id, Map<String, dynamic> payload) async =>
-      const Result<Product>.ok(_productA);
+      Result<Product>.ok(_productA);
 
   @override
   Future<Result<void>> deleteProduct(String id) async {
@@ -83,7 +91,7 @@ class FakeInventoryRepository implements InventoryRepository {
 
   @override
   Future<Result<void>> adjustStock(Map<String, dynamic> payload) async =>
-      const Result<void>.ok(null);
+      Result<void>.ok(null);
 }
 
 void main() {
@@ -94,6 +102,9 @@ void main() {
     fakeRepository = FakeInventoryRepository();
     container = ProviderContainer(
       overrides: <Override>[
+      sharedPreferencesProvider.overrideWithValue(MockSharedPreferences()),
+      cookieStoreProvider.overrideWithValue(CookieStore(CookieJar(), Uri.parse('http://localhost'))),
+      apiClientProvider.overrideWithValue(ApiClient.forTesting(Dio())),
         inventoryRepositoryProvider.overrideWithValue(fakeRepository),
         activeTenantIdProvider.overrideWithValue('tenant-1'),
       ],
@@ -113,7 +124,7 @@ void main() {
 
   test('a repository failure on first load surfaces without clearing to empty silently', () async {
     fakeRepository.listHandler = (ListQuery q) async =>
-        const Result<Cacheable<Paginated<Product>>>.err(ServerFailure('down'));
+        Result<Cacheable<Paginated<Product>>>.err(ServerFailure('down'));
     container.read(productListControllerProvider);
     await Future<void>.delayed(Duration.zero);
 
@@ -177,3 +188,5 @@ void main() {
     expect(fakeRepository.receivedQueries, hasLength(2));
   });
 }
+
+class MockSharedPreferences extends Mock implements SharedPreferences {}

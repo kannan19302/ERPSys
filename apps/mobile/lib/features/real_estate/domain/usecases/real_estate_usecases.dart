@@ -85,3 +85,75 @@ class ListPropertyValuationsUseCase
   Future<Result<Cacheable<Paginated<PropertyValuation>>>> call(ListQuery params) =>
       _repository.listPropertyValuations(params);
 }
+
+class GetLeaseUseCase extends UseCase<Lease, String> {
+  const GetLeaseUseCase(this._repository);
+  final RealEstateRepository _repository;
+  @override
+  Future<Result<Lease>> call(String id) => _repository.getLease(id);
+}
+
+class GetTenantUseCase extends UseCase<TenantDetail, String> {
+  const GetTenantUseCase(this._repository);
+  final RealEstateRepository _repository;
+  @override
+  Future<Result<TenantDetail>> call(String id) => _repository.getTenant(id);
+}
+
+class GetMaintenanceOrderUseCase extends UseCase<MaintenanceOrder, String> {
+  const GetMaintenanceOrderUseCase(this._repository);
+  final RealEstateRepository _repository;
+  @override
+  Future<Result<MaintenanceOrder>> call(String id) =>
+      _repository.getMaintenanceOrder(id);
+}
+
+class SaveLeaseParams {
+  const SaveLeaseParams({required this.payload, this.id});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SaveLeaseUseCase extends UseCase<Lease, SaveLeaseParams> {
+  const SaveLeaseUseCase(this._repository);
+  final RealEstateRepository _repository;
+  @override
+  Future<Result<Lease>> call(SaveLeaseParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createLease(params.payload)
+        : _repository.updateLease(id, params.payload);
+  }
+}
+
+class SaveTenantParams {
+  const SaveTenantParams({required this.payload, this.id});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SaveTenantUseCase extends UseCase<TenantDetail, SaveTenantParams> {
+  const SaveTenantUseCase(this._repository);
+  final RealEstateRepository _repository;
+  @override
+  Future<Result<TenantDetail>> call(SaveTenantParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createTenant(params.payload)
+        : _repository.updateTenant(id, params.payload);
+  }
+}
+
+class DeleteLeaseUseCase extends UseCase<void, String> {
+  const DeleteLeaseUseCase(this._repository);
+  final RealEstateRepository _repository;
+  @override
+  Future<Result<void>> call(String id) => _repository.deleteLease(id);
+}
+
+class DeleteTenantUseCase extends UseCase<void, String> {
+  const DeleteTenantUseCase(this._repository);
+  final RealEstateRepository _repository;
+  @override
+  Future<Result<void>> call(String id) => _repository.deleteTenant(id);
+}

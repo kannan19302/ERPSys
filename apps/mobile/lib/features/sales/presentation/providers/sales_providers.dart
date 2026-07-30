@@ -1,3 +1,4 @@
+import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 
 import 'package:equatable/equatable.dart';
@@ -305,6 +306,15 @@ class SalesOrdersController extends Notifier<SalesListState<SalesOrder>> {
     if (result.isOk) await refresh();
     return result;
   }
+
+  Future<Result<SalesOrder>> save(Map<String, dynamic> payload, {String? id}) async {
+    final Result<SalesOrder> result =
+        await SaveSalesOrderUseCase(ref.read(salesRepositoryProvider))(
+      SaveSalesParams(id: id, payload: payload),
+    );
+    if (result.isOk) await refresh();
+    return result;
+  }
 }
 
 final FutureProviderFamily<SalesOrder, String> salesOrderDetailProvider =
@@ -326,9 +336,12 @@ final NotifierProvider<DeliveryNotesController, SalesListState<DeliveryNote>>
 );
 
 class DeliveryNotesController extends Notifier<SalesListState<DeliveryNote>> {
+  Timer? _searchDebounce;
+
   @override
   SalesListState<DeliveryNote> build() {
     ref.watch(activeTenantIdProvider);
+    ref.onDispose(() => _searchDebounce?.cancel());
     Future<void>.microtask(refresh);
     return const SalesListState<DeliveryNote>();
   }
@@ -375,7 +388,62 @@ class DeliveryNotesController extends Notifier<SalesListState<DeliveryNote>> {
       ),
     );
   }
+
+  void search(String term) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 350), () {
+      state = state.copyWith(
+        query: state.query.copyWith(search: term, page: 1),
+      );
+      refresh();
+    });
+  }
+
+  void applySort(String sort) {
+    state = state.copyWith(query: state.query.copyWith(sort: sort, page: 1));
+    refresh();
+  }
+
+  void applyFilters(Map<String, String> filters) {
+    state = state.copyWith(
+      query: state.query.copyWith(filters: filters, page: 1),
+    );
+    refresh();
+  }
+
+  Future<Result<void>> delete(String id) async {
+    final Result<void> result =
+        await DeleteDeliveryNoteUseCase(ref.read(salesRepositoryProvider))(id);
+    if (result.isOk) await refresh();
+    return result;
+  }
+
+  Future<Result<DeliveryNote>> create(Map<String, dynamic> payload) async {
+    final Result<DeliveryNote> result =
+        await SaveDeliveryNoteUseCase(ref.read(salesRepositoryProvider))(
+      SaveSalesParams(payload: payload),
+    );
+    if (result.isOk) await refresh();
+    return result;
+  }
+
+  Future<Result<DeliveryNote>> submit(String id) async {
+    final Result<DeliveryNote> result =
+        await SubmitDeliveryNoteUseCase(ref.read(salesRepositoryProvider))(id);
+    if (result.isOk) await refresh();
+    return result;
+  }
 }
+
+final FutureProviderFamily<DeliveryNote, String> deliveryNoteDetailProvider =
+    FutureProvider.family<DeliveryNote, String>((Ref ref, String id) async {
+  final Result<DeliveryNote> result =
+      await GetDeliveryNoteUseCase(ref.watch(salesRepositoryProvider))(id);
+  return result.fold(
+    (Failure failure) => throw failure,
+    (DeliveryNote dn) => dn,
+  );
+});
 
 // ── Sales Returns ─────────────────────────────────────────────────────────
 
@@ -386,9 +454,12 @@ final NotifierProvider<SalesReturnsController, SalesListState<SalesReturn>>
 );
 
 class SalesReturnsController extends Notifier<SalesListState<SalesReturn>> {
+  Timer? _searchDebounce;
+
   @override
   SalesListState<SalesReturn> build() {
     ref.watch(activeTenantIdProvider);
+    ref.onDispose(() => _searchDebounce?.cancel());
     Future<void>.microtask(refresh);
     return const SalesListState<SalesReturn>();
   }
@@ -435,7 +506,69 @@ class SalesReturnsController extends Notifier<SalesListState<SalesReturn>> {
       ),
     );
   }
+
+  void search(String term) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 350), () {
+      state = state.copyWith(
+        query: state.query.copyWith(search: term, page: 1),
+      );
+      refresh();
+    });
+  }
+
+  void applySort(String sort) {
+    state = state.copyWith(query: state.query.copyWith(sort: sort, page: 1));
+    refresh();
+  }
+
+  void applyFilters(Map<String, String> filters) {
+    state = state.copyWith(
+      query: state.query.copyWith(filters: filters, page: 1),
+    );
+    refresh();
+  }
+
+  Future<Result<SalesReturn>> create(Map<String, dynamic> payload) async {
+    final Result<SalesReturn> result =
+        await SaveSalesReturnUseCase(ref.read(salesRepositoryProvider))(
+      SaveSalesParams(payload: payload),
+    );
+    if (result.isOk) await refresh();
+    return result;
+  }
+
+  Future<Result<void>> delete(String id) async {
+    final Result<void> result =
+        await DeleteSalesReturnUseCase(ref.read(salesRepositoryProvider))(id);
+    if (result.isOk) await refresh();
+    return result;
+  }
+
+  Future<Result<SalesReturn>> approve(String id) async {
+    final Result<SalesReturn> result =
+        await SalesReturnApproveUseCase(ref.read(salesRepositoryProvider))(id);
+    if (result.isOk) await refresh();
+    return result;
+  }
+
+  Future<Result<SalesReturn>> reject(String id) async {
+    final Result<SalesReturn> result =
+        await SalesReturnRejectUseCase(ref.read(salesRepositoryProvider))(id);
+    if (result.isOk) await refresh();
+    return result;
+  }
 }
+
+final FutureProviderFamily<SalesReturn, String> salesReturnDetailProvider =
+    FutureProvider.family<SalesReturn, String>((Ref ref, String id) async {
+  final Result<SalesReturn> result =
+      await GetSalesReturnUseCase(ref.watch(salesRepositoryProvider))(id);
+  return result.fold(
+    (Failure failure) => throw failure,
+    (SalesReturn sr) => sr,
+  );
+});
 
 // ── Opportunities ─────────────────────────────────────────────────────────
 
@@ -446,9 +579,12 @@ final NotifierProvider<OpportunitiesController, SalesListState<Opportunity>>
 );
 
 class OpportunitiesController extends Notifier<SalesListState<Opportunity>> {
+  Timer? _searchDebounce;
+
   @override
   SalesListState<Opportunity> build() {
     ref.watch(activeTenantIdProvider);
+    ref.onDispose(() => _searchDebounce?.cancel());
     Future<void>.microtask(refresh);
     return const SalesListState<Opportunity>();
   }
@@ -495,7 +631,64 @@ class OpportunitiesController extends Notifier<SalesListState<Opportunity>> {
       ),
     );
   }
+
+  void search(String term) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 350), () {
+      state = state.copyWith(
+        query: state.query.copyWith(search: term, page: 1),
+      );
+      refresh();
+    });
+  }
+
+  void applySort(String sort) {
+    state = state.copyWith(query: state.query.copyWith(sort: sort, page: 1));
+    refresh();
+  }
+
+  void applyFilters(Map<String, String> filters) {
+    state = state.copyWith(
+      query: state.query.copyWith(filters: filters, page: 1),
+    );
+    refresh();
+  }
+
+  Future<Result<Opportunity>> save(Map<String, dynamic> payload, {String? id}) async {
+    final Result<Opportunity> result =
+        await SaveOpportunityUseCase(ref.read(salesRepositoryProvider))(
+      SaveSalesParams(id: id, payload: payload),
+    );
+    if (result.isOk) await refresh();
+    return result;
+  }
+
+  Future<Result<void>> delete(String id) async {
+    final Result<void> result =
+        await DeleteOpportunityUseCase(ref.read(salesRepositoryProvider))(id);
+    if (result.isOk) await refresh();
+    return result;
+  }
+
+  Future<Result<Opportunity>> updateStage(String id, String stage) async {
+    final Result<Opportunity> result =
+        await UpdateOpportunityStageUseCase(ref.read(salesRepositoryProvider))(
+      <String, dynamic>{'id': id, 'stage': stage},
+    );
+    if (result.isOk) await refresh();
+    return result;
+  }
 }
+
+final FutureProviderFamily<Opportunity, String> opportunityDetailProvider =
+    FutureProvider.family<Opportunity, String>((Ref ref, String id) async {
+  final Result<Opportunity> result =
+      await GetOpportunityUseCase(ref.watch(salesRepositoryProvider))(id);
+  return result.fold(
+    (Failure failure) => throw failure,
+    (Opportunity o) => o,
+  );
+});
 
 // ── Pipelines ─────────────────────────────────────────────────────────────
 
@@ -509,5 +702,15 @@ final FutureProvider<List<SalesPipeline>> salesPipelinesProvider =
   return result.fold(
     (Failure failure) => throw failure,
     (List<SalesPipeline> pipelines) => pipelines,
+  );
+});
+
+final FutureProviderFamily<SalesPipeline, String> salesPipelineDetailProvider =
+    FutureProvider.family<SalesPipeline, String>((Ref ref, String id) async {
+  final Result<SalesPipeline> result =
+      await GetSalesPipelineDetailUseCase(ref.watch(salesRepositoryProvider))(id);
+  return result.fold(
+    (Failure failure) => throw failure,
+    (SalesPipeline p) => p,
   );
 });

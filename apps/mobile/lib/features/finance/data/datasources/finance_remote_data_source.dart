@@ -34,11 +34,59 @@ abstract class FinanceRemoteDataSource {
 
   Future<TaxRateModel> updateTaxRate(String id, Map<String, dynamic> payload);
 
+  Future<void> deleteTaxRate(String id);
+
+  Future<Paginated<TaxFilingModel>> listTaxFilings(ListQuery query);
+
+  Future<TaxFilingModel> getTaxFiling(String id);
+
+  Future<TaxFilingModel> createTaxFiling(Map<String, dynamic> payload);
+
+  Future<TaxFilingModel> updateTaxFiling(String id, Map<String, dynamic> payload);
+
+  Future<void> deleteTaxFiling(String id);
+
+  Future<TaxFilingModel> submitTaxFiling(String id);
+
   Future<Paginated<BudgetModel>> listBudgets(ListQuery query);
 
   Future<BudgetModel> getBudget(String id);
 
+  Future<void> deleteBudget(String id);
+
   Future<Map<String, dynamic>> getBudgetVsActuals(String id);
+
+  Future<Paginated<ChartOfAccountModel>> listChartOfAccounts(ListQuery query);
+
+  Future<ChartOfAccountModel> getChartOfAccount(String id);
+
+  Future<ChartOfAccountModel> createChartOfAccount(Map<String, dynamic> payload);
+
+  Future<ChartOfAccountModel> updateChartOfAccount(String id, Map<String, dynamic> payload);
+
+  Future<void> deleteChartOfAccount(String id);
+
+  Future<Paginated<JournalEntryModel>> listJournalEntries(ListQuery query);
+
+  Future<JournalEntryModel> getJournalEntry(String id);
+
+  Future<JournalEntryModel> createJournalEntry(Map<String, dynamic> payload);
+
+  Future<JournalEntryModel> updateJournalEntry(String id, Map<String, dynamic> payload);
+
+  Future<void> deleteJournalEntry(String id);
+
+  Future<JournalEntryModel> postJournalEntry(String id);
+
+  Future<Paginated<BankAccountModel>> listBankAccounts(ListQuery query);
+
+  Future<BankAccountModel> getBankAccount(String id);
+
+  Future<BankAccountModel> createBankAccount(Map<String, dynamic> payload);
+
+  Future<BankAccountModel> updateBankAccount(String id, Map<String, dynamic> payload);
+
+  Future<void> deleteBankAccount(String id);
 
   Future<Map<String, dynamic>> getArAgingReport();
 
@@ -49,16 +97,6 @@ abstract class FinanceRemoteDataSource {
   Future<Map<String, dynamic>> getPnlReport();
 
   Future<Map<String, dynamic>> getBalanceSheet();
-
-  Future<Paginated<Map<String, dynamic>>> listJournalEntries(ListQuery query);
-
-  Future<Map<String, dynamic>> createJournalEntry(Map<String, dynamic> payload);
-
-  Future<Map<String, dynamic>> getJournalEntry(String id);
-
-  Future<Map<String, dynamic>> postJournalEntry(String id);
-
-  Future<List<Map<String, dynamic>>> getChartOfAccounts();
 }
 
 class FinanceRemoteDataSourceImpl implements FinanceRemoteDataSource {
@@ -158,6 +196,9 @@ class FinanceRemoteDataSourceImpl implements FinanceRemoteDataSource {
       );
 
   @override
+  Future<void> deleteTaxRate(String id) => _client.delete(ApiPaths.taxRate(id));
+
+  @override
   Future<Paginated<BudgetModel>> listBudgets(ListQuery query) =>
       _client.getPaginated<BudgetModel>(
         ApiPaths.budgets,
@@ -170,8 +211,156 @@ class FinanceRemoteDataSourceImpl implements FinanceRemoteDataSource {
       BudgetModel.fromJson(await _client.getObject(ApiPaths.budget(id)));
 
   @override
+  Future<void> deleteBudget(String id) => _client.delete(ApiPaths.budget(id));
+
+  @override
   Future<Map<String, dynamic>> getBudgetVsActuals(String id) async =>
       await _client.getObject(ApiPaths.budgetVsActuals(id));
+
+  @override
+  Future<Paginated<TaxFilingModel>> listTaxFilings(ListQuery query) =>
+      _client.getPaginated<TaxFilingModel>(
+        ApiPaths.taxFilings,
+        query,
+        TaxFilingModel.fromJson,
+      );
+
+  @override
+  Future<TaxFilingModel> getTaxFiling(String id) async =>
+      TaxFilingModel.fromJson(await _client.getObject(ApiPaths.taxFiling(id)));
+
+  @override
+  Future<TaxFilingModel> createTaxFiling(Map<String, dynamic> payload) async =>
+      TaxFilingModel.fromJson(
+        await _client.post(ApiPaths.taxFilings, body: payload),
+      );
+
+  @override
+  Future<TaxFilingModel> updateTaxFiling(
+    String id,
+    Map<String, dynamic> payload,
+  ) async =>
+      TaxFilingModel.fromJson(
+        await _client.patch(ApiPaths.taxFiling(id), body: payload),
+      );
+
+  @override
+  Future<void> deleteTaxFiling(String id) => _client.delete(ApiPaths.taxFiling(id));
+
+  @override
+  Future<TaxFilingModel> submitTaxFiling(String id) async =>
+      TaxFilingModel.fromJson(await _client.post(ApiPaths.taxFilingSubmit(id)));
+
+  @override
+  Future<Paginated<ChartOfAccountModel>> listChartOfAccounts(ListQuery query) =>
+      _client.getPaginated<ChartOfAccountModel>(
+        ApiPaths.chartOfAccounts,
+        query,
+        ChartOfAccountModel.fromJson,
+      );
+
+  @override
+  Future<ChartOfAccountModel> getChartOfAccount(String id) async =>
+      ChartOfAccountModel.fromJson(
+        await _client.getObject(ApiPaths.chartOfAccount(id)),
+      );
+
+  @override
+  Future<ChartOfAccountModel> createChartOfAccount(
+    Map<String, dynamic> payload,
+  ) async =>
+      ChartOfAccountModel.fromJson(
+        await _client.post(ApiPaths.chartOfAccounts, body: payload),
+      );
+
+  @override
+  Future<ChartOfAccountModel> updateChartOfAccount(
+    String id,
+    Map<String, dynamic> payload,
+  ) async =>
+      ChartOfAccountModel.fromJson(
+        await _client.patch(ApiPaths.chartOfAccount(id), body: payload),
+      );
+
+  @override
+  Future<void> deleteChartOfAccount(String id) =>
+      _client.delete(ApiPaths.chartOfAccount(id));
+
+  @override
+  Future<Paginated<JournalEntryModel>> listJournalEntries(ListQuery query) =>
+      _client.getPaginated<JournalEntryModel>(
+        ApiPaths.journalEntries,
+        query,
+        JournalEntryModel.fromJson,
+      );
+
+  @override
+  Future<JournalEntryModel> getJournalEntry(String id) async =>
+      JournalEntryModel.fromJson(
+        await _client.getObject(ApiPaths.journalEntry(id)),
+      );
+
+  @override
+  Future<JournalEntryModel> createJournalEntry(
+    Map<String, dynamic> payload,
+  ) async =>
+      JournalEntryModel.fromJson(
+        await _client.post(ApiPaths.journalEntries, body: payload),
+      );
+
+  @override
+  Future<JournalEntryModel> updateJournalEntry(
+    String id,
+    Map<String, dynamic> payload,
+  ) async =>
+      JournalEntryModel.fromJson(
+        await _client.patch(ApiPaths.journalEntry(id), body: payload),
+      );
+
+  @override
+  Future<void> deleteJournalEntry(String id) =>
+      _client.delete(ApiPaths.journalEntry(id));
+
+  @override
+  Future<JournalEntryModel> postJournalEntry(String id) async =>
+      JournalEntryModel.fromJson(
+        await _client.post(ApiPaths.journalEntryPost(id)),
+      );
+
+  @override
+  Future<Paginated<BankAccountModel>> listBankAccounts(ListQuery query) =>
+      _client.getPaginated<BankAccountModel>(
+        ApiPaths.bankAccounts,
+        query,
+        BankAccountModel.fromJson,
+      );
+
+  @override
+  Future<BankAccountModel> getBankAccount(String id) async =>
+      BankAccountModel.fromJson(
+        await _client.getObject(ApiPaths.bankAccount(id)),
+      );
+
+  @override
+  Future<BankAccountModel> createBankAccount(
+    Map<String, dynamic> payload,
+  ) async =>
+      BankAccountModel.fromJson(
+        await _client.post(ApiPaths.bankAccounts, body: payload),
+      );
+
+  @override
+  Future<BankAccountModel> updateBankAccount(
+    String id,
+    Map<String, dynamic> payload,
+  ) async =>
+      BankAccountModel.fromJson(
+        await _client.patch(ApiPaths.bankAccount(id), body: payload),
+      );
+
+  @override
+  Future<void> deleteBankAccount(String id) =>
+      _client.delete(ApiPaths.bankAccount(id));
 
   @override
   Future<Map<String, dynamic>> getArAgingReport() async =>
@@ -192,30 +381,4 @@ class FinanceRemoteDataSourceImpl implements FinanceRemoteDataSource {
   @override
   Future<Map<String, dynamic>> getBalanceSheet() async =>
       await _client.getObject(ApiPaths.balanceSheet);
-
-  @override
-  Future<Paginated<Map<String, dynamic>>> listJournalEntries(ListQuery query) =>
-      _client.getPaginated<Map<String, dynamic>>(
-        ApiPaths.journalEntries,
-        query,
-        (Map<String, dynamic> json) => json,
-      );
-
-  @override
-  Future<Map<String, dynamic>> createJournalEntry(
-    Map<String, dynamic> payload,
-  ) async =>
-      await _client.post(ApiPaths.journalEntries, body: payload);
-
-  @override
-  Future<Map<String, dynamic>> getJournalEntry(String id) async =>
-      await _client.getObject(ApiPaths.journalEntry(id));
-
-  @override
-  Future<Map<String, dynamic>> postJournalEntry(String id) async =>
-      await _client.post(ApiPaths.journalEntryPost(id));
-
-  @override
-  Future<List<Map<String, dynamic>>> getChartOfAccounts() async =>
-      await _client.getList(ApiPaths.chartOfAccounts);
 }

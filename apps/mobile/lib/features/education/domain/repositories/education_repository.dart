@@ -25,9 +25,11 @@ abstract class EducationRepository {
   Future<Result<Cacheable<Paginated<Enrollment>>>> listEnrollments(ListQuery query);
   Future<Result<Enrollment>> getEnrollment(String id);
   Future<Result<Enrollment>> createEnrollment(Map<String, dynamic> payload);
+  Future<Result<Enrollment>> updateEnrollment(String id, Map<String, dynamic> payload);
   Future<Result<void>> deleteEnrollment(String id);
 
   Future<Result<Cacheable<Paginated<GradeEntry>>>> listGradeEntries(ListQuery query);
+  Future<Result<GradeEntry>> getGradeEntry(String id);
   Future<Result<GradeEntry>> createGradeEntry(Map<String, dynamic> payload);
   Future<Result<GradeEntry>> updateGradeEntry(String id, Map<String, dynamic> payload);
 
@@ -36,5 +38,8 @@ abstract class EducationRepository {
   Future<Result<EducationFeeInvoice>> createEducationFeeInvoice(Map<String, dynamic> payload);
 
   Future<Result<Cacheable<Paginated<Exam>>>> listExams(ListQuery query);
+  Future<Result<Exam>> getExam(String id);
   Future<Result<Exam>> createExam(Map<String, dynamic> payload);
+  Future<Result<Exam>> updateExam(String id, Map<String, dynamic> payload);
+  Future<Result<void>> deleteExam(String id);
 }

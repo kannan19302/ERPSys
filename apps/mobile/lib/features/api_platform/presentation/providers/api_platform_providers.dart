@@ -1,3 +1,4 @@
+import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -272,3 +273,10 @@ class UsageLogListController extends Notifier<UsageLogListState> {
     );
   }
 }
+
+final FutureProviderFamily<ApiKey, String> apiKeyDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<ApiUsageLog, String> webhookDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<ApiUsageLog, String> usageLogDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
+
+extension SaveApiKey on ApiKeyListController { Future<Result<ApiKey>> save(Map<String, dynamic> payload, {String? id}) async => throw UnimplementedError(); }
+extension SaveWebhook on WebhookListController { Future<Result<WebhookEndpoint>> save(Map<String, dynamic> payload, {String? id}) async => throw UnimplementedError(); }

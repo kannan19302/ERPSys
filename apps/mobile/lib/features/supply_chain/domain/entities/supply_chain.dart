@@ -135,3 +135,130 @@ class ReorderSuggestion extends Equatable {
         createdAt,
       ];
 }
+
+class SupplyChainRoute extends Equatable {
+  const SupplyChainRoute({
+    required this.id,
+    required this.name,
+    required this.origin,
+    required this.destination,
+    this.carrierId,
+    this.carrierName,
+    this.transitTime,
+    this.cost = 0,
+    this.isActive = true,
+    this.createdAt,
+  });
+
+  final String id;
+  final String name;
+  final String origin;
+  final String destination;
+  final String? carrierId;
+  final String? carrierName;
+  final int? transitTime;
+  final double cost;
+  final bool isActive;
+  final DateTime? createdAt;
+
+  @override
+  List<Object?> get props => <Object?>[
+        id, name, origin, destination, carrierId, carrierName,
+        transitTime, cost, isActive, createdAt,
+      ];
+}
+
+class DockAppointment extends Equatable {
+  const DockAppointment({
+    required this.id,
+    this.warehouseId,
+    this.warehouseName,
+    this.carrierId,
+    this.carrierName,
+    this.scheduledAt,
+    this.arrivedAt,
+    this.departedAt,
+    this.status = 'SCHEDULED',
+    this.reference,
+    this.notes,
+    this.createdAt,
+  });
+
+  final String id;
+  final String? warehouseId;
+  final String? warehouseName;
+  final String? carrierId;
+  final String? carrierName;
+  final DateTime? scheduledAt;
+  final DateTime? arrivedAt;
+  final DateTime? departedAt;
+  final String status;
+  final String? reference;
+  final String? notes;
+  final DateTime? createdAt;
+
+  @override
+  List<Object?> get props => <Object?>[
+        id, warehouseId, warehouseName, carrierId, carrierName,
+        scheduledAt, arrivedAt, departedAt, status, reference, notes, createdAt,
+      ];
+}
+
+class WarehouseTransfer extends Equatable {
+  const WarehouseTransfer({
+    required this.id,
+    this.fromWarehouseId,
+    this.fromWarehouseName,
+    this.toWarehouseId,
+    this.toWarehouseName,
+    this.productId,
+    this.productName,
+    this.quantity = 0,
+    this.status = 'PENDING',
+    this.reference,
+    this.createdAt,
+  });
+
+  final String id;
+  final String? fromWarehouseId;
+  final String? fromWarehouseName;
+  final String? toWarehouseId;
+  final String? toWarehouseName;
+  final String? productId;
+  final String? productName;
+  final double quantity;
+  final String status;
+  final String? reference;
+  final DateTime? createdAt;
+
+  @override
+  List<Object?> get props => <Object?>[
+        id, fromWarehouseId, fromWarehouseName, toWarehouseId, toWarehouseName,
+        productId, productName, quantity, status, reference, createdAt,
+      ];
+}
+
+class TrackingEvent extends Equatable {
+  const TrackingEvent({
+    required this.id,
+    this.shipmentId,
+    this.location,
+    this.status,
+    this.timestamp,
+    this.description,
+    this.createdAt,
+  });
+
+  final String id;
+  final String? shipmentId;
+  final String? location;
+  final String? status;
+  final DateTime? timestamp;
+  final String? description;
+  final DateTime? createdAt;
+
+  @override
+  List<Object?> get props => <Object?>[
+        id, shipmentId, location, status, timestamp, description, createdAt,
+      ];
+}

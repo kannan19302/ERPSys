@@ -25,6 +25,7 @@ class HrRepositoryImpl implements HrRepository {
   static const String _prNamespace = 'hr.payroll-runs';
   static const String _psNamespace = 'hr.payslips';
   static const String _ssNamespace = 'hr.salary-structures';
+  static const String _prNamespacePr = 'hr.performance-reviews';
   static const String _dashboardNamespace = 'hr.dashboard';
 
   final HrRemoteDataSource _remote;
@@ -73,6 +74,8 @@ class HrRepositoryImpl implements HrRepository {
                                     ? TimesheetModel.fromJson(j)
                                     : namespace == _prNamespace
                                         ? PayrollRunModel.fromJson(j)
+                                        : namespace == _prNamespacePr
+                                        ? PerformanceReviewModel.fromJson(j)
                                         : namespace == _psNamespace
                                             ? PayslipModel.fromJson(j)
                                             : SalaryStructureModel.fromJson(j))
@@ -409,6 +412,64 @@ class HrRepositoryImpl implements HrRepository {
     Map<String, dynamic> payload,
   ) =>
       _write<SalaryStructure>(() => _remote.createSalaryStructure(payload));
+
+  // ── Performance reviews ───────────────────────────────────────────────
+
+  @override
+  Future<Result<Cacheable<Paginated<PerformanceReview>>>>
+      listPerformanceReviews(ListQuery query) =>
+          _paginated<PerformanceReview, PerformanceReviewModel>(
+            () => _remote.listPerformanceReviews(query),
+            (Paginated<PerformanceReviewModel> p) => Paginated<PerformanceReview>(
+              data: p.data,
+              meta: p.meta,
+            ),
+            _prNamespacePr,
+            query.cacheKey,
+          );
+
+  @override
+  Future<Result<PerformanceReview>> getPerformanceReview(String id) =>
+      _single<PerformanceReview>(
+        () => _remote.getPerformanceReview(id),
+        _prNamespacePr,
+        id,
+      );
+
+  @override
+  Future<Result<PerformanceReview>> createPerformanceReview(
+    Map<String, dynamic> payload,
+  ) =>
+      _write<PerformanceReview>(() => _remote.createPerformanceReview(payload));
+
+  @override
+  Future<Result<PerformanceReview>> updatePerformanceReview(
+    String id,
+    Map<String, dynamic> payload,
+  ) =>
+      _write<PerformanceReview>(
+        () => _remote.updatePerformanceReview(id, payload),
+      );
+
+  @override
+  Future<Result<PerformanceReview>> submitPerformanceReview(String id) =>
+      _write<PerformanceReview>(() => _remote.submitPerformanceReview(id));
+
+  // ── Leave allocations ─────────────────────────────────────────────────
+
+  @override
+  Future<Result<Cacheable<Paginated<LeaveAllocation>>>> listLeaveAllocations(
+    ListQuery query,
+  ) =>
+      _paginated<LeaveAllocation, LeaveAllocationModel>(
+        () => _remote.listLeaveAllocations(query),
+        (Paginated<LeaveAllocationModel> p) => Paginated<LeaveAllocation>(
+          data: p.data,
+          meta: p.meta,
+        ),
+        _leaveNamespace,
+        query.cacheKey,
+      );
 
   // ── Org chart & dashboard ─────────────────────────────────────────────
 

@@ -14,6 +14,13 @@ int asInt(Object? value) => switch (value) {
       _ => 0,
     };
 
+bool asBool(Object? value) => switch (value) {
+      final bool v => v,
+      final String v => v == 'true',
+      final int v => v == 1,
+      _ => false,
+    };
+
 class AdminUserModel extends AdminUser {
   const AdminUserModel({
     required super.id,
@@ -66,6 +73,7 @@ class AdminRoleModel extends AdminRole {
     super.description,
     super.isSystem = false,
     super.permissions = const <String>[],
+    super.userCount = 0,
     super.createdAt,
     super.updatedAt,
   });
@@ -79,6 +87,7 @@ class AdminRoleModel extends AdminRole {
       description: json['description'] as String?,
       isSystem: json['isSystem'] as bool? ?? false,
       permissions: (json['permissions'] as List<dynamic>?)?.cast<String>() ?? const [],
+      userCount: asInt(json['userCount']),
       createdAt: DateTime.tryParse('${json['createdAt']}'),
       updatedAt: DateTime.tryParse('${json['updatedAt']}'),
     );
@@ -90,6 +99,7 @@ class AdminRoleModel extends AdminRole {
         'description': description,
         'isSystem': isSystem,
         'permissions': permissions,
+        'userCount': userCount,
         'createdAt': createdAt?.toIso8601String(),
         'updatedAt': updatedAt?.toIso8601String(),
       };
@@ -100,7 +110,10 @@ class AdminSettingModel extends AdminSetting {
     required super.id,
     required super.key,
     super.value,
+    super.type = 'string',
     super.category = 'general',
+    super.description,
+    super.isEncrypted = false,
     super.createdAt,
     super.updatedAt,
   });
@@ -112,7 +125,10 @@ class AdminSettingModel extends AdminSetting {
       id: id,
       key: json['key'] as String? ?? '',
       value: json['value'],
+      type: json['type'] as String? ?? 'string',
       category: json['category'] as String? ?? 'general',
+      description: json['description'] as String?,
+      isEncrypted: json['isEncrypted'] as bool? ?? false,
       createdAt: DateTime.tryParse('${json['createdAt']}'),
       updatedAt: DateTime.tryParse('${json['updatedAt']}'),
     );
@@ -122,7 +138,10 @@ class AdminSettingModel extends AdminSetting {
         'id': id,
         'key': key,
         'value': value,
+        'type': type,
         'category': category,
+        'description': description,
+        'isEncrypted': isEncrypted,
         'createdAt': createdAt?.toIso8601String(),
         'updatedAt': updatedAt?.toIso8601String(),
       };
@@ -217,6 +236,84 @@ class SystemHealthModel extends SystemHealth {
         'memoryUsageMb': memoryUsageMb,
         'cpuUsagePercent': cpuUsagePercent,
         'lastChecked': lastChecked?.toIso8601String(),
+        'createdAt': createdAt?.toIso8601String(),
+      };
+}
+
+class AdminApiKeyModel extends AdminApiKey {
+  const AdminApiKeyModel({
+    required super.id,
+    required super.name,
+    super.key,
+    super.permissions = const <String>[],
+    super.lastUsedAt,
+    super.expiresAt,
+    super.isActive = true,
+    super.createdAt,
+  });
+
+  factory AdminApiKeyModel.fromJson(Map<String, dynamic> json) {
+    final Object? id = json['id'];
+    if (id is! String) throw const ParseException('AdminApiKey missing id');
+    return AdminApiKeyModel(
+      id: id,
+      name: json['name'] as String? ?? '',
+      key: json['key'] as String?,
+      permissions: (json['permissions'] as List<dynamic>?)?.cast<String>() ?? const [],
+      lastUsedAt: DateTime.tryParse('${json['lastUsedAt']}'),
+      expiresAt: DateTime.tryParse('${json['expiresAt']}'),
+      isActive: asBool(json['isActive']),
+      createdAt: DateTime.tryParse('${json['createdAt']}'),
+    );
+  }
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+        'name': name,
+        'key': key,
+        'permissions': permissions,
+        'lastUsedAt': lastUsedAt?.toIso8601String(),
+        'expiresAt': expiresAt?.toIso8601String(),
+        'isActive': isActive,
+        'createdAt': createdAt?.toIso8601String(),
+      };
+}
+
+class AdminTenantModel extends AdminTenant {
+  const AdminTenantModel({
+    required super.id,
+    required super.name,
+    required super.slug,
+    super.domain,
+    super.plan = 'free',
+    super.status = 'ACTIVE',
+    super.userCount = 0,
+    super.createdAt,
+  });
+
+  factory AdminTenantModel.fromJson(Map<String, dynamic> json) {
+    final Object? id = json['id'];
+    if (id is! String) throw const ParseException('AdminTenant missing id');
+    return AdminTenantModel(
+      id: id,
+      name: json['name'] as String? ?? '',
+      slug: json['slug'] as String? ?? '',
+      domain: json['domain'] as String?,
+      plan: json['plan'] as String? ?? 'free',
+      status: json['status'] as String? ?? 'ACTIVE',
+      userCount: asInt(json['userCount']),
+      createdAt: DateTime.tryParse('${json['createdAt']}'),
+    );
+  }
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+        'name': name,
+        'slug': slug,
+        'domain': domain,
+        'plan': plan,
+        'status': status,
+        'userCount': userCount,
         'createdAt': createdAt?.toIso8601String(),
       };
 }

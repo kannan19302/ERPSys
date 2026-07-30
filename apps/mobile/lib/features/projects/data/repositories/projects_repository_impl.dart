@@ -22,6 +22,8 @@ class ProjectsRepositoryImpl implements ProjectsRepository {
   static const String _milestoneNamespace = 'projects.milestones';
   static const String _timesheetNamespace = 'projects.timesheets';
   static const String _budgetNamespace = 'projects.budgets';
+  static const String _riskNamespace = 'projects.risks';
+  static const String _portfolioNamespace = 'projects.portfolios';
 
   final ProjectsRemoteDataSource _remote;
   final ResponseCache _cache;
@@ -172,6 +174,22 @@ class ProjectsRepositoryImpl implements ProjectsRepository {
         TimesheetModel.fromJson);
 
   @override
+  Future<Result<Timesheet>> getTimesheet(String id) =>
+      _single(() => _remote.getTimesheet(id));
+
+  @override
+  Future<Result<Timesheet>> createTimesheet(Map<String, dynamic> p) =>
+      _write(() => _remote.createTimesheet(p));
+
+  @override
+  Future<Result<Timesheet>> updateTimesheet(String id, Map<String, dynamic> p) =>
+      _write(() => _remote.updateTimesheet(id, p));
+
+  @override
+  Future<Result<void>> deleteTimesheet(String id) =>
+      _delete(() => _remote.deleteTimesheet(id));
+
+  @override
   Future<Result<Timesheet>> approveTimesheet(String id) =>
       _single(() => _remote.approveTimesheet(id));
 
@@ -181,4 +199,68 @@ class ProjectsRepositoryImpl implements ProjectsRepository {
       _paginated('$_budgetNamespace.$projectId', const ListQuery(limit: 100),
         () => _remote.listProjectBudgets(projectId),
         ProjectBudgetModel.fromJson);
+
+  @override
+  Future<Result<ProjectBudget>> getProjectBudget(String id) =>
+      _single(() => _remote.getProjectBudget(id));
+
+  @override
+  Future<Result<ProjectBudget>> createProjectBudget(Map<String, dynamic> p) =>
+      _write(() => _remote.createProjectBudget(p));
+
+  @override
+  Future<Result<ProjectBudget>> updateProjectBudget(
+    String id, Map<String, dynamic> p) =>
+      _write(() => _remote.updateProjectBudget(id, p));
+
+  @override
+  Future<Result<void>> deleteProjectBudget(String id) =>
+      _delete(() => _remote.deleteProjectBudget(id));
+
+  @override
+  Future<Result<Cacheable<Paginated<ProjectRisk>>>> listProjectRisks(
+    String projectId) =>
+      _paginated('$_riskNamespace.$projectId', const ListQuery(limit: 100),
+        () => _remote.listProjectRisks(projectId),
+        ProjectRiskModel.fromJson);
+
+  @override
+  Future<Result<ProjectRisk>> getProjectRisk(String id) =>
+      _single(() => _remote.getProjectRisk(id));
+
+  @override
+  Future<Result<ProjectRisk>> createProjectRisk(Map<String, dynamic> p) =>
+      _write(() => _remote.createProjectRisk(p));
+
+  @override
+  Future<Result<ProjectRisk>> updateProjectRisk(
+    String id, Map<String, dynamic> p) =>
+      _write(() => _remote.updateProjectRisk(id, p));
+
+  @override
+  Future<Result<void>> deleteProjectRisk(String id) =>
+      _delete(() => _remote.deleteProjectRisk(id));
+
+  @override
+  Future<Result<Cacheable<Paginated<ProjectPortfolio>>>> listProjectPortfolios(
+    ListQuery q) =>
+      _paginated(_portfolioNamespace, q, () => _remote.listProjectPortfolios(q),
+        ProjectPortfolioModel.fromJson);
+
+  @override
+  Future<Result<ProjectPortfolio>> getProjectPortfolio(String id) =>
+      _single(() => _remote.getProjectPortfolio(id));
+
+  @override
+  Future<Result<ProjectPortfolio>> createProjectPortfolio(Map<String, dynamic> p) =>
+      _write(() => _remote.createProjectPortfolio(p));
+
+  @override
+  Future<Result<ProjectPortfolio>> updateProjectPortfolio(
+    String id, Map<String, dynamic> p) =>
+      _write(() => _remote.updateProjectPortfolio(id, p));
+
+  @override
+  Future<Result<void>> deleteProjectPortfolio(String id) =>
+      _delete(() => _remote.deleteProjectPortfolio(id));
 }

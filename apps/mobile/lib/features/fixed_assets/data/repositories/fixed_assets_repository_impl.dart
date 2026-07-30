@@ -173,4 +173,8 @@ class FixedAssetsRepositoryImpl implements FixedAssetsRepository {
   @override
   Future<Result<void>> deleteDisposal(String id) =>
       _delete(() => _remote.deleteDisposal(id));
+
+  @override
+  Future<Result<AssetDisposal>> updateDisposal(String id, Map<String, dynamic> p) async => throw UnimplementedError();
+
 }

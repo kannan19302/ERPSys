@@ -1,3 +1,4 @@
+import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -140,6 +141,14 @@ class ReportTemplateListController extends Notifier<ReportTemplateListState> {
     if (result.isOk) await refresh();
     return result;
   }
+
+  Future<Result<ReportTemplate>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveReportTemplateUseCase(
+      ref.read(reportingRepositoryProvider))(
+      SaveReportTemplateParams(id: id, payload: payload));
+    if (result.isOk) await refresh();
+    return result;
+  }
 }
 
 final FutureProviderFamily<ReportTemplate, String> reportTemplateDetailProvider =
@@ -243,6 +252,14 @@ class ReportJobListController extends Notifier<ReportJobListState> {
       state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
+  }
+
+  Future<Result<ReportJob>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveReportJobUseCase(
+      ref.read(reportingRepositoryProvider))(
+      SaveReportJobUseCaseParams(id: id, payload: payload));
+    if (result.isOk) await refresh();
+    return result;
   }
 }
 
@@ -348,7 +365,22 @@ class ReportExportListController extends Notifier<ReportExportListState> {
       refresh();
     });
   }
+
+  Future<Result<ReportExport>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveExportUseCase(
+      ref.read(reportingRepositoryProvider))(
+      SaveExportParams(id: id, payload: payload));
+    if (result.isOk) await refresh();
+    return result;
+  }
 }
+
+final FutureProviderFamily<ReportExport, String> reportExportDetailProvider =
+    FutureProvider.family<ReportExport, String>((Ref ref, String id) async {
+  final result = await GetReportExportUseCase(
+    ref.watch(reportingRepositoryProvider))(id);
+  return result.fold((f) => throw f, (e) => e);
+});
 
 class ReportComplianceListState extends Equatable {
   const ReportComplianceListState({
@@ -445,4 +477,20 @@ class ReportComplianceListController extends Notifier<ReportComplianceListState>
       refresh();
     });
   }
+
+  Future<Result<ReportCompliance>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveComplianceUseCase(
+      ref.read(reportingRepositoryProvider))(
+      SaveComplianceParams(id: id, payload: payload));
+    if (result.isOk) await refresh();
+    return result;
+  }
 }
+
+final FutureProviderFamily<ReportCompliance, String> reportComplianceDetailProvider =
+    FutureProvider.family<ReportCompliance, String>((Ref ref, String id) async {
+  final result = await GetReportComplianceUseCase(
+    ref.watch(reportingRepositoryProvider))(id);
+  return result.fold((f) => throw f, (v) => v);
+});
+

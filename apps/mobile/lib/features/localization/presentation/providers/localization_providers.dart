@@ -1,3 +1,5 @@
+import '../../domain/entities/localization.dart';
+import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -203,3 +205,9 @@ final FutureProviderFamily<LocalizationLanguage, String> languageDetailProvider 
     FutureProvider.family<LocalizationLanguage, String>((Ref ref, String id) async {
   throw UnimplementedError('Language detail API not available');
 });
+
+
+
+
+extension SaveLanguage on LanguageListController { Future<Result<LocalizationLanguage>> save(Map<String, dynamic> payload, {String? id}) async => throw UnimplementedError(); }
+extension SaveTranslation on TranslationListController { Future<Result<LocalizationTranslation>> save(Map<String, dynamic> payload, {String? id}) async => throw UnimplementedError(); }

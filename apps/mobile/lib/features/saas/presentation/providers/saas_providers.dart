@@ -1,3 +1,4 @@
+import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -396,3 +397,12 @@ class SaasTenantListController extends Notifier<SaasTenantListState> {
     });
   }
 }
+
+final FutureProviderFamily<SaasSubscription, String> saasSubscriptionDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<SaasTenant, String> saasTenantDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<SaasInvoice, String> saasInvoiceDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
+
+extension SaveSaasPlan on SaasPlanListController { Future<Result<SaasPlan>> save(Map<String, dynamic> payload, {String? id}) async => throw UnimplementedError(); }
+extension SaveSaasSubscription on SaasSubscriptionListController { Future<Result<SaasSubscription>> save(Map<String, dynamic> payload, {String? id}) async => throw UnimplementedError(); }
+extension SaveSaasTenant on SaasTenantListController { Future<Result<SaasTenant>> save(Map<String, dynamic> payload, {String? id}) async => throw UnimplementedError(); }
+extension SaveSaasInvoice on SaasInvoiceListController { Future<Result<SaasInvoice>> save(Map<String, dynamic> payload, {String? id}) async => throw UnimplementedError(); }

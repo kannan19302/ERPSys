@@ -65,6 +65,27 @@ abstract class HrRemoteDataSource {
     Map<String, dynamic> payload,
   );
 
+  // Departure & resignation (placeholder)
+
+  // Performance reviews
+  Future<Paginated<PerformanceReviewModel>> listPerformanceReviews(
+    ListQuery query,
+  );
+  Future<PerformanceReviewModel> getPerformanceReview(String id);
+  Future<PerformanceReviewModel> createPerformanceReview(
+    Map<String, dynamic> payload,
+  );
+  Future<PerformanceReviewModel> updatePerformanceReview(
+    String id,
+    Map<String, dynamic> payload,
+  );
+  Future<PerformanceReviewModel> submitPerformanceReview(String id);
+
+  // Leave allocations
+  Future<Paginated<LeaveAllocationModel>> listLeaveAllocations(
+    ListQuery query,
+  );
+
   // Org chart & dashboard
   Future<List<OrgChartNodeModel>> getOrgChart();
   Future<HrDashboardStatsModel> getHrDashboard();
@@ -316,6 +337,59 @@ class HrRemoteDataSourceImpl implements HrRemoteDataSource {
   ) async =>
       SalaryStructureModel.fromJson(
         await _client.post(ApiPaths.salaryStructures, body: payload),
+      );
+
+  // ── Performance reviews ──
+
+  @override
+  Future<Paginated<PerformanceReviewModel>> listPerformanceReviews(
+    ListQuery query,
+  ) =>
+      _client.getPaginated<PerformanceReviewModel>(
+        ApiPaths.performanceReviews,
+        query,
+        PerformanceReviewModel.fromJson,
+      );
+
+  @override
+  Future<PerformanceReviewModel> getPerformanceReview(String id) async =>
+      PerformanceReviewModel.fromJson(
+        await _client.getObject(ApiPaths.performanceReview(id)),
+      );
+
+  @override
+  Future<PerformanceReviewModel> createPerformanceReview(
+    Map<String, dynamic> payload,
+  ) async =>
+      PerformanceReviewModel.fromJson(
+        await _client.post(ApiPaths.performanceReviews, body: payload),
+      );
+
+  @override
+  Future<PerformanceReviewModel> updatePerformanceReview(
+    String id,
+    Map<String, dynamic> payload,
+  ) async =>
+      PerformanceReviewModel.fromJson(
+        await _client.patch(ApiPaths.performanceReview(id), body: payload),
+      );
+
+  @override
+  Future<PerformanceReviewModel> submitPerformanceReview(String id) async =>
+      PerformanceReviewModel.fromJson(
+        await _client.post(ApiPaths.performanceReviewSubmit(id)),
+      );
+
+  // ── Leave allocations ──
+
+  @override
+  Future<Paginated<LeaveAllocationModel>> listLeaveAllocations(
+    ListQuery query,
+  ) =>
+      _client.getPaginated<LeaveAllocationModel>(
+        ApiPaths.leaveRequests,
+        query,
+        LeaveAllocationModel.fromJson,
       );
 
   // ── Org chart & dashboard ──

@@ -548,6 +548,110 @@ class HrDashboardStatsModel extends HrDashboardStats {
       };
 }
 
+// ── PerformanceReview ───────────────────────────────────────────────────────
+
+class PerformanceReviewModel extends PerformanceReview {
+  const PerformanceReviewModel({
+    required super.id,
+    required super.employeeId,
+    required super.employeeName,
+    super.reviewerId,
+    super.reviewerName,
+    required super.reviewPeriod,
+    super.rating,
+    super.goals,
+    super.feedback,
+    super.status,
+    super.dueDate,
+    super.createdAt,
+    super.updatedAt,
+  });
+
+  factory PerformanceReviewModel.fromJson(Map<String, dynamic> json) {
+    final Object? id = json['id'];
+    if (id is! String) {
+      throw const ParseException('PerformanceReview is missing its id');
+    }
+    return PerformanceReviewModel(
+      id: id,
+      employeeId: json['employeeId'] as String? ?? '',
+      employeeName: json['employeeName'] as String? ?? '',
+      reviewerId: json['reviewerId'] as String?,
+      reviewerName: json['reviewerName'] as String?,
+      reviewPeriod: json['reviewPeriod'] as String? ?? '',
+      rating: (json['rating'] as num?)?.toDouble(),
+      goals: json['goals'] as String?,
+      feedback: json['feedback'] as String?,
+      status: json['status'] as String? ?? PerformanceReviewStatus.draft,
+      dueDate: parseDate(json['dueDate']),
+      createdAt: parseDate(json['createdAt']),
+      updatedAt: parseDate(json['updatedAt']),
+    );
+  }
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+        'employeeId': employeeId,
+        'employeeName': employeeName,
+        'reviewerId': reviewerId,
+        'reviewerName': reviewerName,
+        'reviewPeriod': reviewPeriod,
+        'rating': rating,
+        'goals': goals,
+        'feedback': feedback,
+        'status': status,
+        'dueDate': dueDate?.toIso8601String(),
+        'createdAt': createdAt?.toIso8601String(),
+        'updatedAt': updatedAt?.toIso8601String(),
+      };
+}
+
+// ── LeaveAllocation ─────────────────────────────────────────────────────────
+
+class LeaveAllocationModel extends LeaveAllocation {
+  const LeaveAllocationModel({
+    required super.id,
+    required super.employeeId,
+    required super.employeeName,
+    required super.leaveTypeId,
+    required super.leaveTypeName,
+    required super.totalDays,
+    super.usedDays,
+    super.period,
+    super.createdAt,
+  });
+
+  factory LeaveAllocationModel.fromJson(Map<String, dynamic> json) {
+    final Object? id = json['id'];
+    if (id is! String) {
+      throw const ParseException('LeaveAllocation is missing its id');
+    }
+    return LeaveAllocationModel(
+      id: id,
+      employeeId: json['employeeId'] as String? ?? '',
+      employeeName: json['employeeName'] as String? ?? '',
+      leaveTypeId: json['leaveTypeId'] as String? ?? '',
+      leaveTypeName: json['leaveTypeName'] as String? ?? '',
+      totalDays: asDouble(json['totalDays']),
+      usedDays: asDouble(json['usedDays']),
+      period: json['period'] as String?,
+      createdAt: parseDate(json['createdAt']),
+    );
+  }
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+        'employeeId': employeeId,
+        'employeeName': employeeName,
+        'leaveTypeId': leaveTypeId,
+        'leaveTypeName': leaveTypeName,
+        'totalDays': totalDays,
+        'usedDays': usedDays,
+        'period': period,
+        'createdAt': createdAt?.toIso8601String(),
+      };
+}
+
 // ── Org chart ──────────────────────────────────────────────────────────────
 
 class OrgChartNodeModel extends OrgChartNode {

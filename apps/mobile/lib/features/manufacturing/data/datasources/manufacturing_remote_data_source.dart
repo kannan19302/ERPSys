@@ -26,9 +26,28 @@ abstract class ManufacturingRemoteDataSource {
 
   Future<Paginated<WorkstationModel>> listWorkstations(ListQuery query);
   Future<WorkstationModel> getWorkstation(String id);
+  Future<WorkstationModel> createWorkstation(Map<String, dynamic> payload);
+  Future<WorkstationModel> updateWorkstation(String id, Map<String, dynamic> payload);
+  Future<void> deleteWorkstation(String id);
+
+  Future<Paginated<RoutingModel>> listRoutings(ListQuery query);
+  Future<RoutingModel> getRouting(String id);
+  Future<RoutingModel> createRouting(Map<String, dynamic> payload);
+  Future<RoutingModel> updateRouting(String id, Map<String, dynamic> payload);
+  Future<void> deleteRouting(String id);
 
   Future<Paginated<QualityInspectionModel>> listQualityInspections(ListQuery query);
   Future<QualityInspectionModel> getQualityInspection(String id);
+  Future<QualityInspectionModel> createQualityInspection(Map<String, dynamic> payload);
+  Future<QualityInspectionModel> updateQualityInspection(String id, Map<String, dynamic> payload);
+  Future<void> deleteQualityInspection(String id);
+
+  Future<Paginated<EngineeringChangeOrderModel>> listEngineeringChangeOrders(ListQuery query);
+  Future<EngineeringChangeOrderModel> getEngineeringChangeOrder(String id);
+  Future<EngineeringChangeOrderModel> createEngineeringChangeOrder(Map<String, dynamic> payload);
+  Future<EngineeringChangeOrderModel> updateEngineeringChangeOrder(String id, Map<String, dynamic> payload);
+  Future<void> deleteEngineeringChangeOrder(String id);
+  Future<EngineeringChangeOrderModel> approveEngineeringChangeOrder(String id);
 }
 
 class ManufacturingRemoteDataSourceImpl implements ManufacturingRemoteDataSource {
@@ -123,6 +142,46 @@ class ManufacturingRemoteDataSourceImpl implements ManufacturingRemoteDataSource
         await _client.getObject(ApiPaths.workstation(id)));
 
   @override
+  Future<WorkstationModel> createWorkstation(Map<String, dynamic> payload) async =>
+      WorkstationModel.fromJson(
+        await _client.post(ApiPaths.workstations, body: payload));
+
+  @override
+  Future<WorkstationModel> updateWorkstation(
+    String id, Map<String, dynamic> payload) async =>
+      WorkstationModel.fromJson(
+        await _client.patch(ApiPaths.workstation(id), body: payload));
+
+  @override
+  Future<void> deleteWorkstation(String id) =>
+      _client.delete(ApiPaths.workstation(id));
+
+  @override
+  Future<Paginated<RoutingModel>> listRoutings(ListQuery query) =>
+      _client.getPaginated<RoutingModel>(
+        ApiPaths.routings, query, RoutingModel.fromJson);
+
+  @override
+  Future<RoutingModel> getRouting(String id) async =>
+      RoutingModel.fromJson(
+        await _client.getObject(ApiPaths.routing(id)));
+
+  @override
+  Future<RoutingModel> createRouting(Map<String, dynamic> payload) async =>
+      RoutingModel.fromJson(
+        await _client.post(ApiPaths.routings, body: payload));
+
+  @override
+  Future<RoutingModel> updateRouting(
+    String id, Map<String, dynamic> payload) async =>
+      RoutingModel.fromJson(
+        await _client.patch(ApiPaths.routing(id), body: payload));
+
+  @override
+  Future<void> deleteRouting(String id) =>
+      _client.delete(ApiPaths.routing(id));
+
+  @override
   Future<Paginated<QualityInspectionModel>> listQualityInspections(
     ListQuery query) =>
       _client.getPaginated<QualityInspectionModel>(
@@ -132,4 +191,53 @@ class ManufacturingRemoteDataSourceImpl implements ManufacturingRemoteDataSource
   Future<QualityInspectionModel> getQualityInspection(String id) async =>
       QualityInspectionModel.fromJson(
         await _client.getObject(ApiPaths.qualityInspection(id)));
+
+  @override
+  Future<QualityInspectionModel> createQualityInspection(
+    Map<String, dynamic> payload) async =>
+      QualityInspectionModel.fromJson(
+        await _client.post(ApiPaths.qualityInspections, body: payload));
+
+  @override
+  Future<QualityInspectionModel> updateQualityInspection(
+    String id, Map<String, dynamic> payload) async =>
+      QualityInspectionModel.fromJson(
+        await _client.patch(ApiPaths.qualityInspection(id), body: payload));
+
+  @override
+  Future<void> deleteQualityInspection(String id) =>
+      _client.delete(ApiPaths.qualityInspection(id));
+
+  @override
+  Future<Paginated<EngineeringChangeOrderModel>> listEngineeringChangeOrders(
+    ListQuery query) =>
+      _client.getPaginated<EngineeringChangeOrderModel>(
+        ApiPaths.eco, query, EngineeringChangeOrderModel.fromJson);
+
+  @override
+  Future<EngineeringChangeOrderModel> getEngineeringChangeOrder(String id) async =>
+      EngineeringChangeOrderModel.fromJson(
+        await _client.getObject(ApiPaths.ecoDetail(id)));
+
+  @override
+  Future<EngineeringChangeOrderModel> createEngineeringChangeOrder(
+    Map<String, dynamic> payload) async =>
+      EngineeringChangeOrderModel.fromJson(
+        await _client.post(ApiPaths.eco, body: payload));
+
+  @override
+  Future<EngineeringChangeOrderModel> updateEngineeringChangeOrder(
+    String id, Map<String, dynamic> payload) async =>
+      EngineeringChangeOrderModel.fromJson(
+        await _client.patch(ApiPaths.ecoDetail(id), body: payload));
+
+  @override
+  Future<void> deleteEngineeringChangeOrder(String id) =>
+      _client.delete(ApiPaths.ecoDetail(id));
+
+  @override
+  Future<EngineeringChangeOrderModel> approveEngineeringChangeOrder(
+    String id) async =>
+      EngineeringChangeOrderModel.fromJson(
+        await _client.post(ApiPaths.ecoApprove(id)));
 }

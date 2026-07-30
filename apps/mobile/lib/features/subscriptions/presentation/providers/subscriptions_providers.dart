@@ -1,3 +1,5 @@
+import '../../../../core/error/exceptions.dart';
+import '../../../../core/usecase/result.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -104,7 +106,28 @@ class SubscriptionPlanListController extends Notifier<SubscriptionPlanListState>
       ),
     );
   }
+
+  Future<Result<SubscriptionPlan>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveSubscriptionPlanUseCase(
+      ref.read(subscriptionsRepositoryProvider))(
+      SaveSubscriptionPlanParams(id: id, payload: payload));
+    if (result.isOk) await refresh();
+    return result;
+  }
+
+  Future<Result<ChurnSurveyResponse>> saveChurn(Map<String, dynamic> payload) async {
+    final result = await SubmitChurnSurveyUseCase(
+      ref.read(subscriptionsRepositoryProvider))(payload);
+    return result;
+  }
 }
+
+final FutureProviderFamily<SubscriptionPlan, String> subscriptionPlanDetailProvider =
+    FutureProvider.family<SubscriptionPlan, String>((Ref ref, String id) async {
+  final result = await GetSubscriptionPlanUseCase(
+    ref.watch(subscriptionsRepositoryProvider))(id);
+  return result.fold((f) => throw f, (v) => v);
+});
 
 class SubscriptionBillingCycleListState extends Equatable {
   const SubscriptionBillingCycleListState({
@@ -185,4 +208,20 @@ class SubscriptionBillingCycleListController extends Notifier<SubscriptionBillin
       ),
     );
   }
+
+  Future<Result<SubscriptionBillingCycle>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveSubscriptionBillingCycleUseCase(
+      ref.read(subscriptionsRepositoryProvider))(
+      SaveBillingCycleParams(id: id, payload: payload));
+    if (result.isOk) await refresh();
+    return result;
+  }
 }
+
+final FutureProviderFamily<SubscriptionBillingCycle, String> subscriptionBillingCycleDetailProvider =
+    FutureProvider.family<SubscriptionBillingCycle, String>((Ref ref, String id) async {
+  final result = await GetSubscriptionBillingCycleUseCase(
+    ref.watch(subscriptionsRepositoryProvider))(id);
+  return result.fold((f) => throw f, (v) => v);
+});
+

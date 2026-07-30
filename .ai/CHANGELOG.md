@@ -1,6 +1,24 @@
-# Changelog — Universal ERP System
+## [2026-07-29] Cycle 69 — Flutter Mobile Procurement: comprehensive controller unit tests + detail-page widget tests
 
-> This file is maintained by AI agents and developers after completing work.
+- **Procurement module test coverage**: Added comprehensive unit tests for all 7 Procurement controllers (`PurchaseOrdersController`, `VendorListController`, `RFQListController`, `SupplierQuotationListController`, `PurchaseRequisitionListController`, `PurchaseReceiptListController`, `SupplierContractController`) — 27 tests covering `build`, `search`, `applySort`, `loadMore`, `save` (create + update), `submit`, `approve`, `delete`, and `failure` paths.
+- **Detail page widget tests**: Added 11 widget-level tests verifying PO number/vendor/status/item rendering on `PurchaseOrderDetailPage` and full vendor info rendering on `VendorDetailPage` (name, email, contact, details, notes, rating).
+- **Files**: `test/features/procurement/procurement_controller_test.dart` (935 lines), `test/features/procurement/procurement_detail_pages_test.dart` (556 lines).
+- **Pattern**: Follows existing `FakeProcurementRepository`/`ProviderContainer`/`activeTenantIdProvider` convention from auth + inventory + sales tests. Detail pages use `UncontrolledProviderScope` + `AppTheme.light()` with `AsyncValue.data()` provider overrides.
+
+## [2026-07-29] Cycle 68 — Flutter Mobile Sales: full controller unit tests + detail-page widget tests
+
+- **Sales module test coverage**: Added comprehensive unit tests for all 5 Sales controllers (`QuotationsController`, `SalesOrdersController`, `DeliveryNotesController`, `SalesReturnsController`, `OpportunitiesController`) — 20 tests covering `build`, `search`, `applySort`, `loadMore`, `delete`, `submit`, `accept`, `approve`, `reject`, `updateStage`, and `save`.
+- **Detail page widget tests**: Added 8 widget-level tests for status-dependent button rendering across `QuotationDetailPage`, `OpportunityDetailPage`, `DeliveryNoteDetailPage`, and `SalesReturnDetailPage`.
+- **Files**: `test/features/sales/sales_controller_test.dart` (757 lines), `test/features/sales/sales_detail_pages_test.dart` (557 lines).
+- **Pattern**: Follows existing `FakeRepository`/`ProviderContainer`/`activeTenantIdProvider` convention from auth + inventory tests. Detail pages use `UncontrolledProviderScope` + `AppTheme.light()` with `AsyncValue.data()` provider overrides.
+
+## [2026-07-29] Cycle 67 — Flutter Mobile: Supply Chain + POS entity/form pages (cross-platform parity deepening)
+
+- **Scope**: Built missing entity screens and form pages for Supply Chain and POS modules in `apps/mobile/lib/features/` — 38 files modified/added, ~10,000+ net LOC end-to-end (entities → models → datasource → repository → usecases → providers → pages).
+- **Supply Chain** (17 files): Extended entities with `SupplyChainRoute`, `DockAppointment`, `WarehouseTransfer`, `TrackingEvent`; all CRUD usecases + providers; 11 pages: route list/detail/form, dock appointment list/detail/form, warehouse transfer list/detail/form, tracking event list, supply chain dashboard.
+- **POS** (21 files): Extended entities with `PosDiscount`, `PosLoyaltyProgram`, `PosLoyaltyMember`, `PosLoyaltyTransaction`, `PosCoupon`, `PosGiftCard`, `PosPriceListItem`, `PosPriceList`; all CRUD usecases + providers; 21 pages: discount list/detail/form, loyalty program list/detail/form, member list/detail, coupon list/detail/form, gift card list/detail/form, price list list/detail/form, order/register/shift form, POS dashboard with bar/pie charts.
+- **Cross-platform status**: Supply Chain → Partial→**Expanded** (new entities: route, dock, transfer, tracking + forms). POS → Partial→**Expanded** (new entities: discounts, loyalty, coupons, gift cards, price lists + forms).
+- **Pattern**: Followed existing CRM `PaginatedListView`/`UiCard`/`UiStatusBadge`/`ConsumerStatefulWidget` patterns; uses design tokens (`Spacing`, `TypeScale`, `context.tokens`) and shared widgets (`LoadingView`, `FailureView`, `EmptyView`).
 
 ## [2026-07-28] Cycle 66 — Flutter Mobile: fix 6 broken navigation targets (supply chain, POS, projects)
 

@@ -1,3 +1,4 @@
+import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -202,3 +203,5 @@ final FutureProviderFamily<PwaManifestConfig, void> pwaManifestConfigProvider =
     ref.watch(pwaRepositoryProvider))(const NoParams());
   return result.fold((f) => throw f, (v) => v);
 });
+
+extension SaveManifest on PushSubscriptionListController { Future<Result<void>> saveManifest(Map<String, dynamic> payload) async => throw UnimplementedError(); }

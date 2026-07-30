@@ -41,6 +41,7 @@ class AdminRole extends Equatable {
     this.description,
     this.isSystem = false,
     this.permissions = const <String>[],
+    this.userCount = 0,
     this.createdAt,
     this.updatedAt,
   });
@@ -50,12 +51,13 @@ class AdminRole extends Equatable {
   final String? description;
   final bool isSystem;
   final List<String> permissions;
+  final int userCount;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, description, isSystem, permissions, createdAt, updatedAt,
+        id, name, description, isSystem, permissions, userCount, createdAt, updatedAt,
       ];
 }
 
@@ -64,7 +66,10 @@ class AdminSetting extends Equatable {
     required this.id,
     required this.key,
     this.value,
+    this.type = 'string',
     this.category = 'general',
+    this.description,
+    this.isEncrypted = false,
     this.createdAt,
     this.updatedAt,
   });
@@ -72,13 +77,16 @@ class AdminSetting extends Equatable {
   final String id;
   final String key;
   final Object? value;
+  final String type;
   final String category;
+  final String? description;
+  final bool isEncrypted;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
   @override
   List<Object?> get props => <Object?>[
-        id, key, value, category, createdAt, updatedAt,
+        id, key, value, type, category, description, isEncrypted, createdAt, updatedAt,
       ];
 }
 
@@ -145,5 +153,63 @@ class SystemHealth extends Equatable {
   List<Object?> get props => <Object?>[
         id, status, uptimeSeconds, activeUsers, apiLatencyMs, dbLatencyMs,
         cacheHitRate, storageUsedMb, memoryUsageMb, cpuUsagePercent, lastChecked, createdAt,
+      ];
+}
+
+class AdminApiKey extends Equatable {
+  const AdminApiKey({
+    required this.id,
+    required this.name,
+    this.key,
+    this.permissions = const <String>[],
+    this.lastUsedAt,
+    this.expiresAt,
+    this.isActive = true,
+    this.createdAt,
+  });
+
+  final String id;
+  final String name;
+  final String? key;
+  final List<String> permissions;
+  final DateTime? lastUsedAt;
+  final DateTime? expiresAt;
+  final bool isActive;
+  final DateTime? createdAt;
+
+  String? get maskedKey => key != null && key!.length > 8
+      ? '${key!.substring(0, 4)}${'*' * (key!.length - 8)}${key!.substring(key!.length - 4)}'
+      : key;
+
+  @override
+  List<Object?> get props => <Object?>[
+        id, name, key, permissions, lastUsedAt, expiresAt, isActive, createdAt,
+      ];
+}
+
+class AdminTenant extends Equatable {
+  const AdminTenant({
+    required this.id,
+    required this.name,
+    required this.slug,
+    this.domain,
+    this.plan = 'free',
+    this.status = 'ACTIVE',
+    this.userCount = 0,
+    this.createdAt,
+  });
+
+  final String id;
+  final String name;
+  final String slug;
+  final String? domain;
+  final String plan;
+  final String status;
+  final int userCount;
+  final DateTime? createdAt;
+
+  @override
+  List<Object?> get props => <Object?>[
+        id, name, slug, domain, plan, status, userCount, createdAt,
       ];
 }

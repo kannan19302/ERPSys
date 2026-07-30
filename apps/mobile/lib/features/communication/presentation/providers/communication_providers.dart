@@ -1,3 +1,4 @@
+import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -140,6 +141,15 @@ class ChannelListController extends Notifier<ChannelListState> {
   Future<Result<void>> deleteChannel(String id) async {
     final result = await DeleteChannelUseCase(
       ref.read(communicationRepositoryProvider))(id);
+    if (result.isOk) await refresh();
+    return result;
+  }
+
+  Future<Result<Channel>> saveChannel(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveChannelUseCase(
+      ref.read(communicationRepositoryProvider))(
+      SaveChannelParams(id: id, payload: payload),
+    );
     if (result.isOk) await refresh();
     return result;
   }
@@ -347,6 +357,13 @@ class MeetingListController extends Notifier<MeetingListState> {
   Future<void> endMeeting(String id) async {
     await EndMeetingUseCase(ref.read(communicationRepositoryProvider))(id);
     await refresh();
+  }
+
+  Future<Result<Meeting>> saveMeeting(Map<String, dynamic> payload) async {
+    final result = await CreateMeetingUseCase(
+      ref.read(communicationRepositoryProvider))(payload);
+    if (result.isOk) await refresh();
+    return result;
   }
 }
 

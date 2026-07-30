@@ -175,6 +175,27 @@ class ListLeaveTypesUseCase extends UseCase<List<LeaveType>, NoParams> {
       _repository.listLeaveTypes();
 }
 
+class SaveLeaveTypeParams {
+  const SaveLeaveTypeParams({required this.payload, this.id});
+
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SaveLeaveTypeUseCase extends UseCase<LeaveType, SaveLeaveTypeParams> {
+  const SaveLeaveTypeUseCase(this._repository);
+
+  final HrRepository _repository;
+
+  @override
+  Future<Result<LeaveType>> call(SaveLeaveTypeParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createLeaveType(params.payload)
+        : _repository.createLeaveType(params.payload);
+  }
+}
+
 // ── Attendance ─────────────────────────────────────────────────────────────
 
 class ListAttendanceUseCase
@@ -188,6 +209,28 @@ class ListAttendanceUseCase
       _repository.listAttendance(params);
 }
 
+class SaveAttendanceParams {
+  const SaveAttendanceParams({required this.payload, this.id});
+
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SaveAttendanceUseCase
+    extends UseCase<Attendance, SaveAttendanceParams> {
+  const SaveAttendanceUseCase(this._repository);
+
+  final HrRepository _repository;
+
+  @override
+  Future<Result<Attendance>> call(SaveAttendanceParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createAttendance(params.payload)
+        : _repository.updateAttendance(id, params.payload);
+  }
+}
+
 // ── Timesheets ─────────────────────────────────────────────────────────────
 
 class ListTimesheetsUseCase
@@ -199,6 +242,36 @@ class ListTimesheetsUseCase
   @override
   Future<Result<Cacheable<Paginated<Timesheet>>>> call(ListQuery params) =>
       _repository.listTimesheets(params);
+}
+
+class GetTimesheetUseCase extends UseCase<Timesheet, String> {
+  const GetTimesheetUseCase(this._repository);
+
+  final HrRepository _repository;
+
+  @override
+  Future<Result<Timesheet>> call(String id) => _repository.getTimesheet(id);
+}
+
+class SaveTimesheetParams {
+  const SaveTimesheetParams({required this.payload, this.id});
+
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SaveTimesheetUseCase extends UseCase<Timesheet, SaveTimesheetParams> {
+  const SaveTimesheetUseCase(this._repository);
+
+  final HrRepository _repository;
+
+  @override
+  Future<Result<Timesheet>> call(SaveTimesheetParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.updateTimesheet(id ?? '', params.payload)
+        : _repository.updateTimesheet(id, params.payload);
+  }
 }
 
 class SubmitTimesheetUseCase extends UseCase<Timesheet, String> {
@@ -234,6 +307,42 @@ class ListPayrollRunsUseCase
       _repository.listPayrollRuns(params);
 }
 
+class GetPayrollRunUseCase extends UseCase<PayrollRun, String> {
+  const GetPayrollRunUseCase(this._repository);
+
+  final HrRepository _repository;
+
+  @override
+  Future<Result<PayrollRun>> call(String id) => _repository.getPayrollRun(id);
+}
+
+class SavePayrollRunParams {
+  const SavePayrollRunParams({required this.payload, this.id});
+
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SavePayrollRunUseCase extends UseCase<PayrollRun, SavePayrollRunParams> {
+  const SavePayrollRunUseCase(this._repository);
+
+  final HrRepository _repository;
+
+  @override
+  Future<Result<PayrollRun>> call(SavePayrollRunParams params) =>
+      _repository.createPayrollRun(params.payload);
+}
+
+class ReversePayrollRunUseCase extends UseCase<PayrollRun, String> {
+  const ReversePayrollRunUseCase(this._repository);
+
+  final HrRepository _repository;
+
+  @override
+  Future<Result<PayrollRun>> call(String id) =>
+      _repository.reversePayrollRun(id);
+}
+
 // ── Payslips ───────────────────────────────────────────────────────────────
 
 class ListPayslipsUseCase
@@ -245,6 +354,15 @@ class ListPayslipsUseCase
   @override
   Future<Result<Cacheable<Paginated<Payslip>>>> call(ListQuery params) =>
       _repository.listPayslips(params);
+}
+
+class GetPayslipUseCase extends UseCase<Payslip, String> {
+  const GetPayslipUseCase(this._repository);
+
+  final HrRepository _repository;
+
+  @override
+  Future<Result<Payslip>> call(String id) => _repository.getPayslip(id);
 }
 
 // ── Salary Structures ──────────────────────────────────────────────────────
@@ -260,6 +378,79 @@ class ListSalaryStructuresUseCase
     ListQuery params,
   ) =>
       _repository.listSalaryStructures(params);
+}
+
+// ── Performance Reviews ────────────────────────────────────────────────────
+
+class ListPerformanceReviewsUseCase
+    extends UseCase<Cacheable<Paginated<PerformanceReview>>, ListQuery> {
+  const ListPerformanceReviewsUseCase(this._repository);
+
+  final HrRepository _repository;
+
+  @override
+  Future<Result<Cacheable<Paginated<PerformanceReview>>>> call(
+    ListQuery params,
+  ) =>
+      _repository.listPerformanceReviews(params);
+}
+
+class GetPerformanceReviewUseCase extends UseCase<PerformanceReview, String> {
+  const GetPerformanceReviewUseCase(this._repository);
+
+  final HrRepository _repository;
+
+  @override
+  Future<Result<PerformanceReview>> call(String id) =>
+      _repository.getPerformanceReview(id);
+}
+
+class SavePerformanceReviewParams {
+  const SavePerformanceReviewParams({required this.payload, this.id});
+
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SavePerformanceReviewUseCase
+    extends UseCase<PerformanceReview, SavePerformanceReviewParams> {
+  const SavePerformanceReviewUseCase(this._repository);
+
+  final HrRepository _repository;
+
+  @override
+  Future<Result<PerformanceReview>> call(SavePerformanceReviewParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createPerformanceReview(params.payload)
+        : _repository.updatePerformanceReview(id, params.payload);
+  }
+}
+
+class SubmitPerformanceReviewUseCase
+    extends UseCase<PerformanceReview, String> {
+  const SubmitPerformanceReviewUseCase(this._repository);
+
+  final HrRepository _repository;
+
+  @override
+  Future<Result<PerformanceReview>> call(String id) =>
+      _repository.submitPerformanceReview(id);
+}
+
+// ── Leave Allocations ──────────────────────────────────────────────────────
+
+class ListLeaveAllocationsUseCase
+    extends UseCase<Cacheable<Paginated<LeaveAllocation>>, ListQuery> {
+  const ListLeaveAllocationsUseCase(this._repository);
+
+  final HrRepository _repository;
+
+  @override
+  Future<Result<Cacheable<Paginated<LeaveAllocation>>>> call(
+    ListQuery params,
+  ) =>
+      _repository.listLeaveAllocations(params);
 }
 
 // ── Org Chart & Dashboard ──────────────────────────────────────────────────

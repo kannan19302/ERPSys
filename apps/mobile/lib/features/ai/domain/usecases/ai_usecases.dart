@@ -129,3 +129,28 @@ class CreateAiPredictionUseCase extends UseCase<AiPrediction, Map<String, dynami
   Future<Result<AiPrediction>> call(Map<String, dynamic> params) =>
       _repository.createPrediction(params);
 }
+
+
+class SaveAiTrainingDataParams {
+  const SaveAiTrainingDataParams({this.id, required this.payload});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+class SaveAiPredictionParams {
+  const SaveAiPredictionParams({this.id, required this.payload});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+class SaveAiPredictionUseCase extends UseCase<AiPrediction, Map<String, dynamic>> {
+  SaveAiPredictionUseCase(this.repository);
+  final AiRepository repository;
+  @override
+  Future<Result<AiPrediction>> call(Map<String, dynamic> params) async => throw UnimplementedError();
+}
+class GetAiPredictionUseCase extends UseCase<AiPrediction, String> {
+  GetAiPredictionUseCase(this.repository);
+  final AiRepository repository;
+  @override
+  Future<Result<AiPrediction>> call(String params) async => throw UnimplementedError();
+}
+

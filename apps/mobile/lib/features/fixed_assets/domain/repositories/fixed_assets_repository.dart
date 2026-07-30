@@ -33,6 +33,7 @@ abstract class FixedAssetsRepository {
   Future<Result<Cacheable<Paginated<AssetDisposal>>>> listDisposals(ListQuery query);
   Future<Result<AssetDisposal>> getDisposal(String id);
   Future<Result<AssetDisposal>> createDisposal(Map<String, dynamic> payload);
+  Future<Result<AssetDisposal>> updateDisposal(String id, Map<String, dynamic> payload);
   Future<Result<void>> approveDisposal(String id);
   Future<Result<void>> deleteDisposal(String id);
 }

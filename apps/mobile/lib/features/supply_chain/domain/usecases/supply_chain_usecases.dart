@@ -146,3 +146,167 @@ class ApproveReorderSuggestionUseCase extends UseCase<ReorderSuggestion, String>
   Future<Result<ReorderSuggestion>> call(String id) =>
       _repository.approveReorderSuggestion(id);
 }
+
+class ListSupplyChainRoutesUseCase extends UseCase<Cacheable<Paginated<SupplyChainRoute>>, ListQuery> {
+  const ListSupplyChainRoutesUseCase(this._repository);
+  final SupplyChainRepository _repository;
+  @override
+  Future<Result<Cacheable<Paginated<SupplyChainRoute>>>> call(ListQuery params) =>
+      _repository.listSupplyChainRoutes(params);
+}
+
+class GetSupplyChainRouteUseCase extends UseCase<SupplyChainRoute, String> {
+  const GetSupplyChainRouteUseCase(this._repository);
+  final SupplyChainRepository _repository;
+  @override
+  Future<Result<SupplyChainRoute>> call(String id) => _repository.getSupplyChainRoute(id);
+}
+
+class SaveSupplyChainRouteParams {
+  const SaveSupplyChainRouteParams({required this.payload, this.id});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SaveSupplyChainRouteUseCase extends UseCase<SupplyChainRoute, SaveSupplyChainRouteParams> {
+  const SaveSupplyChainRouteUseCase(this._repository);
+  final SupplyChainRepository _repository;
+  @override
+  Future<Result<SupplyChainRoute>> call(SaveSupplyChainRouteParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createSupplyChainRoute(params.payload)
+        : _repository.updateSupplyChainRoute(id, params.payload);
+  }
+}
+
+class DeleteSupplyChainRouteUseCase extends UseCase<void, String> {
+  const DeleteSupplyChainRouteUseCase(this._repository);
+  final SupplyChainRepository _repository;
+  @override
+  Future<Result<void>> call(String id) => _repository.deleteSupplyChainRoute(id);
+}
+
+class ListDockAppointmentsUseCase extends UseCase<Cacheable<Paginated<DockAppointment>>, ListQuery> {
+  const ListDockAppointmentsUseCase(this._repository);
+  final SupplyChainRepository _repository;
+  @override
+  Future<Result<Cacheable<Paginated<DockAppointment>>>> call(ListQuery params) =>
+      _repository.listDockAppointments(params);
+}
+
+class GetDockAppointmentUseCase extends UseCase<DockAppointment, String> {
+  const GetDockAppointmentUseCase(this._repository);
+  final SupplyChainRepository _repository;
+  @override
+  Future<Result<DockAppointment>> call(String id) => _repository.getDockAppointment(id);
+}
+
+class SaveDockAppointmentParams {
+  const SaveDockAppointmentParams({required this.payload, this.id});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SaveDockAppointmentUseCase extends UseCase<DockAppointment, SaveDockAppointmentParams> {
+  const SaveDockAppointmentUseCase(this._repository);
+  final SupplyChainRepository _repository;
+  @override
+  Future<Result<DockAppointment>> call(SaveDockAppointmentParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createDockAppointment(params.payload)
+        : _repository.updateDockAppointment(id, params.payload);
+  }
+}
+
+class DeleteDockAppointmentUseCase extends UseCase<void, String> {
+  const DeleteDockAppointmentUseCase(this._repository);
+  final SupplyChainRepository _repository;
+  @override
+  Future<Result<void>> call(String id) => _repository.deleteDockAppointment(id);
+}
+
+class CheckinDockAppointmentUseCase extends UseCase<DockAppointment, String> {
+  const CheckinDockAppointmentUseCase(this._repository);
+  final SupplyChainRepository _repository;
+  @override
+  Future<Result<DockAppointment>> call(String id) => _repository.checkinDockAppointment(id);
+}
+
+class CompleteDockAppointmentUseCase extends UseCase<DockAppointment, String> {
+  const CompleteDockAppointmentUseCase(this._repository);
+  final SupplyChainRepository _repository;
+  @override
+  Future<Result<DockAppointment>> call(String id) => _repository.completeDockAppointment(id);
+}
+
+class ListWarehouseTransfersUseCase extends UseCase<Cacheable<Paginated<WarehouseTransfer>>, ListQuery> {
+  const ListWarehouseTransfersUseCase(this._repository);
+  final SupplyChainRepository _repository;
+  @override
+  Future<Result<Cacheable<Paginated<WarehouseTransfer>>>> call(ListQuery params) =>
+      _repository.listWarehouseTransfers(params);
+}
+
+class GetWarehouseTransferUseCase extends UseCase<WarehouseTransfer, String> {
+  const GetWarehouseTransferUseCase(this._repository);
+  final SupplyChainRepository _repository;
+  @override
+  Future<Result<WarehouseTransfer>> call(String id) => _repository.getWarehouseTransfer(id);
+}
+
+class SaveWarehouseTransferParams {
+  const SaveWarehouseTransferParams({required this.payload, this.id});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SaveWarehouseTransferUseCase extends UseCase<WarehouseTransfer, SaveWarehouseTransferParams> {
+  const SaveWarehouseTransferUseCase(this._repository);
+  final SupplyChainRepository _repository;
+  @override
+  Future<Result<WarehouseTransfer>> call(SaveWarehouseTransferParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createWarehouseTransfer(params.payload)
+        : _repository.updateWarehouseTransfer(id, params.payload);
+  }
+}
+
+class DeleteWarehouseTransferUseCase extends UseCase<void, String> {
+  const DeleteWarehouseTransferUseCase(this._repository);
+  final SupplyChainRepository _repository;
+  @override
+  Future<Result<void>> call(String id) => _repository.deleteWarehouseTransfer(id);
+}
+
+class ApproveWarehouseTransferUseCase extends UseCase<WarehouseTransfer, String> {
+  const ApproveWarehouseTransferUseCase(this._repository);
+  final SupplyChainRepository _repository;
+  @override
+  Future<Result<WarehouseTransfer>> call(String id) => _repository.approveWarehouseTransfer(id);
+}
+
+class CompleteWarehouseTransferUseCase extends UseCase<WarehouseTransfer, String> {
+  const CompleteWarehouseTransferUseCase(this._repository);
+  final SupplyChainRepository _repository;
+  @override
+  Future<Result<WarehouseTransfer>> call(String id) => _repository.completeWarehouseTransfer(id);
+}
+
+class ListTrackingEventsUseCase extends UseCase<Cacheable<Paginated<TrackingEvent>>, ListQuery> {
+  const ListTrackingEventsUseCase(this._repository);
+  final SupplyChainRepository _repository;
+  @override
+  Future<Result<Cacheable<Paginated<TrackingEvent>>>> call(ListQuery params) =>
+      _repository.listTrackingEvents(params);
+}
+
+class CreateTrackingEventUseCase extends UseCase<TrackingEvent, Map<String, dynamic>> {
+  const CreateTrackingEventUseCase(this._repository);
+  final SupplyChainRepository _repository;
+  @override
+  Future<Result<TrackingEvent>> call(Map<String, dynamic> params) =>
+      _repository.createTrackingEvent(params);
+}

@@ -20,6 +20,10 @@ class ProcurementRepositoryImpl implements ProcurementRepository {
   static const String _poNamespace = 'procurement.purchase-orders';
   static const String _vendorNamespace = 'procurement.vendors';
   static const String _rfqNamespace = 'procurement.rfqs';
+  static const String _sqNamespace = 'procurement.supplier-quotations';
+  static const String _prNamespace = 'procurement.requisitions';
+  static const String _receiptNamespace = 'procurement.receipts';
+  static const String _contractNamespace = 'procurement.contracts';
 
   final ProcurementRemoteDataSource _remote;
   final ResponseCache _cache;
@@ -172,7 +176,7 @@ class ProcurementRepositoryImpl implements ProcurementRepository {
   @override
   Future<Result<Cacheable<Paginated<SupplierQuotation>>>> listSupplierQuotations(
     ListQuery q) =>
-      _paginated('procurement.supplier-quotations', q,
+      _paginated(_sqNamespace, q,
         () => _remote.listSupplierQuotations(q),
         SupplierQuotationModel.fromJson);
 
@@ -185,6 +189,10 @@ class ProcurementRepositoryImpl implements ProcurementRepository {
       _write(() => _remote.createSupplierQuotation(p));
 
   @override
+  Future<Result<SupplierQuotation>> updateSupplierQuotation(String id, Map<String, dynamic> p) =>
+      _write(() => _remote.updateSupplierQuotation(id, p));
+
+  @override
   Future<Result<SupplierQuotation>> approveSupplierQuotation(String id) =>
       _single(() => _remote.approveSupplierQuotation(id));
 
@@ -193,9 +201,13 @@ class ProcurementRepositoryImpl implements ProcurementRepository {
       _single(() => _remote.rejectSupplierQuotation(id));
 
   @override
+  Future<Result<SupplierQuotation>> convertSupplierQuotation(String id) =>
+      _single(() => _remote.convertSupplierQuotation(id));
+
+  @override
   Future<Result<Cacheable<Paginated<PurchaseRequisition>>>> listPurchaseRequisitions(
     ListQuery q) =>
-      _paginated('procurement.requisitions', q,
+      _paginated(_prNamespace, q,
         () => _remote.listPurchaseRequisitions(q),
         PurchaseRequisitionModel.fromJson);
 
@@ -208,6 +220,56 @@ class ProcurementRepositoryImpl implements ProcurementRepository {
       _write(() => _remote.createPurchaseRequisition(p));
 
   @override
+  Future<Result<PurchaseRequisition>> updatePurchaseRequisition(String id, Map<String, dynamic> p) =>
+      _write(() => _remote.updatePurchaseRequisition(id, p));
+
+  @override
   Future<Result<PurchaseRequisition>> approvePurchaseRequisition(String id) =>
       _single(() => _remote.approvePurchaseRequisition(id));
+
+  @override
+  Future<Result<Cacheable<Paginated<PurchaseReceipt>>>> listPurchaseReceipts(
+    ListQuery q) =>
+      _paginated(_receiptNamespace, q,
+        () => _remote.listPurchaseReceipts(q),
+        PurchaseReceiptModel.fromJson);
+
+  @override
+  Future<Result<PurchaseReceipt>> getPurchaseReceipt(String id) =>
+      _single(() => _remote.getPurchaseReceipt(id));
+
+  @override
+  Future<Result<PurchaseReceipt>> createPurchaseReceipt(Map<String, dynamic> p) =>
+      _write(() => _remote.createPurchaseReceipt(p));
+
+  @override
+  Future<Result<PurchaseReceipt>> updatePurchaseReceipt(String id, Map<String, dynamic> p) =>
+      _write(() => _remote.updatePurchaseReceipt(id, p));
+
+  @override
+  Future<Result<Cacheable<Paginated<SupplierContract>>>> listSupplierContracts(
+    ListQuery q) =>
+      _paginated(_contractNamespace, q,
+        () => _remote.listSupplierContracts(q),
+        SupplierContractModel.fromJson);
+
+  @override
+  Future<Result<SupplierContract>> getSupplierContract(String id) =>
+      _single(() => _remote.getSupplierContract(id));
+
+  @override
+  Future<Result<SupplierContract>> createSupplierContract(Map<String, dynamic> p) =>
+      _write(() => _remote.createSupplierContract(p));
+
+  @override
+  Future<Result<SupplierContract>> updateSupplierContract(String id, Map<String, dynamic> p) =>
+      _write(() => _remote.updateSupplierContract(id, p));
+
+  @override
+  Future<Result<void>> deleteSupplierContract(String id) =>
+      _delete(() => _remote.deleteSupplierContract(id));
+
+  @override
+  Future<Result<ProcurementDashboardStats>> getProcurementDashboard() =>
+      _single(() => _remote.getProcurementDashboard());
 }

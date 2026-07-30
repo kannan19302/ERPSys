@@ -84,6 +84,7 @@ final NotifierProvider<PurchaseOrderListController, PurchaseOrderListState>
 );
 
 class PurchaseOrderListController extends Notifier<PurchaseOrderListState> {
+  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async => throw UnimplementedError();
   Timer? _searchDebounce;
 
   @override
@@ -201,6 +202,9 @@ final NotifierProvider<VendorListController, VendorListState>
 );
 
 class VendorListController extends Notifier<VendorListState> {
+  void applySort(String s) {}
+
+  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async => throw UnimplementedError();
   Timer? _searchDebounce;
 
   @override
@@ -263,3 +267,408 @@ final FutureProviderFamily<Vendor, String> vendorDetailProvider =
     ref.watch(procurementRepositoryProvider))(id);
   return result.fold((f) => throw f, (v) => v);
 });
+
+final NotifierProvider<PurchaseReceiptListController, PurchaseReceiptListState> purchaseReceiptListControllerProvider = NotifierProvider<PurchaseReceiptListController, PurchaseReceiptListState>(PurchaseReceiptListController.new);
+
+class PurchaseReceiptListState extends Equatable {
+  const PurchaseReceiptListState({
+    this.items = const <PurchaseReceipt>[],
+    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.query = const ListQuery(sort: '-createdAt'),
+    this.isLoading = true,
+    this.isLoadingMore = false,
+    this.failure,
+    this.loadMoreFailure,
+    this.cachedAt,
+  });
+
+  final List<PurchaseReceipt> items;
+  final PaginationMeta meta;
+  final ListQuery query;
+  final bool isLoading;
+  final bool isLoadingMore;
+  final Failure? failure;
+  final Failure? loadMoreFailure;
+  final DateTime? cachedAt;
+
+  PurchaseReceiptListState copyWith({
+    List<PurchaseReceipt>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    DateTime? cachedAt,
+    bool clearFailures = false,
+    bool clearCachedAt = false,
+  }) =>
+      PurchaseReceiptListState(
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
+        isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+        failure: clearFailures ? null : (failure ?? this.failure),
+        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
+      );
+
+  @override
+  List<Object?> get props => [
+        items,
+        meta,
+        query,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure,
+        cachedAt,
+      ];
+}
+
+class PurchaseReceiptListController extends Notifier<PurchaseReceiptListState> {
+  void search(String s) {}
+  void applyFilters(Map<String, String> f) {}
+  void applySort(String s) {}
+  void loadMore() {}
+  Future<void> refresh() async {}
+  Future<Result<void>> delete(String id) async => throw UnimplementedError();
+  Future<Result<void>> submit(String id) async => throw UnimplementedError();
+  Future<Result<void>> approve(String id) async => throw UnimplementedError();
+  Future<Result<void>> post(String id) async => throw UnimplementedError();
+  
+
+  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async => throw UnimplementedError();
+  @override
+  PurchaseReceiptListState build() {
+    Future<void>.microtask(() {});
+    return const PurchaseReceiptListState(); // Or just throw UnimplementedError if it complains about const
+  }
+}
+
+
+final NotifierProvider<PurchaseRequisitionListController, PurchaseRequisitionListState> purchaseRequisitionListControllerProvider = NotifierProvider<PurchaseRequisitionListController, PurchaseRequisitionListState>(PurchaseRequisitionListController.new);
+
+class PurchaseRequisitionListState extends Equatable {
+  const PurchaseRequisitionListState({
+    this.items = const <PurchaseRequisition>[],
+    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.query = const ListQuery(sort: '-createdAt'),
+    this.isLoading = true,
+    this.isLoadingMore = false,
+    this.failure,
+    this.loadMoreFailure,
+    this.cachedAt,
+  });
+
+  final List<PurchaseRequisition> items;
+  final PaginationMeta meta;
+  final ListQuery query;
+  final bool isLoading;
+  final bool isLoadingMore;
+  final Failure? failure;
+  final Failure? loadMoreFailure;
+  final DateTime? cachedAt;
+
+  PurchaseRequisitionListState copyWith({
+    List<PurchaseRequisition>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    DateTime? cachedAt,
+    bool clearFailures = false,
+    bool clearCachedAt = false,
+  }) =>
+      PurchaseRequisitionListState(
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
+        isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+        failure: clearFailures ? null : (failure ?? this.failure),
+        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
+      );
+
+  @override
+  List<Object?> get props => [
+        items,
+        meta,
+        query,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure,
+        cachedAt,
+      ];
+}
+
+class PurchaseRequisitionListController extends Notifier<PurchaseRequisitionListState> {
+  void search(String s) {}
+  void applyFilters(Map<String, String> f) {}
+  void applySort(String s) {}
+  void loadMore() {}
+  Future<void> refresh() async {}
+  Future<Result<void>> delete(String id) async => throw UnimplementedError();
+  Future<Result<void>> submit(String id) async => throw UnimplementedError();
+  Future<Result<void>> approve(String id) async => throw UnimplementedError();
+  Future<Result<void>> post(String id) async => throw UnimplementedError();
+  
+
+  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async => throw UnimplementedError();
+  @override
+  PurchaseRequisitionListState build() {
+    Future<void>.microtask(() {});
+    return const PurchaseRequisitionListState(); // Or just throw UnimplementedError if it complains about const
+  }
+}
+
+
+final NotifierProvider<RFQListController, RFQListState> rfqListControllerProvider = NotifierProvider<RFQListController, RFQListState>(RFQListController.new);
+
+class RFQListState extends Equatable {
+  const RFQListState({
+    this.items = const <RFQ>[],
+    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.query = const ListQuery(sort: '-createdAt'),
+    this.isLoading = true,
+    this.isLoadingMore = false,
+    this.failure,
+    this.loadMoreFailure,
+    this.cachedAt,
+  });
+
+  final List<RFQ> items;
+  final PaginationMeta meta;
+  final ListQuery query;
+  final bool isLoading;
+  final bool isLoadingMore;
+  final Failure? failure;
+  final Failure? loadMoreFailure;
+  final DateTime? cachedAt;
+
+  RFQListState copyWith({
+    List<RFQ>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    DateTime? cachedAt,
+    bool clearFailures = false,
+    bool clearCachedAt = false,
+  }) =>
+      RFQListState(
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
+        isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+        failure: clearFailures ? null : (failure ?? this.failure),
+        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
+      );
+
+  @override
+  List<Object?> get props => [
+        items,
+        meta,
+        query,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure,
+        cachedAt,
+      ];
+}
+
+class RFQListController extends Notifier<RFQListState> {
+  void search(String s) {}
+  void applyFilters(Map<String, String> f) {}
+  void applySort(String s) {}
+  void loadMore() {}
+  Future<void> refresh() async {}
+  Future<Result<void>> delete(String id) async => throw UnimplementedError();
+  Future<Result<void>> submit(String id) async => throw UnimplementedError();
+  Future<Result<void>> approve(String id) async => throw UnimplementedError();
+  Future<Result<void>> post(String id) async => throw UnimplementedError();
+  
+
+  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async => throw UnimplementedError();
+  @override
+  RFQListState build() {
+    Future<void>.microtask(() {});
+    return const RFQListState(); // Or just throw UnimplementedError if it complains about const
+  }
+}
+
+
+final NotifierProvider<SupplierContractListController, SupplierContractListState> supplierContractListControllerProvider = NotifierProvider<SupplierContractListController, SupplierContractListState>(SupplierContractListController.new);
+
+class SupplierContractListState extends Equatable {
+  const SupplierContractListState({
+    this.items = const <SupplierContract>[],
+    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.query = const ListQuery(sort: '-createdAt'),
+    this.isLoading = true,
+    this.isLoadingMore = false,
+    this.failure,
+    this.loadMoreFailure,
+    this.cachedAt,
+  });
+
+  final List<SupplierContract> items;
+  final PaginationMeta meta;
+  final ListQuery query;
+  final bool isLoading;
+  final bool isLoadingMore;
+  final Failure? failure;
+  final Failure? loadMoreFailure;
+  final DateTime? cachedAt;
+
+  SupplierContractListState copyWith({
+    List<SupplierContract>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    DateTime? cachedAt,
+    bool clearFailures = false,
+    bool clearCachedAt = false,
+  }) =>
+      SupplierContractListState(
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
+        isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+        failure: clearFailures ? null : (failure ?? this.failure),
+        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
+      );
+
+  @override
+  List<Object?> get props => [
+        items,
+        meta,
+        query,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure,
+        cachedAt,
+      ];
+}
+
+class SupplierContractListController extends Notifier<SupplierContractListState> {
+  void search(String s) {}
+  void applyFilters(Map<String, String> f) {}
+  void applySort(String s) {}
+  void loadMore() {}
+  Future<void> refresh() async {}
+  Future<Result<void>> delete(String id) async => throw UnimplementedError();
+  Future<Result<void>> submit(String id) async => throw UnimplementedError();
+  Future<Result<void>> approve(String id) async => throw UnimplementedError();
+  Future<Result<void>> post(String id) async => throw UnimplementedError();
+  
+
+  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async => throw UnimplementedError();
+  @override
+  SupplierContractListState build() {
+    Future<void>.microtask(() {});
+    return const SupplierContractListState(); // Or just throw UnimplementedError if it complains about const
+  }
+}
+
+
+final NotifierProvider<SupplierQuotationListController, SupplierQuotationListState> supplierQuotationListControllerProvider = NotifierProvider<SupplierQuotationListController, SupplierQuotationListState>(SupplierQuotationListController.new);
+
+class SupplierQuotationListState extends Equatable {
+  const SupplierQuotationListState({
+    this.items = const <SupplierQuotation>[],
+    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.query = const ListQuery(sort: '-createdAt'),
+    this.isLoading = true,
+    this.isLoadingMore = false,
+    this.failure,
+    this.loadMoreFailure,
+    this.cachedAt,
+  });
+
+  final List<SupplierQuotation> items;
+  final PaginationMeta meta;
+  final ListQuery query;
+  final bool isLoading;
+  final bool isLoadingMore;
+  final Failure? failure;
+  final Failure? loadMoreFailure;
+  final DateTime? cachedAt;
+
+  SupplierQuotationListState copyWith({
+    List<SupplierQuotation>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    DateTime? cachedAt,
+    bool clearFailures = false,
+    bool clearCachedAt = false,
+  }) =>
+      SupplierQuotationListState(
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
+        isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+        failure: clearFailures ? null : (failure ?? this.failure),
+        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
+      );
+
+  @override
+  List<Object?> get props => [
+        items,
+        meta,
+        query,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure,
+        cachedAt,
+      ];
+}
+
+class SupplierQuotationListController extends Notifier<SupplierQuotationListState> {
+  void search(String s) {}
+  void applyFilters(Map<String, String> f) {}
+  void applySort(String s) {}
+  void loadMore() {}
+  Future<void> refresh() async {}
+  Future<Result<void>> delete(String id) async => throw UnimplementedError();
+  Future<Result<void>> submit(String id) async => throw UnimplementedError();
+  Future<Result<void>> approve(String id) async => throw UnimplementedError();
+  Future<Result<void>> post(String id) async => throw UnimplementedError();
+  
+
+  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async => throw UnimplementedError();
+  @override
+  SupplierQuotationListState build() {
+    Future<void>.microtask(() {});
+    return const SupplierQuotationListState(); // Or just throw UnimplementedError if it complains about const
+  }
+}
+final FutureProvider<ProcurementDashboardStats> procurementDashboardProvider = FutureProvider((ref) async => throw UnimplementedError());
+final FutureProviderFamily<RFQ, String> rfqDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<PurchaseReceipt, String> purchaseReceiptDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<PurchaseRequisition, String> purchaseRequisitionDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<SupplierContract, String> supplierContractDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<SupplierQuotation, String> supplierQuotationDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());

@@ -186,3 +186,11 @@ class DeleteServiceSlaUseCase extends UseCase<void, String> {
   @override
   Future<Result<void>> call(String id) => _repository.deleteSla(id);
 }
+
+class DeleteServiceRequestUseCase extends UseCase<void, String> {
+  DeleteServiceRequestUseCase(this.repository);
+  final ServiceManagementRepository repository;
+  @override
+  Future<Result<void>> call(String params) async => throw UnimplementedError();
+}
+

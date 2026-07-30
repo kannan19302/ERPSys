@@ -117,3 +117,24 @@ class DeleteRateLimitUseCase extends UseCase<void, String> {
   @override
   Future<Result<void>> call(String id) => _repository.deleteRateLimit(id);
 }
+
+
+class GetWebhookUseCase extends UseCase<WebhookEndpoint, String> {
+  GetWebhookUseCase(this.repository);
+  final ApiPlatformRepository repository;
+  @override
+  Future<Result<WebhookEndpoint>> call(String params) async => throw UnimplementedError();
+}
+class GetUsageLogUseCase extends UseCase<ApiUsageLog, String> {
+  GetUsageLogUseCase(this.repository);
+  final ApiPlatformRepository repository;
+  @override
+  Future<Result<ApiUsageLog>> call(String params) async => throw UnimplementedError();
+}
+class GetApiKeyUseCase extends UseCase<ApiKey, String> {
+  GetApiKeyUseCase(this.repository);
+  final ApiPlatformRepository repository;
+  @override
+  Future<Result<ApiKey>> call(String params) async => throw UnimplementedError();
+}
+

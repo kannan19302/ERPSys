@@ -1,3 +1,4 @@
+import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -128,6 +129,15 @@ class BuilderFormListController extends Notifier<BuilderFormListState> {
     if (result.isOk) await refresh();
     return result;
   }
+
+  Future<Result<BuilderForm>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveBuilderFormUseCase(
+      ref.read(builderRepositoryProvider))(
+      SaveBuilderFormParams(id: id, payload: payload),
+    );
+    if (result.isOk) await refresh();
+    return result;
+  }
 }
 
 final FutureProviderFamily<BuilderForm, String> builderFormDetailProvider =
@@ -231,6 +241,15 @@ class BuilderPageListController extends Notifier<BuilderPageListState> {
   Future<Result<void>> delete(String id) async {
     final result = await DeleteBuilderPageUseCase(
       ref.read(builderRepositoryProvider))(id);
+    if (result.isOk) await refresh();
+    return result;
+  }
+
+  Future<Result<BuilderPage>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveBuilderPageUseCase(
+      ref.read(builderRepositoryProvider))(
+      SaveBuilderPageParams(id: id, payload: payload),
+    );
     if (result.isOk) await refresh();
     return result;
   }

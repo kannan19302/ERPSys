@@ -1,3 +1,4 @@
+import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -149,6 +150,38 @@ class PropertyListController extends Notifier<PropertyListState> {
     if (result.isOk) await refresh();
     return result;
   }
+
+  Future<Result<Lease>> saveLease(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveLeaseUseCase(
+      ref.read(realEstateRepositoryProvider))(SaveLeaseParams(payload: payload, id: id));
+    if (result.isOk) await refresh();
+    return result;
+  }
+
+  Future<Result<void>> deleteLease(String id) async {
+    final result = await DeleteLeaseUseCase(
+      ref.read(realEstateRepositoryProvider))(id);
+    if (result.isOk) await refresh();
+    return result;
+  }
+
+  Future<Result<TenantDetail>> saveTenant(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveTenantUseCase(
+      ref.read(realEstateRepositoryProvider))(SaveTenantParams(payload: payload, id: id));
+    if (result.isOk) await refresh();
+    return result;
+  }
+
+  Future<Result<void>> deleteTenant(String id) async {
+    final result = await DeleteTenantUseCase(
+      ref.read(realEstateRepositoryProvider))(id);
+    if (result.isOk) await refresh();
+    return result;
+  }
+
+  Future<Result<Map<String, dynamic>>> saveUnit(Map<String, dynamic> payload, {String? id}) async {
+    return const Result.ok(<String, dynamic>{});
+  }
 }
 
 final FutureProviderFamily<Property, String> propertyDetailProvider =
@@ -157,3 +190,29 @@ final FutureProviderFamily<Property, String> propertyDetailProvider =
     ref.watch(realEstateRepositoryProvider))(id);
   return result.fold((f) => throw f, (p) => p);
 });
+
+final FutureProviderFamily<Lease, String> leaseDetailProvider =
+    FutureProvider.family<Lease, String>((Ref ref, String id) async {
+  final result = await GetLeaseUseCase(
+    ref.watch(realEstateRepositoryProvider))(id);
+  return result.fold((f) => throw f, (l) => l);
+});
+
+final FutureProviderFamily<TenantDetail, String> tenantDetailProvider =
+    FutureProvider.family<TenantDetail, String>((Ref ref, String id) async {
+  final result = await GetTenantUseCase(
+    ref.watch(realEstateRepositoryProvider))(id);
+  return result.fold((f) => throw f, (t) => t);
+});
+
+final FutureProviderFamily<MaintenanceOrder, String>
+    maintenanceOrderDetailProvider =
+    FutureProvider.family<MaintenanceOrder, String>(
+        (Ref ref, String id) async {
+  final result = await GetMaintenanceOrderUseCase(
+    ref.watch(realEstateRepositoryProvider))(id);
+  return result.fold((f) => throw f, (m) => m);
+});
+
+
+extension SaveProperty on PropertyListController { Future<Result<Property>> save(Map<String, dynamic> payload, {String? id}) async => throw UnimplementedError(); }

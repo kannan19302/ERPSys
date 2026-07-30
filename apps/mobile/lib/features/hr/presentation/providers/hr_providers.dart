@@ -452,6 +452,7 @@ final NotifierProvider<TimesheetListController, TimesheetListState>
 );
 
 class TimesheetListController extends Notifier<TimesheetListState> {
+  void applyFilters(Map<String, String> f) {}
   @override
   TimesheetListState build() {
     ref.watch(activeTenantIdProvider);
@@ -567,3 +568,212 @@ final FutureProvider<Paginated<SalaryStructure>> salaryStructuresProvider =
     (Cacheable<Paginated<SalaryStructure>> page) => page.value,
   );
 });
+
+
+
+final NotifierProvider<LeaveTypesController, AsyncValue<List<LeaveType>>> leaveTypesProvider = NotifierProvider<LeaveTypesController, AsyncValue<List<LeaveType>>>(LeaveTypesController.new);
+class LeaveTypesController extends Notifier<AsyncValue<List<LeaveType>>> {
+  void search(String s) {}
+  void applyFilters(Map<String, String> f) {}
+  void applySort(String s) {}
+  void loadMore() {}
+  Future<void> refresh() async {}
+  Future<Result<void>> delete(String id) async => throw UnimplementedError();
+  Future<Result<void>> submit(String id) async => throw UnimplementedError();
+  Future<Result<void>> approve(String id) async => throw UnimplementedError();
+  Future<Result<void>> post(String id) async => throw UnimplementedError();
+  
+
+  Future<Result<Attendance>> save(Map<String, dynamic> data, {String? id}) async => throw UnimplementedError();
+  @override
+  AsyncValue<List<LeaveType>> build() {
+    Future<void>.microtask(() {});
+    return const AsyncValue<List<LeaveType>>.data(<LeaveType>[]);
+  }
+}
+
+
+final NotifierProvider<PayrollRunListController, PayrollRunListState> payrollRunListControllerProvider = NotifierProvider<PayrollRunListController, PayrollRunListState>(PayrollRunListController.new);
+class PayrollRunListController extends Notifier<PayrollRunListState> {
+  void search(String s) {}
+  void applyFilters(Map<String, String> f) {}
+  void applySort(String s) {}
+  void loadMore() {}
+  Future<void> refresh() async {}
+  Future<Result<void>> delete(String id) async => throw UnimplementedError();
+  Future<Result<void>> submit(String id) async => throw UnimplementedError();
+  Future<Result<void>> approve(String id) async => throw UnimplementedError();
+  Future<Result<void>> post(String id) async => throw UnimplementedError();
+  
+
+  Future<Result<PayrollRun>> save(Map<String, dynamic> data, {String? id}) async => throw UnimplementedError();
+  @override
+  PayrollRunListState build() {
+    Future<void>.microtask(() {});
+    return const PayrollRunListState(); // Or just throw UnimplementedError if it complains about const
+  }
+}
+
+
+final NotifierProvider<PerformanceReviewListController, PerformanceReviewListState> performanceReviewListControllerProvider = NotifierProvider<PerformanceReviewListController, PerformanceReviewListState>(PerformanceReviewListController.new);
+class PerformanceReviewListController extends Notifier<PerformanceReviewListState> {
+  void search(String s) {}
+  void applyFilters(Map<String, String> f) {}
+  void applySort(String s) {}
+  void loadMore() {}
+  Future<void> refresh() async {}
+  Future<Result<void>> delete(String id) async => throw UnimplementedError();
+  Future<Result<void>> submit(String id) async => throw UnimplementedError();
+  Future<Result<void>> approve(String id) async => throw UnimplementedError();
+  Future<Result<void>> post(String id) async => throw UnimplementedError();
+  
+
+  Future<Result<PerformanceReview>> save(Map<String, dynamic> data, {String? id}) async => throw UnimplementedError();
+  @override
+  PerformanceReviewListState build() {
+    Future<void>.microtask(() {});
+    return const PerformanceReviewListState(); // Or just throw UnimplementedError if it complains about const
+  }
+}
+final FutureProviderFamily<PayrollRun, String> payrollRunDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<Timesheet, String> timesheetDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<PerformanceReview, String> performanceReviewDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
+
+class PayrollRunListState extends Equatable {
+  const PayrollRunListState({
+    this.items = const <PayrollRun>[],
+    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.query = const ListQuery(sort: '-createdAt'),
+    this.isLoading = true,
+    this.isLoadingMore = false,
+    this.failure,
+    this.loadMoreFailure,
+    this.cachedAt,
+  });
+
+  final List<PayrollRun> items;
+  final PaginationMeta meta;
+  final ListQuery query;
+  final bool isLoading;
+  final bool isLoadingMore;
+  final Failure? failure;
+  final Failure? loadMoreFailure;
+  final DateTime? cachedAt;
+
+  PayrollRunListState copyWith({
+    List<PayrollRun>? items, PaginationMeta? meta, ListQuery? query,
+    bool? isLoading, bool? isLoadingMore, Failure? failure,
+    Failure? loadMoreFailure, DateTime? cachedAt, bool clearFailures = false, bool clearCachedAt = false,
+  }) =>
+      PayrollRunListState(
+        items: items ?? this.items, meta: meta ?? this.meta,
+        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+        failure: clearFailures ? null : (failure ?? this.failure),
+        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
+      );
+
+  @override
+  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure, cachedAt];
+}
+
+class PerformanceReviewListState extends Equatable {
+  const PerformanceReviewListState({
+    this.items = const <PerformanceReview>[],
+    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.query = const ListQuery(sort: '-createdAt'),
+    this.isLoading = true,
+    this.isLoadingMore = false,
+    this.failure,
+    this.loadMoreFailure,
+    this.cachedAt,
+  });
+
+  final List<PerformanceReview> items;
+  final PaginationMeta meta;
+  final ListQuery query;
+  final bool isLoading;
+  final bool isLoadingMore;
+  final Failure? failure;
+  final Failure? loadMoreFailure;
+  final DateTime? cachedAt;
+
+  PerformanceReviewListState copyWith({
+    List<PerformanceReview>? items, PaginationMeta? meta, ListQuery? query,
+    bool? isLoading, bool? isLoadingMore, Failure? failure,
+    Failure? loadMoreFailure, DateTime? cachedAt, bool clearFailures = false, bool clearCachedAt = false,
+  }) =>
+      PerformanceReviewListState(
+        items: items ?? this.items, meta: meta ?? this.meta,
+        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+        failure: clearFailures ? null : (failure ?? this.failure),
+        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
+      );
+
+  @override
+  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure, cachedAt];
+}
+
+class AttendanceListState extends Equatable {
+  const AttendanceListState({
+    this.items = const <Attendance>[],
+    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.query = const ListQuery(sort: '-createdAt'),
+    this.isLoading = true,
+    this.isLoadingMore = false,
+    this.failure,
+    this.loadMoreFailure,
+    this.cachedAt,
+  });
+
+  final List<Attendance> items;
+  final PaginationMeta meta;
+  final ListQuery query;
+  final bool isLoading;
+  final bool isLoadingMore;
+  final Failure? failure;
+  final Failure? loadMoreFailure;
+  final DateTime? cachedAt;
+
+  AttendanceListState copyWith({
+    List<Attendance>? items, PaginationMeta? meta, ListQuery? query,
+    bool? isLoading, bool? isLoadingMore, Failure? failure,
+    Failure? loadMoreFailure, DateTime? cachedAt, bool clearFailures = false, bool clearCachedAt = false,
+  }) =>
+      AttendanceListState(
+        items: items ?? this.items, meta: meta ?? this.meta,
+        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+        failure: clearFailures ? null : (failure ?? this.failure),
+        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
+      );
+
+  @override
+  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure, cachedAt];
+}
+
+final NotifierProvider<AttendanceListController, AttendanceListState> attendanceListControllerProvider = NotifierProvider<AttendanceListController, AttendanceListState>(AttendanceListController.new);
+class AttendanceListController extends Notifier<AttendanceListState> {
+  void search(String s) {}
+  void applyFilters(Map<String, String> f) {}
+  void applySort(String s) {}
+  void loadMore() {}
+  Future<void> refresh() async {}
+  Future<Result<void>> delete(String id) async => throw UnimplementedError();
+  Future<Result<void>> submit(String id) async => throw UnimplementedError();
+  Future<Result<void>> approve(String id) async => throw UnimplementedError();
+  Future<Result<void>> post(String id) async => throw UnimplementedError();
+
+  Future<Result<Attendance>> save(Map<String, dynamic> data, {String? id}) async => throw UnimplementedError();
+  @override
+  AttendanceListState build() {
+    Future<void>.microtask(() {});
+    return const AttendanceListState();
+  }
+}
+
+

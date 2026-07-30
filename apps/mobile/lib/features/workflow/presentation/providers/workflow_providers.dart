@@ -1,3 +1,4 @@
+import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -162,6 +163,14 @@ class WorkflowDefinitionListController extends Notifier<WorkflowDefinitionListSt
     await DeactivateWorkflowDefinitionUseCase(
       ref.read(workflowRepositoryProvider))(id);
     await refresh();
+  }
+
+  Future<Result<WorkflowDefinition>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveWorkflowDefinitionUseCase(
+      ref.read(workflowRepositoryProvider))(
+      SaveWorkflowDefinitionParams(id: id, payload: payload));
+    if (result.isOk) await refresh();
+    return result;
   }
 }
 
@@ -366,6 +375,14 @@ class WorkflowTaskListController extends Notifier<WorkflowTaskListState> {
     await EscalateWorkflowTaskUseCase(ref.read(workflowRepositoryProvider))(id);
     await refresh();
   }
+
+  Future<Result<WorkflowTask>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveWorkflowTaskUseCase(
+      ref.read(workflowRepositoryProvider))(
+      SaveWorkflowTaskParams(id: id, payload: payload));
+    if (result.isOk) await refresh();
+    return result;
+  }
 }
 
 final FutureProviderFamily<WorkflowDefinition, String> workflowDefinitionDetailProvider =
@@ -381,3 +398,11 @@ final FutureProviderFamily<WorkflowInstance, String> workflowInstanceDetailProvi
     ref.watch(workflowRepositoryProvider))(id);
   return result.fold((f) => throw f, (w) => w);
 });
+
+final FutureProviderFamily<WorkflowTask, String> workflowTaskDetailProvider =
+    FutureProvider.family<WorkflowTask, String>((Ref ref, String id) async {
+  final result = await GetWorkflowTaskUseCase(
+    ref.watch(workflowRepositoryProvider))(id);
+  return result.fold((f) => throw f, (t) => t);
+});
+

@@ -21,6 +21,10 @@ class SupplyChainRepositoryImpl implements SupplyChainRepository {
   static const String _carrierNamespace = 'supply-chain.carriers';
   static const String _forecastNamespace = 'supply-chain.forecasts';
   static const String _reorderNamespace = 'supply-chain.reorder-suggestions';
+  static const String _routeNamespace = 'supply-chain.routes';
+  static const String _dockNamespace = 'supply-chain.dock-appointments';
+  static const String _transferNamespace = 'supply-chain.warehouse-transfers';
+  static const String _trackingNamespace = 'supply-chain.tracking-events';
 
   final SupplyChainRemoteDataSource _remote;
   final ResponseCache _cache;
@@ -163,4 +167,92 @@ class SupplyChainRepositoryImpl implements SupplyChainRepository {
   @override
   Future<Result<ReorderSuggestion>> approveReorderSuggestion(String id) =>
       _single(() => _remote.approveReorderSuggestion(id));
+
+  @override
+  Future<Result<Cacheable<Paginated<SupplyChainRoute>>>> listSupplyChainRoutes(ListQuery q) =>
+      _paginated(_routeNamespace, q, () => _remote.listSupplyChainRoutes(q),
+        SupplyChainRouteModel.fromJson);
+
+  @override
+  Future<Result<SupplyChainRoute>> getSupplyChainRoute(String id) =>
+      _single(() => _remote.getSupplyChainRoute(id));
+
+  @override
+  Future<Result<SupplyChainRoute>> createSupplyChainRoute(Map<String, dynamic> p) =>
+      _write(() => _remote.createSupplyChainRoute(p));
+
+  @override
+  Future<Result<SupplyChainRoute>> updateSupplyChainRoute(String id, Map<String, dynamic> p) =>
+      _write(() => _remote.updateSupplyChainRoute(id, p));
+
+  @override
+  Future<Result<void>> deleteSupplyChainRoute(String id) =>
+      _delete(() => _remote.deleteSupplyChainRoute(id));
+
+  @override
+  Future<Result<Cacheable<Paginated<DockAppointment>>>> listDockAppointments(ListQuery q) =>
+      _paginated(_dockNamespace, q, () => _remote.listDockAppointments(q),
+        DockAppointmentModel.fromJson);
+
+  @override
+  Future<Result<DockAppointment>> getDockAppointment(String id) =>
+      _single(() => _remote.getDockAppointment(id));
+
+  @override
+  Future<Result<DockAppointment>> createDockAppointment(Map<String, dynamic> p) =>
+      _write(() => _remote.createDockAppointment(p));
+
+  @override
+  Future<Result<DockAppointment>> updateDockAppointment(String id, Map<String, dynamic> p) =>
+      _write(() => _remote.updateDockAppointment(id, p));
+
+  @override
+  Future<Result<void>> deleteDockAppointment(String id) =>
+      _delete(() => _remote.deleteDockAppointment(id));
+
+  @override
+  Future<Result<DockAppointment>> checkinDockAppointment(String id) =>
+      _single(() => _remote.checkinDockAppointment(id));
+
+  @override
+  Future<Result<DockAppointment>> completeDockAppointment(String id) =>
+      _single(() => _remote.completeDockAppointment(id));
+
+  @override
+  Future<Result<Cacheable<Paginated<WarehouseTransfer>>>> listWarehouseTransfers(ListQuery q) =>
+      _paginated(_transferNamespace, q, () => _remote.listWarehouseTransfers(q),
+        WarehouseTransferModel.fromJson);
+
+  @override
+  Future<Result<WarehouseTransfer>> getWarehouseTransfer(String id) =>
+      _single(() => _remote.getWarehouseTransfer(id));
+
+  @override
+  Future<Result<WarehouseTransfer>> createWarehouseTransfer(Map<String, dynamic> p) =>
+      _write(() => _remote.createWarehouseTransfer(p));
+
+  @override
+  Future<Result<WarehouseTransfer>> updateWarehouseTransfer(String id, Map<String, dynamic> p) =>
+      _write(() => _remote.updateWarehouseTransfer(id, p));
+
+  @override
+  Future<Result<void>> deleteWarehouseTransfer(String id) =>
+      _delete(() => _remote.deleteWarehouseTransfer(id));
+
+  @override
+  Future<Result<WarehouseTransfer>> approveWarehouseTransfer(String id) =>
+      _single(() => _remote.approveWarehouseTransfer(id));
+
+  @override
+  Future<Result<WarehouseTransfer>> completeWarehouseTransfer(String id) =>
+      _single(() => _remote.completeWarehouseTransfer(id));
+
+  @override
+  Future<Result<Cacheable<Paginated<TrackingEvent>>>> listTrackingEvents(ListQuery q) =>
+      _paginated(_trackingNamespace, q, () => _remote.listTrackingEvents(q),
+        TrackingEventModel.fromJson);
+
+  @override
+  Future<Result<TrackingEvent>> createTrackingEvent(Map<String, dynamic> p) =>
+      _write(() => _remote.createTrackingEvent(p));
 }

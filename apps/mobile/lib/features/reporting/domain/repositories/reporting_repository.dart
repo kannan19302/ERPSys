@@ -24,4 +24,16 @@ abstract class ReportingRepository {
   Future<Result<ReportExport>> getExport(String id);
 
   Future<Result<Cacheable<Paginated<ReportCompliance>>>> listCompliance(ListQuery query);
+  Future<Result<ReportCompliance>> getCompliance(String id);
+  Future<Result<ReportCompliance>> createCompliance(Map<String, dynamic> payload);
+  Future<Result<ReportCompliance>> updateCompliance(String id, Map<String, dynamic> payload);
+  Future<Result<void>> deleteCompliance(String id);
+
+
+
+  Future<Result<ReportJob>> createJob(Map<String, dynamic> payload);
+  Future<Result<ReportJob>> updateJob(String id, Map<String, dynamic> payload);
+  Future<Result<ReportExport>> createExport(Map<String, dynamic> payload);
+  Future<Result<ReportExport>> updateExport(String id, Map<String, dynamic> payload);
+
 }

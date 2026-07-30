@@ -232,3 +232,152 @@ class Budget extends Equatable {
         remainingAmount, status, createdAt,
       ];
 }
+
+/// A tax filing record for a given period.
+class TaxFiling extends Equatable {
+  const TaxFiling({
+    required this.id,
+    required this.taxType,
+    required this.period,
+    required this.returnType,
+    required this.totalTax,
+    required this.status,
+    required this.dueAt,
+    this.filedAt,
+    this.notes,
+    this.createdAt,
+  });
+
+  final String id;
+  final String taxType;
+  final String period;
+  final String returnType;
+  final double totalTax;
+  final String status;
+  final DateTime? filedAt;
+  final DateTime dueAt;
+  final String? notes;
+  final DateTime? createdAt;
+
+  @override
+  List<Object?> get props => <Object?>[
+        id, taxType, period, returnType, totalTax, status,
+        filedAt, dueAt, notes, createdAt,
+      ];
+}
+
+/// A chart of account entry.
+class ChartOfAccount extends Equatable {
+  const ChartOfAccount({
+    required this.id,
+    required this.code,
+    required this.name,
+    required this.type,
+    this.parentId,
+    this.isActive = true,
+    this.balance = 0,
+    this.createdAt,
+  });
+
+  final String id;
+  final String code;
+  final String name;
+  final String type;
+  final String? parentId;
+  final bool isActive;
+  final double balance;
+  final DateTime? createdAt;
+
+  @override
+  List<Object?> get props => <Object?>[
+        id, code, name, type, parentId, isActive, balance, createdAt,
+      ];
+}
+
+/// A single line item within a JournalEntry.
+class JournalEntryLineItem extends Equatable {
+  const JournalEntryLineItem({
+    required this.id,
+    required this.accountId,
+    this.accountName,
+    this.debit = 0,
+    this.credit = 0,
+    this.description,
+  });
+
+  final String id;
+  final String accountId;
+  final String? accountName;
+  final double debit;
+  final double credit;
+  final String? description;
+
+  @override
+  List<Object?> get props => <Object?>[
+        id, accountId, accountName, debit, credit, description,
+      ];
+}
+
+/// A journal entry (general ledger entry).
+class JournalEntry extends Equatable {
+  const JournalEntry({
+    required this.id,
+    required this.entryNumber,
+    required this.date,
+    this.description,
+    this.reference,
+    this.totalDebit = 0,
+    this.totalCredit = 0,
+    this.status = 'DRAFT',
+    this.createdAt,
+    this.lineItems = const <JournalEntryLineItem>[],
+  });
+
+  final String id;
+  final String entryNumber;
+  final DateTime date;
+  final String? description;
+  final String? reference;
+  final double totalDebit;
+  final double totalCredit;
+  final String status;
+  final DateTime? createdAt;
+  final List<JournalEntryLineItem> lineItems;
+
+  @override
+  List<Object?> get props => <Object?>[
+        id, entryNumber, date, description, reference,
+        totalDebit, totalCredit, status, createdAt, lineItems,
+      ];
+}
+
+/// A bank account record.
+class BankAccount extends Equatable {
+  const BankAccount({
+    required this.id,
+    required this.name,
+    required this.accountNumber,
+    required this.bankName,
+    this.branch,
+    this.currency = 'USD',
+    this.balance = 0,
+    this.isActive = true,
+    this.createdAt,
+  });
+
+  final String id;
+  final String name;
+  final String accountNumber;
+  final String bankName;
+  final String? branch;
+  final String currency;
+  final double balance;
+  final bool isActive;
+  final DateTime? createdAt;
+
+  @override
+  List<Object?> get props => <Object?>[
+        id, name, accountNumber, bankName, branch, currency,
+        balance, isActive, createdAt,
+      ];
+}

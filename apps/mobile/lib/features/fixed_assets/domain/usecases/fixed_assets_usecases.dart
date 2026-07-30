@@ -87,9 +87,58 @@ class ListDisposalsUseCase
       _repository.listDisposals(params);
 }
 
-class ApproveDisposalUseCase extends UseCase<void, String> {
-  const ApproveDisposalUseCase(this._repository);
+class GetDisposalUseCase extends UseCase<AssetDisposal, String> {
+  const GetDisposalUseCase(this._repository);
   final FixedAssetsRepository _repository;
   @override
-  Future<Result<void>> call(String id) => _repository.approveDisposal(id);
+  Future<Result<AssetDisposal>> call(String id) =>
+      _repository.getDisposal(id);
+}
+
+class SaveDisposalParams {
+  const SaveDisposalParams({required this.payload, this.id});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SaveDisposalUseCase
+    extends UseCase<AssetDisposal, SaveDisposalParams> {
+  const SaveDisposalUseCase(this._repository);
+  final FixedAssetsRepository _repository;
+  @override
+  Future<Result<AssetDisposal>> call(SaveDisposalParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createDisposal(params.payload)
+        : _repository.updateDisposal(id, params.payload);
+  }
+}
+
+class GetMaintenanceScheduleUseCase
+    extends UseCase<AssetMaintenanceSchedule, String> {
+  const GetMaintenanceScheduleUseCase(this._repository);
+  final FixedAssetsRepository _repository;
+  @override
+  Future<Result<AssetMaintenanceSchedule>> call(String id) =>
+      _repository.getMaintenanceSchedule(id);
+}
+
+class SaveMaintenanceScheduleParams {
+  const SaveMaintenanceScheduleParams({required this.payload, this.id});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SaveMaintenanceScheduleUseCase
+    extends UseCase<AssetMaintenanceSchedule, SaveMaintenanceScheduleParams> {
+  const SaveMaintenanceScheduleUseCase(this._repository);
+  final FixedAssetsRepository _repository;
+  @override
+  Future<Result<AssetMaintenanceSchedule>> call(
+      SaveMaintenanceScheduleParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createMaintenanceSchedule(params.payload)
+        : _repository.updateMaintenanceSchedule(id, params.payload);
+  }
 }

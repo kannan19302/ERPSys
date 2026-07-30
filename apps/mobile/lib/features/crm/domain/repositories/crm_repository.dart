@@ -62,11 +62,21 @@ abstract class CrmRepository {
 
   Future<Result<Activity>> createActivity(Map<String, dynamic> payload);
 
+  Future<Result<Activity>> getActivity(String id);
+
+  Future<Result<Activity>> updateActivity(String id, Map<String, dynamic> payload);
+
+  Future<Result<void>> deleteActivity(String id);
+
   Future<Result<Paginated<LeadSource>>> listLeadSources(ListQuery query);
 
   Future<Result<LeadSource>> createLeadSource(Map<String, dynamic> payload);
 
+  Future<Result<void>> deleteLeadSource(String id);
+
   Future<Result<Paginated<EmailTemplate>>> listEmailTemplates(ListQuery query);
+
+  Future<Result<EmailTemplate>> getEmailTemplate(String id);
 
   Future<Result<EmailTemplate>> createEmailTemplate(Map<String, dynamic> payload);
 

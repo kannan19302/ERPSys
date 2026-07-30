@@ -136,30 +136,42 @@ class DeliveryNote extends Equatable {
   const DeliveryNote({
     required this.id,
     required this.salesOrderId,
+    required this.customerId,
     required this.customerName,
     required this.status,
     required this.items,
     this.deliveryDate,
+    this.shippingAddress,
+    this.notes,
     this.createdAt,
+    this.updatedAt,
   });
 
   final String id;
   final String salesOrderId;
+  final String customerId;
   final String customerName;
   final String status;
   final List<DeliveryNoteItem> items;
   final DateTime? deliveryDate;
+  final String? shippingAddress;
+  final String? notes;
   final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   @override
   List<Object?> get props => <Object?>[
         id,
         salesOrderId,
+        customerId,
         customerName,
         status,
         items,
         deliveryDate,
+        shippingAddress,
+        notes,
         createdAt,
+        updatedAt,
       ];
 }
 
@@ -169,48 +181,64 @@ class DeliveryNoteItem extends Equatable {
     required this.productId,
     required this.productName,
     required this.quantity,
+    this.rate,
+    this.amount,
   });
 
   final String id;
   final String productId;
   final String productName;
   final double quantity;
+  final double? rate;
+  final double? amount;
 
   @override
-  List<Object?> get props => <Object?>[id, productId, productName, quantity];
+  List<Object?> get props => <Object?>[id, productId, productName, quantity, rate, amount];
 }
 
 class SalesReturn extends Equatable {
   const SalesReturn({
     required this.id,
     required this.salesOrderId,
+    required this.customerId,
     required this.customerName,
     required this.status,
     required this.reason,
+    required this.reasonType,
     required this.items,
     required this.totalAmount,
+    this.notes,
     this.createdAt,
+    this.updatedAt,
   });
 
   final String id;
   final String salesOrderId;
+  final String customerId;
   final String customerName;
   final String status;
   final String reason;
+  final String reasonType;
   final List<SalesReturnItem> items;
   final double totalAmount;
+  final String? notes;
   final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   @override
   List<Object?> get props => <Object?>[
         id,
         salesOrderId,
+        customerId,
         customerName,
         status,
         reason,
+        reasonType,
         items,
         totalAmount,
+        notes,
         createdAt,
+        updatedAt,
       ];
 }
 
@@ -269,33 +297,66 @@ class Opportunity extends Equatable {
   const Opportunity({
     required this.id,
     required this.title,
+    required this.customerId,
     required this.customerName,
     required this.stage,
+    this.company,
+    this.contactId,
+    this.contactName,
+    this.pipelineId,
+    this.pipelineName,
     this.expectedRevenue,
     this.probability,
     this.closeDate,
     this.status,
+    this.notes,
+    this.assignedTo,
+    this.currency,
+    this.createdAt,
+    this.updatedAt,
   });
 
   final String id;
   final String title;
+  final String customerId;
   final String customerName;
   final String stage;
+  final String? company;
+  final String? contactId;
+  final String? contactName;
+  final String? pipelineId;
+  final String? pipelineName;
   final double? expectedRevenue;
   final double? probability;
   final DateTime? closeDate;
   final String? status;
+  final String? notes;
+  final String? assignedTo;
+  final String? currency;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   @override
   List<Object?> get props => <Object?>[
         id,
         title,
+        customerId,
         customerName,
         stage,
+        company,
+        contactId,
+        contactName,
+        pipelineId,
+        pipelineName,
         expectedRevenue,
         probability,
         closeDate,
         status,
+        notes,
+        assignedTo,
+        currency,
+        createdAt,
+        updatedAt,
       ];
 }
 

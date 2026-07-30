@@ -496,6 +496,101 @@ class HrDashboardStats extends Equatable {
 }
 
 /// `GET /hr/org-chart`
+class PerformanceReviewStatus {
+  const PerformanceReviewStatus._();
+  static const String draft = 'DRAFT';
+  static const String submitted = 'SUBMITTED';
+  static const String completed = 'COMPLETED';
+}
+
+class PerformanceReview extends Equatable {
+  const PerformanceReview({
+    required this.id,
+    required this.employeeId,
+    required this.employeeName,
+    this.reviewerId,
+    this.reviewerName,
+    required this.reviewPeriod,
+    this.rating,
+    this.goals,
+    this.feedback,
+    this.status = PerformanceReviewStatus.draft,
+    this.dueDate,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  final String id;
+  final String employeeId;
+  final String employeeName;
+  final String? reviewerId;
+  final String? reviewerName;
+  final String reviewPeriod;
+  final double? rating;
+  final String? goals;
+  final String? feedback;
+  final String status;
+  final DateTime? dueDate;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  @override
+  List<Object?> get props => <Object?>[
+        id,
+        employeeId,
+        employeeName,
+        reviewerId,
+        reviewerName,
+        reviewPeriod,
+        rating,
+        goals,
+        feedback,
+        status,
+        dueDate,
+        createdAt,
+        updatedAt,
+      ];
+}
+
+class LeaveAllocation extends Equatable {
+  const LeaveAllocation({
+    required this.id,
+    required this.employeeId,
+    required this.employeeName,
+    required this.leaveTypeId,
+    required this.leaveTypeName,
+    required this.totalDays,
+    this.usedDays = 0,
+    this.period,
+    this.createdAt,
+  });
+
+  final String id;
+  final String employeeId;
+  final String employeeName;
+  final String leaveTypeId;
+  final String leaveTypeName;
+  final double totalDays;
+  final double usedDays;
+  final String? period;
+  final DateTime? createdAt;
+
+  double get remainingDays => totalDays - usedDays;
+
+  @override
+  List<Object?> get props => <Object?>[
+        id,
+        employeeId,
+        employeeName,
+        leaveTypeId,
+        leaveTypeName,
+        totalDays,
+        usedDays,
+        period,
+        createdAt,
+      ];
+}
+
 class OrgChartNode extends Equatable {
   const OrgChartNode({
     required this.id,

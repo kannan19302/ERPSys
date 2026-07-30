@@ -1,3 +1,4 @@
+import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -125,6 +126,15 @@ class EcommerceProductListController extends Notifier<EcommerceProductListState>
   Future<Result<void>> delete(String id) async {
     final result = await DeleteEcommerceProductUseCase(
       ref.read(ecommerceRepositoryProvider))(id);
+    if (result.isOk) await refresh();
+    return result;
+  }
+
+  Future<Result<EcommerceProduct>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveEcommerceProductUseCase(
+      ref.read(ecommerceRepositoryProvider))(
+      SaveEcommerceProductParams(id: id, payload: payload),
+    );
     if (result.isOk) await refresh();
     return result;
   }
@@ -330,6 +340,15 @@ class EcommerceCategoryListController extends Notifier<EcommerceCategoryListStat
   Future<Result<void>> delete(String id) async {
     final result = await DeleteEcommerceCategoryUseCase(
       ref.read(ecommerceRepositoryProvider))(id);
+    if (result.isOk) await refresh();
+    return result;
+  }
+
+  Future<Result<EcommerceCategory>> saveCategory(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveEcommerceCategoryUseCase(
+      ref.read(ecommerceRepositoryProvider))(
+      SaveEcommerceCategoryParams(id: id, payload: payload),
+    );
     if (result.isOk) await refresh();
     return result;
   }

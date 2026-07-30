@@ -120,6 +120,45 @@ class ListRFQsUseCase extends UseCase<Cacheable<Paginated<RFQ>>, ListQuery> {
       _repository.listRFQs(params);
 }
 
+class GetRFQUseCase extends UseCase<RFQ, String> {
+  const GetRFQUseCase(this._repository);
+  final ProcurementRepository _repository;
+  @override
+  Future<Result<RFQ>> call(String id) => _repository.getRFQ(id);
+}
+
+class SaveRFQParams {
+  const SaveRFQParams({required this.payload, this.id});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SaveRFQUseCase extends UseCase<RFQ, SaveRFQParams> {
+  const SaveRFQUseCase(this._repository);
+  final ProcurementRepository _repository;
+  @override
+  Future<Result<RFQ>> call(SaveRFQParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createRFQ(params.payload)
+        : _repository.updateRFQ(id, params.payload);
+  }
+}
+
+class SubmitRFQUseCase extends UseCase<RFQ, String> {
+  const SubmitRFQUseCase(this._repository);
+  final ProcurementRepository _repository;
+  @override
+  Future<Result<RFQ>> call(String id) => _repository.submitRFQ(id);
+}
+
+class CloseRFQUseCase extends UseCase<RFQ, String> {
+  const CloseRFQUseCase(this._repository);
+  final ProcurementRepository _repository;
+  @override
+  Future<Result<RFQ>> call(String id) => _repository.closeRFQ(id);
+}
+
 class ListSupplierQuotationsUseCase extends UseCase<Cacheable<Paginated<SupplierQuotation>>, ListQuery> {
   const ListSupplierQuotationsUseCase(this._repository);
   final ProcurementRepository _repository;
@@ -128,10 +167,169 @@ class ListSupplierQuotationsUseCase extends UseCase<Cacheable<Paginated<Supplier
       _repository.listSupplierQuotations(params);
 }
 
+class GetSupplierQuotationUseCase extends UseCase<SupplierQuotation, String> {
+  const GetSupplierQuotationUseCase(this._repository);
+  final ProcurementRepository _repository;
+  @override
+  Future<Result<SupplierQuotation>> call(String id) => _repository.getSupplierQuotation(id);
+}
+
+class SaveSupplierQuotationParams {
+  const SaveSupplierQuotationParams({required this.payload, this.id});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SaveSupplierQuotationUseCase extends UseCase<SupplierQuotation, SaveSupplierQuotationParams> {
+  const SaveSupplierQuotationUseCase(this._repository);
+  final ProcurementRepository _repository;
+  @override
+  Future<Result<SupplierQuotation>> call(SaveSupplierQuotationParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createSupplierQuotation(params.payload)
+        : _repository.updateSupplierQuotation(id, params.payload);
+  }
+}
+
+class ApproveSupplierQuotationUseCase extends UseCase<SupplierQuotation, String> {
+  const ApproveSupplierQuotationUseCase(this._repository);
+  final ProcurementRepository _repository;
+  @override
+  Future<Result<SupplierQuotation>> call(String id) => _repository.approveSupplierQuotation(id);
+}
+
+class RejectSupplierQuotationUseCase extends UseCase<SupplierQuotation, String> {
+  const RejectSupplierQuotationUseCase(this._repository);
+  final ProcurementRepository _repository;
+  @override
+  Future<Result<SupplierQuotation>> call(String id) => _repository.rejectSupplierQuotation(id);
+}
+
+class ConvertSupplierQuotationUseCase extends UseCase<SupplierQuotation, String> {
+  const ConvertSupplierQuotationUseCase(this._repository);
+  final ProcurementRepository _repository;
+  @override
+  Future<Result<SupplierQuotation>> call(String id) => _repository.convertSupplierQuotation(id);
+}
+
 class ListPurchaseRequisitionsUseCase extends UseCase<Cacheable<Paginated<PurchaseRequisition>>, ListQuery> {
   const ListPurchaseRequisitionsUseCase(this._repository);
   final ProcurementRepository _repository;
   @override
   Future<Result<Cacheable<Paginated<PurchaseRequisition>>>> call(ListQuery params) =>
       _repository.listPurchaseRequisitions(params);
+}
+
+class GetPurchaseRequisitionUseCase extends UseCase<PurchaseRequisition, String> {
+  const GetPurchaseRequisitionUseCase(this._repository);
+  final ProcurementRepository _repository;
+  @override
+  Future<Result<PurchaseRequisition>> call(String id) => _repository.getPurchaseRequisition(id);
+}
+
+class SavePurchaseRequisitionParams {
+  const SavePurchaseRequisitionParams({required this.payload, this.id});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SavePurchaseRequisitionUseCase extends UseCase<PurchaseRequisition, SavePurchaseRequisitionParams> {
+  const SavePurchaseRequisitionUseCase(this._repository);
+  final ProcurementRepository _repository;
+  @override
+  Future<Result<PurchaseRequisition>> call(SavePurchaseRequisitionParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createPurchaseRequisition(params.payload)
+        : _repository.updatePurchaseRequisition(id, params.payload);
+  }
+}
+
+class ApprovePurchaseRequisitionUseCase extends UseCase<PurchaseRequisition, String> {
+  const ApprovePurchaseRequisitionUseCase(this._repository);
+  final ProcurementRepository _repository;
+  @override
+  Future<Result<PurchaseRequisition>> call(String id) => _repository.approvePurchaseRequisition(id);
+}
+
+class ListPurchaseReceiptsUseCase extends UseCase<Cacheable<Paginated<PurchaseReceipt>>, ListQuery> {
+  const ListPurchaseReceiptsUseCase(this._repository);
+  final ProcurementRepository _repository;
+  @override
+  Future<Result<Cacheable<Paginated<PurchaseReceipt>>>> call(ListQuery params) =>
+      _repository.listPurchaseReceipts(params);
+}
+
+class GetPurchaseReceiptUseCase extends UseCase<PurchaseReceipt, String> {
+  const GetPurchaseReceiptUseCase(this._repository);
+  final ProcurementRepository _repository;
+  @override
+  Future<Result<PurchaseReceipt>> call(String id) => _repository.getPurchaseReceipt(id);
+}
+
+class SavePurchaseReceiptParams {
+  const SavePurchaseReceiptParams({required this.payload, this.id});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SavePurchaseReceiptUseCase extends UseCase<PurchaseReceipt, SavePurchaseReceiptParams> {
+  const SavePurchaseReceiptUseCase(this._repository);
+  final ProcurementRepository _repository;
+  @override
+  Future<Result<PurchaseReceipt>> call(SavePurchaseReceiptParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createPurchaseReceipt(params.payload)
+        : _repository.updatePurchaseReceipt(id, params.payload);
+  }
+}
+
+class ListSupplierContractsUseCase extends UseCase<Cacheable<Paginated<SupplierContract>>, ListQuery> {
+  const ListSupplierContractsUseCase(this._repository);
+  final ProcurementRepository _repository;
+  @override
+  Future<Result<Cacheable<Paginated<SupplierContract>>>> call(ListQuery params) =>
+      _repository.listSupplierContracts(params);
+}
+
+class GetSupplierContractUseCase extends UseCase<SupplierContract, String> {
+  const GetSupplierContractUseCase(this._repository);
+  final ProcurementRepository _repository;
+  @override
+  Future<Result<SupplierContract>> call(String id) => _repository.getSupplierContract(id);
+}
+
+class SaveSupplierContractParams {
+  const SaveSupplierContractParams({required this.payload, this.id});
+  final String? id;
+  final Map<String, dynamic> payload;
+}
+
+class SaveSupplierContractUseCase extends UseCase<SupplierContract, SaveSupplierContractParams> {
+  const SaveSupplierContractUseCase(this._repository);
+  final ProcurementRepository _repository;
+  @override
+  Future<Result<SupplierContract>> call(SaveSupplierContractParams params) {
+    final String? id = params.id;
+    return id == null
+        ? _repository.createSupplierContract(params.payload)
+        : _repository.updateSupplierContract(id, params.payload);
+  }
+}
+
+class DeleteSupplierContractUseCase extends UseCase<void, String> {
+  const DeleteSupplierContractUseCase(this._repository);
+  final ProcurementRepository _repository;
+  @override
+  Future<Result<void>> call(String id) => _repository.deleteSupplierContract(id);
+}
+
+class GetProcurementDashboardUseCase extends UseCase<ProcurementDashboardStats, void> {
+  const GetProcurementDashboardUseCase(this._repository);
+  final ProcurementRepository _repository;
+  @override
+  Future<Result<ProcurementDashboardStats>> call(void params) =>
+      _repository.getProcurementDashboard();
 }

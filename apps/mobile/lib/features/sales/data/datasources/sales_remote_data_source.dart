@@ -40,9 +40,19 @@ abstract class SalesRemoteDataSource {
 
   Future<DeliveryNoteModel> createDeliveryNote(Map<String, dynamic> payload);
 
+  Future<DeliveryNoteModel> updateDeliveryNote(String id, Map<String, dynamic> payload);
+
+  Future<void> deleteDeliveryNote(String id);
+
+  Future<DeliveryNoteModel> submitDeliveryNote(String id);
+
   Future<Paginated<SalesReturnModel>> listSalesReturns(ListQuery query);
 
   Future<SalesReturnModel> getSalesReturn(String id);
+
+  Future<SalesReturnModel> createSalesReturn(Map<String, dynamic> payload);
+
+  Future<void> deleteSalesReturn(String id);
 
   Future<SalesReturnModel> approveSalesReturn(String id);
 
@@ -51,6 +61,18 @@ abstract class SalesRemoteDataSource {
   Future<List<SalesPipelineModel>> listPipelines();
 
   Future<Paginated<OpportunityModel>> listOpportunities(ListQuery query);
+
+  Future<OpportunityModel> getOpportunity(String id);
+
+  Future<OpportunityModel> createOpportunity(Map<String, dynamic> payload);
+
+  Future<OpportunityModel> updateOpportunity(String id, Map<String, dynamic> payload);
+
+  Future<void> deleteOpportunity(String id);
+
+  Future<OpportunityModel> updateOpportunityStage(String id, String stage);
+
+  Future<SalesPipelineModel> getSalesPipeline(String id);
 
   Future<List<SalesActivityModel>> listSalesActivity();
 
@@ -171,6 +193,25 @@ class SalesRemoteDataSourceImpl implements SalesRemoteDataSource {
       );
 
   @override
+  Future<DeliveryNoteModel> updateDeliveryNote(
+    String id,
+    Map<String, dynamic> payload,
+  ) async =>
+      DeliveryNoteModel.fromJson(
+        await _client.patch(ApiPaths.deliveryNote(id), body: payload),
+      );
+
+  @override
+  Future<void> deleteDeliveryNote(String id) =>
+      _client.delete(ApiPaths.deliveryNote(id));
+
+  @override
+  Future<DeliveryNoteModel> submitDeliveryNote(String id) async =>
+      DeliveryNoteModel.fromJson(
+        await _client.post('${ApiPaths.deliveryNote(id)}/submit'),
+      );
+
+  @override
   Future<Paginated<SalesReturnModel>> listSalesReturns(ListQuery query) =>
       _client.getPaginated<SalesReturnModel>(
         ApiPaths.salesReturns,
@@ -181,6 +222,16 @@ class SalesRemoteDataSourceImpl implements SalesRemoteDataSource {
   @override
   Future<SalesReturnModel> getSalesReturn(String id) async =>
       SalesReturnModel.fromJson(await _client.getObject(ApiPaths.salesReturn(id)));
+
+  @override
+  Future<SalesReturnModel> createSalesReturn(Map<String, dynamic> payload) async =>
+      SalesReturnModel.fromJson(
+        await _client.post(ApiPaths.salesReturns, body: payload),
+      );
+
+  @override
+  Future<void> deleteSalesReturn(String id) =>
+      _client.delete(ApiPaths.salesReturn(id));
 
   @override
   Future<SalesReturnModel> approveSalesReturn(String id) async =>
@@ -206,6 +257,43 @@ class SalesRemoteDataSourceImpl implements SalesRemoteDataSource {
         ApiPaths.opportunities,
         query,
         OpportunityModel.fromJson,
+      );
+
+  @override
+  Future<OpportunityModel> getOpportunity(String id) async =>
+      OpportunityModel.fromJson(
+        await _client.getObject(ApiPaths.opportunity(id)),
+      );
+
+  @override
+  Future<OpportunityModel> createOpportunity(Map<String, dynamic> payload) async =>
+      OpportunityModel.fromJson(
+        await _client.post(ApiPaths.opportunities, body: payload),
+      );
+
+  @override
+  Future<OpportunityModel> updateOpportunity(
+    String id,
+    Map<String, dynamic> payload,
+  ) async =>
+      OpportunityModel.fromJson(
+        await _client.patch(ApiPaths.opportunity(id), body: payload),
+      );
+
+  @override
+  Future<void> deleteOpportunity(String id) =>
+      _client.delete(ApiPaths.opportunity(id));
+
+  @override
+  Future<OpportunityModel> updateOpportunityStage(String id, String stage) async =>
+      OpportunityModel.fromJson(
+        await _client.post(ApiPaths.opportunityStage(id), body: <String, dynamic>{'stage': stage}),
+      );
+
+  @override
+  Future<SalesPipelineModel> getSalesPipeline(String id) async =>
+      SalesPipelineModel.fromJson(
+        await _client.getObject(ApiPaths.salesPipeline(id)),
       );
 
   @override

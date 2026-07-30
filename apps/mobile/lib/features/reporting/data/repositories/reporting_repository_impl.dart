@@ -138,4 +138,36 @@ class ReportingRepositoryImpl implements ReportingRepository {
     ListQuery query) =>
       _paginated(_complianceNamespace, query, () => _remote.listCompliance(query),
         ReportComplianceModel.fromJson);
+
+  @override
+  Future<Result<ReportCompliance>> createCompliance(Map<String, dynamic> p) async => throw UnimplementedError();
+
+  @override
+  Future<Result<ReportExport>> createExport(Map<String, dynamic> p) async => throw UnimplementedError();
+
+  @override
+  Future<Result<ReportJob>> createJob(Map<String, dynamic> p) async => throw UnimplementedError();
+
+  @override
+  Future<Result<void>> deleteCompliance(String id) async => throw UnimplementedError();
+
+  @override
+  Future<Result<void>> deleteExport(String id) async => throw UnimplementedError();
+
+  @override
+  Future<Result<void>> deleteJob(String id) async => throw UnimplementedError();
+
+  @override
+  Future<Result<ReportCompliance>> updateCompliance(String id, Map<String, dynamic> p) async => throw UnimplementedError();
+
+  @override
+  Future<Result<ReportExport>> updateExport(String id, Map<String, dynamic> p) async => throw UnimplementedError();
+
+
+  @override
+  Future<Result<ReportCompliance>> getCompliance(String id) async => throw UnimplementedError();
+
+  @override
+  Future<Result<ReportJob>> updateJob(String id, Map<String, dynamic> p) async => throw UnimplementedError();
+
 }

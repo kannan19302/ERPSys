@@ -203,4 +203,8 @@ class HealthcareRepositoryImpl implements HealthcareRepository {
   @override
   Future<Result<InsuranceClaim>> rejectInsuranceClaim(String id) =>
       _single(() => _remote.rejectInsuranceClaim(id));
+
+  @override
+  Future<Result<Prescription>> updatePrescription(String id, Map<String, dynamic> p) async => throw UnimplementedError();
+
 }

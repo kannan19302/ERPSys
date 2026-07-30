@@ -1,3 +1,4 @@
+import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -140,6 +141,15 @@ class AiModelListController extends Notifier<AiModelListState> {
     if (result.isOk) await refresh();
     return result;
   }
+
+  Future<Result<AiModel>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveAiModelUseCase(
+      ref.read(aiRepositoryProvider))(
+      SaveAiModelParams(id: id, payload: payload),
+    );
+    if (result.isOk) await refresh();
+    return result;
+  }
 }
 
 final FutureProviderFamily<AiModel, String> aiModelDetailProvider =
@@ -248,6 +258,15 @@ class AiPromptListController extends Notifier<AiPromptListState> {
   Future<Result<void>> delete(String id) async {
     final result = await DeleteAiPromptUseCase(
       ref.read(aiRepositoryProvider))(id);
+    if (result.isOk) await refresh();
+    return result;
+  }
+
+  Future<Result<AiPrompt>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveAiPromptUseCase(
+      ref.read(aiRepositoryProvider))(
+      SaveAiPromptParams(id: id, payload: payload),
+    );
     if (result.isOk) await refresh();
     return result;
   }
@@ -362,6 +381,15 @@ class AiTrainingDataListController extends Notifier<AiTrainingDataListState> {
     if (result.isOk) await refresh();
     return result;
   }
+
+  Future<Result<AiTrainingData>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveAiTrainingDataUseCase(
+      ref.read(aiRepositoryProvider))(
+      payload,
+    );
+    if (result.isOk) await refresh();
+    return result;
+  }
 }
 
 class AiPredictionListState extends Equatable {
@@ -459,4 +487,27 @@ class AiPredictionListController extends Notifier<AiPredictionListState> {
       refresh();
     });
   }
+
+  Future<Result<AiPrediction>> save(Map<String, dynamic> payload, {String? id}) async {
+    final result = await SaveAiPredictionUseCase(
+      ref.read(aiRepositoryProvider))(
+      payload,
+    );
+    if (result.isOk) await refresh();
+    return result;
+  }
 }
+
+final FutureProviderFamily<AiPrediction, String> aiPredictionDetailProvider =
+    FutureProvider.family<AiPrediction, String>((Ref ref, String id) async {
+  final result = await GetAiPredictionUseCase(
+    ref.watch(aiRepositoryProvider))(id);
+  return result.fold((f) => throw f, (v) => v);
+});
+
+final FutureProviderFamily<AiTrainingData, String> aiTrainingDataDetailProvider =
+    FutureProvider.family<AiTrainingData, String>((Ref ref, String id) async {
+  final result = await GetAiTrainingDataUseCase(
+    ref.watch(aiRepositoryProvider))(id);
+  return result.fold((f) => throw f, (v) => v);
+});

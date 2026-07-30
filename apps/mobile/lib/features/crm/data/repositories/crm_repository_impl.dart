@@ -383,6 +383,37 @@ class CrmRepositoryImpl implements CrmRepository {
     }
   }
 
+  @override
+  Future<Result<Activity>> getActivity(String id) async {
+    try {
+      return Result<Activity>.ok(await _remote.getActivity(id));
+    } on Object catch (error) {
+      return Result<Activity>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<Activity>> updateActivity(
+    String id,
+    Map<String, dynamic> payload,
+  ) async {
+    try {
+      return Result<Activity>.ok(await _remote.updateActivity(id, payload));
+    } on Object catch (error) {
+      return Result<Activity>.err(mapExceptionToFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<void>> deleteActivity(String id) async {
+    try {
+      await _remote.deleteActivity(id);
+      return const Result<void>.ok(null);
+    } on Object catch (error) {
+      return Result<void>.err(mapExceptionToFailure(error));
+    }
+  }
+
   // ── Lead Sources ───────────────────────────────────────────────────────
 
   @override
@@ -406,7 +437,26 @@ class CrmRepositoryImpl implements CrmRepository {
     }
   }
 
+  @override
+  Future<Result<void>> deleteLeadSource(String id) async {
+    try {
+      await _remote.deleteLeadSource(id);
+      return const Result<void>.ok(null);
+    } on Object catch (error) {
+      return Result<void>.err(mapExceptionToFailure(error));
+    }
+  }
+
   // ── Email Templates ────────────────────────────────────────────────────
+
+  @override
+  Future<Result<EmailTemplate>> getEmailTemplate(String id) async {
+    try {
+      return Result<EmailTemplate>.ok(await _remote.getEmailTemplate(id));
+    } on Object catch (error) {
+      return Result<EmailTemplate>.err(mapExceptionToFailure(error));
+    }
+  }
 
   @override
   Future<Result<Paginated<EmailTemplate>>> listEmailTemplates(
