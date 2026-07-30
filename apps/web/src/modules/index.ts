@@ -2,6 +2,10 @@ import { reportingModule } from "./reporting";
 import { localizationModule } from "./localization";
 import { subscriptionsModule } from "./subscriptions";
 import { fixedAssetsModule } from "./fixed-assets";
+import { reportingModule } from "./reporting";
+import { localizationModule } from "./localization";
+import { subscriptionsModule } from "./subscriptions";
+import { fixedAssetsModule } from "./fixed-assets";
 import { devopsModule } from "./devops";
 import { extGatewayModule } from "./ext-gateway";
 import { apiPlatformModule } from "./api-platform";
@@ -27,6 +31,10 @@ import { superAdminModule } from "./super-admin";
  * means the inventory one, so inventoryModule must stay ahead of crmModule.
  */
 export const registeredModules = [
+  reportingModule,
+  localizationModule,
+  subscriptionsModule,
+  fixedAssetsModule,
   reportingModule,
   localizationModule,
   subscriptionsModule,
