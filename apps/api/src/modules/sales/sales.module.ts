@@ -10,7 +10,7 @@ import { SalesOutboxHandler } from "./sales-outbox.handler";
 import { OutboxHandlerRegistry } from "../outbox/outbox-handler.registry";
 import { OutboxService } from "@unerp/shared";
 import { OutboxModule } from "../outbox/outbox.module";
-import { SalesDeepController } from "./sales-deep.controller";
+
 import { SalesPromotionsService } from "./sales-promotions.service";
 import { SalesPromotionsController } from "./sales-promotions.controller";
 import { SalesPartnersService } from "./sales-partners.service";
@@ -41,8 +41,8 @@ import { SalesIntelligenceSignalsService } from "./sales-intelligence-signals.se
 import { SalesIntelligenceSignalsController } from "./sales-intelligence-signals.controller";
 import { SalesDocumentsDeepService } from "./sales-documents-deep.service";
 import { SalesDocumentsDeepController } from "./sales-documents-deep.controller";
-import { SalesReturnsDeepService } from "./sales-returns-deep.service";
-import { SalesReturnsDeepController } from "./sales-returns-deep.controller";
+import { SalesReturnsService } from "./sales-returns.service";
+import { SalesReturnsController } from "./sales-returns.controller";
 import { SalesGamificationDeepService } from "./sales-gamification-deep.service";
 import { SalesGamificationDeepController } from "./sales-gamification-deep.controller";
 import { SalesAdvancedPricingDeepService } from "./sales-advanced-pricing-deep.service";
@@ -87,7 +87,7 @@ import { SalesEnterpriseModule } from "./sales-enterprise.module";
     SalesController,
     PricingController,
     SalesExpansionController,
-    SalesDeepController,
+
     SalesPromotionsController,
     SalesPartnersController,
     SalesContractsController,
@@ -103,7 +103,7 @@ import { SalesEnterpriseModule } from "./sales-enterprise.module";
     SalesPlaybooksDeepController,
     SalesIntelligenceSignalsController,
     SalesDocumentsDeepController,
-    SalesReturnsDeepController,
+    SalesReturnsController,
     SalesGamificationDeepController,
     SalesAdvancedPricingDeepController,
     SalesEnterpriseExecutionDeepController,
@@ -144,7 +144,7 @@ import { SalesEnterpriseModule } from "./sales-enterprise.module";
     SalesPlaybooksDeepService,
     SalesIntelligenceSignalsService,
     SalesDocumentsDeepService,
-    SalesReturnsDeepService,
+    SalesReturnsService,
     SalesGamificationDeepService,
     SalesAdvancedPricingDeepService,
     SalesEnterpriseExecutionDeepService,
@@ -178,7 +178,7 @@ import { SalesEnterpriseModule } from "./sales-enterprise.module";
     SalesPlaybooksDeepService,
     SalesIntelligenceSignalsService,
     SalesDocumentsDeepService,
-    SalesReturnsDeepService,
+    SalesReturnsService,
     SalesGamificationDeepService,
     SalesAdvancedPricingDeepService,
     SalesEnterpriseExecutionDeepService,

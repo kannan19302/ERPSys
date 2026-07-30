@@ -84,7 +84,7 @@ import {
 import { CrmSalesAutomationService } from "./crm-sales-automation.service";
 import { CrmCustomerSuccessService } from "./crm-customer-success.service";
 import { CrmMarketingAutomationService } from "./crm-marketing-automation.service";
-import { CrmDeepController } from "./crm-deep.controller";
+
 import { CrmExpansionDeepController } from "./crm-expansion-deep.controller";
 import { CrmActivityCaptureService } from "./crm-activity-capture.service";
 import { CrmActivityCaptureController } from "./crm-activity-capture.controller";
@@ -189,7 +189,7 @@ import { CrmPipelineIntelligenceService } from "./crm-pipeline-intelligence.serv
 import { CrmPipelineIntelligenceController } from "./crm-pipeline-intelligence.controller";
 import { CrmRevenueAttributionDeepService } from "./crm-revenue-attribution-deep.service";
 import { CrmRevenueAttributionDeepController } from "./crm-revenue-attribution-deep.controller";
-import { CrmCustomerSuccessDeepService } from "./crm-customer-success-deep.service";
+import { CrmCustomerSuccessDeepService } from "./services/crm-customer-success-deep.service";
 import { CrmCustomerSuccessDeepController } from "./crm-customer-success-deep.controller";
 import { CrmPipelineForecastingDeepService } from "./crm-pipeline-forecasting-deep.service";
 import { CrmPipelineForecastingDeepController } from "./crm-pipeline-forecasting-deep.controller";
@@ -365,7 +365,7 @@ const CRM_SERVICES = [
     CrmCoachingController,
     CrmDealRoomController,
     CrmDealRoomPublicController,
-    CrmDeepController,
+
     CrmExpansionDeepController,
     CrmActivityCaptureController,
     CrmMarketingDeepController,

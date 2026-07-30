@@ -5,7 +5,7 @@ import { ProcurementService } from "./procurement.service";
 import { ContractsService } from "./contracts.service";
 import { ContractsController } from "./contracts.controller";
 import { VendorPortalService } from "./vendor-portal.service";
-import { ProcurementDeepController } from "./procurement-deep.controller";
+
 import { ProcurementExpansionController } from "./procurement-expansion.controller";
 import { ProcurementIntelligenceController } from "./procurement-intelligence.controller";
 import { ProcurementSchedulingController } from "./procurement-scheduling.controller";
@@ -25,6 +25,8 @@ import { ProcurementSettingsController } from "./settings.controller";
 import { ProcurementEnterpriseController } from "./procurement-enterprise.controller";
 import { ProcurementEnterpriseService } from "./procurement-enterprise.service";
 import { ProcurementEnterpriseModule } from "./procurement-enterprise.module";
+import { SupplierPerformanceService } from "./services/supplier-performance.service";
+import { ProcurementSupplierPerformanceController } from "./procurement-supplier-performance.controller";
 
 @Module({
   imports: [ProcurementEnterpriseModule],
@@ -32,7 +34,7 @@ import { ProcurementEnterpriseModule } from "./procurement-enterprise.module";
     ProcurementController,
     ProcurementPublicController,
     ContractsController,
-    ProcurementDeepController,
+
     ProcurementExpansionController,
     ProcurementIntelligenceController,
     ProcurementSchedulingController,
@@ -40,6 +42,7 @@ import { ProcurementEnterpriseModule } from "./procurement-enterprise.module";
     ProcurementDeepExpansionBulkController,
     ProcurementSettingsController,
     ProcurementEnterpriseController,
+    ProcurementSupplierPerformanceController,
   ],
   providers: [
     ProcurementService,
@@ -56,6 +59,7 @@ import { ProcurementEnterpriseModule } from "./procurement-enterprise.module";
     ProcurementApprovalsService,
     ProcurementSourcingService,
     ProcurementEnterpriseService,
+    SupplierPerformanceService,
   ],
   exports: [
     ProcurementService,

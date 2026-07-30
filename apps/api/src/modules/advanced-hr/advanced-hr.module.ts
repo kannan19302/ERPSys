@@ -2,7 +2,7 @@ import { Module } from "@nestjs/common";
 import { AdvancedHrController } from "./advanced-hr.controller";
 import { AdvancedHrService } from "./advanced-hr.service";
 import { PayrollTaxService } from "./payroll-tax.service";
-import { HrDeepController } from "./hr-deep.controller";
+
 
 import { AdvancedHrLearningPathsDeepService } from "./advanced-hr-learning-paths-deep.service";
 import { AdvancedHrLearningPathsDeepController } from "./advanced-hr-learning-paths-deep.controller";
@@ -18,11 +18,13 @@ import { AdvancedHrOrgChartDeepService } from "./advanced-hr-org-chart-deep.serv
 import { AdvancedHrOrgChartDeepController } from "./advanced-hr-org-chart-deep.controller";
 import { AdvancedHrExitInterviewDeepService } from "./advanced-hr-exit-interview-deep.service";
 import { AdvancedHrExitInterviewDeepController } from "./advanced-hr-exit-interview-deep.controller";
+import { AdvancedHrWorkforceDeepService } from "./services/advanced-hr-workforce-deep.service";
+import { AdvancedHrWorkforceDeepController } from "./advanced-hr-workforce-deep.controller";
 
 @Module({
   controllers: [
     AdvancedHrController,
-    HrDeepController,
+
     AdvancedHrLearningPathsDeepController,
     AdvancedHrSuccessionPlanningDeepController,
     AdvancedHrWorkforceAnalyticsDeepController,
@@ -30,6 +32,7 @@ import { AdvancedHrExitInterviewDeepController } from "./advanced-hr-exit-interv
     AdvancedHrBenefitsAdminDeepController,
     AdvancedHrOrgChartDeepController,
     AdvancedHrExitInterviewDeepController,
+    AdvancedHrWorkforceDeepController,
   ],
   providers: [
     AdvancedHrService,
@@ -52,6 +55,7 @@ import { AdvancedHrExitInterviewDeepController } from "./advanced-hr-exit-interv
     AdvancedHrBenefitsAdminDeepService,
     AdvancedHrOrgChartDeepService,
     AdvancedHrExitInterviewDeepService,
+    AdvancedHrWorkforceDeepService,
   ],
 })
 export class AdvancedHrModule {}
