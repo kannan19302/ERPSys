@@ -1,3 +1,13 @@
+import { searchModule } from './search';
+import { serviceManagementModule } from './service-management';
+import { reportingModule } from './reporting';
+import { localizationModule } from './localization';
+import { subscriptionsModule } from './subscriptions';
+import { fixedAssetsModule } from './fixed-assets';
+import { savedViewsModule } from './saved-views';
+import { pwaModule } from './pwa';
+import { outboxModule } from './outbox';
+import { notificationsModule } from './notifications';
 import { blockchainModule } from "./blockchain";
 import { serviceManagementModule } from "./service-management";
 import { peopleModule } from "./people";
@@ -40,6 +50,16 @@ import { superAdminModule } from "./super-admin";
  * means the inventory one, so inventoryModule must stay ahead of crmModule.
  */
 export const registeredModules = [
+  searchModule,
+  serviceManagementModule,
+  reportingModule,
+  localizationModule,
+  subscriptionsModule,
+  fixedAssetsModule,
+  savedViewsModule,
+  pwaModule,
+  outboxModule,
+  notificationsModule,
   blockchainModule,
   serviceManagementModule,
   peopleModule,
