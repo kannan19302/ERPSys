@@ -1,3 +1,5 @@
+import { OutboxGeneratedController } from "./outbox-generated.controller";
+import { OutboxGeneratedService } from "./outbox-generated.service";
 import { Module } from "@nestjs/common";
 import { BullModule } from "@nestjs/bullmq";
 import { OutboxController } from "./outbox.controller";
@@ -31,8 +33,13 @@ function outboxServiceFactory(): OutboxService {
       },
     }),
   ],
-  controllers: [OutboxController, OutboxDeepController],
+  controllers: [
+    OutboxGeneratedController,
+    OutboxController,
+    OutboxDeepController,
+  ],
   providers: [
+    OutboxGeneratedService,
     OutboxDispatcherService,
     OutboxProcessorService,
     OutboxMetricsService,
@@ -41,6 +48,7 @@ function outboxServiceFactory(): OutboxService {
     { provide: OutboxService, useFactory: outboxServiceFactory },
   ],
   exports: [
+    OutboxGeneratedService,
     BullModule,
     OutboxHandlerRegistry,
     OutboxMetricsService,

@@ -1,3 +1,5 @@
+import { NotificationsGeneratedController } from "./notifications-generated.controller";
+import { NotificationsGeneratedService } from "./notifications-generated.service";
 import { Module } from "@nestjs/common";
 import { NotificationsController } from "./notifications.controller";
 import { NotificationPreferencesController } from "./notification-preferences.controller";
@@ -13,12 +15,14 @@ import { PipelineRiskNotificationService } from "./pipeline-risk-notification.se
 
 @Module({
   controllers: [
+    NotificationsGeneratedController,
     NotificationsController,
     NotificationPreferencesController,
     NotificationsDeepController,
     DeviceTokensController,
   ],
   providers: [
+    NotificationsGeneratedService,
     NotificationsService,
     NotificationsDeepService,
     NotificationDeliveryService,
@@ -28,6 +32,7 @@ import { PipelineRiskNotificationService } from "./pipeline-risk-notification.se
     PipelineRiskNotificationService,
   ],
   exports: [
+    NotificationsGeneratedService,
     NotificationsService,
     NotificationsDeepService,
     NotificationDeliveryService,

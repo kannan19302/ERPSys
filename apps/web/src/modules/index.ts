@@ -1,3 +1,7 @@
+import { savedViewsModule } from "./saved-views";
+import { pwaModule } from "./pwa";
+import { outboxModule } from "./outbox";
+import { notificationsModule } from "./notifications";
 import { searchModule } from "./search";
 import { driveModule } from "./drive";
 import { reportingModule } from "./reporting";
@@ -33,6 +37,10 @@ import { superAdminModule } from "./super-admin";
  * means the inventory one, so inventoryModule must stay ahead of crmModule.
  */
 export const registeredModules = [
+  savedViewsModule,
+  pwaModule,
+  outboxModule,
+  notificationsModule,
   searchModule,
   driveModule,
   reportingModule,
