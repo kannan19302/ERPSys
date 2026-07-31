@@ -1,9 +1,4 @@
 // @ts-nocheck
-import { savedViewsModule } from './saved-views';
-import { pwaModule } from './pwa';
-import { outboxModule } from './outbox';
-import { notificationsModule } from './notifications';
-// @ts-nocheck
 import { blockchainModule } from "./blockchain";
 import { serviceManagementModule } from "./service-management";
 import { peopleModule } from "./people";
@@ -49,10 +44,6 @@ export const registeredModules = [
   blockchainModule,
   serviceManagementModule,
   peopleModule,
-  savedViewsModule,
-  pwaModule,
-  outboxModule,
-  notificationsModule,
   searchModule,
   driveModule,
   reportingModule,

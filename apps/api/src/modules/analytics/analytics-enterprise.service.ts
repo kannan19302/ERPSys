@@ -609,6 +609,27 @@ export class AnalyticsEnterpriseService {
     if (limit > 1000) {
       throw new ForbiddenException("LIMIT cannot exceed 1000 rows");
     }
+    // This endpoint executes admin-supplied dynamic SQL text by design (the "ad-hoc query"
+    // feature), so $queryRawUnsafe cannot be eliminated here the way it can elsewhere.
+    // What CAN be eliminated is trusting tenant isolation instead of proving it: verify
+    // RLS is actually enabled+forced on the target table before running the query, so a
+    // misconfiguration fails closed instead of silently returning cross-tenant rows.
+    // docs/ai/ARCHITECTURE_REVIEW.md § F12.
+    if (tableMatch?.[1]) {
+      const [rlsState] = await prisma.$queryRaw<
+        Array<{ enabled: boolean; forced: boolean }>
+      >`
+        SELECT relrowsecurity AS enabled, relforcerowsecurity AS forced
+        FROM pg_class c
+        JOIN pg_namespace n ON n.oid = c.relnamespace
+        WHERE n.nspname = 'public' AND c.relname = ${tableMatch[1]}
+      `;
+      if (!rlsState?.enabled || !rlsState?.forced) {
+        throw new ForbiddenException(
+          `Table '${tableMatch[1]}' does not have RLS enabled and forced — refusing to run an ad-hoc query against it.`,
+        );
+      }
+    }
     try {
       const result = await prisma.$queryRawUnsafe(query);
       return {
@@ -771,20 +792,30 @@ export class AnalyticsEnterpriseService {
       issues: string[];
     }> => {
       try {
-        const rows = (await prisma.$queryRawUnsafe(
-          `SELECT COUNT(*) as cnt FROM "${table}" WHERE "tenant_id" = $1`,
-          tenantId,
-        )) as any[];
+        // `table` and `requiredFields` are hardcoded by the caller (see the `tables` array
+        // below), never user input — but this still used to build SQL by string
+        // interpolation, which is the exact shape that becomes exploitable the moment
+        // someone reuses this helper with a dynamic value. Rewritten with Prisma.sql +
+        // Prisma.raw for identifiers, so a future caller gets the same parameterisation
+        // safety Prisma gives everywhere else, and the raw-SQL policy gate can retire
+        // this pattern from its findings for good rather than re-flagging it every scan.
+        const tableIdent = Prisma.raw(
+          `"${table.replace(/[^a-zA-Z0-9_]/g, "")}"`,
+        );
+        const rows = await prisma.$queryRaw<Array<{ cnt: bigint }>>(
+          Prisma.sql`SELECT COUNT(*) as cnt FROM ${tableIdent} WHERE "tenant_id" = ${tenantId}`,
+        );
         const total = Number(rows[0]?.cnt || 0);
         if (total === 0)
           return { total: 0, complete: 0, completeness: 100, issues: [] };
-        const nullChecks = requiredFields
-          .map((f) => `"${f}" IS NOT NULL`)
-          .join(" AND ");
-        const completeResult = (await prisma.$queryRawUnsafe(
-          `SELECT COUNT(*) as cnt FROM "${table}" WHERE "tenant_id" = $1 AND ${nullChecks}`,
-          tenantId,
-        )) as any[];
+        const nullChecks = Prisma.raw(
+          requiredFields
+            .map((f) => `"${f.replace(/[^a-zA-Z0-9_]/g, "")}" IS NOT NULL`)
+            .join(" AND "),
+        );
+        const completeResult = await prisma.$queryRaw<Array<{ cnt: bigint }>>(
+          Prisma.sql`SELECT COUNT(*) as cnt FROM ${tableIdent} WHERE "tenant_id" = ${tenantId} AND ${nullChecks}`,
+        );
         const complete = Number(completeResult[0]?.cnt || 0);
         const completeness = Number(((complete / total) * 100).toFixed(1));
         const issues: string[] = [];

@@ -1,97 +1,60 @@
-# GitHub Copilot Instructions — UniERP
+# UniERP — Agent Instructions
 
-Universal ERP System (UniERP): composable, multi-tenant, industry-agnostic ERP.
-All registered modules (see .ai/MODULE_REGISTRY.md dashboard) across phases 0–20 | NestJS API | Next.js 15 | PostgreSQL/Prisma | Redis/BullMQ
+> **You are working on a production enterprise ERP platform intended to run real businesses
+> for a decade. Not a prototype. Someone's payroll runs on what you ship.**
 
-## Before suggesting anything
+## Read these before your first edit. All of them are in `docs/ai/`.
 
-1. The project has 31 fully implemented ERP modules. Check `.ai/MODULE_REGISTRY.md` before suggesting new code — it very likely already exists.
-2. Read `AGENTS.md` for all critical project rules.
-3. Read `.ai/HANDBOOK.md#coding-conventions` for naming, UI, and TypeScript patterns.
-4. Read `.ai/ARCHITECTURE_FOUNDATION.md`. Foundation SEALED v1.0 (2026-07-18): the freeze is lifted, and its 8 non-negotiable rules are permanent sealed contracts (changing one requires an ADR).
-5. Work directly on `v1.0` (single active branch policy). Keep `v1.0` and `main` in sync and protected from deletion. Verify Husky pre-checks (`pre-commit` and `pre-push`) pass cleanly before pushing.
+| File                                                             | What it governs                                                   |
+| :--------------------------------------------------------------- | :---------------------------------------------------------------- |
+| **[docs/ai/README.md](docs/ai/README.md)**                       | **THE LAW — read this first**                                     |
+| [docs/ai/PRD.md](docs/ai/PRD.md)                                 | The Goal, scope, personas, requirements                           |
+| [docs/ai/TRD.md](docs/ai/TRD.md)                                 | Tech stack, hosting, CI/CD, the open-source mandate               |
+| [docs/ai/APP_FLOW.md](docs/ai/APP_FLOW.md)                       | User journeys, screens, actions, states                           |
+| [docs/ai/UI_UX_BRIEF.md](docs/ai/UI_UX_BRIEF.md)                 | Colour, type, spacing, motion, a11y                               |
+| [docs/ai/BACKEND_SCHEMA.md](docs/ai/BACKEND_SCHEMA.md)           | Data model, auth, tenancy, encryption                             |
+| [docs/ai/IMPLEMENTATION_PLAN.md](docs/ai/IMPLEMENTATION_PLAN.md) | Build order and the agent workflow                                |
+| [docs/ai/ARCHITECTURE_REVIEW.md](docs/ai/ARCHITECTURE_REVIEW.md) | Honest state of the system + remediation                          |
+| [docs/ai/CODE_STANDARDS.md](docs/ai/CODE_STANDARDS.md)           | **Conduct, code quality, maintainability — the review checklist** |
+| [docs/ai/CHANGELOG.md](docs/ai/CHANGELOG.md)                     | The one log — you append to it every time                         |
 
-## Mandatory Tracking Convention — The 3-File System
+## The rules that get violated most often
 
-UniERP tracks all state in exactly 3 files: `.ai/MODULE_REGISTRY.md` (module status + Collab
-Board), `.ai/CHANGELOG.md` (append-only history), `.ai/HANDBOOK.md` (architecture/conventions
-reference). Check the Collab Board before starting; after finishing, update CHANGELOG.md and
-MODULE_REGISTRY.md — every time, no exceptions, even for small changes. Full rule:
-[AGENTS.md § Mandatory Tracking Convention](../AGENTS.md#-mandatory-tracking-convention--the-3-file-system).
+1. **NEVER create a new file in `docs/ai/`.** It holds exactly ten files, for the entire life
+   of the project. Your notes, plans, and summaries go _inside_ an existing master file or
+   nowhere. Extra files are deleted without review.
+2. **NEVER overwrite or regenerate a master document.** Amend surgically. These are one file
+   each, forever — even if the Goal takes years.
+3. **NEVER suppress a check to make it pass.** No `@ts-nocheck`, `@ts-ignore`,
+   `eslint-disable`, `continue-on-error`, `|| true`, `--no-verify`. A failing check means the
+   code is wrong, not the check. This is treated as a production incident.
+4. **ALWAYS build end-to-end** in this order: Model → Database → API → Auth → UI → Test.
+   A UI without the migration and endpoint behind it is a mock, not a feature.
+5. **ALWAYS append one line to `docs/ai/CHANGELOG.md`.** No exceptions for small changes.
+6. **ALWAYS run `pnpm verify` before pushing.** It runs the same gates CI runs.
+7. **ALWAYS self-review against `docs/ai/CODE_STANDARDS.md` § 9** before you say you are done.
 
-## Non-negotiable rules (enforce in every suggestion)
+## Non-negotiables on every change
 
-### TypeScript
+- Every table has `tenantId` + an RLS policy + a passing two-tenant isolation test
+- Every endpoint has `@Permissions('module.resource.action')` and Zod validation
+- Money is `Decimal(19,4)` — never `Float`
+- No cross-module imports — cross-module facts go through the transactional outbox
+- No hardcoded hex colours or pixel values — design tokens only
+- No hand-rolled `<table>` — use the shared `DataTable`
+- No secrets, credentials, or real customer data in the repo
+- No one-off scripts, temp files, or debug artifacts left behind
 
-- Strict mode everywhere — no `any`, no ESLint disables
-- Use `unknown` + type guards when type is uncertain
-- Zod for all DTO validation (shared between frontend and backend via `packages/shared`)
+## The two agents
 
-### Multi-tenancy (every DB query)
+- **`feature-architect`** — builds new capability and scales the platform (the DEV flow)
+- **`security-sentinel`** — finds and fixes bugs, vulnerabilities, and decay (the QA flow)
 
-- Every Prisma query must include `where: { tenantId: ctx.tenantId, ... }`
-- Every table has a `tenant_id` column — never omit it from a new model
-- Never suggest a query that could return records from multiple tenants
-- Treat application scoping as defense in depth: database isolation comes from the sealed #21 transaction-scoped RLS implementation in `.ai/ARCHITECTURE_FOUNDATION.md` — every protected operation must run through the tenant-scoped transaction client.
+Definitions: `.claude/agents/`. They are written vendor-neutrally — follow them whichever tool
+you are.
 
-### RBAC (every API endpoint)
+## Current priority
 
-- Every NestJS controller method needs `@Permissions('module.resource.action')`
-- Every UI privileged action needs `<ProtectedComponent permission="...">`
-- Register new permissions in `packages/shared/src/permissions/registry.ts`
-
-### Change history (every mutation)
-
-- Every entity-mutation controller method needs `@TrackChanges('EntityType')` + `@UseInterceptors(ChangeHistoryInterceptor)`
-
-### Module boundaries
-
-- Modules NEVER import from each other directly
-- Cross-module state changes via domain events; narrow read-only/provider capabilities only through an approved common integration port
-- Run `pnpm architecture:check` before accepting API changes. The legacy in-process emitter is not approved for critical business effects — use the sealed #17 transactional outbox.
-- Extension manifests must validate `apiVersion` through `@unerp/service-kit`'s published compatibility range; do not add a public contract or retire a supported version without updating `docs/API_VERSIONING_POLICY.md` and its focused tests.
-
-### UI/UX (all frontend suggestions)
-
-- Use `@unerp/ui` components from `packages/ui/` — not custom or third-party components
-- Use `.ui-*` utility classes for layout/forms (defined in `globals.css`; `.frappe-*` names are deprecated aliases)
-- Use CSS variables from `design-tokens.css` — no hardcoded hex colors or pixel values
-- No inline styles on layout elements
-- Every page needs breadcrumbs registered in `SEGMENT_NAMES` in `apps/web/app/(dashboard)/layout.tsx`
-- Handle all four states in every data view: loading, empty, error, success
-
-### Logging & secrets
-
-- Never suggest `console.log` — use `@unerp/shared/logger`
-- Never put secrets, API keys, or credentials in code — use env vars from `.env`
-
-### Database migrations
-
-- `db:push` is disabled. Apply recorded migration history with `pnpm db:deploy`; drift must fail closed and be reconciled through an approved expand/backfill/contract plan.
-- Schema changes go in `packages/database/prisma/schema.prisma`
-- Never hand-edit `prisma/migrations/` — always use `pnpm db:migrate`
-
-### Testing
-
-- All business logic must have unit tests (80%+ coverage target)
-- Tenant isolation tests are mandatory: a user in Tenant A must never access Tenant B's data
-- RBAC enforcement must be tested: unauthorized role must get 403
-
-## Project structure
-
-```
-apps/
-  api/src/modules/<module>/   ← NestJS modules
-    *.module.ts, *.controller.ts, *.service.ts
-    dto/, entities/, events/, tests/
-  web/app/(dashboard)/<module>/  ← Next.js 15 pages
-packages/
-  database/prisma/schema.prisma  ← single Prisma schema
-  shared/src/                    ← Zod validators, types, permissions
-  ui/                            ← @unerp/ui design system
-  auth/                          ← Auth.js + RBAC
-```
-
-## Module status
-
-All modules are tracked in `.ai/MODULE_REGISTRY.md`. Before suggesting a new service, entity, or page, check if the module is already ACTIVE. If it is, suggest extending it rather than creating a parallel implementation.
+**Phase 0 — foundation restoration.** Read `docs/ai/ARCHITECTURE_REVIEW.md`. The platform
+scores 5.4/10 and 100% of application source is currently `@ts-nocheck`. Foundation
+remediation (R1–R10) outranks new features until Phase 0 completes.

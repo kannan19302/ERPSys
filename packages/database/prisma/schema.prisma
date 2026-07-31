@@ -11146,8 +11146,8 @@ model WebOrder {
   status      String   @default("PENDING") // PENDING | PAID | FULFILLED | CANCELLED
   customer    Json     @default("{}") // { name, email, phone, address }
   items       Json     @default("[]") // [{ productSlug, name, price, qty, image }]
-  subtotal    Float    @default(0)
-  total       Float    @default(0)
+  subtotal    Decimal  @default(0) @db.Decimal(19,4)
+  total       Decimal  @default(0) @db.Decimal(19,4)
   currency    String   @default("USD")
   notes       String?
   createdAt   DateTime @default(now()) @map("created_at")
@@ -33194,7 +33194,7 @@ model LetterOfCredit {
   beneficiaryId   String?   @map("beneficiary_id")
   applicantId     String?   @map("applicant_id")
   currency        String    @default("USD")
-  amount          Float
+  amount          Decimal @db.Decimal(19,4)
   expiryDate      DateTime? @map("expiry_date")
   placeOfExpiry   String?   @map("place_of_expiry")
   incoterms       String?
@@ -33261,14 +33261,14 @@ model LcPresentation {
   tenantId        String   @map("tenant_id")
   lcId            String   @map("lc_id")
   presentedDate   DateTime @map("presented_date")
-  documentaryCredit Float? @map("documentary_credit")
+  documentaryCredit Decimal? @db.Decimal(19,4) @map("documentary_credit")
   discrepancies   String?  @db.Text
   status          String   @default("PRESENTED")
   acceptedAt      DateTime? @map("accepted_at")
   rejectedAt      DateTime? @map("rejected_at")
   rejectionReason String?  @db.Text @map("rejection_reason")
   paidAt          DateTime? @map("paid_at")
-  paymentAmount   Float?   @map("payment_amount")
+  paymentAmount   Decimal? @db.Decimal(19,4)   @map("payment_amount")
   createdAt       DateTime @default(now()) @map("created_at")
   lc              LetterOfCredit @relation(fields: [lcId], references: [id])
   @@index([tenantId, lcId])
@@ -33283,12 +33283,12 @@ model BankGuarantee {
   issuingBank     String?   @map("issuing_bank")
   beneficiaryId   String?   @map("beneficiary_id")
   currency        String    @default("USD")
-  amount          Float
+  amount          Decimal @db.Decimal(19,4)
   expiryDate      DateTime? @map("expiry_date")
   purpose         String?   @db.Text
   contractReference String? @map("contract_reference")
   status          String    @default("DRAFT")
-  claimedAmount   Float?    @map("claimed_amount")
+  claimedAmount   Decimal? @db.Decimal(19,4)    @map("claimed_amount")
   claimedAt       DateTime? @map("claimed_at")
   createdBy       String?   @map("created_by")
   createdAt       DateTime  @default(now()) @map("created_at")
@@ -33326,7 +33326,7 @@ model SopDemandPlan {
   region        String?
   channel       String?
   forecastUnits Float    @map("forecast_units")
-  forecastValue Float?   @map("forecast_value")
+  forecastValue Decimal? @db.Decimal(19,4)   @map("forecast_value")
   baselineForecast Float? @map("baseline_forecast")
   marketIntelligence Float? @map("market_intelligence")
   salesAdjustment Float?  @map("sales_adjustment")
@@ -33350,7 +33350,7 @@ model SopSupplyPlan {
   plannedProduction Float  @map("planned_production")
   availableCapacity Float? @map("available_capacity")
   constrainedCapacity Float? @map("constrained_capacity")
-  inventoryTarget Float?   @map("inventory_target")
+  inventoryTarget Decimal? @db.Decimal(19,4)   @map("inventory_target")
   openingStock    Float?   @map("opening_stock")
   closingStock    Float?   @map("closing_stock")
   notes           String?  @db.Text
@@ -33367,8 +33367,8 @@ model SopConsensusPlan {
   productId      String?  @map("product_id")
   productGroup   String?  @map("product_group")
   consensusForecast Float @map("consensus_forecast")
-  revenuePlan    Float?   @map("revenue_plan")
-  marginPlan     Float?   @map("margin_plan")
+  revenuePlan    Decimal? @db.Decimal(19,4)   @map("revenue_plan")
+  marginPlan     Decimal? @db.Decimal(19,4)   @map("margin_plan")
   assumptions    String?  @db.Text
   approvedBy     String?  @map("approved_by")
   approvedAt     DateTime? @map("approved_at")
@@ -33397,7 +33397,7 @@ model LogisticsProvider {
   status          String   @default("ACTIVE")
   contractStart   DateTime? @map("contract_start")
   contractEnd     DateTime? @map("contract_end")
-  contractValue   Float?   @map("contract_value")
+  contractValue   Decimal? @db.Decimal(19,4)   @map("contract_value")
   currency        String?  @default("USD")
   billingModel    String?  @map("billing_model")
   performanceSla  Json?    @map("performance_sla")
@@ -33417,7 +33417,7 @@ model LogisticsProviderInvoice {
   invoiceNo   String   @map("invoice_no")
   periodStart DateTime @map("period_start")
   periodEnd   DateTime @map("period_end")
-  amount      Float
+  amount      Decimal @db.Decimal(19,4)
   currency    String   @default("USD")
   status      String   @default("PENDING")
   dueDate     DateTime? @map("due_date")
@@ -33584,7 +33584,7 @@ model ScmRiskMitigation {
   dueDate     DateTime? @map("due_date")
   completedAt DateTime? @map("completed_at")
   status      String   @default("PLANNED")
-  cost        Float?
+  cost        Decimal? @db.Decimal(19,4)
   effectiveness String? @db.Text
   createdAt   DateTime @default(now()) @map("created_at")
   @@index([tenantId, riskEventId])
@@ -33641,8 +33641,8 @@ model ExportLicense {
   eccnNumber      String?  @map("eccn_number")
   endUser         String?  @map("end_user")
   endUse          String?  @db.Text @map("end_use")
-  approvedValue   Float?   @map("approved_value")
-  usedValue       Float?   @map("used_value")
+  approvedValue   Decimal? @map("approved_value") @db.Decimal(19,4)
+  usedValue       Decimal? @map("used_value") @db.Decimal(19,4)
   issueDate       DateTime? @map("issue_date")
   expiryDate      DateTime? @map("expiry_date")
   status          String   @default("ACTIVE")
@@ -33693,7 +33693,7 @@ model MultiModalTransportOrder {
   actualPickup    DateTime? @map("actual_pickup")
   actualDelivery  DateTime? @map("actual_delivery")
   carrierId       String?  @map("carrier_id")
-  cost            Float?
+  cost            Decimal? @db.Decimal(19,4)
   currency        String   @default("USD")
   status          String   @default("DRAFT")
   priority        String   @default("NORMAL")
@@ -33721,7 +33721,7 @@ model MultiModalTransportLeg {
   arrivalPlan     DateTime? @map("arrival_plan")
   departureActual DateTime? @map("departure_actual")
   arrivalActual   DateTime? @map("arrival_actual")
-  cost            Float?
+  cost            Decimal? @db.Decimal(19,4)
   status          String   @default("PLANNED")
   order           MultiModalTransportOrder @relation(fields: [transportOrderId], references: [id])
   @@index([tenantId, transportOrderId])
@@ -33757,7 +33757,7 @@ model ReverseLogisticsOrder {
   returnAddress   Json?    @map("return_address")
   expectedDate    DateTime? @map("expected_date")
   receivedDate    DateTime? @map("received_date")
-  creditAmount    Float?   @map("credit_amount")
+  creditAmount    Decimal? @db.Decimal(19,4)   @map("credit_amount")
   status          String   @default("REQUESTED")
   disposition     String?
   createdAt       DateTime @default(now()) @map("created_at")
@@ -33776,10 +33776,10 @@ model ReverseLogisticsItem {
   productName   String?  @map("product_name")
   quantity      Float
   returnedQty   Float?   @map("returned_qty")
-  unitCost      Float?   @map("unit_cost")
+  unitCost      Decimal? @db.Decimal(19,4)   @map("unit_cost")
   condition     String?
   disposition   String?
-  refurbishmentCost Float? @map("refurbishment_cost")
+  refurbishmentCost Decimal? @db.Decimal(19,4) @map("refurbishment_cost")
   returnOrder   ReverseLogisticsOrder @relation(fields: [returnOrderId], references: [id])
   @@index([tenantId, returnOrderId])
   @@map("reverse_logistics_items")
@@ -33795,8 +33795,8 @@ model DeliveryZone {
   postalCodes Json?    @map("postal_codes")
   isActive    Boolean  @default(true) @map("is_active")
   maxWeight   Float?   @map("max_weight")
-  baseRate    Float?   @map("base_rate")
-  ratePerKm   Float?   @map("rate_per_km")
+  baseRate    Decimal? @db.Decimal(19,4)   @map("base_rate")
+  ratePerKm   Decimal? @db.Decimal(19,4)   @map("rate_per_km")
   currency    String   @default("USD")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
@@ -33870,7 +33870,7 @@ model ScmIotReading {
   tenantId    String   @map("tenant_id")
   deviceId    String   @map("device_id")
   readingType String   @map("reading_type")
-  value       Float
+  value       Decimal @db.Decimal(19,4)
   unit        String?
   timestamp   DateTime
   device      ScmIotDevice @relation(fields: [deviceId], references: [id])
@@ -33905,10 +33905,10 @@ model WarehouseNetworkDesign {
   name            String
   description     String?  @db.Text
   scenario        String   @default("CURRENT")
-  totalCost       Float?   @map("total_cost")
-  transportCost   Float?   @map("transport_cost")
-  storageCost     Float?   @map("storage_cost")
-  handlingCost    Float?   @map("handling_cost")
+  totalCost       Decimal? @db.Decimal(19,4)   @map("total_cost")
+  transportCost   Decimal? @db.Decimal(19,4)   @map("transport_cost")
+  storageCost     Decimal? @db.Decimal(19,4)   @map("storage_cost")
+  handlingCost    Decimal? @db.Decimal(19,4)   @map("handling_cost")
   serviceLevel    Float?   @map("service_level")
   co2Footprint    Float?   @map("co2_footprint")
   assumptions     Json?
@@ -33933,8 +33933,8 @@ model WarehouseNetworkNode {
   longitude   Float?
   isExisting  Boolean  @default(true) @map("is_existing")
   capacity    Float?
-  fixedCost   Float?   @map("fixed_cost")
-  variableCost Float?  @map("variable_cost")
+  fixedCost   Decimal? @db.Decimal(19,4)   @map("fixed_cost")
+  variableCost Decimal? @db.Decimal(19,4)  @map("variable_cost")
   design      WarehouseNetworkDesign @relation(fields: [designId], references: [id])
   @@index([tenantId, designId])
   @@map("warehouse_network_nodes")
@@ -33946,12 +33946,12 @@ model DynamicDiscountRequest {
   tenantId        String   @map("tenant_id")
   supplierId      String   @map("supplier_id")
   invoiceId       String   @map("invoice_id")
-  originalAmount  Float    @map("original_amount")
+  originalAmount  Decimal @db.Decimal(19,4)    @map("original_amount")
   dueDate         DateTime @map("due_date")
   paymentDate     DateTime @map("payment_date")
   discountRate    Float    @map("discount_rate")
-  discountAmount  Float    @map("discount_amount")
-  netAmount       Float    @map("net_amount")
+  discountAmount  Decimal @db.Decimal(19,4)    @map("discount_amount")
+  netAmount       Decimal @db.Decimal(19,4)    @map("net_amount")
   status          String   @default("OFFERED")
   acceptedAt      DateTime? @map("accepted_at")
   paidAt          DateTime? @map("paid_at")
@@ -33966,8 +33966,8 @@ model ScmFinancingFacility {
   facilityName    String   @map("facility_name")
   facilityType    String   @map("facility_type")
   financier       String?
-  creditLimit     Float    @map("credit_limit")
-  availableLimit  Float    @map("available_limit")
+  creditLimit     Decimal @db.Decimal(19,4)    @map("credit_limit")
+  availableLimit  Decimal @db.Decimal(19,4)    @map("available_limit")
   currency        String   @default("USD")
   interestRate    Float?   @map("interest_rate")
   maturityDays    Int?     @map("maturity_days")
@@ -33985,13 +33985,13 @@ model ScmFinancingDrawdown {
   id          String   @id @default(cuid())
   tenantId    String   @map("tenant_id")
   facilityId  String   @map("facility_id")
-  amount      Float
+  amount      Decimal @db.Decimal(19,4)
   purpose     String?  @db.Text
   referenceId String?  @map("reference_id")
   drawnAt     DateTime @default(now()) @map("drawn_at")
   dueDate     DateTime? @map("due_date")
   repaidAt    DateTime? @map("repaid_at")
-  interest    Float?
+  interest    Decimal? @db.Decimal(19,4)
   status      String   @default("OUTSTANDING")
   facility    ScmFinancingFacility @relation(fields: [facilityId], references: [id])
   @@index([tenantId, facilityId])
@@ -34007,7 +34007,7 @@ model SupplierDevelopmentPlan {
   objectives      String?  @db.Text
   startDate       DateTime? @map("start_date")
   endDate         DateTime? @map("end_date")
-  budget          Float?
+  budget          Decimal? @db.Decimal(19,4)
   status          String   @default("DRAFT")
   progressPct     Float?   @map("progress_pct")
   createdBy       String?  @map("created_by")
@@ -34296,16 +34296,16 @@ model JobCostSheet {
   tenantId        String   @map("tenant_id")
   workOrderId     String   @map("work_order_id")
   productId       String?  @map("product_id")
-  plannedMaterialCost Float? @map("planned_material_cost")
-  plannedLaborCost Float?  @map("planned_labor_cost")
-  plannedOverheadCost Float? @map("planned_overhead_cost")
-  actualMaterialCost Float? @map("actual_material_cost")
-  actualLaborCost Float?   @map("actual_labor_cost")
-  actualOverheadCost Float? @map("actual_overhead_cost")
-  scrapCost       Float?   @map("scrap_cost")
-  reworkCost      Float?   @map("rework_cost")
-  totalPlannedCost Float?  @map("total_planned_cost")
-  totalActualCost Float?   @map("total_actual_cost")
+  plannedMaterialCost Decimal? @db.Decimal(19,4) @map("planned_material_cost")
+  plannedLaborCost Decimal? @db.Decimal(19,4)  @map("planned_labor_cost")
+  plannedOverheadCost Decimal? @db.Decimal(19,4) @map("planned_overhead_cost")
+  actualMaterialCost Decimal? @db.Decimal(19,4) @map("actual_material_cost")
+  actualLaborCost Decimal? @db.Decimal(19,4)   @map("actual_labor_cost")
+  actualOverheadCost Decimal? @db.Decimal(19,4) @map("actual_overhead_cost")
+  scrapCost       Decimal? @db.Decimal(19,4)   @map("scrap_cost")
+  reworkCost      Decimal? @db.Decimal(19,4)   @map("rework_cost")
+  totalPlannedCost Decimal? @db.Decimal(19,4)  @map("total_planned_cost")
+  totalActualCost Decimal? @db.Decimal(19,4)   @map("total_actual_cost")
   variancePct     Float?   @map("variance_pct")
   currency        String   @default("USD")
   closedAt        DateTime? @map("closed_at")
@@ -34324,8 +34324,8 @@ model MfgCostEntry {
   costType    String   @map("cost_type")
   description String?
   quantity    Float?
-  unitCost    Float?   @map("unit_cost")
-  amount      Float
+  unitCost    Decimal? @db.Decimal(19,4)   @map("unit_cost")
+  amount      Decimal @db.Decimal(19,4)
   currency    String   @default("USD")
   resourceId  String?  @map("resource_id")
   resourceType String? @map("resource_type")
@@ -34341,10 +34341,10 @@ model StandardCost {
   productId     String   @map("product_id")
   effectiveFrom DateTime @map("effective_from")
   effectiveTo   DateTime? @map("effective_to")
-  materialCost  Float    @map("material_cost")
-  laborCost     Float    @map("labor_cost")
-  overheadCost  Float    @map("overhead_cost")
-  totalCost     Float    @map("total_cost")
+  materialCost  Decimal @db.Decimal(19,4)    @map("material_cost")
+  laborCost     Decimal @db.Decimal(19,4)    @map("labor_cost")
+  overheadCost  Decimal @db.Decimal(19,4)    @map("overhead_cost")
+  totalCost     Decimal @db.Decimal(19,4)    @map("total_cost")
   currency      String   @default("USD")
   isActive      Boolean  @default(true) @map("is_active")
   approvedBy    String?  @map("approved_by")
@@ -34448,7 +34448,7 @@ model ManufacturingMachine {
   purchaseDate    DateTime? @map("purchase_date")
   installDate     DateTime? @map("install_date")
   warrantyExpiry  DateTime? @map("warranty_expiry")
-  assetValue      Float?   @map("asset_value")
+  assetValue      Decimal? @db.Decimal(19,4)   @map("asset_value")
   nominalCapacity Float?   @map("nominal_capacity")
   capacityUnit    String?  @map("capacity_unit")
   cycleTime       Float?   @map("cycle_time")
@@ -34498,7 +34498,7 @@ model MachineMaintenanceLog {
   endTime         DateTime? @map("end_time")
   duration        Float?
   partsUsed       Json?    @map("parts_used")
-  cost            Float?
+  cost            Decimal? @db.Decimal(19,4)
   result          String?  @db.Text
   nextScheduled   DateTime? @map("next_scheduled")
   machine         ManufacturingMachine @relation(fields: [machineId], references: [id])
@@ -34565,7 +34565,7 @@ model MfgMaintenanceWorkOrder {
   status          String   @default("OPEN")
   partsUsed       Json?    @map("parts_used")
   laborHours      Float?   @map("labor_hours")
-  cost            Float?
+  cost            Decimal? @db.Decimal(19,4)
   findings        String?  @db.Text
   schedule        MaintenanceSchedule? @relation(fields: [scheduleId], references: [id])
   @@index([tenantId])
@@ -34583,7 +34583,7 @@ model SparePart {
   location        String?
   quantity        Float    @default(0)
   reorderPoint    Float?   @map("reorder_point")
-  unitCost        Float?   @map("unit_cost")
+  unitCost        Decimal? @db.Decimal(19,4)   @map("unit_cost")
   supplierId      String?  @map("supplier_id")
   leadTimeDays    Int?     @map("lead_time_days")
   isActive        Boolean  @default(true) @map("is_active")
@@ -34608,8 +34608,8 @@ model SixSigmaProject {
   problemStatement String?  @db.Text @map("problem_statement")
   goalStatement   String?  @db.Text @map("goal_statement")
   scope           String?  @db.Text
-  expectedBenefit Float?   @map("expected_benefit")
-  actualBenefit   Float?   @map("actual_benefit")
+  expectedBenefit Decimal? @db.Decimal(19,4)   @map("expected_benefit")
+  actualBenefit   Decimal? @db.Decimal(19,4)   @map("actual_benefit")
   startDate       DateTime? @map("start_date")
   targetDate      DateTime? @map("target_date")
   completedAt     DateTime? @map("completed_at")
@@ -34838,7 +34838,7 @@ model PpmPortfolio {
   description     String?  @db.Text
   owner           String?
   strategicGoal   String?  @db.Text @map("strategic_goal")
-  budget          Float?
+  budget          Decimal? @db.Decimal(19,4)
   currency        String   @default("USD")
   startDate       DateTime? @map("start_date")
   endDate         DateTime? @map("end_date")
@@ -34936,7 +34936,7 @@ model EvmBaseline {
   tenantId        String   @map("tenant_id")
   projectId       String   @map("project_id")
   baselineType    String   @default("ORIGINAL") @map("baseline_type")
-  budgetAtCompletion Float  @map("budget_at_completion")
+  budgetAtCompletion Decimal @db.Decimal(19,4)  @map("budget_at_completion")
   scheduleBaselineStart DateTime? @map("schedule_baseline_start")
   scheduleBaselineEnd DateTime? @map("schedule_baseline_end")
   approvedBy      String?  @map("approved_by")
@@ -34952,11 +34952,11 @@ model EvmMeasurement {
   tenantId            String   @map("tenant_id")
   baselineId          String   @map("baseline_id")
   measurementDate     DateTime @map("measurement_date")
-  plannedValue        Float    @map("planned_value")
-  earnedValue         Float    @map("earned_value")
-  actualCost          Float    @map("actual_cost")
+  plannedValue        Decimal @db.Decimal(19,4)    @map("planned_value")
+  earnedValue         Decimal @db.Decimal(19,4)    @map("earned_value")
+  actualCost          Decimal @db.Decimal(19,4)    @map("actual_cost")
   scheduleVariance    Float?   @map("schedule_variance")
-  costVariance        Float?   @map("cost_variance")
+  costVariance        Decimal? @db.Decimal(19,4)   @map("cost_variance")
   spi                 Float?
   cpi                 Float?
   eac                 Float?
@@ -35030,7 +35030,7 @@ model ProjectTemplate {
   risks           Json?
   milestones      Json?
   resources       Json?
-  budget          Float?
+  budget          Decimal? @db.Decimal(19,4)
   duration        Int?
   isPublic        Boolean  @default(false) @map("is_public")
   timesUsed       Int      @default(0) @map("times_used")
@@ -35075,7 +35075,7 @@ model PpmChangeRequest {
   requestDate     DateTime @default(now()) @map("request_date")
   priority        String   @default("MEDIUM")
   scheduleImpact  Int?     @map("schedule_impact")
-  costImpact      Float?   @map("cost_impact")
+  costImpact      Decimal? @db.Decimal(19,4)   @map("cost_impact")
   recommendation  String?  @db.Text
   status          String   @default("SUBMITTED")
   approvedBy      String?  @map("approved_by")
@@ -35094,7 +35094,7 @@ model PpmProcurementPlan {
   projectId       String   @map("project_id")
   description     String?  @db.Text
   makeOrBuy       Json?    @map("make_or_buy")
-  totalBudget     Float?   @map("total_budget")
+  totalBudget     Decimal? @db.Decimal(19,4)   @map("total_budget")
   status          String   @default("DRAFT")
   approvedBy      String?  @map("approved_by")
   createdAt       DateTime @default(now()) @map("created_at")
@@ -35112,7 +35112,7 @@ model PpmProcurementRequisition {
   title           String
   description     String?  @db.Text
   quantity        Float?
-  estimatedCost   Float?   @map("estimated_cost")
+  estimatedCost   Decimal? @db.Decimal(19,4)   @map("estimated_cost")
   requiredDate    DateTime? @map("required_date")
   status          String   @default("DRAFT")
   approvedBy      String?  @map("approved_by")
@@ -35167,9 +35167,9 @@ model ProjectBenefit {
   benefitType     String   @map("benefit_type")
   owner           String?
   measurementKpi  String?  @map("measurement_kpi")
-  baselineValue   Float?   @map("baseline_value")
-  targetValue     Float?   @map("target_value")
-  actualValue     Float?   @map("actual_value")
+  baselineValue   Decimal? @db.Decimal(19,4)   @map("baseline_value")
+  targetValue     Decimal? @db.Decimal(19,4)   @map("target_value")
+  actualValue     Decimal? @db.Decimal(19,4)   @map("actual_value")
   realizationDate DateTime? @map("realization_date")
   status          String   @default("PLANNED")
   currency        String   @default("USD")
@@ -35320,7 +35320,7 @@ model ProjectSubcontractor {
   vendorId        String?  @map("vendor_id")
   name            String
   scope           String?  @db.Text
-  contractValue   Float?   @map("contract_value")
+  contractValue   Decimal? @db.Decimal(19,4)   @map("contract_value")
   currency        String   @default("USD")
   startDate       DateTime? @map("start_date")
   endDate         DateTime? @map("end_date")
@@ -35356,7 +35356,7 @@ model SubcontractorPaymentMilestone {
   tenantId        String   @map("tenant_id")
   subcontractorId String   @map("subcontractor_id")
   milestoneTitle  String   @map("milestone_title")
-  amount          Float
+  amount          Decimal @db.Decimal(19,4)
   dueDate         DateTime? @map("due_date")
   trigger         String?
   status          String   @default("PENDING")
@@ -36230,7 +36230,7 @@ model MarketplacePackage {
   version         String   @default("1.0.0")
   content         Json?
   screenshots     Json?
-  price           Float?
+  price           Decimal? @db.Decimal(19,4)
   currency        String   @default("USD")
   isFree          Boolean  @default(true) @map("is_free")
   downloads       Int      @default(0)

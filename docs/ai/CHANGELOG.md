@@ -1,0 +1,82 @@
+# CHANGELOG — The Single Log
+
+> **One append-only log for every change, in every UniERP repository.**
+> One file. Amended, never replaced. Read `README.md` § 0 before editing.
+
+---
+
+## How to use this file
+
+**Every unit of work gets exactly one line.** No exceptions for "small" changes, doc tweaks,
+or typo fixes. Undocumented work is invisible to every other agent and gets silently
+duplicated — which is the single most expensive failure mode in multi-agent development.
+
+**Format** — newest first, under the current date heading:
+
+```
+### 2026-07-31
+
+- `[all] docs(standards): added CODE_STANDARDS.md as the 10th master file — conduct, naming, size/complexity limits, correctness rules, comment and test standards, and § 9 THE REVIEW CHECKLIST which is now the standing procedure for every review; filed R13 for the ESLint rules that would enforce § 4 and § 3 mechanically` · Claude Code
+- `[all] docs(governance): raised the docs/ai file law from nine to ten across README.md, ci.yml, check-policy.mjs, both agents, and all 8 vendor pointer files in all 6 repos — the count is machine-enforced, so this had to move in lockstep` · Claude Code
+- `[core] fix(schema): converted 76 genuine monetary fields from Float to Decimal(19,4) and classified the other 190 as legitimate continuous metrics — resolves the 264 un-baselined Floats that had pnpm schema:lint (and therefore migration:discipline and CI) failing on main` · Claude Code
+- `[core] fix(db): generated 20260730000000_convert_float_money_to_decimal — 76 ALTER COLUMN statements across 42 tables; NOT YET APPLIED, no database was available to verify it` · Claude Code
+- `[core] security(critical): generated 20260730000100_rls_catchup_all_gaps — closes RLS coverage for all 364 previously unprotected tenant tables in one idempotent catalogue loop; migration-safety gate now reports 0 uncovered of 1,029. NOT YET APPLIED` · Claude Code
+- `[core] security(critical): found and fixed a REAL cross-tenant data exposure in analytics getAdHocQuery — it accepted tenantId and never used it, so any user with analytics.report.create could read every tenant's rows; now verifies RLS is enabled AND forced on the target table before executing, failing closed` · Claude Code
+- `[core] security(high): eliminated 7 of 8 unsafe raw-SQL call sites (admin, hr-advanced, storage-metering, 2 in analytics, 1 test mock) by converting to parameterised $queryRaw / Prisma.sql; the 1 remaining is the ad-hoc SQL feature itself, recorded as a reviewed exception in ARCHITECTURE_REVIEW § F12` · Claude Code
+- `[core] fix(web): removed a duplicated import block in apps/web/src/modules/index.ts (savedViewsModule et al. declared twice) that was breaking the Next.js production build — NOT YET VERIFIED, the rebuild was interrupted` · Claude Code
+- `[core] fix(web): VERIFIED the Next.js production build — `pnpm --filter @unerp/web build` now exits 0; only remaining output is a benign webpack cache-serialization warning. T1 done, last known blocker to a green pipeline is clear` · Claude Code
+
+### 2026-07-30
+- `[repo] type(scope): what changed — why it changed` · agent · commit
+```
+
+**Types:** `feat` · `fix` · `security` · `perf` · `refactor` · `docs` · `test` · `build` ·
+`ci` · `chore` · `revert`
+
+**Repos:** `core` (ERPSys) · `web` (corporate site) · `healthcare` · `education` ·
+`realestate` · `fieldservice`
+
+**Rules**
+
+1. Append only. Never edit or delete an existing entry — a wrong entry is corrected by a new
+   entry that says so.
+2. One line per unit of work. If it needs a paragraph, it needed to be two units of work.
+3. Write **why**, not only what. `fix(auth): session cookie now rotates on MFA completion —
+prevented session-fixation after privilege elevation` is useful. `fix: auth bug` is not.
+4. Satellite repos log here too. There is one log for the whole program.
+5. Security fixes are always marked `security`, never disguised as `fix`.
+
+---
+
+### 2026-07-30
+
+- `[all] docs(governance): established the nine-file master document set in docs/ai/ — replaces ~30,000 lines across 18 legacy files that had grown past the point of being read; the single-source-of-truth rule is now enforced by CI` · Claude Code
+- `[core] chore(governance): deleted the legacy AI document set (.ai/, AGENTS.md, CLAUDE.md, 13 role agents, 3 skills, copilot-instructions) — preserved in git history at a7a353b5, carries no authority` · Claude Code
+- `[core] docs(prd): PRD.md established — one Goal, six personas, seven product principles, functional scope, and contractual non-functional requirements` · Claude Code
+- `[core] docs(trd): TRD.md established — the 100% open-source mandate is Requirement 0; every proprietary service now has a mandatory open default and an optional adapter; 5 ADRs recorded` · Claude Code
+- `[core] docs(flow): APP_FLOW.md established — request path, seven user journeys, the universal record lifecycle, and the six mandatory screen states` · Claude Code
+- `[core] docs(design): UI_UX_BRIEF.md established — codifies the existing @unerp/ui-tokens system (7 themes, 2 densities, 70 base tokens) as the canonical design language` · Claude Code
+- `[core] docs(schema): BACKEND_SCHEMA.md established — universal entity contract, four-layer tenancy defence, auth model, AES-256-GCM field encryption, retention matrix` · Claude Code
+- `[core] docs(plan): IMPLEMENTATION_PLAN.md established — the Model→DB→API→Auth→UI→Test→Ship layer order, the two agents, and Phase 0 as foundation restoration` · Claude Code
+- `[core] docs(review): ARCHITECTURE_REVIEW.md established — honest score 5.4/10, ten findings, ten-item remediation programme with a projected path to 8.5 in one quarter` · Claude Code
+- `[core] security(critical): documented F1 — 3,241 of 3,241 source files in apps/api and apps/web carry @ts-nocheck, making typecheck a no-op at all three enforcement layers; ratchet remediation defined as R1` · Claude Code
+- `[core] security(high): documented F5 — RLS is applied by point-in-time migrations, so tables created after 2026-07-22 may have no policy; check-rls-verify.mjs existed but was never wired into CI` · Claude Code
+
+- `[all] ci(gates): rearchitected CI/CD — new ci.yml with 7 blocking gate tiers and a single ``CI passed`` required check; removed every continue-on-error so audit and security scans can actually fail the build` · Claude Code
+- `[core] ci(cd): added cd.yml — the first continuous deployment pipeline; deploys only a commit whose CI is green, builds/scans/signs images once and promotes the same artifact, auto-deploys staging, gates production on human approval, and rolls back automatically on a failed health gate` · Claude Code
+- `[core] ci(ratchet): added scripts/ci/check-suppressions.mjs + .quality-baseline.json — locks in 3,242 @ts-nocheck and 14,931 any so the count can only fall; this is the mechanism behind ADR-005` · Claude Code
+- `[core] ci(policy): added scripts/ci/check-policy.mjs — enforces the rules the docs declare (raw SQL, Float money, gate bypasses, docs/ai file count, design tokens, route guards) instead of leaving them to discipline` · Claude Code
+- `[all] security(gate): added scripts/ci/check-secrets.mjs at pre-commit, pre-push, and CI in all six repos — all six scan clean` · Claude Code
+- `[core] ci(migrations): added scripts/ci/check-migration-safety.mjs — blocks destructive DDL in automated deploys, flags table-locking patterns, and verifies RLS coverage across the whole migration corpus` · Claude Code
+- `[core] security(critical): F5 upgraded from risk to fact — 364 of 1,029 tenant tables have no RLS policy, including saas_invoices, payment_transactions, user_profiles and user_identities; the catalogue-loop migrations only ever covered tables existing at the time they ran` · Claude Code
+- `[core] security(critical): filed F11 — 92 monetary fields typed Float in schema.prisma; silent, cumulative financial corruption. Policy gate now blocks any new one` · Claude Code
+- `[core] security(high): filed F12 — 10 $queryRawUnsafe/$executeRawUnsafe call sites that bypass the RLS-scoped transaction client, and 1,889 of 14,225 controller routes with no @Permissions` · Claude Code
+- `[core] ci(critical): filed F13 — pnpm schema:lint was ALREADY failing on main with 264 un-baselined Float fields, meaning work was merged past a red pipeline; deliberately left red rather than widening the baseline, which would be the exact suppression the new rules forbid` · Claude Code
+- `[core] build(hooks): rewrote husky hooks — pre-commit runs lint-staged + secret scan; pre-push runs the full pnpm verify gate so a green push is a green pipeline` · Claude Code
+- `[core] chore(hygiene): removed one-off and orphaned artifacts — ignore_all.js (the script that injected @ts-nocheck across 3,241 files), cycle-report.json, mobile scratch/, temp_saas.txt, stray .prisma/.txt schema fragments, docker one-off SQL and test-login.js, and 5 autopilot-era scripts orphaned by the .ai/ deletion; extended .gitignore in all six repos` · Claude Code
+- `[web] ci(new): added CI to unierp-corporate-website, which previously had NO pipeline at all — lint, typecheck, audit, CodeQL, and build now gate every change` · Claude Code
+- `[all] ci(guard): added a shared guard workflow to all five satellite repos — secret scan, governance integrity (no forked master docs), gate-bypass detection, and repo hygiene` · Claude Code
+- `[all] docs(governance): added GOVERNANCE.md + 8 vendor pointer files (AGENTS, CLAUDE, GEMINI, Antigravity, DeepSeek, Copilot, Cursor, Windsurf) to every repo so all AI vendors land on the same rules` · Claude Code
+- `[core] docs(agents): added the two agents — feature-architect (DEV flow, with a mandatory per-cycle @ts-nocheck removal quota) and security-sentinel (QA flow, prove-before-filing, fix the class not the instance)` · Claude Code
+
+<!-- Append new entries above this line, newest date first. -->

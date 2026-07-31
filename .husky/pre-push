@@ -1,4 +1,5 @@
-pnpm lint
-pnpm typecheck
-pnpm foundation:check
-pnpm architecture:check
+# Layer 2 — the local blocking gate. docs/ai/TRD.md § 8.
+#
+# Runs the SAME gates as CI, so a green push is a green pipeline.
+# If this fails, fix the cause. Never `git push --no-verify`.
+node scripts/ci/verify.mjs

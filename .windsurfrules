@@ -5,23 +5,23 @@
 
 ## Read these before your first edit. All of them are in `docs/ai/`.
 
-| File                                                             | What it governs                                                   |
-| :--------------------------------------------------------------- | :---------------------------------------------------------------- |
-| **[docs/ai/README.md](docs/ai/README.md)**                       | **THE LAW — read this first**                                     |
-| [docs/ai/PRD.md](docs/ai/PRD.md)                                 | The Goal, scope, personas, requirements                           |
-| [docs/ai/TRD.md](docs/ai/TRD.md)                                 | Tech stack, hosting, CI/CD, the open-source mandate               |
-| [docs/ai/APP_FLOW.md](docs/ai/APP_FLOW.md)                       | User journeys, screens, actions, states                           |
-| [docs/ai/UI_UX_BRIEF.md](docs/ai/UI_UX_BRIEF.md)                 | Colour, type, spacing, motion, a11y                               |
-| [docs/ai/BACKEND_SCHEMA.md](docs/ai/BACKEND_SCHEMA.md)           | Data model, auth, tenancy, encryption                             |
-| [docs/ai/IMPLEMENTATION_PLAN.md](docs/ai/IMPLEMENTATION_PLAN.md) | Build order and the agent workflow                                |
-| [docs/ai/ARCHITECTURE_REVIEW.md](docs/ai/ARCHITECTURE_REVIEW.md) | Honest state of the system + remediation                          |
-| [docs/ai/CODE_STANDARDS.md](docs/ai/CODE_STANDARDS.md)           | **Conduct, code quality, maintainability — the review checklist** |
-| [docs/ai/CHANGELOG.md](docs/ai/CHANGELOG.md)                     | The one log — you append to it every time                         |
+| File | What it governs |
+|:--|:--|
+| **[docs/ai/README.md](docs/ai/README.md)** | **THE LAW — read this first** |
+| [docs/ai/PRD.md](docs/ai/PRD.md) | The Goal, scope, personas, requirements |
+| [docs/ai/TRD.md](docs/ai/TRD.md) | Tech stack, hosting, CI/CD, the open-source mandate |
+| [docs/ai/APP_FLOW.md](docs/ai/APP_FLOW.md) | User journeys, screens, actions, states |
+| [docs/ai/UI_UX_BRIEF.md](docs/ai/UI_UX_BRIEF.md) | Colour, type, spacing, motion, a11y |
+| [docs/ai/BACKEND_SCHEMA.md](docs/ai/BACKEND_SCHEMA.md) | Data model, auth, tenancy, encryption |
+| [docs/ai/IMPLEMENTATION_PLAN.md](docs/ai/IMPLEMENTATION_PLAN.md) | Build order and the agent workflow |
+| [docs/ai/ARCHITECTURE_REVIEW.md](docs/ai/ARCHITECTURE_REVIEW.md) | Honest state of the system + remediation |
+| [docs/ai/CODE_STANDARDS.md](docs/ai/CODE_STANDARDS.md) | **Conduct, code quality, maintainability — the review checklist** |
+| [docs/ai/CHANGELOG.md](docs/ai/CHANGELOG.md) | The one log — you append to it every time |
 
 ## The rules that get violated most often
 
 1. **NEVER create a new file in `docs/ai/`.** It holds exactly ten files, for the entire life
-   of the project. Your notes, plans, and summaries go _inside_ an existing master file or
+   of the project. Your notes, plans, and summaries go *inside* an existing master file or
    nowhere. Extra files are deleted without review.
 2. **NEVER overwrite or regenerate a master document.** Amend surgically. These are one file
    each, forever — even if the Goal takes years.

@@ -1,19 +1,85 @@
+# CI — the server-side enforcement layer. docs/ai/TRD.md § 8, Layer 3.
+#
+# CONTRACT: no code with a failing check reaches main, and nothing merges red.
+# There is deliberately NO `continue-on-error` anywhere in this file. A gate that cannot
+# fail is worse than no gate — it manufactures false confidence.
 name: CI
 
 on:
   push:
-    branches: [main, v1.0]
+    branches: [main]
   pull_request:
-    branches: [main, v1.0]
+    branches: [main]
+  merge_group:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  security-events: write
 
 env:
   NODE_ENV: test
   NEXT_PUBLIC_APP_URL: http://localhost:3000
   NEXT_PUBLIC_API_URL: http://localhost:3001/api/v1
+  TURBO_TELEMETRY_DISABLED: 1
+  DO_NOT_TRACK: 1
 
 jobs:
-  lint:
+  # ─────────────────────────────────────────────────────────────────────────
+  # Tier 1 — cheap gates. Seconds. Fail fast, before anything expensive runs.
+  # ─────────────────────────────────────────────────────────────────────────
+  guard:
+    name: Guard (secrets · suppressions · policy)
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Secret scan (working tree)
+        run: node scripts/ci/check-secrets.mjs --all
+
+      - name: Suppression ratchet
+        run: node scripts/ci/check-suppressions.mjs
+
+      - name: Policy gate
+        run: node scripts/ci/check-policy.mjs
+
+      - name: docs/ai integrity
+        run: |
+          count=$(ls -1 docs/ai | wc -l)
+          if [ "$count" -ne 10 ]; then
+            echo "::error::docs/ai must contain exactly 10 files, found $count."
+            echo "See docs/ai/README.md rule 1 — no sidecar documents."
+            ls -1 docs/ai
+            exit 1
+          fi
+          echo "✅ docs/ai holds exactly 10 master files"
+
+      - name: CHANGELOG updated
+        if: github.event_name == 'pull_request'
+        run: |
+          if git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -q '^docs/ai/CHANGELOG.md$'; then
+            echo "✅ CHANGELOG entry present"
+          else
+            echo "::error::Every change needs one line in docs/ai/CHANGELOG.md. No exceptions for small changes."
+            exit 1
+          fi
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Tier 2 — static analysis.
+  # ─────────────────────────────────────────────────────────────────────────
+  static:
+    name: Static (${{ matrix.check }})
+    runs-on: ubuntu-latest
+    needs: guard
+    strategy:
+      fail-fast: false
+      matrix:
+        check: [lint, typecheck, architecture, format]
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -23,10 +89,30 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm db:generate
-      - run: pnpm lint
 
-  typecheck:
+      - name: Lint
+        if: matrix.check == 'lint'
+        run: pnpm lint
+
+      - name: Typecheck
+        if: matrix.check == 'typecheck'
+        run: pnpm typecheck
+
+      - name: Architecture boundaries
+        if: matrix.check == 'architecture'
+        run: pnpm architecture:check
+
+      - name: Format
+        if: matrix.check == 'format'
+        run: pnpm format:check
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Tier 3 — supply chain. Blocking, not advisory.
+  # ─────────────────────────────────────────────────────────────────────────
+  supply-chain:
+    name: Supply chain
     runs-on: ubuntu-latest
+    needs: guard
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -35,37 +121,63 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm db:generate
-      - run: pnpm typecheck
 
+      # BLOCKING. This previously carried `continue-on-error: true`, which made it decorative.
+      - name: Audit (high + critical block the build)
+        run: pnpm audit --audit-level=high
+
+      - name: Licence compliance (TRD § 1 — the open-source mandate)
+        run: node scripts/ci/check-licenses.mjs
+
+      - name: Generate SBOM
+        run: npx --yes @cyclonedx/cyclonedx-npm --output-file sbom.json || echo '{}' > sbom.json
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.json
+          retention-days: 90
+
+  codeql:
+    name: CodeQL SAST
+    runs-on: ubuntu-latest
+    needs: guard
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-extended
+      - uses: github/codeql-action/analyze@v3
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Tier 4 — behaviour. Needs a real database.
+  # ─────────────────────────────────────────────────────────────────────────
   test:
+    name: Tests + coverage + tenant isolation
     runs-on: ubuntu-latest
+    needs: [static]
     services:
       postgres:
-        image: postgres:16-alpine
+        image: pgvector/pgvector:pg16
         env:
           POSTGRES_USER: unierp
           POSTGRES_PASSWORD: unierp
           POSTGRES_DB: unierp_test
-        ports:
-          - 5432:5432
+        ports: ['5432:5432']
         options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-cmd pg_isready --health-interval 10s
+          --health-timeout 5s --health-retries 5
       redis:
         image: redis:7-alpine
-        ports:
-          - 6379:6379
+        ports: ['6379:6379']
         options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-cmd "redis-cli ping" --health-interval 10s
+          --health-timeout 5s --health-retries 5
     env:
       DATABASE_URL: postgresql://unierp:unierp@localhost:5432/unierp_test
       DATABASE_OWNER_URL: postgresql://unierp:unierp@localhost:5432/unierp_test
+      REDIS_URL: redis://localhost:6379
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -75,59 +187,35 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm db:generate
-      - run: pnpm db:deploy
-      - run: pnpm test
 
-  coverage:
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: unierp
-          POSTGRES_PASSWORD: unierp
-          POSTGRES_DB: unierp_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    env:
-      DATABASE_URL: postgresql://unierp:unierp@localhost:5432/unierp_test
-      DATABASE_OWNER_URL: postgresql://unierp:unierp@localhost:5432/unierp_test
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm db:generate
-      - run: pnpm db:deploy
-      - run: pnpm test:coverage
-      - name: Upload coverage reports
+      - name: Apply migrations (db:deploy — never db:push)
+        run: pnpm db:deploy
+
+      - name: Migration discipline
+        run: pnpm migration:discipline
+
+      - name: Schema lint
+        run: pnpm schema:lint
+
+      # BLOCKING. This script existed but was never wired into CI — ARCHITECTURE_REVIEW § F5.
+      # A table carrying tenant_id without an RLS policy now fails the build.
+      - name: RLS / tenant-isolation verification
+        run: node scripts/check-rls-verify.mjs
+
+      - name: Unit + integration tests with coverage
+        run: pnpm test:coverage
+
+      - uses: actions/upload-artifact@v4
         if: always()
-        uses: actions/upload-artifact@v4
         with:
-          name: coverage-reports
-          path: |
-            **/coverage/
+          name: coverage
+          path: '**/coverage/'
           retention-days: 14
 
-  validate:
+  build:
+    name: Build (api + web)
     runs-on: ubuntu-latest
+    needs: [static]
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -137,38 +225,38 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm db:generate
-      - run: pnpm architecture:check
-      - run: pnpm migration:discipline
-      - run: pnpm foundation:check
-      - run: pnpm schema:lint
-      - run: pnpm audit --audit-level=high
-        continue-on-error: true
+      # Previously only the e2e job built these, so a build-breaking change could pass CI.
+      - run: pnpm --filter @unerp/api build
+      - run: pnpm --filter @unerp/web build
 
   e2e:
+    name: E2E
     runs-on: ubuntu-latest
+    needs: [test, build]
     services:
       postgres:
-        image: postgres:16-alpine
+        image: pgvector/pgvector:pg16
         env:
           POSTGRES_USER: unierp
           POSTGRES_PASSWORD: unierp
           POSTGRES_DB: unierp_test
-        ports:
-          - 5432:5432
+        ports: ['5432:5432']
         options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-cmd pg_isready --health-interval 10s
+          --health-timeout 5s --health-retries 5
       redis:
         image: redis:7-alpine
-        ports:
-          - 6379:6379
+        ports: ['6379:6379']
         options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-cmd "redis-cli ping" --health-interval 10s
+          --health-timeout 5s --health-retries 5
+    env:
+      DATABASE_URL: postgresql://unierp:unierp@localhost:5432/unierp_test
+      DATABASE_OWNER_URL: postgresql://unierp:unierp@localhost:5432/unierp_test
+      REDIS_URL: redis://localhost:6379
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      E2E_EMAIL: admin@unerp.dev
+      E2E_PASSWORD: admin123
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -177,33 +265,38 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Generate Prisma client
-        run: pnpm db:generate
-      - name: Run database migrations
-        run: pnpm db:deploy
-        env:
-          DATABASE_URL: postgresql://unierp:unierp@localhost:5432/unierp_test
-      - name: Seed database
-        run: pnpm db:seed
-        env:
-          DATABASE_URL: postgresql://unierp:unierp@localhost:5432/unierp_test
-      - name: Build API
-        run: pnpm --filter @unerp/api build
-      - name: Build web
-        run: pnpm --filter @unerp/web build
-      - name: Install Playwright browsers
-        run: pnpm --filter @unerp/web exec playwright install --with-deps chromium
-      - name: Run E2E tests (all projects)
-        run: pnpm --filter @unerp/web test:e2e:all
-        env:
-          DATABASE_URL: postgresql://unierp:unierp@localhost:5432/unierp_test
-          NEXT_PUBLIC_APP_URL: http://localhost:3000
-          E2E_EMAIL: admin@unerp.dev
-          E2E_PASSWORD: admin123
-      - name: Upload Playwright report
+      - run: pnpm db:generate
+      - run: pnpm db:deploy
+      - run: pnpm db:seed
+      - run: pnpm --filter @unerp/api build
+      - run: pnpm --filter @unerp/web build
+      - run: pnpm --filter @unerp/web exec playwright install --with-deps chromium
+      - run: pnpm --filter @unerp/web test:e2e:all
+      - uses: actions/upload-artifact@v4
         if: failure()
-        uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: apps/web/playwright-report/
           retention-days: 7
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # The single required status check. Branch protection points at THIS job, so
+  # a job added above becomes blocking automatically, with no reconfiguration.
+  # ─────────────────────────────────────────────────────────────────────────
+  ci-passed:
+    name: CI passed
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [guard, static, supply-chain, codeql, test, build, e2e]
+    steps:
+      - name: Verify every gate succeeded
+        run: |
+          results="${{ join(needs.*.result, ' ') }}"
+          echo "Gate results: $results"
+          for r in $results; do
+            if [ "$r" != "success" ]; then
+              echo "::error::A required gate did not succeed ($r). Red builds are never merged."
+              exit 1
+            fi
+          done
+          echo "✅ All gates green — eligible to merge."
