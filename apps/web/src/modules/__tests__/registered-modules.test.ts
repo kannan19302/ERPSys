@@ -1,17 +1,33 @@
 // @ts-nocheck
-import { describe, expect, it } from 'vitest';
-import { createRegistry } from '@unerp/framework';
-import type { ModuleDefinition } from '@unerp/framework';
-import { registeredModules } from '../index';
-import { inventoryModule } from '../inventory';
-import { crmModule } from '../crm';
-import { financeModule } from '../finance';
-import { advancedFinanceModule } from '../advanced-finance';
-import { financeAuditModule } from '../finance-audit';
-import { hrModule } from '../hr';
-import { ecommerceModule } from '../ecommerce';
-import { adminModule } from '../admin';
-import { superAdminModule } from '../super-admin';
+import { describe, expect, it } from "vitest";
+import { createRegistry } from "@unerp/framework";
+import type { ModuleDefinition } from "@unerp/framework";
+import { registeredModules } from "../index";
+import { blockchainModule } from "../blockchain";
+import { serviceManagementModule } from "../service-management";
+import { peopleModule } from "../people";
+import { savedViewsModule } from "../saved-views";
+import { pwaModule } from "../pwa";
+import { outboxModule } from "../outbox";
+import { notificationsModule } from "../notifications";
+import { searchModule } from "../search";
+import { driveModule } from "../drive";
+import { reportingModule } from "../reporting";
+import { localizationModule } from "../localization";
+import { subscriptionsModule } from "../subscriptions";
+import { fixedAssetsModule } from "../fixed-assets";
+import { devopsModule } from "../devops";
+import { extGatewayModule } from "../ext-gateway";
+import { apiPlatformModule } from "../api-platform";
+import { inventoryModule } from "../inventory";
+import { crmModule } from "../crm";
+import { financeModule } from "../finance";
+import { advancedFinanceModule } from "../advanced-finance";
+import { financeAuditModule } from "../finance-audit";
+import { hrModule } from "../hr";
+import { ecommerceModule } from "../ecommerce";
+import { adminModule } from "../admin";
+import { superAdminModule } from "../super-admin";
 
 /**
  * Every module the app defines, listed independently of `registeredModules` on
@@ -19,6 +35,22 @@ import { superAdminModule } from '../super-admin';
  * vacuous, since dropping a module would silently drop its checks too.
  */
 const allModules: ModuleDefinition[] = [
+  savedViewsModule,
+  pwaModule,
+  outboxModule,
+  notificationsModule,
+  blockchainModule,
+  serviceManagementModule,
+  peopleModule,
+  searchModule,
+  driveModule,
+  reportingModule,
+  localizationModule,
+  subscriptionsModule,
+  fixedAssetsModule,
+  devopsModule,
+  extGatewayModule,
+  apiPlatformModule,
   inventoryModule,
   crmModule,
   financeModule,
@@ -35,7 +67,7 @@ const registry = createRegistry(registeredModules);
 const linkFields = allModules.flatMap((module) =>
   module.resources.flatMap((resource) =>
     (resource.fields ?? [])
-      .filter((field) => field.type === 'link')
+      .filter((field) => field.type === "link")
       .map((field) => ({
         module: module.id,
         resource: resource.name,
@@ -45,13 +77,13 @@ const linkFields = allModules.flatMap((module) =>
   ),
 );
 
-describe('registered modules', () => {
-  it('registers every module the app defines', () => {
+describe("registered modules", () => {
+  it("registers every module the app defines", () => {
     const registeredIds = registeredModules.map((m) => m.id).sort();
     expect(registeredIds).toEqual(allModules.map((m) => m.id).sort());
   });
 
-  it('exposes link fields to check', () => {
+  it("exposes link fields to check", () => {
     expect(linkFields.length).toBeGreaterThan(0);
   });
 
@@ -69,6 +101,8 @@ describe('registered modules', () => {
   // getResource is first-match-wins, so registration order decides which one
   // every link field targeting 'products' resolves to.
   it('resolves the ambiguous "products" name to the inventory resource', () => {
-    expect(registry.getResource('products')?.endpoint).toBe('/inventory/products');
+    expect(registry.getResource("products")?.endpoint).toBe(
+      "/inventory/products",
+    );
   });
 });
