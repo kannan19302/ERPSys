@@ -4,7 +4,7 @@ import { prisma } from "@unerp/database";
 
 @Injectable()
 export class RealEstatePropertyService {
-  constructor(private readonly prismaClient: any = prisma) {}
+  constructor(private readonly prismaClient: typeof prisma = prisma) {}
 
   // ── PROPERTY INSPECTIONS ──
   async getInspections(tenantId: string, query: { propertyId?: string }) {
