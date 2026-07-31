@@ -122,6 +122,20 @@ const HARD = [
         .map((n) => `docs/ai/${n}  ← delete it, or fold its content into one of the ten master files`);
     },
   },
+  {
+    id: 'auth-math-random',
+    label: 'Math.random() used in auth module',
+    why: 'Math.random() is not cryptographically secure and allows predictability of OTPs. Use node:crypto randomInt instead.',
+    scan() {
+      const hits = [];
+      for (const f of files('apps/api/src/modules/auth', ['.ts'])) {
+        read(f).split('\n').forEach((line, i) => {
+          if (/Math\.random\s*\(/.test(line)) hits.push(`${relative(ROOT, f)}:${i + 1}`);
+        });
+      }
+      return hits;
+    },
+  },
 ];
 
 /* ── RATCHET rules ──────────────────────────────────────────────────────── */
