@@ -4,6 +4,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import GridLayout from "react-grid-layout";
 import type { Layout } from "react-grid-layout";
+
+// react-grid-layout's JSX prop types are awkward with the current React types setup.
+const GridLayoutAny = GridLayout as unknown as React.ComponentType<any>;
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
@@ -496,8 +499,7 @@ export function DashboardEditorWorkspace({
                 padding: "16px",
               }}
             >
-              {/* @ts-ignore — react-grid-layout JSX types are awkward in current setup */}
-              <GridLayout
+              <GridLayoutAny
                 className="layout"
                 layout={layout}
                 cols={12}
@@ -570,7 +572,7 @@ export function DashboardEditorWorkspace({
                     </div>
                   );
                 })}
-              </GridLayout>
+              </GridLayoutAny>
             </div>
           )}
         </div>
