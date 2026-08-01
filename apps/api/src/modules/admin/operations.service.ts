@@ -68,7 +68,7 @@ export class OperationsService {
 
   private async checkDatabase(): Promise<string> {
     try {
-      await prisma.$executeRawUnsafe("SELECT 1");
+      await prisma.$executeRaw`SELECT 1`;
       return "HEALTHY";
     } catch {
       return "UNHEALTHY";

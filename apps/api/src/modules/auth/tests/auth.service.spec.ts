@@ -107,6 +107,19 @@ describe("AuthService", () => {
     vi.clearAllMocks();
   });
 
+  describe("generateOtp", () => {
+    it("should generate OTP without using Math.random for cryptographic security", () => {
+      const mathRandomSpy = vi.spyOn(Math, "random").mockReturnValue(0.5);
+
+      const otp = (authService as any).generateOtp();
+
+      expect(mathRandomSpy).not.toHaveBeenCalled();
+      expect(otp).toMatch(/^[0-9]{6}$/);
+
+      mathRandomSpy.mockRestore();
+    });
+  });
+
   describe("register", () => {
     it("should register a tenant and return registration credentials", async () => {
       const { prisma } = await import("@unerp/database");

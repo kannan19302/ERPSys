@@ -88,3 +88,19 @@ storybook-static/
 .agents/
 tsc_errors.txt
 *.tmp
+
+# ── Repo hygiene (docs/ai/ARCHITECTURE_REVIEW.md § R5) ──────────────────
+# One-off scripts, scratch work, and debug artifacts do not belong in a
+# production repository. Use your agent sandbox / scratch directory instead.
+*.log
+svc.log
+scratch/
+**/scratch/
+temp_*
+tmp_*
+*.tmp
+*.bak
+*.orig
+cycle-report.json
+sbom.json
+.quality-*.local.json

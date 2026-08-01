@@ -4,7 +4,7 @@ import { OperationsService } from "../operations.service";
 vi.mock("@unerp/database", () => {
   return {
     prisma: {
-      $executeRawUnsafe: vi.fn(),
+      $executeRaw: vi.fn(),
       $queryRaw: vi.fn(),
       setting: {
         findUnique: vi.fn(),
@@ -72,7 +72,7 @@ describe("OperationsService", () => {
 
   it("should return system health metrics", async () => {
     const { prisma } = await import("@unerp/database");
-    vi.mocked(prisma.$executeRawUnsafe).mockResolvedValue(1);
+    vi.mocked(prisma.$executeRaw).mockResolvedValue(1);
 
     const result = await operationsService.getSystemHealth();
     expect(result.status).toBe("OK");

@@ -2,6 +2,22 @@ import { describe, expect, it } from "vitest";
 import { createRegistry } from "@unerp/framework";
 import type { ModuleDefinition } from "@unerp/framework";
 import { registeredModules } from "../index";
+import { blockchainModule } from "../blockchain";
+import { serviceManagementModule } from "../service-management";
+import { peopleModule } from "../people";
+import { savedViewsModule } from "../saved-views";
+import { pwaModule } from "../pwa";
+import { outboxModule } from "../outbox";
+import { notificationsModule } from "../notifications";
+import { searchModule } from "../search";
+import { driveModule } from "../drive";
+import { reportingModule } from "../reporting";
+import { localizationModule } from "../localization";
+import { subscriptionsModule } from "../subscriptions";
+import { fixedAssetsModule } from "../fixed-assets";
+import { devopsModule } from "../devops";
+import { extGatewayModule } from "../ext-gateway";
+import { apiPlatformModule } from "../api-platform";
 import { inventoryModule } from "../inventory";
 import { crmModule } from "../crm";
 import { financeModule } from "../finance";
@@ -18,6 +34,22 @@ import { superAdminModule } from "../super-admin";
  * vacuous, since dropping a module would silently drop its checks too.
  */
 const allModules: ModuleDefinition[] = [
+  savedViewsModule,
+  pwaModule,
+  outboxModule,
+  notificationsModule,
+  blockchainModule,
+  serviceManagementModule,
+  peopleModule,
+  searchModule,
+  driveModule,
+  reportingModule,
+  localizationModule,
+  subscriptionsModule,
+  fixedAssetsModule,
+  devopsModule,
+  extGatewayModule,
+  apiPlatformModule,
   inventoryModule,
   crmModule,
   financeModule,

@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
 import { TRACKED_MODELS, ownerForModel } from "../../common/app-data-ownership";
 
 interface TableStat {
@@ -161,9 +162,10 @@ export class StorageMeteringService {
       if (!/^[a-z0-9_]+$/i.test(tableName)) {
         return 0;
       }
-      const rows = await prisma.$queryRawUnsafe<Array<{ count: bigint }>>(
-        `SELECT COUNT(*)::bigint AS count FROM "${tableName}" WHERE tenant_id = $1`,
-        tenantId,
+      // Identifier is regex-validated above; using Prisma.sql/raw still parameterises
+      // tenantId properly rather than string-interpolating it. docs/ai/ARCHITECTURE_REVIEW.md § F12.
+      const rows = await prisma.$queryRaw<Array<{ count: bigint }>>(
+        Prisma.sql`SELECT COUNT(*)::bigint AS count FROM ${Prisma.raw(`"${tableName}"`)} WHERE tenant_id = ${tenantId}`,
       );
       return Number(rows[0]?.count || 0n);
     } catch {

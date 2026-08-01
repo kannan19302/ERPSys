@@ -1763,12 +1763,14 @@ export class HrAdvancedService {
         prisma.employee.count({ where: { tenantId, deletedAt: null } }),
       ]);
 
-    const joinedByMonth = await prisma.$queryRawUnsafe<
+    // Fixed table, fixed shape, tenantId is the only variable — no reason for the
+    // Unsafe variant. docs/ai/ARCHITECTURE_REVIEW.md § F12.
+    const joinedByMonth = await prisma.$queryRaw<
       Array<{ month: string; count: bigint }>
-    >(
-      `SELECT TO_CHAR(date_of_joining, 'YYYY-MM') as month, COUNT(*)::int as count FROM employees WHERE tenant_id = $1 AND deleted_at IS NULL AND date_of_joining IS NOT NULL GROUP BY month ORDER BY month`,
-      tenantId,
-    );
+    >`SELECT TO_CHAR(date_of_joining, 'YYYY-MM') as month, COUNT(*)::int as count
+      FROM employees
+      WHERE tenant_id = ${tenantId} AND deleted_at IS NULL AND date_of_joining IS NOT NULL
+      GROUP BY month ORDER BY month`;
 
     return {
       total,

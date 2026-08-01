@@ -1,0 +1,241 @@
+# CD — the deployment pipeline. docs/ai/TRD.md § 8, Layer 4.
+#
+# Previously there was NO continuous deployment (ARCHITECTURE_REVIEW § F3): deployment was
+# manual and unrehearsed, with no staging verification and no rollback procedure.
+#
+# CONTRACT:
+#   · Nothing deploys unless CI is fully green on that exact commit.
+#   · Every artifact is immutable, signed, SBOM-carrying, and tagged with its commit SHA.
+#   · Staging is automatic. Production requires a human approval gate.
+#   · Migrations run expand→migrate→contract and are dry-run against a staging clone first.
+#   · A failed post-deploy health gate rolls back automatically.
+#   · Rollback is a redeploy of the previous SHA and completes in under 5 minutes.
+name: CD
+
+on:
+  workflow_run:
+    workflows: ['CI']
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        type: choice
+        options: [staging, production]
+        required: true
+      sha:
+        description: Commit SHA to deploy (defaults to HEAD of main)
+        type: string
+        required: false
+      rollback:
+        description: Roll back to the previous successful release
+        type: boolean
+        default: false
+
+concurrency:
+  group: cd-${{ github.event.inputs.environment || 'staging' }}
+  cancel-in-progress: false # never interrupt an in-flight deployment
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write # keyless signing via cosign
+  deployments: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository }}
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────────
+  # The hard precondition: CI green on this exact commit. No other path exists.
+  # ─────────────────────────────────────────────────────────────────────────
+  preflight:
+    name: Preflight
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    outputs:
+      sha: ${{ steps.resolve.outputs.sha }}
+      version: ${{ steps.resolve.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.inputs.sha || github.event.workflow_run.head_sha || 'main' }}
+
+      - id: resolve
+        run: |
+          SHA=$(git rev-parse HEAD)
+          echo "sha=$SHA"                       >> "$GITHUB_OUTPUT"
+          echo "version=$(date +%Y.%m.%d)-${SHA:0:7}" >> "$GITHUB_OUTPUT"
+
+      - name: Refuse to deploy a commit whose CI is not green
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          SHA=${{ steps.resolve.outputs.sha }}
+          STATE=$(gh api "repos/${{ github.repository }}/commits/$SHA/check-runs" \
+                  --jq '[.check_runs[] | select(.name=="CI passed") | .conclusion] | first // "missing"')
+          if [ "$STATE" != "success" ]; then
+            echo "::error::CI is '$STATE' for $SHA. Only a fully green commit may deploy."
+            exit 1
+          fi
+          echo "✅ CI green for $SHA"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Build once. The identical artifact is promoted through every environment —
+  # never rebuilt per environment, which would break the immutability guarantee.
+  # ─────────────────────────────────────────────────────────────────────────
+  package:
+    name: Build · scan · sign (${{ matrix.app }})
+    runs-on: ubuntu-latest
+    needs: preflight
+    strategy:
+      matrix:
+        app: [api, web]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.preflight.outputs.sha }}
+
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/${{ matrix.app }}/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.app }}:${{ needs.preflight.outputs.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.app }}:${{ needs.preflight.outputs.version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: true
+          sbom: true
+
+      # BLOCKING — a vulnerable image never reaches an environment.
+      - name: Scan image (Trivy)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.app }}:${{ needs.preflight.outputs.sha }}
+          severity: 'HIGH,CRITICAL'
+          exit-code: '1'
+          ignore-unfixed: true
+
+      - uses: sigstore/cosign-installer@v3
+      - name: Sign image (keyless)
+        run: |
+          cosign sign --yes \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.app }}:${{ needs.preflight.outputs.sha }}
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Staging — automatic on every green main.
+  # ─────────────────────────────────────────────────────────────────────────
+  staging:
+    name: Deploy → staging
+    runs-on: ubuntu-latest
+    needs: [preflight, package]
+    if: github.event.inputs.environment != 'production'
+    environment:
+      name: staging
+      url: https://staging.unierp.dev
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.preflight.outputs.sha }}
+
+      # Rehearse the migration against a clone before touching the real database.
+      - name: Migration dry-run against a staging clone
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_CLONE_DATABASE_URL }}
+        run: |
+          node scripts/ci/check-migration-safety.mjs
+          pnpm db:deploy
+
+      - name: Apply migrations (expand phase)
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+        run: pnpm db:deploy
+
+      - name: Roll out
+        env:
+          DEPLOY_HOST: ${{ secrets.STAGING_DEPLOY_HOST }}
+          DEPLOY_KEY: ${{ secrets.STAGING_DEPLOY_KEY }}
+        run: ./scripts/deploy/rollout.sh staging ${{ needs.preflight.outputs.sha }}
+
+      - name: Health gate
+        run: ./scripts/deploy/health-gate.sh https://staging.unierp.dev
+
+      - name: Smoke tests
+        run: pnpm --filter @unerp/web test:e2e:smoke
+        env:
+          BASE_URL: https://staging.unierp.dev
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Production — human approval required (GitHub Environment protection rule).
+  # ─────────────────────────────────────────────────────────────────────────
+  production:
+    name: Deploy → production
+    runs-on: ubuntu-latest
+    needs: [preflight, package, staging]
+    if: >-
+      always() &&
+      (needs.staging.result == 'success' || needs.staging.result == 'skipped') &&
+      github.event.inputs.environment == 'production'
+    environment:
+      name: production # configure required reviewers on this environment
+      url: https://app.unierp.dev
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.preflight.outputs.sha }}
+
+      - name: Record the current release (for rollback)
+        id: previous
+        run: ./scripts/deploy/record-current.sh production
+
+      - name: Pre-deploy backup checkpoint
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+        run: node scripts/backup-database.mjs --label "pre-deploy-${{ needs.preflight.outputs.sha }}"
+
+      # Backward-compatible with the previously deployed app version by construction —
+      # destructive DDL is forbidden here and requires a separate approved release.
+      - name: Apply migrations (expand only)
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+        run: |
+          node scripts/ci/check-migration-safety.mjs --forbid-destructive
+          pnpm db:deploy
+
+      - name: Blue/green rollout
+        env:
+          DEPLOY_HOST: ${{ secrets.PRODUCTION_DEPLOY_HOST }}
+          DEPLOY_KEY: ${{ secrets.PRODUCTION_DEPLOY_KEY }}
+        run: ./scripts/deploy/rollout.sh production ${{ needs.preflight.outputs.sha }}
+
+      - name: Health gate (error rate · latency · readiness)
+        id: health
+        run: ./scripts/deploy/health-gate.sh https://app.unierp.dev --strict
+
+      - name: Automatic rollback on health-gate failure
+        if: failure() && steps.health.outcome == 'failure'
+        run: |
+          echo "::error::Health gate failed — rolling back to ${{ steps.previous.outputs.sha }}"
+          ./scripts/deploy/rollout.sh production ${{ steps.previous.outputs.sha }}
+          ./scripts/deploy/health-gate.sh https://app.unierp.dev
+
+      - name: Tag the release
+        if: success()
+        run: |
+          git tag -a "v${{ needs.preflight.outputs.version }}" -m "Production release"
+          git push origin "v${{ needs.preflight.outputs.version }}"

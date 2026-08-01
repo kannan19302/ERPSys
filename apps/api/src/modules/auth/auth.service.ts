@@ -9,7 +9,7 @@ import {
 import { InjectQueue } from "@nestjs/bullmq";
 import { Queue } from "bullmq";
 import { EventEmitter2 } from "@nestjs/event-emitter";
-import { randomBytes, createHash, randomUUID } from "node:crypto";
+import { randomBytes, createHash, randomUUID, randomInt } from "node:crypto";
 import * as webPush from "web-push";
 import { prisma, runWithTenantSession } from "@unerp/database";
 import { UserRole, Role } from "@prisma/client";
@@ -1664,7 +1664,7 @@ export class AuthService {
   >();
 
   private generateOtp(): string {
-    return String(Math.floor(100000 + Math.random() * 900000));
+    return String(randomInt(100000, 1000000));
   }
 
   async sendOtp(

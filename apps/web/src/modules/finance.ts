@@ -1,5 +1,5 @@
 import { defineModule, defineResource } from "@unerp/framework";
-import { apiPost } from "@/lib/api";
+import { apiPost } from "../lib/api";
 
 // ─────────────────────────────────────────────────
 // Finance module definition — Phase 2 framework
