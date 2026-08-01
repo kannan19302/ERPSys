@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { Injectable } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import { Injectable } from "@nestjs/common";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class OutboxMetricsService {
@@ -20,13 +19,13 @@ export class OutboxMetricsService {
     this.lastRefresh = now;
 
     const [pending, leased, completed, dead, oldest] = await Promise.all([
-      prisma.outboxDelivery.count({ where: { status: 'PENDING' } }),
-      prisma.outboxDelivery.count({ where: { status: 'LEASED' } }),
-      prisma.outboxDelivery.count({ where: { status: 'COMPLETED' } }),
-      prisma.outboxDelivery.count({ where: { status: 'DEAD' } }),
+      prisma.outboxDelivery.count({ where: { status: "PENDING" } }),
+      prisma.outboxDelivery.count({ where: { status: "LEASED" } }),
+      prisma.outboxDelivery.count({ where: { status: "COMPLETED" } }),
+      prisma.outboxDelivery.count({ where: { status: "DEAD" } }),
       prisma.outboxDelivery.findFirst({
-        where: { status: 'PENDING' },
-        orderBy: { availableAt: 'asc' },
+        where: { status: "PENDING" },
+        orderBy: { availableAt: "asc" },
         select: { availableAt: true },
       }),
     ]);
@@ -35,9 +34,7 @@ export class OutboxMetricsService {
     this.leasedCount = leased;
     this.completedCount = completed;
     this.deadCount = dead;
-    this.oldestPendingAgeMs = oldest
-      ? now - oldest.availableAt.getTime()
-      : 0;
+    this.oldestPendingAgeMs = oldest ? now - oldest.availableAt.getTime() : 0;
   }
 
   getSnapshot() {
@@ -69,14 +66,14 @@ export class OutboxMetricsService {
       return { found: false, dead: false };
     }
 
-    if (delivery.status !== 'DEAD') {
+    if (delivery.status !== "DEAD") {
       return { found: true, dead: false, currentStatus: delivery.status };
     }
 
     await prisma.outboxDelivery.update({
       where: { id: outboxDeliveryId },
       data: {
-        status: 'PENDING',
+        status: "PENDING",
         attempts: 0,
         lastError: null,
         availableAt: new Date(),

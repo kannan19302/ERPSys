@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { BuilderRulesService } from "../services/builder-rules.service";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 

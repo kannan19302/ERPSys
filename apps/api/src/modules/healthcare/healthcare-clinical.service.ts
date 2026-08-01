@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 
@@ -7,7 +6,10 @@ export class HealthcareClinicalService {
   private readonly prisma = prisma;
 
   // ── CLINICAL NOTES ──
-  async getClinicalNotes(tenantId: string, query: { patientId?: string; doctorId?: string }) {
+  async getClinicalNotes(
+    tenantId: string,
+    query: { patientId?: string; doctorId?: string },
+  ) {
     const where: any = { tenantId };
     if (query.patientId) where.patientId = query.patientId;
     if (query.doctorId) where.doctorId = query.doctorId;
@@ -36,7 +38,10 @@ export class HealthcareClinicalService {
   }
 
   // ── TELEMEDICINE SESSIONS ──
-  async getTelehealthSessions(tenantId: string, query: { patientId?: string; status?: string }) {
+  async getTelehealthSessions(
+    tenantId: string,
+    query: { patientId?: string; status?: string },
+  ) {
     const where: any = { tenantId };
     if (query.patientId) where.patientId = query.patientId;
     if (query.status) where.status = query.status;
@@ -54,7 +59,8 @@ export class HealthcareClinicalService {
         patientId: data.patientId,
         doctorId: data.doctorId,
         meetingId: data.meetingId || `MEET-${Date.now()}`,
-        joinUrl: data.joinUrl || `https://telehealth.unerp.io/room/${Date.now()}`,
+        joinUrl:
+          data.joinUrl || `https://telehealth.unerp.io/room/${Date.now()}`,
         scheduledAt: new Date(data.scheduledAt),
         durationMins: data.durationMins || 30,
         status: "SCHEDULED",
@@ -64,7 +70,10 @@ export class HealthcareClinicalService {
   }
 
   // ── MEDICAL BILLS ──
-  async getMedicalBills(tenantId: string, query: { patientId?: string; status?: string }) {
+  async getMedicalBills(
+    tenantId: string,
+    query: { patientId?: string; status?: string },
+  ) {
     const where: any = { tenantId };
     if (query.patientId) where.patientId = query.patientId;
     if (query.status) where.status = query.status;

@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
 import '../../../../core/widgets/interactive_chart.dart';
 import '../../../../core/widgets/ui_card.dart';
-import '../../../../core/utils/formatters.dart';
-import '../providers/projects_providers.dart';
 
 class ProjectDashboardPage extends ConsumerWidget {
   const ProjectDashboardPage({super.key});
@@ -22,7 +20,7 @@ class ProjectDashboardPage extends ConsumerWidget {
         padding: const EdgeInsets.all(Spacing.x4),
         children: [
           // KPI Row
-          Row(
+          const Row(
             children: [
               Expanded(
                 child: KpiCard(
@@ -32,7 +30,7 @@ class ProjectDashboardPage extends ConsumerWidget {
                   previousValue: 10,
                 ),
               ),
-              const SizedBox(width: Spacing.x3),
+              SizedBox(width: Spacing.x3),
               Expanded(
                 child: KpiCard(
                   label: 'In Progress',
@@ -45,7 +43,7 @@ class ProjectDashboardPage extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: Spacing.x3),
-          Row(
+          const Row(
             children: [
               Expanded(
                 child: KpiCard(
@@ -55,7 +53,7 @@ class ProjectDashboardPage extends ConsumerWidget {
                   format: KpiFormat.currency,
                 ),
               ),
-              const SizedBox(width: Spacing.x3),
+              SizedBox(width: Spacing.x3),
               Expanded(
                 child: KpiCard(
                   label: 'Completion',
@@ -111,17 +109,17 @@ class ProjectDashboardPage extends ConsumerWidget {
           const SizedBox(height: Spacing.x4),
 
           // Recent Activity
-          UiCard(
+          const UiCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const UiSectionHeader(title: 'Recent Activity'),
+                UiSectionHeader(title: 'Recent Activity'),
                 _ActivityItem(icon: Icons.add_circle_outline, text: 'New task created in Project Alpha', time: '2h ago'),
-                const Divider(height: 1),
+                Divider(height: 1),
                 _ActivityItem(icon: Icons.check_circle_outline, text: 'Task "UI Review" completed', time: '4h ago'),
-                const Divider(height: 1),
+                Divider(height: 1),
                 _ActivityItem(icon: Icons.people_outline, text: 'John assigned to Project Beta', time: '1d ago'),
-                const Divider(height: 1),
+                Divider(height: 1),
                 _ActivityItem(icon: Icons.trending_up, text: 'Project Gamma budget updated', time: '2d ago'),
               ],
             ),

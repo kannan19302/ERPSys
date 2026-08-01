@@ -1,5 +1,8 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
 import { prisma } from "@unerp/database";
 
 @Injectable()
@@ -66,7 +69,12 @@ export class SalesReturnsService {
     });
   }
 
-  async processReturn(tenantId: string, id: string, action: string, userId: string) {
+  async processReturn(
+    tenantId: string,
+    id: string,
+    action: string,
+    userId: string,
+  ) {
     const record = await this.getReturn(tenantId, id);
 
     const validTransitions: Record<string, string[]> = {
@@ -94,7 +102,12 @@ export class SalesReturnsService {
     return this.processReturn(tenantId, id, "APPROVED", userId);
   }
 
-  async rejectReturn(tenantId: string, id: string, reason: string, userId: string) {
+  async rejectReturn(
+    tenantId: string,
+    id: string,
+    reason: string,
+    userId: string,
+  ) {
     const record = await this.getReturn(tenantId, id);
     return prisma.salesReturn.update({
       where: { id },
@@ -109,7 +122,10 @@ export class SalesReturnsService {
     });
   }
 
-  async createReturnReason(tenantId: string, data: { code: string; label: string; type: string }) {
+  async createReturnReason(
+    tenantId: string,
+    data: { code: string; label: string; type: string },
+  ) {
     return prisma.returnReasonCode.create({
       data: {
         tenantId,
@@ -184,7 +200,13 @@ export class SalesReturnsService {
     });
   }
 
-  async rmaReceiveItem(tenantId: string, rmaId: string, lineId: string, condition: string, userId: string) {
+  async rmaReceiveItem(
+    tenantId: string,
+    rmaId: string,
+    lineId: string,
+    condition: string,
+    userId: string,
+  ) {
     const rma = await prisma.returnMerchandiseAuthorization.findFirst({
       where: { id: rmaId, tenantId },
     });
@@ -202,14 +224,25 @@ export class SalesReturnsService {
 
     await prisma.rMAInspection.upsert({
       where: { rmaId },
-      create: { tenantId, rmaId, inspectorId: userId, inspectionDate: new Date(), overallCondition: condition },
+      create: {
+        tenantId,
+        rmaId,
+        inspectorId: userId,
+        inspectionDate: new Date(),
+        overallCondition: condition,
+      },
       update: { overallCondition: condition, inspectorId: userId },
     });
 
     return updated;
   }
 
-  async createCreditNote(tenantId: string, returnId: string, data: any, userId: string) {
+  async createCreditNote(
+    tenantId: string,
+    returnId: string,
+    data: any,
+    userId: string,
+  ) {
     const salesReturn = await this.getReturn(tenantId, returnId);
     const count = await prisma.creditNote.count({ where: { tenantId } });
     const noteNumber =

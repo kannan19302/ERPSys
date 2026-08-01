@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Module } from "@nestjs/common";
 import { FinanceController } from "./finance.controller";
 import { FinanceSettingsController } from "./settings.controller";

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Injectable, Logger } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 
@@ -6,7 +5,9 @@ import { prisma } from "@unerp/database";
 export class SalesDeepeningUltraPackService {
   private readonly logger = new Logger(SalesDeepeningUltraPackService.name);
 
-  private get db() { return prisma; }
+  private get db() {
+    return prisma;
+  }
 
   async handleUltraCommand(tenantId: string, cmd: string, payload: any) {
     return {

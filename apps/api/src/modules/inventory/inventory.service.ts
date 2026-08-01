@@ -1,33 +1,57 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
-import { prisma } from '@unerp/database';
 import {
-  CreateProductInput, UpdateProductInput,
-  CreateCategoryInput, UpdateCategoryInput,
-  CreateVariantInput, CreateBinLocationInput,
-  CreateSerialNumberInput, UpdateSerialNumberInput,
-  CreateBatchInput, UpdateBatchInput,
-  CreateCycleCountInput, SubmitCycleCountInput,
-  CreateCycleCountScheduleInput, UpdateCycleCountScheduleInput,
-  CreateLicensePlateInput, AddLicensePlateItemInput, MoveLicensePlateInput,
-  CreatePutawayTaskInput, CompletePutawayTaskInput,
-  QuarantineBatchInput, ReleaseBatchQuarantineInput,
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  Inject,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import {
+  CreateProductInput,
+  UpdateProductInput,
+  CreateCategoryInput,
+  UpdateCategoryInput,
+  CreateVariantInput,
+  CreateBinLocationInput,
+  CreateSerialNumberInput,
+  UpdateSerialNumberInput,
+  CreateBatchInput,
+  UpdateBatchInput,
+  CreateCycleCountInput,
+  SubmitCycleCountInput,
+  CreateCycleCountScheduleInput,
+  UpdateCycleCountScheduleInput,
+  CreateLicensePlateInput,
+  AddLicensePlateItemInput,
+  MoveLicensePlateInput,
+  CreatePutawayTaskInput,
+  CompletePutawayTaskInput,
+  QuarantineBatchInput,
+  ReleaseBatchQuarantineInput,
   CreateStockReservationInput,
-  AssembleKitInput, DisassembleKitInput,
-  CreateTransferApprovalRuleInput, UpdateTransferApprovalRuleInput, RejectTransferInput,
-  CreateDockAppointmentInput, UpdateDockAppointmentInput,
-  CreatePickWaveInput, RecordPickInput,
-  CreateConsignmentStockInput, RecordConsignmentConsumptionInput,
+  AssembleKitInput,
+  DisassembleKitInput,
+  CreateTransferApprovalRuleInput,
+  UpdateTransferApprovalRuleInput,
+  RejectTransferInput,
+  CreateDockAppointmentInput,
+  UpdateDockAppointmentInput,
+  CreatePickWaveInput,
+  RecordPickInput,
+  CreateConsignmentStockInput,
+  RecordConsignmentConsumptionInput,
   ReceiveWithTraceabilityInput,
-  CreateQAInspectionTemplateInput, UpdateQAInspectionTemplateInput,
+  CreateQAInspectionTemplateInput,
+  UpdateQAInspectionTemplateInput,
   CreateRequisitionFromReorderRuleInput,
   CreateKitVersionInput,
-  CreateQAInspectionInput, SubmitQAInspectionInput,
-  CreateReorderRuleInput, CreateKitInput,
+  CreateQAInspectionInput,
+  SubmitQAInspectionInput,
+  CreateReorderRuleInput,
+  CreateKitInput,
   CreateStockEntryInput,
   TransferStockInput,
-} from '@unerp/shared';
-import { Prisma } from '@prisma/client';
+} from "@unerp/shared";
+import { Prisma } from "@prisma/client";
 
 import {
   buildPaginationValues,
@@ -35,9 +59,9 @@ import {
   resolveOrgId,
   PaginatedResult,
   PaginationParams,
-} from '../../common/utils/pagination.util';
-import { InventoryProductsService } from './inventory-products.service';
-import { InventoryQaService } from './inventory-qa.service';
+} from "../../common/utils/pagination.util";
+import { InventoryProductsService } from "./inventory-products.service";
+import { InventoryQaService } from "./inventory-qa.service";
 
 @Injectable()
 export class InventoryService {
@@ -67,7 +91,11 @@ export class InventoryService {
     return this.productsService.getProductById(tenantId, id);
   }
 
-  async createProduct(tenantId: string, orgId: string, dto: CreateProductInput) {
+  async createProduct(
+    tenantId: string,
+    orgId: string,
+    dto: CreateProductInput,
+  ) {
     return this.productsService.createProduct(tenantId, orgId, dto);
   }
 
@@ -81,13 +109,21 @@ export class InventoryService {
 
   // ─── STOCK LEVELS ────────────────────────────────────
 
-  async getStockLevels(tenantId: string, params: PaginationParams & { warehouseId?: string } = {}) {
+  async getStockLevels(
+    tenantId: string,
+    params: PaginationParams & { warehouseId?: string } = {},
+  ) {
     return this.productsService.getStockLevels(tenantId, params);
   }
 
   // ─── BULK ──────────────────────────────────────────
 
-  async bulkAction(tenantId: string, action: string, ids: string[], data?: Record<string, unknown>) {
+  async bulkAction(
+    tenantId: string,
+    action: string,
+    ids: string[],
+    data?: Record<string, unknown>,
+  ) {
     return this.productsService.bulkAction(tenantId, action, ids, data);
   }
 
@@ -107,7 +143,11 @@ export class InventoryService {
     return this.productsService.getCategoryById(tenantId, id);
   }
 
-  async createCategory(tenantId: string, orgId: string, dto: CreateCategoryInput) {
+  async createCategory(
+    tenantId: string,
+    orgId: string,
+    dto: CreateCategoryInput,
+  ) {
     return this.productsService.createCategory(tenantId, orgId, dto);
   }
 
@@ -164,7 +204,7 @@ export class InventoryService {
     return prisma.binLocation.findMany({
       where,
       include: { warehouse: true },
-      orderBy: { code: 'asc' },
+      orderBy: { code: "asc" },
     });
   }
 
@@ -173,7 +213,7 @@ export class InventoryService {
       where: { id, tenantId },
       include: { warehouse: true },
     });
-    if (!bin) throw new NotFoundException('Bin location not found');
+    if (!bin) throw new NotFoundException("Bin location not found");
     return bin;
   }
 
@@ -182,7 +222,7 @@ export class InventoryService {
       data: {
         tenantId,
         warehouseId: dto.warehouseId,
-        zone: dto.zone || 'A',
+        zone: dto.zone || "A",
         aisle: dto.aisle,
         rack: dto.rack,
         bin: dto.bin,
@@ -197,7 +237,7 @@ export class InventoryService {
 
   async updateBinLocation(tenantId: string, id: string, dto: any) {
     const bin = await prisma.binLocation.findFirst({ where: { id, tenantId } });
-    if (!bin) throw new NotFoundException('Bin location not found');
+    if (!bin) throw new NotFoundException("Bin location not found");
 
     return prisma.binLocation.update({
       where: { id },
@@ -217,7 +257,7 @@ export class InventoryService {
 
   async deleteBinLocation(tenantId: string, id: string) {
     const bin = await prisma.binLocation.findFirst({ where: { id, tenantId } });
-    if (!bin) throw new NotFoundException('Bin location not found');
+    if (!bin) throw new NotFoundException("Bin location not found");
 
     await prisma.binLocation.update({
       where: { id },
@@ -228,12 +268,15 @@ export class InventoryService {
 
   // ─── TRACEABILITY (SERIAL NUMBERS) ──────────────────
 
-  async getSerialNumbers(tenantId: string, params: PaginationParams & { productId?: string; status?: string } = {}) {
+  async getSerialNumbers(
+    tenantId: string,
+    params: PaginationParams & { productId?: string; status?: string } = {},
+  ) {
     const where: any = { tenantId };
     if (params.productId) where.productId = params.productId;
     if (params.status) where.status = params.status;
     if (params.search) {
-      where.serialNo = { contains: params.search, mode: 'insensitive' };
+      where.serialNo = { contains: params.search, mode: "insensitive" };
     }
 
     const { skip, take } = buildPaginationValues(params);
@@ -244,7 +287,7 @@ export class InventoryService {
         include: { product: true },
         skip,
         take,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       }),
       prisma.serialNumber.count({ where }),
     ]);
@@ -257,7 +300,7 @@ export class InventoryService {
       where: { id, tenantId },
       include: { product: true, history: true },
     });
-    if (!sn) throw new NotFoundException('Serial number not found');
+    if (!sn) throw new NotFoundException("Serial number not found");
     return sn;
   }
 
@@ -268,9 +311,11 @@ export class InventoryService {
         productId: dto.productId,
         warehouseId: dto.warehouseId,
         serialNo: dto.serialNo,
-        status: dto.status || 'AVAILABLE',
+        status: dto.status || "AVAILABLE",
         purchaseDate: dto.purchaseDate ? new Date(dto.purchaseDate) : null,
-        warrantyExpiry: dto.warrantyExpiry ? new Date(dto.warrantyExpiry) : null,
+        warrantyExpiry: dto.warrantyExpiry
+          ? new Date(dto.warrantyExpiry)
+          : null,
         purchaseOrderId: dto.purchaseOrderId,
         salesOrderId: dto.salesOrderId,
         notes: dto.notes,
@@ -279,9 +324,13 @@ export class InventoryService {
     });
   }
 
-  async updateSerialNumber(tenantId: string, id: string, dto: UpdateSerialNumberInput) {
+  async updateSerialNumber(
+    tenantId: string,
+    id: string,
+    dto: UpdateSerialNumberInput,
+  ) {
     const sn = await prisma.serialNumber.findFirst({ where: { id, tenantId } });
-    if (!sn) throw new NotFoundException('Serial number not found');
+    if (!sn) throw new NotFoundException("Serial number not found");
 
     const updateData: any = {
       status: dto.status,
@@ -289,8 +338,14 @@ export class InventoryService {
       notes: dto.notes,
       customFields: dto.customFields,
     };
-    if (dto.purchaseDate !== undefined) updateData.purchaseDate = dto.purchaseDate ? new Date(dto.purchaseDate) : null;
-    if (dto.warrantyExpiry !== undefined) updateData.warrantyExpiry = dto.warrantyExpiry ? new Date(dto.warrantyExpiry) : null;
+    if (dto.purchaseDate !== undefined)
+      updateData.purchaseDate = dto.purchaseDate
+        ? new Date(dto.purchaseDate)
+        : null;
+    if (dto.warrantyExpiry !== undefined)
+      updateData.warrantyExpiry = dto.warrantyExpiry
+        ? new Date(dto.warrantyExpiry)
+        : null;
 
     return prisma.serialNumber.update({
       where: { id },
@@ -301,18 +356,21 @@ export class InventoryService {
   async getSerialNumberHistory(tenantId: string, serialNumberId: string) {
     return prisma.serialNumberHistory.findMany({
       where: { tenantId, serialNumberId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
   // ─── BATCH / LOT CONTROL ─────────────────────────────
 
-  async getBatches(tenantId: string, params: PaginationParams & { productId?: string; status?: string } = {}) {
+  async getBatches(
+    tenantId: string,
+    params: PaginationParams & { productId?: string; status?: string } = {},
+  ) {
     const where: any = { tenantId };
     if (params.productId) where.productId = params.productId;
     if (params.status) where.status = params.status;
     if (params.search) {
-      where.batchNo = { contains: params.search, mode: 'insensitive' };
+      where.batchNo = { contains: params.search, mode: "insensitive" };
     }
 
     const { skip, take } = buildPaginationValues(params);
@@ -323,7 +381,7 @@ export class InventoryService {
         include: { product: true },
         skip,
         take,
-        orderBy: { expiryDate: 'asc' },
+        orderBy: { expiryDate: "asc" },
       }),
       prisma.batch.count({ where }),
     ]);
@@ -336,7 +394,7 @@ export class InventoryService {
       where: { id, tenantId },
       include: { product: true },
     });
-    if (!batch) throw new NotFoundException('Batch not found');
+    if (!batch) throw new NotFoundException("Batch not found");
     return batch;
   }
 
@@ -348,11 +406,13 @@ export class InventoryService {
         batchNo: dto.batchNo,
         lotNo: dto.lotNo,
         quantity: new Prisma.Decimal(dto.quantity),
-        manufactureDate: dto.manufactureDate ? new Date(dto.manufactureDate) : null,
+        manufactureDate: dto.manufactureDate
+          ? new Date(dto.manufactureDate)
+          : null,
         expiryDate: dto.expiryDate ? new Date(dto.expiryDate) : null,
         supplierBatchNo: dto.supplierBatchNo,
         costPrice: dto.costPrice ? new Prisma.Decimal(dto.costPrice) : null,
-        status: dto.status || 'ACTIVE',
+        status: dto.status || "ACTIVE",
         notes: dto.notes,
       },
     });
@@ -360,7 +420,7 @@ export class InventoryService {
 
   async updateBatch(tenantId: string, id: string, dto: UpdateBatchInput) {
     const batch = await prisma.batch.findFirst({ where: { id, tenantId } });
-    if (!batch) throw new NotFoundException('Batch not found');
+    if (!batch) throw new NotFoundException("Batch not found");
 
     const updateData: any = {
       lotNo: dto.lotNo,
@@ -368,10 +428,18 @@ export class InventoryService {
       notes: dto.notes,
       supplierBatchNo: dto.supplierBatchNo,
     };
-    if (dto.quantity !== undefined) updateData.quantity = new Prisma.Decimal(dto.quantity);
-    if (dto.manufactureDate !== undefined) updateData.manufactureDate = dto.manufactureDate ? new Date(dto.manufactureDate) : null;
-    if (dto.expiryDate !== undefined) updateData.expiryDate = dto.expiryDate ? new Date(dto.expiryDate) : null;
-    if (dto.costPrice !== undefined) updateData.costPrice = dto.costPrice ? new Prisma.Decimal(dto.costPrice) : null;
+    if (dto.quantity !== undefined)
+      updateData.quantity = new Prisma.Decimal(dto.quantity);
+    if (dto.manufactureDate !== undefined)
+      updateData.manufactureDate = dto.manufactureDate
+        ? new Date(dto.manufactureDate)
+        : null;
+    if (dto.expiryDate !== undefined)
+      updateData.expiryDate = dto.expiryDate ? new Date(dto.expiryDate) : null;
+    if (dto.costPrice !== undefined)
+      updateData.costPrice = dto.costPrice
+        ? new Prisma.Decimal(dto.costPrice)
+        : null;
 
     return prisma.batch.update({
       where: { id },
@@ -381,43 +449,88 @@ export class InventoryService {
 
   // ─── BATCH QUARANTINE WORKFLOW ───────────────────────
 
-  async quarantineBatch(tenantId: string, id: string, userId: string, dto: QuarantineBatchInput) {
+  async quarantineBatch(
+    tenantId: string,
+    id: string,
+    userId: string,
+    dto: QuarantineBatchInput,
+  ) {
     const batch = await prisma.batch.findFirst({ where: { id, tenantId } });
-    if (!batch) throw new NotFoundException('Batch not found');
-    if (batch.status === 'QUARANTINE') throw new BadRequestException('Batch is already quarantined');
+    if (!batch) throw new NotFoundException("Batch not found");
+    if (batch.status === "QUARANTINE")
+      throw new BadRequestException("Batch is already quarantined");
 
     return prisma.$transaction(async (tx) => {
-      const updated = await tx.batch.update({ where: { id }, data: { status: 'QUARANTINE' } });
+      const updated = await tx.batch.update({
+        where: { id },
+        data: { status: "QUARANTINE" },
+      });
       await tx.batchQuarantineLog.create({
-        data: { tenantId, batchId: id, action: 'QUARANTINED', reason: dto.reason, performedBy: userId },
+        data: {
+          tenantId,
+          batchId: id,
+          action: "QUARANTINED",
+          reason: dto.reason,
+          performedBy: userId,
+        },
       });
       return updated;
     });
   }
 
-  async releaseBatchQuarantine(tenantId: string, id: string, userId: string, dto: ReleaseBatchQuarantineInput) {
+  async releaseBatchQuarantine(
+    tenantId: string,
+    id: string,
+    userId: string,
+    dto: ReleaseBatchQuarantineInput,
+  ) {
     const batch = await prisma.batch.findFirst({ where: { id, tenantId } });
-    if (!batch) throw new NotFoundException('Batch not found');
-    if (batch.status !== 'QUARANTINE') throw new BadRequestException('Batch is not quarantined');
+    if (!batch) throw new NotFoundException("Batch not found");
+    if (batch.status !== "QUARANTINE")
+      throw new BadRequestException("Batch is not quarantined");
 
     return prisma.$transaction(async (tx) => {
-      const updated = await tx.batch.update({ where: { id }, data: { status: 'ACTIVE' } });
+      const updated = await tx.batch.update({
+        where: { id },
+        data: { status: "ACTIVE" },
+      });
       await tx.batchQuarantineLog.create({
-        data: { tenantId, batchId: id, action: 'RELEASED', reason: dto.reason, performedBy: userId },
+        data: {
+          tenantId,
+          batchId: id,
+          action: "RELEASED",
+          reason: dto.reason,
+          performedBy: userId,
+        },
       });
       return updated;
     });
   }
 
-  async rejectBatchQuarantine(tenantId: string, id: string, userId: string, dto: ReleaseBatchQuarantineInput) {
+  async rejectBatchQuarantine(
+    tenantId: string,
+    id: string,
+    userId: string,
+    dto: ReleaseBatchQuarantineInput,
+  ) {
     const batch = await prisma.batch.findFirst({ where: { id, tenantId } });
-    if (!batch) throw new NotFoundException('Batch not found');
-    if (batch.status !== 'QUARANTINE') throw new BadRequestException('Batch is not quarantined');
+    if (!batch) throw new NotFoundException("Batch not found");
+    if (batch.status !== "QUARANTINE")
+      throw new BadRequestException("Batch is not quarantined");
 
     return prisma.$transaction(async (tx) => {
-      const updated = await tx.batch.update({ where: { id }, data: { status: 'EXPIRED' } });
+      const updated = await tx.batch.update({
+        where: { id },
+        data: { status: "EXPIRED" },
+      });
       await tx.batchQuarantineLog.create({
-        data: { tenantId, batchId: id, action: 'REJECTED', reason: dto.reason, performedBy: userId },
+        data: {
+          tenantId,
+          batchId: id,
+          action: "REJECTED",
+          reason: dto.reason,
+          performedBy: userId,
+        },
       });
       return updated;
     });
@@ -426,7 +539,7 @@ export class InventoryService {
   async getBatchQuarantineLog(tenantId: string, batchId: string) {
     return prisma.batchQuarantineLog.findMany({
       where: { tenantId, batchId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -441,10 +554,16 @@ export class InventoryService {
         licensePlateItems: { include: { licensePlate: true } },
       },
     });
-    if (!batch) throw new NotFoundException('Batch not found');
+    if (!batch) throw new NotFoundException("Batch not found");
 
     return {
-      batch: { id: batch.id, batchNo: batch.batchNo, lotNo: batch.lotNo, status: batch.status, product: batch.product },
+      batch: {
+        id: batch.id,
+        batchNo: batch.batchNo,
+        lotNo: batch.lotNo,
+        status: batch.status,
+        product: batch.product,
+      },
       origin: batch.originStockEntry ?? null,
       consumedIn: batch.stockEntryItems.map((i) => i.stockEntry),
       licensePlates: batch.licensePlateItems.map((i) => i.licensePlate),
@@ -455,9 +574,13 @@ export class InventoryService {
   async getExpiringBatchesReport(tenantId: string, withinDays = 30) {
     const cutoff = new Date(Date.now() + withinDays * 24 * 60 * 60 * 1000);
     const batches = await prisma.batch.findMany({
-      where: { tenantId, expiryDate: { not: null, lte: cutoff }, status: { in: ['ACTIVE', 'PARTIALLY_USED'] } },
+      where: {
+        tenantId,
+        expiryDate: { not: null, lte: cutoff },
+        status: { in: ["ACTIVE", "PARTIALLY_USED"] },
+      },
       include: { product: true },
-      orderBy: { expiryDate: 'asc' },
+      orderBy: { expiryDate: "asc" },
     });
 
     return {
@@ -470,31 +593,61 @@ export class InventoryService {
         sku: b.product.sku,
         quantity: Number(b.quantity) - Number(b.usedQty),
         expiryDate: b.expiryDate,
-        daysUntilExpiry: b.expiryDate ? Math.ceil((b.expiryDate.getTime() - Date.now()) / (24 * 60 * 60 * 1000)) : null,
+        daysUntilExpiry: b.expiryDate
+          ? Math.ceil(
+              (b.expiryDate.getTime() - Date.now()) / (24 * 60 * 60 * 1000),
+            )
+          : null,
       })),
     };
   }
 
   /** FEFO pick suggestion: allocates the requested quantity across the soonest-expiring batches first. */
-  async getFefoPickSuggestion(tenantId: string, productId: string, warehouseId: string, quantity: number) {
+  async getFefoPickSuggestion(
+    tenantId: string,
+    productId: string,
+    warehouseId: string,
+    quantity: number,
+  ) {
     const batches = await prisma.batch.findMany({
-      where: { tenantId, productId, status: { in: ['ACTIVE', 'PARTIALLY_USED'] } },
-      orderBy: [{ expiryDate: 'asc' }, { createdAt: 'asc' }],
+      where: {
+        tenantId,
+        productId,
+        status: { in: ["ACTIVE", "PARTIALLY_USED"] },
+      },
+      orderBy: [{ expiryDate: "asc" }, { createdAt: "asc" }],
     });
 
     let remaining = quantity;
-    const allocations: Array<{ batchId: string; batchNo: string; expiryDate: Date | null; allocatedQty: number }> = [];
+    const allocations: Array<{
+      batchId: string;
+      batchNo: string;
+      expiryDate: Date | null;
+      allocatedQty: number;
+    }> = [];
 
     for (const batch of batches) {
       if (remaining <= 0) break;
       const available = Number(batch.quantity) - Number(batch.usedQty);
       if (available <= 0) continue;
       const allocatedQty = Math.min(available, remaining);
-      allocations.push({ batchId: batch.id, batchNo: batch.batchNo, expiryDate: batch.expiryDate, allocatedQty });
+      allocations.push({
+        batchId: batch.id,
+        batchNo: batch.batchNo,
+        expiryDate: batch.expiryDate,
+        allocatedQty,
+      });
       remaining -= allocatedQty;
     }
 
-    return { productId, warehouseId, requestedQty: quantity, fulfilledQty: quantity - remaining, shortfall: remaining, allocations };
+    return {
+      productId,
+      warehouseId,
+      requestedQty: quantity,
+      fulfilledQty: quantity - remaining,
+      shortfall: remaining,
+      allocations,
+    };
   }
 
   /**
@@ -506,10 +659,17 @@ export class InventoryService {
     const genealogy = await this.getBatchGenealogy(tenantId, batchId);
 
     const affectedReferences = genealogy.consumedIn
-      .filter((entry) => entry.referenceType === 'SALES_ORDER' && entry.referenceDoc)
-      .map((entry) => ({ salesOrderId: entry.referenceDoc, stockEntryNumber: entry.entryNumber }));
+      .filter(
+        (entry) => entry.referenceType === "SALES_ORDER" && entry.referenceDoc,
+      )
+      .map((entry) => ({
+        salesOrderId: entry.referenceDoc,
+        stockEntryNumber: entry.entryNumber,
+      }));
 
-    const untracedConsumptions = genealogy.consumedIn.filter((entry) => !(entry.referenceType === 'SALES_ORDER' && entry.referenceDoc)).length;
+    const untracedConsumptions = genealogy.consumedIn.filter(
+      (entry) => !(entry.referenceType === "SALES_ORDER" && entry.referenceDoc),
+    ).length;
 
     return {
       batch: genealogy.batch,
@@ -517,7 +677,10 @@ export class InventoryService {
       affectedSalesOrders: affectedReferences,
       untracedConsumptions,
       licensePlatesInvolved: genealogy.licensePlates.map((p) => p.code),
-      recommendedAction: genealogy.batch.status === 'QUARANTINE' ? 'Already quarantined — proceed to customer notification' : 'Quarantine remaining stock immediately, then notify affected customers',
+      recommendedAction:
+        genealogy.batch.status === "QUARANTINE"
+          ? "Already quarantined — proceed to customer notification"
+          : "Quarantine remaining stock immediately, then notify affected customers",
     };
   }
 
@@ -525,12 +688,21 @@ export class InventoryService {
   async getSerialNumberTrace(tenantId: string, serialNumberId: string) {
     const serial = await prisma.serialNumber.findFirst({
       where: { id: serialNumberId, tenantId },
-      include: { product: true, history: { orderBy: { createdAt: 'desc' } }, licensePlateItems: { include: { licensePlate: true } } },
+      include: {
+        product: true,
+        history: { orderBy: { createdAt: "desc" } },
+        licensePlateItems: { include: { licensePlate: true } },
+      },
     });
-    if (!serial) throw new NotFoundException('Serial number not found');
+    if (!serial) throw new NotFoundException("Serial number not found");
 
     return {
-      serial: { id: serial.id, serialNo: serial.serialNo, status: serial.status, product: serial.product },
+      serial: {
+        id: serial.id,
+        serialNo: serial.serialNo,
+        status: serial.status,
+        product: serial.product,
+      },
       history: serial.history,
       licensePlates: serial.licensePlateItems.map((i) => i.licensePlate),
     };
@@ -538,7 +710,14 @@ export class InventoryService {
 
   // ─── STOCK RESERVATIONS & ALLOCATION ─────────────────
 
-  async getStockReservations(tenantId: string, params: PaginationParams & { productId?: string; warehouseId?: string; status?: string } = {}) {
+  async getStockReservations(
+    tenantId: string,
+    params: PaginationParams & {
+      productId?: string;
+      warehouseId?: string;
+      status?: string;
+    } = {},
+  ) {
     const where: any = { tenantId };
     if (params.productId) where.productId = params.productId;
     if (params.warehouseId) where.warehouseId = params.warehouseId;
@@ -551,7 +730,7 @@ export class InventoryService {
         include: { product: true, warehouse: true },
         skip,
         take,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       }),
       prisma.stockReservation.count({ where }),
     ]);
@@ -559,11 +738,17 @@ export class InventoryService {
   }
 
   /** Sum of currently ACTIVE reservations for a product in a warehouse — the "committed" quantity for allocation reporting. */
-  async getAllocationSummary(tenantId: string, productId: string, warehouseId: string) {
+  async getAllocationSummary(
+    tenantId: string,
+    productId: string,
+    warehouseId: string,
+  ) {
     const [item, active] = await Promise.all([
-      prisma.inventoryItem.findFirst({ where: { tenantId, productId, warehouseId } }),
+      prisma.inventoryItem.findFirst({
+        where: { tenantId, productId, warehouseId },
+      }),
       prisma.stockReservation.aggregate({
-        where: { tenantId, productId, warehouseId, status: 'ACTIVE' },
+        where: { tenantId, productId, warehouseId, status: "ACTIVE" },
         _sum: { quantity: true },
       }),
     ]);
@@ -571,13 +756,29 @@ export class InventoryService {
     const onHand = Number(item?.quantity ?? 0);
     const reserved = Number(active._sum.quantity ?? 0);
 
-    return { productId, warehouseId, onHand, reserved, available: onHand - reserved };
+    return {
+      productId,
+      warehouseId,
+      onHand,
+      reserved,
+      available: onHand - reserved,
+    };
   }
 
-  async createStockReservation(tenantId: string, userId: string, dto: CreateStockReservationInput) {
-    const summary = await this.getAllocationSummary(tenantId, dto.productId, dto.warehouseId);
+  async createStockReservation(
+    tenantId: string,
+    userId: string,
+    dto: CreateStockReservationInput,
+  ) {
+    const summary = await this.getAllocationSummary(
+      tenantId,
+      dto.productId,
+      dto.warehouseId,
+    );
     if (summary.available < dto.quantity) {
-      throw new BadRequestException(`Insufficient available stock: ${summary.available} available, ${dto.quantity} requested`);
+      throw new BadRequestException(
+        `Insufficient available stock: ${summary.available} available, ${dto.quantity} requested`,
+      );
     }
 
     return prisma.stockReservation.create({
@@ -590,25 +791,39 @@ export class InventoryService {
         sourceId: dto.sourceId,
         notes: dto.notes,
         createdBy: userId,
-        status: 'ACTIVE',
+        status: "ACTIVE",
       },
     });
   }
 
   async releaseStockReservation(tenantId: string, id: string) {
-    const reservation = await prisma.stockReservation.findFirst({ where: { id, tenantId } });
-    if (!reservation) throw new NotFoundException('Stock reservation not found');
-    if (reservation.status !== 'ACTIVE') throw new BadRequestException('Reservation is not active');
+    const reservation = await prisma.stockReservation.findFirst({
+      where: { id, tenantId },
+    });
+    if (!reservation)
+      throw new NotFoundException("Stock reservation not found");
+    if (reservation.status !== "ACTIVE")
+      throw new BadRequestException("Reservation is not active");
 
-    return prisma.stockReservation.update({ where: { id }, data: { status: 'RELEASED', releasedAt: new Date() } });
+    return prisma.stockReservation.update({
+      where: { id },
+      data: { status: "RELEASED", releasedAt: new Date() },
+    });
   }
 
   async fulfillStockReservation(tenantId: string, id: string) {
-    const reservation = await prisma.stockReservation.findFirst({ where: { id, tenantId } });
-    if (!reservation) throw new NotFoundException('Stock reservation not found');
-    if (reservation.status !== 'ACTIVE') throw new BadRequestException('Reservation is not active');
+    const reservation = await prisma.stockReservation.findFirst({
+      where: { id, tenantId },
+    });
+    if (!reservation)
+      throw new NotFoundException("Stock reservation not found");
+    if (reservation.status !== "ACTIVE")
+      throw new BadRequestException("Reservation is not active");
 
-    return prisma.stockReservation.update({ where: { id }, data: { status: 'FULFILLED', fulfilledAt: new Date() } });
+    return prisma.stockReservation.update({
+      where: { id },
+      data: { status: "FULFILLED", fulfilledAt: new Date() },
+    });
   }
 
   // ─── INVENTORY ANALYTICS (ABC, dead-stock, turnover) ─
@@ -618,7 +833,10 @@ export class InventoryService {
     const where: any = { tenantId };
     if (warehouseId) where.warehouseId = warehouseId;
 
-    const items = await prisma.inventoryItem.findMany({ where, include: { product: true } });
+    const items = await prisma.inventoryItem.findMany({
+      where,
+      include: { product: true },
+    });
     const ranked = items
       .map((i) => ({
         productId: i.productId,
@@ -632,37 +850,61 @@ export class InventoryService {
     let cumulative = 0;
     const classified = ranked.map((r) => {
       cumulative += r.value;
-      const cumulativePct = totalValue > 0 ? (cumulative / totalValue) * 100 : 0;
-      const cls = cumulativePct <= 80 ? 'A' : cumulativePct <= 95 ? 'B' : 'C';
-      return { ...r, cumulativePct: Number(cumulativePct.toFixed(2)), class: cls };
+      const cumulativePct =
+        totalValue > 0 ? (cumulative / totalValue) * 100 : 0;
+      const cls = cumulativePct <= 80 ? "A" : cumulativePct <= 95 ? "B" : "C";
+      return {
+        ...r,
+        cumulativePct: Number(cumulativePct.toFixed(2)),
+        class: cls,
+      };
     });
 
     return {
       warehouseId: warehouseId ?? null,
       totalValue,
       counts: {
-        A: classified.filter((c) => c.class === 'A').length,
-        B: classified.filter((c) => c.class === 'B').length,
-        C: classified.filter((c) => c.class === 'C').length,
+        A: classified.filter((c) => c.class === "A").length,
+        B: classified.filter((c) => c.class === "B").length,
+        C: classified.filter((c) => c.class === "C").length,
       },
       items: classified,
     };
   }
 
   /** Dead-stock report: items with no stock movement (no stock ledger entry) in the trailing window, still holding value. */
-  async getDeadStockReport(tenantId: string, warehouseId?: string, sinceDays = 90) {
+  async getDeadStockReport(
+    tenantId: string,
+    warehouseId?: string,
+    sinceDays = 90,
+  ) {
     const since = new Date(Date.now() - sinceDays * 24 * 60 * 60 * 1000);
     const where: any = { tenantId };
     if (warehouseId) where.warehouseId = warehouseId;
 
-    const items = await prisma.inventoryItem.findMany({ where, include: { product: true } });
-    const results: Array<{ productId: string; productName: string; sku: string; warehouseId: string; quantity: number; value: number; lastMovementAt: Date | null }> = [];
+    const items = await prisma.inventoryItem.findMany({
+      where,
+      include: { product: true },
+    });
+    const results: Array<{
+      productId: string;
+      productName: string;
+      sku: string;
+      warehouseId: string;
+      quantity: number;
+      value: number;
+      lastMovementAt: Date | null;
+    }> = [];
 
     for (const item of items) {
       if (Number(item.quantity) <= 0) continue;
       const lastEntry = await prisma.stockLedgerEntry.findFirst({
-        where: { tenantId, productId: item.productId, warehouseId: item.warehouseId },
-        orderBy: { createdAt: 'desc' },
+        where: {
+          tenantId,
+          productId: item.productId,
+          warehouseId: item.warehouseId,
+        },
+        orderBy: { createdAt: "desc" },
       });
       const lastMovementAt = lastEntry?.createdAt ?? null;
       if (!lastMovementAt || lastMovementAt < since) {
@@ -678,34 +920,52 @@ export class InventoryService {
       }
     }
 
-    return { warehouseId: warehouseId ?? null, windowDays: sinceDays, deadStockItems: results, totalDeadValue: results.reduce((s, r) => s + r.value, 0) };
+    return {
+      warehouseId: warehouseId ?? null,
+      windowDays: sinceDays,
+      deadStockItems: results,
+      totalDeadValue: results.reduce((s, r) => s + r.value, 0),
+    };
   }
 
   /** Inventory turnover ratio: total quantity issued (OUT-type ledger entries) over the window, divided by average on-hand quantity. */
-  async getTurnoverReport(tenantId: string, warehouseId?: string, sinceDays = 365) {
+  async getTurnoverReport(
+    tenantId: string,
+    warehouseId?: string,
+    sinceDays = 365,
+  ) {
     const since = new Date(Date.now() - sinceDays * 24 * 60 * 60 * 1000);
     const where: any = { tenantId, createdAt: { gte: since } };
     if (warehouseId) where.warehouseId = warehouseId;
 
     const [issuedAgg, itemsWhere] = await Promise.all([
       prisma.stockLedgerEntry.groupBy({
-        by: ['productId'],
+        by: ["productId"],
         where: { ...where, quantity: { lt: 0 } },
         _sum: { quantity: true },
       }),
       (async () => {
         const w: any = { tenantId };
         if (warehouseId) w.warehouseId = warehouseId;
-        return prisma.inventoryItem.findMany({ where: w, include: { product: true } });
+        return prisma.inventoryItem.findMany({
+          where: w,
+          include: { product: true },
+        });
       })(),
     ]);
 
-    const issuedByProduct = new Map(issuedAgg.map((r) => [r.productId, Math.abs(Number(r._sum.quantity ?? 0))]));
+    const issuedByProduct = new Map(
+      issuedAgg.map((r) => [
+        r.productId,
+        Math.abs(Number(r._sum.quantity ?? 0)),
+      ]),
+    );
 
     const results = itemsWhere.map((item) => {
       const issued = issuedByProduct.get(item.productId) ?? 0;
       const onHand = Number(item.quantity);
-      const turnoverRatio = onHand > 0 ? Number((issued / onHand).toFixed(2)) : null;
+      const turnoverRatio =
+        onHand > 0 ? Number((issued / onHand).toFixed(2)) : null;
       return {
         productId: item.productId,
         productName: item.product.name,
@@ -716,17 +976,26 @@ export class InventoryService {
       };
     });
 
-    return { warehouseId: warehouseId ?? null, windowDays: sinceDays, items: results.sort((a, b) => (b.turnoverRatio ?? 0) - (a.turnoverRatio ?? 0)) };
+    return {
+      warehouseId: warehouseId ?? null,
+      windowDays: sinceDays,
+      items: results.sort(
+        (a, b) => (b.turnoverRatio ?? 0) - (a.turnoverRatio ?? 0),
+      ),
+    };
   }
 
   // ─── STOCK ENTRIES & LEDGER ─────────────────────────
 
-  async getStockEntries(tenantId: string, params: PaginationParams & { type?: string; status?: string } = {}) {
+  async getStockEntries(
+    tenantId: string,
+    params: PaginationParams & { type?: string; status?: string } = {},
+  ) {
     const where: any = { tenantId };
     if (params.type) where.type = params.type;
     if (params.status) where.status = params.status;
     if (params.search) {
-      where.entryNumber = { contains: params.search, mode: 'insensitive' };
+      where.entryNumber = { contains: params.search, mode: "insensitive" };
     }
 
     const { skip, take } = buildPaginationValues(params);
@@ -737,7 +1006,7 @@ export class InventoryService {
         include: { items: { include: { product: true } } },
         skip,
         take,
-        orderBy: { postingDate: 'desc' },
+        orderBy: { postingDate: "desc" },
       }),
       prisma.stockEntry.count({ where }),
     ]);
@@ -748,16 +1017,26 @@ export class InventoryService {
   async getStockEntryById(tenantId: string, id: string) {
     const entry = await prisma.stockEntry.findFirst({
       where: { id, tenantId },
-      include: { items: { include: { product: true, fromBin: true, toBin: true, batch: true } }, ledgerEntries: true },
+      include: {
+        items: {
+          include: { product: true, fromBin: true, toBin: true, batch: true },
+        },
+        ledgerEntries: true,
+      },
     });
-    if (!entry) throw new NotFoundException('Stock entry not found');
+    if (!entry) throw new NotFoundException("Stock entry not found");
     return entry;
   }
 
-  async createStockEntry(tenantId: string, orgId: string, userId: string, dto: CreateStockEntryInput) {
+  async createStockEntry(
+    tenantId: string,
+    orgId: string,
+    userId: string,
+    dto: CreateStockEntryInput,
+  ) {
     const resolvedOrgId = await resolveOrgId(tenantId, orgId);
     const count = await prisma.stockEntry.count({ where: { tenantId } });
-    const entryNumber = `STE-${new Date().getFullYear()}-${(count + 1).toString().padStart(5, '0')}`;
+    const entryNumber = `STE-${new Date().getFullYear()}-${(count + 1).toString().padStart(5, "0")}`;
 
     let totalValue = 0;
     const itemsData = dto.items.map((item) => {
@@ -798,7 +1077,7 @@ export class InventoryService {
         referenceType: dto.referenceType,
         totalValue: new Prisma.Decimal(totalValue),
         createdBy: userId,
-        status: 'DRAFT',
+        status: "DRAFT",
         items: {
           create: itemsData,
         },
@@ -809,10 +1088,10 @@ export class InventoryService {
 
   async submitStockEntry(tenantId: string, id: string, userId: string) {
     const entry = await prisma.stockEntry.findFirst({
-      where: { id, tenantId, status: 'DRAFT' },
+      where: { id, tenantId, status: "DRAFT" },
       include: { items: { include: { product: true } } },
     });
-    if (!entry) throw new NotFoundException('Draft Stock Entry not found');
+    if (!entry) throw new NotFoundException("Draft Stock Entry not found");
 
     await prisma.$transaction(async (tx) => {
       for (const item of entry.items) {
@@ -874,7 +1153,7 @@ export class InventoryService {
               balanceQty: invItem.quantity,
               valuationRate: item.valuationRate,
               incomingRate: item.valuationRate,
-              voucherType: 'STOCK_ENTRY',
+              voucherType: "STOCK_ENTRY",
               voucherId: entry.id,
               voucherNumber: entry.entryNumber,
               batchNumber: item.batchNumber,
@@ -940,7 +1219,7 @@ export class InventoryService {
               balanceQty: invItem.quantity,
               valuationRate: item.valuationRate,
               incomingRate: item.valuationRate,
-              voucherType: 'STOCK_ENTRY',
+              voucherType: "STOCK_ENTRY",
               voucherId: entry.id,
               voucherNumber: entry.entryNumber,
               batchNumber: item.batchNumber,
@@ -952,15 +1231,19 @@ export class InventoryService {
         // 3. Serial Number Updates
         if (item.serialNo && item.product.hasSerialTracking) {
           const serialRec = await tx.serialNumber.findFirst({
-            where: { tenantId, productId: item.productId, serialNo: item.serialNo },
+            where: {
+              tenantId,
+              productId: item.productId,
+              serialNo: item.serialNo,
+            },
           });
 
           if (serialRec) {
-            let nextStatus = 'AVAILABLE';
-            if (entry.type === 'MATERIAL_ISSUE' || entry.type === 'SCRAP') {
-              nextStatus = entry.type === 'SCRAP' ? 'SCRAPPED' : 'SOLD';
+            let nextStatus = "AVAILABLE";
+            if (entry.type === "MATERIAL_ISSUE" || entry.type === "SCRAP") {
+              nextStatus = entry.type === "SCRAP" ? "SCRAPPED" : "SOLD";
             } else if (item.toWarehouseId) {
-              nextStatus = 'AVAILABLE';
+              nextStatus = "AVAILABLE";
             }
 
             await tx.serialNumber.update({
@@ -1008,7 +1291,7 @@ export class InventoryService {
       await tx.stockEntry.update({
         where: { id: entry.id },
         data: {
-          status: 'SUBMITTED',
+          status: "SUBMITTED",
           submittedAt: new Date(),
           submittedBy: userId,
         },
@@ -1018,12 +1301,17 @@ export class InventoryService {
     return this.getStockEntryById(tenantId, id);
   }
 
-  async cancelStockEntry(tenantId: string, id: string, userId: string, reason: string) {
+  async cancelStockEntry(
+    tenantId: string,
+    id: string,
+    userId: string,
+    reason: string,
+  ) {
     const entry = await prisma.stockEntry.findFirst({
-      where: { id, tenantId, status: 'SUBMITTED' },
+      where: { id, tenantId, status: "SUBMITTED" },
       include: { items: { include: { product: true } } },
     });
-    if (!entry) throw new NotFoundException('Submitted Stock Entry not found');
+    if (!entry) throw new NotFoundException("Submitted Stock Entry not found");
 
     await prisma.$transaction(async (tx) => {
       // Reverse each item's stock adjustment
@@ -1084,7 +1372,7 @@ export class InventoryService {
               balanceQty: invItem.quantity,
               valuationRate: item.valuationRate,
               incomingRate: item.valuationRate,
-              voucherType: 'STOCK_ENTRY',
+              voucherType: "STOCK_ENTRY",
               voucherId: entry.id,
               voucherNumber: `${entry.entryNumber}-REV`,
               remarks: `Reversal of ${entry.entryNumber}`,
@@ -1148,7 +1436,7 @@ export class InventoryService {
               balanceQty: invItem.quantity,
               valuationRate: item.valuationRate,
               incomingRate: item.valuationRate,
-              voucherType: 'STOCK_ENTRY',
+              voucherType: "STOCK_ENTRY",
               voucherId: entry.id,
               voucherNumber: `${entry.entryNumber}-REV`,
               remarks: `Reversal of ${entry.entryNumber}`,
@@ -1159,13 +1447,17 @@ export class InventoryService {
         // Reverse serial updates
         if (item.serialNo && item.product.hasSerialTracking) {
           const serialRec = await tx.serialNumber.findFirst({
-            where: { tenantId, productId: item.productId, serialNo: item.serialNo },
+            where: {
+              tenantId,
+              productId: item.productId,
+              serialNo: item.serialNo,
+            },
           });
           if (serialRec) {
             await tx.serialNumber.update({
               where: { id: serialRec.id },
               data: {
-                status: 'AVAILABLE',
+                status: "AVAILABLE",
                 warehouseId: item.fromWarehouseId || null,
               },
             });
@@ -1173,9 +1465,9 @@ export class InventoryService {
               data: {
                 tenantId,
                 serialNumberId: serialRec.id,
-                action: 'CANCEL',
+                action: "CANCEL",
                 fromStatus: serialRec.status,
-                toStatus: 'AVAILABLE',
+                toStatus: "AVAILABLE",
                 reference: `${entry.entryNumber}-REV`,
                 performedBy: userId,
               },
@@ -1206,7 +1498,7 @@ export class InventoryService {
       await tx.stockEntry.update({
         where: { id: entry.id },
         data: {
-          status: 'CANCELLED',
+          status: "CANCELLED",
           cancelledAt: new Date(),
           cancelReason: reason,
         },
@@ -1218,7 +1510,10 @@ export class InventoryService {
 
   async getStockLedger(
     tenantId: string,
-    params: PaginationParams & { productId?: string; warehouseId?: string } = {},
+    params: PaginationParams & {
+      productId?: string;
+      warehouseId?: string;
+    } = {},
   ) {
     const where: any = { tenantId };
     if (params.productId) where.productId = params.productId;
@@ -1226,9 +1521,9 @@ export class InventoryService {
 
     if (params.search) {
       where.OR = [
-        { voucherNumber: { contains: params.search, mode: 'insensitive' } },
-        { batchNumber: { contains: params.search, mode: 'insensitive' } },
-        { serialNumber: { contains: params.search, mode: 'insensitive' } },
+        { voucherNumber: { contains: params.search, mode: "insensitive" } },
+        { batchNumber: { contains: params.search, mode: "insensitive" } },
+        { serialNumber: { contains: params.search, mode: "insensitive" } },
       ];
     }
 
@@ -1243,7 +1538,7 @@ export class InventoryService {
         },
         skip,
         take,
-        orderBy: { postingDate: 'desc' },
+        orderBy: { postingDate: "desc" },
       }),
       prisma.stockLedgerEntry.count({ where }),
     ]);
@@ -1253,7 +1548,12 @@ export class InventoryService {
 
   // ─── INTER-WAREHOUSE TRANSFERS ──────────────────────
 
-  async transferStock(tenantId: string, orgId: string, userId: string, dto: TransferStockInput) {
+  async transferStock(
+    tenantId: string,
+    orgId: string,
+    userId: string,
+    dto: TransferStockInput,
+  ) {
     const stockItems = dto.items.map((item, index) => ({
       productId: item.productId,
       qty: item.qty,
@@ -1265,9 +1565,11 @@ export class InventoryService {
     }));
 
     return this.createStockEntry(tenantId, orgId, userId, {
-      type: 'MATERIAL_TRANSFER',
-      purpose: 'MATERIAL_TRANSFER',
-      remarks: dto.remarks || `Inter-warehouse transfer from ${dto.fromWarehouseId} to ${dto.toWarehouseId}`,
+      type: "MATERIAL_TRANSFER",
+      purpose: "MATERIAL_TRANSFER",
+      remarks:
+        dto.remarks ||
+        `Inter-warehouse transfer from ${dto.fromWarehouseId} to ${dto.toWarehouseId}`,
       fromWarehouseId: dto.fromWarehouseId,
       toWarehouseId: dto.toWarehouseId,
       items: stockItems,
@@ -1276,45 +1578,77 @@ export class InventoryService {
 
   // ─── TRANSFER APPROVAL WORKFLOW ──────────────────────
 
-  async getTransferApprovalRules(tenantId: string, params: PaginationParams & { warehouseId?: string } = {}) {
+  async getTransferApprovalRules(
+    tenantId: string,
+    params: PaginationParams & { warehouseId?: string } = {},
+  ) {
     const where: any = { tenantId };
     if (params.warehouseId) where.warehouseId = params.warehouseId;
     const { skip, take } = buildPaginationValues(params);
     const [rules, total] = await Promise.all([
-      prisma.transferApprovalRule.findMany({ where, skip, take, orderBy: { createdAt: 'desc' } }),
+      prisma.transferApprovalRule.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { createdAt: "desc" },
+      }),
       prisma.transferApprovalRule.count({ where }),
     ]);
     return paginatedResult(rules, total, params);
   }
 
-  async createTransferApprovalRule(tenantId: string, dto: CreateTransferApprovalRuleInput) {
+  async createTransferApprovalRule(
+    tenantId: string,
+    dto: CreateTransferApprovalRuleInput,
+  ) {
     return prisma.transferApprovalRule.create({
-      data: { tenantId, warehouseId: dto.warehouseId, thresholdValue: new Prisma.Decimal(dto.thresholdValue), isActive: dto.isActive },
+      data: {
+        tenantId,
+        warehouseId: dto.warehouseId,
+        thresholdValue: new Prisma.Decimal(dto.thresholdValue),
+        isActive: dto.isActive,
+      },
     });
   }
 
-  async updateTransferApprovalRule(tenantId: string, id: string, dto: UpdateTransferApprovalRuleInput) {
-    const rule = await prisma.transferApprovalRule.findFirst({ where: { id, tenantId } });
-    if (!rule) throw new NotFoundException('Transfer approval rule not found');
+  async updateTransferApprovalRule(
+    tenantId: string,
+    id: string,
+    dto: UpdateTransferApprovalRuleInput,
+  ) {
+    const rule = await prisma.transferApprovalRule.findFirst({
+      where: { id, tenantId },
+    });
+    if (!rule) throw new NotFoundException("Transfer approval rule not found");
 
     const data: any = { isActive: dto.isActive };
-    if (dto.thresholdValue !== undefined) data.thresholdValue = new Prisma.Decimal(dto.thresholdValue);
+    if (dto.thresholdValue !== undefined)
+      data.thresholdValue = new Prisma.Decimal(dto.thresholdValue);
     if (dto.warehouseId !== undefined) data.warehouseId = dto.warehouseId;
 
     return prisma.transferApprovalRule.update({ where: { id }, data });
   }
 
   async deleteTransferApprovalRule(tenantId: string, id: string) {
-    const rule = await prisma.transferApprovalRule.findFirst({ where: { id, tenantId } });
-    if (!rule) throw new NotFoundException('Transfer approval rule not found');
+    const rule = await prisma.transferApprovalRule.findFirst({
+      where: { id, tenantId },
+    });
+    if (!rule) throw new NotFoundException("Transfer approval rule not found");
     await prisma.transferApprovalRule.delete({ where: { id } });
     return { success: true };
   }
 
   /** Highest applicable threshold for a warehouse: a warehouse-specific active rule wins over the tenant-wide rule. */
-  private async resolveTransferApprovalThreshold(tenantId: string, warehouseId?: string | null) {
-    const rules = await prisma.transferApprovalRule.findMany({ where: { tenantId, isActive: true } });
-    const specific = warehouseId ? rules.find((r) => r.warehouseId === warehouseId) : undefined;
+  private async resolveTransferApprovalThreshold(
+    tenantId: string,
+    warehouseId?: string | null,
+  ) {
+    const rules = await prisma.transferApprovalRule.findMany({
+      where: { tenantId, isActive: true },
+    });
+    const specific = warehouseId
+      ? rules.find((r) => r.warehouseId === warehouseId)
+      : undefined;
     const global = rules.find((r) => !r.warehouseId);
     const rule = specific ?? global;
     return rule ? Number(rule.thresholdValue) : null;
@@ -1324,18 +1658,29 @@ export class InventoryService {
    * Gate for submitting a transfer-type stock entry: if its value exceeds the configured
    * threshold, creates a PENDING approval and blocks submission instead of shipping the stock.
    */
-  async requestTransferApproval(tenantId: string, stockEntryId: string, userId: string) {
-    const entry = await prisma.stockEntry.findFirst({ where: { id: stockEntryId, tenantId, status: 'DRAFT' } });
-    if (!entry) throw new NotFoundException('Draft stock entry not found');
+  async requestTransferApproval(
+    tenantId: string,
+    stockEntryId: string,
+    userId: string,
+  ) {
+    const entry = await prisma.stockEntry.findFirst({
+      where: { id: stockEntryId, tenantId, status: "DRAFT" },
+    });
+    if (!entry) throw new NotFoundException("Draft stock entry not found");
 
-    const threshold = await this.resolveTransferApprovalThreshold(tenantId, entry.fromWarehouseId ?? entry.toWarehouseId);
+    const threshold = await this.resolveTransferApprovalThreshold(
+      tenantId,
+      entry.fromWarehouseId ?? entry.toWarehouseId,
+    );
     const entryValue = Number(entry.totalValue);
 
     if (threshold === null || entryValue < threshold) {
       return this.submitStockEntry(tenantId, stockEntryId, userId);
     }
 
-    const existing = await prisma.stockTransferApproval.findFirst({ where: { stockEntryId } });
+    const existing = await prisma.stockTransferApproval.findFirst({
+      where: { stockEntryId },
+    });
     if (existing) return existing;
 
     return prisma.stockTransferApproval.create({
@@ -1344,48 +1689,76 @@ export class InventoryService {
         stockEntryId,
         thresholdValue: new Prisma.Decimal(threshold),
         entryValue: new Prisma.Decimal(entryValue),
-        status: 'PENDING',
+        status: "PENDING",
         requestedBy: userId,
       },
     });
   }
 
-  async getPendingTransferApprovals(tenantId: string, params: PaginationParams = {}) {
-    const where = { tenantId, status: 'PENDING' };
+  async getPendingTransferApprovals(
+    tenantId: string,
+    params: PaginationParams = {},
+  ) {
+    const where = { tenantId, status: "PENDING" };
     const { skip, take } = buildPaginationValues(params);
     const [approvals, total] = await Promise.all([
-      prisma.stockTransferApproval.findMany({ where, include: { stockEntry: true }, skip, take, orderBy: { createdAt: 'desc' } }),
+      prisma.stockTransferApproval.findMany({
+        where,
+        include: { stockEntry: true },
+        skip,
+        take,
+        orderBy: { createdAt: "desc" },
+      }),
       prisma.stockTransferApproval.count({ where }),
     ]);
     return paginatedResult(approvals, total, params);
   }
 
   async approveTransfer(tenantId: string, id: string, userId: string) {
-    const approval = await prisma.stockTransferApproval.findFirst({ where: { id, tenantId, status: 'PENDING' } });
-    if (!approval) throw new NotFoundException('Pending transfer approval not found');
+    const approval = await prisma.stockTransferApproval.findFirst({
+      where: { id, tenantId, status: "PENDING" },
+    });
+    if (!approval)
+      throw new NotFoundException("Pending transfer approval not found");
 
     await prisma.stockTransferApproval.update({
       where: { id },
-      data: { status: 'APPROVED', approvedBy: userId, approvedAt: new Date() },
+      data: { status: "APPROVED", approvedBy: userId, approvedAt: new Date() },
     });
 
     return this.submitStockEntry(tenantId, approval.stockEntryId, userId);
   }
 
-  async rejectTransfer(tenantId: string, id: string, userId: string, dto: RejectTransferInput) {
-    const approval = await prisma.stockTransferApproval.findFirst({ where: { id, tenantId, status: 'PENDING' } });
-    if (!approval) throw new NotFoundException('Pending transfer approval not found');
+  async rejectTransfer(
+    tenantId: string,
+    id: string,
+    userId: string,
+    dto: RejectTransferInput,
+  ) {
+    const approval = await prisma.stockTransferApproval.findFirst({
+      where: { id, tenantId, status: "PENDING" },
+    });
+    if (!approval)
+      throw new NotFoundException("Pending transfer approval not found");
 
     return prisma.stockTransferApproval.update({
       where: { id },
-      data: { status: 'REJECTED', approvedBy: userId, approvedAt: new Date(), rejectedReason: dto.reason },
+      data: {
+        status: "REJECTED",
+        approvedBy: userId,
+        approvedAt: new Date(),
+        rejectedReason: dto.reason,
+      },
     });
   }
 
   // ─── MOVEMENT HISTORY / AUDIT TRAIL ──────────────────
 
   /** Consolidated per-product/per-warehouse movement timeline: stock ledger entries, cycle counts, and put-away tasks. */
-  async getMovementHistory(tenantId: string, params: { productId?: string; warehouseId?: string; limit?: number } = {}) {
+  async getMovementHistory(
+    tenantId: string,
+    params: { productId?: string; warehouseId?: string; limit?: number } = {},
+  ) {
     const limit = params.limit ?? 100;
     const ledgerWhere: any = { tenantId };
     if (params.productId) ledgerWhere.productId = params.productId;
@@ -1394,12 +1767,12 @@ export class InventoryService {
     const ledgerEntries = await prisma.stockLedgerEntry.findMany({
       where: ledgerWhere,
       include: { product: { select: { name: true, sku: true } } },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take: limit,
     });
 
     const movements = ledgerEntries.map((e) => ({
-      type: 'LEDGER' as const,
+      type: "LEDGER" as const,
       timestamp: e.createdAt,
       productId: e.productId,
       productName: e.product.name,
@@ -1411,18 +1784,31 @@ export class InventoryService {
       balanceQty: Number(e.balanceQty),
     }));
 
-    return { productId: params.productId ?? null, warehouseId: params.warehouseId ?? null, movements };
+    return {
+      productId: params.productId ?? null,
+      warehouseId: params.warehouseId ?? null,
+      movements,
+    };
   }
 
   // ─── WAVE PICK / PACK-LIST GENERATION ─────────────────
 
-  async getPickWaves(tenantId: string, params: PaginationParams & { warehouseId?: string; status?: string } = {}) {
+  async getPickWaves(
+    tenantId: string,
+    params: PaginationParams & { warehouseId?: string; status?: string } = {},
+  ) {
     const where: any = { tenantId };
     if (params.warehouseId) where.warehouseId = params.warehouseId;
     if (params.status) where.status = params.status;
     const { skip, take } = buildPaginationValues(params);
     const [waves, total] = await Promise.all([
-      prisma.pickWave.findMany({ where, include: { items: true, orders: true }, skip, take, orderBy: { createdAt: 'desc' } }),
+      prisma.pickWave.findMany({
+        where,
+        include: { items: true, orders: true },
+        skip,
+        take,
+        orderBy: { createdAt: "desc" },
+      }),
       prisma.pickWave.count({ where }),
     ]);
     return paginatedResult(waves, total, params);
@@ -1431,25 +1817,39 @@ export class InventoryService {
   async getPickWaveById(tenantId: string, id: string) {
     const wave = await prisma.pickWave.findFirst({
       where: { id, tenantId },
-      include: { items: { include: { product: true, binLocation: true } }, orders: true },
+      include: {
+        items: { include: { product: true, binLocation: true } },
+        orders: true,
+      },
     });
-    if (!wave) throw new NotFoundException('Pick wave not found');
+    if (!wave) throw new NotFoundException("Pick wave not found");
     return wave;
   }
 
   /** Batches multiple sales orders into one wave, aggregating quantity per product and choosing the bin holding the most stock (shortest travel). */
-  async createPickWave(tenantId: string, orgId: string, userId: string, dto: CreatePickWaveInput) {
+  async createPickWave(
+    tenantId: string,
+    orgId: string,
+    userId: string,
+    dto: CreatePickWaveInput,
+  ) {
     const resolvedOrgId = await resolveOrgId(tenantId, orgId);
     const count = await prisma.pickWave.count({ where: { tenantId } });
-    const waveNumber = `WAVE-${new Date().getFullYear()}-${(count + 1).toString().padStart(5, '0')}`;
+    const waveNumber = `WAVE-${new Date().getFullYear()}-${(count + 1).toString().padStart(5, "0")}`;
 
     const productQty = new Map<string, number>();
     for (const orderId of dto.salesOrderIds) {
-      const order = await prisma.salesOrder.findFirst({ where: { id: orderId, tenantId }, include: { lineItems: true } });
+      const order = await prisma.salesOrder.findFirst({
+        where: { id: orderId, tenantId },
+        include: { lineItems: true },
+      });
       if (!order) continue;
       for (const li of order.lineItems) {
         if (!li.productId) continue;
-        productQty.set(li.productId, (productQty.get(li.productId) ?? 0) + Number(li.quantity));
+        productQty.set(
+          li.productId,
+          (productQty.get(li.productId) ?? 0) + Number(li.quantity),
+        );
       }
     }
 
@@ -1457,9 +1857,15 @@ export class InventoryService {
       Array.from(productQty.entries()).map(async ([productId, quantity]) => {
         const bin = await prisma.inventoryItemBin.findFirst({
           where: { tenantId, productId, warehouseId: dto.warehouseId },
-          orderBy: { quantity: 'desc' },
+          orderBy: { quantity: "desc" },
         });
-        return { tenantId, productId, quantity: new Prisma.Decimal(quantity), binLocationId: bin?.binLocationId ?? null, status: 'PENDING' };
+        return {
+          tenantId,
+          productId,
+          quantity: new Prisma.Decimal(quantity),
+          binLocationId: bin?.binLocationId ?? null,
+          status: "PENDING",
+        };
       }),
     );
 
@@ -1471,8 +1877,13 @@ export class InventoryService {
         warehouseId: dto.warehouseId,
         notes: dto.notes,
         createdBy: userId,
-        status: 'OPEN',
-        orders: { create: dto.salesOrderIds.map((salesOrderId) => ({ tenantId, salesOrderId })) },
+        status: "OPEN",
+        orders: {
+          create: dto.salesOrderIds.map((salesOrderId) => ({
+            tenantId,
+            salesOrderId,
+          })),
+        },
         items: { create: items },
       },
       include: { items: true, orders: true },
@@ -1485,34 +1896,57 @@ export class InventoryService {
    * scan-in capture, closing the receive/pick/pack barcode-workflow loop end to end.
    */
   async recordPick(tenantId: string, waveItemId: string, dto: RecordPickInput) {
-    const item = await prisma.pickWaveItem.findFirst({ where: { id: waveItemId, tenantId } });
-    if (!item) throw new NotFoundException('Pick wave item not found');
+    const item = await prisma.pickWaveItem.findFirst({
+      where: { id: waveItemId, tenantId },
+    });
+    if (!item) throw new NotFoundException("Pick wave item not found");
 
     const scannedSerials = dto.scannedSerials ?? [];
     if (scannedSerials.length > 0) {
       const serials = await prisma.serialNumber.findMany({
-        where: { tenantId, productId: item.productId, serialNo: { in: scannedSerials } },
+        where: {
+          tenantId,
+          productId: item.productId,
+          serialNo: { in: scannedSerials },
+        },
       });
       const found = new Map(serials.map((s) => [s.serialNo, s]));
 
       for (const scanned of scannedSerials) {
         const serial = found.get(scanned);
-        if (!serial) throw new BadRequestException(`Serial ${scanned} does not belong to this product`);
-        if (serial.status !== 'AVAILABLE') throw new BadRequestException(`Serial ${scanned} is not AVAILABLE (status: ${serial.status})`);
+        if (!serial)
+          throw new BadRequestException(
+            `Serial ${scanned} does not belong to this product`,
+          );
+        if (serial.status !== "AVAILABLE")
+          throw new BadRequestException(
+            `Serial ${scanned} is not AVAILABLE (status: ${serial.status})`,
+          );
       }
 
       await prisma.$transaction(async (tx) => {
         for (const scanned of scannedSerials) {
           const serial = found.get(scanned)!;
-          await tx.serialNumber.update({ where: { id: serial.id }, data: { status: 'RESERVED' } });
+          await tx.serialNumber.update({
+            where: { id: serial.id },
+            data: { status: "RESERVED" },
+          });
           await tx.serialNumberHistory.create({
-            data: { tenantId, serialNumberId: serial.id, action: 'TRANSFERRED', fromStatus: 'AVAILABLE', toStatus: 'RESERVED', reference: waveItemId, notes: 'Scanned at pick-wave pick' },
+            data: {
+              tenantId,
+              serialNumberId: serial.id,
+              action: "TRANSFERRED",
+              fromStatus: "AVAILABLE",
+              toStatus: "RESERVED",
+              reference: waveItemId,
+              notes: "Scanned at pick-wave pick",
+            },
           });
         }
       });
     }
 
-    const status = dto.pickedQty >= Number(item.quantity) ? 'PICKED' : 'SHORT';
+    const status = dto.pickedQty >= Number(item.quantity) ? "PICKED" : "SHORT";
     return prisma.pickWaveItem.update({
       where: { id: waveItemId },
       data: { pickedQty: new Prisma.Decimal(dto.pickedQty), status },
@@ -1522,7 +1956,7 @@ export class InventoryService {
   /** Pack-list document: the wave's items grouped for packing, once every line has been picked. */
   async getPackList(tenantId: string, waveId: string) {
     const wave = await this.getPickWaveById(tenantId, waveId);
-    const allPicked = wave.items.every((i) => i.status === 'PICKED');
+    const allPicked = wave.items.every((i) => i.status === "PICKED");
 
     return {
       waveId: wave.id,
@@ -1541,17 +1975,29 @@ export class InventoryService {
 
   /** Completing a wave advances its linked sales orders to PROCESSING (picked, ready to ship) — a real fulfillment-status integration, not just an inventory-side status flip. */
   async completePickWave(tenantId: string, id: string) {
-    const wave = await prisma.pickWave.findFirst({ where: { id, tenantId }, include: { items: true, orders: true } });
-    if (!wave) throw new NotFoundException('Pick wave not found');
-    if (!wave.items.every((i) => i.status === 'PICKED')) {
-      throw new BadRequestException('All pick wave items must be picked before completing the wave');
+    const wave = await prisma.pickWave.findFirst({
+      where: { id, tenantId },
+      include: { items: true, orders: true },
+    });
+    if (!wave) throw new NotFoundException("Pick wave not found");
+    if (!wave.items.every((i) => i.status === "PICKED")) {
+      throw new BadRequestException(
+        "All pick wave items must be picked before completing the wave",
+      );
     }
 
-    const updated = await prisma.pickWave.update({ where: { id }, data: { status: 'COMPLETED', completedAt: new Date() } });
+    const updated = await prisma.pickWave.update({
+      where: { id },
+      data: { status: "COMPLETED", completedAt: new Date() },
+    });
 
     await prisma.salesOrder.updateMany({
-      where: { tenantId, id: { in: wave.orders.map((o) => o.salesOrderId) }, status: { in: ['CONFIRMED', 'DRAFT'] } },
-      data: { status: 'PROCESSING' },
+      where: {
+        tenantId,
+        id: { in: wave.orders.map((o) => o.salesOrderId) },
+        status: { in: ["CONFIRMED", "DRAFT"] },
+      },
+      data: { status: "PROCESSING" },
     });
 
     return updated;
@@ -1559,19 +2005,32 @@ export class InventoryService {
 
   // ─── VENDOR-MANAGED / CONSIGNMENT INVENTORY ──────────
 
-  async getConsignmentStocks(tenantId: string, params: PaginationParams & { warehouseId?: string; status?: string } = {}) {
+  async getConsignmentStocks(
+    tenantId: string,
+    params: PaginationParams & { warehouseId?: string; status?: string } = {},
+  ) {
     const where: any = { tenantId };
     if (params.warehouseId) where.warehouseId = params.warehouseId;
     if (params.status) where.status = params.status;
     const { skip, take } = buildPaginationValues(params);
     const [stocks, total] = await Promise.all([
-      prisma.consignmentStock.findMany({ where, include: { product: true, warehouse: true }, skip, take, orderBy: { createdAt: 'desc' } }),
+      prisma.consignmentStock.findMany({
+        where,
+        include: { product: true, warehouse: true },
+        skip,
+        take,
+        orderBy: { createdAt: "desc" },
+      }),
       prisma.consignmentStock.count({ where }),
     ]);
     return paginatedResult(stocks, total, params);
   }
 
-  async createConsignmentStock(tenantId: string, orgId: string, dto: CreateConsignmentStockInput) {
+  async createConsignmentStock(
+    tenantId: string,
+    orgId: string,
+    dto: CreateConsignmentStockInput,
+  ) {
     const resolvedOrgId = await resolveOrgId(tenantId, orgId);
     return prisma.consignmentStock.create({
       data: {
@@ -1582,21 +2041,32 @@ export class InventoryService {
         warehouseId: dto.warehouseId,
         quantityOnHand: new Prisma.Decimal(dto.quantityOnHand),
         unitCost: new Prisma.Decimal(dto.unitCost),
-        status: 'ACTIVE',
+        status: "ACTIVE",
       },
     });
   }
 
   /** Consumption-triggered billing: recording a draw against consignment stock decrements on-hand and logs an unbilled charge for the supplier. */
-  async recordConsignmentConsumption(tenantId: string, consignmentStockId: string, dto: RecordConsignmentConsumptionInput) {
-    const stock = await prisma.consignmentStock.findFirst({ where: { id: consignmentStockId, tenantId } });
-    if (!stock) throw new NotFoundException('Consignment stock not found');
+  async recordConsignmentConsumption(
+    tenantId: string,
+    consignmentStockId: string,
+    dto: RecordConsignmentConsumptionInput,
+  ) {
+    const stock = await prisma.consignmentStock.findFirst({
+      where: { id: consignmentStockId, tenantId },
+    });
+    if (!stock) throw new NotFoundException("Consignment stock not found");
     if (Number(stock.quantityOnHand) < dto.quantity) {
-      throw new BadRequestException(`Insufficient consignment stock: ${stock.quantityOnHand} on hand, ${dto.quantity} requested`);
+      throw new BadRequestException(
+        `Insufficient consignment stock: ${stock.quantityOnHand} on hand, ${dto.quantity} requested`,
+      );
     }
 
     return prisma.$transaction(async (tx) => {
-      await tx.consignmentStock.update({ where: { id: consignmentStockId }, data: { quantityOnHand: { decrement: dto.quantity } } });
+      await tx.consignmentStock.update({
+        where: { id: consignmentStockId },
+        data: { quantityOnHand: { decrement: dto.quantity } },
+      });
       return tx.consignmentConsumption.create({
         data: {
           tenantId,
@@ -1614,35 +2084,60 @@ export class InventoryService {
     return prisma.consignmentConsumption.findMany({
       where: { tenantId, billed: false },
       include: { consignmentStock: true },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
   async markConsignmentConsumptionBilled(tenantId: string, id: string) {
-    const consumption = await prisma.consignmentConsumption.findFirst({ where: { id, tenantId } });
-    if (!consumption) throw new NotFoundException('Consignment consumption not found');
-    return prisma.consignmentConsumption.update({ where: { id }, data: { billed: true, billedAt: new Date() } });
+    const consumption = await prisma.consignmentConsumption.findFirst({
+      where: { id, tenantId },
+    });
+    if (!consumption)
+      throw new NotFoundException("Consignment consumption not found");
+    return prisma.consignmentConsumption.update({
+      where: { id },
+      data: { billed: true, billedAt: new Date() },
+    });
   }
 
   // ─── RECEIPT WITH TRACEABILITY CAPTURE ───────────────
 
   /** Captures serial numbers and/or a batch/lot at the moment of receipt (one call), instead of a separate manual create step afterward. */
-  async receiveWithTraceability(tenantId: string, orgId: string, userId: string, dto: ReceiveWithTraceabilityInput) {
+  async receiveWithTraceability(
+    tenantId: string,
+    orgId: string,
+    userId: string,
+    dto: ReceiveWithTraceabilityInput,
+  ) {
     const resolvedOrgId = await resolveOrgId(tenantId, orgId);
 
     const entry = await this.createStockEntry(tenantId, resolvedOrgId, userId, {
-      type: 'MATERIAL_RECEIPT',
-      purpose: 'MATERIAL_RECEIPT',
-      remarks: 'Receipt with traceability capture',
+      type: "MATERIAL_RECEIPT",
+      purpose: "MATERIAL_RECEIPT",
+      remarks: "Receipt with traceability capture",
       toWarehouseId: dto.warehouseId,
-      items: [{ productId: dto.productId, qty: dto.quantity, toWarehouseId: dto.warehouseId, valuationRate: dto.valuationRate, batchNumber: dto.batchNo ?? undefined }],
+      items: [
+        {
+          productId: dto.productId,
+          qty: dto.quantity,
+          toWarehouseId: dto.warehouseId,
+          valuationRate: dto.valuationRate,
+          batchNumber: dto.batchNo ?? undefined,
+        },
+      ],
     } as any);
     const submitted = await this.submitStockEntry(tenantId, entry.id, userId);
 
     const createdSerials = await Promise.all(
       dto.serialNumbers.map((serialNo) =>
         prisma.serialNumber.create({
-          data: { tenantId, productId: dto.productId, warehouseId: dto.warehouseId, serialNo, status: 'AVAILABLE' },
+          data: {
+            tenantId,
+            productId: dto.productId,
+            warehouseId: dto.warehouseId,
+            serialNo,
+            status: "AVAILABLE",
+          },
         }),
       ),
     );
@@ -1657,45 +2152,83 @@ export class InventoryService {
             quantity: new Prisma.Decimal(dto.quantity),
             expiryDate: dto.expiryDate ? new Date(dto.expiryDate) : null,
             costPrice: new Prisma.Decimal(dto.valuationRate),
-            status: 'ACTIVE',
+            status: "ACTIVE",
             originStockEntryId: entry.id,
           },
         })
       : null;
 
-    return { stockEntry: submitted, serialNumbers: createdSerials, batch: createdBatch };
+    return {
+      stockEntry: submitted,
+      serialNumbers: createdSerials,
+      batch: createdBatch,
+    };
   }
 
   // ─── BARCODE LABEL GENERATION ─────────────────────────
 
   /** Label payload for a product SKU barcode (data only — printing/rendering is a client concern). */
   async getProductLabel(tenantId: string, productId: string) {
-    const product = await prisma.product.findFirst({ where: { id: productId, tenantId } });
-    if (!product) throw new NotFoundException('Product not found');
-    return { type: 'PRODUCT', barcodeValue: product.barcode || product.sku, sku: product.sku, name: product.name };
+    const product = await prisma.product.findFirst({
+      where: { id: productId, tenantId },
+    });
+    if (!product) throw new NotFoundException("Product not found");
+    return {
+      type: "PRODUCT",
+      barcodeValue: product.barcode || product.sku,
+      sku: product.sku,
+      name: product.name,
+    };
   }
 
   async getBatchLabel(tenantId: string, batchId: string) {
-    const batch = await prisma.batch.findFirst({ where: { id: batchId, tenantId }, include: { product: true } });
-    if (!batch) throw new NotFoundException('Batch not found');
-    return { type: 'BATCH', barcodeValue: batch.batchNo, productName: batch.product.name, expiryDate: batch.expiryDate, lotNo: batch.lotNo };
+    const batch = await prisma.batch.findFirst({
+      where: { id: batchId, tenantId },
+      include: { product: true },
+    });
+    if (!batch) throw new NotFoundException("Batch not found");
+    return {
+      type: "BATCH",
+      barcodeValue: batch.batchNo,
+      productName: batch.product.name,
+      expiryDate: batch.expiryDate,
+      lotNo: batch.lotNo,
+    };
   }
 
   async getLicensePlateLabel(tenantId: string, licensePlateId: string) {
-    const plate = await prisma.licensePlate.findFirst({ where: { id: licensePlateId, tenantId } });
-    if (!plate) throw new NotFoundException('License plate not found');
-    return { type: 'LICENSE_PLATE', barcodeValue: plate.code, warehouseId: plate.warehouseId, status: plate.status };
+    const plate = await prisma.licensePlate.findFirst({
+      where: { id: licensePlateId, tenantId },
+    });
+    if (!plate) throw new NotFoundException("License plate not found");
+    return {
+      type: "LICENSE_PLATE",
+      barcodeValue: plate.code,
+      warehouseId: plate.warehouseId,
+      status: plate.status,
+    };
   }
 
   async getBinLabel(tenantId: string, binId: string) {
-    const bin = await prisma.binLocation.findFirst({ where: { id: binId, tenantId } });
-    if (!bin) throw new NotFoundException('Bin location not found');
-    return { type: 'BIN', barcodeValue: bin.code, zone: bin.zone, aisle: bin.aisle, rack: bin.rack };
+    const bin = await prisma.binLocation.findFirst({
+      where: { id: binId, tenantId },
+    });
+    if (!bin) throw new NotFoundException("Bin location not found");
+    return {
+      type: "BIN",
+      barcodeValue: bin.code,
+      zone: bin.zone,
+      aisle: bin.aisle,
+      rack: bin.rack,
+    };
   }
 
   // ─── CYCLE COUNTS ───────────────────────────────────
 
-  async getCycleCounts(tenantId: string, params: PaginationParams & { warehouseId?: string; status?: string } = {}) {
+  async getCycleCounts(
+    tenantId: string,
+    params: PaginationParams & { warehouseId?: string; status?: string } = {},
+  ) {
     const where: any = { tenantId };
     if (params.warehouseId) where.warehouseId = params.warehouseId;
     if (params.status) where.status = params.status;
@@ -1708,7 +2241,7 @@ export class InventoryService {
         include: { items: { include: { product: true } } },
         skip,
         take,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       }),
       prisma.cycleCount.count({ where }),
     ]);
@@ -1721,17 +2254,22 @@ export class InventoryService {
       where: { id, tenantId },
       include: { items: { include: { product: true } } },
     });
-    if (!cc) throw new NotFoundException('Cycle count session not found');
+    if (!cc) throw new NotFoundException("Cycle count session not found");
     return cc;
   }
 
-  async createCycleCount(tenantId: string, _orgId: string, userId: string, dto: CreateCycleCountInput) {
+  async createCycleCount(
+    tenantId: string,
+    _orgId: string,
+    userId: string,
+    dto: CreateCycleCountInput,
+  ) {
     const itemsData = dto.items.map((item) => ({
       tenantId,
       productId: item.productId,
       binLocationId: item.binLocationId,
       expectedQty: new Prisma.Decimal(item.expectedQty),
-      status: 'PENDING',
+      status: "PENDING",
     }));
 
     return prisma.cycleCount.create({
@@ -1740,7 +2278,7 @@ export class InventoryService {
         warehouseId: dto.warehouseId,
         countedBy: dto.countedBy || userId,
         notes: dto.notes,
-        status: 'DRAFT',
+        status: "DRAFT",
         createdBy: userId,
         items: {
           create: itemsData,
@@ -1750,12 +2288,17 @@ export class InventoryService {
     });
   }
 
-  async submitCycleCount(tenantId: string, id: string, userId: string, dto: SubmitCycleCountInput) {
+  async submitCycleCount(
+    tenantId: string,
+    id: string,
+    userId: string,
+    dto: SubmitCycleCountInput,
+  ) {
     const cc = await prisma.cycleCount.findFirst({
-      where: { id, tenantId, status: 'DRAFT' },
+      where: { id, tenantId, status: "DRAFT" },
       include: { items: true },
     });
-    if (!cc) throw new NotFoundException('Draft Cycle Count session not found');
+    if (!cc) throw new NotFoundException("Draft Cycle Count session not found");
 
     let totalVariance = 0;
 
@@ -1775,7 +2318,7 @@ export class InventoryService {
             countedQty: new Prisma.Decimal(counted),
             varianceQty: new Prisma.Decimal(diff),
             variance: new Prisma.Decimal(diff),
-            status: 'COUNTED',
+            status: "COUNTED",
             countedBy: userId,
             countedAt: new Date(),
             remarks: update.remarks,
@@ -1786,7 +2329,7 @@ export class InventoryService {
       await tx.cycleCount.update({
         where: { id: cc.id },
         data: {
-          status: 'COMPLETED',
+          status: "COMPLETED",
           completedAt: new Date(),
           variance: new Prisma.Decimal(totalVariance),
           remarks: dto.remarks,
@@ -1799,13 +2342,16 @@ export class InventoryService {
 
   async approveCycleCount(tenantId: string, id: string, userId: string) {
     const cc = await prisma.cycleCount.findFirst({
-      where: { id, tenantId, status: 'COMPLETED' },
+      where: { id, tenantId, status: "COMPLETED" },
       include: { items: { include: { product: true } } },
     });
-    if (!cc) throw new NotFoundException('Completed Cycle Count session not found');
+    if (!cc)
+      throw new NotFoundException("Completed Cycle Count session not found");
 
     // Create an automatic STOCK_ADJUSTMENT entry for variances
-    const varianceItems = cc.items.filter((item) => Number(item.varianceQty) !== 0);
+    const varianceItems = cc.items.filter(
+      (item) => Number(item.varianceQty) !== 0,
+    );
 
     if (varianceItems.length > 0) {
       const stockItems = varianceItems.map((item, index) => {
@@ -1824,13 +2370,18 @@ export class InventoryService {
       });
 
       // Submit Stock Entry
-      const entry = await this.createStockEntry(tenantId, 'org-system-default', userId, {
-        type: 'STOCK_ADJUSTMENT',
-        purpose: 'STOCK_ADJUSTMENT',
-        remarks: `Auto variance adjustment for Cycle Count #${cc.id}`,
-        fromWarehouseId: cc.warehouseId,
-        items: stockItems,
-      });
+      const entry = await this.createStockEntry(
+        tenantId,
+        "org-system-default",
+        userId,
+        {
+          type: "STOCK_ADJUSTMENT",
+          purpose: "STOCK_ADJUSTMENT",
+          remarks: `Auto variance adjustment for Cycle Count #${cc.id}`,
+          fromWarehouseId: cc.warehouseId,
+          items: stockItems,
+        },
+      );
 
       await this.submitStockEntry(tenantId, entry.id, userId);
     }
@@ -1838,7 +2389,7 @@ export class InventoryService {
     return prisma.cycleCount.update({
       where: { id: cc.id },
       data: {
-        status: 'APPROVED',
+        status: "APPROVED",
         approvedAt: new Date(),
         approvedBy: userId,
       },
@@ -1848,14 +2399,22 @@ export class InventoryService {
 
   // ─── CYCLE COUNT SCHEDULES ──────────────────────────
 
-  async getCycleCountSchedules(tenantId: string, params: PaginationParams & { warehouseId?: string; active?: string } = {}) {
+  async getCycleCountSchedules(
+    tenantId: string,
+    params: PaginationParams & { warehouseId?: string; active?: string } = {},
+  ) {
     const where: any = { tenantId };
     if (params.warehouseId) where.warehouseId = params.warehouseId;
-    if (params.active !== undefined) where.active = params.active === 'true';
+    if (params.active !== undefined) where.active = params.active === "true";
 
     const { skip, take } = buildPaginationValues(params);
     const [schedules, total] = await Promise.all([
-      prisma.cycleCountSchedule.findMany({ where, skip, take, orderBy: { nextDueDate: 'asc' } }),
+      prisma.cycleCountSchedule.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { nextDueDate: "asc" },
+      }),
       prisma.cycleCountSchedule.count({ where }),
     ]);
     return paginatedResult(schedules, total, params);
@@ -1864,11 +2423,14 @@ export class InventoryService {
   async getDueCycleCountSchedules(tenantId: string) {
     return prisma.cycleCountSchedule.findMany({
       where: { tenantId, active: true, nextDueDate: { lte: new Date() } },
-      orderBy: { nextDueDate: 'asc' },
+      orderBy: { nextDueDate: "asc" },
     });
   }
 
-  async createCycleCountSchedule(tenantId: string, dto: CreateCycleCountScheduleInput) {
+  async createCycleCountSchedule(
+    tenantId: string,
+    dto: CreateCycleCountScheduleInput,
+  ) {
     return prisma.cycleCountSchedule.create({
       data: {
         tenantId,
@@ -1883,9 +2445,16 @@ export class InventoryService {
     });
   }
 
-  async updateCycleCountSchedule(tenantId: string, id: string, dto: UpdateCycleCountScheduleInput) {
-    const existing = await prisma.cycleCountSchedule.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Cycle count schedule not found');
+  async updateCycleCountSchedule(
+    tenantId: string,
+    id: string,
+    dto: UpdateCycleCountScheduleInput,
+  ) {
+    const existing = await prisma.cycleCountSchedule.findFirst({
+      where: { id, tenantId },
+    });
+    if (!existing)
+      throw new NotFoundException("Cycle count schedule not found");
 
     const data: any = { ...dto };
     if (dto.nextDueDate) data.nextDueDate = new Date(dto.nextDueDate);
@@ -1894,27 +2463,51 @@ export class InventoryService {
   }
 
   async deleteCycleCountSchedule(tenantId: string, id: string) {
-    const existing = await prisma.cycleCountSchedule.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Cycle count schedule not found');
+    const existing = await prisma.cycleCountSchedule.findFirst({
+      where: { id, tenantId },
+    });
+    if (!existing)
+      throw new NotFoundException("Cycle count schedule not found");
     await prisma.cycleCountSchedule.delete({ where: { id } });
     return { success: true };
   }
 
   /** Rolls a completed schedule's due date forward by its frequency, so recurring counts keep firing without manual re-entry. */
   async rollForwardCycleCountSchedule(tenantId: string, id: string) {
-    const schedule = await prisma.cycleCountSchedule.findFirst({ where: { id, tenantId } });
-    if (!schedule) throw new NotFoundException('Cycle count schedule not found');
+    const schedule = await prisma.cycleCountSchedule.findFirst({
+      where: { id, tenantId },
+    });
+    if (!schedule)
+      throw new NotFoundException("Cycle count schedule not found");
 
-    const days = schedule.frequency === 'WEEKLY' ? 7 : schedule.frequency === 'QUARTERLY' ? 90 : 30;
-    const nextDueDate = new Date(schedule.nextDueDate.getTime() + days * 24 * 60 * 60 * 1000);
+    const days =
+      schedule.frequency === "WEEKLY"
+        ? 7
+        : schedule.frequency === "QUARTERLY"
+          ? 90
+          : 30;
+    const nextDueDate = new Date(
+      schedule.nextDueDate.getTime() + days * 24 * 60 * 60 * 1000,
+    );
 
-    return prisma.cycleCountSchedule.update({ where: { id }, data: { nextDueDate } });
+    return prisma.cycleCountSchedule.update({
+      where: { id },
+      data: { nextDueDate },
+    });
   }
 
   /** Perpetual-inventory accuracy KPI: % of counted items with zero variance, over a trailing window. */
-  async getCycleCountAccuracy(tenantId: string, warehouseId?: string, sinceDays = 90) {
+  async getCycleCountAccuracy(
+    tenantId: string,
+    warehouseId?: string,
+    sinceDays = 90,
+  ) {
     const since = new Date(Date.now() - sinceDays * 24 * 60 * 60 * 1000);
-    const where: any = { tenantId, status: { in: ['COMPLETED', 'APPROVED'] }, completedAt: { gte: since } };
+    const where: any = {
+      tenantId,
+      status: { in: ["COMPLETED", "APPROVED"] },
+      completedAt: { gte: since },
+    };
     if (warehouseId) where.warehouseId = warehouseId;
 
     const counts = await prisma.cycleCount.findMany({
@@ -1942,14 +2535,20 @@ export class InventoryService {
       sessionsCounted: counts.length,
       itemsCounted: totalItems,
       accurateItems,
-      accuracyRate: totalItems > 0 ? Number(((accurateItems / totalItems) * 100).toFixed(2)) : null,
+      accuracyRate:
+        totalItems > 0
+          ? Number(((accurateItems / totalItems) * 100).toFixed(2))
+          : null,
       totalAbsoluteVariance: totalAbsVariance,
     };
   }
 
   // ─── LICENSE PLATES (pallet/container tracking) ─────
 
-  async getLicensePlates(tenantId: string, params: PaginationParams & { warehouseId?: string; status?: string } = {}) {
+  async getLicensePlates(
+    tenantId: string,
+    params: PaginationParams & { warehouseId?: string; status?: string } = {},
+  ) {
     const where: any = { tenantId };
     if (params.warehouseId) where.warehouseId = params.warehouseId;
     if (params.status) where.status = params.status;
@@ -1961,7 +2560,7 @@ export class InventoryService {
         include: { items: true, bin: true },
         skip,
         take,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       }),
       prisma.licensePlate.count({ where }),
     ]);
@@ -1971,15 +2570,26 @@ export class InventoryService {
   async getLicensePlateById(tenantId: string, id: string) {
     const plate = await prisma.licensePlate.findFirst({
       where: { id, tenantId },
-      include: { items: { include: { inventoryItem: true, lotBatch: true, serialNumber: true } }, bin: true, warehouse: true },
+      include: {
+        items: {
+          include: { inventoryItem: true, lotBatch: true, serialNumber: true },
+        },
+        bin: true,
+        warehouse: true,
+      },
     });
-    if (!plate) throw new NotFoundException('License plate not found');
+    if (!plate) throw new NotFoundException("License plate not found");
     return plate;
   }
 
   async createLicensePlate(tenantId: string, dto: CreateLicensePlateInput) {
-    const existing = await prisma.licensePlate.findFirst({ where: { tenantId, code: dto.code } });
-    if (existing) throw new BadRequestException('A license plate with this code already exists');
+    const existing = await prisma.licensePlate.findFirst({
+      where: { tenantId, code: dto.code },
+    });
+    if (existing)
+      throw new BadRequestException(
+        "A license plate with this code already exists",
+      );
 
     return prisma.licensePlate.create({
       data: {
@@ -1987,15 +2597,24 @@ export class InventoryService {
         code: dto.code,
         warehouseId: dto.warehouseId,
         binId: dto.binId,
-        status: 'OPEN',
+        status: "OPEN",
       },
     });
   }
 
-  async addLicensePlateItem(tenantId: string, licensePlateId: string, dto: AddLicensePlateItemInput) {
-    const plate = await prisma.licensePlate.findFirst({ where: { id: licensePlateId, tenantId } });
-    if (!plate) throw new NotFoundException('License plate not found');
-    if (plate.status !== 'OPEN') throw new BadRequestException('Cannot add items to a closed or consumed license plate');
+  async addLicensePlateItem(
+    tenantId: string,
+    licensePlateId: string,
+    dto: AddLicensePlateItemInput,
+  ) {
+    const plate = await prisma.licensePlate.findFirst({
+      where: { id: licensePlateId, tenantId },
+    });
+    if (!plate) throw new NotFoundException("License plate not found");
+    if (plate.status !== "OPEN")
+      throw new BadRequestException(
+        "Cannot add items to a closed or consumed license plate",
+      );
 
     await prisma.licensePlateItem.create({
       data: {
@@ -2010,25 +2629,44 @@ export class InventoryService {
     return this.getLicensePlateById(tenantId, licensePlateId);
   }
 
-  async moveLicensePlate(tenantId: string, id: string, dto: MoveLicensePlateInput) {
-    const plate = await prisma.licensePlate.findFirst({ where: { id, tenantId } });
-    if (!plate) throw new NotFoundException('License plate not found');
-    if (plate.status === 'CONSUMED') throw new BadRequestException('Cannot move a consumed license plate');
+  async moveLicensePlate(
+    tenantId: string,
+    id: string,
+    dto: MoveLicensePlateInput,
+  ) {
+    const plate = await prisma.licensePlate.findFirst({
+      where: { id, tenantId },
+    });
+    if (!plate) throw new NotFoundException("License plate not found");
+    if (plate.status === "CONSUMED")
+      throw new BadRequestException("Cannot move a consumed license plate");
 
-    return prisma.licensePlate.update({ where: { id }, data: { binId: dto.binId } });
+    return prisma.licensePlate.update({
+      where: { id },
+      data: { binId: dto.binId },
+    });
   }
 
   async closeLicensePlate(tenantId: string, id: string) {
-    const plate = await prisma.licensePlate.findFirst({ where: { id, tenantId } });
-    if (!plate) throw new NotFoundException('License plate not found');
-    if (plate.status !== 'OPEN') throw new BadRequestException('License plate is not open');
+    const plate = await prisma.licensePlate.findFirst({
+      where: { id, tenantId },
+    });
+    if (!plate) throw new NotFoundException("License plate not found");
+    if (plate.status !== "OPEN")
+      throw new BadRequestException("License plate is not open");
 
-    return prisma.licensePlate.update({ where: { id }, data: { status: 'CLOSED', closedAt: new Date() } });
+    return prisma.licensePlate.update({
+      where: { id },
+      data: { status: "CLOSED", closedAt: new Date() },
+    });
   }
 
   // ─── DIRECTED PUT-AWAY TASKS ─────────────────────────
 
-  async getPutawayTasks(tenantId: string, params: PaginationParams & { status?: string; stockEntryId?: string } = {}) {
+  async getPutawayTasks(
+    tenantId: string,
+    params: PaginationParams & { status?: string; stockEntryId?: string } = {},
+  ) {
     const where: any = { tenantId };
     if (params.status) where.status = params.status;
     if (params.stockEntryId) where.stockEntryId = params.stockEntryId;
@@ -2037,10 +2675,13 @@ export class InventoryService {
     const [tasks, total] = await Promise.all([
       prisma.putawayTask.findMany({
         where,
-        include: { inventoryItem: { include: { product: true } }, suggestedBin: true },
+        include: {
+          inventoryItem: { include: { product: true } },
+          suggestedBin: true,
+        },
         skip,
         take,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       }),
       prisma.putawayTask.count({ where }),
     ]);
@@ -2049,8 +2690,10 @@ export class InventoryService {
 
   /** Zone-based directed put-away: suggests the bin in the item's warehouse with the most free capacity, to minimize travel distance. */
   async suggestPutawayBin(tenantId: string, inventoryItemId: string) {
-    const item = await prisma.inventoryItem.findFirst({ where: { id: inventoryItemId, tenantId } });
-    if (!item) throw new NotFoundException('Inventory item not found');
+    const item = await prisma.inventoryItem.findFirst({
+      where: { id: inventoryItemId, tenantId },
+    });
+    if (!item) throw new NotFoundException("Inventory item not found");
 
     const bins = await prisma.binLocation.findMany({
       where: { tenantId, warehouseId: item.warehouseId, isActive: true },
@@ -2059,8 +2702,14 @@ export class InventoryService {
     if (bins.length === 0) return null;
 
     bins.sort((a, b) => {
-      const aFree = (a.capacity ?? Infinity) === Infinity ? Infinity : Number(a.capacity) - a._count.inventoryBins;
-      const bFree = (b.capacity ?? Infinity) === Infinity ? Infinity : Number(b.capacity) - b._count.inventoryBins;
+      const aFree =
+        (a.capacity ?? Infinity) === Infinity
+          ? Infinity
+          : Number(a.capacity) - a._count.inventoryBins;
+      const bFree =
+        (b.capacity ?? Infinity) === Infinity
+          ? Infinity
+          : Number(b.capacity) - b._count.inventoryBins;
       return bFree - aFree;
     });
 
@@ -2070,7 +2719,10 @@ export class InventoryService {
   async createPutawayTask(tenantId: string, dto: CreatePutawayTaskInput) {
     let suggestedBinId = dto.suggestedBinId ?? null;
     if (!suggestedBinId) {
-      const suggestion = await this.suggestPutawayBin(tenantId, dto.inventoryItemId);
+      const suggestion = await this.suggestPutawayBin(
+        tenantId,
+        dto.inventoryItemId,
+      );
       suggestedBinId = suggestion?.id ?? null;
     }
 
@@ -2081,64 +2733,106 @@ export class InventoryService {
         inventoryItemId: dto.inventoryItemId,
         quantity: new Prisma.Decimal(dto.quantity),
         suggestedBinId,
-        status: 'PENDING',
+        status: "PENDING",
       },
       include: { suggestedBin: true },
     });
   }
 
-  async completePutawayTask(tenantId: string, id: string, _dto: CompletePutawayTaskInput) {
-    const task = await prisma.putawayTask.findFirst({ where: { id, tenantId } });
-    if (!task) throw new NotFoundException('Putaway task not found');
-    if (task.status === 'COMPLETE') throw new BadRequestException('Putaway task already completed');
+  async completePutawayTask(
+    tenantId: string,
+    id: string,
+    _dto: CompletePutawayTaskInput,
+  ) {
+    const task = await prisma.putawayTask.findFirst({
+      where: { id, tenantId },
+    });
+    if (!task) throw new NotFoundException("Putaway task not found");
+    if (task.status === "COMPLETE")
+      throw new BadRequestException("Putaway task already completed");
 
     return prisma.putawayTask.update({
       where: { id },
-      data: { status: 'COMPLETE', completedAt: new Date() },
+      data: { status: "COMPLETE", completedAt: new Date() },
     });
   }
 
   // ─── YARD / DOCK APPOINTMENT SCHEDULING ───────────────
 
-  async getDockAppointments(tenantId: string, params: PaginationParams & { warehouseId?: string; status?: string; dockDoor?: string } = {}) {
+  async getDockAppointments(
+    tenantId: string,
+    params: PaginationParams & {
+      warehouseId?: string;
+      status?: string;
+      dockDoor?: string;
+    } = {},
+  ) {
     const where: any = { tenantId };
     if (params.warehouseId) where.warehouseId = params.warehouseId;
     if (params.status) where.status = params.status;
     if (params.dockDoor) where.dockDoor = params.dockDoor;
     const { skip, take } = buildPaginationValues(params);
     const [appointments, total] = await Promise.all([
-      prisma.dockAppointment.findMany({ where, skip, take, orderBy: { scheduledAt: 'asc' } }),
+      prisma.dockAppointment.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { scheduledAt: "asc" },
+      }),
       prisma.dockAppointment.count({ where }),
     ]);
     return paginatedResult(appointments, total, params);
   }
 
   /** Rejects a new appointment that overlaps an existing one on the same dock door. */
-  private async assertNoDockConflict(tenantId: string, warehouseId: string, dockDoor: string, scheduledAt: Date, durationMinutes: number, excludeId?: string) {
+  private async assertNoDockConflict(
+    tenantId: string,
+    warehouseId: string,
+    dockDoor: string,
+    scheduledAt: Date,
+    durationMinutes: number,
+    excludeId?: string,
+  ) {
     const start = scheduledAt;
     const end = new Date(scheduledAt.getTime() + durationMinutes * 60 * 1000);
 
     const candidates = await prisma.dockAppointment.findMany({
       where: {
-        tenantId, warehouseId, dockDoor,
-        status: { notIn: ['CANCELLED', 'COMPLETED', 'NO_SHOW'] },
+        tenantId,
+        warehouseId,
+        dockDoor,
+        status: { notIn: ["CANCELLED", "COMPLETED", "NO_SHOW"] },
         ...(excludeId ? { id: { not: excludeId } } : {}),
       },
     });
 
     for (const existing of candidates) {
       const existingStart = existing.scheduledAt;
-      const existingEnd = new Date(existing.scheduledAt.getTime() + existing.durationMinutes * 60 * 1000);
+      const existingEnd = new Date(
+        existing.scheduledAt.getTime() + existing.durationMinutes * 60 * 1000,
+      );
       if (start < existingEnd && end > existingStart) {
-        throw new BadRequestException(`Dock door ${dockDoor} is already booked from ${existingStart.toISOString()} to ${existingEnd.toISOString()}`);
+        throw new BadRequestException(
+          `Dock door ${dockDoor} is already booked from ${existingStart.toISOString()} to ${existingEnd.toISOString()}`,
+        );
       }
     }
   }
 
-  async createDockAppointment(tenantId: string, orgId: string, dto: CreateDockAppointmentInput) {
+  async createDockAppointment(
+    tenantId: string,
+    orgId: string,
+    dto: CreateDockAppointmentInput,
+  ) {
     const resolvedOrgId = await resolveOrgId(tenantId, orgId);
     const scheduledAt = new Date(dto.scheduledAt);
-    await this.assertNoDockConflict(tenantId, dto.warehouseId, dto.dockDoor, scheduledAt, dto.durationMinutes);
+    await this.assertNoDockConflict(
+      tenantId,
+      dto.warehouseId,
+      dto.dockDoor,
+      scheduledAt,
+      dto.durationMinutes,
+    );
 
     return prisma.dockAppointment.create({
       data: {
@@ -2147,67 +2841,122 @@ export class InventoryService {
         warehouseId: dto.warehouseId,
         dockDoor: dto.dockDoor,
         type: dto.type,
-        carrierName: dto.carrierName ?? '',
+        carrierName: dto.carrierName ?? "",
         referenceType: dto.referenceType ?? null,
         referenceId: dto.referenceId ?? null,
         scheduledAt,
         durationMinutes: dto.durationMinutes,
         notes: dto.notes ?? null,
-        status: 'SCHEDULED',
+        status: "SCHEDULED",
       },
     });
   }
 
-  async updateDockAppointment(tenantId: string, id: string, dto: UpdateDockAppointmentInput) {
-    const existing = await prisma.dockAppointment.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Dock appointment not found');
+  async updateDockAppointment(
+    tenantId: string,
+    id: string,
+    dto: UpdateDockAppointmentInput,
+  ) {
+    const existing = await prisma.dockAppointment.findFirst({
+      where: { id, tenantId },
+    });
+    if (!existing) throw new NotFoundException("Dock appointment not found");
 
-    const scheduledAt = dto.scheduledAt ? new Date(dto.scheduledAt) : existing.scheduledAt;
+    const scheduledAt = dto.scheduledAt
+      ? new Date(dto.scheduledAt)
+      : existing.scheduledAt;
     const durationMinutes = dto.durationMinutes ?? existing.durationMinutes;
     const dockDoor = dto.dockDoor ?? existing.dockDoor;
     const warehouseId = dto.warehouseId ?? existing.warehouseId;
 
-    if (dto.scheduledAt || dto.durationMinutes || dto.dockDoor || dto.warehouseId) {
-      await this.assertNoDockConflict(tenantId, warehouseId, dockDoor, scheduledAt, durationMinutes, id);
+    if (
+      dto.scheduledAt ||
+      dto.durationMinutes ||
+      dto.dockDoor ||
+      dto.warehouseId
+    ) {
+      await this.assertNoDockConflict(
+        tenantId,
+        warehouseId,
+        dockDoor,
+        scheduledAt,
+        durationMinutes,
+        id,
+      );
     }
 
     return prisma.dockAppointment.update({
       where: { id },
       data: {
-        scheduledAt, durationMinutes, dockDoor, warehouseId,
+        scheduledAt,
+        durationMinutes,
+        dockDoor,
+        warehouseId,
         ...(dto.type !== undefined ? { type: dto.type } : {}),
-        ...(dto.carrierName !== undefined ? { carrierName: dto.carrierName ?? '' } : {}),
-        ...(dto.referenceType !== undefined ? { referenceType: dto.referenceType } : {}),
-        ...(dto.referenceId !== undefined ? { referenceId: dto.referenceId } : {}),
+        ...(dto.carrierName !== undefined
+          ? { carrierName: dto.carrierName ?? "" }
+          : {}),
+        ...(dto.referenceType !== undefined
+          ? { referenceType: dto.referenceType }
+          : {}),
+        ...(dto.referenceId !== undefined
+          ? { referenceId: dto.referenceId }
+          : {}),
         ...(dto.notes !== undefined ? { notes: dto.notes } : {}),
       },
     });
   }
 
   async checkInDockAppointment(tenantId: string, id: string) {
-    const appointment = await prisma.dockAppointment.findFirst({ where: { id, tenantId, status: 'SCHEDULED' } });
-    if (!appointment) throw new NotFoundException('Scheduled dock appointment not found');
-    return prisma.dockAppointment.update({ where: { id }, data: { status: 'CHECKED_IN', checkedInAt: new Date() } });
+    const appointment = await prisma.dockAppointment.findFirst({
+      where: { id, tenantId, status: "SCHEDULED" },
+    });
+    if (!appointment)
+      throw new NotFoundException("Scheduled dock appointment not found");
+    return prisma.dockAppointment.update({
+      where: { id },
+      data: { status: "CHECKED_IN", checkedInAt: new Date() },
+    });
   }
 
   async completeDockAppointment(tenantId: string, id: string) {
-    const appointment = await prisma.dockAppointment.findFirst({ where: { id, tenantId } });
-    if (!appointment) throw new NotFoundException('Dock appointment not found');
-    if (appointment.status === 'COMPLETED') throw new BadRequestException('Dock appointment already completed');
-    return prisma.dockAppointment.update({ where: { id }, data: { status: 'COMPLETED', completedAt: new Date() } });
+    const appointment = await prisma.dockAppointment.findFirst({
+      where: { id, tenantId },
+    });
+    if (!appointment) throw new NotFoundException("Dock appointment not found");
+    if (appointment.status === "COMPLETED")
+      throw new BadRequestException("Dock appointment already completed");
+    return prisma.dockAppointment.update({
+      where: { id },
+      data: { status: "COMPLETED", completedAt: new Date() },
+    });
   }
 
   async cancelDockAppointment(tenantId: string, id: string) {
-    const appointment = await prisma.dockAppointment.findFirst({ where: { id, tenantId } });
-    if (!appointment) throw new NotFoundException('Dock appointment not found');
-    return prisma.dockAppointment.update({ where: { id }, data: { status: 'CANCELLED' } });
+    const appointment = await prisma.dockAppointment.findFirst({
+      where: { id, tenantId },
+    });
+    if (!appointment) throw new NotFoundException("Dock appointment not found");
+    return prisma.dockAppointment.update({
+      where: { id },
+      data: { status: "CANCELLED" },
+    });
   }
 
   /** Utilization by dock door over a window — booked minutes vs. total available minutes. */
-  async getDockUtilization(tenantId: string, warehouseId: string, sinceDays = 7) {
+  async getDockUtilization(
+    tenantId: string,
+    warehouseId: string,
+    sinceDays = 7,
+  ) {
     const since = new Date(Date.now() - sinceDays * 24 * 60 * 60 * 1000);
     const appointments = await prisma.dockAppointment.findMany({
-      where: { tenantId, warehouseId, scheduledAt: { gte: since }, status: { notIn: ['CANCELLED', 'NO_SHOW'] } },
+      where: {
+        tenantId,
+        warehouseId,
+        scheduledAt: { gte: since },
+        status: { notIn: ["CANCELLED", "NO_SHOW"] },
+      },
     });
 
     const byDoor = new Map<string, number>();
@@ -2222,7 +2971,9 @@ export class InventoryService {
       doors: Array.from(byDoor.entries()).map(([dockDoor, bookedMinutes]) => ({
         dockDoor,
         bookedMinutes,
-        utilizationPct: Number(((bookedMinutes / totalAvailableMinutes) * 100).toFixed(2)),
+        utilizationPct: Number(
+          ((bookedMinutes / totalAvailableMinutes) * 100).toFixed(2),
+        ),
       })),
     };
   }
@@ -2235,33 +2986,63 @@ export class InventoryService {
    * recommendation; slow movers currently occupying zone A get a move-to-reserve recommendation.
    * Per 2026 WMS market benchmarking (Manhattan Active WMS), confirmed via discovery pass.
    */
-  async getSlottingRecommendations(tenantId: string, warehouseId: string, sinceDays = 30) {
+  async getSlottingRecommendations(
+    tenantId: string,
+    warehouseId: string,
+    sinceDays = 30,
+  ) {
     const since = new Date(Date.now() - sinceDays * 24 * 60 * 60 * 1000);
 
-    const [pickFrequency, binAssignments, preferredBins, reserveBins] = await Promise.all([
-      prisma.stockLedgerEntry.groupBy({
-        by: ['productId'],
-        where: { tenantId, warehouseId, createdAt: { gte: since }, quantity: { lt: 0 } },
-        _sum: { quantity: true },
-      }),
-      prisma.inventoryItemBin.findMany({
-        where: { tenantId, warehouseId },
-        include: { product: true, binLocation: true },
-      }),
-      prisma.binLocation.findMany({ where: { tenantId, warehouseId, zone: 'A', isActive: true } }),
-      prisma.binLocation.findMany({ where: { tenantId, warehouseId, zone: { not: 'A' }, isActive: true } }),
-    ]);
+    const [pickFrequency, binAssignments, preferredBins, reserveBins] =
+      await Promise.all([
+        prisma.stockLedgerEntry.groupBy({
+          by: ["productId"],
+          where: {
+            tenantId,
+            warehouseId,
+            createdAt: { gte: since },
+            quantity: { lt: 0 },
+          },
+          _sum: { quantity: true },
+        }),
+        prisma.inventoryItemBin.findMany({
+          where: { tenantId, warehouseId },
+          include: { product: true, binLocation: true },
+        }),
+        prisma.binLocation.findMany({
+          where: { tenantId, warehouseId, zone: "A", isActive: true },
+        }),
+        prisma.binLocation.findMany({
+          where: { tenantId, warehouseId, zone: { not: "A" }, isActive: true },
+        }),
+      ]);
 
-    const pickFreqByProduct = new Map(pickFrequency.map((f) => [f.productId, Math.abs(Number(f._sum.quantity ?? 0))]));
-    const frequencies = Array.from(pickFreqByProduct.values()).sort((a, b) => b - a);
-    const fastMoverThreshold = frequencies[Math.floor(frequencies.length * 0.2)] ?? 0;
+    const pickFreqByProduct = new Map(
+      pickFrequency.map((f) => [
+        f.productId,
+        Math.abs(Number(f._sum.quantity ?? 0)),
+      ]),
+    );
+    const frequencies = Array.from(pickFreqByProduct.values()).sort(
+      (a, b) => b - a,
+    );
+    const fastMoverThreshold =
+      frequencies[Math.floor(frequencies.length * 0.2)] ?? 0;
 
-    const recommendations: Array<{ productId: string; productName: string; currentBinCode: string; currentZone: string; pickFrequency: number; recommendation: string; suggestedBinCode: string | null }> = [];
+    const recommendations: Array<{
+      productId: string;
+      productName: string;
+      currentBinCode: string;
+      currentZone: string;
+      pickFrequency: number;
+      recommendation: string;
+      suggestedBinCode: string | null;
+    }> = [];
 
     for (const assignment of binAssignments) {
       const freq = pickFreqByProduct.get(assignment.productId) ?? 0;
       const isFastMover = freq > 0 && freq >= fastMoverThreshold;
-      const inZoneA = assignment.binLocation.zone === 'A';
+      const inZoneA = assignment.binLocation.zone === "A";
 
       if (isFastMover && !inZoneA && preferredBins.length > 0) {
         recommendations.push({
@@ -2270,39 +3051,75 @@ export class InventoryService {
           currentBinCode: assignment.binLocation.code,
           currentZone: assignment.binLocation.zone,
           pickFrequency: freq,
-          recommendation: 'MOVE_TO_PREFERRED_ZONE',
+          recommendation: "MOVE_TO_PREFERRED_ZONE",
           suggestedBinCode: preferredBins[0]!.code,
         });
-      } else if (!isFastMover && inZoneA && freq === 0 && reserveBins.length > 0) {
+      } else if (
+        !isFastMover &&
+        inZoneA &&
+        freq === 0 &&
+        reserveBins.length > 0
+      ) {
         recommendations.push({
           productId: assignment.productId,
           productName: assignment.product.name,
           currentBinCode: assignment.binLocation.code,
           currentZone: assignment.binLocation.zone,
           pickFrequency: freq,
-          recommendation: 'MOVE_TO_RESERVE_ZONE',
+          recommendation: "MOVE_TO_RESERVE_ZONE",
           suggestedBinCode: reserveBins[0]!.code,
         });
       }
     }
 
-    return { warehouseId, windowDays: sinceDays, count: recommendations.length, recommendations };
+    return {
+      warehouseId,
+      windowDays: sinceDays,
+      count: recommendations.length,
+      recommendations,
+    };
   }
 
   /** Executes a slotting move: relocates a product's bin-level quantity from one bin to another (real stock move, no new schema). */
-  async executeSlottingMove(tenantId: string, productId: string, warehouseId: string, fromBinId: string, toBinId: string) {
-    const fromAssignment = await prisma.inventoryItemBin.findFirst({ where: { tenantId, productId, warehouseId, binLocationId: fromBinId } });
-    if (!fromAssignment) throw new NotFoundException('Source bin assignment not found');
-    if (Number(fromAssignment.quantity) <= 0) throw new BadRequestException('Source bin has no quantity to move');
+  async executeSlottingMove(
+    tenantId: string,
+    productId: string,
+    warehouseId: string,
+    fromBinId: string,
+    toBinId: string,
+  ) {
+    const fromAssignment = await prisma.inventoryItemBin.findFirst({
+      where: { tenantId, productId, warehouseId, binLocationId: fromBinId },
+    });
+    if (!fromAssignment)
+      throw new NotFoundException("Source bin assignment not found");
+    if (Number(fromAssignment.quantity) <= 0)
+      throw new BadRequestException("Source bin has no quantity to move");
 
     const qty = fromAssignment.quantity;
 
     return prisma.$transaction(async (tx) => {
-      await tx.inventoryItemBin.update({ where: { id: fromAssignment.id }, data: { quantity: 0 } });
+      await tx.inventoryItemBin.update({
+        where: { id: fromAssignment.id },
+        data: { quantity: 0 },
+      });
       return tx.inventoryItemBin.upsert({
-        where: { tenantId_productId_warehouseId_binLocationId: { tenantId, productId, warehouseId, binLocationId: toBinId } },
+        where: {
+          tenantId_productId_warehouseId_binLocationId: {
+            tenantId,
+            productId,
+            warehouseId,
+            binLocationId: toBinId,
+          },
+        },
         update: { quantity: { increment: qty } },
-        create: { tenantId, productId, warehouseId, binLocationId: toBinId, quantity: qty },
+        create: {
+          tenantId,
+          productId,
+          warehouseId,
+          binLocationId: toBinId,
+          quantity: qty,
+        },
       });
     });
   }
@@ -2316,23 +3133,32 @@ export class InventoryService {
    * (Manhattan Active WMS, NetSuite WMS) confirmed via discovery pass.
    */
   async getCrossDockOpportunities(tenantId: string, warehouseId?: string) {
-    const putawayWhere: any = { tenantId, status: 'PENDING' };
+    const putawayWhere: any = { tenantId, status: "PENDING" };
     const putawayTasks = await prisma.putawayTask.findMany({
       where: putawayWhere,
       include: { inventoryItem: { include: { product: true } } },
     });
 
-    const opportunities: Array<{ putawayTaskId: string; productId: string; productName: string; inboundQty: number; pickWaveItemId: string; demandQty: number; matchedQty: number }> = [];
+    const opportunities: Array<{
+      putawayTaskId: string;
+      productId: string;
+      productName: string;
+      inboundQty: number;
+      pickWaveItemId: string;
+      demandQty: number;
+      matchedQty: number;
+    }> = [];
 
     for (const task of putawayTasks) {
       const item = task.inventoryItem;
       if (warehouseId && item.warehouseId !== warehouseId) continue;
 
       const demandItem = await prisma.pickWaveItem.findFirst({
-        where: { tenantId, productId: item.productId, status: 'PENDING' },
+        where: { tenantId, productId: item.productId, status: "PENDING" },
         include: { pickWave: true },
       });
-      if (!demandItem || demandItem.pickWave.warehouseId !== item.warehouseId) continue;
+      if (!demandItem || demandItem.pickWave.warehouseId !== item.warehouseId)
+        continue;
 
       opportunities.push({
         putawayTaskId: task.id,
@@ -2341,33 +3167,56 @@ export class InventoryService {
         inboundQty: Number(task.quantity),
         pickWaveItemId: demandItem.id,
         demandQty: Number(demandItem.quantity),
-        matchedQty: Math.min(Number(task.quantity), Number(demandItem.quantity)),
+        matchedQty: Math.min(
+          Number(task.quantity),
+          Number(demandItem.quantity),
+        ),
       });
     }
 
-    return { warehouseId: warehouseId ?? null, count: opportunities.length, opportunities };
+    return {
+      warehouseId: warehouseId ?? null,
+      count: opportunities.length,
+      opportunities,
+    };
   }
 
   /** Executes a cross-dock: completes the inbound receipt task and marks the matched pick-wave item picked, bypassing put-away/storage entirely. */
-  async executeCrossDock(tenantId: string, putawayTaskId: string, pickWaveItemId: string) {
-    const task = await prisma.putawayTask.findFirst({ where: { id: putawayTaskId, tenantId } });
-    if (!task) throw new NotFoundException('Putaway task not found');
-    if (task.status === 'COMPLETE') throw new BadRequestException('Putaway task already completed');
+  async executeCrossDock(
+    tenantId: string,
+    putawayTaskId: string,
+    pickWaveItemId: string,
+  ) {
+    const task = await prisma.putawayTask.findFirst({
+      where: { id: putawayTaskId, tenantId },
+    });
+    if (!task) throw new NotFoundException("Putaway task not found");
+    if (task.status === "COMPLETE")
+      throw new BadRequestException("Putaway task already completed");
 
-    const waveItem = await prisma.pickWaveItem.findFirst({ where: { id: pickWaveItemId, tenantId } });
-    if (!waveItem) throw new NotFoundException('Pick wave item not found');
-    if (waveItem.status === 'PICKED') throw new BadRequestException('Pick wave item is already picked');
+    const waveItem = await prisma.pickWaveItem.findFirst({
+      where: { id: pickWaveItemId, tenantId },
+    });
+    if (!waveItem) throw new NotFoundException("Pick wave item not found");
+    if (waveItem.status === "PICKED")
+      throw new BadRequestException("Pick wave item is already picked");
 
-    const matchedQty = Math.min(Number(task.quantity), Number(waveItem.quantity));
+    const matchedQty = Math.min(
+      Number(task.quantity),
+      Number(waveItem.quantity),
+    );
 
     return prisma.$transaction(async (tx) => {
       const updatedTask = await tx.putawayTask.update({
         where: { id: putawayTaskId },
-        data: { status: 'COMPLETE', completedAt: new Date() },
+        data: { status: "COMPLETE", completedAt: new Date() },
       });
       await tx.pickWaveItem.update({
         where: { id: pickWaveItemId },
-        data: { pickedQty: new Prisma.Decimal(matchedQty), status: matchedQty >= Number(waveItem.quantity) ? 'PICKED' : 'SHORT' },
+        data: {
+          pickedQty: new Prisma.Decimal(matchedQty),
+          status: matchedQty >= Number(waveItem.quantity) ? "PICKED" : "SHORT",
+        },
       });
       return updatedTask;
     });
@@ -2375,7 +3224,10 @@ export class InventoryService {
 
   // ─── QUALITY INSPECTIONS ────────────────────────────
 
-  async getQAInspections(tenantId: string, params: PaginationParams & { status?: string } = {}) {
+  async getQAInspections(
+    tenantId: string,
+    params: PaginationParams & { status?: string } = {},
+  ) {
     return this.qaService.getQAInspections(tenantId, params);
   }
 
@@ -2383,29 +3235,53 @@ export class InventoryService {
     return this.qaService.getQAInspectionById(tenantId, id);
   }
 
-  async createQAInspection(tenantId: string, orgId: string, userId: string, dto: CreateQAInspectionInput) {
+  async createQAInspection(
+    tenantId: string,
+    orgId: string,
+    userId: string,
+    dto: CreateQAInspectionInput,
+  ) {
     return this.qaService.createQAInspection(tenantId, orgId, userId, dto);
   }
 
-  async submitQAInspection(tenantId: string, id: string, userId: string, dto: SubmitQAInspectionInput) {
+  async submitQAInspection(
+    tenantId: string,
+    id: string,
+    userId: string,
+    dto: SubmitQAInspectionInput,
+  ) {
     return this.qaService.submitQAInspection(tenantId, id, userId, dto);
   }
 
-  async routeQAInspectionDisposition(tenantId: string, id: string, userId: string) {
+  async routeQAInspectionDisposition(
+    tenantId: string,
+    id: string,
+    userId: string,
+  ) {
     return this.qaService.routeQAInspectionDisposition(tenantId, id, userId);
   }
 
   // ─── QA INSPECTION TEMPLATES ──────────────────────────
 
-  async getQAInspectionTemplates(tenantId: string, params: PaginationParams & { productId?: string } = {}) {
+  async getQAInspectionTemplates(
+    tenantId: string,
+    params: PaginationParams & { productId?: string } = {},
+  ) {
     return this.qaService.getQAInspectionTemplates(tenantId, params);
   }
 
-  async createQAInspectionTemplate(tenantId: string, dto: CreateQAInspectionTemplateInput) {
+  async createQAInspectionTemplate(
+    tenantId: string,
+    dto: CreateQAInspectionTemplateInput,
+  ) {
     return this.qaService.createQAInspectionTemplate(tenantId, dto);
   }
 
-  async updateQAInspectionTemplate(tenantId: string, id: string, dto: UpdateQAInspectionTemplateInput) {
+  async updateQAInspectionTemplate(
+    tenantId: string,
+    id: string,
+    dto: UpdateQAInspectionTemplateInput,
+  ) {
     return this.qaService.updateQAInspectionTemplate(tenantId, id, dto);
   }
 
@@ -2413,8 +3289,20 @@ export class InventoryService {
     return this.qaService.deleteQAInspectionTemplate(tenantId, id);
   }
 
-  async createQAInspectionFromTemplate(tenantId: string, orgId: string, userId: string, templateId: string, dto: CreateQAInspectionInput) {
-    return this.qaService.createQAInspectionFromTemplate(tenantId, orgId, userId, templateId, dto);
+  async createQAInspectionFromTemplate(
+    tenantId: string,
+    orgId: string,
+    userId: string,
+    templateId: string,
+    dto: CreateQAInspectionInput,
+  ) {
+    return this.qaService.createQAInspectionFromTemplate(
+      tenantId,
+      orgId,
+      userId,
+      templateId,
+      dto,
+    );
   }
 
   // ─── REORDER RULES ──────────────────────────────────
@@ -2454,8 +3342,10 @@ export class InventoryService {
   }
 
   async updateReorderRule(tenantId: string, id: string, dto: any) {
-    const rule = await prisma.reorderRule.findFirst({ where: { id, tenantId } });
-    if (!rule) throw new NotFoundException('Reorder rule not found');
+    const rule = await prisma.reorderRule.findFirst({
+      where: { id, tenantId },
+    });
+    if (!rule) throw new NotFoundException("Reorder rule not found");
 
     const updateData: any = {
       isActive: dto.isActive,
@@ -2463,9 +3353,12 @@ export class InventoryService {
       leadTimeDays: dto.leadTimeDays,
       preferredVendorId: dto.preferredVendorId,
     };
-    if (dto.minQty !== undefined) updateData.minQty = new Prisma.Decimal(dto.minQty);
-    if (dto.maxQty !== undefined) updateData.maxQty = dto.maxQty ? new Prisma.Decimal(dto.maxQty) : null;
-    if (dto.reorderQty !== undefined) updateData.reorderQty = new Prisma.Decimal(dto.reorderQty);
+    if (dto.minQty !== undefined)
+      updateData.minQty = new Prisma.Decimal(dto.minQty);
+    if (dto.maxQty !== undefined)
+      updateData.maxQty = dto.maxQty ? new Prisma.Decimal(dto.maxQty) : null;
+    if (dto.reorderQty !== undefined)
+      updateData.reorderQty = new Prisma.Decimal(dto.reorderQty);
 
     return prisma.reorderRule.update({
       where: { id },
@@ -2474,8 +3367,10 @@ export class InventoryService {
   }
 
   async deleteReorderRule(tenantId: string, id: string) {
-    const rule = await prisma.reorderRule.findFirst({ where: { id, tenantId } });
-    if (!rule) throw new NotFoundException('Reorder rule not found');
+    const rule = await prisma.reorderRule.findFirst({
+      where: { id, tenantId },
+    });
+    if (!rule) throw new NotFoundException("Reorder rule not found");
 
     await prisma.reorderRule.delete({ where: { id } });
     return { success: true };
@@ -2483,7 +3378,10 @@ export class InventoryService {
 
   /** Reorder dashboard: active rules whose on-hand quantity has fallen to/below minQty, with a lead-time-aware suggested order date. */
   async getReorderDashboard(tenantId: string) {
-    const rules = await prisma.reorderRule.findMany({ where: { tenantId, isActive: true }, include: { product: true } });
+    const rules = await prisma.reorderRule.findMany({
+      where: { tenantId, isActive: true },
+      include: { product: true },
+    });
 
     const triggered = await Promise.all(
       rules.map(async (rule) => {
@@ -2492,7 +3390,9 @@ export class InventoryService {
         const items = await prisma.inventoryItem.findMany({ where });
         const onHand = items.reduce((sum, i) => sum + Number(i.quantity), 0);
         const isTriggered = onHand <= Number(rule.minQty);
-        const suggestedOrderDate = new Date(Date.now() - rule.leadTimeDays * 24 * 60 * 60 * 1000);
+        const suggestedOrderDate = new Date(
+          Date.now() - rule.leadTimeDays * 24 * 60 * 60 * 1000,
+        );
 
         return {
           ruleId: rule.id,
@@ -2510,17 +3410,31 @@ export class InventoryService {
       }),
     );
 
-    return { rules: triggered, triggeredCount: triggered.filter((t) => t.isTriggered).length };
+    return {
+      rules: triggered,
+      triggeredCount: triggered.filter((t) => t.isTriggered).length,
+    };
   }
 
   /** Creates a purchase requisition from a triggered reorder rule and stamps lastTriggeredAt, instead of leaving the trigger as a dashboard-only signal. */
-  async createRequisitionFromReorderRule(tenantId: string, orgId: string, userId: string, ruleId: string, dto: CreateRequisitionFromReorderRuleInput) {
-    const rule = await prisma.reorderRule.findFirst({ where: { id: ruleId, tenantId }, include: { product: true } });
-    if (!rule) throw new NotFoundException('Reorder rule not found');
+  async createRequisitionFromReorderRule(
+    tenantId: string,
+    orgId: string,
+    userId: string,
+    ruleId: string,
+    dto: CreateRequisitionFromReorderRuleInput,
+  ) {
+    const rule = await prisma.reorderRule.findFirst({
+      where: { id: ruleId, tenantId },
+      include: { product: true },
+    });
+    if (!rule) throw new NotFoundException("Reorder rule not found");
 
     const resolvedOrgId = await resolveOrgId(tenantId, orgId);
-    const count = await prisma.purchaseRequisition.count({ where: { tenantId } });
-    const requisitionNumber = `REQ-${new Date().getFullYear()}-${(count + 1).toString().padStart(5, '0')}`;
+    const count = await prisma.purchaseRequisition.count({
+      where: { tenantId },
+    });
+    const requisitionNumber = `REQ-${new Date().getFullYear()}-${(count + 1).toString().padStart(5, "0")}`;
     const estimatedPrice = Number(rule.product.costPrice);
     const totalAmount = estimatedPrice * Number(rule.reorderQty);
 
@@ -2530,33 +3444,41 @@ export class InventoryService {
         orgId: resolvedOrgId,
         requisitionNumber,
         title: `Auto-reorder: ${rule.product.name}`,
-        status: 'DRAFT',
+        status: "DRAFT",
         requestedById: userId,
         requiredDate: dto.requiredDate ? new Date(dto.requiredDate) : null,
         estimatedCost: new Prisma.Decimal(totalAmount),
         notes: `Auto-generated from reorder rule ${rule.id} (min ${rule.minQty}, lead time ${rule.leadTimeDays}d)`,
         lineItems: {
-          create: [{
-            tenantId,
-            productId: rule.productId,
-            description: rule.product.name,
-            quantity: new Prisma.Decimal(rule.reorderQty),
-            estimatedPrice: new Prisma.Decimal(estimatedPrice),
-            totalAmount: new Prisma.Decimal(totalAmount),
-          }],
+          create: [
+            {
+              tenantId,
+              productId: rule.productId,
+              description: rule.product.name,
+              quantity: new Prisma.Decimal(rule.reorderQty),
+              estimatedPrice: new Prisma.Decimal(estimatedPrice),
+              totalAmount: new Prisma.Decimal(totalAmount),
+            },
+          ],
         },
       },
       include: { lineItems: true },
     });
 
-    await prisma.reorderRule.update({ where: { id: ruleId }, data: { lastTriggeredAt: new Date() } });
+    await prisma.reorderRule.update({
+      where: { id: ruleId },
+      data: { lastTriggeredAt: new Date() },
+    });
 
     return requisition;
   }
 
   // ─── STOCK ALERTS ───────────────────────────────────
 
-  async getStockAlerts(tenantId: string, params: PaginationParams & { isResolved?: boolean } = {}) {
+  async getStockAlerts(
+    tenantId: string,
+    params: PaginationParams & { isResolved?: boolean } = {},
+  ) {
     const where: any = { tenantId };
     if (params.isResolved !== undefined) where.isResolved = params.isResolved;
 
@@ -2568,7 +3490,7 @@ export class InventoryService {
         include: { product: true },
         skip,
         take,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       }),
       prisma.stockAlert.count({ where }),
     ]);
@@ -2577,8 +3499,10 @@ export class InventoryService {
   }
 
   async resolveStockAlert(tenantId: string, id: string) {
-    const alert = await prisma.stockAlert.findFirst({ where: { id, tenantId } });
-    if (!alert) throw new NotFoundException('Stock alert not found');
+    const alert = await prisma.stockAlert.findFirst({
+      where: { id, tenantId },
+    });
+    if (!alert) throw new NotFoundException("Stock alert not found");
 
     return prisma.stockAlert.update({
       where: { id },
@@ -2613,7 +3537,7 @@ export class InventoryService {
       where: { id, tenantId },
       include: { product: true, components: { include: { product: true } } },
     });
-    if (!kit) throw new NotFoundException('Product kit not found');
+    if (!kit) throw new NotFoundException("Product kit not found");
     return kit;
   }
 
@@ -2647,15 +3571,21 @@ export class InventoryService {
 
   async updateProductKit(tenantId: string, id: string, dto: any) {
     const kit = await prisma.productKit.findFirst({ where: { id, tenantId } });
-    if (!kit) throw new NotFoundException('Product kit not found');
+    if (!kit) throw new NotFoundException("Product kit not found");
 
     return prisma.productKit.update({
       where: { id },
       data: {
         name: dto.name,
         description: dto.description,
-        sellPrice: dto.sellPrice !== undefined ? new Prisma.Decimal(dto.sellPrice) : undefined,
-        discount: dto.discount !== undefined ? new Prisma.Decimal(dto.discount) : undefined,
+        sellPrice:
+          dto.sellPrice !== undefined
+            ? new Prisma.Decimal(dto.sellPrice)
+            : undefined,
+        discount:
+          dto.discount !== undefined
+            ? new Prisma.Decimal(dto.discount)
+            : undefined,
         isActive: dto.isActive,
       },
     });
@@ -2663,7 +3593,7 @@ export class InventoryService {
 
   async deleteProductKit(tenantId: string, id: string) {
     const kit = await prisma.productKit.findFirst({ where: { id, tenantId } });
-    if (!kit) throw new NotFoundException('Product kit not found');
+    if (!kit) throw new NotFoundException("Product kit not found");
 
     await prisma.productKit.delete({ where: { id } });
     return { success: true };
@@ -2672,60 +3602,122 @@ export class InventoryService {
   // ─── KIT BOM VERSIONING ───────────────────────────────
 
   async getKitVersions(tenantId: string, kitId: string) {
-    return prisma.kitVersion.findMany({ where: { tenantId, kitId }, orderBy: { versionNo: 'desc' } });
+    return prisma.kitVersion.findMany({
+      where: { tenantId, kitId },
+      orderBy: { versionNo: "desc" },
+    });
   }
 
   /** Snapshots the kit's current component list as a new version, so BOM changes over time are auditable and revertible. */
-  async createKitVersion(tenantId: string, kitId: string, userId: string, dto: CreateKitVersionInput) {
+  async createKitVersion(
+    tenantId: string,
+    kitId: string,
+    userId: string,
+    dto: CreateKitVersionInput,
+  ) {
     const kit = await this.getProductKitById(tenantId, kitId);
-    const latest = await prisma.kitVersion.findFirst({ where: { tenantId, kitId }, orderBy: { versionNo: 'desc' } });
+    const latest = await prisma.kitVersion.findFirst({
+      where: { tenantId, kitId },
+      orderBy: { versionNo: "desc" },
+    });
     const versionNo = (latest?.versionNo ?? 0) + 1;
 
-    const snapshot = kit.components.map((c) => ({ productId: c.productId, productName: c.product.name, quantity: Number(c.quantity) }));
+    const snapshot = kit.components.map((c) => ({
+      productId: c.productId,
+      productName: c.product.name,
+      quantity: Number(c.quantity),
+    }));
 
     return prisma.$transaction(async (tx) => {
-      await tx.kitVersion.updateMany({ where: { tenantId, kitId, isActive: true }, data: { isActive: false } });
+      await tx.kitVersion.updateMany({
+        where: { tenantId, kitId, isActive: true },
+        data: { isActive: false },
+      });
       return tx.kitVersion.create({
-        data: { tenantId, kitId, versionNo, componentsSnapshot: snapshot, isActive: true, notes: dto.notes, createdBy: userId },
+        data: {
+          tenantId,
+          kitId,
+          versionNo,
+          componentsSnapshot: snapshot,
+          isActive: true,
+          notes: dto.notes,
+          createdBy: userId,
+        },
       });
     });
   }
 
   /** Reverts the kit's live components to match a prior version's snapshot. */
   async activateKitVersion(tenantId: string, kitId: string, versionId: string) {
-    const version = await prisma.kitVersion.findFirst({ where: { id: versionId, tenantId, kitId } });
-    if (!version) throw new NotFoundException('Kit version not found');
+    const version = await prisma.kitVersion.findFirst({
+      where: { id: versionId, tenantId, kitId },
+    });
+    if (!version) throw new NotFoundException("Kit version not found");
 
-    const snapshot = version.componentsSnapshot as Array<{ productId: string; quantity: number }>;
+    const snapshot = version.componentsSnapshot as Array<{
+      productId: string;
+      quantity: number;
+    }>;
 
     await prisma.$transaction(async (tx) => {
       await tx.productKitItem.deleteMany({ where: { tenantId, kitId } });
       await tx.productKitItem.createMany({
-        data: snapshot.map((c) => ({ tenantId, kitId, productId: c.productId, quantity: new Prisma.Decimal(c.quantity) })),
+        data: snapshot.map((c) => ({
+          tenantId,
+          kitId,
+          productId: c.productId,
+          quantity: new Prisma.Decimal(c.quantity),
+        })),
       });
-      await tx.kitVersion.updateMany({ where: { tenantId, kitId, isActive: true }, data: { isActive: false } });
-      await tx.kitVersion.update({ where: { id: versionId }, data: { isActive: true } });
+      await tx.kitVersion.updateMany({
+        where: { tenantId, kitId, isActive: true },
+        data: { isActive: false },
+      });
+      await tx.kitVersion.update({
+        where: { id: versionId },
+        data: { isActive: true },
+      });
     });
 
     return this.getProductKitById(tenantId, kitId);
   }
 
   /** How many kits can be assembled right now from on-hand component stock in a warehouse. */
-  async getKitAvailability(tenantId: string, kitId: string, warehouseId: string) {
+  async getKitAvailability(
+    tenantId: string,
+    kitId: string,
+    warehouseId: string,
+  ) {
     const kit = await this.getProductKitById(tenantId, kitId);
 
     const componentAvailability = await Promise.all(
       kit.components.map(async (c) => {
-        const item = await prisma.inventoryItem.findFirst({ where: { tenantId, productId: c.productId, warehouseId } });
+        const item = await prisma.inventoryItem.findFirst({
+          where: { tenantId, productId: c.productId, warehouseId },
+        });
         const onHand = Number(item?.quantity ?? 0);
         const perKit = Number(c.quantity);
         const buildable = perKit > 0 ? Math.floor(onHand / perKit) : 0;
-        return { productId: c.productId, productName: c.product.name, perKitQty: perKit, onHand, buildable };
+        return {
+          productId: c.productId,
+          productName: c.product.name,
+          perKitQty: perKit,
+          onHand,
+          buildable,
+        };
       }),
     );
 
-    const maxBuildable = componentAvailability.length > 0 ? Math.min(...componentAvailability.map((c) => c.buildable)) : 0;
-    return { kitId, warehouseId, maxBuildable, components: componentAvailability };
+    const maxBuildable =
+      componentAvailability.length > 0
+        ? Math.min(...componentAvailability.map((c) => c.buildable))
+        : 0;
+    return {
+      kitId,
+      warehouseId,
+      maxBuildable,
+      components: componentAvailability,
+    };
   }
 
   /** Rolled-up cost of a kit from its component cost prices, compared against the kit's sell price for margin visibility. */
@@ -2741,15 +3733,37 @@ export class InventoryService {
     const totalCost = componentCosts.reduce((sum, c) => sum + c.lineCost, 0);
     const sellPrice = Number(kit.sellPrice) * (1 - Number(kit.discount) / 100);
 
-    return { kitId, components: componentCosts, totalCost, sellPrice, margin: sellPrice - totalCost, marginPct: sellPrice > 0 ? Number((((sellPrice - totalCost) / sellPrice) * 100).toFixed(2)) : null };
+    return {
+      kitId,
+      components: componentCosts,
+      totalCost,
+      sellPrice,
+      margin: sellPrice - totalCost,
+      marginPct:
+        sellPrice > 0
+          ? Number((((sellPrice - totalCost) / sellPrice) * 100).toFixed(2))
+          : null,
+    };
   }
 
   /** Assembles kits: consumes component stock and produces finished-kit stock via a STOCK_ADJUSTMENT entry. */
-  async assembleKit(tenantId: string, orgId: string, userId: string, kitId: string, dto: AssembleKitInput) {
+  async assembleKit(
+    tenantId: string,
+    orgId: string,
+    userId: string,
+    kitId: string,
+    dto: AssembleKitInput,
+  ) {
     const kit = await this.getProductKitById(tenantId, kitId);
-    const availability = await this.getKitAvailability(tenantId, kitId, dto.warehouseId);
+    const availability = await this.getKitAvailability(
+      tenantId,
+      kitId,
+      dto.warehouseId,
+    );
     if (availability.maxBuildable < dto.quantity) {
-      throw new BadRequestException(`Insufficient component stock: can build ${availability.maxBuildable}, requested ${dto.quantity}`);
+      throw new BadRequestException(
+        `Insufficient component stock: can build ${availability.maxBuildable}, requested ${dto.quantity}`,
+      );
     }
 
     const items = [
@@ -2759,12 +3773,17 @@ export class InventoryService {
         fromWarehouseId: dto.warehouseId,
         valuationRate: Number(c.product.costPrice),
       })),
-      { productId: kit.productId, qty: dto.quantity, toWarehouseId: dto.warehouseId, valuationRate: Number(kit.product.costPrice) },
+      {
+        productId: kit.productId,
+        qty: dto.quantity,
+        toWarehouseId: dto.warehouseId,
+        valuationRate: Number(kit.product.costPrice),
+      },
     ];
 
     const entry = await this.createStockEntry(tenantId, orgId, userId, {
-      type: 'STOCK_ADJUSTMENT',
-      purpose: 'STOCK_ADJUSTMENT',
+      type: "STOCK_ADJUSTMENT",
+      purpose: "STOCK_ADJUSTMENT",
       remarks: `Kit assembly: ${dto.quantity} x ${kit.name}`,
       items,
     } as any);
@@ -2773,16 +3792,35 @@ export class InventoryService {
   }
 
   /** Disassembles kits: consumes finished-kit stock and returns component stock via a STOCK_ADJUSTMENT entry. */
-  async disassembleKit(tenantId: string, orgId: string, userId: string, kitId: string, dto: DisassembleKitInput) {
+  async disassembleKit(
+    tenantId: string,
+    orgId: string,
+    userId: string,
+    kitId: string,
+    dto: DisassembleKitInput,
+  ) {
     const kit = await this.getProductKitById(tenantId, kitId);
-    const kitItem = await prisma.inventoryItem.findFirst({ where: { tenantId, productId: kit.productId, warehouseId: dto.warehouseId } });
+    const kitItem = await prisma.inventoryItem.findFirst({
+      where: {
+        tenantId,
+        productId: kit.productId,
+        warehouseId: dto.warehouseId,
+      },
+    });
     const onHandKits = Number(kitItem?.quantity ?? 0);
     if (onHandKits < dto.quantity) {
-      throw new BadRequestException(`Insufficient kit stock: ${onHandKits} on hand, ${dto.quantity} requested`);
+      throw new BadRequestException(
+        `Insufficient kit stock: ${onHandKits} on hand, ${dto.quantity} requested`,
+      );
     }
 
     const items = [
-      { productId: kit.productId, qty: dto.quantity, fromWarehouseId: dto.warehouseId, valuationRate: Number(kit.product.costPrice) },
+      {
+        productId: kit.productId,
+        qty: dto.quantity,
+        fromWarehouseId: dto.warehouseId,
+        valuationRate: Number(kit.product.costPrice),
+      },
       ...kit.components.map((c) => ({
         productId: c.productId,
         qty: Number(c.quantity) * dto.quantity,
@@ -2792,8 +3830,8 @@ export class InventoryService {
     ];
 
     const entry = await this.createStockEntry(tenantId, orgId, userId, {
-      type: 'STOCK_ADJUSTMENT',
-      purpose: 'STOCK_ADJUSTMENT',
+      type: "STOCK_ADJUSTMENT",
+      purpose: "STOCK_ADJUSTMENT",
       remarks: `Kit disassembly: ${dto.quantity} x ${kit.name}`,
       items,
     } as any);
@@ -2803,14 +3841,21 @@ export class InventoryService {
 
   // ─── VALUATION & REPORTS ────────────────────────────
 
-  async getValuationReport(tenantId: string, params: PaginationParams & { warehouseId?: string; method?: string } = {}) {
+  async getValuationReport(
+    tenantId: string,
+    params: PaginationParams & { warehouseId?: string; method?: string } = {},
+  ) {
     const where: any = { tenantId };
     if (params.warehouseId) where.warehouseId = params.warehouseId;
 
     // Fetch products
     const products = await prisma.product.findMany({
       where: { tenantId, deletedAt: null },
-      include: { inventoryItems: { where: params.warehouseId ? { warehouseId: params.warehouseId } : {} } },
+      include: {
+        inventoryItems: {
+          where: params.warehouseId ? { warehouseId: params.warehouseId } : {},
+        },
+      },
     });
 
     const reportData: any[] = [];
@@ -2823,29 +3868,39 @@ export class InventoryService {
       }
 
       // Calculate cost based on specified or default costing method
-      const method = params.method || prod.costingMethod || 'AVERAGE';
+      const method = params.method || prod.costingMethod || "AVERAGE";
       let unitCost = Number(prod.costPrice);
 
-      if (method === 'FIFO' || method === 'LIFO') {
+      if (method === "FIFO" || method === "LIFO") {
         // Fetch all ledger entry histories to compute valuation rates
         const ledgers = await prisma.stockLedgerEntry.findMany({
-          where: { tenantId, productId: prod.id, ... (params.warehouseId ? { warehouseId: params.warehouseId } : {}) },
-          orderBy: { postingDate: method === 'FIFO' ? 'asc' : 'desc' },
+          where: {
+            tenantId,
+            productId: prod.id,
+            ...(params.warehouseId ? { warehouseId: params.warehouseId } : {}),
+          },
+          orderBy: { postingDate: method === "FIFO" ? "asc" : "desc" },
         });
 
         if (ledgers.length > 0) {
           // Average the rate of the last 5 inbound receipts/purchases as fallback/simplified FIFO calculation
           const receipts = ledgers.filter((l) => Number(l.qtyIn) > 0);
           if (receipts.length > 0) {
-            const sum = receipts.slice(0, 5).reduce((acc, curr) => acc + Number(curr.valuationRate), 0);
+            const sum = receipts
+              .slice(0, 5)
+              .reduce((acc, curr) => acc + Number(curr.valuationRate), 0);
             unitCost = sum / Math.min(receipts.length, 5);
           }
         }
       } else {
         // AVERAGE method: simplified weighted average rate
         const ledger = await prisma.stockLedgerEntry.findFirst({
-          where: { tenantId, productId: prod.id, ... (params.warehouseId ? { warehouseId: params.warehouseId } : {}) },
-          orderBy: { postingDate: 'desc' },
+          where: {
+            tenantId,
+            productId: prod.id,
+            ...(params.warehouseId ? { warehouseId: params.warehouseId } : {}),
+          },
+          orderBy: { postingDate: "desc" },
         });
         if (ledger) {
           unitCost = Number(ledger.valuationRate) || unitCost;
@@ -2873,17 +3928,25 @@ export class InventoryService {
     };
   }
 
-  async getInventoryAging(tenantId: string, params: PaginationParams & { warehouseId?: string } = {}) {
+  async getInventoryAging(
+    tenantId: string,
+    params: PaginationParams & { warehouseId?: string } = {},
+  ) {
     const where: any = { tenantId };
     if (params.warehouseId) where.warehouseId = params.warehouseId;
 
     const products = await prisma.product.findMany({
       where: { tenantId, deletedAt: null },
       include: {
-        inventoryItems: { where: params.warehouseId ? { warehouseId: params.warehouseId } : {} },
+        inventoryItems: {
+          where: params.warehouseId ? { warehouseId: params.warehouseId } : {},
+        },
         stockLedgerEntries: {
-          where: { ... (params.warehouseId ? { warehouseId: params.warehouseId } : {}), qtyIn: { gt: 0 } },
-          orderBy: { postingDate: 'desc' },
+          where: {
+            ...(params.warehouseId ? { warehouseId: params.warehouseId } : {}),
+            qtyIn: { gt: 0 },
+          },
+          orderBy: { postingDate: "desc" },
           take: 1,
         },
       },
@@ -2898,14 +3961,16 @@ export class InventoryService {
       const lastReceipt = prod.stockLedgerEntries[0];
       let daysOld = 0;
       if (lastReceipt) {
-        const diffTime = Math.abs(new Date().getTime() - new Date(lastReceipt.postingDate).getTime());
+        const diffTime = Math.abs(
+          new Date().getTime() - new Date(lastReceipt.postingDate).getTime(),
+        );
         daysOld = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       }
 
-      let category = '0-30 Days';
-      if (daysOld > 90) category = '90+ Days';
-      else if (daysOld > 60) category = '61-90 Days';
-      else if (daysOld > 30) category = '31-60 Days';
+      let category = "0-30 Days";
+      if (daysOld > 90) category = "90+ Days";
+      else if (daysOld > 60) category = "61-90 Days";
+      else if (daysOld > 30) category = "31-60 Days";
 
       return {
         productId: prod.id,

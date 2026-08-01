@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Injectable,
   NotFoundException,
@@ -8,7 +7,12 @@ import { prisma } from "@unerp/database";
 
 @Injectable()
 export class SupportTicketsService {
-  async listTickets(tenantId: string, filters: { status?: string; priority?: string }, page: number, limit: number) {
+  async listTickets(
+    tenantId: string,
+    filters: { status?: string; priority?: string },
+    page: number,
+    limit: number,
+  ) {
     const where: Record<string, unknown> = { tenantId };
 
     if (filters.status) where.status = filters.status.toUpperCase();
@@ -28,14 +32,23 @@ export class SupportTicketsService {
     return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
-  async createTicket(tenantId: string, userId: string, dto: {
-    subject: string;
-    description: string;
-    category?: string;
-    priority?: string;
-    attachments?: string[];
-  }) {
-    const priorityMap: Record<string, string> = { low: "LOW", medium: "NORMAL", high: "HIGH", urgent: "URGENT" };
+  async createTicket(
+    tenantId: string,
+    userId: string,
+    dto: {
+      subject: string;
+      description: string;
+      category?: string;
+      priority?: string;
+      attachments?: string[];
+    },
+  ) {
+    const priorityMap: Record<string, string> = {
+      low: "LOW",
+      medium: "NORMAL",
+      high: "HIGH",
+      urgent: "URGENT",
+    };
 
     return prisma.tenantSupportTicket.create({
       data: {
@@ -69,13 +82,19 @@ export class SupportTicketsService {
     return ticket;
   }
 
-  async updateTicket(tenantId: string, id: string, dto: {
-    subject?: string;
-    description?: string;
-    category?: string;
-    priority?: string;
-  }) {
-    const ticket = await prisma.tenantSupportTicket.findFirst({ where: { id, tenantId } });
+  async updateTicket(
+    tenantId: string,
+    id: string,
+    dto: {
+      subject?: string;
+      description?: string;
+      category?: string;
+      priority?: string;
+    },
+  ) {
+    const ticket = await prisma.tenantSupportTicket.findFirst({
+      where: { id, tenantId },
+    });
     if (!ticket) throw new NotFoundException("Ticket not found");
 
     const data: Record<string, unknown> = {};
@@ -90,14 +109,22 @@ export class SupportTicketsService {
     });
   }
 
-  async addMessage(tenantId: string, userId: string, id: string, body: {
-    content: string;
-    attachments?: string[];
-    isInternal?: boolean;
-  }) {
-    const ticket = await prisma.tenantSupportTicket.findFirst({ where: { id, tenantId } });
+  async addMessage(
+    tenantId: string,
+    userId: string,
+    id: string,
+    body: {
+      content: string;
+      attachments?: string[];
+      isInternal?: boolean;
+    },
+  ) {
+    const ticket = await prisma.tenantSupportTicket.findFirst({
+      where: { id, tenantId },
+    });
     if (!ticket) throw new NotFoundException("Ticket not found");
-    if (ticket.status === "CLOSED") throw new BadRequestException("Cannot add message to closed ticket");
+    if (ticket.status === "CLOSED")
+      throw new BadRequestException("Cannot add message to closed ticket");
 
     return prisma.ticketMessage.create({
       data: {
@@ -111,7 +138,9 @@ export class SupportTicketsService {
   }
 
   async closeTicket(tenantId: string, id: string) {
-    const ticket = await prisma.tenantSupportTicket.findFirst({ where: { id, tenantId } });
+    const ticket = await prisma.tenantSupportTicket.findFirst({
+      where: { id, tenantId },
+    });
     if (!ticket) throw new NotFoundException("Ticket not found");
 
     return prisma.tenantSupportTicket.update({
@@ -121,10 +150,14 @@ export class SupportTicketsService {
   }
 
   async reopenTicket(tenantId: string, id: string) {
-    const ticket = await prisma.tenantSupportTicket.findFirst({ where: { id, tenantId } });
+    const ticket = await prisma.tenantSupportTicket.findFirst({
+      where: { id, tenantId },
+    });
     if (!ticket) throw new NotFoundException("Ticket not found");
     if (ticket.status !== "CLOSED" && ticket.status !== "RESOLVED") {
-      throw new BadRequestException("Only closed or resolved tickets can be reopened");
+      throw new BadRequestException(
+        "Only closed or resolved tickets can be reopened",
+      );
     }
 
     return prisma.tenantSupportTicket.update({
@@ -134,7 +167,9 @@ export class SupportTicketsService {
   }
 
   async escalateTicket(tenantId: string, id: string) {
-    const ticket = await prisma.tenantSupportTicket.findFirst({ where: { id, tenantId } });
+    const ticket = await prisma.tenantSupportTicket.findFirst({
+      where: { id, tenantId },
+    });
     if (!ticket) throw new NotFoundException("Ticket not found");
 
     const nextPriority: Record<string, string> = {
@@ -151,7 +186,9 @@ export class SupportTicketsService {
   }
 
   async assignTicket(tenantId: string, id: string, assigneeId: string) {
-    const ticket = await prisma.tenantSupportTicket.findFirst({ where: { id, tenantId } });
+    const ticket = await prisma.tenantSupportTicket.findFirst({
+      where: { id, tenantId },
+    });
     if (!ticket) throw new NotFoundException("Ticket not found");
 
     return prisma.tenantSupportTicket.update({
@@ -170,7 +207,9 @@ export class SupportTicketsService {
       total: tickets.length,
       openCount: tickets.filter((t) => t.status === "OPEN").length,
       inProgressCount: tickets.filter((t) => t.status === "IN_PROGRESS").length,
-      waitingCustomerCount: tickets.filter((t) => t.status === "WAITING_CUSTOMER").length,
+      waitingCustomerCount: tickets.filter(
+        (t) => t.status === "WAITING_CUSTOMER",
+      ).length,
       resolvedCount: tickets.filter((t) => t.status === "RESOLVED").length,
       closedCount: tickets.filter((t) => t.status === "CLOSED").length,
       byPriority: {

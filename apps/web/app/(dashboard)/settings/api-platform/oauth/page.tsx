@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 
 export default function ApiPlatformOauthRedirectPage() {
-  redirect('/settings/api-platform?tab=oauth');
+  redirect("/settings/api-platform?tab=oauth");
 }

@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/usecase/result.dart';
-import '../../domain/entities/real_estate.dart';
 import '../providers/real_estate_providers.dart';
 
 class PropertyFormPage extends ConsumerStatefulWidget {
@@ -57,7 +54,7 @@ class _PropertyFormPageState extends ConsumerState<PropertyFormPage> {
       'zipCode': _zipCtrl.text.trim().isEmpty ? null : _zipCtrl.text.trim(), 'propertyType': _propertyType, 'status': _status,
       'totalUnits': int.tryParse(_totalUnitsCtrl.text) ?? 0, 'totalArea': double.tryParse(_totalAreaCtrl.text) ?? 0,
       'purchasePrice': double.tryParse(_purchasePriceCtrl.text), 'description': _descriptionCtrl.text.trim().isEmpty ? null : _descriptionCtrl.text.trim(),
-      'amenities': _amenitiesCtrl.text.trim().isEmpty ? [] : _amenitiesCtrl.text.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList(),
+      'amenities': _amenitiesCtrl.text.trim().isEmpty ? <String>[] : _amenitiesCtrl.text.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList(),
     };
     final result = await ref.read(propertyListControllerProvider.notifier).save(payload, id: widget.propertyId);
     if (!context.mounted) return;
@@ -72,15 +69,15 @@ class _PropertyFormPageState extends ConsumerState<PropertyFormPage> {
       body: Form(key: _formKey, child: ListView(padding: const EdgeInsets.all(Spacing.x4), children: [
         TextFormField(controller: _nameCtrl, decoration: const InputDecoration(labelText: 'Name *'), validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null),
         const SizedBox(height: Spacing.x4),
-        DropdownButtonFormField<String>(value: _propertyType, decoration: const InputDecoration(labelText: 'Property Type'), items: const [
+        DropdownButtonFormField<String>(initialValue: _propertyType, decoration: const InputDecoration(labelText: 'Property Type'), items: const [
           DropdownMenuItem(value: 'COMMERCIAL', child: Text('Commercial')), DropdownMenuItem(value: 'RESIDENTIAL', child: Text('Residential')),
           DropdownMenuItem(value: 'INDUSTRIAL', child: Text('Industrial')), DropdownMenuItem(value: 'LAND', child: Text('Land')),
-        ], onChanged: (v) { if (v != null) setState(() => _propertyType = v); }),
+        ], onChanged: (v) { if (v != null) setState(() => _propertyType = v); },),
         const SizedBox(height: Spacing.x4),
-        DropdownButtonFormField<String>(value: _status, decoration: const InputDecoration(labelText: 'Status'), items: const [
+        DropdownButtonFormField<String>(initialValue: _status, decoration: const InputDecoration(labelText: 'Status'), items: const [
           DropdownMenuItem(value: 'ACTIVE', child: Text('Active')), DropdownMenuItem(value: 'INACTIVE', child: Text('Inactive')),
           DropdownMenuItem(value: 'MAINTENANCE', child: Text('Maintenance')),
-        ], onChanged: (v) { if (v != null) setState(() => _status = v); }),
+        ], onChanged: (v) { if (v != null) setState(() => _status = v); },),
         const SizedBox(height: Spacing.x4),
         TextFormField(controller: _addressCtrl, maxLines: 2, textCapitalization: TextCapitalization.sentences, decoration: const InputDecoration(labelText: 'Address', alignLabelWithHint: true)),
         const SizedBox(height: Spacing.x4),
@@ -93,7 +90,7 @@ class _PropertyFormPageState extends ConsumerState<PropertyFormPage> {
         TextFormField(controller: _descriptionCtrl, maxLines: 3, textCapitalization: TextCapitalization.sentences, decoration: const InputDecoration(labelText: 'Description', alignLabelWithHint: true)),
         const SizedBox(height: Spacing.x4),
         TextFormField(controller: _amenitiesCtrl, decoration: const InputDecoration(labelText: 'Amenities', helperText: 'Comma-separated')),
-      ])),
+      ],),),
     );
   }
 }

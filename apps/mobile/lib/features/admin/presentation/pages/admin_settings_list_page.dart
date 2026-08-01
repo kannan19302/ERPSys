@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -78,14 +77,14 @@ class _AdminSettingsListPageState extends ConsumerState<AdminSettingsListPage> {
                 hint: const Text('Category'),
                 underline: const SizedBox.shrink(),
                 items: _categories.entries.map((MapEntry<String, String> e) =>
-                  DropdownMenuItem<String?>(value: e.key, child: Text(e.value))
+                  DropdownMenuItem<String?>(value: e.key, child: Text(e.value)),
                 ).toList(growable: false)..insert(0, const DropdownMenuItem<String?>(value: null, child: Text('All'))),
                 onChanged: (String? v) {
                   setState(() => _categoryFilter = v);
                   if (v == null) { controller.search(''); } else { controller.search(v); }
                 },
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller, t)),
         ],
@@ -123,13 +122,13 @@ class _AdminSettingsListPageState extends ConsumerState<AdminSettingsListPage> {
           Padding(
             padding: const EdgeInsets.only(bottom: Spacing.x2),
             child: Text(cat[0].toUpperCase() + cat.substring(1),
-                style: Theme.of(context).textTheme.titleMedium),
+                style: Theme.of(context).textTheme.titleMedium,),
           ),
           ...grouped[cat]!.map((AdminSetting s) => Padding(
             padding: const EdgeInsets.only(bottom: Spacing.x2),
             child: UiCard(
               onTap: () => context.pushNamed('admin-setting-detail',
-                  pathParameters: <String, String>{'key': s.key}),
+                  pathParameters: <String, String>{'key': s.key},),
               padding: const EdgeInsets.all(Spacing.x3),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -138,15 +137,15 @@ class _AdminSettingsListPageState extends ConsumerState<AdminSettingsListPage> {
                   if (s.description != null) ...<Widget>[
                     const SizedBox(height: Spacing.x0_5),
                     Text(s.description!, maxLines: 1, overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
+                        style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
                   ],
                 ],
               ),
             ),
-          )),
+          ),),
           const SizedBox(height: Spacing.x3),
         ],
-      )).toList(),
+      ),).toList(),
     );
   }
 }

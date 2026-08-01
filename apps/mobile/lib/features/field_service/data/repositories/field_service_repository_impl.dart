@@ -91,7 +91,7 @@ class FieldServiceRepositoryImpl implements FieldServiceRepository {
   @override
   Future<Result<Cacheable<Paginated<ServiceTicket>>>> listServiceTickets(ListQuery q) =>
       _paginated(_ticketNamespace, q, () => _remote.listServiceTickets(q),
-        ServiceTicketModel.fromJson);
+        ServiceTicketModel.fromJson,);
 
   @override
   Future<Result<ServiceTicket>> getServiceTicket(String id) =>
@@ -124,7 +124,7 @@ class FieldServiceRepositoryImpl implements FieldServiceRepository {
   @override
   Future<Result<Cacheable<Paginated<Technician>>>> listTechnicians(ListQuery q) =>
       _paginated(_technicianNamespace, q, () => _remote.listTechnicians(q),
-        TechnicianModel.fromJson);
+        TechnicianModel.fromJson,);
 
   @override
   Future<Result<Technician>> getTechnician(String id) =>
@@ -145,7 +145,7 @@ class FieldServiceRepositoryImpl implements FieldServiceRepository {
   @override
   Future<Result<Cacheable<Paginated<ServiceSchedule>>>> listServiceSchedules(ListQuery q) =>
       _paginated(_scheduleNamespace, q, () => _remote.listServiceSchedules(q),
-        ServiceScheduleModel.fromJson);
+        ServiceScheduleModel.fromJson,);
 
   @override
   Future<Result<ServiceSchedule>> getServiceSchedule(String id) =>
@@ -174,7 +174,7 @@ class FieldServiceRepositoryImpl implements FieldServiceRepository {
   @override
   Future<Result<Cacheable<Paginated<ServiceContract>>>> listServiceContracts(ListQuery q) =>
       _paginated(_contractNamespace, q, () => _remote.listServiceContracts(q),
-        ServiceContractModel.fromJson);
+        ServiceContractModel.fromJson,);
 
   @override
   Future<Result<ServiceContract>> getServiceContract(String id) =>

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Injectable, Logger } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 
@@ -6,7 +5,9 @@ import { prisma } from "@unerp/database";
 export class SaasDeepeningApexCrownSealService {
   private readonly logger = new Logger(SaasDeepeningApexCrownSealService.name);
 
-  private get db() { return prisma; }
+  private get db() {
+    return prisma;
+  }
 
   async processApexCrownSealOp(tenantId: string, cmd: string, body: any) {
     return {

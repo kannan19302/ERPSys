@@ -1,3 +1,9 @@
+## [2026-08-01] Mobile POS — Implemented placeholder Order/Register detail pages; fixed 7 failing widget tests
+
+- **Problem**: `PosOrderDetailPage` and `PosRegisterDetailPage` in `apps/mobile/lib/features/pos/presentation/pages/` were stub pages rendering only a "Placeholder" text, so all 7 tests in `test/features/pos/pos_detail_pages_test.dart` failed (pre-existing, unrelated to any recent change).
+- **Action**: Implemented both pages as `ConsumerWidget`s watching `posOrderDetailProvider`/`posRegisterDetailProvider` with `AsyncValue.when` (LoadingView/FailureView/data). Order page renders number, raw status badge, customer (or "Walk-in customer" when null), item lines as "product × qty", totals (Subtotal/Discount/Tax/Total) and a Payments section when payments exist. Register page renders name, raw status badge, Balances (Opening/Closing balance only when present) and Location with an em-dash "—" fallback. Uses shared `UiCard`/`UiSectionHeader`/`UiStatusBadge`, `Formatters`, and design tokens per app conventions.
+- **Verified**: All 7 `pos_detail_pages_test.dart` tests pass; full `test/features/pos/` suite (32 tests) passes; `flutter analyze` on both pages is clean.
+
 ## [2026-07-30] Phase M — Replaced ALL 7,360 stub endpoints across 6 modules with real implementations (net -97,319 LOC, 6,464 lines of real code added, 185+ new tests)
 
 - **Problem**: 5 deep-suite controller files (94,326 lines, 6,410 stub endpoints) + 3 HR expansion files (3 stubs + 1 stub service, 2,889 lines, 950 stub endpoints) returned static JSON with zero business logic — no Prisma, no DTOs, no tests, no UI. They violated AUTOPILOT § File-size discipline and inflated the feature ledger with 7,360 fake endpoints.

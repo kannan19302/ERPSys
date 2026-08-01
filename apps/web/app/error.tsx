@@ -1,7 +1,6 @@
-// @ts-nocheck
-'use client';
-import { useEffect } from 'react';
-import { ErrorFallback } from '@/components/ErrorFallback';
+"use client";
+import { useEffect } from "react";
+import { ErrorFallback } from "@/components/ErrorFallback";
 
 export default function ErrorBoundary({
   error,
@@ -11,7 +10,7 @@ export default function ErrorBoundary({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error('Unhandled runtime error:', error);
+    console.error("Unhandled runtime error:", error);
   }, [error]);
 
   return (

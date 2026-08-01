@@ -1,7 +1,6 @@
-// @ts-nocheck
-import { Body } from '@nestjs/common';
-import { ZodSchema } from 'zod';
-import { ZodValidationPipe } from '../pipes/zod-validation.pipe';
+import { Body } from "@nestjs/common";
+import { ZodSchema } from "zod";
+import { ZodValidationPipe } from "../pipes/zod-validation.pipe";
 
 /**
  * One-line zod-validated request body.
@@ -13,4 +12,5 @@ import { ZodValidationPipe } from '../pipes/zod-validation.pipe';
  * shape and the static type stay in sync. This is the canonical validation
  * pattern for every write endpoint (see the `pos` module's `dto/` folder).
  */
-export const ZodBody = (schema: ZodSchema) => Body(new ZodValidationPipe(schema));
+export const ZodBody = (schema: ZodSchema) =>
+  Body(new ZodValidationPipe(schema));

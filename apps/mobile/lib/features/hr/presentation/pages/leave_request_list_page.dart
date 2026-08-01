@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -144,7 +143,7 @@ class _StatusFilterRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
-      value: value ?? '',
+      initialValue: value ?? '',
       decoration: const InputDecoration(
         contentPadding: EdgeInsets.symmetric(horizontal: Spacing.x3),
         labelText: 'Status',
@@ -242,7 +241,7 @@ class _LeaveRequestTile extends StatelessWidget {
           Row(
             children: <Widget>[
               Icon(Icons.date_range_outlined,
-                  size: TypeScale.base, color: t.textTertiary),
+                  size: TypeScale.base, color: t.textTertiary,),
               const SizedBox(width: Spacing.x1),
               Text(
                 '${Formatters.date(leaveRequest.fromDate)} – ${Formatters.date(leaveRequest.toDate)}',
@@ -251,7 +250,7 @@ class _LeaveRequestTile extends StatelessWidget {
               const Spacer(),
               Text(
                 '${leaveRequest.days.toInt()} day${leaveRequest.days == 1 ? '' : 's'}',
-                style: TextStyle(
+                style: const TextStyle(
                   fontWeight: TypeScale.medium,
                   fontSize: TypeScale.sm,
                 ),

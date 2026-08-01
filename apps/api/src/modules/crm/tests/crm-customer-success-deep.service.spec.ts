@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NotFoundException } from "@nestjs/common";
 import { CrmCustomerSuccessDeepService } from "../services/crm-customer-success-deep.service";
@@ -58,10 +57,24 @@ describe("CrmCustomerSuccessDeepService", () => {
   describe("listHealthScores", () => {
     it("returns health scores for a tenant", async () => {
       const mockScores = [
-        { id: "hs-1", tenantId: TENANT, customerId: "c-1", score: 85, status: "GREEN" },
-        { id: "hs-2", tenantId: TENANT, customerId: "c-2", score: 45, status: "YELLOW" },
+        {
+          id: "hs-1",
+          tenantId: TENANT,
+          customerId: "c-1",
+          score: 85,
+          status: "GREEN",
+        },
+        {
+          id: "hs-2",
+          tenantId: TENANT,
+          customerId: "c-2",
+          score: 45,
+          status: "YELLOW",
+        },
       ];
-      (prisma.customerHealthLog.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(mockScores);
+      (
+        prisma.customerHealthLog.findMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(mockScores);
 
       const result = await service.listHealthScores(TENANT);
 
@@ -74,7 +87,9 @@ describe("CrmCustomerSuccessDeepService", () => {
     });
 
     it("filters by customerId when provided", async () => {
-      (prisma.customerHealthLog.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+      (
+        prisma.customerHealthLog.findMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([]);
 
       await service.listHealthScores(TENANT, "c-1");
 
@@ -86,7 +101,9 @@ describe("CrmCustomerSuccessDeepService", () => {
     });
 
     it("returns empty array when no health scores exist", async () => {
-      (prisma.customerHealthLog.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+      (
+        prisma.customerHealthLog.findMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([]);
 
       const result = await service.listHealthScores(TENANT);
 
@@ -97,7 +114,9 @@ describe("CrmCustomerSuccessDeepService", () => {
   describe("getHealthScore", () => {
     it("returns the health score when found", async () => {
       const mockScore = { id: "hs-1", tenantId: TENANT, score: 90 };
-      (prisma.customerHealthLog.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(mockScore);
+      (
+        prisma.customerHealthLog.findFirst as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(mockScore);
 
       const result = await service.getHealthScore(TENANT, "hs-1");
 
@@ -105,11 +124,13 @@ describe("CrmCustomerSuccessDeepService", () => {
     });
 
     it("throws NotFoundException when not found", async () => {
-      (prisma.customerHealthLog.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+      (
+        prisma.customerHealthLog.findFirst as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(null);
 
-      await expect(service.getHealthScore(TENANT, "nonexistent")).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.getHealthScore(TENANT, "nonexistent"),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -122,7 +143,9 @@ describe("CrmCustomerSuccessDeepService", () => {
         name: "Q3 Retention Plan",
         status: "ACTIVE",
       };
-      (prisma.customerSuccessPlan.create as ReturnType<typeof vi.fn>).mockResolvedValue(mockPlan);
+      (
+        prisma.customerSuccessPlan.create as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(mockPlan);
 
       const data = {
         customerId: "c-1",
@@ -161,7 +184,9 @@ describe("CrmCustomerSuccessDeepService", () => {
           computedAt: new Date("2026-07-01"),
         },
       ];
-      (prisma.npsAnalytic.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(mockAnalytics);
+      (
+        prisma.npsAnalytic.findMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(mockAnalytics);
 
       const result = await service.getNpsAnalytics(TENANT);
 
@@ -173,7 +198,9 @@ describe("CrmCustomerSuccessDeepService", () => {
     });
 
     it("returns zeroed stats when no analytics exist", async () => {
-      (prisma.npsAnalytic.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+      (
+        prisma.npsAnalytic.findMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([]);
 
       const result = await service.getNpsAnalytics(TENANT);
 

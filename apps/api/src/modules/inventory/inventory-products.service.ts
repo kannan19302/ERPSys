@@ -1,12 +1,17 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
 import {
-  CreateProductInput, UpdateProductInput,
-  CreateCategoryInput, UpdateCategoryInput,
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
+import {
+  CreateProductInput,
+  UpdateProductInput,
+  CreateCategoryInput,
+  UpdateCategoryInput,
   CreateVariantInput,
-} from '@unerp/shared';
+} from "@unerp/shared";
 import {
   buildPaginationValues,
   buildOrderBy,
@@ -14,7 +19,7 @@ import {
   resolveOrgId,
   PaginatedResult,
   PaginationParams,
-} from '../../common/utils/pagination.util';
+} from "../../common/utils/pagination.util";
 
 @Injectable()
 export class InventoryProductsService {
@@ -31,9 +36,9 @@ export class InventoryProductsService {
     if (params.category) where.category = params.category;
     if (params.search) {
       where.OR = [
-        { name: { contains: params.search, mode: 'insensitive' } },
-        { sku: { contains: params.search, mode: 'insensitive' } },
-        { description: { contains: params.search, mode: 'insensitive' } },
+        { name: { contains: params.search, mode: "insensitive" } },
+        { sku: { contains: params.search, mode: "insensitive" } },
+        { description: { contains: params.search, mode: "insensitive" } },
       ];
     }
 
@@ -68,20 +73,31 @@ export class InventoryProductsService {
         inventoryItems: { include: { warehouse: true } },
         variants: true,
         productCategory: true,
-        _count: { select: { invoiceLines: true, purchaseOrderItems: true, salesOrderItems: true } },
+        _count: {
+          select: {
+            invoiceLines: true,
+            purchaseOrderItems: true,
+            salesOrderItems: true,
+          },
+        },
       },
     });
-    if (!product) throw new NotFoundException('Product not found');
+    if (!product) throw new NotFoundException("Product not found");
     return product;
   }
 
-  async createProduct(tenantId: string, orgId: string, dto: CreateProductInput) {
+  async createProduct(
+    tenantId: string,
+    orgId: string,
+    dto: CreateProductInput,
+  ) {
     const resolvedOrgId = await resolveOrgId(tenantId, orgId);
 
     const existing = await prisma.product.findFirst({
       where: { tenantId, orgId: resolvedOrgId, sku: dto.sku },
     });
-    if (existing) throw new BadRequestException(`Product SKU ${dto.sku} already exists.`);
+    if (existing)
+      throw new BadRequestException(`Product SKU ${dto.sku} already exists.`);
 
     return prisma.product.create({
       data: {
@@ -101,8 +117,10 @@ export class InventoryProductsService {
   }
 
   async updateProduct(tenantId: string, id: string, dto: UpdateProductInput) {
-    const product = await prisma.product.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!product) throw new NotFoundException('Product not found');
+    const product = await prisma.product.findFirst({
+      where: { id, tenantId, deletedAt: null },
+    });
+    if (!product) throw new NotFoundException("Product not found");
 
     return prisma.product.update({
       where: { id },
@@ -112,31 +130,45 @@ export class InventoryProductsService {
         type: dto.type,
         category: dto.category,
         unit: dto.unit,
-        costPrice: dto.costPrice !== undefined ? new Prisma.Decimal(dto.costPrice) : undefined,
-        sellPrice: dto.sellPrice !== undefined ? new Prisma.Decimal(dto.sellPrice) : undefined,
+        costPrice:
+          dto.costPrice !== undefined
+            ? new Prisma.Decimal(dto.costPrice)
+            : undefined,
+        sellPrice:
+          dto.sellPrice !== undefined
+            ? new Prisma.Decimal(dto.sellPrice)
+            : undefined,
         taxCategory: dto.taxCategory,
       },
     });
   }
 
   async deleteProduct(tenantId: string, id: string) {
-    const product = await prisma.product.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!product) throw new NotFoundException('Product not found');
+    const product = await prisma.product.findFirst({
+      where: { id, tenantId, deletedAt: null },
+    });
+    if (!product) throw new NotFoundException("Product not found");
 
-    await prisma.product.update({ where: { id }, data: { deletedAt: new Date(), isActive: false } });
+    await prisma.product.update({
+      where: { id },
+      data: { deletedAt: new Date(), isActive: false },
+    });
     return { success: true };
   }
 
   // ─── STOCK LEVELS ────────────────────────────────────
 
-  async getStockLevels(tenantId: string, params: PaginationParams & { warehouseId?: string } = {}) {
+  async getStockLevels(
+    tenantId: string,
+    params: PaginationParams & { warehouseId?: string } = {},
+  ) {
     const where: any = { tenantId };
     if (params.warehouseId) where.warehouseId = params.warehouseId;
     if (params.search) {
       where.product = {
         OR: [
-          { name: { contains: params.search, mode: 'insensitive' } },
-          { sku: { contains: params.search, mode: 'insensitive' } },
+          { name: { contains: params.search, mode: "insensitive" } },
+          { sku: { contains: params.search, mode: "insensitive" } },
         ],
       };
     }
@@ -152,7 +184,7 @@ export class InventoryProductsService {
         },
         skip,
         take,
-        orderBy: { updatedAt: 'desc' },
+        orderBy: { updatedAt: "desc" },
       }),
       prisma.inventoryItem.count({ where }),
     ]);
@@ -162,28 +194,37 @@ export class InventoryProductsService {
 
   // ─── BULK ──────────────────────────────────────────
 
-  async bulkAction(tenantId: string, action: string, ids: string[], _data?: Record<string, unknown>) {
-    const results: Array<{ id: string; status: 'success' | 'error'; error?: string }> = [];
+  async bulkAction(
+    tenantId: string,
+    action: string,
+    ids: string[],
+    _data?: Record<string, unknown>,
+  ) {
+    const results: Array<{
+      id: string;
+      status: "success" | "error";
+      error?: string;
+    }> = [];
 
     for (const id of ids) {
       try {
         switch (action) {
-          case 'delete':
+          case "delete":
             await this.deleteProduct(tenantId, id);
             break;
           default:
             throw new BadRequestException(`Unsupported action: ${action}`);
         }
-        results.push({ id, status: 'success' });
+        results.push({ id, status: "success" });
       } catch (err: any) {
-        results.push({ id, status: 'error', error: err.message });
+        results.push({ id, status: "error", error: err.message });
       }
     }
 
     return {
       total: ids.length,
-      succeeded: results.filter((r) => r.status === 'success').length,
-      failed: results.filter((r) => r.status === 'error').length,
+      succeeded: results.filter((r) => r.status === "success").length,
+      failed: results.filter((r) => r.status === "error").length,
       results,
     };
   }
@@ -191,18 +232,21 @@ export class InventoryProductsService {
   // ─── STATS ─────────────────────────────────────────
 
   async getInventoryStats(tenantId: string) {
-    const [totalProducts, activeProducts, totalWarehouses, lowStockItems] = await Promise.all([
-      prisma.product.count({ where: { tenantId, deletedAt: null } }),
-      prisma.product.count({ where: { tenantId, deletedAt: null, isActive: true } }),
-      prisma.warehouse.count({ where: { tenantId, isActive: true } }),
-      prisma.inventoryItem.count({
-        where: {
-          tenantId,
-          reorderPoint: { not: null },
-          quantity: { lte: prisma.inventoryItem.fields?.reorderPoint ?? 0 },
-        },
-      }),
-    ]);
+    const [totalProducts, activeProducts, totalWarehouses, lowStockItems] =
+      await Promise.all([
+        prisma.product.count({ where: { tenantId, deletedAt: null } }),
+        prisma.product.count({
+          where: { tenantId, deletedAt: null, isActive: true },
+        }),
+        prisma.warehouse.count({ where: { tenantId, isActive: true } }),
+        prisma.inventoryItem.count({
+          where: {
+            tenantId,
+            reorderPoint: { not: null },
+            quantity: { lte: prisma.inventoryItem.fields?.reorderPoint ?? 0 },
+          },
+        }),
+      ]);
 
     return { totalProducts, activeProducts, totalWarehouses, lowStockItems };
   }
@@ -219,7 +263,7 @@ export class InventoryProductsService {
         include: { parent: true },
         skip,
         take,
-        orderBy: { sortOrder: 'asc' },
+        orderBy: { sortOrder: "asc" },
       }),
       prisma.productCategory.count({ where }),
     ]);
@@ -232,11 +276,15 @@ export class InventoryProductsService {
       where: { id, tenantId },
       include: { parent: true, children: true },
     });
-    if (!category) throw new NotFoundException('Category not found');
+    if (!category) throw new NotFoundException("Category not found");
     return category;
   }
 
-  async createCategory(tenantId: string, orgId: string, dto: CreateCategoryInput) {
+  async createCategory(
+    tenantId: string,
+    orgId: string,
+    dto: CreateCategoryInput,
+  ) {
     const resolvedOrgId = await resolveOrgId(tenantId, orgId);
     return prisma.productCategory.create({
       data: {
@@ -254,8 +302,10 @@ export class InventoryProductsService {
   }
 
   async updateCategory(tenantId: string, id: string, dto: UpdateCategoryInput) {
-    const category = await prisma.productCategory.findFirst({ where: { id, tenantId } });
-    if (!category) throw new NotFoundException('Category not found');
+    const category = await prisma.productCategory.findFirst({
+      where: { id, tenantId },
+    });
+    if (!category) throw new NotFoundException("Category not found");
 
     return prisma.productCategory.update({
       where: { id },
@@ -272,8 +322,10 @@ export class InventoryProductsService {
   }
 
   async deleteCategory(tenantId: string, id: string) {
-    const category = await prisma.productCategory.findFirst({ where: { id, tenantId } });
-    if (!category) throw new NotFoundException('Category not found');
+    const category = await prisma.productCategory.findFirst({
+      where: { id, tenantId },
+    });
+    if (!category) throw new NotFoundException("Category not found");
 
     await prisma.productCategory.delete({ where: { id } });
     return { success: true };
@@ -304,8 +356,10 @@ export class InventoryProductsService {
   }
 
   async updateProductVariant(tenantId: string, id: string, dto: any) {
-    const variant = await prisma.productVariant.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!variant) throw new NotFoundException('Product variant not found');
+    const variant = await prisma.productVariant.findFirst({
+      where: { id, tenantId, deletedAt: null },
+    });
+    if (!variant) throw new NotFoundException("Product variant not found");
 
     return prisma.productVariant.update({
       where: { id },
@@ -313,8 +367,14 @@ export class InventoryProductsService {
         sku: dto.sku,
         name: dto.name,
         attributes: dto.attributes,
-        costPrice: dto.costPrice !== undefined ? new Prisma.Decimal(dto.costPrice) : undefined,
-        sellPrice: dto.sellPrice !== undefined ? new Prisma.Decimal(dto.sellPrice) : undefined,
+        costPrice:
+          dto.costPrice !== undefined
+            ? new Prisma.Decimal(dto.costPrice)
+            : undefined,
+        sellPrice:
+          dto.sellPrice !== undefined
+            ? new Prisma.Decimal(dto.sellPrice)
+            : undefined,
         barcode: dto.barcode,
         isActive: dto.isActive,
       },
@@ -322,8 +382,10 @@ export class InventoryProductsService {
   }
 
   async deleteProductVariant(tenantId: string, id: string) {
-    const variant = await prisma.productVariant.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!variant) throw new NotFoundException('Product variant not found');
+    const variant = await prisma.productVariant.findFirst({
+      where: { id, tenantId, deletedAt: null },
+    });
+    if (!variant) throw new NotFoundException("Product variant not found");
 
     await prisma.productVariant.update({
       where: { id },

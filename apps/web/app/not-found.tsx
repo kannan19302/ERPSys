@@ -1,7 +1,6 @@
-// @ts-nocheck
-'use client';
+"use client";
 
-import { ErrorFallback } from '@/components/ErrorFallback';
+import { ErrorFallback } from "@/components/ErrorFallback";
 
 export default function NotFound() {
   return (

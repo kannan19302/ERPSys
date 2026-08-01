@@ -1,5 +1,12 @@
-// @ts-nocheck
-import { Controller, Get, Post, Body, Query, Req, UseGuards } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Query,
+  Req,
+  UseGuards,
+} from "@nestjs/common";
 import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { RbacGuard } from "../../common/guards/rbac.guard";
@@ -32,25 +39,37 @@ export class RealEstatePropertyController {
 
   @Get("rent-collection")
   @Permissions("real-estate.rent-collection.read")
-  async getRentCollectionLogs(@Req() req: AuthenticatedRequest, @Query() query: any) {
+  async getRentCollectionLogs(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: any,
+  ) {
     return this.service.getRentCollectionLogs(req.user.tenantId, query);
   }
 
   @Post("rent-collection")
   @Permissions("real-estate.rent-collection.create")
-  async createRentCollectionLog(@Req() req: AuthenticatedRequest, @Body() body: any) {
+  async createRentCollectionLog(
+    @Req() req: AuthenticatedRequest,
+    @Body() body: any,
+  ) {
     return this.service.createRentCollectionLog(req.user.tenantId, body);
   }
 
   @Get("syndicate")
   @Permissions("real-estate.syndicate.read")
-  async getListingSyndicates(@Req() req: AuthenticatedRequest, @Query() query: any) {
+  async getListingSyndicates(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: any,
+  ) {
     return this.service.getListingSyndicates(req.user.tenantId, query);
   }
 
   @Post("syndicate")
   @Permissions("real-estate.syndicate.create")
-  async createListingSyndicate(@Req() req: AuthenticatedRequest, @Body() body: any) {
+  async createListingSyndicate(
+    @Req() req: AuthenticatedRequest,
+    @Body() body: any,
+  ) {
     return this.service.createListingSyndicate(req.user.tenantId, body);
   }
 }

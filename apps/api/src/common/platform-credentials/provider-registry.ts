@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * The reusable part of the platform-credentials system: one entry per
  * integration/tunable "provider", each listing its editable fields. Adding a

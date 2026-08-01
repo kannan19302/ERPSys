@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -126,7 +125,7 @@ class ServiceTicketListController extends Notifier<ServiceTicketListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteServiceTicketUseCase(
-      ref.read(fieldServiceRepositoryProvider))(id);
+      ref.read(fieldServiceRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
@@ -135,7 +134,7 @@ class ServiceTicketListController extends Notifier<ServiceTicketListState> {
 final FutureProviderFamily<ServiceTicket, String> serviceTicketDetailProvider =
     FutureProvider.family<ServiceTicket, String>((Ref ref, String id) async {
   final result = await GetServiceTicketUseCase(
-    ref.watch(fieldServiceRepositoryProvider))(id);
+    ref.watch(fieldServiceRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -232,7 +231,7 @@ class TechnicianListController extends Notifier<TechnicianListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteTechnicianUseCase(
-      ref.read(fieldServiceRepositoryProvider))(id);
+      ref.read(fieldServiceRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }

@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -128,7 +127,7 @@ class _JournalEntryDetail extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               const UiSectionHeader(title: 'Line Items'),
-              Row(
+              const Row(
 //                 style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),
                 children: <Widget>[
                   Expanded(flex: 3, child: Text('Account')),

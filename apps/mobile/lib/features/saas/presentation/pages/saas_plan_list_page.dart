@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -62,7 +61,7 @@ class _SaasPlanListPageState extends ConsumerState<SaasPlanListPage> {
                     : '${state.meta.total} plan${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -96,20 +95,20 @@ class _SaasPlanListPageState extends ConsumerState<SaasPlanListPage> {
               Row(children: [
                 Expanded(
                   child: Text(plan.name,
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
                 UiStatusBadge(
                   label: plan.isActive ? 'ACTIVE' : 'INACTIVE',
                   tone: plan.isActive ? UiTone.success : UiTone.neutral,
                 ),
-              ]),
+              ],),
               const SizedBox(height: Spacing.x1),
               Text('\$${plan.price.toStringAsFixed(2)} / ${plan.billingInterval}',
-                  style: TextStyle(color: palette.textSecondary)),
+                  style: TextStyle(color: palette.textSecondary),),
               if (plan.maxUsers != null) ...[
                 const SizedBox(height: Spacing.x1),
                 Text('Max ${plan.maxUsers} users',
-                    style: TextStyle(fontSize: TypeScale.xs, color: palette.textTertiary)),
+                    style: TextStyle(fontSize: TypeScale.xs, color: palette.textTertiary),),
               ],
             ],
           ),

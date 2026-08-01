@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Injectable, Logger } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 
@@ -8,7 +7,9 @@ export class SaasFeatureFlagsMeteringDeepService {
     SaasFeatureFlagsMeteringDeepService.name,
   );
 
-  private get db() { return prisma; }
+  private get db() {
+    return prisma;
+  }
 
   // 1. Feature Flag Management & Targeted Evaluation (30 methods)
   async createFeatureFlagRule(tenantId: string, ruleData: any) {

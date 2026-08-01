@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -73,7 +72,7 @@ class _PurchaseRequisitionListPageState extends ConsumerState<PurchaseRequisitio
                   controller.applyFilters(v == null ? const {} : {'status': v});
                 },
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -107,11 +106,11 @@ class _PurchaseRequisitionListPageState extends ConsumerState<PurchaseRequisitio
                 Row(children: [
                   Expanded(child: Text(r.title, style: Theme.of(context).textTheme.titleSmall)),
                   UiStatusBadge(label: r.status, tone: _statusTone(r.status)),
-                ]),
+                ],),
                 const SizedBox(height: Spacing.x1),
                 Text(r.department ?? '', style: TextStyle(color: context.tokens.textSecondary)),
                 const SizedBox(height: Spacing.x1),
-                Text('\$${r.totalEstimated.toStringAsFixed(2)}', style: TextStyle(fontSize: TypeScale.xs)),
+                Text('\$${r.totalEstimated.toStringAsFixed(2)}', style: const TextStyle(fontSize: TypeScale.xs)),
               ],
             ),
           ),

@@ -1,8 +1,11 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
-import { z } from 'zod';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
+import { z } from "zod";
 
 export const createProviderSchema = z.object({
   name: z.string().min(1),
@@ -28,10 +31,12 @@ export const createDropShipOrderSchema = z.object({
   carrier: z.string().optional(),
   requestedDate: z.string().datetime().optional(),
   estimatedCost: z.number().positive().optional(),
-  currency: z.string().default('USD'),
+  currency: z.string().default("USD"),
   notes: z.string().optional(),
 });
-export type CreateDropShipOrderInput = z.infer<typeof createDropShipOrderSchema>;
+export type CreateDropShipOrderInput = z.infer<
+  typeof createDropShipOrderSchema
+>;
 
 export const createDropShipOrderItemSchema = z.object({
   productId: z.string().min(1),
@@ -39,26 +44,43 @@ export const createDropShipOrderItemSchema = z.object({
   unitPrice: z.number(),
   shippedQty: z.number().default(0),
 });
-export type CreateDropShipOrderItemInput = z.infer<typeof createDropShipOrderItemSchema>;
+export type CreateDropShipOrderItemInput = z.infer<
+  typeof createDropShipOrderItemSchema
+>;
 
 export const updateDropShipOrderStatusSchema = z.object({
-  status: z.enum(['PENDING', 'AWAITING_ACK', 'ACKNOWLEDGED', 'SHIPPED', 'DELIVERED', 'CANCELLED']),
+  status: z.enum([
+    "PENDING",
+    "AWAITING_ACK",
+    "ACKNOWLEDGED",
+    "SHIPPED",
+    "DELIVERED",
+    "CANCELLED",
+  ]),
 });
-export type UpdateDropShipOrderStatusInput = z.infer<typeof updateDropShipOrderStatusSchema>;
+export type UpdateDropShipOrderStatusInput = z.infer<
+  typeof updateDropShipOrderStatusSchema
+>;
 
 @Injectable()
 export class InventoryDropShipService {
-
-  async listProviders(tenantId: string, query: { search?: string; isActive?: string }) {
+  async listProviders(
+    tenantId: string,
+    query: { search?: string; isActive?: string },
+  ) {
     const where: Prisma.DropShipProviderWhereInput = { tenantId };
     if (query.search) {
       where.OR = [
-        { name: { contains: query.search, mode: 'insensitive' } },
-        { code: { contains: query.search, mode: 'insensitive' } },
+        { name: { contains: query.search, mode: "insensitive" } },
+        { code: { contains: query.search, mode: "insensitive" } },
       ];
     }
-    if (query.isActive !== undefined) where.isActive = query.isActive === 'true';
-    return prisma.dropShipProvider.findMany({ where, orderBy: { name: 'asc' } });
+    if (query.isActive !== undefined)
+      where.isActive = query.isActive === "true";
+    return prisma.dropShipProvider.findMany({
+      where,
+      orderBy: { name: "asc" },
+    });
   }
 
   async createProvider(tenantId: string, dto: CreateProviderInput) {
@@ -66,7 +88,9 @@ export class InventoryDropShipService {
       where: { tenantId, code: dto.code },
     });
     if (existing) {
-      throw new BadRequestException(`Provider with code '${dto.code}' already exists`);
+      throw new BadRequestException(
+        `Provider with code '${dto.code}' already exists`,
+      );
     }
     return prisma.dropShipProvider.create({
       data: {
@@ -83,9 +107,15 @@ export class InventoryDropShipService {
     });
   }
 
-  async updateProvider(tenantId: string, id: string, dto: Partial<CreateProviderInput>) {
-    const record = await prisma.dropShipProvider.findFirst({ where: { id, tenantId } });
-    if (!record) throw new NotFoundException('Drop-ship provider not found');
+  async updateProvider(
+    tenantId: string,
+    id: string,
+    dto: Partial<CreateProviderInput>,
+  ) {
+    const record = await prisma.dropShipProvider.findFirst({
+      where: { id, tenantId },
+    });
+    if (!record) throw new NotFoundException("Drop-ship provider not found");
     return prisma.dropShipProvider.update({
       where: { id },
       data: {
@@ -102,14 +132,25 @@ export class InventoryDropShipService {
   }
 
   async deleteProvider(tenantId: string, id: string) {
-    const record = await prisma.dropShipProvider.findFirst({ where: { id, tenantId } });
-    if (!record) throw new NotFoundException('Drop-ship provider not found');
-    return prisma.dropShipProvider.update({ where: { id }, data: { isActive: false } });
+    const record = await prisma.dropShipProvider.findFirst({
+      where: { id, tenantId },
+    });
+    if (!record) throw new NotFoundException("Drop-ship provider not found");
+    return prisma.dropShipProvider.update({
+      where: { id },
+      data: { isActive: false },
+    });
   }
 
   async listOrders(
     tenantId: string,
-    query: { page?: number; limit?: number; status?: string; providerId?: string; vendorId?: string },
+    query: {
+      page?: number;
+      limit?: number;
+      status?: string;
+      providerId?: string;
+      vendorId?: string;
+    },
   ) {
     const page = Math.max(1, query.page ?? 1);
     const limit = Math.min(100, query.limit ?? 20);
@@ -122,13 +163,19 @@ export class InventoryDropShipService {
       prisma.dropShipOrder.findMany({
         where,
         include: { provider: true, items: true },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         skip: (page - 1) * limit,
         take: limit,
       }),
       prisma.dropShipOrder.count({ where }),
     ]);
-    return { data, total, page, limit, totalPages: Math.max(1, Math.ceil(total / limit)) };
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+    };
   }
 
   async getOrderById(tenantId: string, id: string) {
@@ -136,21 +183,26 @@ export class InventoryDropShipService {
       where: { id, tenantId },
       include: { provider: true, items: true },
     });
-    if (!order) throw new NotFoundException('Drop-ship order not found');
+    if (!order) throw new NotFoundException("Drop-ship order not found");
     return order;
   }
 
-  async createOrder(tenantId: string, dto: CreateDropShipOrderInput & { items?: CreateDropShipOrderItemInput[] }) {
+  async createOrder(
+    tenantId: string,
+    dto: CreateDropShipOrderInput & { items?: CreateDropShipOrderItemInput[] },
+  ) {
     const provider = await prisma.dropShipProvider.findFirst({
       where: { id: dto.providerId, tenantId },
     });
-    if (!provider) throw new NotFoundException('Drop-ship provider not found');
+    if (!provider) throw new NotFoundException("Drop-ship provider not found");
 
     const existing = await prisma.dropShipOrder.findFirst({
       where: { tenantId, orderNumber: dto.orderNumber },
     });
     if (existing) {
-      throw new BadRequestException(`Order '${dto.orderNumber}' already exists`);
+      throw new BadRequestException(
+        `Order '${dto.orderNumber}' already exists`,
+      );
     }
 
     const orderItems = (dto.items ?? []).map((item: any) => ({
@@ -159,7 +211,9 @@ export class InventoryDropShipService {
       quantity: new Prisma.Decimal(Number(item.quantity).toFixed(3)),
       shippedQty: new Prisma.Decimal(Number(item.shippedQty ?? 0).toFixed(3)),
       unitPrice: new Prisma.Decimal(Number(item.unitPrice).toFixed(2)),
-      totalPrice: new Prisma.Decimal((Number(item.unitPrice) * Number(item.quantity)).toFixed(2)),
+      totalPrice: new Prisma.Decimal(
+        (Number(item.unitPrice) * Number(item.quantity)).toFixed(2),
+      ),
     }));
 
     return prisma.dropShipOrder.create({
@@ -175,7 +229,10 @@ export class InventoryDropShipService {
         trackingNumber: dto.trackingNumber ?? null,
         carrier: dto.carrier ?? null,
         requestedDate: dto.requestedDate ? new Date(dto.requestedDate) : null,
-        estimatedCost: dto.estimatedCost !== undefined ? new Prisma.Decimal(dto.estimatedCost.toFixed(2)) : null,
+        estimatedCost:
+          dto.estimatedCost !== undefined
+            ? new Prisma.Decimal(dto.estimatedCost.toFixed(2))
+            : null,
         currency: dto.currency,
         notes: dto.notes ?? null,
         items: { create: orderItems },
@@ -184,15 +241,21 @@ export class InventoryDropShipService {
     });
   }
 
-  async updateOrderStatus(tenantId: string, id: string, dto: UpdateDropShipOrderStatusInput) {
-    const order = await prisma.dropShipOrder.findFirst({ where: { id, tenantId } });
-    if (!order) throw new NotFoundException('Drop-ship order not found');
+  async updateOrderStatus(
+    tenantId: string,
+    id: string,
+    dto: UpdateDropShipOrderStatusInput,
+  ) {
+    const order = await prisma.dropShipOrder.findFirst({
+      where: { id, tenantId },
+    });
+    if (!order) throw new NotFoundException("Drop-ship order not found");
 
     const validTransitions: Record<string, string[]> = {
-      PENDING: ['AWAITING_ACK', 'CANCELLED'],
-      AWAITING_ACK: ['ACKNOWLEDGED', 'CANCELLED'],
-      ACKNOWLEDGED: ['SHIPPED', 'CANCELLED'],
-      SHIPPED: ['DELIVERED', 'CANCELLED'],
+      PENDING: ["AWAITING_ACK", "CANCELLED"],
+      AWAITING_ACK: ["ACKNOWLEDGED", "CANCELLED"],
+      ACKNOWLEDGED: ["SHIPPED", "CANCELLED"],
+      SHIPPED: ["DELIVERED", "CANCELLED"],
       DELIVERED: [],
       CANCELLED: [],
     };
@@ -204,8 +267,8 @@ export class InventoryDropShipService {
     }
 
     const updateData: any = { status: dto.status };
-    if (dto.status === 'SHIPPED') updateData.shippedDate = new Date();
-    if (dto.status === 'DELIVERED') updateData.deliveredDate = new Date();
+    if (dto.status === "SHIPPED") updateData.shippedDate = new Date();
+    if (dto.status === "DELIVERED") updateData.deliveredDate = new Date();
 
     return prisma.dropShipOrder.update({
       where: { id },
@@ -215,14 +278,18 @@ export class InventoryDropShipService {
   }
 
   async cancelOrder(tenantId: string, id: string) {
-    const order = await prisma.dropShipOrder.findFirst({ where: { id, tenantId } });
-    if (!order) throw new NotFoundException('Drop-ship order not found');
-    if (order.status === 'DELIVERED' || order.status === 'CANCELLED') {
-      throw new BadRequestException('Cannot cancel a delivered or already cancelled order');
+    const order = await prisma.dropShipOrder.findFirst({
+      where: { id, tenantId },
+    });
+    if (!order) throw new NotFoundException("Drop-ship order not found");
+    if (order.status === "DELIVERED" || order.status === "CANCELLED") {
+      throw new BadRequestException(
+        "Cannot cancel a delivered or already cancelled order",
+      );
     }
     return prisma.dropShipOrder.update({
       where: { id },
-      data: { status: 'CANCELLED' },
+      data: { status: "CANCELLED" },
       include: { provider: true, items: true },
     });
   }
@@ -233,7 +300,7 @@ export class InventoryDropShipService {
     const [totalOrders, byStatus] = await Promise.all([
       prisma.dropShipOrder.count({ where }),
       prisma.dropShipOrder.groupBy({
-        by: ['status'],
+        by: ["status"],
         where,
         _count: { _all: true },
       }),
@@ -246,12 +313,12 @@ export class InventoryDropShipService {
 
     return {
       totalOrders,
-      pending: counts['PENDING'] ?? 0,
-      awaitingAck: counts['AWAITING_ACK'] ?? 0,
-      acknowledged: counts['ACKNOWLEDGED'] ?? 0,
-      shipped: counts['SHIPPED'] ?? 0,
-      delivered: counts['DELIVERED'] ?? 0,
-      cancelled: counts['CANCELLED'] ?? 0,
+      pending: counts["PENDING"] ?? 0,
+      awaitingAck: counts["AWAITING_ACK"] ?? 0,
+      acknowledged: counts["ACKNOWLEDGED"] ?? 0,
+      shipped: counts["SHIPPED"] ?? 0,
+      delivered: counts["DELIVERED"] ?? 0,
+      cancelled: counts["CANCELLED"] ?? 0,
     };
   }
 }

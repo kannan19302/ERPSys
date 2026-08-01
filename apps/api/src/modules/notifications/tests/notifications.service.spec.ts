@@ -1,8 +1,7 @@
-// @ts-nocheck
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { NotificationsService } from '../notifications.service';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { NotificationsService } from "../notifications.service";
 
-vi.mock('@unerp/database', () => {
+vi.mock("@unerp/database", () => {
   return {
     prisma: {
       notificationChannel: {
@@ -21,7 +20,7 @@ vi.mock('@unerp/database', () => {
   };
 });
 
-describe('NotificationsService', () => {
+describe("NotificationsService", () => {
   let service: NotificationsService;
 
   beforeEach(() => {
@@ -29,13 +28,15 @@ describe('NotificationsService', () => {
     vi.clearAllMocks();
   });
 
-  it('should get channels', async () => {
-    const { prisma } = await import('@unerp/database');
-    const mockChannels = [{ id: 'ch-1', name: 'Web', isEnabled: true }];
-    vi.mocked(prisma.notificationChannel.findMany).mockResolvedValue(mockChannels as never);
+  it("should get channels", async () => {
+    const { prisma } = await import("@unerp/database");
+    const mockChannels = [{ id: "ch-1", name: "Web", isEnabled: true }];
+    vi.mocked(prisma.notificationChannel.findMany).mockResolvedValue(
+      mockChannels as never,
+    );
 
-    const res = await service.getChannels('tenant-123');
+    const res = await service.getChannels("tenant-123");
     expect(res).toBeDefined();
-    expect(res[0]?.name).toBe('Web');
+    expect(res[0]?.name).toBe("Web");
   });
 });

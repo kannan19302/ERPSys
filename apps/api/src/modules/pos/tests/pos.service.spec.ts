@@ -1,8 +1,7 @@
-// @ts-nocheck
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { PosService } from '../pos.service';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { PosService } from "../pos.service";
 
-vi.mock('@unerp/database', () => {
+vi.mock("@unerp/database", () => {
   return {
     prisma: {
       pOSTerminal: {
@@ -29,12 +28,12 @@ vi.mock('@unerp/database', () => {
       organization: {
         findFirst: vi.fn(),
       },
-      $transaction: vi.fn((cb) => cb(require('@unerp/database').prisma)),
+      $transaction: vi.fn((cb) => cb(require("@unerp/database").prisma)),
     },
   };
 });
 
-describe('PosService', () => {
+describe("PosService", () => {
   let posService: PosService;
 
   beforeEach(() => {
@@ -42,22 +41,28 @@ describe('PosService', () => {
     vi.clearAllMocks();
   });
 
-  it('should fetch terminals', async () => {
-    const { prisma } = await import('@unerp/database');
-    const mockTerminals = [{ id: 't-1', name: 'Main Terminal', code: 'TERM-01' }];
-    vi.mocked(prisma.pOSTerminal.findMany).mockResolvedValue(mockTerminals as never);
+  it("should fetch terminals", async () => {
+    const { prisma } = await import("@unerp/database");
+    const mockTerminals = [
+      { id: "t-1", name: "Main Terminal", code: "TERM-01" },
+    ];
+    vi.mocked(prisma.pOSTerminal.findMany).mockResolvedValue(
+      mockTerminals as never,
+    );
 
-    const res = await posService.getTerminals('tenant-123');
+    const res = await posService.getTerminals("tenant-123");
     expect(res).toBeDefined();
-    expect(res[0]?.name).toBe('Main Terminal');
+    expect(res[0]?.name).toBe("Main Terminal");
   });
 
-  it('should fetch register sessions', async () => {
-    const { prisma } = await import('@unerp/database');
-    const mockRegisters = [{ id: 'reg-1', status: 'OPEN', startingCash: 250 }];
-    vi.mocked(prisma.pOSRegister.findMany).mockResolvedValue(mockRegisters as never);
+  it("should fetch register sessions", async () => {
+    const { prisma } = await import("@unerp/database");
+    const mockRegisters = [{ id: "reg-1", status: "OPEN", startingCash: 250 }];
+    vi.mocked(prisma.pOSRegister.findMany).mockResolvedValue(
+      mockRegisters as never,
+    );
 
-    const res = await posService.getRegisters('tenant-123');
+    const res = await posService.getRegisters("tenant-123");
     expect(res).toBeDefined();
     expect(res[0]?.startingCash).toBe(250);
   });

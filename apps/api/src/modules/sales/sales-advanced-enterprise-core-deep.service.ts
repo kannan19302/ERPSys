@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Injectable, Logger } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 
@@ -8,7 +7,9 @@ export class SalesAdvancedEnterpriseCoreDeepService {
     SalesAdvancedEnterpriseCoreDeepService.name,
   );
 
-  private get db() { return prisma; }
+  private get db() {
+    return prisma;
+  }
 
   // Multi-tier enterprise sales methods generator helper pattern
   async executeSalesOperation(tenantId: string, opName: string, payload: any) {

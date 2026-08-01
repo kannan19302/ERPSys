@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Injectable, Logger } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 
@@ -6,7 +5,9 @@ import { prisma } from "@unerp/database";
 export class SaasDeepeningApexFinalService {
   private readonly logger = new Logger(SaasDeepeningApexFinalService.name);
 
-  private get db() { return prisma; }
+  private get db() {
+    return prisma;
+  }
 
   async processFinalApexOp(tenantId: string, cmd: string, body: any) {
     return {

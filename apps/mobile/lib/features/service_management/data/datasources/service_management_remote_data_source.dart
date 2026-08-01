@@ -40,22 +40,22 @@ class ServiceManagementRemoteDataSourceImpl implements ServiceManagementRemoteDa
   @override
   Future<Paginated<ServiceCatalogModel>> listCatalogs(ListQuery query) =>
       _client.getPaginated<ServiceCatalogModel>(
-        ApiPaths.serviceCatalogs, query, ServiceCatalogModel.fromJson);
+        ApiPaths.serviceCatalogs, query, ServiceCatalogModel.fromJson,);
 
   @override
   Future<ServiceCatalogModel> getCatalog(String id) async =>
       ServiceCatalogModel.fromJson(
-        await _client.getObject(ApiPaths.serviceCatalog(id)));
+        await _client.getObject(ApiPaths.serviceCatalog(id)),);
 
   @override
   Future<ServiceCatalogModel> createCatalog(Map<String, dynamic> payload) async =>
       ServiceCatalogModel.fromJson(
-        await _client.post(ApiPaths.serviceCatalogs, body: payload));
+        await _client.post(ApiPaths.serviceCatalogs, body: payload),);
 
   @override
   Future<ServiceCatalogModel> updateCatalog(String id, Map<String, dynamic> payload) async =>
       ServiceCatalogModel.fromJson(
-        await _client.patch(ApiPaths.serviceCatalog(id), body: payload));
+        await _client.patch(ApiPaths.serviceCatalog(id), body: payload),);
 
   @override
   Future<void> deleteCatalog(String id) =>
@@ -64,62 +64,62 @@ class ServiceManagementRemoteDataSourceImpl implements ServiceManagementRemoteDa
   @override
   Future<Paginated<ServiceRequestModel>> listRequests(ListQuery query) =>
       _client.getPaginated<ServiceRequestModel>(
-        ApiPaths.serviceRequests, query, ServiceRequestModel.fromJson);
+        ApiPaths.serviceRequests, query, ServiceRequestModel.fromJson,);
 
   @override
   Future<ServiceRequestModel> getRequest(String id) async =>
       ServiceRequestModel.fromJson(
-        await _client.getObject(ApiPaths.serviceRequest(id)));
+        await _client.getObject(ApiPaths.serviceRequest(id)),);
 
   @override
   Future<ServiceRequestModel> createRequest(Map<String, dynamic> payload) async =>
       ServiceRequestModel.fromJson(
-        await _client.post(ApiPaths.serviceRequests, body: payload));
+        await _client.post(ApiPaths.serviceRequests, body: payload),);
 
   @override
   Future<ServiceRequestModel> updateRequest(String id, Map<String, dynamic> payload) async =>
       ServiceRequestModel.fromJson(
-        await _client.patch(ApiPaths.serviceRequest(id), body: payload));
+        await _client.patch(ApiPaths.serviceRequest(id), body: payload),);
 
   @override
   Future<ServiceRequestModel> assignRequest(String id, String userId) async =>
       ServiceRequestModel.fromJson(
-        await _client.post('${ApiPaths.serviceRequest(id)}/assign', body: <String, dynamic>{'userId': userId}));
+        await _client.post('${ApiPaths.serviceRequest(id)}/assign', body: <String, dynamic>{'userId': userId}),);
 
   @override
   Future<ServiceRequestModel> resolveRequest(String id, String resolution) async =>
       ServiceRequestModel.fromJson(
-        await _client.post('${ApiPaths.serviceRequest(id)}/resolve', body: <String, dynamic>{'resolution': resolution}));
+        await _client.post('${ApiPaths.serviceRequest(id)}/resolve', body: <String, dynamic>{'resolution': resolution}),);
 
   @override
   Future<ServiceRequestModel> closeRequest(String id) async =>
       ServiceRequestModel.fromJson(
-        await _client.post('${ApiPaths.serviceRequest(id)}/close'));
+        await _client.post('${ApiPaths.serviceRequest(id)}/close'),);
 
   @override
   Future<Paginated<ServiceContractModel>> listContracts(ListQuery query) =>
       _client.getPaginated<ServiceContractModel>(
-        ApiPaths.serviceContractsMgmt, query, ServiceContractModel.fromJson);
+        ApiPaths.serviceContractsMgmt, query, ServiceContractModel.fromJson,);
 
   @override
   Future<ServiceContractModel> getContract(String id) async =>
       ServiceContractModel.fromJson(
-        await _client.getObject(ApiPaths.serviceContractMgmt(id)));
+        await _client.getObject(ApiPaths.serviceContractMgmt(id)),);
 
   @override
   Future<ServiceContractModel> createContract(Map<String, dynamic> payload) async =>
       ServiceContractModel.fromJson(
-        await _client.post(ApiPaths.serviceContractsMgmt, body: payload));
+        await _client.post(ApiPaths.serviceContractsMgmt, body: payload),);
 
   @override
   Future<ServiceContractModel> updateContract(String id, Map<String, dynamic> payload) async =>
       ServiceContractModel.fromJson(
-        await _client.patch(ApiPaths.serviceContractMgmt(id), body: payload));
+        await _client.patch(ApiPaths.serviceContractMgmt(id), body: payload),);
 
   @override
   Future<ServiceContractModel> renewContract(String id) async =>
       ServiceContractModel.fromJson(
-        await _client.post('${ApiPaths.serviceContractMgmt(id)}/renew'));
+        await _client.post('${ApiPaths.serviceContractMgmt(id)}/renew'),);
 
   @override
   Future<void> terminateContract(String id) =>
@@ -128,22 +128,22 @@ class ServiceManagementRemoteDataSourceImpl implements ServiceManagementRemoteDa
   @override
   Future<Paginated<ServiceLevelAgreementModel>> listSlas(ListQuery query) =>
       _client.getPaginated<ServiceLevelAgreementModel>(
-        ApiPaths.serviceLevelAgreements, query, ServiceLevelAgreementModel.fromJson);
+        ApiPaths.serviceLevelAgreements, query, ServiceLevelAgreementModel.fromJson,);
 
   @override
   Future<ServiceLevelAgreementModel> getSla(String id) async =>
       ServiceLevelAgreementModel.fromJson(
-        await _client.getObject(ApiPaths.serviceLevelAgreement(id)));
+        await _client.getObject(ApiPaths.serviceLevelAgreement(id)),);
 
   @override
   Future<ServiceLevelAgreementModel> createSla(Map<String, dynamic> payload) async =>
       ServiceLevelAgreementModel.fromJson(
-        await _client.post(ApiPaths.serviceLevelAgreements, body: payload));
+        await _client.post(ApiPaths.serviceLevelAgreements, body: payload),);
 
   @override
   Future<ServiceLevelAgreementModel> updateSla(String id, Map<String, dynamic> payload) async =>
       ServiceLevelAgreementModel.fromJson(
-        await _client.patch(ApiPaths.serviceLevelAgreement(id), body: payload));
+        await _client.patch(ApiPaths.serviceLevelAgreement(id), body: payload),);
 
   @override
   Future<void> deleteSla(String id) =>

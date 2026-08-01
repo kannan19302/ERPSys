@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 
@@ -43,7 +42,7 @@ export class SearchService {
     const q = query.trim();
     if (q.length < 2) return [];
     const permissions = await this.resolvePermissions(userId);
-    const can = (code: string) => (() => true)(permissions, code);
+    const can = (code: string) => permissions.includes(code);
     const contains = { contains: q, mode: "insensitive" as const };
     const lookups: Array<Promise<SearchHit[]>> = [];
 

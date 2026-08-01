@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import React, { useState, useEffect } from "react";
 import {
@@ -122,8 +121,15 @@ export default function DevopsPage() {
           icon={<GitBranch size={20} />}
         />
       </div>
-      <div className="ui-card" style={{ padding: 'var(--space-4)' }}>
-        <div className="ui-flex" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
+      <div className="ui-card" style={{ padding: "var(--space-4)" }}>
+        <div
+          className="ui-flex"
+          style={{
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "var(--space-4)",
+          }}
+        >
           <h3 className="text-sm font-semibold m-0">Recent Deployments</h3>
           <Button variant="primary" size="sm">
             <Plus size={14} /> New Deployment

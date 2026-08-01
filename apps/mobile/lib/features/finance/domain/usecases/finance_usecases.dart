@@ -422,5 +422,5 @@ class ListTaxRatesUseCase extends UseCase<Paginated<TaxRate>, ListQuery> {
   ListTaxRatesUseCase(this.repository);
   final FinanceRepository repository;
   @override
-  Future<Result<Paginated<TaxRate>>> call(ListQuery params) async => Result.ok(Paginated(data: [], meta: PaginationMeta(page: 1, limit: 10, total: 0, totalPages: 0)));
+  Future<Result<Paginated<TaxRate>>> call(ListQuery params) async => const Result.ok(Paginated(data: [], meta: PaginationMeta(page: 1, limit: 10, total: 0, totalPages: 0)));
 }

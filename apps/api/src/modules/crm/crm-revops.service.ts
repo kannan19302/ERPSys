@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { Injectable } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import { Injectable } from "@nestjs/common";
+import { prisma } from "@unerp/database";
 
 /**
  * CRM RevOps & Advanced Commission service.
@@ -45,12 +44,20 @@ import { prisma } from '@unerp/database';
 @Injectable()
 export class CrmRevOpsService {
   async getRevOpsMetrics(tenantId: string): Promise<{
-    arr: number; mrr: number; nrr: number; grr: number; cac: number; ltv: number;
+    arr: number;
+    mrr: number;
+    nrr: number;
+    grr: number;
+    cac: number;
+    ltv: number;
   }> {
     const closedWon = await prisma.opportunity.findMany({
-      where: { tenantId, stage: 'CLOSED_WON', deletedAt: null },
+      where: { tenantId, stage: "CLOSED_WON", deletedAt: null },
     });
-    const totalRevenue = closedWon.reduce((s, o) => s + Number(o.amount || 0), 0);
+    const totalRevenue = closedWon.reduce(
+      (s, o) => s + Number(o.amount || 0),
+      0,
+    );
     const arr = totalRevenue;
     const mrr = totalRevenue / 12;
 
@@ -64,29 +71,44 @@ export class CrmRevOpsService {
     };
   }
 
-  async getCommissions(tenantId: string): Promise<Array<{ id: string; repName: string; dealName: string; amount: number; commissionAmount: number; status: string }>> {
+  async getCommissions(tenantId: string): Promise<
+    Array<{
+      id: string;
+      repName: string;
+      dealName: string;
+      amount: number;
+      commissionAmount: number;
+      status: string;
+    }>
+  > {
     const opps = await prisma.opportunity.findMany({
-      where: { tenantId, stage: 'CLOSED_WON', deletedAt: null },
+      where: { tenantId, stage: "CLOSED_WON", deletedAt: null },
       take: 20,
     });
 
-    const userIds = opps.map((o) => o.assignedToId).filter((id): id is string => !!id);
+    const userIds = opps
+      .map((o) => o.assignedToId)
+      .filter((id): id is string => !!id);
     const users = await prisma.user.findMany({
       where: { id: { in: userIds } },
       select: { id: true, firstName: true, lastName: true },
     });
-    const userMap = new Map(users.map((u) => [u.id, `${u.firstName} ${u.lastName}`]));
+    const userMap = new Map(
+      users.map((u) => [u.id, `${u.firstName} ${u.lastName}`]),
+    );
 
     return opps.map((opp) => {
       const amount = Number(opp.amount || 0);
       const commissionAmount = amount * 0.1; // Default 10% commission rate
       return {
         id: opp.id,
-        repName: opp.assignedToId ? (userMap.get(opp.assignedToId) ?? 'Unassigned') : 'Unassigned',
+        repName: opp.assignedToId
+          ? (userMap.get(opp.assignedToId) ?? "Unassigned")
+          : "Unassigned",
         dealName: opp.name,
         amount,
         commissionAmount: Math.round(commissionAmount),
-        status: 'PENDING_PAYOUT',
+        status: "PENDING_PAYOUT",
       };
     });
   }

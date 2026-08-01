@@ -90,7 +90,7 @@ class StorageRepositoryImpl implements StorageRepository {
   @override
   Future<Result<Cacheable<Paginated<StorageBucket>>>> listBuckets(ListQuery q) =>
       _paginated(_bucketNamespace, q, () => _remote.listBuckets(q),
-        StorageBucketModel.fromJson);
+        StorageBucketModel.fromJson,);
 
   @override
   Future<Result<StorageBucket>> getBucket(String id) =>
@@ -111,7 +111,7 @@ class StorageRepositoryImpl implements StorageRepository {
   @override
   Future<Result<Cacheable<Paginated<StorageFile>>>> listFiles(ListQuery q) =>
       _paginated(_fileNamespace, q, () => _remote.listFiles(q),
-        StorageFileModel.fromJson);
+        StorageFileModel.fromJson,);
 
   @override
   Future<Result<StorageFile>> getFile(String id) =>
@@ -132,7 +132,7 @@ class StorageRepositoryImpl implements StorageRepository {
   @override
   Future<Result<Cacheable<Paginated<StoragePolicy>>>> listPolicies(ListQuery q) =>
       _paginated(_policyNamespace, q, () => _remote.listPolicies(q),
-        StoragePolicyModel.fromJson);
+        StoragePolicyModel.fromJson,);
 
   @override
   Future<Result<StoragePolicy>> getPolicy(String id) =>

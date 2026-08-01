@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -108,7 +107,7 @@ class _RFQListPageState extends ConsumerState<RFQListPage> {
                   }
                 },
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -145,11 +144,11 @@ class _RFQListPageState extends ConsumerState<RFQListPage> {
                 Row(children: [
                   Expanded(child: Text(rfq.rfqNumber, style: Theme.of(context).textTheme.titleSmall)),
                   UiStatusBadge(label: rfq.status, tone: _statusTone(rfq.status)),
-                ]),
+                ],),
                 const SizedBox(height: Spacing.x1),
                 Text(rfq.vendorName ?? rfq.id, style: TextStyle(color: context.tokens.textSecondary)),
                 const SizedBox(height: Spacing.x1),
-                Text('${rfq.vendorCount} vendor${rfq.vendorCount == 1 ? '' : 's'}', style: TextStyle(fontSize: TypeScale.xs)),
+                Text('${rfq.vendorCount} vendor${rfq.vendorCount == 1 ? '' : 's'}', style: const TextStyle(fontSize: TypeScale.xs)),
               ],
             ),
           ),

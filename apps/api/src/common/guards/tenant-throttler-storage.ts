@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { ThrottlerStorage } from '@nestjs/throttler';
-import Redis from 'ioredis';
+import { ThrottlerStorage } from "@nestjs/throttler";
+import Redis from "ioredis";
 
 interface ThrottlerStorageRecord {
   totalHits: number;
@@ -9,7 +8,7 @@ interface ThrottlerStorageRecord {
   timeToBlockExpire: number;
 }
 
-const KEY_PREFIX = 'throttle:';
+const KEY_PREFIX = "throttle:";
 
 export class RedisThrottlerStorage implements ThrottlerStorage {
   private client: Redis | null = null;
@@ -18,12 +17,21 @@ export class RedisThrottlerStorage implements ThrottlerStorage {
 
   private connection(): Redis {
     if (!this.client) {
-      this.client = new Redis(this.redisUrl, { maxRetriesPerRequest: 2, lazyConnect: false });
+      this.client = new Redis(this.redisUrl, {
+        maxRetriesPerRequest: 2,
+        lazyConnect: false,
+      });
     }
     return this.client;
   }
 
-  async increment(key: string, ttl: number, limit: number, blockDuration: number, _throttlerName: string): Promise<ThrottlerStorageRecord> {
+  async increment(
+    key: string,
+    ttl: number,
+    limit: number,
+    blockDuration: number,
+    _throttlerName: string,
+  ): Promise<ThrottlerStorageRecord> {
     const redisKey = `${KEY_PREFIX}${key}`;
     const redis = this.connection();
 
@@ -44,13 +52,24 @@ export class RedisThrottlerStorage implements ThrottlerStorage {
 export class InMemoryThrottlerStorage implements ThrottlerStorage {
   private storage = new Map<string, { hits: number; expiresAt: number }>();
 
-  async increment(key: string, ttl: number, limit: number, blockDuration: number, _throttlerName: string): Promise<ThrottlerStorageRecord> {
+  async increment(
+    key: string,
+    ttl: number,
+    limit: number,
+    blockDuration: number,
+    _throttlerName: string,
+  ): Promise<ThrottlerStorageRecord> {
     const now = Date.now();
     const entry = this.storage.get(key);
 
     if (!entry || entry.expiresAt <= now) {
       this.storage.set(key, { hits: 1, expiresAt: now + ttl });
-      return { totalHits: 1, timeToExpire: ttl, isBlocked: false, timeToBlockExpire: 0 };
+      return {
+        totalHits: 1,
+        timeToExpire: ttl,
+        isBlocked: false,
+        timeToBlockExpire: 0,
+      };
     }
 
     entry.hits += 1;
@@ -58,6 +77,11 @@ export class InMemoryThrottlerStorage implements ThrottlerStorage {
     const isBlocked = entry.hits > limit;
     const timeToBlockExpire = isBlocked ? blockDuration : 0;
 
-    return { totalHits: entry.hits, timeToExpire, isBlocked, timeToBlockExpire };
+    return {
+      totalHits: entry.hits,
+      timeToExpire,
+      isBlocked,
+      timeToBlockExpire,
+    };
   }
 }

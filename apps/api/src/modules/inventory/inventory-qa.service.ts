@@ -1,28 +1,33 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
 import {
   CreateQAInspectionTemplateInput,
   UpdateQAInspectionTemplateInput,
   CreateQAInspectionInput,
   SubmitQAInspectionInput,
-} from '@unerp/shared';
+} from "@unerp/shared";
 import {
   buildPaginationValues,
   paginatedResult,
   resolveOrgId,
   PaginationParams,
-} from '../../common/utils/pagination.util';
+} from "../../common/utils/pagination.util";
 
 @Injectable()
 export class InventoryQaService {
-
-  async getQAInspections(tenantId: string, params: PaginationParams & { status?: string } = {}) {
+  async getQAInspections(
+    tenantId: string,
+    params: PaginationParams & { status?: string } = {},
+  ) {
     const where: any = { tenantId };
     if (params.status) where.status = params.status;
     if (params.search) {
-      where.inspectionNumber = { contains: params.search, mode: 'insensitive' };
+      where.inspectionNumber = { contains: params.search, mode: "insensitive" };
     }
 
     const { skip, take } = buildPaginationValues(params);
@@ -33,7 +38,7 @@ export class InventoryQaService {
         include: { product: true, checkpoints: true },
         skip,
         take,
-        orderBy: { inspectionDate: 'desc' },
+        orderBy: { inspectionDate: "desc" },
       }),
       prisma.qualityInspection.count({ where }),
     ]);
@@ -46,14 +51,19 @@ export class InventoryQaService {
       where: { id, tenantId },
       include: { product: true, checkpoints: true },
     });
-    if (!qa) throw new NotFoundException('QA inspection not found');
+    if (!qa) throw new NotFoundException("QA inspection not found");
     return qa;
   }
 
-  async createQAInspection(tenantId: string, orgId: string, userId: string, dto: CreateQAInspectionInput) {
+  async createQAInspection(
+    tenantId: string,
+    orgId: string,
+    userId: string,
+    dto: CreateQAInspectionInput,
+  ) {
     const resolvedOrgId = await resolveOrgId(tenantId, orgId);
     const count = await prisma.qualityInspection.count({ where: { tenantId } });
-    const inspectionNumber = `QA-${new Date().getFullYear()}-${(count + 1).toString().padStart(5, '0')}`;
+    const inspectionNumber = `QA-${new Date().getFullYear()}-${(count + 1).toString().padStart(5, "0")}`;
 
     const cps = dto.checkpoints.map((cp) => ({
       tenantId,
@@ -75,7 +85,7 @@ export class InventoryQaService {
         inspectedBy: dto.inspectedBy || userId,
         remarks: dto.remarks,
         createdBy: userId,
-        status: 'PENDING',
+        status: "PENDING",
         checkpoints: {
           create: cps,
         },
@@ -84,12 +94,17 @@ export class InventoryQaService {
     });
   }
 
-  async submitQAInspection(tenantId: string, id: string, _userId: string, dto: SubmitQAInspectionInput) {
+  async submitQAInspection(
+    tenantId: string,
+    id: string,
+    _userId: string,
+    dto: SubmitQAInspectionInput,
+  ) {
     const qa = await prisma.qualityInspection.findFirst({
-      where: { id, tenantId, status: 'PENDING' },
+      where: { id, tenantId, status: "PENDING" },
       include: { checkpoints: true },
     });
-    if (!qa) throw new NotFoundException('Pending QA inspection not found');
+    if (!qa) throw new NotFoundException("Pending QA inspection not found");
 
     await prisma.$transaction(async (tx) => {
       // Update checkpoints
@@ -121,71 +136,135 @@ export class InventoryQaService {
     return this.getQAInspectionById(tenantId, id);
   }
 
-  async routeQAInspectionDisposition(tenantId: string, id: string, userId: string) {
-    const qa = await prisma.qualityInspection.findFirst({ where: { id, tenantId } });
-    if (!qa) throw new NotFoundException('QA inspection not found');
-    if (!qa.disposition) throw new BadRequestException('Inspection has no disposition to route yet');
+  async routeQAInspectionDisposition(
+    tenantId: string,
+    id: string,
+    userId: string,
+  ) {
+    const qa = await prisma.qualityInspection.findFirst({
+      where: { id, tenantId },
+    });
+    if (!qa) throw new NotFoundException("QA inspection not found");
+    if (!qa.disposition)
+      throw new BadRequestException(
+        "Inspection has no disposition to route yet",
+      );
 
-    if (qa.disposition === 'QUARANTINE' && qa.referenceType === 'STOCK_ENTRY') {
-      const batch = await prisma.batch.findFirst({ where: { tenantId, originStockEntryId: qa.referenceId } });
-      if (batch && batch.status !== 'QUARANTINE') {
+    if (qa.disposition === "QUARANTINE" && qa.referenceType === "STOCK_ENTRY") {
+      const batch = await prisma.batch.findFirst({
+        where: { tenantId, originStockEntryId: qa.referenceId },
+      });
+      if (batch && batch.status !== "QUARANTINE") {
         await prisma.$transaction(async (tx) => {
-          await tx.batch.update({ where: { id: batch.id }, data: { status: 'QUARANTINE' } });
+          await tx.batch.update({
+            where: { id: batch.id },
+            data: { status: "QUARANTINE" },
+          });
           await tx.batchQuarantineLog.create({
             data: {
               tenantId,
               batchId: batch.id,
-              action: 'QUARANTINED',
+              action: "QUARANTINED",
               reason: `QA inspection ${qa.inspectionNumber} disposition: QUARANTINE`,
               performedBy: userId,
             },
           });
         });
-        return { routed: true, action: 'BATCH_QUARANTINED', batchId: batch.id };
+        return { routed: true, action: "BATCH_QUARANTINED", batchId: batch.id };
       }
     }
 
-    return { routed: false, action: 'NONE', reason: 'No matching batch/action for this disposition' };
+    return {
+      routed: false,
+      action: "NONE",
+      reason: "No matching batch/action for this disposition",
+    };
   }
 
-  async getQAInspectionTemplates(tenantId: string, params: PaginationParams & { productId?: string } = {}) {
+  async getQAInspectionTemplates(
+    tenantId: string,
+    params: PaginationParams & { productId?: string } = {},
+  ) {
     const where: any = { tenantId };
     if (params.productId) where.productId = params.productId;
     const { skip, take } = buildPaginationValues(params);
     const [templates, total] = await Promise.all([
-      prisma.qAInspectionTemplate.findMany({ where, skip, take, orderBy: { createdAt: 'desc' } }),
+      prisma.qAInspectionTemplate.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { createdAt: "desc" },
+      }),
       prisma.qAInspectionTemplate.count({ where }),
     ]);
     return paginatedResult(templates, total, params);
   }
 
-  async createQAInspectionTemplate(tenantId: string, dto: CreateQAInspectionTemplateInput) {
+  async createQAInspectionTemplate(
+    tenantId: string,
+    dto: CreateQAInspectionTemplateInput,
+  ) {
     return prisma.qAInspectionTemplate.create({
-      data: { tenantId, name: dto.name, productId: dto.productId, checklist: dto.checklist, isActive: dto.isActive },
+      data: {
+        tenantId,
+        name: dto.name,
+        productId: dto.productId,
+        checklist: dto.checklist,
+        isActive: dto.isActive,
+      },
     });
   }
 
-  async updateQAInspectionTemplate(tenantId: string, id: string, dto: UpdateQAInspectionTemplateInput) {
-    const template = await prisma.qAInspectionTemplate.findFirst({ where: { id, tenantId } });
-    if (!template) throw new NotFoundException('QA inspection template not found');
+  async updateQAInspectionTemplate(
+    tenantId: string,
+    id: string,
+    dto: UpdateQAInspectionTemplateInput,
+  ) {
+    const template = await prisma.qAInspectionTemplate.findFirst({
+      where: { id, tenantId },
+    });
+    if (!template)
+      throw new NotFoundException("QA inspection template not found");
     return prisma.qAInspectionTemplate.update({
       where: { id },
-      data: { name: dto.name, productId: dto.productId, checklist: dto.checklist, isActive: dto.isActive },
+      data: {
+        name: dto.name,
+        productId: dto.productId,
+        checklist: dto.checklist,
+        isActive: dto.isActive,
+      },
     });
   }
 
   async deleteQAInspectionTemplate(tenantId: string, id: string) {
-    const template = await prisma.qAInspectionTemplate.findFirst({ where: { id, tenantId } });
-    if (!template) throw new NotFoundException('QA inspection template not found');
+    const template = await prisma.qAInspectionTemplate.findFirst({
+      where: { id, tenantId },
+    });
+    if (!template)
+      throw new NotFoundException("QA inspection template not found");
     await prisma.qAInspectionTemplate.delete({ where: { id } });
     return { success: true };
   }
 
-  async createQAInspectionFromTemplate(tenantId: string, orgId: string, userId: string, templateId: string, dto: CreateQAInspectionInput) {
-    const template = await prisma.qAInspectionTemplate.findFirst({ where: { id: templateId, tenantId } });
-    if (!template) throw new NotFoundException('QA inspection template not found');
+  async createQAInspectionFromTemplate(
+    tenantId: string,
+    orgId: string,
+    userId: string,
+    templateId: string,
+    dto: CreateQAInspectionInput,
+  ) {
+    const template = await prisma.qAInspectionTemplate.findFirst({
+      where: { id: templateId, tenantId },
+    });
+    if (!template)
+      throw new NotFoundException("QA inspection template not found");
 
-    const checkpoints = (template.checklist as Array<{ parameter: string; criteria: string }>) ?? [];
-    return this.createQAInspection(tenantId, orgId, userId, { ...dto, checkpoints } as any);
+    const checkpoints =
+      (template.checklist as Array<{ parameter: string; criteria: string }>) ??
+      [];
+    return this.createQAInspection(tenantId, orgId, userId, {
+      ...dto,
+      checkpoints,
+    } as any);
   }
 }

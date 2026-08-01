@@ -93,9 +93,9 @@ class ProcurementRepositoryImpl implements ProcurementRepository {
 
   @override
   Future<Result<Cacheable<Paginated<PurchaseOrder>>>> listPurchaseOrders(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_poNamespace, query, () => _remote.listPurchaseOrders(query),
-        PurchaseOrderModel.fromJson);
+        PurchaseOrderModel.fromJson,);
 
   @override
   Future<Result<PurchaseOrder>> getPurchaseOrder(String id) =>
@@ -132,7 +132,7 @@ class ProcurementRepositoryImpl implements ProcurementRepository {
   @override
   Future<Result<Cacheable<Paginated<Vendor>>>> listVendors(ListQuery q) =>
       _paginated(_vendorNamespace, q, () => _remote.listVendors(q),
-        VendorModel.fromJson);
+        VendorModel.fromJson,);
 
   @override
   Future<Result<Vendor>> getVendor(String id) =>
@@ -153,7 +153,7 @@ class ProcurementRepositoryImpl implements ProcurementRepository {
   @override
   Future<Result<Cacheable<Paginated<RFQ>>>> listRFQs(ListQuery q) =>
       _paginated(_rfqNamespace, q, () => _remote.listRFQs(q),
-        RFQModel.fromJson);
+        RFQModel.fromJson,);
 
   @override
   Future<Result<RFQ>> getRFQ(String id) => _single(() => _remote.getRFQ(id));
@@ -175,10 +175,10 @@ class ProcurementRepositoryImpl implements ProcurementRepository {
 
   @override
   Future<Result<Cacheable<Paginated<SupplierQuotation>>>> listSupplierQuotations(
-    ListQuery q) =>
+    ListQuery q,) =>
       _paginated(_sqNamespace, q,
         () => _remote.listSupplierQuotations(q),
-        SupplierQuotationModel.fromJson);
+        SupplierQuotationModel.fromJson,);
 
   @override
   Future<Result<SupplierQuotation>> getSupplierQuotation(String id) =>
@@ -206,10 +206,10 @@ class ProcurementRepositoryImpl implements ProcurementRepository {
 
   @override
   Future<Result<Cacheable<Paginated<PurchaseRequisition>>>> listPurchaseRequisitions(
-    ListQuery q) =>
+    ListQuery q,) =>
       _paginated(_prNamespace, q,
         () => _remote.listPurchaseRequisitions(q),
-        PurchaseRequisitionModel.fromJson);
+        PurchaseRequisitionModel.fromJson,);
 
   @override
   Future<Result<PurchaseRequisition>> getPurchaseRequisition(String id) =>
@@ -229,10 +229,10 @@ class ProcurementRepositoryImpl implements ProcurementRepository {
 
   @override
   Future<Result<Cacheable<Paginated<PurchaseReceipt>>>> listPurchaseReceipts(
-    ListQuery q) =>
+    ListQuery q,) =>
       _paginated(_receiptNamespace, q,
         () => _remote.listPurchaseReceipts(q),
-        PurchaseReceiptModel.fromJson);
+        PurchaseReceiptModel.fromJson,);
 
   @override
   Future<Result<PurchaseReceipt>> getPurchaseReceipt(String id) =>
@@ -248,10 +248,10 @@ class ProcurementRepositoryImpl implements ProcurementRepository {
 
   @override
   Future<Result<Cacheable<Paginated<SupplierContract>>>> listSupplierContracts(
-    ListQuery q) =>
+    ListQuery q,) =>
       _paginated(_contractNamespace, q,
         () => _remote.listSupplierContracts(q),
-        SupplierContractModel.fromJson);
+        SupplierContractModel.fromJson,);
 
   @override
   Future<Result<SupplierContract>> getSupplierContract(String id) =>

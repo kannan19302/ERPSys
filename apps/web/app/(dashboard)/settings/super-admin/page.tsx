@@ -1,10 +1,9 @@
-// @ts-nocheck
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, Spinner } from '@unerp/ui';
-import { useApiClient } from '@unerp/framework';
-import styles from './page.module.css';
+import React, { useState, useEffect } from "react";
+import { Card, PageHeader, Spinner } from "@unerp/ui";
+import { useApiClient } from "@unerp/framework";
+import styles from "./page.module.css";
 import {
   Building,
   Users,
@@ -13,7 +12,7 @@ import {
   Server,
   Database,
   Cpu,
-} from 'lucide-react';
+} from "lucide-react";
 
 interface AnalyticsData {
   totalTenants: number;
@@ -30,7 +29,7 @@ interface HealthData {
     heapUsed: number;
     heapTotal: number;
   };
-  status: 'healthy' | 'degraded' | 'down';
+  status: "healthy" | "degraded" | "down";
 }
 
 const MOCK_ANALYTICS: AnalyticsData = {
@@ -41,10 +40,10 @@ const MOCK_ANALYTICS: AnalyticsData = {
 };
 
 const MOCK_HEALTH: HealthData = {
-  uptime: '14d 6h 32m',
+  uptime: "14d 6h 32m",
   dbLatency: 4.2,
   memoryUsage: { rss: 256, heapUsed: 128, heapTotal: 512 },
-  status: 'healthy',
+  status: "healthy",
 };
 
 export default function SuperAdminDashboardPage() {
@@ -59,13 +58,18 @@ export default function SuperAdminDashboardPage() {
     setError(null);
     try {
       const [analyticsData, healthData] = await Promise.all([
-        client.get<AnalyticsData | { data: AnalyticsData }>('/super-admin/analytics'),
-        client.get<HealthData | { data: HealthData }>('/super-admin/health'),
+        client.get<AnalyticsData | { data: AnalyticsData }>(
+          "/super-admin/analytics",
+        ),
+        client.get<HealthData | { data: HealthData }>("/super-admin/health"),
       ]);
-      setAnalytics('data' in analyticsData ? analyticsData.data : analyticsData);
-      setHealth('data' in healthData ? healthData.data : healthData);
+      setAnalytics(
+        "data" in analyticsData ? analyticsData.data : analyticsData,
+      );
+      setHealth("data" in healthData ? healthData.data : healthData);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to load dashboard';
+      const message =
+        err instanceof Error ? err.message : "Failed to load dashboard";
       setError(message);
       setAnalytics(null);
       setHealth(null);
@@ -88,10 +92,14 @@ export default function SuperAdminDashboardPage() {
 
   const statusColor = (status: string) => {
     switch (status) {
-      case 'healthy': return 'var(--color-green-600)';
-      case 'degraded': return 'var(--color-yellow-600)';
-      case 'down': return 'var(--color-red-600)';
-      default: return 'var(--color-gray-500)';
+      case "healthy":
+        return "var(--color-green-600)";
+      case "degraded":
+        return "var(--color-yellow-600)";
+      case "down":
+        return "var(--color-red-600)";
+      default:
+        return "var(--color-gray-500)";
     }
   };
 
@@ -102,19 +110,31 @@ export default function SuperAdminDashboardPage() {
         description="System overview and health monitoring"
       />
 
-      {error && (
-        <div className={`ui-card ${styles.error}`}>
-          {error}
-        </div>
-      )}
+      {error && <div className={`ui-card ${styles.error}`}>{error}</div>}
 
       {/* KPI Cards */}
       <div className={styles.kpiGrid}>
         {[
-          { label: 'Total Tenants', value: analytics?.totalTenants ?? 0, icon: Building },
-          { label: 'Total Users', value: analytics?.totalUsers ?? 0, icon: Users },
-          { label: 'Active Tenants', value: analytics?.activeTenants ?? 0, icon: Activity },
-          { label: 'MRR', value: `$${(analytics?.mrr ?? 0).toLocaleString()}`, icon: DollarSign },
+          {
+            label: "Total Tenants",
+            value: analytics?.totalTenants ?? 0,
+            icon: Building,
+          },
+          {
+            label: "Total Users",
+            value: analytics?.totalUsers ?? 0,
+            icon: Users,
+          },
+          {
+            label: "Active Tenants",
+            value: analytics?.activeTenants ?? 0,
+            icon: Activity,
+          },
+          {
+            label: "MRR",
+            value: `$${(analytics?.mrr ?? 0).toLocaleString()}`,
+            icon: DollarSign,
+          },
         ].map((card) => (
           <Card key={card.label}>
             <div className={styles.kpiCard}>
@@ -135,10 +155,13 @@ export default function SuperAdminDashboardPage() {
         <div className={styles.healthCard}>
           <div className="ui-flex-between">
             <h3 className={styles.healthTitle}>System Health</h3>
-            <span className={styles.healthStatus} style={{
-              color: statusColor(health?.status || ''),
-            }}>
-              {health?.status || 'Unknown'}
+            <span
+              className={styles.healthStatus}
+              style={{
+                color: statusColor(health?.status || ""),
+              }}
+            >
+              {health?.status || "Unknown"}
             </span>
           </div>
 
@@ -148,7 +171,7 @@ export default function SuperAdminDashboardPage() {
                 <Server size={14} className={styles.metricIcon} />
                 <span className={styles.metricLabel}>Uptime</span>
               </div>
-              <div className={styles.metricValue}>{health?.uptime || '—'}</div>
+              <div className={styles.metricValue}>{health?.uptime || "—"}</div>
             </div>
 
             <div className="ui-card p-3">
@@ -156,7 +179,9 @@ export default function SuperAdminDashboardPage() {
                 <Database size={14} className={styles.metricIcon} />
                 <span className={styles.metricLabel}>DB Latency</span>
               </div>
-              <div className={styles.metricValue}>{health?.dbLatency ?? '—'} ms</div>
+              <div className={styles.metricValue}>
+                {health?.dbLatency ?? "—"} ms
+              </div>
             </div>
 
             <div className="ui-card p-3">
@@ -164,7 +189,9 @@ export default function SuperAdminDashboardPage() {
                 <Cpu size={14} className={styles.metricIcon} />
                 <span className={styles.metricLabel}>Memory (RSS)</span>
               </div>
-              <div className={styles.metricValue}>{health?.memoryUsage?.rss ?? '—'} MB</div>
+              <div className={styles.metricValue}>
+                {health?.memoryUsage?.rss ?? "—"} MB
+              </div>
             </div>
           </div>
         </div>

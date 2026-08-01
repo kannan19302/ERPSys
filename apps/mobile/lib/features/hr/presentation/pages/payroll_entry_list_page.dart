@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import '../../../../core/contracts/paginated.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/theme/design_tokens.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/error/failures.dart';
-import '../../../../core/widgets/paginated_list_view.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/ui_card.dart';
 import '../../domain/entities/hr.dart';
@@ -38,7 +36,7 @@ class _PayrollEntryListPageState extends ConsumerState<PayrollEntryListPage> {
       body: asyncSlips.when(
         loading: () => const LoadingView(),
         error: (Object e, StackTrace _) => FailureView(
-          failure: e is Failure ? e as Failure : ServerFailure(e.toString()),
+          failure: e is Failure ? e : ServerFailure(e.toString()),
           onRetry: () => ref.invalidate(payslipsProvider),
         ),
         data: (Paginated<Payslip> page) {
@@ -74,7 +72,7 @@ class _PayrollEntryListPageState extends ConsumerState<PayrollEntryListPage> {
                       radius: Spacing.x4,
                       backgroundColor: t.bgSunken,
                       child: Icon(Icons.person_outline,
-                          color: t.textSecondary, size: TypeScale.lg),
+                          color: t.textSecondary, size: TypeScale.lg,),
                     ),
                     const SizedBox(width: Spacing.x3),
                     Expanded(

@@ -84,8 +84,18 @@ final NotifierProvider<PurchaseOrderListController, PurchaseOrderListState>
 );
 
 class PurchaseOrderListController extends Notifier<PurchaseOrderListState> {
-  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async => throw UnimplementedError();
   Timer? _searchDebounce;
+
+  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async {
+    final result = await SavePurchaseOrderUseCase(
+      ref.read(procurementRepositoryProvider),
+    )(SavePurchaseOrderParams(payload: data, id: id));
+    if (result.isOk) await refresh();
+    return result.fold(
+      (f) => Result<void>.err(f),
+      (_) => const Result<void>.ok(null),
+    );
+  }
 
   @override
   PurchaseOrderListState build() {
@@ -146,7 +156,7 @@ class PurchaseOrderListController extends Notifier<PurchaseOrderListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeletePurchaseOrderUseCase(
-      ref.read(procurementRepositoryProvider))(id);
+      ref.read(procurementRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
@@ -155,7 +165,7 @@ class PurchaseOrderListController extends Notifier<PurchaseOrderListState> {
 final FutureProviderFamily<PurchaseOrder, String> purchaseOrderDetailProvider =
     FutureProvider.family<PurchaseOrder, String>((Ref ref, String id) async {
   final result = await GetPurchaseOrderUseCase(
-    ref.watch(procurementRepositoryProvider))(id);
+    ref.watch(procurementRepositoryProvider),)(id);
   return result.fold((f) => throw f, (po) => po);
 });
 
@@ -204,8 +214,18 @@ final NotifierProvider<VendorListController, VendorListState>
 class VendorListController extends Notifier<VendorListState> {
   void applySort(String s) {}
 
-  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async => throw UnimplementedError();
   Timer? _searchDebounce;
+
+  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async {
+    final result = await SaveVendorUseCase(
+      ref.read(procurementRepositoryProvider),
+    )(SaveVendorParams(payload: data, id: id));
+    if (result.isOk) await refresh();
+    return result.fold(
+      (f) => Result<void>.err(f),
+      (_) => const Result<void>.ok(null),
+    );
+  }
 
   @override
   VendorListState build() {
@@ -255,7 +275,7 @@ class VendorListController extends Notifier<VendorListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteVendorUseCase(
-      ref.read(procurementRepositoryProvider))(id);
+      ref.read(procurementRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
@@ -264,7 +284,7 @@ class VendorListController extends Notifier<VendorListState> {
 final FutureProviderFamily<Vendor, String> vendorDetailProvider =
     FutureProvider.family<Vendor, String>((Ref ref, String id) async {
   final result = await GetVendorUseCase(
-    ref.watch(procurementRepositoryProvider))(id);
+    ref.watch(procurementRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -328,23 +348,80 @@ class PurchaseReceiptListState extends Equatable {
 }
 
 class PurchaseReceiptListController extends Notifier<PurchaseReceiptListState> {
-  void search(String s) {}
-  void applyFilters(Map<String, String> f) {}
-  void applySort(String s) {}
-  void loadMore() {}
-  Future<void> refresh() async {}
+  Timer? _searchDebounce;
+
+  @override
+  PurchaseReceiptListState build() {
+    ref.watch(activeTenantIdProvider);
+    ref.onDispose(() => _searchDebounce?.cancel());
+    Future<void>.microtask(refresh);
+    return const PurchaseReceiptListState();
+  }
+
+  ListPurchaseReceiptsUseCase get _listUseCase =>
+      ListPurchaseReceiptsUseCase(ref.read(procurementRepositoryProvider));
+
+  Future<void> refresh() async {
+    final ListQuery query = state.query.copyWith(page: 1);
+    state = state.copyWith(isLoading: true, clearFailures: true);
+    final result = await _listUseCase(query);
+    state = result.fold(
+      (f) => state.copyWith(isLoading: false, failure: f, items: const []),
+      (page) => state.copyWith(
+        items: page.value.data, meta: page.value.meta, query: query,
+        isLoading: false, clearFailures: true, cachedAt: page.cachedAt,
+        clearCachedAt: !page.isFromCache,
+      ),
+    );
+  }
+
+  Future<void> loadMore() async {
+    if (state.isLoadingMore || !state.meta.hasMore) return;
+    state = state.copyWith(isLoadingMore: true, clearFailures: true);
+    final next = state.query.copyWith(page: state.meta.page + 1);
+    final result = await _listUseCase(next);
+    state = result.fold(
+      (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
+      (page) => state.copyWith(
+        items: [...state.items, ...page.value.data], meta: page.value.meta,
+        query: next, isLoadingMore: false, clearFailures: true,
+      ),
+    );
+  }
+
+  void search(String term) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 350), () {
+      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      refresh();
+    });
+  }
+
+  void applySort(String sort) {
+    state = state.copyWith(query: state.query.copyWith(sort: sort, page: 1));
+    refresh();
+  }
+
+  void applyFilters(Map<String, String> filters) {
+    state = state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
+    refresh();
+  }
+
+  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async {
+    final result = await SavePurchaseReceiptUseCase(
+      ref.read(procurementRepositoryProvider),
+    )(SavePurchaseReceiptParams(payload: data, id: id));
+    if (result.isOk) await refresh();
+    return result.fold(
+      (f) => Result<void>.err(f),
+      (_) => const Result<void>.ok(null),
+    );
+  }
+
   Future<Result<void>> delete(String id) async => throw UnimplementedError();
   Future<Result<void>> submit(String id) async => throw UnimplementedError();
   Future<Result<void>> approve(String id) async => throw UnimplementedError();
   Future<Result<void>> post(String id) async => throw UnimplementedError();
-  
-
-  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async => throw UnimplementedError();
-  @override
-  PurchaseReceiptListState build() {
-    Future<void>.microtask(() {});
-    return const PurchaseReceiptListState(); // Or just throw UnimplementedError if it complains about const
-  }
 }
 
 
@@ -408,23 +485,90 @@ class PurchaseRequisitionListState extends Equatable {
 }
 
 class PurchaseRequisitionListController extends Notifier<PurchaseRequisitionListState> {
-  void search(String s) {}
-  void applyFilters(Map<String, String> f) {}
-  void applySort(String s) {}
-  void loadMore() {}
-  Future<void> refresh() async {}
-  Future<Result<void>> delete(String id) async => throw UnimplementedError();
-  Future<Result<void>> submit(String id) async => throw UnimplementedError();
-  Future<Result<void>> approve(String id) async => throw UnimplementedError();
-  Future<Result<void>> post(String id) async => throw UnimplementedError();
-  
+  Timer? _searchDebounce;
 
-  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async => throw UnimplementedError();
   @override
   PurchaseRequisitionListState build() {
-    Future<void>.microtask(() {});
-    return const PurchaseRequisitionListState(); // Or just throw UnimplementedError if it complains about const
+    ref.watch(activeTenantIdProvider);
+    ref.onDispose(() => _searchDebounce?.cancel());
+    Future<void>.microtask(refresh);
+    return const PurchaseRequisitionListState();
   }
+
+  ListPurchaseRequisitionsUseCase get _listUseCase =>
+      ListPurchaseRequisitionsUseCase(ref.read(procurementRepositoryProvider));
+
+  Future<void> refresh() async {
+    final ListQuery query = state.query.copyWith(page: 1);
+    state = state.copyWith(isLoading: true, clearFailures: true);
+    final result = await _listUseCase(query);
+    state = result.fold(
+      (f) => state.copyWith(isLoading: false, failure: f, items: const []),
+      (page) => state.copyWith(
+        items: page.value.data, meta: page.value.meta, query: query,
+        isLoading: false, clearFailures: true, cachedAt: page.cachedAt,
+        clearCachedAt: !page.isFromCache,
+      ),
+    );
+  }
+
+  Future<void> loadMore() async {
+    if (state.isLoadingMore || !state.meta.hasMore) return;
+    state = state.copyWith(isLoadingMore: true, clearFailures: true);
+    final next = state.query.copyWith(page: state.meta.page + 1);
+    final result = await _listUseCase(next);
+    state = result.fold(
+      (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
+      (page) => state.copyWith(
+        items: [...state.items, ...page.value.data], meta: page.value.meta,
+        query: next, isLoadingMore: false, clearFailures: true,
+      ),
+    );
+  }
+
+  void search(String term) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 350), () {
+      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      refresh();
+    });
+  }
+
+  void applySort(String sort) {
+    state = state.copyWith(query: state.query.copyWith(sort: sort, page: 1));
+    refresh();
+  }
+
+  void applyFilters(Map<String, String> filters) {
+    state = state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
+    refresh();
+  }
+
+  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async {
+    final result = await SavePurchaseRequisitionUseCase(
+      ref.read(procurementRepositoryProvider),
+    )(SavePurchaseRequisitionParams(payload: data, id: id));
+    if (result.isOk) await refresh();
+    return result.fold(
+      (f) => Result<void>.err(f),
+      (_) => const Result<void>.ok(null),
+    );
+  }
+
+  Future<Result<void>> approve(String id) async {
+    final result = await ApprovePurchaseRequisitionUseCase(
+      ref.read(procurementRepositoryProvider),
+    )(id);
+    if (result.isOk) await refresh();
+    return result.fold(
+      (f) => Result<void>.err(f),
+      (_) => const Result<void>.ok(null),
+    );
+  }
+
+  Future<Result<void>> delete(String id) async => throw UnimplementedError();
+  Future<Result<void>> submit(String id) async => throw UnimplementedError();
+  Future<Result<void>> post(String id) async => throw UnimplementedError();
 }
 
 
@@ -488,23 +632,90 @@ class RFQListState extends Equatable {
 }
 
 class RFQListController extends Notifier<RFQListState> {
-  void search(String s) {}
-  void applyFilters(Map<String, String> f) {}
-  void applySort(String s) {}
-  void loadMore() {}
-  Future<void> refresh() async {}
-  Future<Result<void>> delete(String id) async => throw UnimplementedError();
-  Future<Result<void>> submit(String id) async => throw UnimplementedError();
-  Future<Result<void>> approve(String id) async => throw UnimplementedError();
-  Future<Result<void>> post(String id) async => throw UnimplementedError();
-  
+  Timer? _searchDebounce;
 
-  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async => throw UnimplementedError();
   @override
   RFQListState build() {
-    Future<void>.microtask(() {});
-    return const RFQListState(); // Or just throw UnimplementedError if it complains about const
+    ref.watch(activeTenantIdProvider);
+    ref.onDispose(() => _searchDebounce?.cancel());
+    Future<void>.microtask(refresh);
+    return const RFQListState();
   }
+
+  ListRFQsUseCase get _listUseCase =>
+      ListRFQsUseCase(ref.read(procurementRepositoryProvider));
+
+  Future<void> refresh() async {
+    final ListQuery query = state.query.copyWith(page: 1);
+    state = state.copyWith(isLoading: true, clearFailures: true);
+    final result = await _listUseCase(query);
+    state = result.fold(
+      (f) => state.copyWith(isLoading: false, failure: f, items: const []),
+      (page) => state.copyWith(
+        items: page.value.data, meta: page.value.meta, query: query,
+        isLoading: false, clearFailures: true, cachedAt: page.cachedAt,
+        clearCachedAt: !page.isFromCache,
+      ),
+    );
+  }
+
+  Future<void> loadMore() async {
+    if (state.isLoadingMore || !state.meta.hasMore) return;
+    state = state.copyWith(isLoadingMore: true, clearFailures: true);
+    final next = state.query.copyWith(page: state.meta.page + 1);
+    final result = await _listUseCase(next);
+    state = result.fold(
+      (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
+      (page) => state.copyWith(
+        items: [...state.items, ...page.value.data], meta: page.value.meta,
+        query: next, isLoadingMore: false, clearFailures: true,
+      ),
+    );
+  }
+
+  void search(String term) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 350), () {
+      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      refresh();
+    });
+  }
+
+  void applySort(String sort) {
+    state = state.copyWith(query: state.query.copyWith(sort: sort, page: 1));
+    refresh();
+  }
+
+  void applyFilters(Map<String, String> filters) {
+    state = state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
+    refresh();
+  }
+
+  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async {
+    final result = await SaveRFQUseCase(
+      ref.read(procurementRepositoryProvider),
+    )(SaveRFQParams(payload: data, id: id));
+    if (result.isOk) await refresh();
+    return result.fold(
+      (f) => Result<void>.err(f),
+      (_) => const Result<void>.ok(null),
+    );
+  }
+
+  Future<Result<void>> submit(String id) async {
+    final result = await SubmitRFQUseCase(
+      ref.read(procurementRepositoryProvider),
+    )(id);
+    if (result.isOk) await refresh();
+    return result.fold(
+      (f) => Result<void>.err(f),
+      (_) => const Result<void>.ok(null),
+    );
+  }
+
+  Future<Result<void>> delete(String id) async => throw UnimplementedError();
+  Future<Result<void>> approve(String id) async => throw UnimplementedError();
+  Future<Result<void>> post(String id) async => throw UnimplementedError();
 }
 
 
@@ -568,23 +779,87 @@ class SupplierContractListState extends Equatable {
 }
 
 class SupplierContractListController extends Notifier<SupplierContractListState> {
-  void search(String s) {}
-  void applyFilters(Map<String, String> f) {}
-  void applySort(String s) {}
-  void loadMore() {}
-  Future<void> refresh() async {}
-  Future<Result<void>> delete(String id) async => throw UnimplementedError();
+  Timer? _searchDebounce;
+
+  @override
+  SupplierContractListState build() {
+    ref.watch(activeTenantIdProvider);
+    ref.onDispose(() => _searchDebounce?.cancel());
+    Future<void>.microtask(refresh);
+    return const SupplierContractListState();
+  }
+
+  ListSupplierContractsUseCase get _listUseCase =>
+      ListSupplierContractsUseCase(ref.read(procurementRepositoryProvider));
+
+  Future<void> refresh() async {
+    final ListQuery query = state.query.copyWith(page: 1);
+    state = state.copyWith(isLoading: true, clearFailures: true);
+    final result = await _listUseCase(query);
+    state = result.fold(
+      (f) => state.copyWith(isLoading: false, failure: f, items: const []),
+      (page) => state.copyWith(
+        items: page.value.data, meta: page.value.meta, query: query,
+        isLoading: false, clearFailures: true, cachedAt: page.cachedAt,
+        clearCachedAt: !page.isFromCache,
+      ),
+    );
+  }
+
+  Future<void> loadMore() async {
+    if (state.isLoadingMore || !state.meta.hasMore) return;
+    state = state.copyWith(isLoadingMore: true, clearFailures: true);
+    final next = state.query.copyWith(page: state.meta.page + 1);
+    final result = await _listUseCase(next);
+    state = result.fold(
+      (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
+      (page) => state.copyWith(
+        items: [...state.items, ...page.value.data], meta: page.value.meta,
+        query: next, isLoadingMore: false, clearFailures: true,
+      ),
+    );
+  }
+
+  void search(String term) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 350), () {
+      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      refresh();
+    });
+  }
+
+  void applySort(String sort) {
+    state = state.copyWith(query: state.query.copyWith(sort: sort, page: 1));
+    refresh();
+  }
+
+  void applyFilters(Map<String, String> filters) {
+    state = state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
+    refresh();
+  }
+
+  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async {
+    final result = await SaveSupplierContractUseCase(
+      ref.read(procurementRepositoryProvider),
+    )(SaveSupplierContractParams(payload: data, id: id));
+    if (result.isOk) await refresh();
+    return result.fold(
+      (f) => Result<void>.err(f),
+      (_) => const Result<void>.ok(null),
+    );
+  }
+
+  Future<Result<void>> delete(String id) async {
+    final result = await DeleteSupplierContractUseCase(
+      ref.read(procurementRepositoryProvider),
+    )(id);
+    if (result.isOk) await refresh();
+    return result;
+  }
+
   Future<Result<void>> submit(String id) async => throw UnimplementedError();
   Future<Result<void>> approve(String id) async => throw UnimplementedError();
   Future<Result<void>> post(String id) async => throw UnimplementedError();
-  
-
-  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async => throw UnimplementedError();
-  @override
-  SupplierContractListState build() {
-    Future<void>.microtask(() {});
-    return const SupplierContractListState(); // Or just throw UnimplementedError if it complains about const
-  }
 }
 
 
@@ -648,23 +923,90 @@ class SupplierQuotationListState extends Equatable {
 }
 
 class SupplierQuotationListController extends Notifier<SupplierQuotationListState> {
-  void search(String s) {}
-  void applyFilters(Map<String, String> f) {}
-  void applySort(String s) {}
-  void loadMore() {}
-  Future<void> refresh() async {}
-  Future<Result<void>> delete(String id) async => throw UnimplementedError();
-  Future<Result<void>> submit(String id) async => throw UnimplementedError();
-  Future<Result<void>> approve(String id) async => throw UnimplementedError();
-  Future<Result<void>> post(String id) async => throw UnimplementedError();
-  
+  Timer? _searchDebounce;
 
-  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async => throw UnimplementedError();
   @override
   SupplierQuotationListState build() {
-    Future<void>.microtask(() {});
-    return const SupplierQuotationListState(); // Or just throw UnimplementedError if it complains about const
+    ref.watch(activeTenantIdProvider);
+    ref.onDispose(() => _searchDebounce?.cancel());
+    Future<void>.microtask(refresh);
+    return const SupplierQuotationListState();
   }
+
+  ListSupplierQuotationsUseCase get _listUseCase =>
+      ListSupplierQuotationsUseCase(ref.read(procurementRepositoryProvider));
+
+  Future<void> refresh() async {
+    final ListQuery query = state.query.copyWith(page: 1);
+    state = state.copyWith(isLoading: true, clearFailures: true);
+    final result = await _listUseCase(query);
+    state = result.fold(
+      (f) => state.copyWith(isLoading: false, failure: f, items: const []),
+      (page) => state.copyWith(
+        items: page.value.data, meta: page.value.meta, query: query,
+        isLoading: false, clearFailures: true, cachedAt: page.cachedAt,
+        clearCachedAt: !page.isFromCache,
+      ),
+    );
+  }
+
+  Future<void> loadMore() async {
+    if (state.isLoadingMore || !state.meta.hasMore) return;
+    state = state.copyWith(isLoadingMore: true, clearFailures: true);
+    final next = state.query.copyWith(page: state.meta.page + 1);
+    final result = await _listUseCase(next);
+    state = result.fold(
+      (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
+      (page) => state.copyWith(
+        items: [...state.items, ...page.value.data], meta: page.value.meta,
+        query: next, isLoadingMore: false, clearFailures: true,
+      ),
+    );
+  }
+
+  void search(String term) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 350), () {
+      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      refresh();
+    });
+  }
+
+  void applySort(String sort) {
+    state = state.copyWith(query: state.query.copyWith(sort: sort, page: 1));
+    refresh();
+  }
+
+  void applyFilters(Map<String, String> filters) {
+    state = state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
+    refresh();
+  }
+
+  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async {
+    final result = await SaveSupplierQuotationUseCase(
+      ref.read(procurementRepositoryProvider),
+    )(SaveSupplierQuotationParams(payload: data, id: id));
+    if (result.isOk) await refresh();
+    return result.fold(
+      (f) => Result<void>.err(f),
+      (_) => const Result<void>.ok(null),
+    );
+  }
+
+  Future<Result<void>> approve(String id) async {
+    final result = await ApproveSupplierQuotationUseCase(
+      ref.read(procurementRepositoryProvider),
+    )(id);
+    if (result.isOk) await refresh();
+    return result.fold(
+      (f) => Result<void>.err(f),
+      (_) => const Result<void>.ok(null),
+    );
+  }
+
+  Future<Result<void>> delete(String id) async => throw UnimplementedError();
+  Future<Result<void>> submit(String id) async => throw UnimplementedError();
+  Future<Result<void>> post(String id) async => throw UnimplementedError();
 }
 final FutureProvider<ProcurementDashboardStats> procurementDashboardProvider = FutureProvider((ref) async => throw UnimplementedError());
 final FutureProviderFamily<RFQ, String> rfqDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());

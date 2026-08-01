@@ -91,7 +91,7 @@ class FixedAssetsRepositoryImpl implements FixedAssetsRepository {
   @override
   Future<Result<Cacheable<Paginated<FixedAsset>>>> listFixedAssets(ListQuery query) =>
       _paginated(_assetNamespace, query, () => _remote.listFixedAssets(query),
-        FixedAssetModel.fromJson);
+        FixedAssetModel.fromJson,);
 
   @override
   Future<Result<FixedAsset>> getFixedAsset(String id) =>
@@ -118,7 +118,7 @@ class FixedAssetsRepositoryImpl implements FixedAssetsRepository {
       listDepreciationSchedules(ListQuery query) =>
           _paginated(_depreciationNamespace, query,
             () => _remote.listDepreciationSchedules(query),
-            AssetDepreciationScheduleModel.fromJson);
+            AssetDepreciationScheduleModel.fromJson,);
 
   @override
   Future<Result<AssetDepreciationSchedule>> recordDepreciation(Map<String, dynamic> p) =>
@@ -129,7 +129,7 @@ class FixedAssetsRepositoryImpl implements FixedAssetsRepository {
       listMaintenanceSchedules(ListQuery query) =>
           _paginated(_maintenanceNamespace, query,
             () => _remote.listMaintenanceSchedules(query),
-            AssetMaintenanceScheduleModel.fromJson);
+            AssetMaintenanceScheduleModel.fromJson,);
 
   @override
   Future<Result<AssetMaintenanceSchedule>> getMaintenanceSchedule(String id) =>
@@ -137,12 +137,12 @@ class FixedAssetsRepositoryImpl implements FixedAssetsRepository {
 
   @override
   Future<Result<AssetMaintenanceSchedule>> createMaintenanceSchedule(
-    Map<String, dynamic> p) =>
+    Map<String, dynamic> p,) =>
       _write(() => _remote.createMaintenanceSchedule(p));
 
   @override
   Future<Result<AssetMaintenanceSchedule>> updateMaintenanceSchedule(
-    String id, Map<String, dynamic> p) =>
+    String id, Map<String, dynamic> p,) =>
       _write(() => _remote.updateMaintenanceSchedule(id, p));
 
   @override
@@ -156,7 +156,7 @@ class FixedAssetsRepositoryImpl implements FixedAssetsRepository {
   @override
   Future<Result<Cacheable<Paginated<AssetDisposal>>>> listDisposals(ListQuery query) =>
       _paginated(_disposalNamespace, query, () => _remote.listDisposals(query),
-        AssetDisposalModel.fromJson);
+        AssetDisposalModel.fromJson,);
 
   @override
   Future<Result<AssetDisposal>> getDisposal(String id) =>

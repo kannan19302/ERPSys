@@ -1,13 +1,18 @@
-// @ts-nocheck
-import { Injectable } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { GlAccountingService } from './gl-accounting.service';
+import { Injectable } from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { GlAccountingService } from "./gl-accounting.service";
 
 @Injectable()
 export class FinancialReportingService {
   constructor(private readonly glService: GlAccountingService) {}
 
-  async getProfitAndLoss(tenantId: string, orgId: string, startDate: string, endDate: string, bookId?: string) {
+  async getProfitAndLoss(
+    tenantId: string,
+    orgId: string,
+    startDate: string,
+    endDate: string,
+    bookId?: string,
+  ) {
     const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
     const start = new Date(startDate);
     const end = new Date(endDate);
@@ -15,7 +20,7 @@ export class FinancialReportingService {
     const journalFilter: any = {
       orgId: resolvedOrgId,
       date: { gte: start, lte: end },
-      status: 'POSTED',
+      status: "POSTED",
     };
     if (bookId) {
       journalFilter.bookId = bookId;
@@ -24,20 +29,27 @@ export class FinancialReportingService {
         where: { tenantId, orgId: resolvedOrgId, isPrimary: true },
       });
       if (primaryBook) {
-        journalFilter.OR = [
-          { bookId: primaryBook.id },
-          { bookId: null }
-        ];
+        journalFilter.OR = [{ bookId: primaryBook.id }, { bookId: null }];
       } else {
         journalFilter.bookId = null;
       }
     }
 
     const revenueAccounts = await prisma.account.findMany({
-      where: { tenantId, orgId: resolvedOrgId, type: 'REVENUE', isActive: true },
+      where: {
+        tenantId,
+        orgId: resolvedOrgId,
+        type: "REVENUE",
+        isActive: true,
+      },
     });
     const expenseAccounts = await prisma.account.findMany({
-      where: { tenantId, orgId: resolvedOrgId, type: 'EXPENSE', isActive: true },
+      where: {
+        tenantId,
+        orgId: resolvedOrgId,
+        type: "EXPENSE",
+        isActive: true,
+      },
     });
 
     const revenueEntries = await prisma.journalEntry.findMany({
@@ -56,20 +68,34 @@ export class FinancialReportingService {
       },
     });
 
-    const revenueByAccount = new Map<string, { name: string; code: string; amount: number }>();
+    const revenueByAccount = new Map<
+      string,
+      { name: string; code: string; amount: number }
+    >();
     for (const entry of revenueEntries) {
       const acc = revenueAccounts.find((a) => a.id === entry.accountId);
       if (!acc) continue;
-      const e = revenueByAccount.get(entry.accountId) || { name: acc.name, code: acc.code, amount: 0 };
+      const e = revenueByAccount.get(entry.accountId) || {
+        name: acc.name,
+        code: acc.code,
+        amount: 0,
+      };
       e.amount += Number(entry.credit) - Number(entry.debit);
       revenueByAccount.set(entry.accountId, e);
     }
 
-    const expensesByAccount = new Map<string, { name: string; code: string; amount: number }>();
+    const expensesByAccount = new Map<
+      string,
+      { name: string; code: string; amount: number }
+    >();
     for (const entry of expenseEntries) {
       const acc = expenseAccounts.find((a) => a.id === entry.accountId);
       if (!acc) continue;
-      const e = expensesByAccount.get(entry.accountId) || { name: acc.name, code: acc.code, amount: 0 };
+      const e = expensesByAccount.get(entry.accountId) || {
+        name: acc.name,
+        code: acc.code,
+        amount: 0,
+      };
       e.amount += Number(entry.debit) - Number(entry.credit);
       expensesByAccount.set(entry.accountId, e);
     }
@@ -90,12 +116,17 @@ export class FinancialReportingService {
   }
 
   // Helper to compute account balances dynamically for a specific book
-  async getComputedBalances(tenantId: string, resolvedOrgId: string, asOfDate: string | Date, bookId?: string): Promise<Map<string, number>> {
+  async getComputedBalances(
+    tenantId: string,
+    resolvedOrgId: string,
+    asOfDate: string | Date,
+    bookId?: string,
+  ): Promise<Map<string, number>> {
     const asOf = new Date(asOfDate);
     const journalFilter: any = {
       orgId: resolvedOrgId,
       date: { lte: asOf },
-      status: 'POSTED',
+      status: "POSTED",
     };
     if (bookId) {
       journalFilter.bookId = bookId;
@@ -104,10 +135,7 @@ export class FinancialReportingService {
         where: { tenantId, orgId: resolvedOrgId, isPrimary: true },
       });
       if (primaryBook) {
-        journalFilter.OR = [
-          { bookId: primaryBook.id },
-          { bookId: null }
-        ];
+        journalFilter.OR = [{ bookId: primaryBook.id }, { bookId: null }];
       } else {
         journalFilter.bookId = null;
       }
@@ -130,46 +158,82 @@ export class FinancialReportingService {
 
   // ── BALANCE SHEET ──────────────────────────────────
 
-  async getBalanceSheet(tenantId: string, orgId: string, asOfDate: string, bookId?: string) {
+  async getBalanceSheet(
+    tenantId: string,
+    orgId: string,
+    asOfDate: string,
+    bookId?: string,
+  ) {
     const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
     const accounts = await prisma.account.findMany({
       where: { tenantId, orgId: resolvedOrgId, isActive: true },
     });
 
-    const computedBalances = await this.getComputedBalances(tenantId, resolvedOrgId, asOfDate, bookId);
+    const computedBalances = await this.getComputedBalances(
+      tenantId,
+      resolvedOrgId,
+      asOfDate,
+      bookId,
+    );
 
-    const accountsMapped = accounts.map(a => {
+    const accountsMapped = accounts.map((a) => {
       const bal = computedBalances.get(a.id) || 0;
       let balanceVal = bal;
-      if (['LIABILITY', 'EQUITY', 'REVENUE'].includes(a.type)) {
+      if (["LIABILITY", "EQUITY", "REVENUE"].includes(a.type)) {
         balanceVal = -bal;
       }
-      const finalBalance = computedBalances.has(a.id) ? balanceVal : Number(a.balance);
+      const finalBalance = computedBalances.has(a.id)
+        ? balanceVal
+        : Number(a.balance);
       return { ...a, balance: finalBalance };
     });
 
-    const currentAssets = accountsMapped.filter((a) => a.type === 'ASSET' && a.code.startsWith('1'));
-    const nonCurrentAssets = accountsMapped.filter((a) => a.type === 'ASSET' && !a.code.startsWith('1'));
-    const currentLiabilities = accountsMapped.filter((a) => a.type === 'LIABILITY' && a.code.startsWith('2'));
-    const nonCurrentLiabilities = accountsMapped.filter((a) => a.type === 'LIABILITY' && !a.code.startsWith('2'));
-    const equityAccounts = accountsMapped.filter((a) => a.type === 'EQUITY');
+    const currentAssets = accountsMapped.filter(
+      (a) => a.type === "ASSET" && a.code.startsWith("1"),
+    );
+    const nonCurrentAssets = accountsMapped.filter(
+      (a) => a.type === "ASSET" && !a.code.startsWith("1"),
+    );
+    const currentLiabilities = accountsMapped.filter(
+      (a) => a.type === "LIABILITY" && a.code.startsWith("2"),
+    );
+    const nonCurrentLiabilities = accountsMapped.filter(
+      (a) => a.type === "LIABILITY" && !a.code.startsWith("2"),
+    );
+    const equityAccounts = accountsMapped.filter((a) => a.type === "EQUITY");
 
-    const sum = (accs: typeof accountsMapped) => accs.reduce((s, a) => s + Number(a.balance), 0);
-    const fmt = (accs: typeof accountsMapped) => accs.map((a) => ({ code: a.code, name: a.name, balance: Number(a.balance) }));
+    const sum = (accs: typeof accountsMapped) =>
+      accs.reduce((s, a) => s + Number(a.balance), 0);
+    const fmt = (accs: typeof accountsMapped) =>
+      accs.map((a) => ({
+        code: a.code,
+        name: a.name,
+        balance: Number(a.balance),
+      }));
 
     const totalAssets = sum(currentAssets) + sum(nonCurrentAssets);
-    const totalLiabilities = sum(currentLiabilities) + sum(nonCurrentLiabilities);
+    const totalLiabilities =
+      sum(currentLiabilities) + sum(nonCurrentLiabilities);
     const totalEquity = sum(equityAccounts);
 
     return {
       assets: {
         current: { total: sum(currentAssets), accounts: fmt(currentAssets) },
-        nonCurrent: { total: sum(nonCurrentAssets), accounts: fmt(nonCurrentAssets) },
+        nonCurrent: {
+          total: sum(nonCurrentAssets),
+          accounts: fmt(nonCurrentAssets),
+        },
         total: totalAssets,
       },
       liabilities: {
-        current: { total: sum(currentLiabilities), accounts: fmt(currentLiabilities) },
-        nonCurrent: { total: sum(nonCurrentLiabilities), accounts: fmt(nonCurrentLiabilities) },
+        current: {
+          total: sum(currentLiabilities),
+          accounts: fmt(currentLiabilities),
+        },
+        nonCurrent: {
+          total: sum(nonCurrentLiabilities),
+          accounts: fmt(nonCurrentLiabilities),
+        },
         total: totalLiabilities,
       },
       equity: { total: totalEquity, accounts: fmt(equityAccounts) },
@@ -180,28 +244,43 @@ export class FinancialReportingService {
 
   // ── CASH FLOW ──────────────────────────────────
 
-  async getCashFlowStatement(tenantId: string, orgId: string, startDate: string, endDate: string, bookId?: string) {
+  async getCashFlowStatement(
+    tenantId: string,
+    orgId: string,
+    startDate: string,
+    endDate: string,
+    bookId?: string,
+  ) {
     const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
     const accounts = await prisma.account.findMany({
       where: { tenantId, orgId: resolvedOrgId, isActive: true },
     });
 
-    const computedBalances = await this.getComputedBalances(tenantId, resolvedOrgId, endDate, bookId);
+    const computedBalances = await this.getComputedBalances(
+      tenantId,
+      resolvedOrgId,
+      endDate,
+      bookId,
+    );
 
-    const accountsMapped = accounts.map(a => {
+    const accountsMapped = accounts.map((a) => {
       const bal = computedBalances.get(a.id) || 0;
       const finalBalance = computedBalances.has(a.id) ? bal : Number(a.balance);
       return { ...a, balance: finalBalance };
     });
 
     const operatingAccounts = accountsMapped.filter(
-      (a) => a.type === 'REVENUE' || (a.type === 'EXPENSE' && !a.code.startsWith('8')),
+      (a) =>
+        a.type === "REVENUE" ||
+        (a.type === "EXPENSE" && !a.code.startsWith("8")),
     );
     const investingAccounts = accountsMapped.filter(
-      (a) => a.type === 'ASSET' && (a.code.startsWith('15') || a.code.startsWith('16')),
+      (a) =>
+        a.type === "ASSET" &&
+        (a.code.startsWith("15") || a.code.startsWith("16")),
     );
     const financingAccounts = accountsMapped.filter(
-      (a) => a.type === 'LIABILITY' || a.type === 'EQUITY',
+      (a) => a.type === "LIABILITY" || a.type === "EQUITY",
     );
 
     const mapAccts = (accs: typeof accountsMapped) =>
@@ -236,20 +315,31 @@ export class FinancialReportingService {
 
     const accounts = await prisma.account.findMany({
       where: { tenantId, orgId: resolvedOrgId, isActive: true },
-      orderBy: { code: 'asc' },
+      orderBy: { code: "asc" },
     });
 
     const entries = await prisma.journalEntry.findMany({
       where: {
         tenantId,
         accountId: { in: accounts.map((a) => a.id) },
-        journal: { orgId: resolvedOrgId, date: { lte: asOf }, status: 'POSTED' },
+        journal: {
+          orgId: resolvedOrgId,
+          date: { lte: asOf },
+          status: "POSTED",
+        },
       },
     });
 
-    const accountTotals = new Map<string, { debitTotal: number; creditTotal: number; entriesCount: number }>();
+    const accountTotals = new Map<
+      string,
+      { debitTotal: number; creditTotal: number; entriesCount: number }
+    >();
     for (const entry of entries) {
-      const c = accountTotals.get(entry.accountId) || { debitTotal: 0, creditTotal: 0, entriesCount: 0 };
+      const c = accountTotals.get(entry.accountId) || {
+        debitTotal: 0,
+        creditTotal: 0,
+        entriesCount: 0,
+      };
       c.debitTotal += Number(entry.debit);
       c.creditTotal += Number(entry.credit);
       c.entriesCount++;
@@ -257,8 +347,12 @@ export class FinancialReportingService {
     }
 
     const accountRows = accounts.map((account) => {
-      const totals = accountTotals.get(account.id) || { debitTotal: 0, creditTotal: 0, entriesCount: 0 };
-      const balance = ['ASSET', 'EXPENSE'].includes(account.type)
+      const totals = accountTotals.get(account.id) || {
+        debitTotal: 0,
+        creditTotal: 0,
+        entriesCount: 0,
+      };
+      const balance = ["ASSET", "EXPENSE"].includes(account.type)
         ? totals.debitTotal - totals.creditTotal
         : totals.creditTotal - totals.debitTotal;
       return {
@@ -283,7 +377,12 @@ export class FinancialReportingService {
 
   // ── AGING REPORT ──────────────────────────────────
 
-  async getAgingReport(tenantId: string, orgId: string, type: 'AR' | 'AP', asOfDate: string) {
+  async getAgingReport(
+    tenantId: string,
+    orgId: string,
+    type: "AR" | "AP",
+    asOfDate: string,
+  ) {
     const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
     const asOf = new Date(asOfDate);
     let items: Array<{
@@ -296,26 +395,31 @@ export class FinancialReportingService {
       ageBucket: string;
     }> = [];
 
-    if (type === 'AR') {
+    if (type === "AR") {
       const invoices = await prisma.invoice.findMany({
         where: {
           tenantId,
           orgId: resolvedOrgId,
-          status: { notIn: ['DRAFT', 'PAID', 'VOID'] },
+          status: { notIn: ["DRAFT", "PAID", "VOID"] },
           dueDate: { lt: asOf },
         },
         include: { customer: true },
       });
       items = invoices.map((inv) => {
         const dueDate = new Date(inv.dueDate);
-        const daysOverdue = Math.max(0, Math.floor((asOf.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)));
+        const daysOverdue = Math.max(
+          0,
+          Math.floor(
+            (asOf.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24),
+          ),
+        );
         const outstanding = Number(inv.totalAmount) - Number(inv.paidAmount);
-        let ageBucket = '0-30';
-        if (daysOverdue > 90) ageBucket = '90+';
-        else if (daysOverdue > 60) ageBucket = '61-90';
-        else if (daysOverdue > 30) ageBucket = '31-60';
+        let ageBucket = "0-30";
+        if (daysOverdue > 90) ageBucket = "90+";
+        else if (daysOverdue > 60) ageBucket = "61-90";
+        else if (daysOverdue > 30) ageBucket = "31-60";
         return {
-          partyName: inv.customer?.name || 'Unknown',
+          partyName: inv.customer?.name || "Unknown",
           documentNumber: inv.invoiceNumber,
           totalAmount: Number(inv.totalAmount),
           outstanding,
@@ -329,20 +433,25 @@ export class FinancialReportingService {
         where: {
           tenantId,
           orgId: resolvedOrgId,
-          status: { notIn: ['DRAFT', 'CANCELLED'] },
+          status: { notIn: ["DRAFT", "CANCELLED"] },
           createdAt: { lt: asOf },
         },
         include: { vendor: true },
       });
       items = purchaseOrders.map((po) => {
         const createdDate = new Date(po.createdAt);
-        const daysOverdue = Math.max(0, Math.floor((asOf.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24)));
-        let ageBucket = '0-30';
-        if (daysOverdue > 90) ageBucket = '90+';
-        else if (daysOverdue > 60) ageBucket = '61-90';
-        else if (daysOverdue > 30) ageBucket = '31-60';
+        const daysOverdue = Math.max(
+          0,
+          Math.floor(
+            (asOf.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24),
+          ),
+        );
+        let ageBucket = "0-30";
+        if (daysOverdue > 90) ageBucket = "90+";
+        else if (daysOverdue > 60) ageBucket = "61-90";
+        else if (daysOverdue > 30) ageBucket = "31-60";
         return {
-          partyName: po.vendor?.name || 'Unknown',
+          partyName: po.vendor?.name || "Unknown",
           documentNumber: po.poNumber,
           totalAmount: Number(po.totalAmount),
           outstanding: Number(po.totalAmount),
@@ -353,11 +462,16 @@ export class FinancialReportingService {
       });
     }
 
-    const buckets: Record<string, typeof items> = { '0-30': [], '31-60': [], '61-90': [], '90+': [] };
+    const buckets: Record<string, typeof items> = {
+      "0-30": [],
+      "31-60": [],
+      "61-90": [],
+      "90+": [],
+    };
     for (const item of items) {
       const t = buckets[item.ageBucket];
       if (t) t.push(item);
-      else if (buckets['90+']) buckets['90+'].push(item);
+      else if (buckets["90+"]) buckets["90+"].push(item);
     }
 
     const allItems = Object.values(buckets).flat();
@@ -370,7 +484,10 @@ export class FinancialReportingService {
       bucketTotals: Object.fromEntries(
         Object.entries(buckets).map(([k, list]) => [
           k,
-          { count: list.length, totalOutstanding: list.reduce((s, i) => s + i.outstanding, 0) },
+          {
+            count: list.length,
+            totalOutstanding: list.reduce((s, i) => s + i.outstanding, 0),
+          },
         ]),
       ),
     };
@@ -383,24 +500,32 @@ export class FinancialReportingService {
     const accounts = await prisma.account.findMany({
       where: { tenantId, orgId: resolvedOrgId, isActive: true },
     });
-    const getBalance = (type: string) => accounts.filter((a) => a.type === type).reduce((s, a) => s + Number(a.balance), 0);
+    const getBalance = (type: string) =>
+      accounts
+        .filter((a) => a.type === type)
+        .reduce((s, a) => s + Number(a.balance), 0);
     const currentAssets = accounts
-      .filter((a) => a.type === 'ASSET' && a.code.startsWith('1'))
+      .filter((a) => a.type === "ASSET" && a.code.startsWith("1"))
       .reduce((s, a) => s + Number(a.balance), 0);
     const currentLiabilities = accounts
-      .filter((a) => a.type === 'LIABILITY' && a.code.startsWith('2'))
+      .filter((a) => a.type === "LIABILITY" && a.code.startsWith("2"))
       .reduce((s, a) => s + Number(a.balance), 0);
-    const totalLiabilities = getBalance('LIABILITY');
-    const totalEquity = getBalance('EQUITY');
-    const totalRevenue = getBalance('REVENUE');
-    const totalExpenses = getBalance('EXPENSE');
+    const totalLiabilities = getBalance("LIABILITY");
+    const totalEquity = getBalance("EQUITY");
+    const totalRevenue = getBalance("REVENUE");
+    const totalExpenses = getBalance("EXPENSE");
     const netProfit = totalRevenue - totalExpenses;
 
     return {
-      currentRatio: currentLiabilities > 0 ? currentAssets / currentLiabilities : 0,
-      quickRatio: currentLiabilities > 0 ? (currentAssets - 0) / currentLiabilities : 0,
+      currentRatio:
+        currentLiabilities > 0 ? currentAssets / currentLiabilities : 0,
+      quickRatio:
+        currentLiabilities > 0 ? (currentAssets - 0) / currentLiabilities : 0,
       debtToEquity: totalEquity > 0 ? totalLiabilities / totalEquity : 0,
-      grossMargin: totalRevenue > 0 ? ((totalRevenue - totalExpenses) / totalRevenue) * 100 : 0,
+      grossMargin:
+        totalRevenue > 0
+          ? ((totalRevenue - totalExpenses) / totalRevenue) * 100
+          : 0,
       netProfitMargin: totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0,
       returnOnEquity: totalEquity > 0 ? (netProfit / totalEquity) * 100 : 0,
       asOfDate: new Date().toISOString(),
@@ -412,11 +537,17 @@ export class FinancialReportingService {
   async getCashFlowForecast(tenantId: string, orgId: string, months = 3) {
     const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
     const now = new Date();
-    const forecast: Array<{ month: string; expectedInflow: number; expectedOutflow: number; netCash: number; cumulativeCash: number }> = [];
+    const forecast: Array<{
+      month: string;
+      expectedInflow: number;
+      expectedOutflow: number;
+      netCash: number;
+      cumulativeCash: number;
+    }> = [];
     let cumulative = 0;
 
     const bankAccounts = await prisma.bankAccount.findMany({
-      where: { tenantId, orgId: resolvedOrgId, status: 'ACTIVE' },
+      where: { tenantId, orgId: resolvedOrgId, status: "ACTIVE" },
     });
     const accountIds = bankAccounts.map((ba) => ba.accountId);
     const accounts = await prisma.account.findMany({
@@ -434,7 +565,7 @@ export class FinancialReportingService {
         where: {
           tenantId,
           orgId: resolvedOrgId,
-          status: { notIn: ['PAID', 'DRAFT', 'VOID'] },
+          status: { notIn: ["PAID", "DRAFT", "VOID"] },
           dueDate: { gte: monthStart, lte: monthEnd },
         },
         _sum: { totalAmount: true, paidAmount: true },
@@ -443,13 +574,15 @@ export class FinancialReportingService {
         where: {
           tenantId,
           orgId: resolvedOrgId,
-          status: 'PENDING',
+          status: "PENDING",
           dueDate: { gte: monthStart, lte: monthEnd },
         },
         _sum: { amount: true },
       });
 
-      const inflow = Number(inflows._sum.totalAmount || 0) - Number(inflows._sum.paidAmount || 0);
+      const inflow =
+        Number(inflows._sum.totalAmount || 0) -
+        Number(inflows._sum.paidAmount || 0);
       const outflow = Number(outflows._sum.amount || 0);
       const net = inflow - outflow;
       cumulative += net;
@@ -471,7 +604,7 @@ export class FinancialReportingService {
   async getCashPosition(tenantId: string, orgId: string) {
     const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
     const bankAccounts = await prisma.bankAccount.findMany({
-      where: { tenantId, orgId: resolvedOrgId, status: 'ACTIVE' },
+      where: { tenantId, orgId: resolvedOrgId, status: "ACTIVE" },
     });
     const accountIds = bankAccounts.map((ba) => ba.accountId);
     const accounts = await prisma.account.findMany({
@@ -488,16 +621,18 @@ export class FinancialReportingService {
       where: {
         tenantId,
         orgId: resolvedOrgId,
-        status: { in: ['SENT', 'OVERDUE', 'PARTIALLY_PAID'] },
+        status: { in: ["SENT", "OVERDUE", "PARTIALLY_PAID"] },
       },
       _sum: { totalAmount: true, paidAmount: true },
     });
     const pendingOutflows = await prisma.paymentSchedule.aggregate({
-      where: { tenantId, orgId: resolvedOrgId, status: 'PENDING' },
+      where: { tenantId, orgId: resolvedOrgId, status: "PENDING" },
       _sum: { amount: true },
     });
 
-    const expectedInflows = Number(pendingInflows._sum.totalAmount || 0) - Number(pendingInflows._sum.paidAmount || 0);
+    const expectedInflows =
+      Number(pendingInflows._sum.totalAmount || 0) -
+      Number(pendingInflows._sum.paidAmount || 0);
     const expectedOutflows = Number(pendingOutflows._sum.amount || 0);
 
     return {
@@ -529,43 +664,80 @@ export class FinancialReportingService {
     });
 
     // Monthly revenue trend
-    const byMonth: Record<string, { invoiced: number; paid: number; count: number }> = {};
+    const byMonth: Record<
+      string,
+      { invoiced: number; paid: number; count: number }
+    > = {};
     for (const inv of invoices) {
-      const key = `${inv.issueDate.getFullYear()}-${String(inv.issueDate.getMonth() + 1).padStart(2, '0')}`;
+      const key = `${inv.issueDate.getFullYear()}-${String(inv.issueDate.getMonth() + 1).padStart(2, "0")}`;
       if (!byMonth[key]) byMonth[key] = { invoiced: 0, paid: 0, count: 0 };
       byMonth[key].invoiced += Number(inv.totalAmount);
-      byMonth[key].paid += inv.payments.reduce((s, p) => s + Number(p.amount), 0);
+      byMonth[key].paid += inv.payments.reduce(
+        (s, p) => s + Number(p.amount),
+        0,
+      );
       byMonth[key].count++;
     }
 
     // Customer breakdown (top 10)
-    const byCustomer: Record<string, { name: string; invoiced: number; paid: number; count: number }> = {};
+    const byCustomer: Record<
+      string,
+      { name: string; invoiced: number; paid: number; count: number }
+    > = {};
     for (const inv of invoices) {
-      const key = inv.customerId || 'unknown';
-      if (!byCustomer[key]) byCustomer[key] = { name: inv.customer?.name ?? 'Unknown', invoiced: 0, paid: 0, count: 0 };
+      const key = inv.customerId || "unknown";
+      if (!byCustomer[key])
+        byCustomer[key] = {
+          name: inv.customer?.name ?? "Unknown",
+          invoiced: 0,
+          paid: 0,
+          count: 0,
+        };
       byCustomer[key].invoiced += Number(inv.totalAmount);
-      byCustomer[key].paid += inv.payments.reduce((s, p) => s + Number(p.amount), 0);
+      byCustomer[key].paid += inv.payments.reduce(
+        (s, p) => s + Number(p.amount),
+        0,
+      );
       byCustomer[key].count++;
     }
 
-    const topCustomers = Object.values(byCustomer).sort((a, b) => b.invoiced - a.invoiced).slice(0, 10);
+    const topCustomers = Object.values(byCustomer)
+      .sort((a, b) => b.invoiced - a.invoiced)
+      .slice(0, 10);
 
     // Status breakdown
     const statusCounts: Record<string, number> = {};
     const statusAmounts: Record<string, number> = {};
     for (const inv of invoices) {
       statusCounts[inv.status] = (statusCounts[inv.status] || 0) + 1;
-      statusAmounts[inv.status] = (statusAmounts[inv.status] || 0) + Number(inv.totalAmount);
+      statusAmounts[inv.status] =
+        (statusAmounts[inv.status] || 0) + Number(inv.totalAmount);
     }
 
     // Average days to pay
-    const paidInvoices = invoices.filter(inv => inv.status === 'PAID' && inv.payments.length > 0);
-    const avgDaysToPay = paidInvoices.length > 0
-      ? paidInvoices.reduce((s, inv) => {
-          const lastPayment = inv.payments.sort((a, b) => new Date(b.paidAt).getTime() - new Date(a.paidAt).getTime())[0];
-          return s + (lastPayment ? Math.max(0, (new Date(lastPayment.paidAt).getTime() - inv.issueDate.getTime()) / (1000 * 60 * 60 * 24)) : 0);
-        }, 0) / paidInvoices.length
-      : 0;
+    const paidInvoices = invoices.filter(
+      (inv) => inv.status === "PAID" && inv.payments.length > 0,
+    );
+    const avgDaysToPay =
+      paidInvoices.length > 0
+        ? paidInvoices.reduce((s, inv) => {
+            const lastPayment = inv.payments.sort(
+              (a, b) =>
+                new Date(b.paidAt).getTime() - new Date(a.paidAt).getTime(),
+            )[0];
+            return (
+              s +
+              (lastPayment
+                ? Math.max(
+                    0,
+                    (new Date(lastPayment.paidAt).getTime() -
+                      inv.issueDate.getTime()) /
+                      (1000 * 60 * 60 * 24),
+                  )
+                : 0)
+            );
+          }, 0) / paidInvoices.length
+        : 0;
 
     return {
       period: { months, since: since.toISOString() },
@@ -574,11 +746,20 @@ export class FinancialReportingService {
         .map(([month, data]) => ({ month, ...data })),
       topCustomers,
       statusBreakdown: Object.entries(statusCounts).map(([status, count]) => ({
-        status, count, amount: statusAmounts[status] || 0,
+        status,
+        count,
+        amount: statusAmounts[status] || 0,
       })),
       avgDaysToPay: Math.round(avgDaysToPay),
-      totalInvoiced: invoices.reduce((s, inv) => s + Number(inv.totalAmount), 0),
-      totalCollected: invoices.reduce((s, inv) => s + inv.payments.reduce((ps, p) => ps + Number(p.amount), 0), 0),
+      totalInvoiced: invoices.reduce(
+        (s, inv) => s + Number(inv.totalAmount),
+        0,
+      ),
+      totalCollected: invoices.reduce(
+        (s, inv) =>
+          s + inv.payments.reduce((ps, p) => ps + Number(p.amount), 0),
+        0,
+      ),
     };
   }
 
@@ -586,28 +767,52 @@ export class FinancialReportingService {
 
   async getApAgingReport(tenantId: string) {
     const schedules = await prisma.paymentSchedule.findMany({
-      where: { tenantId, status: 'PENDING' },
+      where: { tenantId, status: "PENDING" },
       include: { vendor: true },
     });
 
     const now = Date.now();
     const buckets = {
       current: { total: 0, count: 0, items: [] as unknown[] },
-      '1-30': { total: 0, count: 0, items: [] as unknown[] },
-      '31-60': { total: 0, count: 0, items: [] as unknown[] },
-      '61-90': { total: 0, count: 0, items: [] as unknown[] },
-      '90+': { total: 0, count: 0, items: [] as unknown[] },
+      "1-30": { total: 0, count: 0, items: [] as unknown[] },
+      "31-60": { total: 0, count: 0, items: [] as unknown[] },
+      "61-90": { total: 0, count: 0, items: [] as unknown[] },
+      "90+": { total: 0, count: 0, items: [] as unknown[] },
     };
 
     for (const s of schedules) {
-      const daysOverdue = Math.floor((now - s.dueDate.getTime()) / (1000 * 60 * 60 * 24));
+      const daysOverdue = Math.floor(
+        (now - s.dueDate.getTime()) / (1000 * 60 * 60 * 24),
+      );
       const amount = Number(s.amount);
-      const entry = { id: s.id, vendor: s.vendor?.name, dueDate: s.dueDate, amount, daysOverdue };
-      if (daysOverdue <= 0) { buckets.current.total += amount; buckets.current.count++; buckets.current.items.push(entry); }
-      else if (daysOverdue <= 30) { buckets['1-30'].total += amount; buckets['1-30'].count++; buckets['1-30'].items.push(entry); }
-      else if (daysOverdue <= 60) { buckets['31-60'].total += amount; buckets['31-60'].count++; buckets['31-60'].items.push(entry); }
-      else if (daysOverdue <= 90) { buckets['61-90'].total += amount; buckets['61-90'].count++; buckets['61-90'].items.push(entry); }
-      else { buckets['90+'].total += amount; buckets['90+'].count++; buckets['90+'].items.push(entry); }
+      const entry = {
+        id: s.id,
+        vendor: s.vendor?.name,
+        dueDate: s.dueDate,
+        amount,
+        daysOverdue,
+      };
+      if (daysOverdue <= 0) {
+        buckets.current.total += amount;
+        buckets.current.count++;
+        buckets.current.items.push(entry);
+      } else if (daysOverdue <= 30) {
+        buckets["1-30"].total += amount;
+        buckets["1-30"].count++;
+        buckets["1-30"].items.push(entry);
+      } else if (daysOverdue <= 60) {
+        buckets["31-60"].total += amount;
+        buckets["31-60"].count++;
+        buckets["31-60"].items.push(entry);
+      } else if (daysOverdue <= 90) {
+        buckets["61-90"].total += amount;
+        buckets["61-90"].count++;
+        buckets["61-90"].items.push(entry);
+      } else {
+        buckets["90+"].total += amount;
+        buckets["90+"].count++;
+        buckets["90+"].items.push(entry);
+      }
     }
 
     const grandTotal = Object.values(buckets).reduce((s, b) => s + b.total, 0);
@@ -616,61 +821,101 @@ export class FinancialReportingService {
 
   // ── WRITE-OFF / BAD DEBT ──────────────────────────────────
 
-  async writeOffInvoice(tenantId: string, orgId: string, invoiceId: string, reason: string) {
+  async writeOffInvoice(
+    tenantId: string,
+    orgId: string,
+    invoiceId: string,
+    reason: string,
+  ) {
     const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
-    const invoice = await prisma.invoice.findFirst({ where: { id: invoiceId, tenantId } });
-    if (!invoice) throw new Error('Invoice not found');
-    if (['PAID', 'VOID', 'WRITTEN_OFF'].includes(invoice.status)) {
+    const invoice = await prisma.invoice.findFirst({
+      where: { id: invoiceId, tenantId },
+    });
+    if (!invoice) throw new Error("Invoice not found");
+    if (["PAID", "VOID", "WRITTEN_OFF"].includes(invoice.status)) {
       throw new Error(`Cannot write off invoice in status ${invoice.status}`);
     }
 
     // Mark invoice as written off
     await prisma.invoice.update({
       where: { id: invoiceId },
-      data: { status: 'VOID', notes: `[WRITTEN_OFF] ${reason} — ${new Date().toISOString()}` } as never,
+      data: {
+        status: "VOID",
+        notes: `[WRITTEN_OFF] ${reason} — ${new Date().toISOString()}`,
+      } as never,
     });
 
     // Create a bad-debt journal entry
     const badDebtAccount = await prisma.account.findFirst({
-      where: { tenantId, orgId: resolvedOrgId, name: { contains: 'Bad Debt' } },
+      where: { tenantId, orgId: resolvedOrgId, name: { contains: "Bad Debt" } },
     });
     const arAccount = await prisma.account.findFirst({
-      where: { tenantId, orgId: resolvedOrgId, type: 'ASSET', name: { contains: 'Receivable' } },
+      where: {
+        tenantId,
+        orgId: resolvedOrgId,
+        type: "ASSET",
+        name: { contains: "Receivable" },
+      },
     });
 
     if (badDebtAccount && arAccount) {
-      const writeOffAmount = Number(invoice.totalAmount) - Number(invoice.paidAmount || 0);
+      const writeOffAmount =
+        Number(invoice.totalAmount) - Number(invoice.paidAmount || 0);
       await prisma.journal.create({
         data: {
           tenantId,
           orgId: resolvedOrgId,
           entryNumber: `WO-${Date.now()}`,
           notes: `Bad debt write-off for invoice ${invoice.invoiceNumber}: ${reason}`,
-          status: 'POSTED',
+          status: "POSTED",
           date: new Date(),
           entries: {
             create: [
-              { tenantId, accountId: badDebtAccount.id, debit: writeOffAmount, credit: 0, description: `Bad debt write-off: ${invoice.invoiceNumber}` },
-              { tenantId, accountId: arAccount.id, debit: 0, credit: writeOffAmount, description: `AR reduction: ${invoice.invoiceNumber}` },
+              {
+                tenantId,
+                accountId: badDebtAccount.id,
+                debit: writeOffAmount,
+                credit: 0,
+                description: `Bad debt write-off: ${invoice.invoiceNumber}`,
+              },
+              {
+                tenantId,
+                accountId: arAccount.id,
+                debit: 0,
+                credit: writeOffAmount,
+                description: `AR reduction: ${invoice.invoiceNumber}`,
+              },
             ],
           },
         },
       });
     }
 
-    await this.glService.logAudit(prisma, tenantId, 'Invoice', invoiceId, 'WRITE_OFF', { invoiceId, reason }, 'system');
+    await this.glService.logAudit(
+      prisma,
+      tenantId,
+      "Invoice",
+      invoiceId,
+      "WRITE_OFF",
+      { invoiceId, reason },
+      "system",
+    );
     return { writtenOff: true, invoiceId, reason };
   }
 
   // ── PROFORMA INVOICE ──────────────────────────────────
 
-  async createProformaInvoice(tenantId: string, orgId: string, sourceInvoiceId: string) {
+  async createProformaInvoice(
+    tenantId: string,
+    orgId: string,
+    sourceInvoiceId: string,
+  ) {
     const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
     const source = await prisma.invoice.findFirst({
       where: { id: sourceInvoiceId, tenantId },
       include: { lineItems: true },
     });
-    if (!source) throw new Error('Source invoice not found');
+    if (!source) throw new Error("Source invoice not found");
 
     const proforma = await prisma.invoice.create({
       data: {
@@ -680,7 +925,7 @@ export class FinancialReportingService {
         invoiceNumber: `PRO-${source.invoiceNumber}`,
         issueDate: new Date(),
         dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        status: 'DRAFT',
+        status: "DRAFT",
         notes: `Proforma invoice based on ${source.invoiceNumber}`,
         subtotal: source.subtotal,
         taxAmount: source.taxAmount,
@@ -706,15 +951,15 @@ export class FinancialReportingService {
   async calculateLateFees(tenantId: string, orgId: string) {
     const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
     const dunningLevels = await prisma.dunningLevel.findMany({
-      where: { tenantId, status: 'ACTIVE' },
-      orderBy: { daysOverdue: 'desc' },
+      where: { tenantId, status: "ACTIVE" },
+      orderBy: { daysOverdue: "desc" },
     });
 
     const overdueInvoices = await prisma.invoice.findMany({
       where: {
         tenantId,
         orgId: resolvedOrgId,
-        status: { notIn: ['PAID', 'VOID', 'DRAFT'] },
+        status: { notIn: ["PAID", "VOID", "DRAFT"] },
         dueDate: { lt: new Date() },
       },
       include: { customer: true },
@@ -722,8 +967,12 @@ export class FinancialReportingService {
 
     const now = Date.now();
     const feeCalculations = overdueInvoices.map((inv) => {
-      const daysOverdue = Math.floor((now - inv.dueDate.getTime()) / (1000 * 60 * 60 * 24));
-      const applicableLevel = dunningLevels.find((lvl) => daysOverdue >= lvl.daysOverdue);
+      const daysOverdue = Math.floor(
+        (now - inv.dueDate.getTime()) / (1000 * 60 * 60 * 24),
+      );
+      const applicableLevel = dunningLevels.find(
+        (lvl) => daysOverdue >= lvl.daysOverdue,
+      );
       const lateFee = applicableLevel ? Number(applicableLevel.feeAmount) : 0;
       return {
         invoiceId: inv.id,
@@ -732,12 +981,16 @@ export class FinancialReportingService {
         daysOverdue,
         invoiceAmount: Number(inv.totalAmount),
         lateFee,
-        applicableLevel: applicableLevel?.levelName ?? 'None',
+        applicableLevel: applicableLevel?.levelName ?? "None",
       };
     });
 
     const totalFees = feeCalculations.reduce((s, f) => s + f.lateFee, 0);
-    return { calculations: feeCalculations, totalFees, overdueCount: feeCalculations.length };
+    return {
+      calculations: feeCalculations,
+      totalFees,
+      overdueCount: feeCalculations.length,
+    };
   }
 
   // ── FINANCE DASHBOARD KPIs ──────────────────────────────────
@@ -748,34 +1001,67 @@ export class FinancialReportingService {
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const startOfYear = new Date(now.getFullYear(), 0, 1);
 
-    const [mtdRevenue, ytdRevenue, unpaidInvoices, overdueInvoices, cashPosition, pendingApprovals] = await Promise.all([
+    const [
+      mtdRevenue,
+      ytdRevenue,
+      unpaidInvoices,
+      overdueInvoices,
+      cashPosition,
+      pendingApprovals,
+    ] = await Promise.all([
       prisma.invoice.aggregate({
-        where: { tenantId, orgId: resolvedOrgId, status: 'PAID', issueDate: { gte: startOfMonth } },
+        where: {
+          tenantId,
+          orgId: resolvedOrgId,
+          status: "PAID",
+          issueDate: { gte: startOfMonth },
+        },
         _sum: { totalAmount: true },
       }),
       prisma.invoice.aggregate({
-        where: { tenantId, orgId: resolvedOrgId, status: 'PAID', issueDate: { gte: startOfYear } },
+        where: {
+          tenantId,
+          orgId: resolvedOrgId,
+          status: "PAID",
+          issueDate: { gte: startOfYear },
+        },
         _sum: { totalAmount: true },
       }),
       prisma.invoice.aggregate({
-        where: { tenantId, orgId: resolvedOrgId, status: { notIn: ['PAID', 'VOID', 'DRAFT'] } },
+        where: {
+          tenantId,
+          orgId: resolvedOrgId,
+          status: { notIn: ["PAID", "VOID", "DRAFT"] },
+        },
         _sum: { totalAmount: true },
         _count: true,
       }),
       prisma.invoice.aggregate({
-        where: { tenantId, orgId: resolvedOrgId, status: { notIn: ['PAID', 'VOID', 'DRAFT'] }, dueDate: { lt: now } },
+        where: {
+          tenantId,
+          orgId: resolvedOrgId,
+          status: { notIn: ["PAID", "VOID", "DRAFT"] },
+          dueDate: { lt: now },
+        },
         _sum: { totalAmount: true },
         _count: true,
       }),
-      prisma.bankAccount.findMany({ where: { tenantId, orgId: resolvedOrgId, status: 'ACTIVE' } }),
-      prisma.journal.count({ where: { tenantId, orgId: resolvedOrgId, status: 'PENDING_APPROVAL' } }),
+      prisma.bankAccount.findMany({
+        where: { tenantId, orgId: resolvedOrgId, status: "ACTIVE" },
+      }),
+      prisma.journal.count({
+        where: { tenantId, orgId: resolvedOrgId, status: "PENDING_APPROVAL" },
+      }),
     ]);
 
-    const bankAccountIds = cashPosition.map(ba => ba.accountId);
+    const bankAccountIds = cashPosition.map((ba) => ba.accountId);
     const bankAccountsGL = await prisma.account.findMany({
       where: { id: { in: bankAccountIds }, tenantId },
     });
-    const totalCash = bankAccountsGL.reduce((s, a) => s + Number(a.balance || 0), 0);
+    const totalCash = bankAccountsGL.reduce(
+      (s, a) => s + Number(a.balance || 0),
+      0,
+    );
 
     return {
       mtdRevenue: Number(mtdRevenue._sum.totalAmount || 0),
@@ -795,7 +1081,14 @@ export class FinancialReportingService {
   async get13WeekCashForecast(tenantId: string, orgId: string) {
     const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
     const now = new Date();
-    const weeks: { weekStart: Date; weekEnd: Date; label: string; projectedInflows: number; projectedOutflows: number; netCashFlow: number }[] = [];
+    const weeks: {
+      weekStart: Date;
+      weekEnd: Date;
+      label: string;
+      projectedInflows: number;
+      projectedOutflows: number;
+      netCashFlow: number;
+    }[] = [];
 
     for (let w = 0; w < 13; w++) {
       const weekStart = new Date(now);
@@ -808,14 +1101,20 @@ export class FinancialReportingService {
       const [invoicesInflow, apOutflow] = await Promise.all([
         prisma.invoice.aggregate({
           where: {
-            tenantId, orgId: resolvedOrgId,
-            status: { notIn: ['PAID', 'VOID', 'DRAFT'] },
+            tenantId,
+            orgId: resolvedOrgId,
+            status: { notIn: ["PAID", "VOID", "DRAFT"] },
             dueDate: { gte: weekStart, lte: weekEnd },
           },
           _sum: { totalAmount: true },
         }),
         prisma.paymentSchedule.aggregate({
-          where: { tenantId, orgId: resolvedOrgId, status: 'PENDING', dueDate: { gte: weekStart, lte: weekEnd } },
+          where: {
+            tenantId,
+            orgId: resolvedOrgId,
+            status: "PENDING",
+            dueDate: { gte: weekStart, lte: weekEnd },
+          },
           _sum: { amount: true },
         }),
       ]);
@@ -826,7 +1125,7 @@ export class FinancialReportingService {
       weeks.push({
         weekStart,
         weekEnd,
-        label: `Week ${w + 1} (${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})`,
+        label: `Week ${w + 1} (${weekStart.toLocaleDateString("en-US", { month: "short", day: "numeric" })})`,
         projectedInflows: inflows,
         projectedOutflows: outflows,
         netCashFlow: inflows - outflows,
@@ -835,7 +1134,12 @@ export class FinancialReportingService {
 
     const totalInflows = weeks.reduce((s, w) => s + w.projectedInflows, 0);
     const totalOutflows = weeks.reduce((s, w) => s + w.projectedOutflows, 0);
-    return { weeks, totalInflows, totalOutflows, netPosition: totalInflows - totalOutflows };
+    return {
+      weeks,
+      totalInflows,
+      totalOutflows,
+      netPosition: totalInflows - totalOutflows,
+    };
   }
 
   // ── BUDGET MONTHLY SPREAD ──────────────────────────────────
@@ -845,16 +1149,30 @@ export class FinancialReportingService {
     const yearEnd = new Date(`${fiscalYear}-12-31`);
 
     const budgets = await prisma.budget.findMany({
-      where: { tenantId, startDate: { gte: yearStart }, endDate: { lte: yearEnd } },
+      where: {
+        tenantId,
+        startDate: { gte: yearStart },
+        endDate: { lte: yearEnd },
+      },
       include: { account: true },
     });
 
-    const monthlyBudgets: Record<string, { month: string; budgeted: number; accounts: { name: string; amount: number }[] }> = {};
+    const monthlyBudgets: Record<
+      string,
+      {
+        month: string;
+        budgeted: number;
+        accounts: { name: string; amount: number }[];
+      }
+    > = {};
     for (let m = 0; m < 12; m++) {
       const monthDate = new Date(parseInt(fiscalYear), m, 1);
-      const monthKey = `${fiscalYear}-${String(m + 1).padStart(2, '0')}`;
+      const monthKey = `${fiscalYear}-${String(m + 1).padStart(2, "0")}`;
       monthlyBudgets[monthKey] = {
-        month: monthDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        month: monthDate.toLocaleDateString("en-US", {
+          month: "short",
+          year: "numeric",
+        }),
         budgeted: 0,
         accounts: [],
       };
@@ -863,32 +1181,54 @@ export class FinancialReportingService {
     for (const budget of budgets) {
       const start = new Date(budget.startDate);
       const end = new Date(budget.endDate);
-      const monthCount = Math.max(1, (end.getFullYear() - start.getFullYear()) * 12 + end.getMonth() - start.getMonth() + 1);
+      const monthCount = Math.max(
+        1,
+        (end.getFullYear() - start.getFullYear()) * 12 +
+          end.getMonth() -
+          start.getMonth() +
+          1,
+      );
       const monthlyAmount = Number(budget.amount) / monthCount;
 
       for (let m = 0; m < monthCount; m++) {
         const d = new Date(start.getFullYear(), start.getMonth() + m, 1);
         if (d.getFullYear() !== parseInt(fiscalYear)) continue;
-        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
         if (monthlyBudgets[key]) {
           monthlyBudgets[key].budgeted += monthlyAmount;
-          monthlyBudgets[key].accounts.push({ name: budget.account?.name ?? 'Unknown', amount: monthlyAmount });
+          monthlyBudgets[key].accounts.push({
+            name: budget.account?.name ?? "Unknown",
+            amount: monthlyAmount,
+          });
         }
       }
     }
 
-    return { fiscalYear, months: Object.values(monthlyBudgets), totalBudgeted: budgets.reduce((s, b) => s + Number(b.amount), 0) };
+    return {
+      fiscalYear,
+      months: Object.values(monthlyBudgets),
+      totalBudgeted: budgets.reduce((s, b) => s + Number(b.amount), 0),
+    };
   }
 
   // ── GL ACCOUNT DRILL-DOWN ──────────────────────────────────
 
-  async getGlAccountDrillDown(tenantId: string, accountId: string, startDate?: string, endDate?: string, page = 1, limit = 50) {
-    const account = await prisma.account.findFirst({ where: { id: accountId, tenantId } });
-    if (!account) throw new Error('Account not found');
+  async getGlAccountDrillDown(
+    tenantId: string,
+    accountId: string,
+    startDate?: string,
+    endDate?: string,
+    page = 1,
+    limit = 50,
+  ) {
+    const account = await prisma.account.findFirst({
+      where: { id: accountId, tenantId },
+    });
+    if (!account) throw new Error("Account not found");
 
     const dateFilter: Record<string, unknown> = {};
-    if (startDate) dateFilter['gte'] = new Date(startDate);
-    if (endDate) dateFilter['lte'] = new Date(endDate);
+    if (startDate) dateFilter["gte"] = new Date(startDate);
+    if (endDate) dateFilter["lte"] = new Date(endDate);
 
     const skip = (page - 1) * limit;
     const [entries, total] = await Promise.all([
@@ -896,14 +1236,24 @@ export class FinancialReportingService {
         where: {
           tenantId,
           accountId,
-          ...(Object.keys(dateFilter).length ? { journal: { date: dateFilter } } : {}),
+          ...(Object.keys(dateFilter).length
+            ? { journal: { date: dateFilter } }
+            : {}),
         },
         include: { journal: true },
-        orderBy: { journal: { date: 'desc' } },
+        orderBy: { journal: { date: "desc" } },
         skip,
         take: limit,
       }),
-      prisma.journalEntry.count({ where: { tenantId, accountId, ...(Object.keys(dateFilter).length ? { journal: { date: dateFilter } } : {}) } }),
+      prisma.journalEntry.count({
+        where: {
+          tenantId,
+          accountId,
+          ...(Object.keys(dateFilter).length
+            ? { journal: { date: dateFilter } }
+            : {}),
+        },
+      }),
     ]);
 
     let runningBalance = Number(account.balance || 0);
@@ -912,7 +1262,7 @@ export class FinancialReportingService {
       runningBalance -= net; // simplified running backwards
       return {
         date: e.journal.date,
-        description: e.description || e.journal.notes || '',
+        description: e.description || e.journal.notes || "",
         reference: e.journal.entryNumber,
         debit: Number(e.debit),
         credit: Number(e.credit),
@@ -921,7 +1271,13 @@ export class FinancialReportingService {
     });
 
     return {
-      account: { id: account.id, code: account.code, name: account.name, type: account.type, currentBalance: Number(account.balance || 0) },
+      account: {
+        id: account.id,
+        code: account.code,
+        name: account.name,
+        type: account.type,
+        currentBalance: Number(account.balance || 0),
+      },
       transactions,
       total,
       page,
@@ -937,29 +1293,65 @@ export class FinancialReportingService {
     since.setMonth(since.getMonth() - months);
 
     const paidInvoices = await prisma.invoice.findMany({
-      where: { tenantId, status: 'PAID', issueDate: { gte: since } },
+      where: { tenantId, status: "PAID", issueDate: { gte: since } },
       include: { customer: true, payments: true },
     });
 
-    const byCustomer: Record<string, { name: string; invoiceCount: number; avgDaysToPay: number; totalPaid: number; onTimeCount: number; lateCount: number }> = {};
+    const byCustomer: Record<
+      string,
+      {
+        name: string;
+        invoiceCount: number;
+        avgDaysToPay: number;
+        totalPaid: number;
+        onTimeCount: number;
+        lateCount: number;
+      }
+    > = {};
 
     for (const inv of paidInvoices) {
-      const key = inv.customerId || 'unknown';
-      if (!byCustomer[key]) byCustomer[key] = { name: inv.customer?.name ?? 'Unknown', invoiceCount: 0, avgDaysToPay: 0, totalPaid: 0, onTimeCount: 0, lateCount: 0 };
+      const key = inv.customerId || "unknown";
+      if (!byCustomer[key])
+        byCustomer[key] = {
+          name: inv.customer?.name ?? "Unknown",
+          invoiceCount: 0,
+          avgDaysToPay: 0,
+          totalPaid: 0,
+          onTimeCount: 0,
+          lateCount: 0,
+        };
 
-      const lastPayment = inv.payments.sort((a, b) => new Date(b.paidAt).getTime() - new Date(a.paidAt).getTime())[0];
+      const lastPayment = inv.payments.sort(
+        (a, b) => new Date(b.paidAt).getTime() - new Date(a.paidAt).getTime(),
+      )[0];
       if (!lastPayment) continue;
-      const daysToPay = Math.max(0, (new Date(lastPayment.paidAt).getTime() - inv.issueDate.getTime()) / (1000 * 60 * 60 * 24));
+      const daysToPay = Math.max(
+        0,
+        (new Date(lastPayment.paidAt).getTime() - inv.issueDate.getTime()) /
+          (1000 * 60 * 60 * 24),
+      );
       const isLate = new Date(lastPayment.paidAt) > inv.dueDate;
 
       byCustomer[key].invoiceCount++;
-      byCustomer[key].avgDaysToPay = (byCustomer[key].avgDaysToPay * (byCustomer[key].invoiceCount - 1) + daysToPay) / byCustomer[key].invoiceCount;
-      byCustomer[key].totalPaid += inv.payments.reduce((s, p) => s + Number(p.amount), 0);
-      if (isLate) byCustomer[key].lateCount++; else byCustomer[key].onTimeCount++;
+      byCustomer[key].avgDaysToPay =
+        (byCustomer[key].avgDaysToPay * (byCustomer[key].invoiceCount - 1) +
+          daysToPay) /
+        byCustomer[key].invoiceCount;
+      byCustomer[key].totalPaid += inv.payments.reduce(
+        (s, p) => s + Number(p.amount),
+        0,
+      );
+      if (isLate) byCustomer[key].lateCount++;
+      else byCustomer[key].onTimeCount++;
     }
 
     return Object.values(byCustomer)
-      .map(c => ({ ...c, onTimeRate: c.invoiceCount > 0 ? (c.onTimeCount / c.invoiceCount) * 100 : 0, avgDaysToPay: Math.round(c.avgDaysToPay) }))
+      .map((c) => ({
+        ...c,
+        onTimeRate:
+          c.invoiceCount > 0 ? (c.onTimeCount / c.invoiceCount) * 100 : 0,
+        avgDaysToPay: Math.round(c.avgDaysToPay),
+      }))
       .sort((a, b) => a.avgDaysToPay - b.avgDaysToPay);
   }
 
@@ -971,17 +1363,38 @@ export class FinancialReportingService {
       include: { vendor: true },
     });
 
-    const byVendor: Record<string, { name: string; pending: number; paid: number; overdue: number; total: number }> = {};
+    const byVendor: Record<
+      string,
+      {
+        name: string;
+        pending: number;
+        paid: number;
+        overdue: number;
+        total: number;
+      }
+    > = {};
     const now = Date.now();
 
     for (const s of schedules) {
       const key = s.vendorId;
-      if (!byVendor[key]) byVendor[key] = { name: s.vendor?.name ?? 'Unknown', pending: 0, paid: 0, overdue: 0, total: 0 };
+      if (!byVendor[key])
+        byVendor[key] = {
+          name: s.vendor?.name ?? "Unknown",
+          pending: 0,
+          paid: 0,
+          overdue: 0,
+          total: 0,
+        };
       const amount = Number(s.amount);
       byVendor[key].total += amount;
-      if (s.status === 'PAID') { byVendor[key].paid += amount; }
-      else if (s.dueDate.getTime() < now) { byVendor[key].overdue += amount; byVendor[key].pending += amount; }
-      else { byVendor[key].pending += amount; }
+      if (s.status === "PAID") {
+        byVendor[key].paid += amount;
+      } else if (s.dueDate.getTime() < now) {
+        byVendor[key].overdue += amount;
+        byVendor[key].pending += amount;
+      } else {
+        byVendor[key].pending += amount;
+      }
     }
 
     return Object.values(byVendor).sort((a, b) => b.pending - a.pending);
@@ -995,12 +1408,15 @@ export class FinancialReportingService {
 
     const filings = await prisma.taxFiling.findMany({
       where: { tenantId, periodStart: { gte: start, lte: end } },
-      orderBy: { periodStart: 'asc' },
+      orderBy: { periodStart: "asc" },
     });
 
-    const parsedFilings = filings.map(f => {
-      const payload = (f.payload && typeof f.payload === 'object' ? f.payload : {}) as Record<string, unknown>;
-      const netTaxPayable = typeof payload.netTaxPayable === 'number' ? payload.netTaxPayable : 0;
+    const parsedFilings = filings.map((f) => {
+      const payload = (
+        f.payload && typeof f.payload === "object" ? f.payload : {}
+      ) as Record<string, unknown>;
+      const netTaxPayable =
+        typeof payload.netTaxPayable === "number" ? payload.netTaxPayable : 0;
       return {
         id: f.id,
         period: `${f.periodStart.toLocaleDateString()} – ${f.periodEnd.toLocaleDateString()}`,
@@ -1010,9 +1426,14 @@ export class FinancialReportingService {
       };
     });
 
-    const totalTaxLiability = parsedFilings.reduce((s, f) => s + f.liability, 0);
-    const totalTaxPaid = parsedFilings.filter(f => f.status === 'FILED').reduce((s, f) => s + f.liability, 0);
-    const pending = parsedFilings.filter(f => f.status !== 'FILED').length;
+    const totalTaxLiability = parsedFilings.reduce(
+      (s, f) => s + f.liability,
+      0,
+    );
+    const totalTaxPaid = parsedFilings
+      .filter((f) => f.status === "FILED")
+      .reduce((s, f) => s + f.liability, 0);
+    const pending = parsedFilings.filter((f) => f.status !== "FILED").length;
 
     return {
       year,
@@ -1024,4 +1445,3 @@ export class FinancialReportingService {
     };
   }
 }
-

@@ -1,6 +1,9 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
 
 export interface HierarchyTreeNode {
   id: string;
@@ -56,17 +59,35 @@ export interface HierarchyTreeNode {
 @Injectable()
 export class CrmAccountManagementService {
   // ── F46: Account Plans ─────────────────────────────
-  async getAccountPlan(tenantId: string, customerId: string): Promise<{
-    customerId: string; customerName: string; strategicObjectives: string[];
-    keyInitiatives: Array<{ initiative: string; status: string; dueDate: string; owner: string }>;
+  async getAccountPlan(
+    tenantId: string,
+    customerId: string,
+  ): Promise<{
+    customerId: string;
+    customerName: string;
+    strategicObjectives: string[];
+    keyInitiatives: Array<{
+      initiative: string;
+      status: string;
+      dueDate: string;
+      owner: string;
+    }>;
     growthTargets: { currentARR: number; targetARR: number; growthPct: number };
-    risks: Array<{ risk: string; impact: 'HIGH' | 'MEDIUM' | 'LOW'; mitigation: string }>;
-    stakeholderMap: Array<{ name: string; role: string; sentiment: 'POSITIVE' | 'NEUTRAL' | 'NEGATIVE' }>;
+    risks: Array<{
+      risk: string;
+      impact: "HIGH" | "MEDIUM" | "LOW";
+      mitigation: string;
+    }>;
+    stakeholderMap: Array<{
+      name: string;
+      role: string;
+      sentiment: "POSITIVE" | "NEUTRAL" | "NEGATIVE";
+    }>;
   }> {
     const customer = await prisma.customer.findFirst({
       where: { id: customerId, tenantId, deletedAt: null },
     });
-    if (!customer) throw new NotFoundException('Customer not found');
+    if (!customer) throw new NotFoundException("Customer not found");
 
     const contacts = await prisma.contact.findMany({
       where: { tenantId, customerId, deletedAt: null },
@@ -78,31 +99,73 @@ export class CrmAccountManagementService {
       customerId,
       customerName: customer.name,
       strategicObjectives: [
-        'Increase product adoption across all departments',
-        'Expand to additional business units',
-        'Drive executive sponsorship engagement',
+        "Increase product adoption across all departments",
+        "Expand to additional business units",
+        "Drive executive sponsorship engagement",
       ],
       keyInitiatives: [
-        { initiative: 'Quarterly Business Review', status: 'SCHEDULED', dueDate: (new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0]) || '', owner: 'CSM' },
-        { initiative: 'Product training rollout', status: 'IN_PROGRESS', dueDate: (new Date(Date.now() + 60 * 86400000).toISOString().split('T')[0]) || '', owner: 'Training Team' },
-        { initiative: 'Upsell evaluation meeting', status: 'PLANNED', dueDate: (new Date(Date.now() + 45 * 86400000).toISOString().split('T')[0]) || '', owner: 'AE' },
+        {
+          initiative: "Quarterly Business Review",
+          status: "SCHEDULED",
+          dueDate:
+            new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0] ||
+            "",
+          owner: "CSM",
+        },
+        {
+          initiative: "Product training rollout",
+          status: "IN_PROGRESS",
+          dueDate:
+            new Date(Date.now() + 60 * 86400000).toISOString().split("T")[0] ||
+            "",
+          owner: "Training Team",
+        },
+        {
+          initiative: "Upsell evaluation meeting",
+          status: "PLANNED",
+          dueDate:
+            new Date(Date.now() + 45 * 86400000).toISOString().split("T")[0] ||
+            "",
+          owner: "AE",
+        },
       ],
-      growthTargets: { currentARR: revenue, targetARR: Math.round(revenue * 1.2), growthPct: 20 },
+      growthTargets: {
+        currentARR: revenue,
+        targetARR: Math.round(revenue * 1.2),
+        growthPct: 20,
+      },
       risks: [
-        { risk: 'Key contact departure', impact: 'HIGH', mitigation: 'Multi-thread relationships across departments' },
-        { risk: 'Budget constraints', impact: 'MEDIUM', mitigation: 'Demonstrate ROI with usage data' },
+        {
+          risk: "Key contact departure",
+          impact: "HIGH",
+          mitigation: "Multi-thread relationships across departments",
+        },
+        {
+          risk: "Budget constraints",
+          impact: "MEDIUM",
+          mitigation: "Demonstrate ROI with usage data",
+        },
       ],
       stakeholderMap: contacts.map((c) => ({
         name: `${c.firstName} ${c.lastName}`,
-        role: c.title || 'Unknown',
-        sentiment: 'NEUTRAL' as const,
+        role: c.title || "Unknown",
+        sentiment: "NEUTRAL" as const,
       })),
     };
   }
 
   // ── F47: Strategic Contacts & Influence Map ─────────
-  async getInfluenceMap(tenantId: string, customerId: string): Promise<{
-    nodes: Array<{ id: string; name: string; role: string; influence: 'HIGH' | 'MEDIUM' | 'LOW'; sentiment: 'POSITIVE' | 'NEUTRAL' | 'NEGATIVE' }>;
+  async getInfluenceMap(
+    tenantId: string,
+    customerId: string,
+  ): Promise<{
+    nodes: Array<{
+      id: string;
+      name: string;
+      role: string;
+      influence: "HIGH" | "MEDIUM" | "LOW";
+      sentiment: "POSITIVE" | "NEUTRAL" | "NEGATIVE";
+    }>;
     edges: Array<{ from: string; to: string; type: string }>;
   }> {
     const contacts = await prisma.contact.findMany({
@@ -112,9 +175,14 @@ export class CrmAccountManagementService {
     const nodes = contacts.map((c) => ({
       id: c.id,
       name: `${c.firstName} ${c.lastName}`,
-      role: c.title || 'Staff',
-      influence: c.title?.toLowerCase().includes('ceo') || c.title?.toLowerCase().includes('vp') || c.title?.toLowerCase().includes('director') ? ('HIGH' as const) : ('MEDIUM' as const),
-      sentiment: 'NEUTRAL' as const,
+      role: c.title || "Staff",
+      influence:
+        c.title?.toLowerCase().includes("ceo") ||
+        c.title?.toLowerCase().includes("vp") ||
+        c.title?.toLowerCase().includes("director")
+          ? ("HIGH" as const)
+          : ("MEDIUM" as const),
+      sentiment: "NEUTRAL" as const,
     }));
 
     const edges: Array<{ from: string; to: string; type: string }> = [];
@@ -123,7 +191,7 @@ export class CrmAccountManagementService {
       const current = nodes[i];
       const next = nodes[i + 1];
       if (current && next) {
-        edges.push({ from: current.id, to: next.id, type: 'REPORTS_TO' });
+        edges.push({ from: current.id, to: next.id, type: "REPORTS_TO" });
       }
     }
 
@@ -138,7 +206,10 @@ export class CrmAccountManagementService {
    * mock implementation, which parsed a `[PARENT:id]` tag out of the
    * free-text `notes` field instead of using a real column.
    */
-  async getAccountHierarchy(tenantId: string, customerId: string): Promise<{
+  async getAccountHierarchy(
+    tenantId: string,
+    customerId: string,
+  ): Promise<{
     parent: { id: string; name: string } | null;
     current: { id: string; name: string };
     subsidiaries: Array<{ id: string; name: string; type: string }>;
@@ -147,55 +218,87 @@ export class CrmAccountManagementService {
       where: { id: customerId, tenantId, deletedAt: null },
       include: { parentCustomer: { select: { id: true, name: true } } },
     });
-    if (!customer) throw new NotFoundException('Customer not found');
+    if (!customer) throw new NotFoundException("Customer not found");
 
     const subs = await prisma.customer.findMany({
       where: { tenantId, parentCustomerId: customerId, deletedAt: null },
     });
 
     return {
-      parent: customer.parentCustomer ? { id: customer.parentCustomer.id, name: customer.parentCustomer.name } : null,
+      parent: customer.parentCustomer
+        ? { id: customer.parentCustomer.id, name: customer.parentCustomer.name }
+        : null,
       current: { id: customer.id, name: customer.name },
-      subsidiaries: subs.map((s) => ({ id: s.id, name: s.name, type: s.customerType || 'RECURRING' })),
+      subsidiaries: subs.map((s) => ({
+        id: s.id,
+        name: s.name,
+        type: s.customerType || "RECURRING",
+      })),
     };
   }
 
   /** Set (or clear) a customer's parent account. Rejects cycles. */
-  async setParentAccount(tenantId: string, customerId: string, parentCustomerId: string | null) {
-    const customer = await prisma.customer.findFirst({ where: { id: customerId, tenantId, deletedAt: null } });
-    if (!customer) throw new NotFoundException('Customer not found');
+  async setParentAccount(
+    tenantId: string,
+    customerId: string,
+    parentCustomerId: string | null,
+  ) {
+    const customer = await prisma.customer.findFirst({
+      where: { id: customerId, tenantId, deletedAt: null },
+    });
+    if (!customer) throw new NotFoundException("Customer not found");
 
     if (parentCustomerId) {
       if (parentCustomerId === customerId) {
-        throw new BadRequestException('A customer cannot be its own parent');
+        throw new BadRequestException("A customer cannot be its own parent");
       }
-      const parent = await prisma.customer.findFirst({ where: { id: parentCustomerId, tenantId, deletedAt: null } });
-      if (!parent) throw new NotFoundException('Parent customer not found');
+      const parent = await prisma.customer.findFirst({
+        where: { id: parentCustomerId, tenantId, deletedAt: null },
+      });
+      if (!parent) throw new NotFoundException("Parent customer not found");
 
       // Walk up the proposed parent's chain to reject cycles (A->B->C->A).
       let cursor: string | null = parent.parentCustomerId;
       const seen = new Set<string>([customerId]);
       while (cursor) {
-        if (seen.has(cursor)) throw new BadRequestException('This assignment would create a circular account hierarchy');
+        if (seen.has(cursor))
+          throw new BadRequestException(
+            "This assignment would create a circular account hierarchy",
+          );
         seen.add(cursor);
-        const next: { parentCustomerId: string | null } | null = await prisma.customer.findFirst({
-          where: { id: cursor, tenantId },
-          select: { parentCustomerId: true },
-        });
+        const next: { parentCustomerId: string | null } | null =
+          await prisma.customer.findFirst({
+            where: { id: cursor, tenantId },
+            select: { parentCustomerId: true },
+          });
         cursor = next?.parentCustomerId ?? null;
       }
     }
 
-    return prisma.customer.update({ where: { id: customerId }, data: { parentCustomerId } });
+    return prisma.customer.update({
+      where: { id: customerId },
+      data: { parentCustomerId },
+    });
   }
 
   /** Full descendant tree (unlimited depth) for a top-level (or any) account. */
-  async getHierarchyTree(tenantId: string, customerId: string): Promise<HierarchyTreeNode> {
+  async getHierarchyTree(
+    tenantId: string,
+    customerId: string,
+  ): Promise<HierarchyTreeNode> {
     const buildNode = async (id: string): Promise<HierarchyTreeNode> => {
-      const node = await prisma.customer.findFirst({ where: { id, tenantId, deletedAt: null }, select: { id: true, name: true } });
-      if (!node) throw new NotFoundException('Customer not found');
-      const children = await prisma.customer.findMany({ where: { tenantId, parentCustomerId: id, deletedAt: null }, select: { id: true } });
-      const childNodes = await Promise.all(children.map((c) => buildNode(c.id)));
+      const node = await prisma.customer.findFirst({
+        where: { id, tenantId, deletedAt: null },
+        select: { id: true, name: true },
+      });
+      if (!node) throw new NotFoundException("Customer not found");
+      const children = await prisma.customer.findMany({
+        where: { tenantId, parentCustomerId: id, deletedAt: null },
+        select: { id: true },
+      });
+      const childNodes = await Promise.all(
+        children.map((c) => buildNode(c.id)),
+      );
       return { id: node.id, name: node.name, children: childNodes };
     };
     return buildNode(customerId);
@@ -206,45 +309,64 @@ export class CrmAccountManagementService {
    * and every descendant subsidiary (deepens item 49's parity with
    * Salesforce Account Hierarchy rollups).
    */
-  async getHierarchyRollup(tenantId: string, customerId: string): Promise<{
+  async getHierarchyRollup(
+    tenantId: string,
+    customerId: string,
+  ): Promise<{
     accountCount: number;
     totalOpenPipeline: number;
     totalWonRevenue: number;
     openOpportunityCount: number;
     wonOpportunityCount: number;
-    byAccount: Array<{ customerId: string; name: string; openPipeline: number; wonRevenue: number }>;
+    byAccount: Array<{
+      customerId: string;
+      name: string;
+      openPipeline: number;
+      wonRevenue: number;
+    }>;
   }> {
     const collectIds = async (id: string): Promise<string[]> => {
-      const children = await prisma.customer.findMany({ where: { tenantId, parentCustomerId: id, deletedAt: null }, select: { id: true } });
+      const children = await prisma.customer.findMany({
+        where: { tenantId, parentCustomerId: id, deletedAt: null },
+        select: { id: true },
+      });
       const nested = await Promise.all(children.map((c) => collectIds(c.id)));
       return [id, ...nested.flat()];
     };
-    const root = await prisma.customer.findFirst({ where: { id: customerId, tenantId, deletedAt: null } });
-    if (!root) throw new NotFoundException('Customer not found');
+    const root = await prisma.customer.findFirst({
+      where: { id: customerId, tenantId, deletedAt: null },
+    });
+    if (!root) throw new NotFoundException("Customer not found");
 
     const ids = await collectIds(customerId);
     const opportunities = await prisma.opportunity.findMany({
       where: { tenantId, customerId: { in: ids }, deletedAt: null },
       select: { customerId: true, amount: true, stage: true },
     });
-    const customers = await prisma.customer.findMany({ where: { id: { in: ids } }, select: { id: true, name: true } });
+    const customers = await prisma.customer.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, name: true },
+    });
     const nameById = new Map(customers.map((c) => [c.id, c.name]));
 
-    const byAccountMap = new Map<string, { openPipeline: number; wonRevenue: number }>();
+    const byAccountMap = new Map<
+      string,
+      { openPipeline: number; wonRevenue: number }
+    >();
     let totalOpenPipeline = 0;
     let totalWonRevenue = 0;
     let openOpportunityCount = 0;
     let wonOpportunityCount = 0;
 
     for (const opp of opportunities) {
-      const cid = opp.customerId ?? 'unknown';
+      const cid = opp.customerId ?? "unknown";
       const entry = byAccountMap.get(cid) ?? { openPipeline: 0, wonRevenue: 0 };
       const amount = Number(opp.amount ?? 0);
-      if (opp.stage === 'CLOSED_WON') {
+      if (opp.stage === "CLOSED_WON") {
         entry.wonRevenue += amount;
         totalWonRevenue += amount;
         wonOpportunityCount += 1;
-      } else if (opp.stage !== 'CLOSED_LOST') {
+      } else if (opp.stage !== "CLOSED_LOST") {
         entry.openPipeline += amount;
         totalOpenPipeline += amount;
         openOpportunityCount += 1;
@@ -260,7 +382,7 @@ export class CrmAccountManagementService {
       wonOpportunityCount,
       byAccount: Array.from(byAccountMap.entries()).map(([cid, v]) => ({
         customerId: cid,
-        name: nameById.get(cid) ?? 'Unknown',
+        name: nameById.get(cid) ?? "Unknown",
         openPipeline: v.openPipeline,
         wonRevenue: v.wonRevenue,
       })),
@@ -268,8 +390,12 @@ export class CrmAccountManagementService {
   }
 
   // ── F50: Account Engagement Scorecard ───────────────
-  async getEngagementScorecard(tenantId: string, customerId: string): Promise<{
-    score: number; grade: 'EXCELLENT' | 'GOOD' | 'FAIR' | 'POOR';
+  async getEngagementScorecard(
+    tenantId: string,
+    customerId: string,
+  ): Promise<{
+    score: number;
+    grade: "EXCELLENT" | "GOOD" | "FAIR" | "POOR";
     activities30Days: number;
     trend: Array<{ date: string; count: number }>;
     channelMix: Array<{ channel: string; count: number }>;
@@ -283,15 +409,19 @@ export class CrmAccountManagementService {
     const activityCount = await prisma.activity.count({
       where: {
         tenantId,
-        OR: [
-          { customerId },
-          { contactId: { in: contactIds } },
-        ],
+        OR: [{ customerId }, { contactId: { in: contactIds } }],
       },
     });
 
     const score = Math.min(100, activityCount * 10);
-    const grade = score >= 80 ? 'EXCELLENT' as const : score >= 60 ? 'GOOD' as const : score >= 30 ? 'FAIR' as const : 'POOR' as const;
+    const grade =
+      score >= 80
+        ? ("EXCELLENT" as const)
+        : score >= 60
+          ? ("GOOD" as const)
+          : score >= 30
+            ? ("FAIR" as const)
+            : ("POOR" as const);
 
     return {
       score,
@@ -299,18 +429,27 @@ export class CrmAccountManagementService {
       activities30Days: activityCount,
       trend: [],
       channelMix: [
-        { channel: 'EMAIL', count: Math.round(activityCount * 0.6) },
-        { channel: 'CALL', count: Math.round(activityCount * 0.3) },
-        { channel: 'MEETING', count: Math.round(activityCount * 0.1) },
+        { channel: "EMAIL", count: Math.round(activityCount * 0.6) },
+        { channel: "CALL", count: Math.round(activityCount * 0.3) },
+        { channel: "MEETING", count: Math.round(activityCount * 0.1) },
       ],
     };
   }
 
   // ── F51: Inactive Account Alerts ────────────────────
-  async getInactiveAccounts(tenantId: string, inactiveDays: number = 30): Promise<Array<{
-    customerId: string; customerName: string; lastActivityDate: string | null;
-    daysInactive: number; arrValue: number; riskRating: string;
-  }>> {
+  async getInactiveAccounts(
+    tenantId: string,
+    inactiveDays: number = 30,
+  ): Promise<
+    Array<{
+      customerId: string;
+      customerName: string;
+      lastActivityDate: string | null;
+      daysInactive: number;
+      arrValue: number;
+      riskRating: string;
+    }>
+  > {
     const cutoff = new Date(Date.now() - inactiveDays * 86400000);
     const customers = await prisma.customer.findMany({
       where: { tenantId, deletedAt: null },
@@ -320,13 +459,17 @@ export class CrmAccountManagementService {
     for (const c of customers) {
       const lastAct = await prisma.activity.findFirst({
         where: { customerId: c.id, tenantId },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       });
 
       if (!lastAct || new Date(lastAct.createdAt) < cutoff) {
         const days = lastAct
-          ? Math.round((Date.now() - new Date(lastAct.createdAt).getTime()) / 86400000)
-          : Math.round((Date.now() - new Date(c.createdAt).getTime()) / 86400000);
+          ? Math.round(
+              (Date.now() - new Date(lastAct.createdAt).getTime()) / 86400000,
+            )
+          : Math.round(
+              (Date.now() - new Date(c.createdAt).getTime()) / 86400000,
+            );
 
         const rev = await this.getAccountRevenue(tenantId, c.id);
 
@@ -336,7 +479,7 @@ export class CrmAccountManagementService {
           lastActivityDate: lastAct?.createdAt?.toISOString() ?? null,
           daysInactive: days,
           arrValue: rev,
-          riskRating: c.riskRating || 'LOW',
+          riskRating: c.riskRating || "LOW",
         });
       }
     }
@@ -345,32 +488,56 @@ export class CrmAccountManagementService {
   }
 
   // ── F52: Customer Health Index ─────────────────────
-  async getCustomerHealthScore(tenantId: string, customerId: string): Promise<{
-    healthScore: number; status: 'HEALTHY' | 'NEUTRAL' | 'AT_RISK';
+  async getCustomerHealthScore(
+    tenantId: string,
+    customerId: string,
+  ): Promise<{
+    healthScore: number;
+    status: "HEALTHY" | "NEUTRAL" | "AT_RISK";
     factors: Array<{ factor: string; score: number; weight: number }>;
   }> {
     const customer = await prisma.customer.findFirst({
       where: { id: customerId, tenantId, deletedAt: null },
     });
-    if (!customer) throw new NotFoundException('Customer not found');
+    if (!customer) throw new NotFoundException("Customer not found");
 
     const factors = [
-      { factor: 'Product Adoption (license utilization)', score: 85, weight: 30 },
-      { factor: 'Support Ticket Volume', score: customer.riskRating === 'HIGH' ? 40 : 90, weight: 20 },
-      { factor: 'Interaction Engagement', score: 75, weight: 25 },
-      { factor: 'Invoice Payment History', score: customer.creditHold ? 30 : 95, weight: 25 },
+      {
+        factor: "Product Adoption (license utilization)",
+        score: 85,
+        weight: 30,
+      },
+      {
+        factor: "Support Ticket Volume",
+        score: customer.riskRating === "HIGH" ? 40 : 90,
+        weight: 20,
+      },
+      { factor: "Interaction Engagement", score: 75, weight: 25 },
+      {
+        factor: "Invoice Payment History",
+        score: customer.creditHold ? 30 : 95,
+        weight: 25,
+      },
     ];
 
     const healthScore = Math.round(
       factors.reduce((sum, f) => sum + (f.score * f.weight) / 100, 0),
     );
-    const status = healthScore >= 80 ? 'HEALTHY' as const : healthScore >= 50 ? 'NEUTRAL' as const : 'AT_RISK' as const;
+    const status =
+      healthScore >= 80
+        ? ("HEALTHY" as const)
+        : healthScore >= 50
+          ? ("NEUTRAL" as const)
+          : ("AT_RISK" as const);
 
     return { healthScore, status, factors };
   }
 
   // ── F80: Account Lifecycle Stage Transitions ────────
-  async getAccountLifecycleHistory(tenantId: string, customerId: string): Promise<{
+  async getAccountLifecycleHistory(
+    tenantId: string,
+    customerId: string,
+  ): Promise<{
     currentStage: string;
     stageHistory: Array<{ stage: string; enteredAt: string; duration: number }>;
     nextStage: string;
@@ -379,19 +546,30 @@ export class CrmAccountManagementService {
     const customer = await prisma.customer.findFirst({
       where: { id: customerId, tenantId, deletedAt: null },
     });
-    if (!customer) throw new NotFoundException('Customer not found');
+    if (!customer) throw new NotFoundException("Customer not found");
 
     const status = customer.riskRating;
     const stageMap: Record<string, string> = {
-      LOW: 'ACTIVE',
-      MEDIUM: 'AT_RISK',
-      HIGH: 'CHURNED',
+      LOW: "ACTIVE",
+      MEDIUM: "AT_RISK",
+      HIGH: "CHURNED",
     };
 
-    const currentStage = stageMap[status] || 'ACTIVE';
-    const lifecycle = ['PROSPECT', 'ONBOARDING', 'ACTIVE', 'GROWTH', 'RENEWAL', 'AT_RISK', 'CHURNED'];
+    const currentStage = stageMap[status] || "ACTIVE";
+    const lifecycle = [
+      "PROSPECT",
+      "ONBOARDING",
+      "ACTIVE",
+      "GROWTH",
+      "RENEWAL",
+      "AT_RISK",
+      "CHURNED",
+    ];
     const currentIdx = lifecycle.indexOf(currentStage);
-    const nextStage = currentIdx < lifecycle.length - 2 ? (lifecycle[currentIdx + 1] || currentStage) : currentStage;
+    const nextStage =
+      currentIdx < lifecycle.length - 2
+        ? lifecycle[currentIdx + 1] || currentStage
+        : currentStage;
 
     // Calculate readiness for next stage
     const revenue = await this.getAccountRevenue(tenantId, customerId);
@@ -400,7 +578,13 @@ export class CrmAccountManagementService {
     return {
       currentStage,
       stageHistory: [
-        { stage: currentStage, enteredAt: customer.createdAt.toISOString(), duration: Math.round((Date.now() - customer.createdAt.getTime()) / 86400000) },
+        {
+          stage: currentStage,
+          enteredAt: customer.createdAt.toISOString(),
+          duration: Math.round(
+            (Date.now() - customer.createdAt.getTime()) / 86400000,
+          ),
+        },
       ],
       nextStage,
       readiness,
@@ -408,39 +592,89 @@ export class CrmAccountManagementService {
   }
 
   // ── F53: Account Scoring (ICP Fit) ─────────────────
-  async getAccountScore(tenantId: string, customerId: string): Promise<{
-    totalScore: number; grade: 'A' | 'B' | 'C' | 'D' | 'F';
+  async getAccountScore(
+    tenantId: string,
+    customerId: string,
+  ): Promise<{
+    totalScore: number;
+    grade: "A" | "B" | "C" | "D" | "F";
     factors: Array<{ factor: string; score: number; maxScore: number }>;
   }> {
     const customer = await prisma.customer.findFirst({
       where: { id: customerId, tenantId, deletedAt: null },
     });
-    if (!customer) throw new NotFoundException('Customer not found');
+    if (!customer) throw new NotFoundException("Customer not found");
 
-    const factors: Array<{ factor: string; score: number; maxScore: number }> = [];
+    const factors: Array<{ factor: string; score: number; maxScore: number }> =
+      [];
 
     // Industry alignment (check notes as fallback)
-    const industryScore = customer.notes?.toLowerCase().includes('industry') ? 15 : 5;
-    factors.push({ factor: 'Industry Specified', score: industryScore, maxScore: 15 });
+    const industryScore = customer.notes?.toLowerCase().includes("industry")
+      ? 15
+      : 5;
+    factors.push({
+      factor: "Industry Specified",
+      score: industryScore,
+      maxScore: 15,
+    });
 
     // Company size (check notes as fallback)
-    const sizeScore = customer.notes?.toLowerCase().includes('employees') ? 12 : 5;
-    factors.push({ factor: 'Company Size', score: sizeScore, maxScore: 15 });
+    const sizeScore = customer.notes?.toLowerCase().includes("employees")
+      ? 12
+      : 5;
+    factors.push({ factor: "Company Size", score: sizeScore, maxScore: 15 });
 
     // Revenue potential
     const creditLimit = Number(customer.creditLimit || 0);
-    const revenueScore = creditLimit > 100000 ? 20 : creditLimit > 10000 ? 15 : creditLimit > 0 ? 10 : 0;
-    factors.push({ factor: 'Revenue Potential', score: revenueScore, maxScore: 20 });
+    const revenueScore =
+      creditLimit > 100000
+        ? 20
+        : creditLimit > 10000
+          ? 15
+          : creditLimit > 0
+            ? 10
+            : 0;
+    factors.push({
+      factor: "Revenue Potential",
+      score: revenueScore,
+      maxScore: 20,
+    });
 
     // Contact depth
-    const contactCount = await prisma.contact.count({ where: { tenantId, customerId, deletedAt: null } });
-    const contactScore = contactCount >= 5 ? 15 : contactCount >= 2 ? 10 : contactCount >= 1 ? 5 : 0;
-    factors.push({ factor: 'Contact Depth', score: contactScore, maxScore: 15 });
+    const contactCount = await prisma.contact.count({
+      where: { tenantId, customerId, deletedAt: null },
+    });
+    const contactScore =
+      contactCount >= 5
+        ? 15
+        : contactCount >= 2
+          ? 10
+          : contactCount >= 1
+            ? 5
+            : 0;
+    factors.push({
+      factor: "Contact Depth",
+      score: contactScore,
+      maxScore: 15,
+    });
 
     // Engagement history
-    const activityCount = await prisma.activity.count({ where: { tenantId, customerId } });
-    const engagementScore = activityCount >= 10 ? 15 : activityCount >= 5 ? 10 : activityCount > 0 ? 5 : 0;
-    factors.push({ factor: 'Engagement History', score: engagementScore, maxScore: 15 });
+    const activityCount = await prisma.activity.count({
+      where: { tenantId, customerId },
+    });
+    const engagementScore =
+      activityCount >= 10
+        ? 15
+        : activityCount >= 5
+          ? 10
+          : activityCount > 0
+            ? 5
+            : 0;
+    factors.push({
+      factor: "Engagement History",
+      score: engagementScore,
+      maxScore: 15,
+    });
 
     // Data completeness
     let completeness = 0;
@@ -451,49 +685,94 @@ export class CrmAccountManagementService {
     if (customer.taxId) completeness += 4;
     if (customer.notes) completeness += 4;
     const dataScore = Math.min(20, completeness);
-    factors.push({ factor: 'Data Completeness', score: dataScore, maxScore: 20 });
+    factors.push({
+      factor: "Data Completeness",
+      score: dataScore,
+      maxScore: 20,
+    });
 
     const totalScore = factors.reduce((s, f) => s + f.score, 0);
-    const grade = totalScore >= 80 ? 'A' as const : totalScore >= 65 ? 'B' as const : totalScore >= 50 ? 'C' as const : totalScore >= 35 ? 'D' as const : 'F' as const;
+    const grade =
+      totalScore >= 80
+        ? ("A" as const)
+        : totalScore >= 65
+          ? ("B" as const)
+          : totalScore >= 50
+            ? ("C" as const)
+            : totalScore >= 35
+              ? ("D" as const)
+              : ("F" as const);
 
     return { totalScore, grade, factors };
   }
 
   // ── F55: Customer Churn Risks ──────────────────────
-  async getCustomerRiskAlerts(tenantId: string): Promise<Array<{
-    customerId: string; customerName: string; riskType: string;
-    severity: 'HIGH' | 'MEDIUM' | 'LOW'; alertMessage: string;
-  }>> {
+  async getCustomerRiskAlerts(tenantId: string): Promise<
+    Array<{
+      customerId: string;
+      customerName: string;
+      riskType: string;
+      severity: "HIGH" | "MEDIUM" | "LOW";
+      alertMessage: string;
+    }>
+  > {
     const riskCustomers = await prisma.customer.findMany({
-      where: { tenantId, riskRating: { in: ['MEDIUM', 'HIGH'] }, deletedAt: null },
+      where: {
+        tenantId,
+        riskRating: { in: ["MEDIUM", "HIGH"] },
+        deletedAt: null,
+      },
     });
 
     return riskCustomers.map((c) => ({
       customerId: c.id,
       customerName: c.name,
-      riskType: c.riskRating === 'HIGH' ? 'CHURN_DANGER' : 'LOW_ENGAGEMENT',
+      riskType: c.riskRating === "HIGH" ? "CHURN_DANGER" : "LOW_ENGAGEMENT",
       severity: c.riskRating as any,
-      alertMessage: c.riskRating === 'HIGH' ? 'Critical risk of churn — credit limits and payments pending' : 'Engagement dropping over last 30 days',
+      alertMessage:
+        c.riskRating === "HIGH"
+          ? "Critical risk of churn — credit limits and payments pending"
+          : "Engagement dropping over last 30 days",
     }));
   }
 
   // ── F59: Account Team Management ───────────────────
-  async getAccountTeam(tenantId: string, customerId: string): Promise<Array<{
-    userId: string; userName: string; role: string; assignedAt: string;
-  }>> {
-    const customer = await prisma.customer.findFirst({ where: { id: customerId, tenantId, deletedAt: null } });
-    if (!customer) throw new NotFoundException('Customer not found');
+  async getAccountTeam(
+    tenantId: string,
+    customerId: string,
+  ): Promise<
+    Array<{
+      userId: string;
+      userName: string;
+      role: string;
+      assignedAt: string;
+    }>
+  > {
+    const customer = await prisma.customer.findFirst({
+      where: { id: customerId, tenantId, deletedAt: null },
+    });
+    if (!customer) throw new NotFoundException("Customer not found");
 
-    const team: Array<{ userId: string; userName: string; role: string; assignedAt: string }> = [];
+    const team: Array<{
+      userId: string;
+      userName: string;
+      role: string;
+      assignedAt: string;
+    }> = [];
 
     // Parse additional team from notes
-    const notes = typeof customer.notes === 'string' ? customer.notes : '';
+    const notes = typeof customer.notes === "string" ? customer.notes : "";
     const teamMatches = notes.match(/\[TEAM:([^\]]+)\]/g);
     if (teamMatches) {
       for (const match of teamMatches) {
-        const parts = match.replace('[TEAM:', '').replace(']', '').split('|');
+        const parts = match.replace("[TEAM:", "").replace("]", "").split("|");
         if (parts[0] && parts[1]) {
-          team.push({ userId: parts[0], userName: parts[0], role: parts[1], assignedAt: customer.createdAt.toISOString() });
+          team.push({
+            userId: parts[0],
+            userName: parts[0],
+            role: parts[1],
+            assignedAt: customer.createdAt.toISOString(),
+          });
         }
       }
     }
@@ -501,53 +780,144 @@ export class CrmAccountManagementService {
     return team;
   }
 
-  async assignAccountTeamMember(tenantId: string, customerId: string, userId: string, role: string): Promise<{ status: string }> {
-    const customer = await prisma.customer.findFirst({ where: { id: customerId, tenantId, deletedAt: null } });
-    if (!customer) throw new NotFoundException('Customer not found');
+  async assignAccountTeamMember(
+    tenantId: string,
+    customerId: string,
+    userId: string,
+    role: string,
+  ): Promise<{ status: string }> {
+    const customer = await prisma.customer.findFirst({
+      where: { id: customerId, tenantId, deletedAt: null },
+    });
+    if (!customer) throw new NotFoundException("Customer not found");
 
-    const user = await prisma.user.findFirst({ where: { id: userId, tenantId }, select: { firstName: true, lastName: true } });
-    if (!user) throw new NotFoundException('User not found');
+    const user = await prisma.user.findFirst({
+      where: { id: userId, tenantId },
+      select: { firstName: true, lastName: true },
+    });
+    if (!user) throw new NotFoundException("User not found");
 
-    const notes = typeof customer.notes === 'string' ? customer.notes : '';
+    const notes = typeof customer.notes === "string" ? customer.notes : "";
     const teamTag = `[TEAM:${userId}|${role}]`;
     if (!notes.includes(teamTag)) {
-      await prisma.customer.update({ where: { id: customerId }, data: { notes: notes + ' ' + teamTag } });
+      await prisma.customer.update({
+        where: { id: customerId },
+        data: { notes: notes + " " + teamTag },
+      });
     }
 
-    return { status: 'assigned' };
+    return { status: "assigned" };
   }
 
   // ── F60: Onboarding Checklist ──────────────────────
-  async getOnboardingChecklist(tenantId: string, customerId: string): Promise<{
-    customerId: string; customerName: string; completionPct: number;
-    items: Array<{ id: string; task: string; status: string; dueDate: string; assignee: string }>;
+  async getOnboardingChecklist(
+    tenantId: string,
+    customerId: string,
+  ): Promise<{
+    customerId: string;
+    customerName: string;
+    completionPct: number;
+    items: Array<{
+      id: string;
+      task: string;
+      status: string;
+      dueDate: string;
+      assignee: string;
+    }>;
   }> {
-    const customer = await prisma.customer.findFirst({ where: { id: customerId, tenantId, deletedAt: null } });
-    if (!customer) throw new NotFoundException('Customer not found');
+    const customer = await prisma.customer.findFirst({
+      where: { id: customerId, tenantId, deletedAt: null },
+    });
+    if (!customer) throw new NotFoundException("Customer not found");
 
     const items = [
-      { id: 'ob-1', task: 'Welcome call completed', status: 'COMPLETE', dueDate: '', assignee: 'CSM' },
-      { id: 'ob-2', task: 'Account setup & configuration', status: 'COMPLETE', dueDate: '', assignee: 'Implementation' },
-      { id: 'ob-3', task: 'Primary contacts identified', status: 'COMPLETE', dueDate: '', assignee: 'AE' },
-      { id: 'ob-4', task: 'Product training scheduled', status: 'IN_PROGRESS', dueDate: (new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]) || '', assignee: 'Training' },
-      { id: 'ob-5', task: 'Integration setup', status: 'PENDING', dueDate: (new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0]) || '', assignee: 'Technical' },
-      { id: 'ob-6', task: 'First value milestone achieved', status: 'PENDING', dueDate: (new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0]) || '', assignee: 'CSM' },
-      { id: 'ob-7', task: 'Executive Business Review scheduled', status: 'PENDING', dueDate: (new Date(Date.now() + 60 * 86400000).toISOString().split('T')[0]) || '', assignee: 'CSM' },
-      { id: 'ob-8', task: 'Expansion opportunity identified', status: 'PENDING', dueDate: (new Date(Date.now() + 90 * 86400000).toISOString().split('T')[0]) || '', assignee: 'AE' },
+      {
+        id: "ob-1",
+        task: "Welcome call completed",
+        status: "COMPLETE",
+        dueDate: "",
+        assignee: "CSM",
+      },
+      {
+        id: "ob-2",
+        task: "Account setup & configuration",
+        status: "COMPLETE",
+        dueDate: "",
+        assignee: "Implementation",
+      },
+      {
+        id: "ob-3",
+        task: "Primary contacts identified",
+        status: "COMPLETE",
+        dueDate: "",
+        assignee: "AE",
+      },
+      {
+        id: "ob-4",
+        task: "Product training scheduled",
+        status: "IN_PROGRESS",
+        dueDate:
+          new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0] || "",
+        assignee: "Training",
+      },
+      {
+        id: "ob-5",
+        task: "Integration setup",
+        status: "PENDING",
+        dueDate:
+          new Date(Date.now() + 14 * 86400000).toISOString().split("T")[0] ||
+          "",
+        assignee: "Technical",
+      },
+      {
+        id: "ob-6",
+        task: "First value milestone achieved",
+        status: "PENDING",
+        dueDate:
+          new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0] ||
+          "",
+        assignee: "CSM",
+      },
+      {
+        id: "ob-7",
+        task: "Executive Business Review scheduled",
+        status: "PENDING",
+        dueDate:
+          new Date(Date.now() + 60 * 86400000).toISOString().split("T")[0] ||
+          "",
+        assignee: "CSM",
+      },
+      {
+        id: "ob-8",
+        task: "Expansion opportunity identified",
+        status: "PENDING",
+        dueDate:
+          new Date(Date.now() + 90 * 86400000).toISOString().split("T")[0] ||
+          "",
+        assignee: "AE",
+      },
     ];
 
-    const completedCount = items.filter((i) => i.status === 'COMPLETE').length;
+    const completedCount = items.filter((i) => i.status === "COMPLETE").length;
     const completionPct = Math.round((completedCount / items.length) * 100);
 
     return { customerId, customerName: customer.name, completionPct, items };
   }
 
   // ── F77: Customer Renewal Likelihood Score ──────────
-  async getRenewalLikelihood(tenantId: string): Promise<Array<{
-    customerId: string; customerName: string; contractId: string; contractTitle: string;
-    renewalDate: string; contractValue: number; renewalLikelihood: number;
-    churnRisk: string; daysUntilRenewal: number;
-  }>> {
+  async getRenewalLikelihood(tenantId: string): Promise<
+    Array<{
+      customerId: string;
+      customerName: string;
+      contractId: string;
+      contractTitle: string;
+      renewalDate: string;
+      contractValue: number;
+      renewalLikelihood: number;
+      churnRisk: string;
+      daysUntilRenewal: number;
+    }>
+  > {
     const contracts = await prisma.contract.findMany({
       where: { tenantId, deletedAt: null },
       include: { customer: { select: { name: true, riskRating: true } } },
@@ -555,33 +925,48 @@ export class CrmAccountManagementService {
 
     const results: any[] = [];
     for (const c of contracts) {
-      const daysUntil = Math.round((new Date(c.endDate).getTime() - Date.now()) / 86400000);
+      const daysUntil = Math.round(
+        (new Date(c.endDate).getTime() - Date.now()) / 86400000,
+      );
       let renewalLikelihood = 85; // Default healthy likelihood
 
       if (c.customer) {
-        if (c.customer.riskRating === 'HIGH') renewalLikelihood -= 40;
-        else if (c.customer.riskRating === 'MEDIUM') renewalLikelihood -= 20;
+        if (c.customer.riskRating === "HIGH") renewalLikelihood -= 40;
+        else if (c.customer.riskRating === "MEDIUM") renewalLikelihood -= 20;
 
         const openCases = await prisma.case.count({
-          where: { tenantId, customerId: c.customerId || '', status: { in: ['OPEN', 'IN_PROGRESS'] } },
+          where: {
+            tenantId,
+            customerId: c.customerId || "",
+            status: { in: ["OPEN", "IN_PROGRESS"] },
+          },
         });
         if (openCases > 3) renewalLikelihood -= 20;
 
         const recentActivity = await prisma.activity.count({
-          where: { tenantId, customerId: c.customerId || '', createdAt: { gte: new Date(Date.now() - 30 * 86400000) } },
+          where: {
+            tenantId,
+            customerId: c.customerId || "",
+            createdAt: { gte: new Date(Date.now() - 30 * 86400000) },
+          },
         });
         if (recentActivity === 0) renewalLikelihood -= 15;
       }
 
       results.push({
-        customerId: c.customerId || '',
-        customerName: c.customer?.name || 'Unknown',
+        customerId: c.customerId || "",
+        customerName: c.customer?.name || "Unknown",
         contractId: c.id,
         contractTitle: c.title,
-        renewalDate: (c.endDate.toISOString().split('T')[0]) || '',
+        renewalDate: c.endDate.toISOString().split("T")[0] || "",
         contractValue: Number(c.value || 0),
         renewalLikelihood: Math.max(0, Math.min(100, renewalLikelihood)),
-        churnRisk: renewalLikelihood >= 70 ? 'LOW' : renewalLikelihood >= 40 ? 'MEDIUM' : 'HIGH',
+        churnRisk:
+          renewalLikelihood >= 70
+            ? "LOW"
+            : renewalLikelihood >= 40
+              ? "MEDIUM"
+              : "HIGH",
         daysUntilRenewal: daysUntil,
       });
     }
@@ -590,9 +975,16 @@ export class CrmAccountManagementService {
   }
 
   // ── Helper ─────────────────────────────────────────
-  private async getAccountRevenue(tenantId: string, customerId: string): Promise<number> {
+  private async getAccountRevenue(
+    tenantId: string,
+    customerId: string,
+  ): Promise<number> {
     const orders = await prisma.salesOrder.findMany({
-      where: { tenantId, customerId, status: { in: ['CONFIRMED', 'DELIVERED'] } },
+      where: {
+        tenantId,
+        customerId,
+        status: { in: ["CONFIRMED", "DELIVERED"] },
+      },
     });
     return orders.reduce((s, o) => s + Number(o.totalAmount || 0), 0);
   }
@@ -614,26 +1006,54 @@ export class CrmAccountManagementService {
   }
 
   // ContactRole
-  async assignContactRole(tenantId: string, opportunityId: string, contactId: string, role: string) {
+  async assignContactRole(
+    tenantId: string,
+    opportunityId: string,
+    contactId: string,
+    role: string,
+  ) {
     return prisma.contactRole.upsert({
-      where: { tenantId_opportunityId_contactId: { tenantId, opportunityId, contactId } },
+      where: {
+        tenantId_opportunityId_contactId: {
+          tenantId,
+          opportunityId,
+          contactId,
+        },
+      },
       create: { tenantId, opportunityId, contactId, role },
       update: { role },
     });
   }
 
-  async removeContactRole(tenantId: string, opportunityId: string, contactId: string) {
+  async removeContactRole(
+    tenantId: string,
+    opportunityId: string,
+    contactId: string,
+  ) {
     return prisma.contactRole.delete({
-      where: { tenantId_opportunityId_contactId: { tenantId, opportunityId, contactId } },
+      where: {
+        tenantId_opportunityId_contactId: {
+          tenantId,
+          opportunityId,
+          contactId,
+        },
+      },
     });
   }
 
   // CustomerHealthLog
-  async logCustomerHealth(tenantId: string, customerId: string, score: number, status: string, reason?: string, loggedBy?: string) {
+  async logCustomerHealth(
+    tenantId: string,
+    customerId: string,
+    score: number,
+    status: string,
+    reason?: string,
+    loggedBy?: string,
+  ) {
     // Also update customer's riskRating based on score
-    let riskRating = 'LOW';
-    if (score < 40) riskRating = 'HIGH';
-    else if (score < 70) riskRating = 'MEDIUM';
+    let riskRating = "LOW";
+    if (score < 40) riskRating = "HIGH";
+    else if (score < 70) riskRating = "MEDIUM";
 
     await prisma.customer.update({
       where: { id: customerId },
@@ -648,11 +1068,15 @@ export class CrmAccountManagementService {
   async getCustomerHealthLogs(tenantId: string, customerId: string) {
     return prisma.customerHealthLog.findMany({
       where: { tenantId, customerId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
-  async mergeAccounts(tenantId: string, sourceCustomerId: string, targetCustomerId: string) {
+  async mergeAccounts(
+    tenantId: string,
+    sourceCustomerId: string,
+    targetCustomerId: string,
+  ) {
     // Move opportunities, cases, contacts, invoices, salesOrders from source to target
     await prisma.opportunity.updateMany({
       where: { tenantId, customerId: sourceCustomerId },
@@ -683,4 +1107,3 @@ export class CrmAccountManagementService {
     return { success: true };
   }
 }
-

@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -42,7 +41,7 @@ class _MeetingFormPageState extends ConsumerState<MeetingFormPage> {
         .read(meetingListControllerProvider.notifier)
         .saveMeeting(payload);
 
-    if (!context.mounted) return;
+    if (!mounted) return;
     setState(() => _saving = false);
 
     result.fold(
@@ -68,7 +67,7 @@ class _MeetingFormPageState extends ConsumerState<MeetingFormPage> {
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
-    if (picked != null && context.mounted) {
+    if (picked != null && mounted) {
       final TimeOfDay? time = await showTimePicker(
         context: context,
         initialTime: TimeOfDay.fromDateTime(_startTime),
@@ -86,7 +85,7 @@ class _MeetingFormPageState extends ConsumerState<MeetingFormPage> {
       firstDate: _startTime,
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
-    if (picked != null && context.mounted) {
+    if (picked != null && mounted) {
       final TimeOfDay? time = await showTimePicker(
         context: context,
         initialTime: TimeOfDay.fromDateTime(_endTime ?? _startTime.add(const Duration(hours: 1))),

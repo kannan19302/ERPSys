@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -51,7 +50,7 @@ class _CompensationBandListPageState extends ConsumerState<CompensationBandListP
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
                 .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value)))
+                    value: e.key, child: Text(e.value),),)
                 .toList(),
           ),
         ],
@@ -86,7 +85,7 @@ class _CompensationBandListPageState extends ConsumerState<CompensationBandListP
                     : '${state.meta.total} band${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -137,20 +136,20 @@ class _BandTile extends StatelessWidget {
             Row(children: [
               Expanded(
                 child: Text(band.name,
-                    style: Theme.of(context).textTheme.titleSmall),
+                    style: Theme.of(context).textTheme.titleSmall,),
               ),
               UiStatusBadge(
                 label: band.status,
                 tone: band.status == 'ACTIVE' ? UiTone.success : UiTone.neutral,
               ),
-            ]),
+            ],),
             const SizedBox(height: Spacing.x1),
             Text('${Formatters.currency(band.minSalary)} - ${Formatters.currency(band.maxSalary)}',
-                style: Theme.of(context).textTheme.labelLarge),
+                style: Theme.of(context).textTheme.labelLarge,),
             if (band.grade != null) ...[
               const SizedBox(height: Spacing.x1),
               Text('Grade: ${band.grade}',
-                  style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
+                  style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
             ],
           ],
         ),

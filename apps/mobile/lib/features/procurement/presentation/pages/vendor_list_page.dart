@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -87,7 +86,7 @@ class _VendorListPageState extends ConsumerState<VendorListPage> {
                     : '${state.meta.total} vendor${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -127,15 +126,15 @@ class _VendorListPageState extends ConsumerState<VendorListPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(v.name, maxLines: 1, overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.labelLarge),
+                  style: Theme.of(context).textTheme.labelLarge,),
               if (v.email != null)
                 Text(v.email!, maxLines: 1, overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: context.tokens.textTertiary, fontSize: TypeScale.xs)),
+                    style: TextStyle(color: context.tokens.textTertiary, fontSize: TypeScale.xs),),
             ],
-          )),
+          ),),
           const SizedBox(width: Spacing.x2),
           UiStatusBadge(label: v.status, tone: v.status == 'ACTIVE' ? UiTone.success : UiTone.neutral),
-        ]),
+        ],),
       ),
     );
   }

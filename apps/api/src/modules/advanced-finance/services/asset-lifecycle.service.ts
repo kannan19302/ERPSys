@@ -1,19 +1,30 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
 
 @Injectable()
 export class AssetLifecycleService {
   private async getAsset(tenantId: string, assetId: string) {
-    const a = await prisma.fixedAsset.findFirst({ where: { id: assetId, tenantId } });
-    if (!a) throw new NotFoundException('Asset not found');
+    const a = await prisma.fixedAsset.findFirst({
+      where: { id: assetId, tenantId },
+    });
+    if (!a) throw new NotFoundException("Asset not found");
     return a;
   }
 
-  async createAssetRevaluation(tenantId: string, dto: {
-    assetId: string; revaluationDate: string; revaluedValue: number; notes?: string;
-  }) {
+  async createAssetRevaluation(
+    tenantId: string,
+    dto: {
+      assetId: string;
+      revaluationDate: string;
+      revaluedValue: number;
+      notes?: string;
+    },
+  ) {
     const asset = await this.getAsset(tenantId, dto.assetId);
     const before = Number(asset.currentValue);
     const gainLoss = dto.revaluedValue - before;
@@ -42,14 +53,17 @@ export class AssetLifecycleService {
   async listAssetRevaluations(tenantId: string, assetId: string) {
     return prisma.assetRevaluation.findMany({
       where: { tenantId, assetId },
-      orderBy: { revaluationDate: 'desc' },
+      orderBy: { revaluationDate: "desc" },
     });
   }
 
   async postAssetRevaluationGL(tenantId: string, revalId: string) {
-    const rev = await prisma.assetRevaluation.findFirst({ where: { id: revalId, tenantId } });
-    if (!rev) throw new NotFoundException('Revaluation record not found');
-    if (rev.glJournalId) throw new BadRequestException('Revaluation already posted to GL');
+    const rev = await prisma.assetRevaluation.findFirst({
+      where: { id: revalId, tenantId },
+    });
+    if (!rev) throw new NotFoundException("Revaluation record not found");
+    if (rev.glJournalId)
+      throw new BadRequestException("Revaluation already posted to GL");
 
     const asset = await this.getAsset(tenantId, rev.assetId);
     const gainLoss = Number(rev.gainLoss);
@@ -60,7 +74,7 @@ export class AssetLifecycleService {
         orgId: asset.orgId,
         entryNumber: `JRN-REV-${Date.now()}`,
         date: new Date(rev.revaluationDate),
-        status: 'POSTED',
+        status: "POSTED",
         notes: `GL Adjustment for asset revaluation: ${asset.name} (${asset.assetCode})`,
       },
     });
@@ -81,7 +95,7 @@ export class AssetLifecycleService {
           {
             tenantId,
             journalId: journal.id,
-            accountId: 'acc-reval-reserve-default',
+            accountId: "acc-reval-reserve-default",
             debit: new Prisma.Decimal(0),
             credit: new Prisma.Decimal(gainLoss),
             description: `Credit revaluation reserve for asset ${asset.assetCode}`,
@@ -95,7 +109,7 @@ export class AssetLifecycleService {
           {
             tenantId,
             journalId: journal.id,
-            accountId: 'acc-impairment-expense-default',
+            accountId: "acc-impairment-expense-default",
             debit: new Prisma.Decimal(Math.abs(gainLoss)),
             credit: new Prisma.Decimal(0),
             description: `Revaluation downward loss write-off for asset ${asset.assetCode}`,
@@ -120,11 +134,19 @@ export class AssetLifecycleService {
     return { journalId: journal.id, gainLoss };
   }
 
-  async createAssetDisposal(tenantId: string, dto: {
-    assetId: string; disposalDate: string; disposalType: string; salePrice?: number; notes?: string;
-  }) {
+  async createAssetDisposal(
+    tenantId: string,
+    dto: {
+      assetId: string;
+      disposalDate: string;
+      disposalType: string;
+      salePrice?: number;
+      notes?: string;
+    },
+  ) {
     const asset = await this.getAsset(tenantId, dto.assetId);
-    if (asset.status === 'DISPOSED') throw new BadRequestException('Asset already disposed');
+    if (asset.status === "DISPOSED")
+      throw new BadRequestException("Asset already disposed");
 
     const netBookValue = Number(asset.currentValue);
     const sale = dto.salePrice ?? 0;
@@ -145,7 +167,7 @@ export class AssetLifecycleService {
     // Update asset status
     await prisma.fixedAsset.update({
       where: { id: dto.assetId },
-      data: { status: 'DISPOSED', currentValue: 0 },
+      data: { status: "DISPOSED", currentValue: 0 },
     });
 
     return disp;
@@ -154,14 +176,17 @@ export class AssetLifecycleService {
   async listAssetDisposals(tenantId: string) {
     return prisma.assetDisposal.findMany({
       where: { tenantId },
-      orderBy: { disposalDate: 'desc' },
+      orderBy: { disposalDate: "desc" },
     });
   }
 
   async postAssetDisposalGL(tenantId: string, disposalId: string) {
-    const disp = await prisma.assetDisposal.findFirst({ where: { id: disposalId, tenantId } });
-    if (!disp) throw new NotFoundException('Disposal record not found');
-    if (disp.glJournalId) throw new BadRequestException('Disposal already posted to GL');
+    const disp = await prisma.assetDisposal.findFirst({
+      where: { id: disposalId, tenantId },
+    });
+    if (!disp) throw new NotFoundException("Disposal record not found");
+    if (disp.glJournalId)
+      throw new BadRequestException("Disposal already posted to GL");
 
     const asset = await this.getAsset(tenantId, disp.assetId);
     const purchaseVal = Number(asset.purchaseValue);
@@ -179,7 +204,7 @@ export class AssetLifecycleService {
         orgId: asset.orgId,
         entryNumber: `JRN-DISP-${Date.now()}`,
         date: new Date(disp.disposalDate),
-        status: 'POSTED',
+        status: "POSTED",
         notes: `GL Write-off for asset disposal: ${asset.name} (${asset.assetCode})`,
       },
     });
@@ -211,7 +236,7 @@ export class AssetLifecycleService {
       entries.push({
         tenantId,
         journalId: journal.id,
-        accountId: 'acc-cash-default',
+        accountId: "acc-cash-default",
         debit: new Prisma.Decimal(sale),
         credit: new Prisma.Decimal(0),
         description: `Debit cash received from disposal sale of ${asset.assetCode}`,
@@ -223,7 +248,7 @@ export class AssetLifecycleService {
       entries.push({
         tenantId,
         journalId: journal.id,
-        accountId: 'acc-gain-disposal-default',
+        accountId: "acc-gain-disposal-default",
         debit: new Prisma.Decimal(0),
         credit: new Prisma.Decimal(gainLoss),
         description: `Credit gain on disposal for asset ${asset.assetCode}`,
@@ -233,7 +258,7 @@ export class AssetLifecycleService {
       entries.push({
         tenantId,
         journalId: journal.id,
-        accountId: 'acc-loss-disposal-default',
+        accountId: "acc-loss-disposal-default",
         debit: new Prisma.Decimal(Math.abs(gainLoss)),
         credit: new Prisma.Decimal(0),
         description: `Debit loss on disposal for asset ${asset.assetCode}`,
@@ -250,9 +275,12 @@ export class AssetLifecycleService {
   }
 
   async triggerImpairmentPostGL(tenantId: string, impairmentId: string) {
-    const imp = await prisma.assetImpairment.findFirst({ where: { id: impairmentId, tenantId } });
-    if (!imp) throw new NotFoundException('Impairment not found');
-    if (imp.glJournalId) throw new BadRequestException('Impairment already posted');
+    const imp = await prisma.assetImpairment.findFirst({
+      where: { id: impairmentId, tenantId },
+    });
+    if (!imp) throw new NotFoundException("Impairment not found");
+    if (imp.glJournalId)
+      throw new BadRequestException("Impairment already posted");
 
     const asset = await this.getAsset(tenantId, imp.assetId);
     const loss = Number(imp.impairmentLoss);
@@ -263,7 +291,7 @@ export class AssetLifecycleService {
         orgId: asset.orgId,
         entryNumber: `JRN-IMP-${Date.now()}`,
         date: new Date(imp.testDate),
-        status: 'POSTED',
+        status: "POSTED",
         notes: `GL Posting for asset impairment loss: ${asset.name}`,
       },
     });
@@ -274,7 +302,7 @@ export class AssetLifecycleService {
         {
           tenantId,
           journalId: journal.id,
-          accountId: 'acc-impairment-expense-default',
+          accountId: "acc-impairment-expense-default",
           debit: new Prisma.Decimal(loss),
           credit: new Prisma.Decimal(0),
           description: `Debit impairment loss expense for ${asset.assetCode}`,
@@ -292,13 +320,16 @@ export class AssetLifecycleService {
 
     await prisma.assetImpairment.update({
       where: { id: impairmentId },
-      data: { status: 'POSTED', glJournalId: journal.id, postedAt: new Date() },
+      data: { status: "POSTED", glJournalId: journal.id, postedAt: new Date() },
     });
 
     return { journalId: journal.id, impairmentLoss: loss };
   }
 
-  async calculateDepreciationAfterReval(tenantId: string, assetId: string): Promise<number> {
+  async calculateDepreciationAfterReval(
+    tenantId: string,
+    assetId: string,
+  ): Promise<number> {
     const asset = await this.getAsset(tenantId, assetId);
     const netValue = Number(asset.currentValue);
     const salvage = Number(asset.salvageValue);
@@ -317,7 +348,10 @@ export class AssetLifecycleService {
     ]);
 
     const totalRevalGain = revals.reduce((s, r) => s + Number(r.gainLoss), 0);
-    const totalImpairmentLoss = impairments.reduce((s, i) => s + Number(i.impairmentLoss), 0);
+    const totalImpairmentLoss = impairments.reduce(
+      (s, i) => s + Number(i.impairmentLoss),
+      0,
+    );
     const totalDepreciation = deps.reduce((s, d) => s + Number(d.amount), 0);
 
     return {
@@ -331,7 +365,10 @@ export class AssetLifecycleService {
     };
   }
 
-  async bulkDisposeAssets(tenantId: string, dto: { assetIds: string[]; disposalDate: string; disposalType: string }) {
+  async bulkDisposeAssets(
+    tenantId: string,
+    dto: { assetIds: string[]; disposalDate: string; disposalType: string },
+  ) {
     const created: any[] = [];
     for (const assetId of dto.assetIds) {
       try {

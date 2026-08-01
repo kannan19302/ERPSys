@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Injectable, Logger } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 import { TRACKED_MODELS, ownerForModel } from "../../common/app-data-ownership";

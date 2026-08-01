@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { Injectable } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import { Injectable } from "@nestjs/common";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class AlertsService {
@@ -11,7 +10,7 @@ export class AlertsService {
         isDismissed: false,
         ...(unreadOnly && { isRead: false }),
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -39,7 +38,7 @@ export class AlertsService {
   async getThresholds(tenantId: string) {
     return prisma.alertThreshold.findMany({
       where: { tenantId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -64,7 +63,7 @@ export class AlertsService {
         metric: data.metric,
         operator: data.operator,
         value: data.value,
-        severity: data.severity ?? 'WARNING',
+        severity: data.severity ?? "WARNING",
         isActive: data.isActive ?? true,
         notifyEmail: data.notifyEmail ?? true,
         cooldownMin: data.cooldownMin ?? 60,
@@ -74,8 +73,12 @@ export class AlertsService {
         value: data.value,
         ...(data.severity !== undefined && { severity: data.severity }),
         ...(data.isActive !== undefined && { isActive: data.isActive }),
-        ...(data.notifyEmail !== undefined && { notifyEmail: data.notifyEmail }),
-        ...(data.cooldownMin !== undefined && { cooldownMin: data.cooldownMin }),
+        ...(data.notifyEmail !== undefined && {
+          notifyEmail: data.notifyEmail,
+        }),
+        ...(data.cooldownMin !== undefined && {
+          cooldownMin: data.cooldownMin,
+        }),
       },
     });
   }
@@ -100,7 +103,7 @@ export class AlertsService {
       data: {
         tenantId,
         type: data.type,
-        severity: data.severity ?? 'WARNING',
+        severity: data.severity ?? "WARNING",
         title: data.title,
         message: data.message,
         metadata: data.metadata ?? {},

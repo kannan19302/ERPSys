@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { Injectable } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import { Injectable } from "@nestjs/common";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class ActivityFeedService {
@@ -28,7 +27,7 @@ export class ActivityFeedService {
     const [items, total] = await Promise.all([
       prisma.changeHistory.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         skip,
         take: limit,
       }),

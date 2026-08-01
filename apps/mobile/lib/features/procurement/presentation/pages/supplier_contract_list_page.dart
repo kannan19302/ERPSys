@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -72,7 +71,7 @@ class _SupplierContractListPageState extends ConsumerState<SupplierContractListP
                   controller.applyFilters(v == null ? const {} : {'status': v});
                 },
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -106,10 +105,10 @@ class _SupplierContractListPageState extends ConsumerState<SupplierContractListP
                 Row(children: [
                   Expanded(child: Text(c.supplierName, style: Theme.of(context).textTheme.titleSmall)),
                   UiStatusBadge(label: c.status, tone: _statusTone(c.status)),
-                ]),
+                ],),
                 const SizedBox(height: Spacing.x1),
                 Text(c.type, style: TextStyle(color: context.tokens.textSecondary)),
-                Text('\$${c.value.toStringAsFixed(2)}', style: TextStyle(fontSize: TypeScale.xs)),
+                Text('\$${c.value.toStringAsFixed(2)}', style: const TextStyle(fontSize: TypeScale.xs)),
               ],
             ),
           ),

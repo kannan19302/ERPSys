@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { GitBranch, PlayCircle, CheckSquare, BarChart3 } from "lucide-react";
 import type { ModuleTab } from "@unerp/ui-layout";

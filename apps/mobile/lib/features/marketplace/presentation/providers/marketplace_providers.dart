@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -125,7 +124,7 @@ class MarketplaceAppListController extends Notifier<MarketplaceAppListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteMarketplaceAppUseCase(
-      ref.read(marketplaceRepositoryProvider))(id);
+      ref.read(marketplaceRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
@@ -134,7 +133,7 @@ class MarketplaceAppListController extends Notifier<MarketplaceAppListState> {
 final FutureProviderFamily<MarketplaceApp, String> marketplaceAppDetailProvider =
     FutureProvider.family<MarketplaceApp, String>((Ref ref, String id) async {
   final result = await GetMarketplaceAppUseCase(
-    ref.watch(marketplaceRepositoryProvider))(id);
+    ref.watch(marketplaceRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 

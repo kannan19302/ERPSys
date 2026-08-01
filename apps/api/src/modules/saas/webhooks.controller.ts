@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Controller,
   Get,
@@ -53,7 +52,10 @@ export class WebhooksController {
   @ApiOperation({ summary: "Create webhook endpoint" })
   @Permissions("saas.webhook.create")
   @Post("endpoints")
-  async createEndpoint(@Req() req: AuthReq, @ZodBody(createEndpointSchema) body: z.infer<typeof createEndpointSchema>) {
+  async createEndpoint(
+    @Req() req: AuthReq,
+    @ZodBody(createEndpointSchema) body: z.infer<typeof createEndpointSchema>,
+  ) {
     return this.webhooksService.createEndpoint(req.user.tenantId, body);
   }
 
@@ -67,7 +69,11 @@ export class WebhooksController {
   @ApiOperation({ summary: "Update webhook endpoint" })
   @Permissions("saas.webhook.update")
   @Patch("endpoints/:id")
-  async updateEndpoint(@Req() req: AuthReq, @Param("id") id: string, @ZodBody(updateEndpointSchema) body: z.infer<typeof updateEndpointSchema>) {
+  async updateEndpoint(
+    @Req() req: AuthReq,
+    @Param("id") id: string,
+    @ZodBody(updateEndpointSchema) body: z.infer<typeof updateEndpointSchema>,
+  ) {
     return this.webhooksService.updateEndpoint(req.user.tenantId, id, body);
   }
 
@@ -102,7 +108,10 @@ export class WebhooksController {
   @ApiOperation({ summary: "Redeliver webhook event" })
   @Permissions("saas.webhook.create")
   @Post("deliveries/:deliveryId/redeliver")
-  async redeliverEvent(@Req() req: AuthReq, @Param("deliveryId") deliveryId: string) {
+  async redeliverEvent(
+    @Req() req: AuthReq,
+    @Param("deliveryId") deliveryId: string,
+  ) {
     return this.webhooksService.redeliverEvent(req.user.tenantId, deliveryId);
   }
 

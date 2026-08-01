@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Injectable, Logger } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 
@@ -6,7 +5,9 @@ import { prisma } from "@unerp/database";
 export class SalesQuoteCpqMasterDeepService {
   private readonly logger = new Logger(SalesQuoteCpqMasterDeepService.name);
 
-  private get db() { return prisma; }
+  private get db() {
+    return prisma;
+  }
 
   // 1. Guided CPQ & Bundle Engine (20 methods)
   async createBundleRule(tenantId: string, rule: any) {

@@ -1,16 +1,29 @@
-// @ts-nocheck
 import { Injectable } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 
 @Injectable()
 export class TenantAnalyticsService {
-  public get db(): typeof prisma { return prisma; }
+  public get db(): typeof prisma {
+    return prisma;
+  }
   async getPlatformOverview() {
-    const [totalTenants, activeTenants, totalSubscriptions, totalRevenue, mrr, arr] = await Promise.all([
+    const [
+      totalTenants,
+      activeTenants,
+      totalSubscriptions,
+      totalRevenue,
+      mrr,
+      arr,
+    ] = await Promise.all([
       prisma.tenant.count(),
       prisma.tenant.count({ where: { status: "ACTIVE" } }),
-      prisma.tenantSubscription.count({ where: { status: { in: ["ACTIVE", "TRIAL"] } } }),
-      prisma.saaSInvoice.aggregate({ where: { status: "PAID" }, _sum: { totalAmount: true } }),
+      prisma.tenantSubscription.count({
+        where: { status: { in: ["ACTIVE", "TRIAL"] } },
+      }),
+      prisma.saaSInvoice.aggregate({
+        where: { status: "PAID" },
+        _sum: { totalAmount: true },
+      }),
       this.calculateMrr(),
       this.calculateArr(),
     ]);
@@ -30,7 +43,10 @@ export class TenantAnalyticsService {
       totalRevenue: totalRevenue._sum.totalAmount ?? 0,
       mrr,
       arr,
-      growth: activeTenants > 0 ? Math.round((newTenantsThisMonth / activeTenants) * 100) : 0,
+      growth:
+        activeTenants > 0
+          ? Math.round((newTenantsThisMonth / activeTenants) * 100)
+          : 0,
     };
   }
 
@@ -60,7 +76,9 @@ export class TenantAnalyticsService {
         skip: (page - 1) * limit,
         take: limit,
         include: {
-          subscription: { include: { plan: { select: { id: true, name: true } } } },
+          subscription: {
+            include: { plan: { select: { id: true, name: true } } },
+          },
           _count: { select: { users: true } },
         },
       }),
@@ -71,7 +89,14 @@ export class TenantAnalyticsService {
   }
 
   async getTenantDetail(tenantId: string) {
-    const [tenant, subscription, usage, invoiceCount, userCount, paymentMethods] = await Promise.all([
+    const [
+      tenant,
+      subscription,
+      usage,
+      invoiceCount,
+      userCount,
+      paymentMethods,
+    ] = await Promise.all([
       prisma.tenant.findUnique({ where: { id: tenantId } }),
       prisma.tenantSubscription.findFirst({
         where: { tenantId },
@@ -106,7 +131,10 @@ export class TenantAnalyticsService {
         metric: u.metric,
         current: u.currentValue,
         limit: u.limitValue,
-        pct: u.limitValue > 0 ? Math.round((u.currentValue / u.limitValue) * 100) : 0,
+        pct:
+          u.limitValue > 0
+            ? Math.round((u.currentValue / u.limitValue) * 100)
+            : 0,
       })),
       invoiceCount,
       userCount,
@@ -135,7 +163,12 @@ export class TenantAnalyticsService {
   }
 
   async getRevenueAnalytics(period: "7d" | "30d" | "90d" | "1y") {
-    const daysMap: Record<string, number> = { "7d": 7, "30d": 30, "90d": 90, "1y": 365 };
+    const daysMap: Record<string, number> = {
+      "7d": 7,
+      "30d": 30,
+      "90d": 90,
+      "1y": 365,
+    };
     const days = daysMap[period] ?? 30;
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
@@ -150,17 +183,32 @@ export class TenantAnalyticsService {
 
     return {
       period,
-      totalRevenue: invoices.reduce((sum, inv) => sum + Number(inv.totalAmount), 0),
+      totalRevenue: invoices.reduce(
+        (sum, inv) => sum + Number(inv.totalAmount),
+        0,
+      ),
       totalInvoices: invoices.length,
-      averageInvoiceValue: invoices.length > 0
-        ? invoices.reduce((sum, inv) => sum + Number(inv.totalAmount), 0) / invoices.length
-        : 0,
-      daily: this.groupByDate(invoices.map((inv) => ({ paidAt: inv.paidAt, totalAmount: Number(inv.totalAmount) }))),
+      averageInvoiceValue:
+        invoices.length > 0
+          ? invoices.reduce((sum, inv) => sum + Number(inv.totalAmount), 0) /
+            invoices.length
+          : 0,
+      daily: this.groupByDate(
+        invoices.map((inv) => ({
+          paidAt: inv.paidAt,
+          totalAmount: Number(inv.totalAmount),
+        })),
+      ),
     };
   }
 
   async getChurnAnalytics(period: "7d" | "30d" | "90d" | "1y") {
-    const daysMap: Record<string, number> = { "7d": 7, "30d": 30, "90d": 90, "1y": 365 };
+    const daysMap: Record<string, number> = {
+      "7d": 7,
+      "30d": 30,
+      "90d": 90,
+      "1y": 365,
+    };
     const days = daysMap[period] ?? 30;
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
@@ -182,9 +230,10 @@ export class TenantAnalyticsService {
       }),
     ]);
 
-    const churnRate = totalSubsAtStart > 0
-      ? Math.round((cancelledSubs.length / totalSubsAtStart) * 100)
-      : 0;
+    const churnRate =
+      totalSubsAtStart > 0
+        ? Math.round((cancelledSubs.length / totalSubsAtStart) * 100)
+        : 0;
 
     return {
       period,
@@ -220,7 +269,12 @@ export class TenantAnalyticsService {
   }
 
   async getTenantGrowth(period: "7d" | "30d" | "90d" | "1y") {
-    const daysMap: Record<string, number> = { "7d": 7, "30d": 30, "90d": 90, "1y": 365 };
+    const daysMap: Record<string, number> = {
+      "7d": 7,
+      "30d": 30,
+      "90d": 90,
+      "1y": 365,
+    };
     const days = daysMap[period] ?? 30;
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
@@ -234,7 +288,13 @@ export class TenantAnalyticsService {
     return {
       period,
       totalNew: tenants.length,
-      daily: this.groupByDate(tenants.map((t) => ({ ...t, paidAt: t.createdAt, totalAmount: 0 })) as any),
+      daily: this.groupByDate(
+        tenants.map((t) => ({
+          ...t,
+          paidAt: t.createdAt,
+          totalAmount: 0,
+        })) as any,
+      ),
     };
   }
 
@@ -247,7 +307,14 @@ export class TenantAnalyticsService {
     for (const t of tenants) {
       const settings = t.settings as Record<string, unknown> | null;
       const currency = (settings?.currency as string) ?? "USD";
-      const region = currency === "EUR" ? "EU" : currency === "GBP" ? "UK" : currency === "USD" ? "US" : "Other";
+      const region =
+        currency === "EUR"
+          ? "EU"
+          : currency === "GBP"
+            ? "UK"
+            : currency === "USD"
+              ? "US"
+              : "Other";
       regions[region] = (regions[region] ?? 0) + 1;
     }
 
@@ -262,7 +329,14 @@ export class TenantAnalyticsService {
   }
 
   async getFeatureAdoption() {
-    const [totalTenants, apiKeys, customDomains, ssoConfigs, webhooks, branding] = await Promise.all([
+    const [
+      totalTenants,
+      apiKeys,
+      customDomains,
+      ssoConfigs,
+      webhooks,
+      branding,
+    ] = await Promise.all([
       prisma.tenant.count({ where: { status: "ACTIVE" } }),
       prisma.tenantApiKey.groupBy({ by: ["tenantId"], _count: true }),
       prisma.tenantDomain.groupBy({ by: ["tenantId"], _count: true }),
@@ -274,21 +348,61 @@ export class TenantAnalyticsService {
     return {
       totalTenants: totalTenants,
       features: [
-        { feature: "API Keys", usageCount: apiKeys.length, adoptionRate: totalTenants > 0 ? Math.round((apiKeys.length / totalTenants) * 100) : 0 },
-        { feature: "Custom Domains", usageCount: customDomains.length, adoptionRate: totalTenants > 0 ? Math.round((customDomains.length / totalTenants) * 100) : 0 },
-        { feature: "SSO", usageCount: ssoConfigs.length, adoptionRate: totalTenants > 0 ? Math.round((ssoConfigs.length / totalTenants) * 100) : 0 },
-        { feature: "Webhooks", usageCount: webhooks.length, adoptionRate: totalTenants > 0 ? Math.round((webhooks.length / totalTenants) * 100) : 0 },
-        { feature: "Custom Branding", usageCount: branding.length, adoptionRate: totalTenants > 0 ? Math.round((branding.length / totalTenants) * 100) : 0 },
+        {
+          feature: "API Keys",
+          usageCount: apiKeys.length,
+          adoptionRate:
+            totalTenants > 0
+              ? Math.round((apiKeys.length / totalTenants) * 100)
+              : 0,
+        },
+        {
+          feature: "Custom Domains",
+          usageCount: customDomains.length,
+          adoptionRate:
+            totalTenants > 0
+              ? Math.round((customDomains.length / totalTenants) * 100)
+              : 0,
+        },
+        {
+          feature: "SSO",
+          usageCount: ssoConfigs.length,
+          adoptionRate:
+            totalTenants > 0
+              ? Math.round((ssoConfigs.length / totalTenants) * 100)
+              : 0,
+        },
+        {
+          feature: "Webhooks",
+          usageCount: webhooks.length,
+          adoptionRate:
+            totalTenants > 0
+              ? Math.round((webhooks.length / totalTenants) * 100)
+              : 0,
+        },
+        {
+          feature: "Custom Branding",
+          usageCount: branding.length,
+          adoptionRate:
+            totalTenants > 0
+              ? Math.round((branding.length / totalTenants) * 100)
+              : 0,
+        },
       ],
     };
   }
 
   async getHealthMetrics() {
-    const [recentInvoices, failedInvoices, pendingDeliveries] = await Promise.all([
-      prisma.saaSInvoice.count({ where: { createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } } }),
-      prisma.saaSInvoice.count({ where: { status: "OVERDUE" } }),
-      prisma.tenantWebhookDelivery.count({ where: { status: "PENDING" } }),
-    ]);
+    const [recentInvoices, failedInvoices, pendingDeliveries] =
+      await Promise.all([
+        prisma.saaSInvoice.count({
+          where: {
+            createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+          },
+        }),
+        prisma.saaSInvoice.count({ where: { status: "OVERDUE" } }),
+        prisma.tenantWebhookDelivery.count({ where: { status: "PENDING" } }),
+      ]);
 
     return {
       status: "healthy",
@@ -307,7 +421,9 @@ export class TenantAnalyticsService {
     });
 
     return activeSubs.reduce((sum, sub) => {
-      const price = sub.plan.prices?.[0] ? Number(sub.plan.prices[0].monthly) : 0;
+      const price = sub.plan.prices?.[0]
+        ? Number(sub.plan.prices[0].monthly)
+        : 0;
       return sum + (sub.billingPeriod === "YEARLY" ? price / 12 : price);
     }, 0);
   }
@@ -317,7 +433,9 @@ export class TenantAnalyticsService {
     return mrr * 12;
   }
 
-  private groupByDate(items: Array<{ paidAt: Date | null; totalAmount: number }>): Record<string, number> {
+  private groupByDate(
+    items: Array<{ paidAt: Date | null; totalAmount: number }>,
+  ): Record<string, number> {
     const grouped: Record<string, number> = {};
     for (const item of items) {
       if (!item.paidAt) continue;

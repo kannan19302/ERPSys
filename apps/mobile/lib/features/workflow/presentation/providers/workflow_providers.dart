@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -148,27 +147,27 @@ class WorkflowDefinitionListController extends Notifier<WorkflowDefinitionListSt
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteWorkflowDefinitionUseCase(
-      ref.read(workflowRepositoryProvider))(id);
+      ref.read(workflowRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<void> activate(String id) async {
     await ActivateWorkflowDefinitionUseCase(
-      ref.read(workflowRepositoryProvider))(id);
+      ref.read(workflowRepositoryProvider),)(id);
     await refresh();
   }
 
   Future<void> deactivate(String id) async {
     await DeactivateWorkflowDefinitionUseCase(
-      ref.read(workflowRepositoryProvider))(id);
+      ref.read(workflowRepositoryProvider),)(id);
     await refresh();
   }
 
   Future<Result<WorkflowDefinition>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveWorkflowDefinitionUseCase(
-      ref.read(workflowRepositoryProvider))(
-      SaveWorkflowDefinitionParams(id: id, payload: payload));
+      ref.read(workflowRepositoryProvider),)(
+      SaveWorkflowDefinitionParams(id: id, payload: payload),);
     if (result.isOk) await refresh();
     return result;
   }
@@ -260,13 +259,13 @@ class WorkflowInstanceListController extends Notifier<WorkflowInstanceListState>
 
   Future<void> cancel(String id) async {
     await CancelWorkflowInstanceUseCase(
-      ref.read(workflowRepositoryProvider))(id);
+      ref.read(workflowRepositoryProvider),)(id);
     await refresh();
   }
 
   Future<void> advance(String id) async {
     await AdvanceWorkflowInstanceUseCase(
-      ref.read(workflowRepositoryProvider))(id);
+      ref.read(workflowRepositoryProvider),)(id);
     await refresh();
   }
 }
@@ -378,8 +377,8 @@ class WorkflowTaskListController extends Notifier<WorkflowTaskListState> {
 
   Future<Result<WorkflowTask>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveWorkflowTaskUseCase(
-      ref.read(workflowRepositoryProvider))(
-      SaveWorkflowTaskParams(id: id, payload: payload));
+      ref.read(workflowRepositoryProvider),)(
+      SaveWorkflowTaskParams(id: id, payload: payload),);
     if (result.isOk) await refresh();
     return result;
   }
@@ -388,21 +387,21 @@ class WorkflowTaskListController extends Notifier<WorkflowTaskListState> {
 final FutureProviderFamily<WorkflowDefinition, String> workflowDefinitionDetailProvider =
     FutureProvider.family<WorkflowDefinition, String>((Ref ref, String id) async {
   final result = await GetWorkflowDefinitionUseCase(
-    ref.watch(workflowRepositoryProvider))(id);
+    ref.watch(workflowRepositoryProvider),)(id);
   return result.fold((f) => throw f, (w) => w);
 });
 
 final FutureProviderFamily<WorkflowInstance, String> workflowInstanceDetailProvider =
     FutureProvider.family<WorkflowInstance, String>((Ref ref, String id) async {
   final result = await GetWorkflowInstanceUseCase(
-    ref.watch(workflowRepositoryProvider))(id);
+    ref.watch(workflowRepositoryProvider),)(id);
   return result.fold((f) => throw f, (w) => w);
 });
 
 final FutureProviderFamily<WorkflowTask, String> workflowTaskDetailProvider =
     FutureProvider.family<WorkflowTask, String>((Ref ref, String id) async {
   final result = await GetWorkflowTaskUseCase(
-    ref.watch(workflowRepositoryProvider))(id);
+    ref.watch(workflowRepositoryProvider),)(id);
   return result.fold((f) => throw f, (t) => t);
 });
 

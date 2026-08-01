@@ -1,33 +1,56 @@
-// @ts-nocheck
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException, Logger } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import {
+  pipelines,
+  configMaps,
+  monitorDashboards,
+  alertConfigs,
+  logEntries,
+  backupJobs,
+  migrations,
+  healthChecks,
+  errorRecords,
+  uptimeRecords,
+  slaContracts,
+  incidents,
+  capacityPlans,
+  changeRequests,
+  certificates,
+  createRecordId,
+  findRecord,
+  removeRecord,
+  type CertificateRecord,
+} from "./devops-deep.store";
 
 @Injectable()
 export class DevopsDeepV2Service {
+  private readonly logger = new Logger(DevopsDeepV2Service.name);
+
   async getPipelineStats(tenantId: string) {
-    const [total, active] = await Promise.all([
-      prisma.devopsPipeline.count({ where: { tenantId } }),
-      prisma.devopsPipeline.count({ where: { tenantId, isActive: true } }),
-    ]);
+    const total = pipelines.filter((p) => p.tenantId === tenantId).length;
+    const active = pipelines.filter(
+      (p) => p.tenantId === tenantId && p.isActive,
+    ).length;
     return { total, active };
   }
   async triggerPipeline(tenantId: string, id: string) {
-    await prisma.devopsPipeline.updateMany({
-      where: { id, tenantId },
-      data: { lastRunAt: new Date(), lastStatus: "RUNNING" },
-    });
+    const p = findRecord(pipelines, tenantId, id);
+    if (!p) throw new NotFoundException("Pipeline not found");
+    p.lastRunAt = new Date();
+    p.lastStatus = "RUNNING";
+    p.updatedAt = new Date();
     return { triggered: true, pipelineId: id };
   }
   async getDeploymentStats(tenantId: string) {
     const [total, successful, failed] = await Promise.all([
-      prisma.devopsDeployment.count({ where: { tenantId } }),
-      prisma.devopsDeployment.count({ where: { tenantId, status: "SUCCESS" } }),
-      prisma.devopsDeployment.count({ where: { tenantId, status: "FAILED" } }),
+      prisma.deployment.count({ where: { tenantId } }),
+      prisma.deployment.count({ where: { tenantId, status: "SUCCESS" } }),
+      prisma.deployment.count({ where: { tenantId, status: "FAILED" } }),
     ]);
     return { total, successful, failed };
   }
   async getDeploymentHistory(tenantId: string, page: number = 1) {
-    const items = await prisma.devopsDeployment.findMany({
+    const items = await prisma.deployment.findMany({
       where: { tenantId },
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * 20,
@@ -36,90 +59,84 @@ export class DevopsDeepV2Service {
     return { items, page };
   }
   async getEnvironmentStats(tenantId: string) {
-    const [total, protected] = await Promise.all([
-      prisma.devopsEnvironment.count({ where: { tenantId } }),
-      prisma.devopsEnvironment.count({
-        where: { tenantId, isProtected: true },
-      }),
-    ]);
-    return { total, protected };
+    const environments = await prisma.environment.findMany({
+      where: { tenantId },
+    });
+    const total = environments.length;
+    const protectedCount = environments.filter(
+      (e) => (e.metadata as Record<string, unknown>)?.isProtected === true,
+    ).length;
+    return { total, protected: protectedCount };
   }
   async getConfigMapStats(tenantId: string) {
     return {
-      total: await prisma.devopsConfigMap.count({ where: { tenantId } }),
+      total: configMaps.filter((c) => c.tenantId === tenantId).length,
     };
   }
   async getFeatureFlagStats(tenantId: string) {
     const [total, enabled] = await Promise.all([
-      prisma.devopsFeatureFlag.count({ where: { tenantId } }),
-      prisma.devopsFeatureFlag.count({ where: { tenantId, isEnabled: true } }),
+      prisma.saasFeatureFlag.count({ where: { tenantId } }),
+      prisma.saasFeatureFlag.count({ where: { tenantId, isEnabled: true } }),
     ]);
     return { total, enabled };
   }
   async getDashboardStats(tenantId: string) {
     return {
-      total: await prisma.devopsMonitorDashboard.count({ where: { tenantId } }),
+      total: monitorDashboards.filter((d) => d.tenantId === tenantId).length,
     };
   }
   async getAlertStats(tenantId: string) {
-    const [total, active] = await Promise.all([
-      prisma.devopsAlertConfig.count({ where: { tenantId } }),
-      prisma.devopsAlertConfig.count({ where: { tenantId, isActive: true } }),
-    ]);
+    const total = alertConfigs.filter((a) => a.tenantId === tenantId).length;
+    const active = alertConfigs.filter(
+      (a) => a.tenantId === tenantId && a.isActive,
+    ).length;
     return { total, active };
   }
   async triggerAlert(tenantId: string, id: string) {
-    await prisma.devopsAlertConfig.updateMany({
-      where: { id, tenantId },
-      data: { lastTriggeredAt: new Date() },
-    });
+    const a = findRecord(alertConfigs, tenantId, id);
+    if (!a) throw new NotFoundException("Alert config not found");
+    a.lastTriggeredAt = new Date();
+    a.updatedAt = new Date();
     return { triggered: true, alertId: id };
   }
   async getLogStats(tenantId: string) {
-    const [total, errors, warns] = await Promise.all([
-      prisma.devopsLogEntry.count({ where: { tenantId } }),
-      prisma.devopsLogEntry.count({ where: { tenantId, level: "ERROR" } }),
-      prisma.devopsLogEntry.count({ where: { tenantId, level: "WARN" } }),
-    ]);
+    const logs = logEntries.filter((l) => l.tenantId === tenantId);
+    const total = logs.length;
+    const errors = logs.filter((l) => l.level === "ERROR").length;
+    const warns = logs.filter((l) => l.level === "WARN").length;
     return { total, errors, warns };
   }
   async getBackupStats(tenantId: string) {
-    const [total, successful, failed] = await Promise.all([
-      prisma.devopsBackupJob.count({ where: { tenantId } }),
-      prisma.devopsBackupJob.count({ where: { tenantId, status: "SUCCESS" } }),
-      prisma.devopsBackupJob.count({ where: { tenantId, status: "FAILED" } }),
-    ]);
+    const jobs = backupJobs.filter((b) => b.tenantId === tenantId);
+    const total = jobs.length;
+    const successful = jobs.filter((b) => b.status === "SUCCESS").length;
+    const failed = jobs.filter((b) => b.status === "FAILED").length;
     return { total, successful, failed };
   }
   async getMigrationStats(tenantId: string) {
-    const [total, successful] = await Promise.all([
-      prisma.devopsMigrationRecord.count({ where: { tenantId } }),
-      prisma.devopsMigrationRecord.count({
-        where: { tenantId, status: "SUCCESS" },
-      }),
-    ]);
+    const records = migrations.filter((m) => m.tenantId === tenantId);
+    const total = records.length;
+    const successful = records.filter((m) => m.status === "SUCCESS").length;
     return { total, successful };
   }
   async getHealthCheckStats(tenantId: string) {
-    const [total, active] = await Promise.all([
-      prisma.devopsHealthCheck.count({ where: { tenantId } }),
-      prisma.devopsHealthCheck.count({ where: { tenantId, isActive: true } }),
-    ]);
+    const total = healthChecks.filter((h) => h.tenantId === tenantId).length;
+    const active = healthChecks.filter(
+      (h) => h.tenantId === tenantId && h.isActive,
+    ).length;
     return { total, active };
   }
   async getErrorStats(tenantId: string) {
-    const [total, open] = await Promise.all([
-      prisma.devopsErrorRecord.count({ where: { tenantId } }),
-      prisma.devopsErrorRecord.count({ where: { tenantId, status: "OPEN" } }),
-    ]);
+    const records = errorRecords.filter((e) => e.tenantId === tenantId);
+    const total = records.length;
+    const open = records.filter((e) => e.status === "OPEN").length;
     return { total, open };
   }
   async getUptimeStats(tenantId: string) {
-    const records = await prisma.devopsUptimeRecord.findMany({
-      where: { tenantId },
-      orderBy: { checkedAt: "desc" },
-      take: 100,
-    });
+    const records = uptimeRecords
+      .filter((u) => u.tenantId === tenantId)
+      .sort((a, b) => b.checkedAt.getTime() - a.checkedAt.getTime())
+      .slice(0, 100);
     return {
       total: records.length,
       up: records.filter((r) => r.status === "UP").length,
@@ -127,91 +144,95 @@ export class DevopsDeepV2Service {
     };
   }
   async getSlaStats(tenantId: string) {
-    const [total, active] = await Promise.all([
-      prisma.devopsSlaContract.count({ where: { tenantId } }),
-      prisma.devopsSlaContract.count({ where: { tenantId, isActive: true } }),
-    ]);
+    const total = slaContracts.filter((s) => s.tenantId === tenantId).length;
+    const active = slaContracts.filter(
+      (s) => s.tenantId === tenantId && s.isActive,
+    ).length;
     return { total, active };
   }
   async getIncidentStats(tenantId: string) {
-    const [total, open, resolved] = await Promise.all([
-      prisma.devopsIncident.count({ where: { tenantId } }),
-      prisma.devopsIncident.count({ where: { tenantId, status: "OPEN" } }),
-      prisma.devopsIncident.count({ where: { tenantId, status: "RESOLVED" } }),
-    ]);
+    const records = incidents.filter((i) => i.tenantId === tenantId);
+    const total = records.length;
+    const open = records.filter((i) => i.status === "OPEN").length;
+    const resolved = records.filter((i) => i.status === "RESOLVED").length;
     return { total, open, resolved };
   }
   async getCapacityPlanStats(tenantId: string) {
     return {
-      total: await prisma.devopsCapacityPlan.count({ where: { tenantId } }),
+      total: capacityPlans.filter((c) => c.tenantId === tenantId).length,
     };
   }
   async getChangeRequestStats(tenantId: string) {
-    const [total, approved, pending] = await Promise.all([
-      prisma.devopsChangeRequest.count({ where: { tenantId } }),
-      prisma.devopsChangeRequest.count({
-        where: { tenantId, status: "APPROVED" },
-      }),
-      prisma.devopsChangeRequest.count({
-        where: { tenantId, status: "DRAFT" },
-      }),
-    ]);
+    const records = changeRequests.filter((c) => c.tenantId === tenantId);
+    const total = records.length;
+    const approved = records.filter((c) => c.status === "APPROVED").length;
+    const pending = records.filter((c) => c.status === "DRAFT").length;
     return { total, approved, pending };
   }
   async listCertificates(tenantId: string) {
-    return prisma.devopsCertificate.findMany({
-      where: { tenantId },
-      orderBy: { createdAt: "desc" },
-    });
+    return certificates
+      .filter((c) => c.tenantId === tenantId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
   async createCertificate(tenantId: string, data: any) {
-    return prisma.devopsCertificate.create({
-      data: {
-        tenantId,
-        name: data.name,
-        domain: data.domain,
-        issuer: data.issuer,
-        notBefore: new Date(data.notBefore),
-        notAfter: new Date(data.notAfter),
-        fingerprint: data.fingerprint,
-      },
-    });
+    const now = new Date();
+    const record: CertificateRecord = {
+      id: createRecordId(),
+      tenantId,
+      name: data.name,
+      domain: data.domain,
+      issuer: data.issuer ?? null,
+      notBefore: new Date(data.notBefore),
+      notAfter: new Date(data.notAfter),
+      fingerprint: data.fingerprint ?? null,
+      isActive: true,
+      createdAt: now,
+      updatedAt: now,
+    };
+    certificates.push(record);
+    return record;
   }
   async updateCertificate(tenantId: string, id: string, data: any) {
-    const item = await prisma.devopsCertificate.findFirst({
-      where: { id, tenantId },
-    });
+    const item = findRecord(certificates, tenantId, id);
     if (!item) throw new NotFoundException("Certificate not found");
-    return prisma.devopsCertificate.update({ where: { id }, data });
+    Object.assign(item, data, { updatedAt: new Date() });
+    return item;
   }
   async deleteCertificate(tenantId: string, id: string) {
-    await prisma.devopsCertificate.deleteMany({ where: { id, tenantId } });
-    return { deleted: true };
+    const item = findRecord(certificates, tenantId, id);
+    if (!item) throw new NotFoundException("Certificate not found");
+    return removeRecord(certificates, tenantId, id) as CertificateRecord;
   }
   async getCertificateStats(tenantId: string) {
-    const [total, active, expiring] = await Promise.all([
-      prisma.devopsCertificate.count({ where: { tenantId } }),
-      prisma.devopsCertificate.count({ where: { tenantId, isActive: true } }),
-      prisma.devopsCertificate.count({
-        where: {
-          tenantId,
-          notAfter: { lte: new Date(Date.now() + 30 * 86400000) },
-        },
-      }),
-    ]);
+    const records = certificates.filter((c) => c.tenantId === tenantId);
+    const total = records.length;
+    const active = records.filter((c) => c.isActive).length;
+    const expiring = records.filter(
+      (c) => c.notAfter.getTime() <= Date.now() + 30 * 86400000,
+    ).length;
     return { total, active, expiringSoon: expiring };
   }
   async getDevopsSummary(tenantId: string) {
-    const [pipelines, deployments, incidents, alerts] = await Promise.all([
-      prisma.devopsPipeline.count({ where: { tenantId } }),
-      prisma.devopsDeployment.count({ where: { tenantId } }),
-      prisma.devopsIncident.count({ where: { tenantId, status: "OPEN" } }),
-      prisma.devopsAlertConfig.count({ where: { tenantId, isActive: true } }),
-    ]);
+    const [pipelinesCount, deployments, incidentsCount, alerts] =
+      await Promise.all([
+        Promise.resolve(
+          pipelines.filter((p) => p.tenantId === tenantId).length,
+        ),
+        prisma.deployment.count({ where: { tenantId } }),
+        Promise.resolve(
+          incidents.filter(
+            (i) => i.tenantId === tenantId && i.status === "OPEN",
+          ).length,
+        ),
+        Promise.resolve(
+          alertConfigs.filter((a) => a.tenantId === tenantId && a.isActive)
+            .length,
+        ),
+      ]);
     return {
-      pipelines,
+      pipelines: pipelinesCount,
       deployments,
-      openIncidents: incidents,
+      openIncidents: incidentsCount,
       activeAlerts: alerts,
     };
   }

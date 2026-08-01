@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -147,14 +146,14 @@ class DocumentListController extends Notifier<DocumentListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteDocumentUseCase(
-      ref.read(documentsRepositoryProvider))(id);
+      ref.read(documentsRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<void>> star(String id) async {
     final result = await StarDocumentUseCase(
-      ref.read(documentsRepositoryProvider))(id);
+      ref.read(documentsRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
@@ -162,7 +161,7 @@ class DocumentListController extends Notifier<DocumentListState> {
 
 final documentDetailProvider = FutureProvider.family<Document, String>((Ref ref, String id) async {
   final result = await GetDocumentUseCase(
-    ref.watch(documentsRepositoryProvider))(id);
+    ref.watch(documentsRepositoryProvider),)(id);
   return result.fold((f) => throw f, (d) => d);
 });
 
@@ -276,14 +275,14 @@ class FolderListController extends Notifier<FolderListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteFolderUseCase(
-      ref.read(documentsRepositoryProvider))(id);
+      ref.read(documentsRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<DocumentFolder>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveFolderUseCase(
-      ref.read(documentsRepositoryProvider))(
+      ref.read(documentsRepositoryProvider),)(
       SaveFolderParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -293,13 +292,13 @@ class FolderListController extends Notifier<FolderListState> {
 
 final documentTemplateDetailProvider = FutureProvider.family<DocumentTemplate, String>((Ref ref, String id) async {
   final result = await GetTemplateUseCase(
-    ref.watch(documentsRepositoryProvider))(id);
+    ref.watch(documentsRepositoryProvider),)(id);
   return result.fold((f) => throw f, (t) => t);
 });
 
 final FutureProviderFamily<DocumentFolder, String> folderDetailProvider =
     FutureProvider.family<DocumentFolder, String>((Ref ref, String id) async {
   final result = await GetFolderUseCase(
-    ref.watch(documentsRepositoryProvider))(id);
+    ref.watch(documentsRepositoryProvider),)(id);
   return result.fold((f) => throw f, (f) => f);
 });

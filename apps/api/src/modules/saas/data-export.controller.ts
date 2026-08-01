@@ -1,12 +1,4 @@
-// @ts-nocheck
-import {
-  Controller,
-  Get,
-  Post,
-  UseGuards,
-  Req,
-  Param,
-} from "@nestjs/common";
+import { Controller, Get, Post, UseGuards, Req, Param } from "@nestjs/common";
 import { z } from "zod";
 import { ZodBody } from "../../common/decorators/zod-body.decorator";
 import { Request } from "express";
@@ -40,8 +32,15 @@ export class DataExportController {
   @ApiOperation({ summary: "Request a data export" })
   @Permissions("saas.export.create")
   @Post()
-  async requestExport(@Req() req: AuthReq, @ZodBody(requestExportSchema) body: z.infer<typeof requestExportSchema>) {
-    return this.dataExportService.requestExport(req.user.tenantId, req.user.userId, body);
+  async requestExport(
+    @Req() req: AuthReq,
+    @ZodBody(requestExportSchema) body: z.infer<typeof requestExportSchema>,
+  ) {
+    return this.dataExportService.requestExport(
+      req.user.tenantId,
+      req.user.userId,
+      body,
+    );
   }
 
   @ApiOperation({ summary: "List export jobs" })

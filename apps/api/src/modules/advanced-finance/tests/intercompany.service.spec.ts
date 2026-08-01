@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { InterCompanyService } from "../services/intercompany.service";
 import { prisma } from "@unerp/database";

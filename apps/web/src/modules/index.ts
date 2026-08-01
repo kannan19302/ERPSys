@@ -1,21 +1,9 @@
-// @ts-nocheck
-import { searchModule } from './search';
-import { driveModule } from './drive';
-// @ts-nocheck
-import { reportingModule } from './reporting';
-import { localizationModule } from './localization';
-import { subscriptionsModule } from './subscriptions';
-import { fixedAssetsModule } from './fixed-assets';
-// @ts-nocheck
-import { blockchainModule } from './blockchain';
-import { serviceManagementModule } from './service-management';
-import { peopleModule } from './people';
-// @ts-nocheck
-import { savedViewsModule } from './saved-views';
-import { pwaModule } from './pwa';
-import { outboxModule } from './outbox';
-import { notificationsModule } from './notifications';
-// @ts-nocheck
+import { searchModule } from "./search";
+import { driveModule } from "./drive";
+import { reportingModule } from "./reporting";
+import { localizationModule } from "./localization";
+import { subscriptionsModule } from "./subscriptions";
+import { fixedAssetsModule } from "./fixed-assets";
 import { blockchainModule } from "./blockchain";
 import { serviceManagementModule } from "./service-management";
 import { peopleModule } from "./people";
@@ -23,12 +11,6 @@ import { savedViewsModule } from "./saved-views";
 import { pwaModule } from "./pwa";
 import { outboxModule } from "./outbox";
 import { notificationsModule } from "./notifications";
-import { searchModule } from "./search";
-import { driveModule } from "./drive";
-import { reportingModule } from "./reporting";
-import { localizationModule } from "./localization";
-import { subscriptionsModule } from "./subscriptions";
-import { fixedAssetsModule } from "./fixed-assets";
 import { devopsModule } from "./devops";
 import { extGatewayModule } from "./ext-gateway";
 import { apiPlatformModule } from "./api-platform";
@@ -67,19 +49,6 @@ export const registeredModules = [
   pwaModule,
   outboxModule,
   notificationsModule,
-  blockchainModule,
-  serviceManagementModule,
-  peopleModule,
-  savedViewsModule,
-  pwaModule,
-  outboxModule,
-  notificationsModule,
-  searchModule,
-  driveModule,
-  reportingModule,
-  localizationModule,
-  subscriptionsModule,
-  fixedAssetsModule,
   devopsModule,
   extGatewayModule,
   apiPlatformModule,

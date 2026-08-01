@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -50,7 +49,7 @@ class _ServiceTicketListPageState extends ConsumerState<ServiceTicketListPage> {
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
                 .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value)))
+                    value: e.key, child: Text(e.value),),)
                 .toList(),
           ),
         ],
@@ -84,7 +83,7 @@ class _ServiceTicketListPageState extends ConsumerState<ServiceTicketListPage> {
                     : '${state.meta.total} ticket${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -117,26 +116,26 @@ class _ServiceTicketListPageState extends ConsumerState<ServiceTicketListPage> {
               Row(children: [
                 Expanded(
                   child: Text(t.ticketNumber,
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
                 UiStatusBadge(
                   label: t.status,
                   tone: _statusTone(t.status),
                 ),
-              ]),
+              ],),
               const SizedBox(height: Spacing.x1),
               Text(t.title,
-                  style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.sm)),
+                  style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.sm),),
               const SizedBox(height: Spacing.x1),
               Row(children: [
                 Text(t.customerName ?? 'Unknown customer',
-                    style: TextStyle(fontSize: TypeScale.xs)),
+                    style: const TextStyle(fontSize: TypeScale.xs),),
                 const Spacer(),
                 UiStatusBadge(
                   label: t.priority,
                   tone: _priorityTone(t.priority),
                 ),
-              ]),
+              ],),
             ],
           ),
         ),

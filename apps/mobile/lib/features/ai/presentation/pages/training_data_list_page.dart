@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -49,7 +48,7 @@ class _AiTrainingDataListPageState extends ConsumerState<AiTrainingDataListPage>
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
                 .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value)))
+                    value: e.key, child: Text(e.value),),)
                 .toList(),
           ),
         ],
@@ -83,7 +82,7 @@ class _AiTrainingDataListPageState extends ConsumerState<AiTrainingDataListPage>
                     : '${state.meta.total} dataset${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -138,26 +137,26 @@ class _TrainingDataTile extends StatelessWidget {
               Row(children: [
                 Expanded(
                   child: Text(data.name,
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
                 UiStatusBadge(
                   label: data.status,
                   tone: _statusTone(data.status),
                 ),
-              ]),
+              ],),
               const SizedBox(height: Spacing.x1),
               Row(children: [
                 if (data.dataType != null)
                   Text(data.dataType!,
-                      style: TextStyle(color: t.textSecondary, fontSize: TypeScale.sm)),
+                      style: TextStyle(color: t.textSecondary, fontSize: TypeScale.sm),),
                 const SizedBox(width: Spacing.x2),
                 Text('${data.recordsCount} records',
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.sm)),
-              ]),
+                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.sm),),
+              ],),
               if (data.createdAt != null) ...[
                 const SizedBox(height: Spacing.x1),
                 Text(DateFormat.yMMMd().format(data.createdAt!.toLocal()),
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
+                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
               ],
             ],
           ),

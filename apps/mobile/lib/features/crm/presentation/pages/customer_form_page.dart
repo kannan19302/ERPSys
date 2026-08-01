@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -185,7 +184,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _status,
+              initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: const <DropdownMenuItem<String>>[
                 DropdownMenuItem<String>(value: 'ACTIVE', child: Text('Active')),
@@ -198,7 +197,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _customerType,
+              initialValue: _customerType,
               decoration: const InputDecoration(labelText: 'Customer Type'),
               items: const <DropdownMenuItem<String>>[
                 DropdownMenuItem<String>(value: 'COMPANY', child: Text('Company')),

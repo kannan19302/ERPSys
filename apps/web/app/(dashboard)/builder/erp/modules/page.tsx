@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import styles from "./page.module.css";
 import { GenericBuilderModal } from "@/components/builder/GenericBuilderModal";
@@ -482,7 +481,7 @@ function ERPModulesPageContent() {
         onClose={() => setDeleteTarget(null)}
         onConfirm={() => {
           if (deleteTarget) {
-            handleDeleteModule(deleteTarget);
+            handleDeleteModule(String(deleteTarget));
             setDeleteTarget(null);
           }
         }}

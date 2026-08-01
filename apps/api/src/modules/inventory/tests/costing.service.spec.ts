@@ -1,14 +1,13 @@
-// @ts-nocheck
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from "vitest";
 
 // These tests validate the costing logic algorithms without hitting the database
-describe('Inventory Costing Algorithms', () => {
-  describe('FIFO cost layer consumption', () => {
-    it('consumes oldest layers first', () => {
+describe("Inventory Costing Algorithms", () => {
+  describe("FIFO cost layer consumption", () => {
+    it("consumes oldest layers first", () => {
       const layers = [
-        { qty: 10, cost: 5.00, remaining: 10 },
-        { qty: 20, cost: 6.00, remaining: 20 },
-        { qty: 15, cost: 7.00, remaining: 15 },
+        { qty: 10, cost: 5.0, remaining: 10 },
+        { qty: 20, cost: 6.0, remaining: 20 },
+        { qty: 15, cost: 7.0, remaining: 15 },
       ];
 
       let toConsume = 25;
@@ -30,12 +29,12 @@ describe('Inventory Costing Algorithms', () => {
     });
   });
 
-  describe('LIFO cost layer consumption', () => {
-    it('consumes newest layers first', () => {
+  describe("LIFO cost layer consumption", () => {
+    it("consumes newest layers first", () => {
       const layers = [
-        { qty: 10, cost: 5.00, remaining: 10 },
-        { qty: 20, cost: 6.00, remaining: 20 },
-        { qty: 15, cost: 7.00, remaining: 15 },
+        { qty: 10, cost: 5.0, remaining: 10 },
+        { qty: 20, cost: 6.0, remaining: 20 },
+        { qty: 15, cost: 7.0, remaining: 15 },
       ];
 
       let toConsume = 25;
@@ -58,8 +57,8 @@ describe('Inventory Costing Algorithms', () => {
     });
   });
 
-  describe('Weighted average cost', () => {
-    it('calculates correct weighted average', () => {
+  describe("Weighted average cost", () => {
+    it("calculates correct weighted average", () => {
       const receipts = [
         { qty: 100, unitCost: 10 },
         { qty: 200, unitCost: 12 },
@@ -77,8 +76,8 @@ describe('Inventory Costing Algorithms', () => {
     });
   });
 
-  describe('Landed cost allocation', () => {
-    it('allocates by value proportionally', () => {
+  describe("Landed cost allocation", () => {
+    it("allocates by value proportionally", () => {
       const items = [
         { value: 1000, qty: 10 },
         { value: 3000, qty: 20 },
@@ -86,9 +85,10 @@ describe('Inventory Costing Algorithms', () => {
       const totalValue = items.reduce((s, i) => s + i.value, 0);
       const freightCost = 200;
 
-      const allocations = items.map(item => ({
+      const allocations = items.map((item) => ({
         originalCost: item.value,
-        freightAlloc: Math.round((item.value / totalValue) * freightCost * 100) / 100,
+        freightAlloc:
+          Math.round((item.value / totalValue) * freightCost * 100) / 100,
       }));
 
       expect(allocations[0]!.freightAlloc).toBe(50); // 1000/4000 * 200

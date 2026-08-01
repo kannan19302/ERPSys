@@ -1,5 +1,16 @@
-// @ts-nocheck
-import { Controller, Get, Post, Put, Delete, Param, Query, Req, Body, UseGuards, UseInterceptors } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Query,
+  Req,
+  Body,
+  UseGuards,
+  UseInterceptors,
+} from "@nestjs/common";
 import { ApiTags, ApiBearerAuth, ApiOperation } from "@nestjs/swagger";
 import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
@@ -14,7 +25,13 @@ import {
 } from "./crm-partner-deep.service";
 
 interface AuthenticatedRequest extends Request {
-  user: { tenantId: string; userId: string; email: string; roles: string[]; orgId?: string };
+  user: {
+    tenantId: string;
+    userId: string;
+    email: string;
+    roles: string[];
+    orgId?: string;
+  };
 }
 
 @ApiTags("crm-partner")
@@ -38,7 +55,10 @@ export class CrmPartnerDealRegistrationController {
   @ApiOperation({ summary: "Get deal registration" })
   @Get("deal-registrations/:id")
   @Permissions("crm.partner.read")
-  async getDealRegistration(@Req() req: AuthenticatedRequest, @Param("id") id: string) {
+  async getDealRegistration(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
     return this.svc.getDealRegistration(req.user.tenantId, id);
   }
 
@@ -47,23 +67,45 @@ export class CrmPartnerDealRegistrationController {
   @Permissions("crm.partner.manage")
   @TrackChanges("SalesPartnerDealRegistration")
   @UseInterceptors(ChangeHistoryInterceptor)
-  async createDealRegistration(@Req() req: AuthenticatedRequest, @Body() body: any) {
+  async createDealRegistration(
+    @Req() req: AuthenticatedRequest,
+    @Body() body: any,
+  ) {
     const dto = dealRegistrationSchema.parse(body);
-    return this.svc.createDealRegistration(req.user.tenantId, req.user.orgId, dto);
+    return this.svc.createDealRegistration(
+      req.user.tenantId,
+      req.user.orgId,
+      dto,
+    );
   }
 
   @ApiOperation({ summary: "Approve deal registration" })
   @Post("deal-registrations/:id/approve")
   @Permissions("crm.partner.approve")
-  async approveDealRegistration(@Req() req: AuthenticatedRequest, @Param("id") id: string) {
-    return this.svc.approveDealRegistration(req.user.tenantId, id, req.user.userId);
+  async approveDealRegistration(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
+    return this.svc.approveDealRegistration(
+      req.user.tenantId,
+      id,
+      req.user.userId,
+    );
   }
 
   @ApiOperation({ summary: "Reject deal registration" })
   @Post("deal-registrations/:id/reject")
   @Permissions("crm.partner.approve")
-  async rejectDealRegistration(@Req() req: AuthenticatedRequest, @Param("id") id: string, @Body() body: any) {
-    return this.svc.rejectDealRegistration(req.user.tenantId, id, body.rejectionReason || "No reason provided");
+  async rejectDealRegistration(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+    @Body() body: any,
+  ) {
+    return this.svc.rejectDealRegistration(
+      req.user.tenantId,
+      id,
+      body.rejectionReason || "No reason provided",
+    );
   }
 
   @ApiOperation({ summary: "Deal registration stats" })
@@ -112,7 +154,11 @@ export class CrmPartnerMdfController {
   @ApiOperation({ summary: "Update MDF fund" })
   @Put("mdf-funds/:id")
   @Permissions("crm.partner.manage")
-  async updateMdfFund(@Req() req: AuthenticatedRequest, @Param("id") id: string, @Body() body: any) {
+  async updateMdfFund(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+    @Body() body: any,
+  ) {
     const dto = mdfFundSchema.partial().parse(body);
     return this.svc.updateMdfFund(req.user.tenantId, id, dto);
   }
@@ -120,7 +166,10 @@ export class CrmPartnerMdfController {
   @ApiOperation({ summary: "Delete MDF fund" })
   @Delete("mdf-funds/:id")
   @Permissions("crm.partner.manage")
-  async deleteMdfFund(@Req() req: AuthenticatedRequest, @Param("id") id: string) {
+  async deleteMdfFund(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
     return this.svc.deleteMdfFund(req.user.tenantId, id);
   }
 
@@ -134,7 +183,10 @@ export class CrmPartnerMdfController {
   @ApiOperation({ summary: "Partner performance analytics" })
   @Get("performance/:partnerId")
   @Permissions("crm.partner.read")
-  async partnerPerformance(@Req() req: AuthenticatedRequest, @Param("partnerId") partnerId: string) {
+  async partnerPerformance(
+    @Req() req: AuthenticatedRequest,
+    @Param("partnerId") partnerId: string,
+  ) {
     return this.svc.getPartnerPerformance(req.user.tenantId, partnerId);
   }
 }

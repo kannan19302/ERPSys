@@ -96,7 +96,7 @@ class ConfirmActionDialog extends StatefulWidget {
           reasonRequired: reasonRequired,
         ),
       ).then((ConfirmActionResult? result) =>
-          result ?? const ConfirmActionResult(confirmed: false));
+          result ?? const ConfirmActionResult(confirmed: false),);
 }
 
 class _ConfirmActionDialogState extends State<ConfirmActionDialog> {
@@ -206,7 +206,7 @@ class WorkflowActionDialog extends StatefulWidget {
           commentHint: commentHint,
         ),
       ).then((WorkflowActionResult? result) =>
-          result ?? const WorkflowActionResult(approved: false, comment: ''));
+          result ?? const WorkflowActionResult(approved: false, comment: ''),);
 }
 
 class _WorkflowActionDialogState extends State<WorkflowActionDialog> {
@@ -428,46 +428,48 @@ class _StatusTransitionDialogState extends State<StatusTransitionDialog> {
 
     return AlertDialog(
       title: Text(widget.title),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            'Current: ${widget.currentStatus}',
-            style: TextStyle(
-              fontSize: TypeScale.sm,
-              color: t.textSecondary,
-            ),
-          ),
-          const SizedBox(height: Spacing.x3),
-          ...widget.availableStatuses
-              .where((String s) => s != widget.currentStatus)
-              .map(
-                (String status) => RadioListTile<String>(
-                  title: Text(status),
-                  value: status,
-                  groupValue: _selectedStatus,
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                  onChanged: (String? value) {
-                    setState(() {
-                      _selectedStatus = value;
-                    });
-                  },
-                ),
+      content: RadioGroup<String>(
+        groupValue: _selectedStatus,
+        onChanged: (String? value) {
+          setState(() {
+            _selectedStatus = value;
+          });
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              'Current: ${widget.currentStatus}',
+              style: TextStyle(
+                fontSize: TypeScale.sm,
+                color: t.textSecondary,
               ),
-          const SizedBox(height: Spacing.x2),
-          TextField(
-            controller: _reasonController,
-            maxLines: 3,
-            minLines: 1,
-            onChanged: (_) => setState(() {}),
-            decoration: InputDecoration(
-              hintText: widget.reasonHint,
-              isDense: true,
             ),
-          ),
-        ],
+            const SizedBox(height: Spacing.x3),
+            ...widget.availableStatuses
+                .where((String s) => s != widget.currentStatus)
+                .map(
+                  (String status) => RadioListTile<String>(
+                    title: Text(status),
+                    value: status,
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+            const SizedBox(height: Spacing.x2),
+            TextField(
+              controller: _reasonController,
+              maxLines: 3,
+              minLines: 1,
+              onChanged: (_) => setState(() {}),
+              decoration: InputDecoration(
+                hintText: widget.reasonHint,
+                isDense: true,
+              ),
+            ),
+          ],
+        ),
       ),
       actions: <Widget>[
         TextButton(

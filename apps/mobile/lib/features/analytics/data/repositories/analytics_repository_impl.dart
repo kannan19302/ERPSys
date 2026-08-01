@@ -91,7 +91,7 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
   @override
   Future<Result<Cacheable<Paginated<AnalyticsKpi>>>> listKpis(ListQuery query) =>
       _paginated(_kpiNamespace, query, () => _remote.listKpis(query),
-        AnalyticsKpiModel.fromJson);
+        AnalyticsKpiModel.fromJson,);
 
   @override
   Future<Result<AnalyticsKpi>> getKpi(String id) =>
@@ -111,9 +111,9 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
 
   @override
   Future<Result<Cacheable<Paginated<AnalyticsDashboard>>>> listDashboards(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_dashboardNamespace, query, () => _remote.listDashboards(query),
-        AnalyticsDashboardModel.fromJson);
+        AnalyticsDashboardModel.fromJson,);
 
   @override
   Future<Result<AnalyticsDashboard>> getDashboard(String id) =>
@@ -133,9 +133,9 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
 
   @override
   Future<Result<Cacheable<Paginated<AnalyticsReport>>>> listReports(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_reportNamespace, query, () => _remote.listReports(query),
-        AnalyticsReportModel.fromJson);
+        AnalyticsReportModel.fromJson,);
 
   @override
   Future<Result<AnalyticsReport>> getReport(String id) =>
@@ -155,7 +155,7 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
 
   @override
   Future<Result<Cacheable<Paginated<AnalyticsPipeline>>>> listPipelines(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_pipelineNamespace, query, () => _remote.listPipelines(query),
-        AnalyticsPipelineModel.fromJson);
+        AnalyticsPipelineModel.fromJson,);
 }

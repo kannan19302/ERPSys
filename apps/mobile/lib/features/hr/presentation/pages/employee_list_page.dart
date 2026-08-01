@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -308,7 +307,7 @@ class _StatusFilter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
-      value: value ?? '',
+      initialValue: value ?? '',
       decoration: const InputDecoration(
         contentPadding: EdgeInsets.symmetric(horizontal: Spacing.x3),
         labelText: 'Status',
@@ -350,7 +349,7 @@ class _DepartmentFilter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
-      value: value ?? '',
+      initialValue: value ?? '',
       decoration: const InputDecoration(
         contentPadding: EdgeInsets.symmetric(horizontal: Spacing.x3),
         labelText: 'Department',

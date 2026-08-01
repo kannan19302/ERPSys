@@ -1,8 +1,19 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
-import { CreateCustomerInput, CreateVendorInput, UpdateCustomerInput, UpdateVendorInput, VendorNoteInput, CustomerNoteInput, CreateCustomerTagInput } from '@unerp/shared';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
+import {
+  CreateCustomerInput,
+  CreateVendorInput,
+  UpdateCustomerInput,
+  UpdateVendorInput,
+  VendorNoteInput,
+  CustomerNoteInput,
+  CreateCustomerTagInput,
+} from "@unerp/shared";
 
 @Injectable()
 export class CrmCustomersService {
@@ -15,8 +26,8 @@ export class CrmCustomersService {
       type?: string;
       status?: string;
       sortBy?: string;
-      sortOrder?: 'asc' | 'desc';
-    }
+      sortOrder?: "asc" | "desc";
+    },
   ) {
     const where: Prisma.CustomerWhereInput = {
       tenantId,
@@ -34,15 +45,18 @@ export class CrmCustomersService {
     if (query?.search) {
       const searchLower = query.search.trim();
       where.OR = [
-        { name: { contains: searchLower, mode: 'insensitive' } },
-        { email: { contains: searchLower, mode: 'insensitive' } },
-        { phone: { contains: searchLower, mode: 'insensitive' } },
+        { name: { contains: searchLower, mode: "insensitive" } },
+        { email: { contains: searchLower, mode: "insensitive" } },
+        { phone: { contains: searchLower, mode: "insensitive" } },
       ];
     }
 
-    const validSortFields = ['name', 'createdAt', 'creditLimit', 'status'];
-    const sortBy = query?.sortBy && validSortFields.includes(query.sortBy) ? query.sortBy : 'name';
-    const sortOrder = query?.sortOrder === 'desc' ? 'desc' : 'asc';
+    const validSortFields = ["name", "createdAt", "creditLimit", "status"];
+    const sortBy =
+      query?.sortBy && validSortFields.includes(query.sortBy)
+        ? query.sortBy
+        : "name";
+    const sortOrder = query?.sortOrder === "desc" ? "desc" : "asc";
 
     const orderBy: Prisma.CustomerOrderByWithRelationInput = {
       [sortBy]: sortOrder,
@@ -59,7 +73,11 @@ export class CrmCustomersService {
           skip,
           take: limit,
           orderBy,
-          include: { _count: { select: { invoices: true, quotations: true, salesOrders: true } } },
+          include: {
+            _count: {
+              select: { invoices: true, quotations: true, salesOrders: true },
+            },
+          },
         }),
         prisma.customer.count({ where }),
       ]);
@@ -78,16 +96,24 @@ export class CrmCustomersService {
     return prisma.customer.findMany({
       where,
       orderBy,
-      include: { _count: { select: { invoices: true, quotations: true, salesOrders: true } } },
+      include: {
+        _count: {
+          select: { invoices: true, quotations: true, salesOrders: true },
+        },
+      },
     });
   }
 
   async getCustomerById(tenantId: string, id: string) {
     const customer = await prisma.customer.findFirst({
       where: { id, tenantId, deletedAt: null },
-      include: { _count: { select: { invoices: true, quotations: true, salesOrders: true } } },
+      include: {
+        _count: {
+          select: { invoices: true, quotations: true, salesOrders: true },
+        },
+      },
     });
-    if (!customer) throw new NotFoundException('Customer not found');
+    if (!customer) throw new NotFoundException("Customer not found");
     return customer;
   }
 
@@ -95,12 +121,12 @@ export class CrmCustomersService {
     const customer = await prisma.customer.findFirst({
       where: { id, tenantId, deletedAt: null },
     });
-    if (!customer) throw new NotFoundException('Customer not found');
+    if (!customer) throw new NotFoundException("Customer not found");
 
     const [salesOrders, salesOrderCountResult] = await Promise.all([
       prisma.salesOrder.findMany({
         where: { customerId: id, tenantId, deletedAt: null },
-        orderBy: { orderDate: 'desc' },
+        orderBy: { orderDate: "desc" },
         take: 5,
         select: {
           id: true,
@@ -115,7 +141,7 @@ export class CrmCustomersService {
           customerId: id,
           tenantId,
           deletedAt: null,
-          status: { in: ['CONFIRMED', 'PROCESSING', 'DELIVERED'] },
+          status: { in: ["CONFIRMED", "PROCESSING", "DELIVERED"] },
         },
         _sum: {
           totalAmount: true,
@@ -128,7 +154,7 @@ export class CrmCustomersService {
     const [invoices, invoiceCountResult] = await Promise.all([
       prisma.invoice.findMany({
         where: { customerId: id, tenantId, deletedAt: null },
-        orderBy: { issueDate: 'desc' },
+        orderBy: { issueDate: "desc" },
         take: 5,
         select: {
           id: true,
@@ -145,7 +171,7 @@ export class CrmCustomersService {
           customerId: id,
           tenantId,
           deletedAt: null,
-          status: { not: 'PAID' },
+          status: { not: "PAID" },
         },
         _sum: {
           totalAmount: true,
@@ -154,12 +180,14 @@ export class CrmCustomersService {
       }),
     ]);
 
-    const unpaidBalance = Number(invoiceCountResult._sum.totalAmount || 0) - Number(invoiceCountResult._sum.paidAmount || 0);
+    const unpaidBalance =
+      Number(invoiceCountResult._sum.totalAmount || 0) -
+      Number(invoiceCountResult._sum.paidAmount || 0);
 
     const [cases, casesCountResult] = await Promise.all([
       prisma.case.findMany({
         where: { customerId: id, tenantId },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         take: 5,
         select: {
           id: true,
@@ -171,7 +199,7 @@ export class CrmCustomersService {
         },
       }),
       prisma.case.groupBy({
-        by: ['status'],
+        by: ["status"],
         where: { customerId: id, tenantId },
         _count: {
           id: true,
@@ -180,27 +208,35 @@ export class CrmCustomersService {
     ]);
 
     const openCases = casesCountResult
-      .filter((c) => ['OPEN', 'IN_PROGRESS', 'WAITING_ON_CUSTOMER'].includes(c.status))
+      .filter((c) =>
+        ["OPEN", "IN_PROGRESS", "WAITING_ON_CUSTOMER"].includes(c.status),
+      )
       .reduce((acc, c) => acc + c._count.id, 0);
 
     const resolvedCases = casesCountResult
-      .filter((c) => ['RESOLVED', 'CLOSED'].includes(c.status))
+      .filter((c) => ["RESOLVED", "CLOSED"].includes(c.status))
       .reduce((acc, c) => acc + c._count.id, 0);
 
     const creditLimit = customer.creditLimit ? Number(customer.creditLimit) : 0;
-    const availableCredit = customer.creditLimit ? Math.max(0, creditLimit - unpaidBalance) : 0;
-    const isCreditLimitExceeded = customer.creditLimit ? unpaidBalance > creditLimit : false;
+    const availableCredit = customer.creditLimit
+      ? Math.max(0, creditLimit - unpaidBalance)
+      : 0;
+    const isCreditLimitExceeded = customer.creditLimit
+      ? unpaidBalance > creditLimit
+      : false;
 
     // Recalculate Risk Rating
     const now = new Date();
     const overdueInvoices = invoices.filter(
-      (inv) => new Date(inv.dueDate) < now && Number(inv.totalAmount) - Number(inv.paidAmount) > 0
+      (inv) =>
+        new Date(inv.dueDate) < now &&
+        Number(inv.totalAmount) - Number(inv.paidAmount) > 0,
     );
-    let risk = 'LOW';
+    let risk = "LOW";
     if (overdueInvoices.length > 3 || isCreditLimitExceeded) {
-      risk = 'HIGH';
+      risk = "HIGH";
     } else if (overdueInvoices.length > 0) {
-      risk = 'MEDIUM';
+      risk = "MEDIUM";
     }
 
     if (customer.riskRating !== risk) {
@@ -228,32 +264,51 @@ export class CrmCustomersService {
     };
   }
 
-  async createCustomer(tenantId: string, orgId: string, dto: CreateCustomerInput) {
+  async createCustomer(
+    tenantId: string,
+    orgId: string,
+    dto: CreateCustomerInput,
+  ) {
     let resolvedOrgId = orgId;
-    if (!orgId || orgId === 'org-system-default') {
+    if (!orgId || orgId === "org-system-default") {
       const org = await prisma.organization.findFirst({ where: { tenantId } });
-      if (!org) throw new BadRequestException('No Organization registered in this tenant');
+      if (!org)
+        throw new BadRequestException(
+          "No Organization registered in this tenant",
+        );
       resolvedOrgId = org.id;
     }
     return prisma.customer.create({
       data: {
-        tenantId, orgId: resolvedOrgId,
-        name: dto.name, type: dto.type,
-        email: dto.email || null, phone: dto.phone || null, taxId: dto.taxId || null,
-        billingAddress: dto.billingAddress ? (dto.billingAddress as Prisma.InputJsonValue) : Prisma.DbNull,
-        shippingAddress: dto.shippingAddress ? (dto.shippingAddress as Prisma.InputJsonValue) : Prisma.DbNull,
-        creditLimit: dto.creditLimit || null, paymentTerms: dto.paymentTerms, notes: dto.notes || null,
-        customerType: dto.customerType || 'RECURRING',
+        tenantId,
+        orgId: resolvedOrgId,
+        name: dto.name,
+        type: dto.type,
+        email: dto.email || null,
+        phone: dto.phone || null,
+        taxId: dto.taxId || null,
+        billingAddress: dto.billingAddress
+          ? (dto.billingAddress as Prisma.InputJsonValue)
+          : Prisma.DbNull,
+        shippingAddress: dto.shippingAddress
+          ? (dto.shippingAddress as Prisma.InputJsonValue)
+          : Prisma.DbNull,
+        creditLimit: dto.creditLimit || null,
+        paymentTerms: dto.paymentTerms,
+        notes: dto.notes || null,
+        customerType: dto.customerType || "RECURRING",
         creditHold: dto.creditHold || false,
         creditHoldReason: dto.creditHoldReason || null,
-        riskRating: dto.riskRating || 'LOW',
+        riskRating: dto.riskRating || "LOW",
       },
     });
   }
 
   async updateCustomer(tenantId: string, id: string, dto: UpdateCustomerInput) {
-    const existing = await prisma.customer.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Customer not found');
+    const existing = await prisma.customer.findFirst({
+      where: { id, tenantId },
+    });
+    if (!existing) throw new NotFoundException("Customer not found");
     return prisma.customer.update({
       where: { id },
       data: {
@@ -262,75 +317,123 @@ export class CrmCustomersService {
         ...(dto.phone !== undefined && { phone: dto.phone }),
         ...(dto.taxId !== undefined && { taxId: dto.taxId }),
         ...(dto.creditLimit !== undefined && { creditLimit: dto.creditLimit }),
-        ...(dto.paymentTerms !== undefined && { paymentTerms: dto.paymentTerms }),
+        ...(dto.paymentTerms !== undefined && {
+          paymentTerms: dto.paymentTerms,
+        }),
         ...(dto.notes !== undefined && { notes: dto.notes }),
         ...(dto.type !== undefined && { type: dto.type }),
-        ...(dto.customerType !== undefined && { customerType: dto.customerType }),
+        ...(dto.customerType !== undefined && {
+          customerType: dto.customerType,
+        }),
         ...(dto.creditHold !== undefined && { creditHold: dto.creditHold }),
-        ...(dto.creditHoldReason !== undefined && { creditHoldReason: dto.creditHoldReason }),
+        ...(dto.creditHoldReason !== undefined && {
+          creditHoldReason: dto.creditHoldReason,
+        }),
         ...(dto.riskRating !== undefined && { riskRating: dto.riskRating }),
-        ...(dto.billingAddress && { billingAddress: dto.billingAddress as Prisma.InputJsonValue }),
-        ...(dto.shippingAddress && { shippingAddress: dto.shippingAddress as Prisma.InputJsonValue }),
+        ...(dto.billingAddress && {
+          billingAddress: dto.billingAddress as Prisma.InputJsonValue,
+        }),
+        ...(dto.shippingAddress && {
+          shippingAddress: dto.shippingAddress as Prisma.InputJsonValue,
+        }),
       },
     });
   }
 
   async deleteCustomer(tenantId: string, id: string) {
-    const existing = await prisma.customer.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Customer not found');
-    return prisma.customer.update({ where: { id }, data: { deletedAt: new Date() } });
+    const existing = await prisma.customer.findFirst({
+      where: { id, tenantId },
+    });
+    if (!existing) throw new NotFoundException("Customer not found");
+    return prisma.customer.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
   }
 
-  async toggleCustomerCreditHold(tenantId: string, id: string, creditHold: boolean, reason?: string) {
-    const existing = await prisma.customer.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Customer not found');
+  async toggleCustomerCreditHold(
+    tenantId: string,
+    id: string,
+    creditHold: boolean,
+    reason?: string,
+  ) {
+    const existing = await prisma.customer.findFirst({
+      where: { id, tenantId },
+    });
+    if (!existing) throw new NotFoundException("Customer not found");
     return prisma.customer.update({
       where: { id },
       data: {
         creditHold,
-        creditHoldReason: creditHold ? (reason || 'Manual Credit Freeze') : null,
+        creditHoldReason: creditHold ? reason || "Manual Credit Freeze" : null,
       },
     });
   }
 
-  async getVendors(tenantId: string, query?: { page?: number; limit?: number; search?: string; status?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' }) {
+  async getVendors(
+    tenantId: string,
+    query?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      status?: string;
+      sortBy?: string;
+      sortOrder?: "asc" | "desc";
+    },
+  ) {
     const where: Prisma.VendorWhereInput = { tenantId, deletedAt: null };
     if (query?.status) where.status = query.status;
     if (query?.search) {
       where.OR = [
-        { name: { contains: query.search, mode: 'insensitive' } },
-        { email: { contains: query.search, mode: 'insensitive' } },
+        { name: { contains: query.search, mode: "insensitive" } },
+        { email: { contains: query.search, mode: "insensitive" } },
       ];
     }
     const page = query?.page || 1;
     const limit = query?.limit || 20;
     const skip = (page - 1) * limit;
     const orderBy: Prisma.VendorOrderByWithRelationInput = {};
-    if (query?.sortBy === 'name') orderBy.name = query.sortOrder || 'asc';
-    else if (query?.sortBy === 'createdAt') orderBy.createdAt = query.sortOrder || 'desc';
-    else orderBy.createdAt = 'desc';
+    if (query?.sortBy === "name") orderBy.name = query.sortOrder || "asc";
+    else if (query?.sortBy === "createdAt")
+      orderBy.createdAt = query.sortOrder || "desc";
+    else orderBy.createdAt = "desc";
     const [data, totalCount] = await Promise.all([
       prisma.vendor.findMany({ where, skip, take: limit, orderBy }),
       prisma.vendor.count({ where }),
     ]);
-    return { data, totalCount, page, limit, totalPages: Math.ceil(totalCount / limit) };
+    return {
+      data,
+      totalCount,
+      page,
+      limit,
+      totalPages: Math.ceil(totalCount / limit),
+    };
   }
 
   async createVendor(tenantId: string, orgId: string, dto: CreateVendorInput) {
     let resolvedOrgId = orgId;
-    if (!orgId || orgId === 'org-system-default') {
+    if (!orgId || orgId === "org-system-default") {
       const org = await prisma.organization.findFirst({ where: { tenantId } });
-      if (!org) throw new BadRequestException('No Organization registered in this tenant');
+      if (!org)
+        throw new BadRequestException(
+          "No Organization registered in this tenant",
+        );
       resolvedOrgId = org.id;
     }
     return prisma.vendor.create({
       data: {
-        tenantId, orgId: resolvedOrgId,
-        name: dto.name, email: dto.email || null, phone: dto.phone || null,
+        tenantId,
+        orgId: resolvedOrgId,
+        name: dto.name,
+        email: dto.email || null,
+        phone: dto.phone || null,
         taxId: dto.taxId || null,
-        type: dto.type || 'COMPANY',
-        address: dto.address ? (dto.address as Prisma.InputJsonValue) : Prisma.DbNull,
-        paymentTerms: dto.paymentTerms, notes: dto.notes || null,
+        type: dto.type || "COMPANY",
+        address: dto.address
+          ? (dto.address as Prisma.InputJsonValue)
+          : Prisma.DbNull,
+        paymentTerms: dto.paymentTerms,
+        notes: dto.notes || null,
       },
     });
   }
@@ -352,7 +455,7 @@ export class CrmCustomersService {
         },
       },
     });
-    if (!vendor) throw new NotFoundException('Vendor not found');
+    if (!vendor) throw new NotFoundException("Vendor not found");
     return vendor;
   }
 
@@ -360,17 +463,21 @@ export class CrmCustomersService {
     const vendor = await prisma.vendor.findFirst({
       where: { id, tenantId, deletedAt: null },
     });
-    if (!vendor) throw new NotFoundException('Vendor not found');
+    if (!vendor) throw new NotFoundException("Vendor not found");
 
     // Purchase Orders (recent 5 + aggregates)
     const [recentPOs, poAgg, openPOCount] = await Promise.all([
       prisma.purchaseOrder.findMany({
         where: { vendorId: id, tenantId, deletedAt: null },
-        orderBy: { orderDate: 'desc' },
+        orderBy: { orderDate: "desc" },
         take: 5,
         select: {
-          id: true, poNumber: true, totalAmount: true,
-          status: true, orderDate: true, expectedDate: true,
+          id: true,
+          poNumber: true,
+          totalAmount: true,
+          status: true,
+          orderDate: true,
+          expectedDate: true,
         },
       }),
       prisma.purchaseOrder.aggregate({
@@ -380,8 +487,12 @@ export class CrmCustomersService {
       }),
       prisma.purchaseOrder.count({
         where: {
-          vendorId: id, tenantId, deletedAt: null,
-          status: { in: ['DRAFT', 'APPROVED', 'ORDERED', 'PARTIALLY_RECEIVED'] },
+          vendorId: id,
+          tenantId,
+          deletedAt: null,
+          status: {
+            in: ["DRAFT", "APPROVED", "ORDERED", "PARTIALLY_RECEIVED"],
+          },
         },
       }),
     ]);
@@ -392,39 +503,57 @@ export class CrmCustomersService {
     // Debit Notes (recent 5)
     const recentDebitNotes = await prisma.debitNote.findMany({
       where: { vendorId: id, tenantId },
-      orderBy: { issueDate: 'desc' },
+      orderBy: { issueDate: "desc" },
       take: 5,
       select: {
-        id: true, noteNumber: true, amount: true,
-        status: true, issueDate: true, reason: true,
+        id: true,
+        noteNumber: true,
+        amount: true,
+        status: true,
+        issueDate: true,
+        reason: true,
       },
     });
 
     // Purchase Returns (recent 5)
     const recentReturns = await prisma.purchaseReturn.findMany({
       where: { vendorId: id, tenantId },
-      orderBy: { returnDate: 'desc' },
+      orderBy: { returnDate: "desc" },
       take: 5,
       select: {
-        id: true, returnNumber: true, totalAmount: true,
-        status: true, returnDate: true, reason: true,
+        id: true,
+        returnNumber: true,
+        totalAmount: true,
+        status: true,
+        returnDate: true,
+        reason: true,
       },
     });
 
     // Blanket Purchase Agreements
     const activeAgreements = await prisma.blanketPurchaseAgreement.findMany({
-      where: { vendorId: id, tenantId, status: { in: ['ACTIVE', 'APPROVED'] } },
-      orderBy: { startDate: 'desc' },
+      where: { vendorId: id, tenantId, status: { in: ["ACTIVE", "APPROVED"] } },
+      orderBy: { startDate: "desc" },
       take: 5,
       select: {
-        id: true, agreementNumber: true, title: true, agreementLimit: true,
-        startDate: true, endDate: true, status: true,
+        id: true,
+        agreementNumber: true,
+        title: true,
+        agreementLimit: true,
+        startDate: true,
+        endDate: true,
+        status: true,
       },
     });
 
     // On-time delivery calculation (from POs with receipts)
     const posWithReceipts = await prisma.purchaseOrder.findMany({
-      where: { vendorId: id, tenantId, deletedAt: null, expectedDate: { not: null } },
+      where: {
+        vendorId: id,
+        tenantId,
+        deletedAt: null,
+        expectedDate: { not: null },
+      },
       include: { receipts: { select: { receivedDate: true } } },
     });
 
@@ -435,24 +564,38 @@ export class CrmCustomersService {
 
     for (const po of posWithReceipts) {
       if (po.receipts.length > 0 && po.expectedDate) {
-        const latestReceipt = new Date(Math.max(...po.receipts.map(r => r.receivedDate.getTime())));
+        const latestReceipt = new Date(
+          Math.max(...po.receipts.map((r) => r.receivedDate.getTime())),
+        );
         if (latestReceipt <= new Date(po.expectedDate)) {
           onTimeCount++;
         } else {
           lateCount++;
         }
         const leadMs = latestReceipt.getTime() - po.orderDate.getTime();
-        totalLeadTimeDays += Math.max(0, Math.floor(leadMs / (1000 * 60 * 60 * 24)));
+        totalLeadTimeDays += Math.max(
+          0,
+          Math.floor(leadMs / (1000 * 60 * 60 * 24)),
+        );
         leadTimeEntries++;
       }
     }
 
     const deliveredPOs = onTimeCount + lateCount;
-    const onTimeDeliveryRate = deliveredPOs > 0 ? Math.round((onTimeCount / deliveredPOs) * 1000) / 10 : 100;
-    const avgLeadTimeDays = leadTimeEntries > 0 ? Math.round((totalLeadTimeDays / leadTimeEntries) * 10) / 10 : 0;
-    const computedQualityScore = Math.max(0, 100 - (recentReturns.length * 10));
+    const onTimeDeliveryRate =
+      deliveredPOs > 0
+        ? Math.round((onTimeCount / deliveredPOs) * 1000) / 10
+        : 100;
+    const avgLeadTimeDays =
+      leadTimeEntries > 0
+        ? Math.round((totalLeadTimeDays / leadTimeEntries) * 10) / 10
+        : 0;
+    const computedQualityScore = Math.max(0, 100 - recentReturns.length * 10);
 
-    if (vendor.averageLeadTimeDays !== avgLeadTimeDays || vendor.qualityScore !== computedQualityScore) {
+    if (
+      vendor.averageLeadTimeDays !== avgLeadTimeDays ||
+      vendor.qualityScore !== computedQualityScore
+    ) {
       await prisma.vendor.update({
         where: { id },
         data: {
@@ -487,8 +630,10 @@ export class CrmCustomersService {
   }
 
   async updateVendor(tenantId: string, id: string, dto: UpdateVendorInput) {
-    const existing = await prisma.vendor.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!existing) throw new NotFoundException('Vendor not found');
+    const existing = await prisma.vendor.findFirst({
+      where: { id, tenantId, deletedAt: null },
+    });
+    if (!existing) throw new NotFoundException("Vendor not found");
 
     const updateData: Record<string, unknown> = {};
     if (dto.name !== undefined) updateData.name = dto.name;
@@ -496,33 +641,55 @@ export class CrmCustomersService {
     if (dto.phone !== undefined) updateData.phone = dto.phone || null;
     if (dto.taxId !== undefined) updateData.taxId = dto.taxId || null;
     if (dto.type !== undefined) updateData.type = dto.type;
-    if (dto.paymentTerms !== undefined) updateData.paymentTerms = dto.paymentTerms;
+    if (dto.paymentTerms !== undefined)
+      updateData.paymentTerms = dto.paymentTerms;
     if (dto.notes !== undefined) updateData.notes = dto.notes || null;
     if (dto.status !== undefined) updateData.status = dto.status;
     if (dto.address !== undefined) {
-      updateData.address = dto.address ? (dto.address as Prisma.InputJsonValue) : Prisma.DbNull;
+      updateData.address = dto.address
+        ? (dto.address as Prisma.InputJsonValue)
+        : Prisma.DbNull;
     }
-    if (dto.onboardingStatus !== undefined) updateData.onboardingStatus = dto.onboardingStatus;
-    if (dto.checklistTaxVerified !== undefined) updateData.checklistTaxVerified = dto.checklistTaxVerified;
-    if (dto.checklistBankVerified !== undefined) updateData.checklistBankVerified = dto.checklistBankVerified;
-    if (dto.checklistNdaSigned !== undefined) updateData.checklistNdaSigned = dto.checklistNdaSigned;
+    if (dto.onboardingStatus !== undefined)
+      updateData.onboardingStatus = dto.onboardingStatus;
+    if (dto.checklistTaxVerified !== undefined)
+      updateData.checklistTaxVerified = dto.checklistTaxVerified;
+    if (dto.checklistBankVerified !== undefined)
+      updateData.checklistBankVerified = dto.checklistBankVerified;
+    if (dto.checklistNdaSigned !== undefined)
+      updateData.checklistNdaSigned = dto.checklistNdaSigned;
 
     return prisma.vendor.update({ where: { id }, data: updateData });
   }
 
   async deleteVendor(tenantId: string, id: string) {
-    const existing = await prisma.vendor.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!existing) throw new NotFoundException('Vendor not found');
-    return prisma.vendor.update({ where: { id }, data: { deletedAt: new Date() } });
+    const existing = await prisma.vendor.findFirst({
+      where: { id, tenantId, deletedAt: null },
+    });
+    if (!existing) throw new NotFoundException("Vendor not found");
+    return prisma.vendor.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
   }
 
   async updateVendorStatus(tenantId: string, id: string, status: string) {
-    const validStatuses = ['ACTIVE', 'INACTIVE', 'ON_HOLD', 'BLOCKED', 'PREFERRED'];
+    const validStatuses = [
+      "ACTIVE",
+      "INACTIVE",
+      "ON_HOLD",
+      "BLOCKED",
+      "PREFERRED",
+    ];
     if (!validStatuses.includes(status)) {
-      throw new BadRequestException(`Invalid status. Must be one of: ${validStatuses.join(', ')}`);
+      throw new BadRequestException(
+        `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
+      );
     }
-    const existing = await prisma.vendor.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!existing) throw new NotFoundException('Vendor not found');
+    const existing = await prisma.vendor.findFirst({
+      where: { id, tenantId, deletedAt: null },
+    });
+    if (!existing) throw new NotFoundException("Vendor not found");
     return prisma.vendor.update({ where: { id }, data: { status } });
   }
 
@@ -531,28 +698,38 @@ export class CrmCustomersService {
     const notes = await prisma.activity.findMany({
       where: {
         tenantId,
-        type: { in: ['NOTE', 'CALL', 'EMAIL', 'MEETING'] },
+        type: { in: ["NOTE", "CALL", "EMAIL", "MEETING"] },
         subject: { startsWith: `[VENDOR:${vendorId}]` },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       select: {
-        id: true, type: true, subject: true, description: true,
+        id: true,
+        type: true,
+        subject: true,
+        description: true,
         createdAt: true,
       },
     });
     // Strip the vendor prefix from subject for display
-    return notes.map(n => ({
+    return notes.map((n) => ({
       ...n,
-      subject: n.subject.replace(`[VENDOR:${vendorId}] `, ''),
+      subject: n.subject.replace(`[VENDOR:${vendorId}] `, ""),
     }));
   }
 
-  async addVendorNote(tenantId: string, orgId: string, vendorId: string, dto: VendorNoteInput) {
-    const vendor = await prisma.vendor.findFirst({ where: { id: vendorId, tenantId, deletedAt: null } });
-    if (!vendor) throw new NotFoundException('Vendor not found');
+  async addVendorNote(
+    tenantId: string,
+    orgId: string,
+    vendorId: string,
+    dto: VendorNoteInput,
+  ) {
+    const vendor = await prisma.vendor.findFirst({
+      where: { id: vendorId, tenantId, deletedAt: null },
+    });
+    if (!vendor) throw new NotFoundException("Vendor not found");
 
     let resolvedOrgId = orgId;
-    if (!orgId || orgId === 'org-system-default') {
+    if (!orgId || orgId === "org-system-default") {
       const org = await prisma.organization.findFirst({ where: { tenantId } });
       if (org) resolvedOrgId = org.id;
     }
@@ -561,17 +738,29 @@ export class CrmCustomersService {
       data: {
         tenantId,
         orgId: resolvedOrgId,
-        type: dto.type || 'NOTE',
+        type: dto.type || "NOTE",
         subject: `[VENDOR:${vendorId}] ${dto.content.substring(0, 100)}`,
         description: dto.content,
       },
     });
   }
 
-  async bulkUpdateVendorStatus(tenantId: string, ids: string[], status: string) {
-    const validStatuses = ['ACTIVE', 'INACTIVE', 'ON_HOLD', 'BLOCKED', 'PREFERRED'];
+  async bulkUpdateVendorStatus(
+    tenantId: string,
+    ids: string[],
+    status: string,
+  ) {
+    const validStatuses = [
+      "ACTIVE",
+      "INACTIVE",
+      "ON_HOLD",
+      "BLOCKED",
+      "PREFERRED",
+    ];
     if (!validStatuses.includes(status)) {
-      throw new BadRequestException(`Invalid status. Must be one of: ${validStatuses.join(', ')}`);
+      throw new BadRequestException(
+        `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
+      );
     }
     const result = await prisma.vendor.updateMany({
       where: { id: { in: ids }, tenantId, deletedAt: null },
@@ -580,22 +769,34 @@ export class CrmCustomersService {
     return { updated: result.count, status };
   }
 
-  async exportVendors(tenantId: string, query?: { search?: string; status?: string }) {
+  async exportVendors(
+    tenantId: string,
+    query?: { search?: string; status?: string },
+  ) {
     const where: Prisma.VendorWhereInput = { tenantId, deletedAt: null };
     if (query?.status) where.status = query.status;
     if (query?.search) {
       where.OR = [
-        { name: { contains: query.search, mode: 'insensitive' } },
-        { email: { contains: query.search, mode: 'insensitive' } },
+        { name: { contains: query.search, mode: "insensitive" } },
+        { email: { contains: query.search, mode: "insensitive" } },
       ];
     }
     return prisma.vendor.findMany({
       where,
-      orderBy: { name: 'asc' },
+      orderBy: { name: "asc" },
       select: {
-        id: true, name: true, email: true, phone: true, taxId: true,
-        type: true, status: true, paymentTerms: true, notes: true,
-        address: true, createdAt: true, updatedAt: true,
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        taxId: true,
+        type: true,
+        status: true,
+        paymentTerms: true,
+        notes: true,
+        address: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
   }
@@ -603,12 +804,22 @@ export class CrmCustomersService {
   // ── CUSTOMER MECHANICAL FEATURES ────────────────
 
   async updateCustomerStatus(tenantId: string, id: string, status: string) {
-    const validStatuses = ['ACTIVE', 'INACTIVE', 'ON_HOLD', 'BLOCKED', 'PREFERRED'];
+    const validStatuses = [
+      "ACTIVE",
+      "INACTIVE",
+      "ON_HOLD",
+      "BLOCKED",
+      "PREFERRED",
+    ];
     if (!validStatuses.includes(status)) {
-      throw new BadRequestException(`Invalid status. Must be one of: ${validStatuses.join(', ')}`);
+      throw new BadRequestException(
+        `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
+      );
     }
-    const existing = await prisma.customer.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!existing) throw new NotFoundException('Customer not found');
+    const existing = await prisma.customer.findFirst({
+      where: { id, tenantId, deletedAt: null },
+    });
+    if (!existing) throw new NotFoundException("Customer not found");
     return prisma.customer.update({ where: { id }, data: { status } });
   }
 
@@ -617,28 +828,38 @@ export class CrmCustomersService {
     const notes = await prisma.activity.findMany({
       where: {
         tenantId,
-        type: { in: ['NOTE', 'CALL', 'EMAIL', 'MEETING'] },
+        type: { in: ["NOTE", "CALL", "EMAIL", "MEETING"] },
         subject: { startsWith: `[CUSTOMER:${customerId}]` },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       select: {
-        id: true, type: true, subject: true, description: true,
+        id: true,
+        type: true,
+        subject: true,
+        description: true,
         createdAt: true,
       },
     });
     // Strip the customer prefix from subject for display
-    return notes.map(n => ({
+    return notes.map((n) => ({
       ...n,
-      subject: n.subject.replace(`[CUSTOMER:${customerId}] `, ''),
+      subject: n.subject.replace(`[CUSTOMER:${customerId}] `, ""),
     }));
   }
 
-  async addCustomerNote(tenantId: string, orgId: string, customerId: string, dto: CustomerNoteInput) {
-    const customer = await prisma.customer.findFirst({ where: { id: customerId, tenantId, deletedAt: null } });
-    if (!customer) throw new NotFoundException('Customer not found');
+  async addCustomerNote(
+    tenantId: string,
+    orgId: string,
+    customerId: string,
+    dto: CustomerNoteInput,
+  ) {
+    const customer = await prisma.customer.findFirst({
+      where: { id: customerId, tenantId, deletedAt: null },
+    });
+    if (!customer) throw new NotFoundException("Customer not found");
 
     let resolvedOrgId = orgId;
-    if (!orgId || orgId === 'org-system-default') {
+    if (!orgId || orgId === "org-system-default") {
       const org = await prisma.organization.findFirst({ where: { tenantId } });
       if (org) resolvedOrgId = org.id;
     }
@@ -647,7 +868,7 @@ export class CrmCustomersService {
       data: {
         tenantId,
         orgId: resolvedOrgId,
-        type: dto.type || 'NOTE',
+        type: dto.type || "NOTE",
         subject: `[CUSTOMER:${customerId}] ${dto.content.substring(0, 100)}`,
         description: dto.content,
         customerId,
@@ -655,10 +876,22 @@ export class CrmCustomersService {
     });
   }
 
-  async bulkUpdateCustomerStatus(tenantId: string, ids: string[], status: string) {
-    const validStatuses = ['ACTIVE', 'INACTIVE', 'ON_HOLD', 'BLOCKED', 'PREFERRED'];
+  async bulkUpdateCustomerStatus(
+    tenantId: string,
+    ids: string[],
+    status: string,
+  ) {
+    const validStatuses = [
+      "ACTIVE",
+      "INACTIVE",
+      "ON_HOLD",
+      "BLOCKED",
+      "PREFERRED",
+    ];
     if (!validStatuses.includes(status)) {
-      throw new BadRequestException(`Invalid status. Must be one of: ${validStatuses.join(', ')}`);
+      throw new BadRequestException(
+        `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
+      );
     }
     const result = await prisma.customer.updateMany({
       where: { id: { in: ids }, tenantId, deletedAt: null },
@@ -667,23 +900,36 @@ export class CrmCustomersService {
     return { updated: result.count, status };
   }
 
-  async exportCustomers(tenantId: string, query?: { search?: string; status?: string }) {
+  async exportCustomers(
+    tenantId: string,
+    query?: { search?: string; status?: string },
+  ) {
     const where: Prisma.CustomerWhereInput = { tenantId, deletedAt: null };
     if (query?.status) where.status = query.status;
     if (query?.search) {
       where.OR = [
-        { name: { contains: query.search, mode: 'insensitive' } },
-        { email: { contains: query.search, mode: 'insensitive' } },
+        { name: { contains: query.search, mode: "insensitive" } },
+        { email: { contains: query.search, mode: "insensitive" } },
       ];
     }
     return prisma.customer.findMany({
       where,
-      orderBy: { name: 'asc' },
+      orderBy: { name: "asc" },
       select: {
-        id: true, name: true, email: true, phone: true, taxId: true,
-        type: true, status: true, creditLimit: true, paymentTerms: true,
-        notes: true, billingAddress: true, shippingAddress: true,
-        createdAt: true, updatedAt: true,
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        taxId: true,
+        type: true,
+        status: true,
+        creditLimit: true,
+        paymentTerms: true,
+        notes: true,
+        billingAddress: true,
+        shippingAddress: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
   }
@@ -691,29 +937,37 @@ export class CrmCustomersService {
   // ── CUSTOMER TAGS ──────────────────────────────
 
   async getCustomerTags(tenantId: string) {
-    return prisma.customerTag.findMany({ where: { tenantId }, orderBy: { name: 'asc' } });
+    return prisma.customerTag.findMany({
+      where: { tenantId },
+      orderBy: { name: "asc" },
+    });
   }
 
   async createCustomerTag(tenantId: string, dto: CreateCustomerTagInput) {
-    return prisma.customerTag.create({ data: { tenantId, name: dto.name, color: dto.color || '#3b82f6' } });
+    return prisma.customerTag.create({
+      data: { tenantId, name: dto.name, color: dto.color || "#3b82f6" },
+    });
   }
 
   async deleteCustomerTag(tenantId: string, id: string) {
     const tag = await prisma.customerTag.findFirst({ where: { id, tenantId } });
-    if (!tag) throw new NotFoundException('Tag not found');
+    if (!tag) throw new NotFoundException("Tag not found");
     return prisma.customerTag.delete({ where: { id } });
   }
 
   async assignCustomerTag(tenantId: string, customerId: string, tagId: string) {
-    const customer = await prisma.customer.findFirst({ where: { id: customerId, tenantId } });
-    if (!customer) throw new NotFoundException('Customer not found');
+    const customer = await prisma.customer.findFirst({
+      where: { id: customerId, tenantId },
+    });
+    if (!customer) throw new NotFoundException("Customer not found");
     return prisma.customerTagLink.create({ data: { customerId, tagId } });
   }
 
   async removeCustomerTag(customerId: string, tagId: string) {
-    const link = await prisma.customerTagLink.findFirst({ where: { customerId, tagId } });
-    if (!link) throw new NotFoundException('Tag assignment not found');
+    const link = await prisma.customerTagLink.findFirst({
+      where: { customerId, tagId },
+    });
+    if (!link) throw new NotFoundException("Tag assignment not found");
     return prisma.customerTagLink.delete({ where: { id: link.id } });
   }
 }
-

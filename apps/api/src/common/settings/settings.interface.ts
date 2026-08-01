@@ -1,9 +1,8 @@
-// @ts-nocheck
-import { z, ZodSchema } from 'zod';
+import { z, ZodSchema } from "zod";
 
-export type SettingType = 'string' | 'number' | 'boolean' | 'object' | 'array';
+export type SettingType = "string" | "number" | "boolean" | "object" | "array";
 
-export type SettingScope = 'TENANT' | 'USER' | 'ROLE';
+export type SettingScope = "TENANT" | "USER" | "ROLE";
 
 export interface SettingOption {
   value: any;
@@ -51,7 +50,7 @@ export interface GetSettingsQuery {
   roleId?: string;
 }
 
-export const SettingScopeEnum = z.enum(['TENANT', 'USER', 'ROLE']);
+export const SettingScopeEnum = z.enum(["TENANT", "USER", "ROLE"]);
 export const SetSettingInputSchema = z.object({
   value: z.any(),
   scope: SettingScopeEnum.optional(),

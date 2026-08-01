@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -49,11 +48,11 @@ class _SupplierContractDetail extends StatelessWidget {
             Row(children: [
               Expanded(child: Text(contract.supplierName, style: Theme.of(context).textTheme.titleLarge)),
               UiStatusBadge(label: contract.status, tone: _statusTone(contract.status)),
-            ]),
+            ],),
             const SizedBox(height: Spacing.x1),
             Text(contract.contractNumber, style: TextStyle(color: t.textSecondary)),
           ],
-        )),
+        ),),
         const SizedBox(height: Spacing.x4),
         UiCard(child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,7 +64,7 @@ class _SupplierContractDetail extends StatelessWidget {
             if (contract.startDate != null) _Row('Start Date', Formatters.date(contract.startDate!)),
             if (contract.endDate != null) _Row('End Date', Formatters.date(contract.endDate!)),
           ],
-        )),
+        ),),
         if (contract.terms != null && contract.terms!.isNotEmpty) ...[
           const SizedBox(height: Spacing.x4),
           UiCard(child: Column(
@@ -74,7 +73,7 @@ class _SupplierContractDetail extends StatelessWidget {
               const UiSectionHeader(title: 'Terms'),
               Text(contract.terms!, style: TextStyle(color: t.textSecondary)),
             ],
-          )),
+          ),),
         ],
         if (contract.notes != null && contract.notes!.isNotEmpty) ...[
           const SizedBox(height: Spacing.x4),
@@ -84,7 +83,7 @@ class _SupplierContractDetail extends StatelessWidget {
               const UiSectionHeader(title: 'Notes'),
               Text(contract.notes!, style: TextStyle(color: t.textSecondary)),
             ],
-          )),
+          ),),
         ],
         if (contract.createdAt != null) ...[
           const SizedBox(height: Spacing.x4),
@@ -110,7 +109,7 @@ class _Row extends StatelessWidget {
       child: Row(children: [
         Expanded(child: Text(label, style: TextStyle(color: context.tokens.textSecondary))),
         Text(value, style: Theme.of(context).textTheme.labelLarge),
-      ]),
+      ],),
     );
   }
 }

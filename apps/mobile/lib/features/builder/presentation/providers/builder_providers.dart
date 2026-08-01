@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -125,14 +124,14 @@ class BuilderFormListController extends Notifier<BuilderFormListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteBuilderFormUseCase(
-      ref.read(builderRepositoryProvider))(id);
+      ref.read(builderRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<BuilderForm>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveBuilderFormUseCase(
-      ref.read(builderRepositoryProvider))(
+      ref.read(builderRepositoryProvider),)(
       SaveBuilderFormParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -143,7 +142,7 @@ class BuilderFormListController extends Notifier<BuilderFormListState> {
 final FutureProviderFamily<BuilderForm, String> builderFormDetailProvider =
     FutureProvider.family<BuilderForm, String>((Ref ref, String id) async {
   final result = await GetBuilderFormUseCase(
-    ref.watch(builderRepositoryProvider))(id);
+    ref.watch(builderRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -240,14 +239,14 @@ class BuilderPageListController extends Notifier<BuilderPageListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteBuilderPageUseCase(
-      ref.read(builderRepositoryProvider))(id);
+      ref.read(builderRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<BuilderPage>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveBuilderPageUseCase(
-      ref.read(builderRepositoryProvider))(
+      ref.read(builderRepositoryProvider),)(
       SaveBuilderPageParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -258,7 +257,7 @@ class BuilderPageListController extends Notifier<BuilderPageListState> {
 final FutureProviderFamily<BuilderPage, String> builderPageDetailProvider =
     FutureProvider.family<BuilderPage, String>((Ref ref, String id) async {
   final result = await GetBuilderPageUseCase(
-    ref.watch(builderRepositoryProvider))(id);
+    ref.watch(builderRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -355,7 +354,7 @@ class BuilderWorkflowListController extends Notifier<BuilderWorkflowListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteBuilderWorkflowUseCase(
-      ref.read(builderRepositoryProvider))(id);
+      ref.read(builderRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
@@ -454,7 +453,7 @@ class BuilderTemplateListController extends Notifier<BuilderTemplateListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteBuilderTemplateUseCase(
-      ref.read(builderRepositoryProvider))(id);
+      ref.read(builderRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }

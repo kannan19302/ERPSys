@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Controller, Get, Param, Query, UseGuards, Req } from "@nestjs/common";
 import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
@@ -17,19 +16,28 @@ export class WorkflowEnterpriseController {
 
   @Get("workflow-analytics")
   @Permissions("workflow.enterprise.read")
-  async getWorkflowAnalytics(@Req() req: AuthenticatedRequest, @Query("dateRange") dateRange?: string) {
+  async getWorkflowAnalytics(
+    @Req() req: AuthenticatedRequest,
+    @Query("dateRange") dateRange?: string,
+  ) {
     return this.service.getWorkflowAnalytics(req.user.tenantId, dateRange);
   }
 
   @Get("process-efficiency")
   @Permissions("workflow.enterprise.read")
-  async getProcessEfficiency(@Req() req: AuthenticatedRequest, @Query("workflowId") workflowId?: string) {
+  async getProcessEfficiency(
+    @Req() req: AuthenticatedRequest,
+    @Query("workflowId") workflowId?: string,
+  ) {
     return this.service.getProcessEfficiency(req.user.tenantId, workflowId);
   }
 
   @Get("sla-tracking")
   @Permissions("workflow.enterprise.read")
-  async getSlaTracking(@Req() req: AuthenticatedRequest, @Query("dateRange") dateRange?: string) {
+  async getSlaTracking(
+    @Req() req: AuthenticatedRequest,
+    @Query("dateRange") dateRange?: string,
+  ) {
     return this.service.getSlaTracking(req.user.tenantId, dateRange);
   }
 
@@ -41,7 +49,10 @@ export class WorkflowEnterpriseController {
 
   @Get("approval-matrix")
   @Permissions("workflow.enterprise.read")
-  async getApprovalMatrix(@Req() req: AuthenticatedRequest, @Query("approverId") approverId?: string) {
+  async getApprovalMatrix(
+    @Req() req: AuthenticatedRequest,
+    @Query("approverId") approverId?: string,
+  ) {
     return this.service.getApprovalMatrix(req.user.tenantId, approverId);
   }
 

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { CommunicationAdminService } from "../communication-admin.service";
 import { CommunicationBotsService } from "../communication-bots.service";

@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -51,7 +50,7 @@ class _MultiCurrencyRateListPageState extends ConsumerState<MultiCurrencyRateLis
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
                 .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value)))
+                    value: e.key, child: Text(e.value),),)
                 .toList(),
           ),
         ],
@@ -86,7 +85,7 @@ class _MultiCurrencyRateListPageState extends ConsumerState<MultiCurrencyRateLis
                     : '${state.meta.total} rate${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -135,20 +134,20 @@ class _RateTile extends StatelessWidget {
             Row(children: [
               Expanded(
                 child: Text('${rate.fromCurrency} / ${rate.toCurrency}',
-                    style: Theme.of(context).textTheme.titleSmall),
+                    style: Theme.of(context).textTheme.titleSmall,),
               ),
               UiStatusBadge(
                 label: rate.source ?? 'MANUAL',
                 tone: UiTone.info,
               ),
-            ]),
+            ],),
             const SizedBox(height: Spacing.x1),
             Text(rate.rate.toStringAsFixed(6),
-                style: Theme.of(context).textTheme.labelLarge),
+                style: Theme.of(context).textTheme.labelLarge,),
             if (rate.rateDate != null) ...[
               const SizedBox(height: Spacing.x1),
               Text(Formatters.date(rate.rateDate!),
-                  style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs)),
+                  style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs),),
             ],
           ],
         ),

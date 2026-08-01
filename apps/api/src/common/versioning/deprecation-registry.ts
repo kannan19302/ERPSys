@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * API deprecation registry (Foundation Roadmap Track G.1).
  *
@@ -32,7 +31,10 @@ export interface DeprecationEntry {
 export const API_DEPRECATIONS: DeprecationEntry[] = [];
 
 /** Longest-prefix match so nested surfaces can carry their own clocks. */
-export function findDeprecation(path: string, registry: DeprecationEntry[] = API_DEPRECATIONS): DeprecationEntry | null {
+export function findDeprecation(
+  path: string,
+  registry: DeprecationEntry[] = API_DEPRECATIONS,
+): DeprecationEntry | null {
   let best: DeprecationEntry | null = null;
   for (const entry of registry) {
     if (!path.startsWith(entry.pathPrefix)) continue;

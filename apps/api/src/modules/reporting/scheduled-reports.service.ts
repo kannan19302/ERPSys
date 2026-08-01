@@ -1,13 +1,12 @@
-// @ts-nocheck
-import { Injectable } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import { Injectable } from "@nestjs/common";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class ScheduledReportsService {
   async getScheduledReports(tenantId: string) {
     return prisma.scheduledReport.findMany({
       where: { tenantId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -32,7 +31,7 @@ export class ScheduledReportsService {
         schedule: dto.schedule,
         recipients: dto.recipients ?? [],
         filters: (dto.filters ?? {}) as any,
-        format: dto.format ?? 'pdf',
+        format: dto.format ?? "pdf",
       },
     });
   }
@@ -75,6 +74,6 @@ export class ScheduledReportsService {
       where: { id, tenantId },
       data: { lastRunAt: new Date() },
     });
-    return { success: true, message: 'Report execution triggered' };
+    return { success: true, message: "Report execution triggered" };
   }
 }

@@ -1,17 +1,12 @@
 import 'package:flutter/material.dart';
-import '../../../../core/widgets/permission_gate.dart';
-import '../../../../core/widgets/ui_card.dart';
-import '../../../../core/utils/formatters.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/widgets/state_views.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/widgets/form_fields.dart';
 import '../providers/healthcare_providers.dart';
 
 class PrescriptionFormPage extends ConsumerStatefulWidget {
+  const PrescriptionFormPage({super.key, this.id});
   static const String routeName = 'prescription-form';
   static const String routePath = 'prescriptions/new';
-  const PrescriptionFormPage({super.key, this.id});
 
   final String? id;
 

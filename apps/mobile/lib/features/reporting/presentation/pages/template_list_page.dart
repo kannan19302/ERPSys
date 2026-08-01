@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -50,7 +49,7 @@ class _ReportTemplateListPageState extends ConsumerState<ReportTemplateListPage>
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
                 .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value)))
+                    value: e.key, child: Text(e.value),),)
                 .toList(),
           ),
         ],
@@ -93,7 +92,7 @@ class _ReportTemplateListPageState extends ConsumerState<ReportTemplateListPage>
                     : '${state.meta.total} template${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -148,27 +147,27 @@ class _TemplateTile extends StatelessWidget {
               Row(children: [
                 Expanded(
                   child: Text(template.name,
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
                 UiStatusBadge(
                   label: template.status,
                   tone: _statusTone(template.status),
                 ),
-              ]),
+              ],),
               if (template.description != null) ...[
                 const SizedBox(height: Spacing.x1),
                 Text(template.description!,
-                    style: TextStyle(color: t.textSecondary)),
+                    style: TextStyle(color: t.textSecondary),),
               ],
               if (template.reportType != null) ...[
                 const SizedBox(height: Spacing.x1),
                 Row(children: [
                   Text(template.reportType!,
-                      style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
+                      style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
                   const SizedBox(width: Spacing.x2),
                   Text(template.format,
-                      style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
-                ]),
+                      style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
+                ],),
               ],
             ],
           ),

@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -46,22 +45,6 @@ class _ActivityListPageState extends ConsumerState<ActivityListPage> {
     'OPEN': 'Open',
     'COMPLETED': 'Completed',
     'CANCELLED': 'Cancelled',
-  };
-
-  static const Map<String, IconData> _typeIcons = <String, IconData>{
-    'CALL': Icons.phone_outlined,
-    'EMAIL': Icons.email_outlined,
-    'MEETING': Icons.groups_outlined,
-    'TASK': Icons.check_circle_outline,
-    'NOTE': Icons.notes_outlined,
-  };
-
-  static const Map<String, Color> _typeColors = <String, Color>{
-    'CALL': Color(0xFF0EA5E9),
-    'EMAIL': Color(0xFF8B5CF6),
-    'MEETING': Color(0xFFF59E0B),
-    'TASK': Color(0xFF10B981),
-    'NOTE': Color(0xFF6B7280),
   };
 
   @override
@@ -210,6 +193,8 @@ class _ActivityListPageState extends ConsumerState<ActivityListPage> {
 
 class _ActivityTile extends StatelessWidget {
 
+  const _ActivityTile({required this.activity, this.onTap});
+
   static const Map<String, Color> _typeColors = {
     'CALL': Colors.blue,
     'EMAIL': Colors.green,
@@ -223,8 +208,6 @@ class _ActivityTile extends StatelessWidget {
     'MEETING': Icons.event,
     'TASK': Icons.check_circle_outline,
   };
-
-  const _ActivityTile({required this.activity, this.onTap});
 
   final Activity activity;
   final VoidCallback? onTap;
@@ -245,7 +228,7 @@ class _ActivityTile extends StatelessWidget {
             height: Spacing.x10,
             width: Spacing.x10,
             decoration: BoxDecoration(
-              color: typeColor.withOpacity(0.1),
+              color: typeColor.withValues(alpha: 0.1),
               borderRadius: Radii.control,
             ),
             alignment: Alignment.center,

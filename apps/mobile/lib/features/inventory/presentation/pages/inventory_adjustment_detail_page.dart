@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -70,7 +69,7 @@ class _AdjustmentDetail extends StatelessWidget {
                 height: Spacing.x12,
                 width: Spacing.x12,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: Radii.pill,
                 ),
                 alignment: Alignment.center,

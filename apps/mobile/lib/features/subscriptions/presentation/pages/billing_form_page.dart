@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
 import '../providers/subscriptions_providers.dart';
 
 class BillingFormPage extends ConsumerStatefulWidget {
@@ -43,18 +42,18 @@ class _BillingFormPageState extends ConsumerState<BillingFormPage> {
         TextFormField(controller: _amountCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Amount *')),
         const SizedBox(height: Spacing.x4),
         Row(children: [
-          Expanded(child: DropdownButtonFormField<String>(value: _currency, decoration: const InputDecoration(labelText: 'Currency'), items: const [
+          Expanded(child: DropdownButtonFormField<String>(initialValue: _currency, decoration: const InputDecoration(labelText: 'Currency'), items: const [
             DropdownMenuItem(value: 'USD', child: Text('USD')), DropdownMenuItem(value: 'EUR', child: Text('EUR')),
-          ], onChanged: (v) { if (v != null) setState(() => _currency = v); })),
+          ], onChanged: (v) { if (v != null) setState(() => _currency = v); },),),
           const SizedBox(width: Spacing.x3),
-          Expanded(child: DropdownButtonFormField<String>(value: _status, decoration: const InputDecoration(labelText: 'Status'), items: const [
+          Expanded(child: DropdownButtonFormField<String>(initialValue: _status, decoration: const InputDecoration(labelText: 'Status'), items: const [
             DropdownMenuItem(value: 'PENDING', child: Text('Pending')), DropdownMenuItem(value: 'PAID', child: Text('Paid')),
             DropdownMenuItem(value: 'OVERDUE', child: Text('Overdue')), DropdownMenuItem(value: 'CANCELLED', child: Text('Cancelled')),
-          ], onChanged: (v) { if (v != null) setState(() => _status = v); })),
-        ]),
+          ], onChanged: (v) { if (v != null) setState(() => _status = v); },),),
+        ],),
         const SizedBox(height: Spacing.x4),
         TextFormField(controller: _invoiceCtrl, decoration: const InputDecoration(labelText: 'Invoice ID')),
-      ])),
+      ],),),
     );
   }
 }

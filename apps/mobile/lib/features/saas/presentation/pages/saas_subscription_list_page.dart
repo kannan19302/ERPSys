@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -70,7 +69,7 @@ class _SaasSubscriptionListPageState extends ConsumerState<SaasSubscriptionListP
                     : '${state.meta.total} subscription${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -104,20 +103,20 @@ class _SaasSubscriptionListPageState extends ConsumerState<SaasSubscriptionListP
               Row(children: [
                 Expanded(
                   child: Text(sub.planName,
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
                 UiStatusBadge(
                   label: sub.status,
                   tone: _statusTones[sub.status] ?? UiTone.neutral,
                 ),
-              ]),
+              ],),
               const SizedBox(height: Spacing.x1),
               Text(sub.tenantId,
-                  style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs)),
+                  style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs),),
               if (sub.currentPeriodEnd != null) ...[
                 const SizedBox(height: Spacing.x1),
                 Text('Renews ${_formatDate(sub.currentPeriodEnd!)}',
-                    style: TextStyle(fontSize: TypeScale.xs, color: palette.textTertiary)),
+                    style: TextStyle(fontSize: TypeScale.xs, color: palette.textTertiary),),
               ],
             ],
           ),

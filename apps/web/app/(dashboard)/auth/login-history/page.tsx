@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { PageHeader, DataTable, Pagination } from "@unerp/ui";
@@ -6,8 +5,14 @@ import { RouteGuard } from "@unerp/framework";
 import type { Column } from "@unerp/ui";
 
 interface LoginRecord {
-  id: string; status: string; ipAddress: string | null; device: string | null;
-  browser: string | null; location: string | null; failureReason: string | null; createdAt: string;
+  id: string;
+  status: string;
+  ipAddress: string | null;
+  device: string | null;
+  browser: string | null;
+  location: string | null;
+  failureReason: string | null;
+  createdAt: string;
 }
 
 export default function LoginHistoryPage() {
@@ -30,31 +35,76 @@ export default function LoginHistoryPage() {
     setLoading(false);
   }, [page, statusFilter]);
 
-  useEffect(() => { fetchHistory(); }, [fetchHistory]);
+  useEffect(() => {
+    fetchHistory();
+  }, [fetchHistory]);
 
   const columns: Column<LoginRecord>[] = [
-    { key: "status", header: "Status", render: (r) => <span className={r.status === "SUCCESS" ? "ui-badge ui-badge-success" : "ui-badge ui-badge-danger"}>{r.status}</span> },
-    { key: "ipAddress", header: "IP Address", render: (r) => r.ipAddress ?? "-" },
+    {
+      key: "status",
+      header: "Status",
+      render: (r) => (
+        <span
+          className={
+            r.status === "SUCCESS"
+              ? "ui-badge ui-badge-success"
+              : "ui-badge ui-badge-danger"
+          }
+        >
+          {r.status}
+        </span>
+      ),
+    },
+    {
+      key: "ipAddress",
+      header: "IP Address",
+      render: (r) => r.ipAddress ?? "-",
+    },
     { key: "location", header: "Location", render: (r) => r.location ?? "-" },
     { key: "browser", header: "Browser", render: (r) => r.browser ?? "-" },
     { key: "device", header: "Device", render: (r) => r.device ?? "-" },
-    { key: "failureReason", header: "Reason", render: (r) => r.failureReason ?? "-" },
-    { key: "createdAt", header: "Date", render: (r) => new Date(r.createdAt).toLocaleString() },
+    {
+      key: "failureReason",
+      header: "Reason",
+      render: (r) => r.failureReason ?? "-",
+    },
+    {
+      key: "createdAt",
+      header: "Date",
+      render: (r) => new Date(r.createdAt).toLocaleString(),
+    },
   ];
 
   return (
     <RouteGuard permission="auth.login-history.read">
       <div className="ui-stack-6">
-        <PageHeader title="Login History" description="Review all sign-in attempts to your account." breadcrumbs={[{ label: "Apps", href: "/apps" }, { label: "Auth", href: "/auth" }, { label: "Login History" }]} />
+        <PageHeader
+          title="Login History"
+          description="Review all sign-in attempts to your account."
+          breadcrumbs={[
+            { label: "Apps", href: "/apps" },
+            { label: "Auth", href: "/auth" },
+            { label: "Login History" },
+          ]}
+        />
         <div className="ui-flex-row ui-gap-4">
-          <select className="ui-input u-w-48" value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}>
+          <select
+            className="ui-input u-w-48"
+            value={statusFilter}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setPage(1);
+            }}
+          >
             <option value="">All Status</option>
             <option value="SUCCESS">Success</option>
             <option value="FAILED">Failed</option>
           </select>
         </div>
         <DataTable columns={columns} data={records} loading={loading} />
-        {totalPages > 1 && <Pagination page={page} pageCount={totalPages} onChange={setPage} />}
+        {totalPages > 1 && (
+          <Pagination page={page} pageCount={totalPages} onChange={setPage} />
+        )}
       </div>
     </RouteGuard>
   );

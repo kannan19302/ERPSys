@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -50,7 +49,7 @@ class _EcommerceProductListPageState extends ConsumerState<EcommerceProductListP
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
                 .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value)))
+                    value: e.key, child: Text(e.value),),)
                 .toList(),
           ),
         ],
@@ -84,7 +83,7 @@ class _EcommerceProductListPageState extends ConsumerState<EcommerceProductListP
                     : '${state.meta.total} product${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -118,20 +117,20 @@ class _EcommerceProductListPageState extends ConsumerState<EcommerceProductListP
               Row(children: [
                 Expanded(
                   child: Text(p.name,
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
                 UiStatusBadge(
                   label: p.status,
                   tone: p.status == 'ACTIVE' ? UiTone.success : UiTone.neutral,
                 ),
-              ]),
+              ],),
               const SizedBox(height: Spacing.x1),
               if (p.sku != null)
                 Text('SKU: ${p.sku}',
-                    style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs)),
+                    style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs),),
               Row(children: [
                 Text('\$${p.price.toStringAsFixed(2)}',
-                    style: Theme.of(context).textTheme.labelLarge),
+                    style: Theme.of(context).textTheme.labelLarge,),
                 if (p.comparePrice != null && p.comparePrice! > 0) ...[
                   const SizedBox(width: Spacing.x2),
                   Text('\$${p.comparePrice!.toStringAsFixed(2)}',
@@ -139,12 +138,12 @@ class _EcommerceProductListPageState extends ConsumerState<EcommerceProductListP
                         fontSize: TypeScale.xs,
                         color: palette.textSecondary,
                         decoration: TextDecoration.lineThrough,
-                      )),
+                      ),),
                 ],
                 const Spacer(),
                 Text('${p.inventory} in stock',
-                    style: TextStyle(fontSize: TypeScale.xs, color: p.inventory > 0 ? palette.textSecondary : Colors.red)),
-              ]),
+                    style: TextStyle(fontSize: TypeScale.xs, color: p.inventory > 0 ? palette.textSecondary : Colors.red),),
+              ],),
             ],
           ),
         ),
@@ -174,7 +173,6 @@ class _EcommerceOrderListPageState extends ConsumerState<EcommerceOrderListPage>
   Widget build(BuildContext context) {
     final state = ref.watch(ecommerceOrderListControllerProvider);
     final controller = ref.read(ecommerceOrderListControllerProvider.notifier);
-    final t = context.tokens;
     return Scaffold(
       appBar: AppBar(title: const Text('Orders')),
       body: Column(
@@ -229,18 +227,18 @@ class _EcommerceOrderListPageState extends ConsumerState<EcommerceOrderListPage>
               Row(children: [
                 Expanded(
                   child: Text(o.orderNumber,
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
                 UiStatusBadge(label: o.status, tone: _orderStatusTone(o.status)),
-              ]),
+              ],),
               if (o.customerName != null) ...[
                 const SizedBox(height: Spacing.x1),
                 Text(o.customerName!,
-                    style: TextStyle(color: palette.textSecondary)),
+                    style: TextStyle(color: palette.textSecondary),),
               ],
               const SizedBox(height: Spacing.x1),
               Text('\$${o.totalAmount.toStringAsFixed(2)}',
-                  style: Theme.of(context).textTheme.labelLarge),
+                  style: Theme.of(context).textTheme.labelLarge,),
             ],
           ),
         ),

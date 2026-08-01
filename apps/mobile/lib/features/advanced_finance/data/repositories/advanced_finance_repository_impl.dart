@@ -94,9 +94,9 @@ class AdvancedFinanceRepositoryImpl implements AdvancedFinanceRepository {
 
   @override
   Future<Result<Cacheable<Paginated<MultiCurrencyRate>>>> listMultiCurrencyRates(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_mcRateNamespace, query, () => _remote.listMultiCurrencyRates(query),
-        MultiCurrencyRateModel.fromJson);
+        MultiCurrencyRateModel.fromJson,);
 
   @override
   Future<Result<MultiCurrencyRate>> getMultiCurrencyRate(String id) =>
@@ -116,10 +116,10 @@ class AdvancedFinanceRepositoryImpl implements AdvancedFinanceRepository {
 
   @override
   Future<Result<Cacheable<Paginated<ConsolidationReport>>>> listConsolidationReports(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_consolidationNamespace, query,
         () => _remote.listConsolidationReports(query),
-        ConsolidationReportModel.fromJson);
+        ConsolidationReportModel.fromJson,);
 
   @override
   Future<Result<ConsolidationReport>> getConsolidationReport(String id) =>
@@ -131,10 +131,10 @@ class AdvancedFinanceRepositoryImpl implements AdvancedFinanceRepository {
 
   @override
   Future<Result<Cacheable<Paginated<IntercompanyAgreement>>>> listIntercompanyAgreements(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_intercompanyNamespace, query,
         () => _remote.listIntercompanyAgreements(query),
-        IntercompanyAgreementModel.fromJson);
+        IntercompanyAgreementModel.fromJson,);
 
   @override
   Future<Result<IntercompanyAgreement>> getIntercompanyAgreement(String id) =>
@@ -146,9 +146,9 @@ class AdvancedFinanceRepositoryImpl implements AdvancedFinanceRepository {
 
   @override
   Future<Result<Cacheable<Paginated<CostAllocation>>>> listCostAllocations(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_costAllocNamespace, query, () => _remote.listCostAllocations(query),
-        CostAllocationModel.fromJson);
+        CostAllocationModel.fromJson,);
 
   @override
   Future<Result<CostAllocation>> getCostAllocation(String id) =>
@@ -164,10 +164,10 @@ class AdvancedFinanceRepositoryImpl implements AdvancedFinanceRepository {
 
   @override
   Future<Result<Cacheable<Paginated<RevenueRecognitionEntry>>>> listRevenueRecognitionEntries(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_revenueRecogNamespace, query,
         () => _remote.listRevenueRecognitionEntries(query),
-        RevenueRecognitionEntryModel.fromJson);
+        RevenueRecognitionEntryModel.fromJson,);
 
   @override
   Future<Result<RevenueRecognitionEntry>> getRevenueRecognitionEntry(String id) =>
@@ -183,9 +183,9 @@ class AdvancedFinanceRepositoryImpl implements AdvancedFinanceRepository {
 
   @override
   Future<Result<Cacheable<Paginated<BudgetVersion>>>> listBudgetVersions(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_budgetVersionNamespace, query, () => _remote.listBudgetVersions(query),
-        BudgetVersionModel.fromJson);
+        BudgetVersionModel.fromJson,);
 
   @override
   Future<Result<BudgetVersion>> getBudgetVersion(String id) =>
@@ -197,9 +197,9 @@ class AdvancedFinanceRepositoryImpl implements AdvancedFinanceRepository {
 
   @override
   Future<Result<Cacheable<Paginated<FinancialCloseTask>>>> listFinancialCloseTasks(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_closeTaskNamespace, query, () => _remote.listFinancialCloseTasks(query),
-        FinancialCloseTaskModel.fromJson);
+        FinancialCloseTaskModel.fromJson,);
 
   @override
   Future<Result<FinancialCloseTask>> getFinancialCloseTask(String id) =>
@@ -215,9 +215,9 @@ class AdvancedFinanceRepositoryImpl implements AdvancedFinanceRepository {
 
   @override
   Future<Result<Cacheable<Paginated<AuditTrailEntry>>>> listAuditTrails(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_auditTrailNamespace, query, () => _remote.listAuditTrails(query),
-        AuditTrailEntryModel.fromJson);
+        AuditTrailEntryModel.fromJson,);
 
   @override
   Future<Result<AuditTrailEntry>> getAuditTrail(String id) =>

@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -63,7 +62,7 @@ class _TechnicianListPageState extends ConsumerState<TechnicianListPage> {
                     : '${state.meta.total} technician${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -96,25 +95,25 @@ class _TechnicianListPageState extends ConsumerState<TechnicianListPage> {
               Row(children: [
                 Expanded(
                   child: Text(tech.name,
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
                 UiStatusBadge(
                   label: tech.status,
                   tone: _statusTone(tech.status),
                 ),
-              ]),
+              ],),
               if (tech.specialization != null) ...[
                 const SizedBox(height: Spacing.x1),
                 Text(tech.specialization!,
-                    style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs)),
+                    style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs),),
               ],
               if (tech.phone != null) ...[
                 const SizedBox(height: Spacing.x1),
                 Row(children: [
                   Icon(Icons.phone, size: TypeScale.xs, color: context.tokens.textTertiary),
                   const SizedBox(width: Spacing.x1),
-                  Text(tech.phone!, style: TextStyle(fontSize: TypeScale.xs)),
-                ]),
+                  Text(tech.phone!, style: const TextStyle(fontSize: TypeScale.xs)),
+                ],),
               ],
             ],
           ),

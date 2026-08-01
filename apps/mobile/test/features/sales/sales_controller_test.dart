@@ -163,7 +163,7 @@ Paginated<T> _page<T>(List<T> items, {int page = 1, bool hasMore = false}) =>
     );
 
 Cacheable<Paginated<T>> _cachedPage<T>(List<T> items,
-        {int page = 1, bool hasMore = false}) =>
+        {int page = 1, bool hasMore = false,}) =>
     Cacheable<Paginated<T>>(
       value: _page<T>(items, page: page, hasMore: hasMore),
     );
@@ -176,43 +176,43 @@ class FakeSalesRepository implements SalesRepository {
   Future<Result<Cacheable<Paginated<Quotation>>>> Function(ListQuery)?
       listQuotationsHandler;
   int deleteQuotationCalls = 0;
-  Result<void> deleteQuotationResult = Result<void>.ok(null);
+  Result<void> deleteQuotationResult = const Result<void>.ok(null);
   int submitQuotationCalls = 0;
-  Result<Quotation> submitQuotationResult = Result<Quotation>.ok(_quotationB);
+  Result<Quotation> submitQuotationResult = const Result<Quotation>.ok(_quotationB);
   int acceptQuotationCalls = 0;
-  Result<Quotation> acceptQuotationResult = Result<Quotation>.ok(_quotationA);
+  Result<Quotation> acceptQuotationResult = const Result<Quotation>.ok(_quotationA);
 
   // Sales Orders
   Future<Result<Cacheable<Paginated<SalesOrder>>>> Function(ListQuery)?
       listSalesOrdersHandler;
   int deleteSalesOrderCalls = 0;
-  Result<void> deleteSalesOrderResult = Result<void>.ok(null);
+  Result<void> deleteSalesOrderResult = const Result<void>.ok(null);
 
   // Delivery Notes
   Future<Result<Paginated<DeliveryNote>>> Function(ListQuery)?
       listDeliveryNotesHandler;
   int submitDeliveryNoteCalls = 0;
   Result<DeliveryNote> submitDeliveryNoteResult =
-      Result<DeliveryNote>.ok(_deliveryNoteB);
+      const Result<DeliveryNote>.ok(_deliveryNoteB);
 
   // Sales Returns
   Future<Result<Paginated<SalesReturn>>> Function(ListQuery)?
       listSalesReturnsHandler;
   int approveSalesReturnCalls = 0;
   Result<SalesReturn> approveSalesReturnResult =
-      Result<SalesReturn>.ok(_salesReturnB);
+      const Result<SalesReturn>.ok(_salesReturnB);
   int rejectSalesReturnCalls = 0;
   Result<SalesReturn> rejectSalesReturnResult =
-      Result<SalesReturn>.ok(_salesReturnA);
+      const Result<SalesReturn>.ok(_salesReturnA);
 
   // Opportunities
   Future<Result<Paginated<Opportunity>>> Function(ListQuery)?
       listOpportunitiesHandler;
   int deleteOpportunityCalls = 0;
-  Result<void> deleteOpportunityResult = Result<void>.ok(null);
+  Result<void> deleteOpportunityResult = const Result<void>.ok(null);
   int updateOpportunityStageCalls = 0;
   Result<Opportunity> updateOpportunityStageResult =
-      Result<Opportunity>.ok(_opportunityB);
+      const Result<Opportunity>.ok(_opportunityB);
   Future<Result<Opportunity>> Function(Map<String, dynamic>)?
       saveOpportunityHandler;
 
@@ -220,7 +220,7 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<Cacheable<Paginated<Quotation>>>> listQuotations(
-      ListQuery query) async {
+      ListQuery query,) async {
     receivedQueries.add(query);
     final handler = listQuotationsHandler;
     if (handler != null) return handler(query);
@@ -231,16 +231,16 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<Quotation>> getQuotation(String id) async =>
-      Result<Quotation>.ok(_quotationA);
+      const Result<Quotation>.ok(_quotationA);
 
   @override
   Future<Result<Quotation>> createQuotation(Map<String, dynamic> payload) async =>
-      Result<Quotation>.ok(_quotationA);
+      const Result<Quotation>.ok(_quotationA);
 
   @override
   Future<Result<Quotation>> updateQuotation(
-      String id, Map<String, dynamic> payload) async =>
-      Result<Quotation>.ok(_quotationA);
+      String id, Map<String, dynamic> payload,) async =>
+      const Result<Quotation>.ok(_quotationA);
 
   @override
   Future<Result<void>> deleteQuotation(String id) async {
@@ -262,13 +262,13 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<SalesOrder>> convertQuotation(String id) async =>
-      Result<SalesOrder>.ok(_salesOrderA);
+      const Result<SalesOrder>.ok(_salesOrderA);
 
   // ── Sales Orders ──
 
   @override
   Future<Result<Cacheable<Paginated<SalesOrder>>>> listSalesOrders(
-      ListQuery query) async {
+      ListQuery query,) async {
     receivedQueries.add(query);
     final handler = listSalesOrdersHandler;
     if (handler != null) return handler(query);
@@ -279,16 +279,16 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<SalesOrder>> getSalesOrder(String id) async =>
-      Result<SalesOrder>.ok(_salesOrderA);
+      const Result<SalesOrder>.ok(_salesOrderA);
 
   @override
   Future<Result<SalesOrder>> createSalesOrder(Map<String, dynamic> payload) async =>
-      Result<SalesOrder>.ok(_salesOrderA);
+      const Result<SalesOrder>.ok(_salesOrderA);
 
   @override
   Future<Result<SalesOrder>> updateSalesOrder(
-      String id, Map<String, dynamic> payload) async =>
-      Result<SalesOrder>.ok(_salesOrderA);
+      String id, Map<String, dynamic> payload,) async =>
+      const Result<SalesOrder>.ok(_salesOrderA);
 
   @override
   Future<Result<void>> deleteSalesOrder(String id) async {
@@ -298,17 +298,17 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<SalesOrder>> confirmSalesOrder(String id) async =>
-      Result<SalesOrder>.ok(_salesOrderB);
+      const Result<SalesOrder>.ok(_salesOrderB);
 
   @override
   Future<Result<SalesOrder>> cancelSalesOrder(String id) async =>
-      Result<SalesOrder>.ok(_salesOrderA);
+      const Result<SalesOrder>.ok(_salesOrderA);
 
   // ── Delivery Notes ──
 
   @override
   Future<Result<Paginated<DeliveryNote>>> listDeliveryNotes(
-      ListQuery query) async {
+      ListQuery query,) async {
     receivedQueries.add(query);
     final handler = listDeliveryNotesHandler;
     if (handler != null) return handler(query);
@@ -319,21 +319,21 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<DeliveryNote>> getDeliveryNote(String id) async =>
-      Result<DeliveryNote>.ok(_deliveryNoteA);
+      const Result<DeliveryNote>.ok(_deliveryNoteA);
 
   @override
   Future<Result<DeliveryNote>> createDeliveryNote(
-      Map<String, dynamic> payload) async =>
-      Result<DeliveryNote>.ok(_deliveryNoteA);
+      Map<String, dynamic> payload,) async =>
+      const Result<DeliveryNote>.ok(_deliveryNoteA);
 
   @override
   Future<Result<DeliveryNote>> updateDeliveryNote(
-      String id, Map<String, dynamic> payload) async =>
-      Result<DeliveryNote>.ok(_deliveryNoteA);
+      String id, Map<String, dynamic> payload,) async =>
+      const Result<DeliveryNote>.ok(_deliveryNoteA);
 
   @override
   Future<Result<void>> deleteDeliveryNote(String id) async {
-    return Result<void>.ok(null);
+    return const Result<void>.ok(null);
   }
 
   @override
@@ -346,7 +346,7 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<Paginated<SalesReturn>>> listSalesReturns(
-      ListQuery query) async {
+      ListQuery query,) async {
     receivedQueries.add(query);
     final handler = listSalesReturnsHandler;
     if (handler != null) return handler(query);
@@ -357,16 +357,16 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<SalesReturn>> getSalesReturn(String id) async =>
-      Result<SalesReturn>.ok(_salesReturnA);
+      const Result<SalesReturn>.ok(_salesReturnA);
 
   @override
   Future<Result<SalesReturn>> createSalesReturn(
-      Map<String, dynamic> payload) async =>
-      Result<SalesReturn>.ok(_salesReturnA);
+      Map<String, dynamic> payload,) async =>
+      const Result<SalesReturn>.ok(_salesReturnA);
 
   @override
   Future<Result<void>> deleteSalesReturn(String id) async {
-    return Result<void>.ok(null);
+    return const Result<void>.ok(null);
   }
 
   @override
@@ -385,11 +385,11 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<List<SalesPipeline>>> listPipelines() async =>
-      Result<List<SalesPipeline>>.ok(<SalesPipeline>[]);
+      const Result<List<SalesPipeline>>.ok(<SalesPipeline>[]);
 
   @override
   Future<Result<SalesPipeline>> getSalesPipeline(String id) async =>
-      Result<SalesPipeline>.ok(
+      const Result<SalesPipeline>.ok(
         SalesPipeline(id: 'pl1', name: 'Default', stages: <PipelineStage>[]),
       );
 
@@ -397,7 +397,7 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<Paginated<Opportunity>>> listOpportunities(
-      ListQuery query) async {
+      ListQuery query,) async {
     receivedQueries.add(query);
     final handler = listOpportunitiesHandler;
     if (handler != null) return handler(query);
@@ -408,19 +408,19 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<Opportunity>> getOpportunity(String id) async =>
-      Result<Opportunity>.ok(_opportunityA);
+      const Result<Opportunity>.ok(_opportunityA);
 
   @override
   Future<Result<Opportunity>> createOpportunity(
-      Map<String, dynamic> payload) async =>
-      Result<Opportunity>.ok(_opportunityA);
+      Map<String, dynamic> payload,) async =>
+      const Result<Opportunity>.ok(_opportunityA);
 
   @override
   Future<Result<Opportunity>> updateOpportunity(
-      String id, Map<String, dynamic> payload) async {
+      String id, Map<String, dynamic> payload,) async {
     final handler = saveOpportunityHandler;
     if (handler != null) return handler(payload);
-    return Result<Opportunity>.ok(_opportunityB);
+    return const Result<Opportunity>.ok(_opportunityB);
   }
 
   @override
@@ -431,7 +431,7 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<Opportunity>> updateOpportunityStage(
-      String id, String stage) async {
+      String id, String stage,) async {
     updateOpportunityStageCalls++;
     return updateOpportunityStageResult;
   }
@@ -440,12 +440,12 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<List<SalesActivity>>> listSalesActivity() async =>
-      Result<List<SalesActivity>>.ok(<SalesActivity>[]);
+      const Result<List<SalesActivity>>.ok(<SalesActivity>[]);
 
   @override
   Future<Result<SalesActivity>> logSalesActivity(
-      Map<String, dynamic> payload) async =>
-      Result<SalesActivity>.ok(
+      Map<String, dynamic> payload,) async =>
+      const Result<SalesActivity>.ok(
         SalesActivity(id: 'sa1', type: 'NOTE', subject: 'Call log'),
       );
 }
@@ -525,7 +525,7 @@ void main() {
       final state = container.read(quotationsProvider);
       expect(state.items.map((Quotation q) => q.id), <String>['q1', 'q2']);
       expect(fakeRepository.receivedQueries.map((ListQuery q) => q.page),
-          <int>[1, 2]);
+          <int>[1, 2],);
     });
 
     test('loadMore is a no-op when hasMore is false', () async {
@@ -619,7 +619,7 @@ void main() {
               Result<Cacheable<Paginated<SalesOrder>>>.ok(
                 _cachedPage<SalesOrder>(
                   <SalesOrder>[
-                    if (q.page == 1) _salesOrderA else _salesOrderB
+                    if (q.page == 1) _salesOrderA else _salesOrderB,
                   ],
                   page: q.page,
                   hasMore: q.page == 1,
@@ -632,9 +632,9 @@ void main() {
 
       final state = container.read(salesOrdersProvider);
       expect(state.items.map((SalesOrder o) => o.id),
-          <String>['so1', 'so2']);
+          <String>['so1', 'so2'],);
       expect(fakeRepository.receivedQueries.map((ListQuery q) => q.page),
-          <int>[1, 2]);
+          <int>[1, 2],);
     });
 
     test('delete calls repository and refreshes', () async {

@@ -1,7 +1,10 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
 
 @Injectable()
 export class CashPoolingService {
@@ -10,20 +13,27 @@ export class CashPoolingService {
       where: { id, tenantId },
       include: { runs: true },
     });
-    if (!pool) throw new NotFoundException('Cash pool not found');
+    if (!pool) throw new NotFoundException("Cash pool not found");
     return pool;
   }
 
-  async createCashPool(tenantId: string, dto: {
-    orgId: string; name: string; poolType?: string;
-    headerAccountId: string; participantAccountIds: string[]; targetBalance?: number;
-  }) {
+  async createCashPool(
+    tenantId: string,
+    dto: {
+      orgId: string;
+      name: string;
+      poolType?: string;
+      headerAccountId: string;
+      participantAccountIds: string[];
+      targetBalance?: number;
+    },
+  ) {
     return prisma.cashPool.create({
       data: {
         tenantId,
         orgId: dto.orgId,
         name: dto.name,
-        poolType: dto.poolType ?? 'PHYSICAL',
+        poolType: dto.poolType ?? "PHYSICAL",
         headerAccountId: dto.headerAccountId,
         participantAccountIds: dto.participantAccountIds as never,
         targetBalance: dto.targetBalance ?? 0,
@@ -44,7 +54,8 @@ export class CashPoolingService {
 
   async poolConcentrationRun(tenantId: string, poolId: string) {
     const pool = await this.getPool(tenantId, poolId);
-    if (!pool.isActive) throw new BadRequestException('Cash pool is not active');
+    if (!pool.isActive)
+      throw new BadRequestException("Cash pool is not active");
 
     const participantIds = pool.participantAccountIds as string[];
     let totalSwept = 0;
@@ -52,7 +63,9 @@ export class CashPoolingService {
 
     // Sweep all balances exceeding targetBalance to concentration header account
     for (const acctId of participantIds) {
-      const acct = await prisma.bankAccount.findFirst({ where: { id: acctId, tenantId } });
+      const acct = await prisma.bankAccount.findFirst({
+        where: { id: acctId, tenantId },
+      });
       if (!acct) continue;
       // In a real system, we look up the bank account balance. Since we don't have transaction aggregation details, we mock:
       const balance = 150000; // Mock participant balance
@@ -67,7 +80,7 @@ export class CashPoolingService {
       data: {
         tenantId,
         cashPoolId: poolId,
-        runType: 'SWEEP',
+        runType: "SWEEP",
         totalSwept,
         details: details as never,
       },
@@ -81,7 +94,7 @@ export class CashPoolingService {
           orgId: pool.orgId,
           entryNumber: `JRN-SWP-${Date.now()}`,
           date: new Date(),
-          status: 'POSTED',
+          status: "POSTED",
           notes: `GL Sweep Concentration for pool: ${pool.name}`,
         },
       });
@@ -99,7 +112,7 @@ export class CashPoolingService {
           {
             tenantId,
             journalId: journal.id,
-            accountId: 'acc-participant-pool-clearing',
+            accountId: "acc-participant-pool-clearing",
             debit: new Prisma.Decimal(0),
             credit: new Prisma.Decimal(totalSwept),
             description: `Sweep Concentration credit participant account clearing`,
@@ -117,7 +130,8 @@ export class CashPoolingService {
 
   async poolRedistributionRun(tenantId: string, poolId: string) {
     const pool = await this.getPool(tenantId, poolId);
-    if (!pool.isActive) throw new BadRequestException('Cash pool is not active');
+    if (!pool.isActive)
+      throw new BadRequestException("Cash pool is not active");
 
     const participantIds = pool.participantAccountIds as string[];
     let totalFunded = 0;
@@ -125,7 +139,9 @@ export class CashPoolingService {
 
     // Fund participant accounts that fall below the targetBalance from Concentration header account
     for (const acctId of participantIds) {
-      const acct = await prisma.bankAccount.findFirst({ where: { id: acctId, tenantId } });
+      const acct = await prisma.bankAccount.findFirst({
+        where: { id: acctId, tenantId },
+      });
       if (!acct) continue;
       const balance = 20000; // Mock participant balance below target
       const target = Number(pool.targetBalance) || 50000;
@@ -140,7 +156,7 @@ export class CashPoolingService {
       data: {
         tenantId,
         cashPoolId: poolId,
-        runType: 'FUNDING',
+        runType: "FUNDING",
         totalSwept: -totalFunded,
         details: details as never,
       },
@@ -152,24 +168,37 @@ export class CashPoolingService {
   async listPoolRuns(tenantId: string, poolId: string) {
     return prisma.cashPoolRun.findMany({
       where: { tenantId, cashPoolId: poolId },
-      orderBy: { runDate: 'desc' },
+      orderBy: { runDate: "desc" },
     });
   }
 
   // ── VARIANCE ALERT CONFIGS ─────────────────────────────
 
-  async createVarianceAlertConfig(tenantId: string, dto: {
-    accountId: string; thresholdPct: number; ownerId: string;
-  }) {
+  async createVarianceAlertConfig(
+    tenantId: string,
+    dto: {
+      accountId: string;
+      thresholdPct: number;
+      ownerId: string;
+    },
+  ) {
     return prisma.varianceAlertConfig.upsert({
       where: { tenantId_accountId: { tenantId, accountId: dto.accountId } },
-      create: { tenantId, accountId: dto.accountId, thresholdPct: dto.thresholdPct, ownerId: dto.ownerId, isActive: true },
+      create: {
+        tenantId,
+        accountId: dto.accountId,
+        thresholdPct: dto.thresholdPct,
+        ownerId: dto.ownerId,
+        isActive: true,
+      },
       update: { thresholdPct: dto.thresholdPct, ownerId: dto.ownerId },
     });
   }
 
   async getBudgetVarianceAlerts(tenantId: string) {
-    const configs = await prisma.varianceAlertConfig.findMany({ where: { tenantId, isActive: true } });
+    const configs = await prisma.varianceAlertConfig.findMany({
+      where: { tenantId, isActive: true },
+    });
     const alerts: any[] = [];
 
     for (const config of configs) {
@@ -185,7 +214,8 @@ export class CashPoolingService {
           variancePct: pct.toFixed(2),
           thresholdPct: config.thresholdPct,
           ownerId: config.ownerId,
-          severity: pct > Number(config.thresholdPct) * 1.5 ? 'CRITICAL' : 'WARNING',
+          severity:
+            pct > Number(config.thresholdPct) * 1.5 ? "CRITICAL" : "WARNING",
         });
       }
     }

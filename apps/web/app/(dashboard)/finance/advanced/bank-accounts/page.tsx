@@ -1,10 +1,9 @@
-// @ts-nocheck
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Modal, PageHeader } from '@unerp/ui';
-import { ListView, FormView, RouteGuard } from '@unerp/framework';
-import { bankAccountResource } from '@/modules/finance';
+import { useState } from "react";
+import { Modal, PageHeader } from "@unerp/ui";
+import { ListView, FormView, RouteGuard } from "@unerp/framework";
+import { bankAccountResource } from "@/modules/finance";
 
 export default function BankAccountsPage() {
   const [showCreate, setShowCreate] = useState(false);
@@ -15,7 +14,11 @@ export default function BankAccountsPage() {
         <PageHeader
           title="Bank Accounts"
           description="Manage treasury, bank accounts, and corporate cash ledger"
-          breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'Finance', href: '/finance' }, { label: 'Bank Accounts' }]}
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "Finance", href: "/finance" },
+            { label: "Bank Accounts" },
+          ]}
         />
 
         <ListView
@@ -23,7 +26,11 @@ export default function BankAccountsPage() {
           onCreate={() => setShowCreate(true)}
         />
 
-        <Modal open={showCreate} onClose={() => setShowCreate(false)} title="Add Bank Account">
+        <Modal
+          open={showCreate}
+          onClose={() => setShowCreate(false)}
+          title="Add Bank Account"
+        >
           <FormView
             resource={bankAccountResource}
             onSuccess={() => setShowCreate(false)}

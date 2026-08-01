@@ -1,30 +1,90 @@
-// @ts-nocheck
-import {
-  Injectable,
-  NotFoundException,
-} from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 import * as crypto from "node:crypto";
 
 @Injectable()
 export class WebhooksService {
   private readonly availableEvents = [
-    { id: "subscription.created", name: "Subscription Created", description: "A new subscription was created" },
-    { id: "subscription.updated", name: "Subscription Updated", description: "Subscription plan or status changed" },
-    { id: "subscription.cancelled", name: "Subscription Cancelled", description: "A subscription was cancelled" },
-    { id: "subscription.expired", name: "Subscription Expired", description: "A subscription has expired" },
-    { id: "invoice.created", name: "Invoice Created", description: "A new invoice was generated" },
-    { id: "invoice.paid", name: "Invoice Paid", description: "An invoice payment succeeded" },
-    { id: "invoice.overdue", name: "Invoice Overdue", description: "An invoice is past due" },
-    { id: "invoice.refunded", name: "Invoice Refunded", description: "An invoice was refunded" },
-    { id: "payment.failed", name: "Payment Failed", description: "A payment attempt failed" },
-    { id: "usage.alert", name: "Usage Alert Triggered", description: "Usage exceeded a threshold" },
-    { id: "user.added", name: "User Added", description: "A new user was added to the tenant" },
-    { id: "user.removed", name: "User Removed", description: "A user was removed from the tenant" },
-    { id: "ticket.created", name: "Support Ticket Created", description: "A new support ticket was opened" },
-    { id: "ticket.updated", name: "Support Ticket Updated", description: "A ticket status changed" },
-    { id: "domain.verified", name: "Domain Verified", description: "A custom domain was verified" },
-    { id: "export.completed", name: "Data Export Completed", description: "A data export is ready for download" },
+    {
+      id: "subscription.created",
+      name: "Subscription Created",
+      description: "A new subscription was created",
+    },
+    {
+      id: "subscription.updated",
+      name: "Subscription Updated",
+      description: "Subscription plan or status changed",
+    },
+    {
+      id: "subscription.cancelled",
+      name: "Subscription Cancelled",
+      description: "A subscription was cancelled",
+    },
+    {
+      id: "subscription.expired",
+      name: "Subscription Expired",
+      description: "A subscription has expired",
+    },
+    {
+      id: "invoice.created",
+      name: "Invoice Created",
+      description: "A new invoice was generated",
+    },
+    {
+      id: "invoice.paid",
+      name: "Invoice Paid",
+      description: "An invoice payment succeeded",
+    },
+    {
+      id: "invoice.overdue",
+      name: "Invoice Overdue",
+      description: "An invoice is past due",
+    },
+    {
+      id: "invoice.refunded",
+      name: "Invoice Refunded",
+      description: "An invoice was refunded",
+    },
+    {
+      id: "payment.failed",
+      name: "Payment Failed",
+      description: "A payment attempt failed",
+    },
+    {
+      id: "usage.alert",
+      name: "Usage Alert Triggered",
+      description: "Usage exceeded a threshold",
+    },
+    {
+      id: "user.added",
+      name: "User Added",
+      description: "A new user was added to the tenant",
+    },
+    {
+      id: "user.removed",
+      name: "User Removed",
+      description: "A user was removed from the tenant",
+    },
+    {
+      id: "ticket.created",
+      name: "Support Ticket Created",
+      description: "A new support ticket was opened",
+    },
+    {
+      id: "ticket.updated",
+      name: "Support Ticket Updated",
+      description: "A ticket status changed",
+    },
+    {
+      id: "domain.verified",
+      name: "Domain Verified",
+      description: "A custom domain was verified",
+    },
+    {
+      id: "export.completed",
+      name: "Data Export Completed",
+      description: "A data export is ready for download",
+    },
   ];
 
   private generateSecret(): string {
@@ -38,17 +98,20 @@ export class WebhooksService {
     });
   }
 
-  async createEndpoint(tenantId: string, dto: {
-    url: string;
-    description?: string;
-    events: string[];
-    secret?: string;
-    enabled?: boolean;
-    filter?: Record<string, unknown>;
-    retryCount?: number;
-    timeoutMs?: number;
-    apiVersion?: string;
-  }) {
+  async createEndpoint(
+    tenantId: string,
+    dto: {
+      url: string;
+      description?: string;
+      events: string[];
+      secret?: string;
+      enabled?: boolean;
+      filter?: Record<string, unknown>;
+      retryCount?: number;
+      timeoutMs?: number;
+      apiVersion?: string;
+    },
+  ) {
     const secret = dto.secret ?? this.generateSecret();
 
     const endpoint = await prisma.tenantWebhookEndpoint.create({
@@ -73,18 +136,24 @@ export class WebhooksService {
     };
   }
 
-  async updateEndpoint(tenantId: string, id: string, dto: {
-    url?: string;
-    description?: string;
-    events?: string[];
-    secret?: string;
-    enabled?: boolean;
-    filter?: Record<string, unknown>;
-    retryCount?: number;
-    timeoutMs?: number;
-    apiVersion?: string;
-  }) {
-    const endpoint = await prisma.tenantWebhookEndpoint.findFirst({ where: { id, tenantId } });
+  async updateEndpoint(
+    tenantId: string,
+    id: string,
+    dto: {
+      url?: string;
+      description?: string;
+      events?: string[];
+      secret?: string;
+      enabled?: boolean;
+      filter?: Record<string, unknown>;
+      retryCount?: number;
+      timeoutMs?: number;
+      apiVersion?: string;
+    },
+  ) {
+    const endpoint = await prisma.tenantWebhookEndpoint.findFirst({
+      where: { id, tenantId },
+    });
     if (!endpoint) throw new NotFoundException("Webhook endpoint not found");
 
     const updateData: Record<string, unknown> = {};
@@ -93,24 +162,35 @@ export class WebhooksService {
     if (dto.events !== undefined) updateData.events = dto.events as any;
     if (dto.enabled !== undefined) updateData.isActive = dto.enabled;
 
-    return prisma.tenantWebhookEndpoint.update({ where: { id }, data: updateData });
+    return prisma.tenantWebhookEndpoint.update({
+      where: { id },
+      data: updateData,
+    });
   }
 
   async deleteEndpoint(tenantId: string, id: string) {
-    const endpoint = await prisma.tenantWebhookEndpoint.findFirst({ where: { id, tenantId } });
+    const endpoint = await prisma.tenantWebhookEndpoint.findFirst({
+      where: { id, tenantId },
+    });
     if (!endpoint) throw new NotFoundException("Webhook endpoint not found");
-    await prisma.tenantWebhookDelivery.deleteMany({ where: { endpointId: id } });
+    await prisma.tenantWebhookDelivery.deleteMany({
+      where: { endpointId: id },
+    });
     return prisma.tenantWebhookEndpoint.delete({ where: { id } });
   }
 
   async getEndpoint(tenantId: string, id: string) {
-    const endpoint = await prisma.tenantWebhookEndpoint.findFirst({ where: { id, tenantId } });
+    const endpoint = await prisma.tenantWebhookEndpoint.findFirst({
+      where: { id, tenantId },
+    });
     if (!endpoint) throw new NotFoundException("Webhook endpoint not found");
     return endpoint;
   }
 
   async getEndpointSecret(tenantId: string, id: string) {
-    const endpoint = await prisma.tenantWebhookEndpoint.findFirst({ where: { id, tenantId } });
+    const endpoint = await prisma.tenantWebhookEndpoint.findFirst({
+      where: { id, tenantId },
+    });
     if (!endpoint) throw new NotFoundException("Webhook endpoint not found");
     return {
       id: endpoint.id,
@@ -119,7 +199,9 @@ export class WebhooksService {
   }
 
   async rotateSecret(tenantId: string, id: string) {
-    const endpoint = await prisma.tenantWebhookEndpoint.findFirst({ where: { id, tenantId } });
+    const endpoint = await prisma.tenantWebhookEndpoint.findFirst({
+      where: { id, tenantId },
+    });
     if (!endpoint) throw new NotFoundException("Webhook endpoint not found");
 
     const newSecret = this.generateSecret();
@@ -132,7 +214,9 @@ export class WebhooksService {
   }
 
   async listDeliveries(tenantId: string, endpointId: string) {
-    const endpoint = await prisma.tenantWebhookEndpoint.findFirst({ where: { id: endpointId, tenantId } });
+    const endpoint = await prisma.tenantWebhookEndpoint.findFirst({
+      where: { id: endpointId, tenantId },
+    });
     if (!endpoint) throw new NotFoundException("Webhook endpoint not found");
 
     const [items, total] = await Promise.all([
@@ -171,7 +255,9 @@ export class WebhooksService {
   }
 
   async testEndpoint(tenantId: string, id: string) {
-    const endpoint = await prisma.tenantWebhookEndpoint.findFirst({ where: { id, tenantId } });
+    const endpoint = await prisma.tenantWebhookEndpoint.findFirst({
+      where: { id, tenantId },
+    });
     if (!endpoint) throw new NotFoundException("Webhook endpoint not found");
 
     const testPayload = {
@@ -192,14 +278,22 @@ export class WebhooksService {
   }
 
   async getDeliveryStats(tenantId: string, endpointId: string) {
-    const endpoint = await prisma.tenantWebhookEndpoint.findFirst({ where: { id: endpointId, tenantId } });
+    const endpoint = await prisma.tenantWebhookEndpoint.findFirst({
+      where: { id: endpointId, tenantId },
+    });
     if (!endpoint) throw new NotFoundException("Webhook endpoint not found");
 
     const [total, delivered, failed, pending] = await Promise.all([
       prisma.tenantWebhookDelivery.count({ where: { endpointId } }),
-      prisma.tenantWebhookDelivery.count({ where: { endpointId, status: "DELIVERED" } }),
-      prisma.tenantWebhookDelivery.count({ where: { endpointId, status: "FAILED" } }),
-      prisma.tenantWebhookDelivery.count({ where: { endpointId, status: "PENDING" } }),
+      prisma.tenantWebhookDelivery.count({
+        where: { endpointId, status: "DELIVERED" },
+      }),
+      prisma.tenantWebhookDelivery.count({
+        where: { endpointId, status: "FAILED" },
+      }),
+      prisma.tenantWebhookDelivery.count({
+        where: { endpointId, status: "PENDING" },
+      }),
     ]);
 
     return {
@@ -207,14 +301,18 @@ export class WebhooksService {
       delivered,
       failed,
       pending,
-      retrying: await prisma.tenantWebhookDelivery.count({ where: { endpointId, status: "RETRYING" } }),
+      retrying: await prisma.tenantWebhookDelivery.count({
+        where: { endpointId, status: "RETRYING" },
+      }),
       successRate: total > 0 ? Math.round((delivered / total) * 100) : 0,
       consecutiveFailures: endpoint.consecutiveFailures,
     };
   }
 
   async disableEndpoint(tenantId: string, id: string) {
-    const endpoint = await prisma.tenantWebhookEndpoint.findFirst({ where: { id, tenantId } });
+    const endpoint = await prisma.tenantWebhookEndpoint.findFirst({
+      where: { id, tenantId },
+    });
     if (!endpoint) throw new NotFoundException("Webhook endpoint not found");
     return prisma.tenantWebhookEndpoint.update({
       where: { id },
@@ -223,7 +321,9 @@ export class WebhooksService {
   }
 
   async enableEndpoint(tenantId: string, id: string) {
-    const endpoint = await prisma.tenantWebhookEndpoint.findFirst({ where: { id, tenantId } });
+    const endpoint = await prisma.tenantWebhookEndpoint.findFirst({
+      where: { id, tenantId },
+    });
     if (!endpoint) throw new NotFoundException("Webhook endpoint not found");
     return prisma.tenantWebhookEndpoint.update({
       where: { id },

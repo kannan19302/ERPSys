@@ -1,9 +1,7 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/utils/formatters.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/ui_card.dart';
@@ -20,14 +18,13 @@ class HrDashboardPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final AsyncValue<HrDashboardStats> asyncStats =
         ref.watch(hrDashboardProvider);
-    final Palette t = context.tokens;
 
     return Scaffold(
       appBar: AppBar(title: const Text('HR Dashboard')),
       body: asyncStats.when(
         loading: () => const LoadingView(),
         error: (Object e, StackTrace _) => FailureView(
-          failure: e is Failure ? e as Failure : ServerFailure(e.toString()),
+          failure: e is Failure ? e : ServerFailure(e.toString()),
           onRetry: () => ref.invalidate(hrDashboardProvider),
         ),
         data: (HrDashboardStats stats) => _DashboardContent(stats: stats),
@@ -174,7 +171,7 @@ class _KpiCard extends StatelessWidget {
               padding: const EdgeInsets.all(Spacing.x2),
               decoration: BoxDecoration(
                 color: color.withAlpha(25),
-                borderRadius: BorderRadius.all(Radius.circular(Radii.sm)),
+                borderRadius: const BorderRadius.all(Radius.circular(Radii.sm)),
               ),
               child: Icon(icon, color: color, size: TypeScale.xl),
             ),

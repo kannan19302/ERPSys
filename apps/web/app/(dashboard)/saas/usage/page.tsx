@@ -1,7 +1,12 @@
-// @ts-nocheck
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
-import { Card, PageHeader, DashboardKPICard, DashboardChart, DataTable } from "@unerp/ui";
+import {
+  Card,
+  PageHeader,
+  DashboardKPICard,
+  DashboardChart,
+  DataTable,
+} from "@unerp/ui";
 import {
   Users,
   HardDrive,
@@ -98,7 +103,9 @@ export default function SaasUsagePage() {
     }
   };
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    loadData();
+  }, []);
 
   const chartData = useMemo(() => {
     return history.map((h) => ({
@@ -172,10 +179,17 @@ export default function SaasUsagePage() {
     } catch {}
   };
 
-  const formatStorage = (mb: number) => mb >= 1024 ? `${(mb / 1024).toFixed(1)} GB` : `${mb} MB`;
+  const formatStorage = (mb: number) =>
+    mb >= 1024 ? `${(mb / 1024).toFixed(1)} GB` : `${mb} MB`;
 
-  const pct = (current: number, limit: number) => limit > 0 ? Math.round((current / limit) * 100) : 0;
-  const barColor = (v: number) => v > 90 ? "ui-progress-bar-danger" : v > 75 ? "ui-progress-bar-warning" : "ui-progress-bar-success";
+  const pct = (current: number, limit: number) =>
+    limit > 0 ? Math.round((current / limit) * 100) : 0;
+  const barColor = (v: number) =>
+    v > 90
+      ? "ui-progress-bar-danger"
+      : v > 75
+        ? "ui-progress-bar-warning"
+        : "ui-progress-bar-success";
 
   const metricLabel: Record<string, string> = {
     USERS_COUNT: "Active Users",
@@ -227,10 +241,19 @@ export default function SaasUsagePage() {
               <Users size={18} style={{ color: "var(--color-primary)" }} />
               <span className="ui-heading-sm">Active Users</span>
             </div>
-            <div className="text-2xl font-bold">{metrics?.usersCurrent.toLocaleString() || 0}</div>
-            <div className="ui-text-xs-muted">of {metrics?.usersLimit.toLocaleString() || 0} limit</div>
+            <div className="text-2xl font-bold">
+              {metrics?.usersCurrent.toLocaleString() || 0}
+            </div>
+            <div className="ui-text-xs-muted">
+              of {metrics?.usersLimit.toLocaleString() || 0} limit
+            </div>
             <div className="ui-progress ui-mt-3">
-              <div className={`ui-progress-bar ${barColor(pct(metrics?.usersCurrent || 0, metrics?.usersLimit || 1))}`} style={{ width: `${pct(metrics?.usersCurrent || 0, metrics?.usersLimit || 1)}%` }} />
+              <div
+                className={`ui-progress-bar ${barColor(pct(metrics?.usersCurrent || 0, metrics?.usersLimit || 1))}`}
+                style={{
+                  width: `${pct(metrics?.usersCurrent || 0, metrics?.usersLimit || 1)}%`,
+                }}
+              />
             </div>
           </Card>
           <Card padding="lg">
@@ -238,10 +261,19 @@ export default function SaasUsagePage() {
               <HardDrive size={18} style={{ color: "var(--color-warning)" }} />
               <span className="ui-heading-sm">Storage</span>
             </div>
-            <div className="text-2xl font-bold">{formatStorage(metrics?.storageCurrentMb || 0)}</div>
-            <div className="ui-text-xs-muted">of {formatStorage(metrics?.storageLimitMb || 0)} limit</div>
+            <div className="text-2xl font-bold">
+              {formatStorage(metrics?.storageCurrentMb || 0)}
+            </div>
+            <div className="ui-text-xs-muted">
+              of {formatStorage(metrics?.storageLimitMb || 0)} limit
+            </div>
             <div className="ui-progress ui-mt-3">
-              <div className={`ui-progress-bar ${barColor(pct(metrics?.storageCurrentMb || 0, metrics?.storageLimitMb || 1))}`} style={{ width: `${pct(metrics?.storageCurrentMb || 0, metrics?.storageLimitMb || 1)}%` }} />
+              <div
+                className={`ui-progress-bar ${barColor(pct(metrics?.storageCurrentMb || 0, metrics?.storageLimitMb || 1))}`}
+                style={{
+                  width: `${pct(metrics?.storageCurrentMb || 0, metrics?.storageLimitMb || 1)}%`,
+                }}
+              />
             </div>
           </Card>
           <Card padding="lg">
@@ -249,10 +281,19 @@ export default function SaasUsagePage() {
               <Zap size={18} style={{ color: "var(--color-success)" }} />
               <span className="ui-heading-sm">API Calls</span>
             </div>
-            <div className="text-2xl font-bold">{(metrics?.apiCallsCurrent || 0).toLocaleString()}</div>
-            <div className="ui-text-xs-muted">of {(metrics?.apiCallsLimit || 0).toLocaleString()} limit</div>
+            <div className="text-2xl font-bold">
+              {(metrics?.apiCallsCurrent || 0).toLocaleString()}
+            </div>
+            <div className="ui-text-xs-muted">
+              of {(metrics?.apiCallsLimit || 0).toLocaleString()} limit
+            </div>
             <div className="ui-progress ui-mt-3">
-              <div className={`ui-progress-bar ${barColor(pct(metrics?.apiCallsCurrent || 0, metrics?.apiCallsLimit || 1))}`} style={{ width: `${pct(metrics?.apiCallsCurrent || 0, metrics?.apiCallsLimit || 1)}%` }} />
+              <div
+                className={`ui-progress-bar ${barColor(pct(metrics?.apiCallsCurrent || 0, metrics?.apiCallsLimit || 1))}`}
+                style={{
+                  width: `${pct(metrics?.apiCallsCurrent || 0, metrics?.apiCallsLimit || 1)}%`,
+                }}
+              />
             </div>
           </Card>
         </div>
@@ -264,9 +305,21 @@ export default function SaasUsagePage() {
           config={{
             xAxisKey: "date",
             series: [
-              { dataKey: "Users", name: "Users", color: "var(--color-primary)" },
-              { dataKey: "Storage", name: "Storage (GB)", color: "var(--color-warning)" },
-              { dataKey: "API Calls", name: "API Calls", color: "var(--color-success)" },
+              {
+                dataKey: "Users",
+                name: "Users",
+                color: "var(--color-primary)",
+              },
+              {
+                dataKey: "Storage",
+                name: "Storage (GB)",
+                color: "var(--color-warning)",
+              },
+              {
+                dataKey: "API Calls",
+                name: "API Calls",
+                color: "var(--color-success)",
+              },
             ],
           }}
           defaultChartType="line"
@@ -282,14 +335,21 @@ export default function SaasUsagePage() {
             )}
             <div className="ui-stack-2">
               {appStorage.map((a) => (
-                <div key={a.appSlug} className="ui-flex-between ui-py-2 ui-border-b ui-border-border/30">
+                <div
+                  key={a.appSlug}
+                  className="ui-flex-between ui-py-2 ui-border-b ui-border-border/30"
+                >
                   <div className="ui-hstack-2">
                     <HardDrive size={14} className="ui-text-muted" />
                     <span className="capitalize font-medium">{a.appSlug}</span>
                   </div>
                   <div className="ui-hstack-3">
-                    <span className="text-xs ui-text-muted">{a.rowCount.toLocaleString()} rows</span>
-                    <span className="font-mono text-sm font-semibold">{formatStorage(a.estimatedMb)}</span>
+                    <span className="text-xs ui-text-muted">
+                      {a.rowCount.toLocaleString()} rows
+                    </span>
+                    <span className="font-mono text-sm font-semibold">
+                      {formatStorage(a.estimatedMb)}
+                    </span>
                   </div>
                 </div>
               ))}
@@ -299,7 +359,10 @@ export default function SaasUsagePage() {
           <Card padding="lg">
             <div className="ui-flex-between ui-mb-4">
               <h3 className="ui-heading-base">Usage Alert Rules</h3>
-              <button className="ui-btn ui-btn-primary" onClick={() => setShowCreateRule(true)}>
+              <button
+                className="ui-btn ui-btn-primary"
+                onClick={() => setShowCreateRule(true)}
+              >
                 <Plus size={14} /> Add Rule
               </button>
             </div>
@@ -308,10 +371,17 @@ export default function SaasUsagePage() {
             )}
             <div className="ui-stack-2">
               {alertRules.map((rule) => (
-                <div key={rule.id} className="ui-flex-between ui-py-2 ui-border-b ui-border-border/30">
+                <div
+                  key={rule.id}
+                  className="ui-flex-between ui-py-2 ui-border-b ui-border-border/30"
+                >
                   <div>
-                    <div className="font-medium text-sm">{metricLabel[rule.metric] || rule.metric}</div>
-                    <div className="ui-text-xs-muted">Threshold: {rule.threshold}%</div>
+                    <div className="font-medium text-sm">
+                      {metricLabel[rule.metric] || rule.metric}
+                    </div>
+                    <div className="ui-text-xs-muted">
+                      Threshold: {rule.threshold}%
+                    </div>
                   </div>
                   <div className="ui-hstack-2">
                     <button
@@ -320,10 +390,18 @@ export default function SaasUsagePage() {
                     >
                       {rule.enabled ? "Enabled" : "Disabled"}
                     </button>
-                    <button className="ui-btn-icon" onClick={() => setEditingRule(rule)} title="Edit">
+                    <button
+                      className="ui-btn-icon"
+                      onClick={() => setEditingRule(rule)}
+                      title="Edit"
+                    >
                       <Bell size={14} />
                     </button>
-                    <button className="ui-btn-icon ui-table-action-btn-danger" onClick={() => handleDeleteRule(rule.id)} title="Delete">
+                    <button
+                      className="ui-btn-icon ui-table-action-btn-danger"
+                      onClick={() => handleDeleteRule(rule.id)}
+                      title="Delete"
+                    >
                       <Trash2 size={14} />
                     </button>
                   </div>
@@ -338,13 +416,19 @@ export default function SaasUsagePage() {
             )}
             <div className="ui-stack-2">
               {alertHistory.slice(0, 10).map((item) => (
-                <div key={item.id} className="ui-flex-between ui-py-2 ui-border-b ui-border-border/30">
+                <div
+                  key={item.id}
+                  className="ui-flex-between ui-py-2 ui-border-b ui-border-border/30"
+                >
                   <div className="ui-hstack-3">
                     <AlertTriangle size={14} className="ui-text-warning" />
                     <div>
-                      <span className="text-sm font-medium">{metricLabel[item.metric] || item.metric}</span>
+                      <span className="text-sm font-medium">
+                        {metricLabel[item.metric] || item.metric}
+                      </span>
                       <span className="ui-text-xs-muted ui-ml-2">
-                        {item.triggeredValue} exceeded {item.threshold} threshold
+                        {item.triggeredValue} exceeded {item.threshold}{" "}
+                        threshold
                       </span>
                     </div>
                   </div>
@@ -358,11 +442,17 @@ export default function SaasUsagePage() {
         </div>
 
         {showCreateRule && (
-          <div className="ui-modal-overlay" onClick={() => setShowCreateRule(false)}>
+          <div
+            className="ui-modal-overlay"
+            onClick={() => setShowCreateRule(false)}
+          >
             <div className="ui-modal" onClick={(e) => e.stopPropagation()}>
               <div className="ui-modal-header">
                 <span>Create Alert Rule</span>
-                <button className="ui-btn-icon" onClick={() => setShowCreateRule(false)}>
+                <button
+                  className="ui-btn-icon"
+                  onClick={() => setShowCreateRule(false)}
+                >
                   <X size={16} />
                 </button>
               </div>
@@ -370,7 +460,11 @@ export default function SaasUsagePage() {
                 <div className="ui-modal-body ui-stack-4">
                   <div className="ui-form-group">
                     <label className="ui-label">Metric</label>
-                    <select className="ui-select" value={newMetric} onChange={(e) => setNewMetric(e.target.value)}>
+                    <select
+                      className="ui-select"
+                      value={newMetric}
+                      onChange={(e) => setNewMetric(e.target.value)}
+                    >
                       <option value="USERS_COUNT">Active Users</option>
                       <option value="STORAGE_MB">Storage Used</option>
                       <option value="API_CALLS_COUNT">API Calls</option>
@@ -378,12 +472,27 @@ export default function SaasUsagePage() {
                   </div>
                   <div className="ui-form-group">
                     <label className="ui-label">Threshold (%)</label>
-                    <input className="ui-input" type="number" min={1} max={100} value={newThreshold} onChange={(e) => setNewThreshold(Number(e.target.value))} />
+                    <input
+                      className="ui-input"
+                      type="number"
+                      min={1}
+                      max={100}
+                      value={newThreshold}
+                      onChange={(e) => setNewThreshold(Number(e.target.value))}
+                    />
                   </div>
                 </div>
                 <div className="ui-modal-footer">
-                  <button type="button" className="ui-btn ui-btn-secondary" onClick={() => setShowCreateRule(false)}>Cancel</button>
-                  <button type="submit" className="ui-btn ui-btn-primary">Create Rule</button>
+                  <button
+                    type="button"
+                    className="ui-btn ui-btn-secondary"
+                    onClick={() => setShowCreateRule(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="ui-btn ui-btn-primary">
+                    Create Rule
+                  </button>
                 </div>
               </form>
             </div>
@@ -391,11 +500,17 @@ export default function SaasUsagePage() {
         )}
 
         {editingRule && (
-          <div className="ui-modal-overlay" onClick={() => setEditingRule(null)}>
+          <div
+            className="ui-modal-overlay"
+            onClick={() => setEditingRule(null)}
+          >
             <div className="ui-modal" onClick={(e) => e.stopPropagation()}>
               <div className="ui-modal-header">
                 <span>Edit Alert Rule</span>
-                <button className="ui-btn-icon" onClick={() => setEditingRule(null)}>
+                <button
+                  className="ui-btn-icon"
+                  onClick={() => setEditingRule(null)}
+                >
                   <X size={16} />
                 </button>
               </div>
@@ -403,7 +518,16 @@ export default function SaasUsagePage() {
                 <div className="ui-modal-body ui-stack-4">
                   <div className="ui-form-group">
                     <label className="ui-label">Metric</label>
-                    <select className="ui-select" value={editingRule.metric} onChange={(e) => setEditingRule({ ...editingRule, metric: e.target.value })}>
+                    <select
+                      className="ui-select"
+                      value={editingRule.metric}
+                      onChange={(e) =>
+                        setEditingRule({
+                          ...editingRule,
+                          metric: e.target.value,
+                        })
+                      }
+                    >
                       <option value="USERS_COUNT">Active Users</option>
                       <option value="STORAGE_MB">Storage Used</option>
                       <option value="API_CALLS_COUNT">API Calls</option>
@@ -411,12 +535,32 @@ export default function SaasUsagePage() {
                   </div>
                   <div className="ui-form-group">
                     <label className="ui-label">Threshold (%)</label>
-                    <input className="ui-input" type="number" min={1} max={100} value={editingRule.threshold} onChange={(e) => setEditingRule({ ...editingRule, threshold: Number(e.target.value) })} />
+                    <input
+                      className="ui-input"
+                      type="number"
+                      min={1}
+                      max={100}
+                      value={editingRule.threshold}
+                      onChange={(e) =>
+                        setEditingRule({
+                          ...editingRule,
+                          threshold: Number(e.target.value),
+                        })
+                      }
+                    />
                   </div>
                 </div>
                 <div className="ui-modal-footer">
-                  <button type="button" className="ui-btn ui-btn-secondary" onClick={() => setEditingRule(null)}>Cancel</button>
-                  <button type="submit" className="ui-btn ui-btn-primary">Save</button>
+                  <button
+                    type="button"
+                    className="ui-btn ui-btn-secondary"
+                    onClick={() => setEditingRule(null)}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="ui-btn ui-btn-primary">
+                    Save
+                  </button>
                 </div>
               </form>
             </div>

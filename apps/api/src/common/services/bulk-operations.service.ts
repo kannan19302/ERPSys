@@ -1,7 +1,10 @@
-// @ts-nocheck
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { prisma } from '@unerp/database';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
+import { prisma } from "@unerp/database";
 
 interface BulkOperationResult {
   succeeded: number;
@@ -11,21 +14,61 @@ interface BulkOperationResult {
 }
 
 const ALLOWED_BULK_MODELS = new Set([
-  'customer', 'vendor', 'contact', 'lead', 'employee',
-  'product', 'invoice', 'purchaseOrder', 'salesOrder',
-  'quotation', 'deliveryNote', 'paymentEntry', 'journalEntry',
-  'project', 'task', 'warehouse', 'user', 'role',
-  'account', 'budget', 'asset', 'department', 'designation',
-  'leaveApplication', 'expenseClaim', 'opportunity', 'campaign',
+  "customer",
+  "vendor",
+  "contact",
+  "lead",
+  "employee",
+  "product",
+  "invoice",
+  "purchaseOrder",
+  "salesOrder",
+  "quotation",
+  "deliveryNote",
+  "paymentEntry",
+  "journalEntry",
+  "project",
+  "task",
+  "warehouse",
+  "user",
+  "role",
+  "account",
+  "budget",
+  "asset",
+  "department",
+  "designation",
+  "leaveApplication",
+  "expenseClaim",
+  "opportunity",
+  "campaign",
 ]);
 
 const TENANT_MODELS = new Set([
-  'customer', 'vendor', 'contact', 'lead', 'employee',
-  'product', 'invoice', 'purchaseOrder', 'salesOrder',
-  'quotation', 'deliveryNote', 'paymentEntry', 'journalEntry',
-  'project', 'task', 'warehouse',
-  'account', 'budget', 'asset', 'department', 'designation',
-  'leaveApplication', 'expenseClaim', 'opportunity', 'campaign',
+  "customer",
+  "vendor",
+  "contact",
+  "lead",
+  "employee",
+  "product",
+  "invoice",
+  "purchaseOrder",
+  "salesOrder",
+  "quotation",
+  "deliveryNote",
+  "paymentEntry",
+  "journalEntry",
+  "project",
+  "task",
+  "warehouse",
+  "account",
+  "budget",
+  "asset",
+  "department",
+  "designation",
+  "leaveApplication",
+  "expenseClaim",
+  "opportunity",
+  "campaign",
 ]);
 
 @Injectable()
@@ -34,10 +77,12 @@ export class BulkOperationsService {
 
   private getModel(modelName: string): any {
     if (!ALLOWED_BULK_MODELS.has(modelName)) {
-      throw new BadRequestException(`Model '${modelName}' is not allowed for bulk operations`);
+      throw new BadRequestException(
+        `Model '${modelName}' is not allowed for bulk operations`,
+      );
     }
     const model = (prisma as any)[modelName];
-    if (!model || typeof model.create !== 'function') {
+    if (!model || typeof model.create !== "function") {
       throw new BadRequestException(`Invalid Prisma model: ${modelName}`);
     }
     return model;
@@ -50,12 +95,21 @@ export class BulkOperationsService {
     return data;
   }
 
-  async bulkCreate(tenantId: string, modelName: string, records: any[]): Promise<BulkOperationResult> {
+  async bulkCreate(
+    tenantId: string,
+    modelName: string,
+    records: any[],
+  ): Promise<BulkOperationResult> {
     if (!records || records.length === 0) {
-      throw new BadRequestException('Records array is required');
+      throw new BadRequestException("Records array is required");
     }
     const model = this.getModel(modelName);
-    const result: BulkOperationResult = { succeeded: 0, failed: 0, errors: [], total: records.length };
+    const result: BulkOperationResult = {
+      succeeded: 0,
+      failed: 0,
+      errors: [],
+      total: records.length,
+    };
 
     await prisma.$transaction(async (tx) => {
       for (let i = 0; i < records.length; i++) {
@@ -65,26 +119,43 @@ export class BulkOperationsService {
           result.succeeded++;
         } catch (err: any) {
           result.failed++;
-          result.errors.push({ index: i, message: err.message || 'Unknown error' });
+          result.errors.push({
+            index: i,
+            message: err.message || "Unknown error",
+          });
         }
       }
     });
 
     if (this.eventEmitter) {
-      this.eventEmitter.emit('bulk-ops.create.completed', {
-        tenantId, modelName, succeeded: result.succeeded, failed: result.failed, total: result.total,
+      this.eventEmitter.emit("bulk-ops.create.completed", {
+        tenantId,
+        modelName,
+        succeeded: result.succeeded,
+        failed: result.failed,
+        total: result.total,
       });
     }
 
     return result;
   }
 
-  async bulkUpdate(tenantId: string, modelName: string, ids: string[], updates: Record<string, any>): Promise<BulkOperationResult> {
+  async bulkUpdate(
+    tenantId: string,
+    modelName: string,
+    ids: string[],
+    updates: Record<string, any>,
+  ): Promise<BulkOperationResult> {
     if (!ids || ids.length === 0) {
-      throw new BadRequestException('IDs array is required');
+      throw new BadRequestException("IDs array is required");
     }
     const model = this.getModel(modelName);
-    const result: BulkOperationResult = { succeeded: 0, failed: 0, errors: [], total: ids.length };
+    const result: BulkOperationResult = {
+      succeeded: 0,
+      failed: 0,
+      errors: [],
+      total: ids.length,
+    };
 
     await prisma.$transaction(async (tx) => {
       for (const id of ids) {
@@ -103,26 +174,39 @@ export class BulkOperationsService {
           result.succeeded++;
         } catch (err: any) {
           result.failed++;
-          result.errors.push({ id, message: err.message || 'Unknown error' });
+          result.errors.push({ id, message: err.message || "Unknown error" });
         }
       }
     });
 
     if (this.eventEmitter) {
-      this.eventEmitter.emit('bulk-ops.update.completed', {
-        tenantId, modelName, succeeded: result.succeeded, failed: result.failed, total: result.total,
+      this.eventEmitter.emit("bulk-ops.update.completed", {
+        tenantId,
+        modelName,
+        succeeded: result.succeeded,
+        failed: result.failed,
+        total: result.total,
       });
     }
 
     return result;
   }
 
-  async bulkDelete(tenantId: string, modelName: string, ids: string[]): Promise<BulkOperationResult> {
+  async bulkDelete(
+    tenantId: string,
+    modelName: string,
+    ids: string[],
+  ): Promise<BulkOperationResult> {
     if (!ids || ids.length === 0) {
-      throw new BadRequestException('IDs array is required');
+      throw new BadRequestException("IDs array is required");
     }
     const model = this.getModel(modelName);
-    const result: BulkOperationResult = { succeeded: 0, failed: 0, errors: [], total: ids.length };
+    const result: BulkOperationResult = {
+      succeeded: 0,
+      failed: 0,
+      errors: [],
+      total: ids.length,
+    };
 
     await prisma.$transaction(async (tx) => {
       for (const id of ids) {
@@ -146,26 +230,39 @@ export class BulkOperationsService {
           result.succeeded++;
         } catch (err: any) {
           result.failed++;
-          result.errors.push({ id, message: err.message || 'Unknown error' });
+          result.errors.push({ id, message: err.message || "Unknown error" });
         }
       }
     });
 
     if (this.eventEmitter) {
-      this.eventEmitter.emit('bulk-ops.delete.completed', {
-        tenantId, modelName, succeeded: result.succeeded, failed: result.failed, total: result.total,
+      this.eventEmitter.emit("bulk-ops.delete.completed", {
+        tenantId,
+        modelName,
+        succeeded: result.succeeded,
+        failed: result.failed,
+        total: result.total,
       });
     }
 
     return result;
   }
 
-  async bulkRestore(tenantId: string, modelName: string, ids: string[]): Promise<BulkOperationResult> {
+  async bulkRestore(
+    tenantId: string,
+    modelName: string,
+    ids: string[],
+  ): Promise<BulkOperationResult> {
     if (!ids || ids.length === 0) {
-      throw new BadRequestException('IDs array is required');
+      throw new BadRequestException("IDs array is required");
     }
     this.getModel(modelName);
-    const result: BulkOperationResult = { succeeded: 0, failed: 0, errors: [], total: ids.length };
+    const result: BulkOperationResult = {
+      succeeded: 0,
+      failed: 0,
+      errors: [],
+      total: ids.length,
+    };
 
     await prisma.$transaction(async (tx) => {
       for (const id of ids) {
@@ -180,33 +277,50 @@ export class BulkOperationsService {
             result.errors.push({ id, message: `Record ${id} not found` });
             continue;
           }
-          await (tx as any)[modelName].update({ where, data: { deletedAt: null } });
+          await (tx as any)[modelName].update({
+            where,
+            data: { deletedAt: null },
+          });
           result.succeeded++;
         } catch (err: any) {
           result.failed++;
-          result.errors.push({ id, message: err.message || 'Unknown error' });
+          result.errors.push({ id, message: err.message || "Unknown error" });
         }
       }
     });
 
     if (this.eventEmitter) {
-      this.eventEmitter.emit('bulk-ops.restore.completed', {
-        tenantId, modelName, succeeded: result.succeeded, failed: result.failed, total: result.total,
+      this.eventEmitter.emit("bulk-ops.restore.completed", {
+        tenantId,
+        modelName,
+        succeeded: result.succeeded,
+        failed: result.failed,
+        total: result.total,
       });
     }
 
     return result;
   }
 
-  async bulkStatusChange(tenantId: string, modelName: string, ids: string[], status: string): Promise<BulkOperationResult> {
+  async bulkStatusChange(
+    tenantId: string,
+    modelName: string,
+    ids: string[],
+    status: string,
+  ): Promise<BulkOperationResult> {
     if (!ids || ids.length === 0) {
-      throw new BadRequestException('IDs array is required');
+      throw new BadRequestException("IDs array is required");
     }
     if (!status) {
-      throw new BadRequestException('Status value is required');
+      throw new BadRequestException("Status value is required");
     }
     this.getModel(modelName);
-    const result: BulkOperationResult = { succeeded: 0, failed: 0, errors: [], total: ids.length };
+    const result: BulkOperationResult = {
+      succeeded: 0,
+      failed: 0,
+      errors: [],
+      total: ids.length,
+    };
 
     await prisma.$transaction(async (tx) => {
       for (const id of ids) {
@@ -225,14 +339,19 @@ export class BulkOperationsService {
           result.succeeded++;
         } catch (err: any) {
           result.failed++;
-          result.errors.push({ id, message: err.message || 'Unknown error' });
+          result.errors.push({ id, message: err.message || "Unknown error" });
         }
       }
     });
 
     if (this.eventEmitter) {
-      this.eventEmitter.emit('bulk-ops.status-change.completed', {
-        tenantId, modelName, status, succeeded: result.succeeded, failed: result.failed, total: result.total,
+      this.eventEmitter.emit("bulk-ops.status-change.completed", {
+        tenantId,
+        modelName,
+        status,
+        succeeded: result.succeeded,
+        failed: result.failed,
+        total: result.total,
       });
     }
 

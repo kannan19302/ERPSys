@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -120,7 +119,7 @@ class SaasPlanListController extends Notifier<SaasPlanListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteSaasPlanUseCase(
-      ref.read(saasRepositoryProvider))(id);
+      ref.read(saasRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
@@ -129,7 +128,7 @@ class SaasPlanListController extends Notifier<SaasPlanListState> {
 final FutureProviderFamily<SaasPlan, String> saasPlanDetailProvider =
     FutureProvider.family<SaasPlan, String>((Ref ref, String id) async {
   final result = await GetSaasPlanUseCase(
-    ref.watch(saasRepositoryProvider))(id);
+    ref.watch(saasRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 

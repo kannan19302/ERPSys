@@ -1,8 +1,10 @@
-// @ts-nocheck
-import { Injectable } from '@nestjs/common';
-import { randomUUID } from 'crypto';
-import { AppLogger } from '../../../common/services/logger.service';
-import type { PaymentGatewayAdapter, PaymentIntentResult } from './payment-gateway.interface';
+import { Injectable } from "@nestjs/common";
+import { randomUUID } from "crypto";
+import { AppLogger } from "../../../common/services/logger.service";
+import type {
+  PaymentGatewayAdapter,
+  PaymentIntentResult,
+} from "./payment-gateway.interface";
 
 /**
  * MOCK PAYMENT GATEWAY — MVP ONLY. No real network I/O, no real charge is ever
@@ -23,7 +25,7 @@ export class MockPaymentGatewayService implements PaymentGatewayAdapter {
   private readonly logger = new AppLogger();
 
   constructor() {
-    this.logger.setContext('MockPaymentGatewayService');
+    this.logger.setContext("MockPaymentGatewayService");
   }
 
   async createIntent(
@@ -37,22 +39,31 @@ export class MockPaymentGatewayService implements PaymentGatewayAdapter {
     );
     return {
       id,
-      status: 'requires_confirmation',
+      status: "requires_confirmation",
       clientSecret: `${id}_secret_mock`,
     };
   }
 
-  async confirmIntent(intentId: string, simulateDecline = false): Promise<PaymentIntentResult> {
+  async confirmIntent(
+    intentId: string,
+    simulateDecline = false,
+  ): Promise<PaymentIntentResult> {
     if (simulateDecline) {
-      this.logger.warn(`[MOCK PAYMENT GATEWAY] confirmIntent DECLINED (test-mode) id=${intentId}`);
-      return { id: intentId, status: 'failed' };
+      this.logger.warn(
+        `[MOCK PAYMENT GATEWAY] confirmIntent DECLINED (test-mode) id=${intentId}`,
+      );
+      return { id: intentId, status: "failed" };
     }
-    this.logger.log(`[MOCK PAYMENT GATEWAY] confirmIntent SUCCEEDED (no real charge) id=${intentId}`);
-    return { id: intentId, status: 'succeeded' };
+    this.logger.log(
+      `[MOCK PAYMENT GATEWAY] confirmIntent SUCCEEDED (no real charge) id=${intentId}`,
+    );
+    return { id: intentId, status: "succeeded" };
   }
 
   async refund(intentId: string, amount: number): Promise<PaymentIntentResult> {
-    this.logger.log(`[MOCK PAYMENT GATEWAY] refund id=${intentId} amount=${amount} (no real refund issued)`);
-    return { id: intentId, status: 'refunded' };
+    this.logger.log(
+      `[MOCK PAYMENT GATEWAY] refund id=${intentId} amount=${amount} (no real refund issued)`,
+    );
+    return { id: intentId, status: "refunded" };
   }
 }

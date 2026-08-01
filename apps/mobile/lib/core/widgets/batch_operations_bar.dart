@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/theme/design_tokens.dart';
-import '../../core/rbac/permissions.dart';
 import '../../core/widgets/permission_gate.dart';
-import 'action_dialogs.dart';
 
 /// Bottom bar that appears when items are selected in a list.
 ///
@@ -67,7 +65,7 @@ class _BatchOperationsBarState extends State<BatchOperationsBar>
     ).animate(CurvedAnimation(
       parent: _controller,
       curve: Motion.easeOut,
-    ));
+    ),);
 
     _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _controller, curve: Motion.easeOut),

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -820,7 +819,9 @@ export default function FinanceDashboardPage() {
               <div className="p-2 bg-[var(--color-success-light)] rounded-lg">
                 <DollarSign size={20} />
               </div>
-              <span className="text-[var(--color-text)]">Finance & Accounting</span>
+              <span className="text-[var(--color-text)]">
+                Finance & Accounting
+              </span>
             </div>
           }
           description="Executive dashboard — revenue, cash flow, receivables, compliance, and module workspaces."

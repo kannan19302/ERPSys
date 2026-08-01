@@ -1,11 +1,10 @@
-// @ts-nocheck
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Modal, PageHeader } from '@unerp/ui';
-import { ListView, FormView, RouteGuard } from '@unerp/framework';
-import { vendorResource } from '@/modules/crm';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Modal, PageHeader } from "@unerp/ui";
+import { ListView, FormView, RouteGuard } from "@unerp/framework";
+import { vendorResource } from "@/modules/crm";
 
 export default function VendorsPage() {
   const router = useRouter();
@@ -17,7 +16,11 @@ export default function VendorsPage() {
         <PageHeader
           title="Vendors"
           description="Manage supplier and partner profiles in your CRM"
-          breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'CRM', href: '/crm' }, { label: 'Vendors' }]}
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "CRM", href: "/crm" },
+            { label: "Vendors" },
+          ]}
         />
 
         <ListView
@@ -26,7 +29,11 @@ export default function VendorsPage() {
           onCreate={() => setShowCreate(true)}
         />
 
-        <Modal open={showCreate} onClose={() => setShowCreate(false)} title="New Vendor">
+        <Modal
+          open={showCreate}
+          onClose={() => setShowCreate(false)}
+          title="New Vendor"
+        >
           <FormView
             resource={vendorResource}
             onSuccess={() => setShowCreate(false)}

@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 
 export default function HolidaysRedirect() {
-  redirect('/hr/advanced/operations-service?tab=holidays');
+  redirect("/hr/advanced/operations-service?tab=holidays");
 }

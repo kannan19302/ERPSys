@@ -1,16 +1,19 @@
-// @ts-nocheck
-'use client';
-import styles from './page.module.css';
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Card, Button, Spinner } from '@unerp/ui';
-import { LogIn, AlertCircle } from 'lucide-react';
-import { portalPost, setPortalToken, PortalApiError } from '../../../../src/lib/portal-api';
+"use client";
+import styles from "./page.module.css";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Card, Button, Spinner } from "@unerp/ui";
+import { LogIn, AlertCircle } from "lucide-react";
+import {
+  portalPost,
+  setPortalToken,
+  PortalApiError,
+} from "../../../../src/lib/portal-api";
 
 export default function CustomerPortalLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,14 +22,17 @@ export default function CustomerPortalLoginPage() {
     setError(null);
     setSubmitting(true);
     try {
-      const result = await portalPost<{ token: string; customerId: string }>('/portal/auth/login', {
-        email,
-        password,
-      });
+      const result = await portalPost<{ token: string; customerId: string }>(
+        "/portal/auth/login",
+        {
+          email,
+          password,
+        },
+      );
       setPortalToken(result.token);
-      router.push('/public/customer-portal/dashboard');
+      router.push("/public/customer-portal/dashboard");
     } catch (e) {
-      setError(e instanceof PortalApiError ? e.message : 'Login failed');
+      setError(e instanceof PortalApiError ? e.message : "Login failed");
     } finally {
       setSubmitting(false);
     }
@@ -36,10 +42,12 @@ export default function CustomerPortalLoginPage() {
     <div className={styles.s1}>
       <Card className="ui-card" style={{ width: 380, padding: 24 }}>
         <h2 className={styles.s2}>Customer Portal</h2>
-        <p className={styles.s3}>Sign in to view your quotes, orders, invoices and support cases.</p>
+        <p className={styles.s3}>
+          Sign in to view your quotes, orders, invoices and support cases.
+        </p>
 
         {error && (
-          <div className={`ui-alert ui-alert-error ${styles.s4}`} >
+          <div className={`ui-alert ui-alert-error ${styles.s4}`}>
             <AlertCircle size={16} /> {error}
           </div>
         )}
@@ -66,8 +74,18 @@ export default function CustomerPortalLoginPage() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          <Button type="submit" disabled={submitting} style={{ width: '100%', marginTop: 8 }}>
-            {submitting ? <Spinner size="sm" /> : <><LogIn size={16} /> Sign in</>}
+          <Button
+            type="submit"
+            disabled={submitting}
+            style={{ width: "100%", marginTop: 8 }}
+          >
+            {submitting ? (
+              <Spinner size="sm" />
+            ) : (
+              <>
+                <LogIn size={16} /> Sign in
+              </>
+            )}
           </Button>
         </form>
       </Card>

@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 
 export default function EmailConfigRedirectPage() {
-  redirect('/settings/branding-communication?tab=email-server');
+  redirect("/settings/branding-communication?tab=email-server");
 }

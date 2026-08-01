@@ -1,25 +1,38 @@
-// @ts-nocheck
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class BuilderWorkflowsService {
   async getWorkflows(tenantId: string) {
     return prisma.builderWorkflow.findMany({
       where: { tenantId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
   async getWorkflowById(tenantId: string, id: string) {
-    const wf = await prisma.builderWorkflow.findFirst({ where: { id, tenantId } });
-    if (!wf) throw new NotFoundException('Workflow not found');
+    const wf = await prisma.builderWorkflow.findFirst({
+      where: { id, tenantId },
+    });
+    if (!wf) throw new NotFoundException("Workflow not found");
     return wf;
   }
 
   async createWorkflow(
     tenantId: string,
-    dto: { name: string; description?: string; docType?: string; trigger?: string; nodes?: any; edges?: any; settings?: any }
+    dto: {
+      name: string;
+      description?: string;
+      docType?: string;
+      trigger?: string;
+      nodes?: any;
+      edges?: any;
+      settings?: any;
+    },
   ) {
     return prisma.builderWorkflow.create({
       data: {
@@ -27,7 +40,7 @@ export class BuilderWorkflowsService {
         name: dto.name,
         description: dto.description || null,
         docType: dto.docType || null,
-        trigger: dto.trigger || 'SUBMIT',
+        trigger: dto.trigger || "SUBMIT",
         nodes: dto.nodes || [],
         edges: dto.edges || [],
         settings: dto.settings || {},
@@ -35,9 +48,24 @@ export class BuilderWorkflowsService {
     });
   }
 
-  async updateWorkflow(tenantId: string, id: string, dto: Partial<{ name: string; description: string; docType: string; status: string; trigger: string; nodes: any; edges: any; settings: any }>) {
-    const wf = await prisma.builderWorkflow.findFirst({ where: { id, tenantId } });
-    if (!wf) throw new NotFoundException('Workflow not found');
+  async updateWorkflow(
+    tenantId: string,
+    id: string,
+    dto: Partial<{
+      name: string;
+      description: string;
+      docType: string;
+      status: string;
+      trigger: string;
+      nodes: any;
+      edges: any;
+      settings: any;
+    }>,
+  ) {
+    const wf = await prisma.builderWorkflow.findFirst({
+      where: { id, tenantId },
+    });
+    if (!wf) throw new NotFoundException("Workflow not found");
 
     return prisma.builderWorkflow.update({
       where: { id },
@@ -55,57 +83,61 @@ export class BuilderWorkflowsService {
   }
 
   async deleteWorkflow(tenantId: string, id: string) {
-    const wf = await prisma.builderWorkflow.findFirst({ where: { id, tenantId } });
-    if (!wf) throw new NotFoundException('Workflow not found');
+    const wf = await prisma.builderWorkflow.findFirst({
+      where: { id, tenantId },
+    });
+    if (!wf) throw new NotFoundException("Workflow not found");
     return prisma.builderWorkflow.delete({ where: { id } });
   }
 
   async executeWorkflow(tenantId: string, id: string) {
-    const wf = await prisma.builderWorkflow.findFirst({ where: { id, tenantId } });
-    if (!wf) throw new NotFoundException('Workflow not found');
+    const wf = await prisma.builderWorkflow.findFirst({
+      where: { id, tenantId },
+    });
+    if (!wf) throw new NotFoundException("Workflow not found");
 
     const nodes = Array.isArray(wf.nodes) ? (wf.nodes as any[]) : [];
     if (nodes.length === 0) {
-      throw new BadRequestException('Workflow has no executable nodes');
+      throw new BadRequestException("Workflow has no executable nodes");
     }
 
     const startedAt = new Date();
-    
+
     // Simulate real node execution by mapping through nodes and resolving them
-    const executionLogs = nodes.map(node => {
-      let nodeStatus = 'SUCCESS';
+    const executionLogs = nodes.map((node) => {
+      let nodeStatus = "SUCCESS";
       let message = `Executed node: ${node.type} (${node.label})`;
-      
-      switch(node.type) {
-        case 'action':
+
+      switch (node.type) {
+        case "action":
           message = `Processed action node: ${node.label}`;
           break;
-        case 'condition':
+        case "condition":
           message = `Evaluated condition for: ${node.label} (Result: true)`;
           break;
-        case 'trigger':
+        case "trigger":
           message = `Triggered by event: ${node.label}`;
           break;
         default:
           message = `Processed node: ${node.label}`;
       }
-      
+
       return {
         nodeId: node.id,
         nodeLabel: node.label,
         status: nodeStatus,
         message,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     });
 
     const completedAt = new Date();
-    const hasFailures = executionLogs.some(log => log.status === 'FAILED');
+    const hasFailures = executionLogs.some((log) => log.status === "FAILED");
 
     const execution = {
       id: `exec_${startedAt.getTime()}`,
       workflowId: id,
-      status: hasFailures ? 'FAILED' : 'COMPLETED',
+      status: hasFailures ? "FAILED" : "COMPLETED",
       startedAt: startedAt.toISOString(),
       completedAt: completedAt.toISOString(),
       logs: executionLogs,
@@ -115,16 +147,23 @@ export class BuilderWorkflowsService {
     await prisma.auditLog.create({
       data: {
         tenantId,
-        action: 'workflow_execution',
+        action: "workflow_execution",
         entityId: id,
-        entityType: 'BuilderWorkflow',
+        entityType: "BuilderWorkflow",
         changes: { execution } as any,
-        userId: 'system'
-      }
+        userId: "system",
+      },
     });
 
-    const settings = wf.settings && typeof wf.settings === 'object' && !Array.isArray(wf.settings) ? wf.settings : {};
-    const executions = Array.isArray((settings as { executions?: unknown }).executions)
+    const settings =
+      wf.settings &&
+      typeof wf.settings === "object" &&
+      !Array.isArray(wf.settings)
+        ? wf.settings
+        : {};
+    const executions = Array.isArray(
+      (settings as { executions?: unknown }).executions,
+    )
       ? ((settings as { executions: unknown[] }).executions as unknown[])
       : [];
 
@@ -142,9 +181,16 @@ export class BuilderWorkflowsService {
   }
 
   async getWorkflowExecutions(tenantId: string, id: string) {
-    const wf = await prisma.builderWorkflow.findFirst({ where: { id, tenantId } });
-    if (!wf) throw new NotFoundException('Workflow not found');
-    const settings = wf.settings && typeof wf.settings === 'object' && !Array.isArray(wf.settings) ? wf.settings : {};
+    const wf = await prisma.builderWorkflow.findFirst({
+      where: { id, tenantId },
+    });
+    if (!wf) throw new NotFoundException("Workflow not found");
+    const settings =
+      wf.settings &&
+      typeof wf.settings === "object" &&
+      !Array.isArray(wf.settings)
+        ? wf.settings
+        : {};
     return Array.isArray((settings as { executions?: unknown }).executions)
       ? (settings as { executions: unknown[] }).executions
       : [];

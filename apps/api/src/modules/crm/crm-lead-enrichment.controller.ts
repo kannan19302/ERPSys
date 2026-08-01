@@ -1,16 +1,39 @@
-// @ts-nocheck
 import { z } from "zod";
-import { Controller, Get, Post, Put, Delete, Param, Query, Req, UseGuards, HttpCode, HttpStatus } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Query,
+  Req,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+} from "@nestjs/common";
 import { ApiTags, ApiBearerAuth, ApiOperation } from "@nestjs/swagger";
 import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { RbacGuard } from "../../common/guards/rbac.guard";
 import { Permissions } from "../../common/decorators/permissions.decorator";
 import { ZodBody } from "../../common/decorators/zod-body.decorator";
-import { CrmLeadEnrichmentService, enrichmentSourceSchema, enrichmentRuleSchema, fieldMappingSchema, enrichmentScheduleSchema } from "./crm-lead-enrichment.service";
+import {
+  CrmLeadEnrichmentService,
+  enrichmentSourceSchema,
+  enrichmentRuleSchema,
+  fieldMappingSchema,
+  enrichmentScheduleSchema,
+} from "./crm-lead-enrichment.service";
 
 interface AuthRequest extends Request {
-  user: { tenantId: string; userId: string; email: string; roles: string[]; orgId?: string };
+  user: {
+    tenantId: string;
+    userId: string;
+    email: string;
+    roles: string[];
+    orgId?: string;
+  };
 }
 
 @ApiTags("crm-lead-enrichment")
@@ -23,7 +46,10 @@ export class CrmLeadEnrichmentSourceController {
   @Post("sources")
   @Permissions("crm.enrichment.manage")
   @ApiOperation({ summary: "Create enrichment source" })
-  async createSource(@Req() req: AuthRequest, @ZodBody(enrichmentSourceSchema) body: unknown) {
+  async createSource(
+    @Req() req: AuthRequest,
+    @ZodBody(enrichmentSourceSchema) body: unknown,
+  ) {
     return this.svc.createSource(req.user.tenantId, body as any);
   }
 
@@ -44,7 +70,11 @@ export class CrmLeadEnrichmentSourceController {
   @Put("sources/:id")
   @Permissions("crm.enrichment.manage")
   @ApiOperation({ summary: "Update enrichment source" })
-  async updateSource(@Req() req: AuthRequest, @Param("id") id: string, @ZodBody(enrichmentSourceSchema.partial()) body: unknown) {
+  async updateSource(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @ZodBody(enrichmentSourceSchema.partial()) body: unknown,
+  ) {
     return this.svc.updateSource(req.user.tenantId, id, body as any);
   }
 
@@ -81,14 +111,20 @@ export class CrmLeadEnrichmentRuleController {
   @Post("rules")
   @Permissions("crm.enrichment.manage")
   @ApiOperation({ summary: "Create enrichment rule" })
-  async createRule(@Req() req: AuthRequest, @ZodBody(enrichmentRuleSchema) body: unknown) {
+  async createRule(
+    @Req() req: AuthRequest,
+    @ZodBody(enrichmentRuleSchema) body: unknown,
+  ) {
     return this.svc.createRule(req.user.tenantId, body as any);
   }
 
   @Get("rules")
   @Permissions("crm.enrichment.read")
   @ApiOperation({ summary: "List enrichment rules" })
-  async listRules(@Req() req: AuthRequest, @Query("objectType") objectType?: string) {
+  async listRules(
+    @Req() req: AuthRequest,
+    @Query("objectType") objectType?: string,
+  ) {
     return { data: await this.svc.listRules(req.user.tenantId, objectType) };
   }
 
@@ -102,7 +138,11 @@ export class CrmLeadEnrichmentRuleController {
   @Put("rules/:id")
   @Permissions("crm.enrichment.manage")
   @ApiOperation({ summary: "Update enrichment rule" })
-  async updateRule(@Req() req: AuthRequest, @Param("id") id: string, @ZodBody(enrichmentRuleSchema.partial()) body: unknown) {
+  async updateRule(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @ZodBody(enrichmentRuleSchema.partial()) body: unknown,
+  ) {
     return this.svc.updateRule(req.user.tenantId, id, body as any);
   }
 
@@ -132,21 +172,38 @@ export class CrmLeadEnrichmentFieldMappingController {
   @Post("field-mappings")
   @Permissions("crm.enrichment.manage")
   @ApiOperation({ summary: "Create field mapping" })
-  async createMapping(@Req() req: AuthRequest, @ZodBody(fieldMappingSchema) body: unknown) {
+  async createMapping(
+    @Req() req: AuthRequest,
+    @ZodBody(fieldMappingSchema) body: unknown,
+  ) {
     return this.svc.createFieldMapping(req.user.tenantId, body as any);
   }
 
   @Get("field-mappings")
   @Permissions("crm.enrichment.read")
   @ApiOperation({ summary: "List field mappings" })
-  async listMappings(@Req() req: AuthRequest, @Query("sourceId") sourceId?: string, @Query("targetEntity") targetEntity?: string) {
-    return { data: await this.svc.listFieldMappings(req.user.tenantId, sourceId, targetEntity) };
+  async listMappings(
+    @Req() req: AuthRequest,
+    @Query("sourceId") sourceId?: string,
+    @Query("targetEntity") targetEntity?: string,
+  ) {
+    return {
+      data: await this.svc.listFieldMappings(
+        req.user.tenantId,
+        sourceId,
+        targetEntity,
+      ),
+    };
   }
 
   @Put("field-mappings/:id")
   @Permissions("crm.enrichment.manage")
   @ApiOperation({ summary: "Update field mapping" })
-  async updateMapping(@Req() req: AuthRequest, @Param("id") id: string, @ZodBody(fieldMappingSchema.partial()) body: unknown) {
+  async updateMapping(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @ZodBody(fieldMappingSchema.partial()) body: unknown,
+  ) {
     return this.svc.updateFieldMapping(req.user.tenantId, id, body as any);
   }
 
@@ -169,29 +226,69 @@ export class CrmLeadEnrichmentExecutionController {
   @Post("leads/:leadId/enrich")
   @Permissions("crm.lead.update")
   @ApiOperation({ summary: "Enrich a single lead" })
-  async enrichLead(@Req() req: AuthRequest, @Param("leadId") leadId: string, @Query("sourceId") sourceId?: string) {
-    return this.svc.enrichLead(req.user.tenantId, leadId, sourceId, req.user.userId);
+  async enrichLead(
+    @Req() req: AuthRequest,
+    @Param("leadId") leadId: string,
+    @Query("sourceId") sourceId?: string,
+  ) {
+    return this.svc.enrichLead(
+      req.user.tenantId,
+      leadId,
+      sourceId,
+      req.user.userId,
+    );
   }
 
   @Get("leads/:leadId/data")
   @Permissions("crm.lead.read")
   @ApiOperation({ summary: "Get enrichment data for a lead" })
-  async getEnrichmentData(@Req() req: AuthRequest, @Param("leadId") leadId: string) {
-    return { data: await this.svc.getEnrichmentData(req.user.tenantId, leadId) };
+  async getEnrichmentData(
+    @Req() req: AuthRequest,
+    @Param("leadId") leadId: string,
+  ) {
+    return {
+      data: await this.svc.getEnrichmentData(req.user.tenantId, leadId),
+    };
   }
 
   @Post("bulk-enrich")
   @Permissions("crm.lead.update")
   @ApiOperation({ summary: "Bulk enrich leads" })
-  async bulkEnrich(@Req() req: AuthRequest, @ZodBody(z.object({ leadIds: z.array(z.string()), sourceId: z.string().optional() })) body: { leadIds: string[]; sourceId?: string }) {
-    return this.svc.bulkEnrich(req.user.tenantId, body.leadIds, body.sourceId, req.user.userId);
+  async bulkEnrich(
+    @Req() req: AuthRequest,
+    @ZodBody(
+      z.object({
+        leadIds: z.array(z.string()),
+        sourceId: z.string().optional(),
+      }),
+    )
+    body: { leadIds: string[]; sourceId?: string },
+  ) {
+    return this.svc.bulkEnrich(
+      req.user.tenantId,
+      body.leadIds,
+      body.sourceId,
+      req.user.userId,
+    );
   }
 
   @Get("logs")
   @Permissions("crm.enrichment.read")
   @ApiOperation({ summary: "List enrichment logs" })
-  async listLogs(@Req() req: AuthRequest, @Query("objectId") objectId?: string, @Query("sourceId") sourceId?: string, @Query("status") status?: string) {
-    return { data: await this.svc.listLogs(req.user.tenantId, objectId, sourceId, status) };
+  async listLogs(
+    @Req() req: AuthRequest,
+    @Query("objectId") objectId?: string,
+    @Query("sourceId") sourceId?: string,
+    @Query("status") status?: string,
+  ) {
+    return {
+      data: await this.svc.listLogs(
+        req.user.tenantId,
+        objectId,
+        sourceId,
+        status,
+      ),
+    };
   }
 
   @Get("logs/:id")
@@ -212,7 +309,10 @@ export class CrmLeadEnrichmentScheduleController {
   @Post("schedules")
   @Permissions("crm.enrichment.manage")
   @ApiOperation({ summary: "Create enrichment schedule" })
-  async createSchedule(@Req() req: AuthRequest, @ZodBody(enrichmentScheduleSchema) body: unknown) {
+  async createSchedule(
+    @Req() req: AuthRequest,
+    @ZodBody(enrichmentScheduleSchema) body: unknown,
+  ) {
     return this.svc.createSchedule(req.user.tenantId, body as any);
   }
 
@@ -233,7 +333,11 @@ export class CrmLeadEnrichmentScheduleController {
   @Put("schedules/:id")
   @Permissions("crm.enrichment.manage")
   @ApiOperation({ summary: "Update enrichment schedule" })
-  async updateSchedule(@Req() req: AuthRequest, @Param("id") id: string, @ZodBody(enrichmentScheduleSchema.partial()) body: unknown) {
+  async updateSchedule(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @ZodBody(enrichmentScheduleSchema.partial()) body: unknown,
+  ) {
     return this.svc.updateSchedule(req.user.tenantId, id, body as any);
   }
 

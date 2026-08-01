@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/widgets/ui_card.dart';
 import '../../../../core/utils/formatters.dart';
@@ -6,10 +5,7 @@ import '../../../../core/widgets/permission_gate.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/widgets/state_views.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/widgets/state_views.dart';
-import '../../../../core/utils/formatters.dart';
 import '../providers/healthcare_providers.dart';
-import '../../../../core/widgets/permission_gate.dart';
 
 class PatientDetailPage extends ConsumerWidget {
   const PatientDetailPage({super.key, required this.id});
@@ -43,7 +39,7 @@ class PatientDetailPage extends ConsumerWidget {
                       _DetailRow(label: 'Name', value: patient.name),
                       _DetailRow(label: 'Date of Birth', value: patient.dateOfBirth != null
                           ? Formatters.date(patient.dateOfBirth!)
-                          : '-'),
+                          : '-',),
                       _DetailRow(label: 'Gender', value: patient.gender ?? '-'),
                       _DetailRow(label: 'Phone', value: patient.phone ?? '-'),
                       _DetailRow(label: 'Email', value: patient.email ?? '-'),
@@ -78,8 +74,8 @@ class PatientDetailPage extends ConsumerWidget {
 }
 
 class _StatusBadge extends StatelessWidget {
-  final String status;
   const _StatusBadge({required this.status});
+  final String status;
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +88,7 @@ class _StatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Text(
@@ -104,9 +100,9 @@ class _StatusBadge extends StatelessWidget {
 }
 
 class _DetailRow extends StatelessWidget {
+  const _DetailRow({required this.label, required this.value});
   final String label;
   final String value;
-  const _DetailRow({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) => Padding(

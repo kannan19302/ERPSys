@@ -137,7 +137,7 @@ class _SupplierContractFormPageState extends ConsumerState<SupplierContractFormP
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _status,
+              initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: const [
                 DropdownMenuItem(value: 'DRAFT', child: Text('Draft')),

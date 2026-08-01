@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { Injectable } from '@nestjs/common';
-import { AiClient } from '../../common/integrations/ai-client';
+import { Injectable } from "@nestjs/common";
+import { AiClient } from "../../common/integrations/ai-client";
 
 @Injectable()
 export class BuilderAiService {
@@ -24,10 +23,13 @@ Format:
   "dataModels": [{"name": "Record", "fields": [{"name": "title", "type": "Text", "required": true}]}]
 }`;
 
-    const res = await this.aiService.chat([
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: prompt }
-    ], { maxTokens: 2500, tenantId });
+    const res = await this.aiService.chat(
+      [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: prompt },
+      ],
+      { maxTokens: 2500, tenantId },
+    );
 
     try {
       const parsed = JSON.parse(res.content);
@@ -39,49 +41,83 @@ Format:
 
   private stubAppModule(prompt: string) {
     const clean = prompt.trim();
-    const name = clean ? (clean.split(/[.!?\n]/)[0] || 'Custom AI App').slice(0, 50) : 'Custom AI App';
-    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const name = clean
+      ? (clean.split(/[.!?\n]/)[0] || "Custom AI App").slice(0, 50)
+      : "Custom AI App";
+    const slug = name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
     return {
       name,
       slug,
       description: `AI generated custom application based on prompt: "${clean}"`,
-      icon: '🚀',
-      color: '#8b5cf6',
+      icon: "🚀",
+      color: "#8b5cf6",
       pages: [
-        { name: 'Analytics Board', slug: 'analytics', type: 'dashboard' },
-        { name: 'Records Management', slug: 'manage', type: 'list' }
+        { name: "Analytics Board", slug: "analytics", type: "dashboard" },
+        { name: "Records Management", slug: "manage", type: "list" },
       ],
       dataModels: [
         {
-          name: 'ItemRecord',
+          name: "ItemRecord",
           fields: [
-            { name: 'name', type: 'Text', required: true },
-            { name: 'reference', type: 'Text', required: false },
-            { name: 'value', type: 'Currency', required: false }
-          ]
-        }
-      ]
+            { name: "name", type: "Text", required: true },
+            { name: "reference", type: "Text", required: false },
+            { name: "value", type: "Currency", required: false },
+          ],
+        },
+      ],
     };
   }
 
   async suggestCopilotFields(tenantId: string, prompt: string) {
     if (!this.aiService.isConfigured()) {
       return [
-        { id: '1', type: 'Text', label: 'Notes', name: 'notes', required: false, readOnly: false },
-        { id: '2', type: 'Select', label: 'Priority', name: 'priority', required: true, readOnly: false, options: 'Low\nMedium\nHigh' }
+        {
+          id: "1",
+          type: "Text",
+          label: "Notes",
+          name: "notes",
+          required: false,
+          readOnly: false,
+        },
+        {
+          id: "2",
+          type: "Select",
+          label: "Priority",
+          name: "priority",
+          required: true,
+          readOnly: false,
+          options: "Low\nMedium\nHigh",
+        },
       ];
     }
 
-    const res = await this.aiService.chat([
-      { role: 'system', content: 'Suggest 2-4 form fields as JSON array: [{"label": "...", "name": "...", "type": "Text|Select|Check|Date", "required": true/false}]' },
-      { role: 'user', content: prompt }
-    ], { maxTokens: 1000, tenantId });
+    const res = await this.aiService.chat(
+      [
+        {
+          role: "system",
+          content:
+            'Suggest 2-4 form fields as JSON array: [{"label": "...", "name": "...", "type": "Text|Select|Check|Date", "required": true/false}]',
+        },
+        { role: "user", content: prompt },
+      ],
+      { maxTokens: 1000, tenantId },
+    );
 
     try {
       return JSON.parse(res.content);
     } catch {
       return [
-        { id: '1', type: 'Text', label: 'Suggested Notes', name: 'suggested_notes', required: false, readOnly: false }
+        {
+          id: "1",
+          type: "Text",
+          label: "Suggested Notes",
+          name: "suggested_notes",
+          required: false,
+          readOnly: false,
+        },
       ];
     }
   }

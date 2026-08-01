@@ -1,7 +1,6 @@
-// @ts-nocheck
-import { Injectable } from '@nestjs/common';
-import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-import { prisma } from '@unerp/database';
+import { Injectable } from "@nestjs/common";
+import { EventEmitter2, OnEvent } from "@nestjs/event-emitter";
+import { prisma } from "@unerp/database";
 
 interface PipelineDealAtRiskEvent {
   tenantId: string;
@@ -27,7 +26,7 @@ interface PipelineDealAtRiskEvent {
 export class PipelineRiskNotificationService {
   constructor(private readonly eventEmitter: EventEmitter2) {}
 
-  @OnEvent('pipeline.deal.at_risk')
+  @OnEvent("pipeline.deal.at_risk")
   async handleDealAtRisk(payload: PipelineDealAtRiskEvent) {
     const { tenantId, opportunityId, alertType, riskLevel, message } = payload;
     if (!tenantId || !opportunityId) return;
@@ -39,25 +38,32 @@ export class PipelineRiskNotificationService {
       });
       if (!opportunity) return;
 
-      const recipients = await this.resolveRecipients(tenantId, opportunity.assignedToId);
+      const recipients = await this.resolveRecipients(
+        tenantId,
+        opportunity.assignedToId,
+      );
       if (recipients.length === 0) return;
 
       const title = `Deal at risk: "${opportunity.name}" (${riskLevel})`;
       const body = `${message} — alert type ${alertType}.`;
 
       for (const userId of recipients) {
-        this.eventEmitter.emit('notification.send', {
+        this.eventEmitter.emit("notification.send", {
           tenantId,
           userId,
-          type: 'CRM_PIPELINE_DEAL_AT_RISK',
+          type: "CRM_PIPELINE_DEAL_AT_RISK",
           title,
           body,
-          channel: 'IN_APP',
+          channel: "IN_APP",
         });
       }
     } catch (err) {
-      const { pinoLogger } = await import('../../common/services/logger.service');
-      pinoLogger.error({ opportunityId, tenantId, err }, 'Failed to notify of at-risk pipeline deal');
+      const { pinoLogger } =
+        await import("../../common/services/logger.service");
+      pinoLogger.error(
+        { opportunityId, tenantId, err },
+        "Failed to notify of at-risk pipeline deal",
+      );
     }
   }
 
@@ -66,10 +72,18 @@ export class PipelineRiskNotificationService {
    * otherwise every tenant user holding a CRM opportunity permission (RVP/
    * manager fallback so nothing goes unnoticed on unassigned deals).
    */
-  private async resolveRecipients(tenantId: string, assignedToId: string | null): Promise<string[]> {
+  private async resolveRecipients(
+    tenantId: string,
+    assignedToId: string | null,
+  ): Promise<string[]> {
     if (assignedToId) {
       const user = await prisma.user.findFirst({
-        where: { id: assignedToId, tenantId, deletedAt: null, status: 'ACTIVE' },
+        where: {
+          id: assignedToId,
+          tenantId,
+          deletedAt: null,
+          status: "ACTIVE",
+        },
         select: { id: true },
       });
       if (user) return [user.id];
@@ -81,16 +95,26 @@ export class PipelineRiskNotificationService {
     });
     const crmRoleIds = roles
       .filter((role) => {
-        const perms = Array.isArray(role.permissions) ? (role.permissions as string[]) : [];
-        return perms.some((p) => p === '*' || p === 'crm.opportunity.update' || p === 'crm.opportunity.read');
+        const perms = Array.isArray(role.permissions)
+          ? (role.permissions as string[])
+          : [];
+        return perms.some(
+          (p) =>
+            p === "*" ||
+            p === "crm.opportunity.update" ||
+            p === "crm.opportunity.read",
+        );
       })
       .map((role) => role.id);
     if (crmRoleIds.length === 0) return [];
 
     const userRoles = await prisma.userRole.findMany({
-      where: { roleId: { in: crmRoleIds }, user: { tenantId, deletedAt: null, status: 'ACTIVE' } },
+      where: {
+        roleId: { in: crmRoleIds },
+        user: { tenantId, deletedAt: null, status: "ACTIVE" },
+      },
       select: { userId: true },
-      distinct: ['userId'],
+      distinct: ["userId"],
     });
     return userRoles.map((ur) => ur.userId);
   }

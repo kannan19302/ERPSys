@@ -91,7 +91,7 @@ class DocumentsRepositoryImpl implements DocumentsRepository {
   @override
   Future<Result<Cacheable<Paginated<DocumentFolder>>>> listFolders(ListQuery q) =>
       _paginated(_foldersNamespace, q, () => _remote.listFolders(q),
-        DocumentFolderModel.fromJson);
+        DocumentFolderModel.fromJson,);
 
   @override
   Future<Result<DocumentFolder>> getFolder(String id) =>
@@ -112,7 +112,7 @@ class DocumentsRepositoryImpl implements DocumentsRepository {
   @override
   Future<Result<Cacheable<Paginated<Document>>>> listDocuments(ListQuery q) =>
       _paginated(_documentsNamespace, q, () => _remote.listDocuments(q),
-        DocumentModel.fromJson);
+        DocumentModel.fromJson,);
 
   @override
   Future<Result<Document>> getDocument(String id) =>
@@ -144,15 +144,15 @@ class DocumentsRepositoryImpl implements DocumentsRepository {
 
   @override
   Future<Result<Cacheable<Paginated<DocumentVersion>>>> listDocumentVersions(
-    String documentId, ListQuery q) =>
+    String documentId, ListQuery q,) =>
       _paginated(_versionsNamespace, q,
         () => _remote.listDocumentVersions(documentId, q),
-        DocumentVersionModel.fromJson);
+        DocumentVersionModel.fromJson,);
 
   @override
   Future<Result<Cacheable<Paginated<DocumentTemplate>>>> listTemplates(ListQuery q) =>
       _paginated(_templatesNamespace, q, () => _remote.listTemplates(q),
-        DocumentTemplateModel.fromJson);
+        DocumentTemplateModel.fromJson,);
 
   @override
   Future<Result<DocumentTemplate>> getTemplate(String id) =>

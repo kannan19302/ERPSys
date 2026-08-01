@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import React, { useState, useEffect } from "react";
 import {
@@ -33,7 +32,7 @@ export default function ContentSchedulePage() {
     {
       key: "actions",
       header: "Actions",
-      render: (_val: unknown, row: Record<string, unknown>) => (
+      render: (row: Record<string, unknown>) => (
         <div
           className="ui-flex"
           style={{ gap: "var(--space-2)" }}

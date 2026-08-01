@@ -1,6 +1,5 @@
-// @ts-nocheck
-import styles from './layout.module.css';
-import type { ReactNode } from 'react';
+import styles from "./layout.module.css";
+import type { ReactNode } from "react";
 
 /**
  * Public storefront shell — sibling route group to (dashboard), NOT nested
@@ -17,14 +16,8 @@ export default function StorefrontLayout({
   children: ReactNode;
 }) {
   return (
-    <div
-      className={styles.s1}
-    >
-      <div
-        className={styles.s2}
-      >
-        {children}
-      </div>
+    <div className={styles.s1}>
+      <div className={styles.s2}>{children}</div>
     </div>
   );
 }

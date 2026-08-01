@@ -1,8 +1,7 @@
-// @ts-nocheck
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { HrService } from '../hr.service';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { HrService } from "../hr.service";
 
-vi.mock('@unerp/database', () => {
+vi.mock("@unerp/database", () => {
   return {
     prisma: {
       employee: {
@@ -19,7 +18,7 @@ vi.mock('@unerp/database', () => {
   };
 });
 
-describe('HrService', () => {
+describe("HrService", () => {
   let hrService: HrService;
 
   beforeEach(() => {
@@ -27,32 +26,36 @@ describe('HrService', () => {
     vi.clearAllMocks();
   });
 
-  describe('getEmployees', () => {
-    it('should return all employees in the tenant', async () => {
-      const { prisma } = await import('@unerp/database');
+  describe("getEmployees", () => {
+    it("should return all employees in the tenant", async () => {
+      const { prisma } = await import("@unerp/database");
       const mockEmployees = [
         {
-          id: 'emp-1',
-          employeeCode: 'EMP-001',
-          firstName: 'Tony',
-          lastName: 'Stark',
-          email: 'tony@stark.com',
-          phone: '123456789',
-          designation: 'Engineer',
-          employmentType: 'FULL_TIME',
-          status: 'ACTIVE',
+          id: "emp-1",
+          employeeCode: "EMP-001",
+          firstName: "Tony",
+          lastName: "Stark",
+          email: "tony@stark.com",
+          phone: "123456789",
+          designation: "Engineer",
+          employmentType: "FULL_TIME",
+          status: "ACTIVE",
           dateOfJoining: new Date(),
-          department: { name: 'Engineering', code: 'ENG' },
+          department: { name: "Engineering", code: "ENG" },
         },
       ];
 
-      vi.mocked(prisma.employee.findMany).mockResolvedValue(mockEmployees as unknown as Awaited<ReturnType<typeof prisma.employee.findMany>>);
+      vi.mocked(prisma.employee.findMany).mockResolvedValue(
+        mockEmployees as unknown as Awaited<
+          ReturnType<typeof prisma.employee.findMany>
+        >,
+      );
 
-      const result = await hrService.getEmployees('tenant-123');
+      const result = await hrService.getEmployees("tenant-123");
 
       expect(result).toBeDefined();
-      expect((result.data || result)[0]?.employeeCode).toBe('EMP-001');
-      expect((result.data || result)[0]?.departmentName).toBe('Engineering');
+      expect((result.data || result)[0]?.employeeCode).toBe("EMP-001");
+      expect((result.data || result)[0]?.departmentName).toBe("Engineering");
     });
   });
 });

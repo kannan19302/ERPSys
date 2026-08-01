@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -50,7 +49,7 @@ class _DocumentsListPageState extends ConsumerState<DocumentsListPage> {
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
                 .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value)))
+                    value: e.key, child: Text(e.value),),)
                 .toList(),
           ),
         ],
@@ -85,7 +84,7 @@ class _DocumentsListPageState extends ConsumerState<DocumentsListPage> {
                     : '${state.meta.total} document${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -153,24 +152,24 @@ class _DocumentTile extends StatelessWidget {
                     child: Text(document.name,
                         style: Theme.of(context).textTheme.titleSmall,
                         maxLines: 1,
-                        overflow: TextOverflow.ellipsis),
+                        overflow: TextOverflow.ellipsis,),
                   ),
                   if (document.starred)
                     const Icon(Icons.star, size: TypeScale.base, color: Colors.amber),
-                ]),
+                ],),
                 const SizedBox(height: Spacing.x1),
                 Row(children: [
                   Text(document.fileType.toUpperCase(),
-                      style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
+                      style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
                   const SizedBox(width: Spacing.x2),
                   Text(Formatters.compact(document.fileSize),
-                      style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
+                      style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
                   if (document.folderName != null) ...<Widget>[
                     const SizedBox(width: Spacing.x2),
                     Text('in ${document.folderName}',
-                        style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
+                        style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
                   ],
-                ]),
+                ],),
                 const SizedBox(height: Spacing.x1),
                 UiStatusBadge(
                   label: document.status,

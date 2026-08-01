@@ -1,5 +1,12 @@
-// @ts-nocheck
-import { Controller, Get, Post, Body, Query, Req, UseGuards } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Query,
+  Req,
+  UseGuards,
+} from "@nestjs/common";
 import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { RbacGuard } from "../../common/guards/rbac.guard";
@@ -20,25 +27,37 @@ export class HealthcareClinicalController {
 
   @Get("clinical-notes")
   @Permissions("healthcare.clinical-notes.read")
-  async getClinicalNotes(@Req() req: AuthenticatedRequest, @Query() query: any) {
+  async getClinicalNotes(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: any,
+  ) {
     return this.service.getClinicalNotes(req.user.tenantId, query);
   }
 
   @Post("clinical-notes")
   @Permissions("healthcare.clinical-notes.create")
-  async createClinicalNote(@Req() req: AuthenticatedRequest, @Body() body: any) {
+  async createClinicalNote(
+    @Req() req: AuthenticatedRequest,
+    @Body() body: any,
+  ) {
     return this.service.createClinicalNote(req.user.tenantId, body);
   }
 
   @Get("telehealth-sessions")
   @Permissions("healthcare.telehealth.read")
-  async getTelehealthSessions(@Req() req: AuthenticatedRequest, @Query() query: any) {
+  async getTelehealthSessions(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: any,
+  ) {
     return this.service.getTelehealthSessions(req.user.tenantId, query);
   }
 
   @Post("telehealth-sessions")
   @Permissions("healthcare.telehealth.create")
-  async createTelehealthSession(@Req() req: AuthenticatedRequest, @Body() body: any) {
+  async createTelehealthSession(
+    @Req() req: AuthenticatedRequest,
+    @Body() body: any,
+  ) {
     return this.service.createTelehealthSession(req.user.tenantId, body);
   }
 

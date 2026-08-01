@@ -72,7 +72,7 @@ class _ProjectRiskFormPageState extends ConsumerState<ProjectRiskFormPage> {
     };
 
     final result = await ref.read(projectRiskListControllerProvider.notifier).save(
-      payload, id: widget.riskId);
+      payload, id: widget.riskId,);
 
     if (!context.mounted) return;
     setState(() => _saving = false);
@@ -119,7 +119,7 @@ class _ProjectRiskFormPageState extends ConsumerState<ProjectRiskFormPage> {
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _probability,
+              initialValue: _probability,
               decoration: const InputDecoration(labelText: 'Probability'),
               items: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
                   .map((v) => DropdownMenuItem<String>(value: v, child: Text(v)))
@@ -128,7 +128,7 @@ class _ProjectRiskFormPageState extends ConsumerState<ProjectRiskFormPage> {
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _impact,
+              initialValue: _impact,
               decoration: const InputDecoration(labelText: 'Impact'),
               items: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
                   .map((v) => DropdownMenuItem<String>(value: v, child: Text(v)))
@@ -137,7 +137,7 @@ class _ProjectRiskFormPageState extends ConsumerState<ProjectRiskFormPage> {
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _status,
+              initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: ['IDENTIFIED', 'IN_PROGRESS', 'MITIGATED', 'CLOSED']
                   .map((v) => DropdownMenuItem<String>(value: v, child: Text(v)))

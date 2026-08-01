@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Controller,
   Get,
@@ -37,16 +36,66 @@ const updateIntegrationSchema = z.object({
 });
 
 const availableIntegrations = [
-  { id: "stripe", name: "Stripe", category: "Payments", description: "Payment processing" },
-  { id: "slack", name: "Slack", category: "Communication", description: "Team messaging" },
-  { id: "sendgrid", name: "SendGrid", category: "Email", description: "Email delivery" },
-  { id: "aws-s3", name: "AWS S3", category: "Storage", description: "File storage" },
-  { id: "auth0", name: "Auth0", category: "Auth", description: "Identity management" },
-  { id: "datadog", name: "Datadog", category: "Monitoring", description: "Application monitoring" },
-  { id: "sentry", name: "Sentry", category: "Monitoring", description: "Error tracking" },
-  { id: "elasticsearch", name: "Elasticsearch", category: "Analytics", description: "Search & analytics" },
-  { id: "redis", name: "Redis", category: "Cache", description: "In-memory cache" },
-  { id: "rabbitmq", name: "RabbitMQ", category: "Queue", description: "Message queue" },
+  {
+    id: "stripe",
+    name: "Stripe",
+    category: "Payments",
+    description: "Payment processing",
+  },
+  {
+    id: "slack",
+    name: "Slack",
+    category: "Communication",
+    description: "Team messaging",
+  },
+  {
+    id: "sendgrid",
+    name: "SendGrid",
+    category: "Email",
+    description: "Email delivery",
+  },
+  {
+    id: "aws-s3",
+    name: "AWS S3",
+    category: "Storage",
+    description: "File storage",
+  },
+  {
+    id: "auth0",
+    name: "Auth0",
+    category: "Auth",
+    description: "Identity management",
+  },
+  {
+    id: "datadog",
+    name: "Datadog",
+    category: "Monitoring",
+    description: "Application monitoring",
+  },
+  {
+    id: "sentry",
+    name: "Sentry",
+    category: "Monitoring",
+    description: "Error tracking",
+  },
+  {
+    id: "elasticsearch",
+    name: "Elasticsearch",
+    category: "Analytics",
+    description: "Search & analytics",
+  },
+  {
+    id: "redis",
+    name: "Redis",
+    category: "Cache",
+    description: "In-memory cache",
+  },
+  {
+    id: "rabbitmq",
+    name: "RabbitMQ",
+    category: "Queue",
+    description: "Message queue",
+  },
 ];
 
 @ApiTags("saas-integrations")
@@ -69,7 +118,11 @@ export class IntegrationsController {
   @ApiOperation({ summary: "Install a new integration" })
   @Permissions("saas.marketplace.create")
   @Post()
-  async createIntegration(@Req() req: AuthReq, @ZodBody(createIntegrationSchema) body: z.infer<typeof createIntegrationSchema>) {
+  async createIntegration(
+    @Req() req: AuthReq,
+    @ZodBody(createIntegrationSchema)
+    body: z.infer<typeof createIntegrationSchema>,
+  ) {
     return this.saasService.installApp(req.user.tenantId, body.appSlug);
   }
 
@@ -77,16 +130,27 @@ export class IntegrationsController {
   @Permissions("saas.marketplace.read")
   @Get(":id")
   async getIntegration(@Req() req: AuthReq, @Param("id") id: string) {
-    return this.saasService.db.installedApp.findFirst({ where: { id, tenantId: req.user.tenantId } });
+    return this.saasService.db.installedApp.findFirst({
+      where: { id, tenantId: req.user.tenantId },
+    });
   }
 
   @ApiOperation({ summary: "Update integration configuration" })
   @Permissions("saas.marketplace.create")
   @Patch(":id")
-  async updateIntegration(@Req() req: AuthReq, @Param("id") id: string, @ZodBody(updateIntegrationSchema) body: z.infer<typeof updateIntegrationSchema>) {
+  async updateIntegration(
+    @Req() req: AuthReq,
+    @Param("id") id: string,
+    @ZodBody(updateIntegrationSchema)
+    body: z.infer<typeof updateIntegrationSchema>,
+  ) {
     return this.saasService.db.installedApp.updateMany({
       where: { id, tenantId: req.user.tenantId },
-      data: { config: body.config as any, status: body.status, ...(body.name ? { appName: body.name } : {}) },
+      data: {
+        config: body.config as any,
+        status: body.status,
+        ...(body.name ? { appName: body.name } : {}),
+      },
     });
   }
 
@@ -101,7 +165,9 @@ export class IntegrationsController {
   @Permissions("saas.marketplace.read")
   @Get(":id/status")
   async getIntegrationStatus(@Req() req: AuthReq, @Param("id") id: string) {
-    const app = await this.saasService.db.installedApp.findFirst({ where: { id, tenantId: req.user.tenantId } });
+    const app = await this.saasService.db.installedApp.findFirst({
+      where: { id, tenantId: req.user.tenantId },
+    });
     return { id, status: app?.status ?? "NOT_FOUND", lastChecked: new Date() };
   }
 
@@ -131,7 +197,12 @@ export class IntegrationsController {
   @Permissions("saas.marketplace.create")
   @Post(":id/sync")
   async syncIntegration(@Param("id") id: string) {
-    return { id, syncStatus: "COMPLETED", syncedAt: new Date(), recordsProcessed: 0 };
+    return {
+      id,
+      syncStatus: "COMPLETED",
+      syncedAt: new Date(),
+      recordsProcessed: 0,
+    };
   }
 
   @ApiOperation({ summary: "Get integration sync logs" })
@@ -178,6 +249,8 @@ export class IntegrationsController {
   @Permissions("saas.marketplace.read")
   @Get("popular")
   async getPopularIntegrations() {
-    return availableIntegrations.slice(0, 5).map((i) => ({ ...i, popularity: Math.floor(Math.random() * 100) }));
+    return availableIntegrations
+      .slice(0, 5)
+      .map((i) => ({ ...i, popularity: Math.floor(Math.random() * 100) }));
   }
 }

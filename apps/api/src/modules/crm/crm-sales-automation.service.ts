@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Injectable } from "@nestjs/common";
 import { prisma, runWithTenantSession } from "@unerp/database";
 import { z } from "zod";

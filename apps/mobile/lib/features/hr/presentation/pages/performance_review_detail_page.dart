@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -12,7 +11,7 @@ import '../providers/hr_providers.dart';
 
 class PerformanceReviewDetailPage extends ConsumerWidget {
   const PerformanceReviewDetailPage(
-      {required this.performanceReviewId, super.key});
+      {required this.performanceReviewId, super.key,});
 
   static const String routeName = 'performance-review-detail';
   static const String routePath = '/hr/performance-reviews/:id';
@@ -24,8 +23,6 @@ class PerformanceReviewDetailPage extends ConsumerWidget {
     final AsyncValue<PerformanceReview> asyncPr = ref.watch(
       performanceReviewDetailProvider(performanceReviewId),
     );
-    final Palette t = context.tokens;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Performance Review'),

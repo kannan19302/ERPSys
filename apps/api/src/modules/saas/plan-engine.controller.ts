@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Controller,
   Get,
@@ -53,7 +52,9 @@ const updatePriceSchema = setPriceSchema.partial();
 const addFeatureSchema = z.object({
   featureKey: z.string().min(1).max(100),
   featureName: z.string().min(1).max(255),
-  featureType: z.enum(["boolean", "numeric", "text", "select"]).default("boolean"),
+  featureType: z
+    .enum(["boolean", "numeric", "text", "select"])
+    .default("boolean"),
   featureValue: z.string().optional(),
   description: z.string().optional(),
   isHighlighted: z.boolean().default(false),
@@ -86,14 +87,21 @@ export class PlanEngineController {
   @ApiOperation({ summary: "Create new plan" })
   @Permissions("saas.plan.create")
   @Post()
-  async createPlan(@Req() req: AuthReq, @ZodBody(createPlanSchema) body: z.infer<typeof createPlanSchema>) {
+  async createPlan(
+    @Req() req: AuthReq,
+    @ZodBody(createPlanSchema) body: z.infer<typeof createPlanSchema>,
+  ) {
     return this.planEngineService.createPlan(req.user.tenantId, body);
   }
 
   @ApiOperation({ summary: "Update plan" })
   @Permissions("saas.plan.update")
   @Patch(":id")
-  async updatePlan(@Req() req: AuthReq, @Param("id") id: string, @ZodBody(updatePlanSchema) body: z.infer<typeof updatePlanSchema>) {
+  async updatePlan(
+    @Req() req: AuthReq,
+    @Param("id") id: string,
+    @ZodBody(updatePlanSchema) body: z.infer<typeof updatePlanSchema>,
+  ) {
     return this.planEngineService.updatePlan(req.user.tenantId, id, body);
   }
 
@@ -129,21 +137,36 @@ export class PlanEngineController {
   @ApiOperation({ summary: "Set plan price" })
   @Permissions("saas.pricing.create")
   @Post(":id/prices")
-  async setPlanPrice(@Req() req: AuthReq, @Param("id") id: string, @ZodBody(setPriceSchema) body: z.infer<typeof setPriceSchema>) {
+  async setPlanPrice(
+    @Req() req: AuthReq,
+    @Param("id") id: string,
+    @ZodBody(setPriceSchema) body: z.infer<typeof setPriceSchema>,
+  ) {
     return this.planEngineService.setPlanPrice(req.user.tenantId, id, body);
   }
 
   @ApiOperation({ summary: "Update plan price" })
   @Permissions("saas.pricing.update")
   @Patch("prices/:priceId")
-  async updatePlanPrice(@Req() req: AuthReq, @Param("priceId") priceId: string, @ZodBody(updatePriceSchema) body: z.infer<typeof updatePriceSchema>) {
-    return this.planEngineService.updatePlanPrice(req.user.tenantId, priceId, body);
+  async updatePlanPrice(
+    @Req() req: AuthReq,
+    @Param("priceId") priceId: string,
+    @ZodBody(updatePriceSchema) body: z.infer<typeof updatePriceSchema>,
+  ) {
+    return this.planEngineService.updatePlanPrice(
+      req.user.tenantId,
+      priceId,
+      body,
+    );
   }
 
   @ApiOperation({ summary: "Delete plan price" })
   @Permissions("saas.pricing.delete")
   @Delete("prices/:priceId")
-  async deletePlanPrice(@Req() req: AuthReq, @Param("priceId") priceId: string) {
+  async deletePlanPrice(
+    @Req() req: AuthReq,
+    @Param("priceId") priceId: string,
+  ) {
     return this.planEngineService.deletePlanPrice(req.user.tenantId, priceId);
   }
 
@@ -157,21 +180,39 @@ export class PlanEngineController {
   @ApiOperation({ summary: "Add plan feature" })
   @Permissions("saas.plan.update")
   @Post(":id/features")
-  async addPlanFeature(@Req() req: AuthReq, @Param("id") id: string, @ZodBody(addFeatureSchema) body: z.infer<typeof addFeatureSchema>) {
+  async addPlanFeature(
+    @Req() req: AuthReq,
+    @Param("id") id: string,
+    @ZodBody(addFeatureSchema) body: z.infer<typeof addFeatureSchema>,
+  ) {
     return this.planEngineService.addPlanFeature(req.user.tenantId, id, body);
   }
 
   @ApiOperation({ summary: "Update plan feature" })
   @Permissions("saas.plan.update")
   @Patch("features/:featureId")
-  async updatePlanFeature(@Req() req: AuthReq, @Param("featureId") featureId: string, @ZodBody(updateFeatureSchema) body: z.infer<typeof updateFeatureSchema>) {
-    return this.planEngineService.updatePlanFeature(req.user.tenantId, featureId, body);
+  async updatePlanFeature(
+    @Req() req: AuthReq,
+    @Param("featureId") featureId: string,
+    @ZodBody(updateFeatureSchema) body: z.infer<typeof updateFeatureSchema>,
+  ) {
+    return this.planEngineService.updatePlanFeature(
+      req.user.tenantId,
+      featureId,
+      body,
+    );
   }
 
   @ApiOperation({ summary: "Remove plan feature" })
   @Permissions("saas.plan.update")
   @Delete("features/:featureId")
-  async removePlanFeature(@Req() req: AuthReq, @Param("featureId") featureId: string) {
-    return this.planEngineService.removePlanFeature(req.user.tenantId, featureId);
+  async removePlanFeature(
+    @Req() req: AuthReq,
+    @Param("featureId") featureId: string,
+  ) {
+    return this.planEngineService.removePlanFeature(
+      req.user.tenantId,
+      featureId,
+    );
   }
 }

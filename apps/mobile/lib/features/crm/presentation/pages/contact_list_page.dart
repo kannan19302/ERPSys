@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -183,7 +182,7 @@ class _ContactTile extends StatelessWidget {
 
     final String displayName =
         '${contact.firstName ?? ''} ${contact.lastName ?? ''}'.trim();
-    final String? initials = displayName.isNotEmpty
+    final String initials = displayName.isNotEmpty
         ? displayName.split(' ').map((String s) => s.isNotEmpty ? s[0] : '').take(2).join().toUpperCase()
         : '?';
 
@@ -196,7 +195,7 @@ class _ContactTile extends StatelessWidget {
             radius: Spacing.x5,
             backgroundColor: t.primaryLight,
             child: Text(
-              initials ?? '',
+              initials,
               style: TextStyle(
                 color: t.primary,
                 fontSize: TypeScale.sm,

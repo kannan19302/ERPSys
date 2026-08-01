@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Injectable } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 
@@ -6,7 +5,10 @@ import { prisma } from "@unerp/database";
 export class EducationService {
   // ── Students ──
   async getStudents(tenantId: string) {
-    return prisma.educationStudent.findMany({ where: { tenantId }, orderBy: { createdAt: "desc" } });
+    return prisma.educationStudent.findMany({
+      where: { tenantId },
+      orderBy: { createdAt: "desc" },
+    });
   }
   async getStudentById(tenantId: string, id: string) {
     return prisma.educationStudent.findFirst({ where: { tenantId, id } });
@@ -15,12 +17,18 @@ export class EducationService {
     return prisma.educationStudent.create({ data: { ...data, tenantId } });
   }
   async updateStudent(tenantId: string, id: string, data: any) {
-    return prisma.educationStudent.updateMany({ where: { tenantId, id }, data });
+    return prisma.educationStudent.updateMany({
+      where: { tenantId, id },
+      data,
+    });
   }
 
   // ── Courses ──
   async getCourses(tenantId: string) {
-    return prisma.educationCourse.findMany({ where: { tenantId }, orderBy: { createdAt: "desc" } });
+    return prisma.educationCourse.findMany({
+      where: { tenantId },
+      orderBy: { createdAt: "desc" },
+    });
   }
   async getCourseById(tenantId: string, id: string) {
     return prisma.educationCourse.findFirst({ where: { tenantId, id } });
@@ -31,7 +39,10 @@ export class EducationService {
 
   // ── Fee Structures ──
   async getFeeStructures(tenantId: string) {
-    return prisma.educationFeeStructure.findMany({ where: { tenantId }, orderBy: { createdAt: "desc" } });
+    return prisma.educationFeeStructure.findMany({
+      where: { tenantId },
+      orderBy: { createdAt: "desc" },
+    });
   }
   async createFeeStructure(tenantId: string, data: any) {
     return prisma.educationFeeStructure.create({ data: { ...data, tenantId } });
@@ -48,7 +59,10 @@ export class EducationService {
 
   // ── Books ──
   async getBooks(tenantId: string) {
-    return prisma.educationBook.findMany({ where: { tenantId }, orderBy: { createdAt: "desc" } });
+    return prisma.educationBook.findMany({
+      where: { tenantId },
+      orderBy: { createdAt: "desc" },
+    });
   }
   async createBook(tenantId: string, data: any) {
     return prisma.educationBook.create({ data: { ...data, tenantId } });
@@ -79,7 +93,10 @@ export class EducationService {
   }
 
   // ── Attendance ──
-  async getAttendance(tenantId: string, filters?: { studentId?: string; courseId?: string; date?: string }) {
+  async getAttendance(
+    tenantId: string,
+    filters?: { studentId?: string; courseId?: string; date?: string },
+  ) {
     return prisma.educationAttendanceRecord.findMany({
       where: { tenantId, ...filters },
       include: { student: true, course: true },
@@ -88,7 +105,10 @@ export class EducationService {
   }
 
   // ── Grades ──
-  async getGrades(tenantId: string, filters?: { studentId?: string; courseId?: string }) {
+  async getGrades(
+    tenantId: string,
+    filters?: { studentId?: string; courseId?: string },
+  ) {
     return prisma.grade.findMany({
       where: { tenantId, ...filters },
       include: { student: true, course: true },

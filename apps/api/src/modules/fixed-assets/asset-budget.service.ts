@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Injectable } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 import { Prisma } from "@prisma/client";
@@ -8,11 +7,10 @@ export class AssetBudgetService {
   async getAllocations(
     tenantId: string,
     fiscalYear?: number,
-    assetId_IGNORE?: string,
+    assetId?: string,
   ) {
     const where: Prisma.FixedAssetBudgetAllocationWhereInput = { tenantId };
     if (fiscalYear) where.fiscalYear = fiscalYear;
-    if (assetId_IGNORE) where.assetId_IGNORE = assetId_IGNORE;
     return prisma.fixedAssetBudgetAllocation.findMany({
       where,
       orderBy: { fiscalYear: "desc" },
@@ -60,7 +58,7 @@ export class AssetBudgetService {
   async createAllocationSimple(
     tenantId: string,
     body: {
-      assetId_IGNORE: string;
+      assetId: string;
       fiscalYear: string;
       allocatedAmount: number;
       spentAmount?: number;

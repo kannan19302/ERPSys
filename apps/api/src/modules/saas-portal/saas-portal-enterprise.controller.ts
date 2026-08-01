@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Controller, Get, Param, Query, UseGuards, Req } from "@nestjs/common";
 import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
@@ -17,26 +16,48 @@ export class SaasPortalEnterpriseController {
 
   @Get("tenant-analytics")
   @Permissions("saas.enterprise.read")
-  async getTenantAnalytics(@Req() req: AuthenticatedRequest, @Query("dateRange") dateRange?: string) {
+  async getTenantAnalytics(
+    @Req() req: AuthenticatedRequest,
+    @Query("dateRange") dateRange?: string,
+  ) {
     return this.service.getTenantAnalytics(req.user.tenantId, dateRange);
   }
 
   @Get("subscription-metrics")
   @Permissions("saas.enterprise.read")
-  async getSubscriptionMetrics(@Req() req: AuthenticatedRequest, @Query("periodStart") periodStart?: string, @Query("periodEnd") periodEnd?: string) {
-    return this.service.getSubscriptionMetrics(req.user.tenantId, periodStart, periodEnd);
+  async getSubscriptionMetrics(
+    @Req() req: AuthenticatedRequest,
+    @Query("periodStart") periodStart?: string,
+    @Query("periodEnd") periodEnd?: string,
+  ) {
+    return this.service.getSubscriptionMetrics(
+      req.user.tenantId,
+      periodStart,
+      periodEnd,
+    );
   }
 
   @Get("usage-metering")
   @Permissions("saas.enterprise.read")
-  async getUsageMetering(@Req() req: AuthenticatedRequest, @Query("period") period?: string) {
+  async getUsageMetering(
+    @Req() req: AuthenticatedRequest,
+    @Query("period") period?: string,
+  ) {
     return this.service.getUsageMetering(req.user.tenantId, period);
   }
 
   @Get("billing-analytics")
   @Permissions("saas.enterprise.read")
-  async getBillingAnalytics(@Req() req: AuthenticatedRequest, @Query("periodStart") periodStart?: string, @Query("periodEnd") periodEnd?: string) {
-    return this.service.getBillingAnalytics(req.user.tenantId, periodStart, periodEnd);
+  async getBillingAnalytics(
+    @Req() req: AuthenticatedRequest,
+    @Query("periodStart") periodStart?: string,
+    @Query("periodEnd") periodEnd?: string,
+  ) {
+    return this.service.getBillingAnalytics(
+      req.user.tenantId,
+      periodStart,
+      periodEnd,
+    );
   }
 
   @Get("dashboard-kpis")

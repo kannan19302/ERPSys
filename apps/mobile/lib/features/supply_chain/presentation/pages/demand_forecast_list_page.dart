@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -38,7 +37,7 @@ class _DemandForecastListPageState extends ConsumerState<DemandForecastListPage>
                     : '${state.meta.total} forecast${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -85,31 +84,31 @@ class _ForecastTile extends StatelessWidget {
             Row(children: [
               Expanded(
                 child: Text(forecast.productName,
-                    style: Theme.of(context).textTheme.titleSmall),
+                    style: Theme.of(context).textTheme.titleSmall,),
               ),
               UiStatusBadge(
                 label: forecast.period,
                 tone: UiTone.info,
               ),
-            ]),
+            ],),
             const SizedBox(height: Spacing.x1),
             Row(children: [
               Text('Forecast: ',
-                  style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
+                  style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
               Text('${forecast.forecastQuantity}',
-                  style: TextStyle(fontWeight: TypeScale.semibold)),
+                  style: const TextStyle(fontWeight: TypeScale.semibold),),
               if (forecast.actualQuantity != null) ...<Widget>[
                 const SizedBox(width: Spacing.x3),
                 Text('Actual: ',
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
+                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
                 Text('${forecast.actualQuantity}',
-                    style: TextStyle(fontWeight: TypeScale.semibold)),
+                    style: const TextStyle(fontWeight: TypeScale.semibold),),
               ],
-            ]),
+            ],),
             if (forecast.accuracy != null) ...<Widget>[
               const SizedBox(height: Spacing.x0_5),
               Text('Accuracy: ${(forecast.accuracy! * 100).toStringAsFixed(1)}%',
-                  style: TextStyle(color: t.success, fontSize: TypeScale.xs)),
+                  style: TextStyle(color: t.success, fontSize: TypeScale.xs),),
             ],
           ],
         ),

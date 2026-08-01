@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -76,7 +75,7 @@ class _PortalSupportTicketListPageState extends ConsumerState<PortalSupportTicke
                     : '${state.meta.total} ticket${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -110,13 +109,13 @@ class _PortalSupportTicketListPageState extends ConsumerState<PortalSupportTicke
               Row(children: [
                 Expanded(
                   child: Text(ticket.subject,
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
                 UiStatusBadge(
                   label: ticket.priority,
                   tone: _priorityTones[ticket.priority] ?? UiTone.neutral,
                 ),
-              ]),
+              ],),
               const SizedBox(height: Spacing.x1),
               Row(children: [
                 UiStatusBadge(
@@ -126,9 +125,9 @@ class _PortalSupportTicketListPageState extends ConsumerState<PortalSupportTicke
                 if (ticket.category != null) ...[
                   const SizedBox(width: Spacing.x2),
                   Text(ticket.category!,
-                      style: TextStyle(color: palette.textTertiary, fontSize: TypeScale.xs)),
+                      style: TextStyle(color: palette.textTertiary, fontSize: TypeScale.xs),),
                 ],
-              ]),
+              ],),
             ],
           ),
         ),

@@ -1,12 +1,9 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/di/providers.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecase/result.dart';
-import '../../data/repositories/hr_repository_impl.dart';
 import '../../domain/entities/hr.dart';
 import '../../domain/repositories/hr_repository.dart';
 import '../../domain/usecases/hr_usecases.dart';
@@ -99,7 +96,6 @@ class _DepartmentFormPageState extends ConsumerState<DepartmentFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final Palette t = context.tokens;
     final AsyncValue<List<Department>> asyncDepts = ref.watch(departmentsProvider);
     final List<Department> allDepts = asyncDepts.valueOrNull ?? const <Department>[];
 
@@ -132,14 +128,14 @@ class _DepartmentFormPageState extends ConsumerState<DepartmentFormPage> {
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _parentDeptId,
+              initialValue: _parentDeptId,
               decoration: const InputDecoration(labelText: 'Parent Department'),
               isExpanded: true,
               items: <String?>[
                 null,
                 ...allDepts
                     .where((Department d) => d.id != widget.departmentId)
-                    .map((Department d) => d.id)
+                    .map((Department d) => d.id),
               ].map(
                 (String? v) => DropdownMenuItem<String>(
                   value: v,
@@ -158,13 +154,13 @@ class _DepartmentFormPageState extends ConsumerState<DepartmentFormPage> {
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _headEmployeeId,
+              initialValue: _headEmployeeId,
               decoration: const InputDecoration(labelText: 'Head of Department'),
               isExpanded: true,
               items: <String?>[null].map(
                 (String? v) => DropdownMenuItem<String>(
                   value: v,
-                  child: Text(v == null ? 'Not assigned' : v!),
+                  child: Text(v ?? 'Not assigned'),
                 ),
               ).toList(),
               onChanged: (String? v) => setState(() => _headEmployeeId = v),

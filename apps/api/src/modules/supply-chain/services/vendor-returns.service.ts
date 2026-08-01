@@ -1,12 +1,17 @@
-// @ts-nocheck
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
-import { CreateVendorReturnDto, UpdateVendorReturnStatusDto } from '../dto/supply-chain.dto';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
+import {
+  CreateVendorReturnDto,
+  UpdateVendorReturnStatusDto,
+} from "../dto/supply-chain.dto";
 
 @Injectable()
 export class VendorReturnsService {
-  async list(tenantId: string, query: { page?: number; limit?: number; status?: string }) {
+  async list(
+    tenantId: string,
+    query: { page?: number; limit?: number; status?: string },
+  ) {
     const page = query.page || 1;
     const limit = Math.min(query.limit || 20, 100);
     const where: Prisma.VendorReturnShipmentWhereInput = { tenantId };
@@ -15,7 +20,7 @@ export class VendorReturnsService {
     const [items, total] = await Promise.all([
       prisma.vendorReturnShipment.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         skip: (page - 1) * limit,
         take: limit,
         include: { rmaRequest: true, warehouse: true },
@@ -30,7 +35,7 @@ export class VendorReturnsService {
       where: { id, tenantId },
       include: { rmaRequest: true, warehouse: true },
     });
-    if (!item) throw new NotFoundException('Vendor return shipment not found');
+    if (!item) throw new NotFoundException("Vendor return shipment not found");
     return item;
   }
 
@@ -44,25 +49,38 @@ export class VendorReturnsService {
         carrier: dto.carrier,
         trackingNumber: dto.trackingNumber,
         creditMemoRef: dto.creditMemoRef,
-        creditAmount: dto.creditAmount !== undefined && dto.creditAmount !== null ? new Prisma.Decimal(dto.creditAmount) : null,
+        creditAmount:
+          dto.creditAmount !== undefined && dto.creditAmount !== null
+            ? new Prisma.Decimal(dto.creditAmount)
+            : null,
         notes: dto.notes,
-        status: 'PENDING',
+        status: "PENDING",
       },
     });
   }
 
-  async updateStatus(tenantId: string, id: string, dto: UpdateVendorReturnStatusDto) {
-    const existing = await prisma.vendorReturnShipment.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Vendor return shipment not found');
+  async updateStatus(
+    tenantId: string,
+    id: string,
+    dto: UpdateVendorReturnStatusDto,
+  ) {
+    const existing = await prisma.vendorReturnShipment.findFirst({
+      where: { id, tenantId },
+    });
+    if (!existing)
+      throw new NotFoundException("Vendor return shipment not found");
 
     const now = new Date();
     const extra: Record<string, unknown> = {};
-    if (dto.status === 'PACKED') extra.packedAt = now;
-    if (dto.status === 'SHIPPED') extra.shippedAt = now;
-    if (dto.status === 'DELIVERED') extra.deliveredAt = now;
-    if (dto.trackingNumber !== undefined) extra.trackingNumber = dto.trackingNumber;
-    if (dto.creditMemoRef !== undefined) extra.creditMemoRef = dto.creditMemoRef;
-    if (dto.creditAmount !== undefined && dto.creditAmount !== null) extra.creditAmount = new Prisma.Decimal(dto.creditAmount);
+    if (dto.status === "PACKED") extra.packedAt = now;
+    if (dto.status === "SHIPPED") extra.shippedAt = now;
+    if (dto.status === "DELIVERED") extra.deliveredAt = now;
+    if (dto.trackingNumber !== undefined)
+      extra.trackingNumber = dto.trackingNumber;
+    if (dto.creditMemoRef !== undefined)
+      extra.creditMemoRef = dto.creditMemoRef;
+    if (dto.creditAmount !== undefined && dto.creditAmount !== null)
+      extra.creditAmount = new Prisma.Decimal(dto.creditAmount);
 
     return prisma.vendorReturnShipment.update({
       where: { id },
@@ -71,9 +89,14 @@ export class VendorReturnsService {
   }
 
   async getStats(tenantId: string) {
-    const all = await prisma.vendorReturnShipment.findMany({ where: { tenantId } });
+    const all = await prisma.vendorReturnShipment.findMany({
+      where: { tenantId },
+    });
     const totalReturns = all.length;
-    const totalCreditAmount = all.reduce((sum, r) => sum + (r.creditAmount ? Number(r.creditAmount) : 0), 0);
+    const totalCreditAmount = all.reduce(
+      (sum, r) => sum + (r.creditAmount ? Number(r.creditAmount) : 0),
+      0,
+    );
     const statusCounts: Record<string, number> = {};
     for (const r of all) {
       statusCounts[r.status] = (statusCounts[r.status] || 0) + 1;

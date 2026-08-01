@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Controller,
   Get,
@@ -42,7 +41,15 @@ const makePaymentSchema = z.object({
 });
 
 const currencyRates: Record<string, Record<string, number>> = {
-  USD: { EUR: 0.92, GBP: 0.79, JPY: 149.5, INR: 83.1, CAD: 1.36, AUD: 1.53, BRL: 4.97 },
+  USD: {
+    EUR: 0.92,
+    GBP: 0.79,
+    JPY: 149.5,
+    INR: 83.1,
+    CAD: 1.36,
+    AUD: 1.53,
+    BRL: 4.97,
+  },
   EUR: { USD: 1.09, GBP: 0.86, JPY: 162.5, INR: 90.3, CAD: 1.48, AUD: 1.66 },
   GBP: { USD: 1.27, EUR: 1.16, JPY: 189.2, INR: 105.2, CAD: 1.72, AUD: 1.94 },
 };
@@ -64,7 +71,11 @@ export class PaymentsExtController {
   @ApiOperation({ summary: "Add a new payment method" })
   @Permissions("saas.payment.create")
   @Post("methods")
-  async addPaymentMethod(@Req() req: AuthReq, @ZodBody(addPaymentMethodSchema) body: z.infer<typeof addPaymentMethodSchema>) {
+  async addPaymentMethod(
+    @Req() req: AuthReq,
+    @ZodBody(addPaymentMethodSchema)
+    body: z.infer<typeof addPaymentMethodSchema>,
+  ) {
     return this.paymentMethodsService.addPaymentMethod(req.user.tenantId, {
       type: body.type,
       token: body.token,
@@ -87,14 +98,19 @@ export class PaymentsExtController {
   @Permissions("saas.payment.delete")
   @Delete("methods/:id")
   async removePaymentMethod(@Req() req: AuthReq, @Param("id") id: string) {
-    return this.paymentMethodsService.removePaymentMethod(req.user.tenantId, id);
+    return this.paymentMethodsService.removePaymentMethod(
+      req.user.tenantId,
+      id,
+    );
   }
 
   @ApiOperation({ summary: "Get a specific payment method" })
   @Permissions("saas.payment.read")
   @Get("methods/:id")
   async getPaymentMethod(@Req() req: AuthReq, @Param("id") id: string) {
-    return this.paymentMethodsService.db.paymentMethod.findFirst({ where: { id, tenantId: req.user.tenantId } });
+    return this.paymentMethodsService.db.paymentMethod.findFirst({
+      where: { id, tenantId: req.user.tenantId },
+    });
   }
 
   @ApiOperation({ summary: "Get payment history" })
@@ -126,9 +142,17 @@ export class PaymentsExtController {
         skip: (p - 1) * l,
         take: l,
       }),
-      this.paymentMethodsService.db.paymentTransaction.count({ where: where as any }),
+      this.paymentMethodsService.db.paymentTransaction.count({
+        where: where as any,
+      }),
     ]);
-    return { items, total, page: p, limit: l, totalPages: Math.ceil(total / l) };
+    return {
+      items,
+      total,
+      page: p,
+      limit: l,
+      totalPages: Math.ceil(total / l),
+    };
   }
 
   @ApiOperation({ summary: "Get a payment transaction by id" })
@@ -141,10 +165,17 @@ export class PaymentsExtController {
   @ApiOperation({ summary: "Make a one-time payment" })
   @Permissions("saas.payment.create")
   @Post("pay")
-  async makeOneTimePayment(@Req() req: AuthReq, @ZodBody(makePaymentSchema) body: z.infer<typeof makePaymentSchema>) {
+  async makeOneTimePayment(
+    @Req() req: AuthReq,
+    @ZodBody(makePaymentSchema) body: z.infer<typeof makePaymentSchema>,
+  ) {
     const pm = body.paymentMethodId
-      ? await this.paymentMethodsService.db.paymentMethod.findFirst({ where: { id: body.paymentMethodId, tenantId: req.user.tenantId } })
-      : await this.paymentMethodsService.db.paymentMethod.findFirst({ where: { tenantId: req.user.tenantId, isDefault: true } });
+      ? await this.paymentMethodsService.db.paymentMethod.findFirst({
+          where: { id: body.paymentMethodId, tenantId: req.user.tenantId },
+        })
+      : await this.paymentMethodsService.db.paymentMethod.findFirst({
+          where: { tenantId: req.user.tenantId, isDefault: true },
+        });
 
     return this.paymentMethodsService.db.paymentTransaction.create({
       data: {
@@ -166,7 +197,11 @@ export class PaymentsExtController {
   @Get("upcoming")
   async getUpcomingPayments(@Req() req: AuthReq) {
     const invoices = await this.paymentMethodsService.db.saaSInvoice.findMany({
-      where: { tenantId: req.user.tenantId, status: "PENDING", dueDate: { gte: new Date() } },
+      where: {
+        tenantId: req.user.tenantId,
+        status: "PENDING",
+        dueDate: { gte: new Date() },
+      },
       orderBy: { dueDate: "asc" },
       take: 10,
     });
@@ -178,17 +213,30 @@ export class PaymentsExtController {
   @Get("status")
   async getPaymentStatus(@Req() req: AuthReq) {
     const [totalPaid, totalPending, totalOverdue, methods] = await Promise.all([
-      this.paymentMethodsService.db.paymentTransaction.aggregate({ where: { tenantId: req.user.tenantId, status: "SUCCEEDED" }, _sum: { amount: true } }),
-      this.paymentMethodsService.db.saaSInvoice.aggregate({ where: { tenantId: req.user.tenantId, status: "PENDING" }, _sum: { amountDue: true } }),
-      this.paymentMethodsService.db.saaSInvoice.aggregate({ where: { tenantId: req.user.tenantId, status: "OVERDUE" }, _sum: { amountDue: true } }),
-      this.paymentMethodsService.db.paymentMethod.count({ where: { tenantId: req.user.tenantId } }),
+      this.paymentMethodsService.db.paymentTransaction.aggregate({
+        where: { tenantId: req.user.tenantId, status: "SUCCEEDED" },
+        _sum: { amount: true },
+      }),
+      this.paymentMethodsService.db.saaSInvoice.aggregate({
+        where: { tenantId: req.user.tenantId, status: "PENDING" },
+        _sum: { amountDue: true },
+      }),
+      this.paymentMethodsService.db.saaSInvoice.aggregate({
+        where: { tenantId: req.user.tenantId, status: "OVERDUE" },
+        _sum: { amountDue: true },
+      }),
+      this.paymentMethodsService.db.paymentMethod.count({
+        where: { tenantId: req.user.tenantId },
+      }),
     ]);
     return {
       totalPaid: Number(totalPaid._sum.amount ?? 0),
       pendingAmount: Number(totalPending._sum.amountDue ?? 0),
       overdueAmount: Number(totalOverdue._sum.amountDue ?? 0),
       savedMethods: methods,
-      hasDefaultMethod: await this.paymentMethodsService.db.paymentMethod.count({ where: { tenantId: req.user.tenantId, isDefault: true } }).then((c) => c > 0),
+      hasDefaultMethod: await this.paymentMethodsService.db.paymentMethod
+        .count({ where: { tenantId: req.user.tenantId, isDefault: true } })
+        .then((c) => c > 0),
     };
   }
 

@@ -1,12 +1,11 @@
-// @ts-nocheck
-'use client';
+"use client";
 
-import styles from './TemplatesTab.module.css';
+import styles from "./TemplatesTab.module.css";
 
-import React, { useState, useEffect } from 'react';
-import { GitFork, RefreshCw, Plus } from 'lucide-react';
-import Link from 'next/link';
-import { useApiClient } from '@unerp/framework';
+import React, { useState, useEffect } from "react";
+import { GitFork, RefreshCw, Plus } from "lucide-react";
+import Link from "next/link";
+import { useApiClient } from "@unerp/framework";
 
 interface WorkflowStep {
   id: string;
@@ -31,7 +30,7 @@ export default function TemplatesTab() {
 
   const loadData = async () => {
     try {
-      const wfs = await client.get<Workflow[]>('/workflows');
+      const wfs = await client.get<Workflow[]>("/workflows");
       setWorkflows(Array.isArray(wfs) ? wfs : []);
     } catch (e) {
       console.error(e);
@@ -40,27 +39,46 @@ export default function TemplatesTab() {
     }
   };
 
-  useEffect(() => { void loadData(); }, [client]);
+  useEffect(() => {
+    void loadData();
+  }, [client]);
 
   const handleCreateWorkflow = async () => {
-    const name = prompt('Enter workflow name:');
+    const name = prompt("Enter workflow name:");
     if (!name) return;
-    const triggerType = prompt('Enter trigger type (e.g. PO_CREATED, LEAVE_REQUESTED, INVOICE_CREATED):', 'PO_CREATED');
+    const triggerType = prompt(
+      "Enter trigger type (e.g. PO_CREATED, LEAVE_REQUESTED, INVOICE_CREATED):",
+      "PO_CREATED",
+    );
     if (!triggerType) return;
-    const assigneeRole = prompt('Enter primary assignee role:', 'Admin');
+    const assigneeRole = prompt("Enter primary assignee role:", "Admin");
     if (!assigneeRole) return;
-    const slaLimitStr = prompt('Enter SLA limit hours (optional, e.g. 24):', '24');
+    const slaLimitStr = prompt(
+      "Enter SLA limit hours (optional, e.g. 24):",
+      "24",
+    );
     const slaLimitHours = slaLimitStr ? parseInt(slaLimitStr, 10) : undefined;
-    const backupAssigneeRole = slaLimitHours ? (prompt('Enter backup assignee role:', 'Manager') || 'Admin') : undefined;
+    const backupAssigneeRole = slaLimitHours
+      ? prompt("Enter backup assignee role:", "Manager") || "Admin"
+      : undefined;
 
     try {
-      await client.post('/workflows', {
-          name, triggerType,
-          steps: [{ stepOrder: 1, actionType: 'APPROVAL', assigneeRole, slaLimitHours, backupAssigneeRole }],
+      await client.post("/workflows", {
+        name,
+        triggerType,
+        steps: [
+          {
+            stepOrder: 1,
+            actionType: "APPROVAL",
+            assigneeRole,
+            slaLimitHours,
+            backupAssigneeRole,
+          },
+        ],
       });
       void loadData();
     } catch {
-      alert('Error creating workflow.');
+      alert("Error creating workflow.");
     }
   };
 
@@ -79,10 +97,7 @@ export default function TemplatesTab() {
         <Link href="/settings/automation-rules" className={styles.p5}>
           Open the full Automation Rules builder →
         </Link>
-        <button
-          onClick={handleCreateWorkflow}
-          className={styles.p6}
-        >
+        <button onClick={handleCreateWorkflow} className={styles.p6}>
           <Plus size={16} /> Create Workflow
         </button>
       </div>
@@ -107,12 +122,17 @@ export default function TemplatesTab() {
                 <div className={styles.p13}>
                   {wf.steps?.map((step) => (
                     <div key={step.id} className={styles.p14}>
-                      Step {step.stepOrder}: {step.actionType} ({step.assigneeRole})
-                      {step.slaLimitHours ? ` [SLA: ${step.slaLimitHours}h (Backup: ${step.backupAssigneeRole || 'Admin'})]` : ''}
+                      Step {step.stepOrder}: {step.actionType} (
+                      {step.assigneeRole})
+                      {step.slaLimitHours
+                        ? ` [SLA: ${step.slaLimitHours}h (Backup: ${step.backupAssigneeRole || "Admin"})]`
+                        : ""}
                     </div>
                   ))}
                   {(!wf.steps || wf.steps.length === 0) && (
-                    <span className="ui-text-caption ui-text-tertiary">No steps configured for this workflow template.</span>
+                    <span className="ui-text-caption ui-text-tertiary">
+                      No steps configured for this workflow template.
+                    </span>
                   )}
                 </div>
               </div>
@@ -120,7 +140,8 @@ export default function TemplatesTab() {
           ))}
           {workflows.length === 0 && (
             <div className={styles.p15}>
-              No workflow templates found. Click &quot;Create Workflow&quot; to get started.
+              No workflow templates found. Click &quot;Create Workflow&quot; to
+              get started.
             </div>
           )}
         </div>

@@ -92,7 +92,7 @@ class WorkflowRepositoryImpl implements WorkflowRepository {
   Future<Result<Cacheable<Paginated<WorkflowDefinition>>>> listWorkflowDefinitions(ListQuery query) =>
       _paginated(_definitionNamespace, query,
         () => _remote.listWorkflowDefinitions(query),
-        WorkflowDefinitionModel.fromJson);
+        WorkflowDefinitionModel.fromJson,);
 
   @override
   Future<Result<WorkflowDefinition>> getWorkflowDefinition(String id) =>
@@ -122,7 +122,7 @@ class WorkflowRepositoryImpl implements WorkflowRepository {
   Future<Result<Cacheable<Paginated<WorkflowInstance>>>> listWorkflowInstances(ListQuery query) =>
       _paginated(_instanceNamespace, query,
         () => _remote.listWorkflowInstances(query),
-        WorkflowInstanceModel.fromJson);
+        WorkflowInstanceModel.fromJson,);
 
   @override
   Future<Result<WorkflowInstance>> getWorkflowInstance(String id) =>
@@ -144,7 +144,7 @@ class WorkflowRepositoryImpl implements WorkflowRepository {
   Future<Result<Cacheable<Paginated<WorkflowTask>>>> listWorkflowTasks(ListQuery query) =>
       _paginated(_taskNamespace, query,
         () => _remote.listWorkflowTasks(query),
-        WorkflowTaskModel.fromJson);
+        WorkflowTaskModel.fromJson,);
 
   @override
   Future<Result<WorkflowTask>> approveWorkflowTask(String id) =>
@@ -166,7 +166,7 @@ class WorkflowRepositoryImpl implements WorkflowRepository {
   Future<Result<Cacheable<Paginated<SlaRule>>>> listSlaRules(ListQuery query) =>
       _paginated(_slaNamespace, query,
         () => _remote.listSlaRules(query),
-        SlaRuleModel.fromJson);
+        SlaRuleModel.fromJson,);
 
   @override
   Future<Result<SlaRule>> createSlaRule(Map<String, dynamic> payload) =>

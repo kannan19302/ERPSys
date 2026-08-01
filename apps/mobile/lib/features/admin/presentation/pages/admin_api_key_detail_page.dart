@@ -1,17 +1,10 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/widgets/ui_card.dart';
-import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/permission_gate.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/widgets/state_views.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
 import '../../../../core/rbac/permissions.dart';
-import '../../../../core/widgets/permission_gate.dart';
-import '../../../../core/widgets/state_views.dart';
 import '../../domain/entities/admin.dart';
 import '../providers/admin_providers.dart';
 
@@ -24,7 +17,6 @@ class AdminApiKeyDetailPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AsyncValue<AdminApiKey> keyAsync = ref.watch(adminApiKeyDetailProvider(apiKeyId));
-    final Palette t = context.tokens;
 
     return Scaffold(
       appBar: AppBar(
@@ -77,7 +69,7 @@ class AdminApiKeyDetailPage extends ConsumerWidget {
 }
 
 class _ApiKeyDetail extends StatefulWidget {
-  const _ApiKeyDetail({super.key, required this.apiKey});
+  const _ApiKeyDetail({required this.apiKey});
   final AdminApiKey apiKey;
 
   @override
@@ -108,9 +100,9 @@ class _ApiKeyDetailState extends State<_ApiKeyDetail> {
                   ),
                   child: Text(key.isActive ? 'Active' : 'Inactive',
                       style: TextStyle(color: key.isActive ? t.success : t.textSecondary,
-                          fontSize: TypeScale.xs, fontWeight: TypeScale.medium)),
+                          fontSize: TypeScale.xs, fontWeight: TypeScale.medium,),),
                 ),
-              ]),
+              ],),
             ],
           ),
         ),
@@ -127,7 +119,7 @@ class _ApiKeyDetailState extends State<_ApiKeyDetail> {
                     decoration: BoxDecoration(color: t.bgSunken, borderRadius: Radii.control),
                     child: SelectableText(
                       _keyRevealed ? (key.key ?? '—') : (key.maskedKey ?? '—'),
-                      style: TextStyle(fontFamily: 'monospace', fontSize: TypeScale.sm),
+                      style: const TextStyle(fontFamily: 'monospace', fontSize: TypeScale.sm),
                     ),
                   ),
                 ),
@@ -136,7 +128,7 @@ class _ApiKeyDetailState extends State<_ApiKeyDetail> {
                   icon: Icon(_keyRevealed ? Icons.visibility_off : Icons.visibility, size: TypeScale.xl),
                   onPressed: () => setState(() => _keyRevealed = !_keyRevealed),
                 ),
-              ]),
+              ],),
             ],
           ),
         ),
@@ -165,8 +157,8 @@ class _ApiKeyDetailState extends State<_ApiKeyDetail> {
                   margin: const EdgeInsets.only(bottom: Spacing.x1_5),
                   padding: const EdgeInsets.symmetric(horizontal: Spacing.x2_5, vertical: Spacing.x1_5),
                   decoration: BoxDecoration(color: t.bgSunken, borderRadius: Radii.control),
-                  child: Text(p, style: TextStyle(fontSize: TypeScale.xs, fontFamily: 'monospace')),
-                )),
+                  child: Text(p, style: const TextStyle(fontSize: TypeScale.xs, fontFamily: 'monospace')),
+                ),),
             ],
           ),
         ),
@@ -213,7 +205,7 @@ class _FieldRow extends StatelessWidget {
       child: Row(children: <Widget>[
         Expanded(child: Text(label, style: TextStyle(color: t.textSecondary))),
         Text(value, style: Theme.of(context).textTheme.labelLarge),
-      ]),
+      ],),
     );
   }
 }

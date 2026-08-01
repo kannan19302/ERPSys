@@ -1,15 +1,14 @@
-// @ts-nocheck
 import {
   CanActivate,
   ExecutionContext,
   Injectable,
   UnauthorizedException,
-} from '@nestjs/common';
-import type { Request } from 'express';
-import { prisma } from '@unerp/database';
-import { hashApiKey } from '../auth/api-key.util';
+} from "@nestjs/common";
+import type { Request } from "express";
+import { prisma } from "@unerp/database";
+import { hashApiKey } from "../auth/api-key.util";
 
-const API_KEY_HEADER = 'x-api-key';
+const API_KEY_HEADER = "x-api-key";
 
 /**
  * Service-to-service authentication. Verifies the `x-api-key` header against an
@@ -24,27 +23,27 @@ export class ApiKeyGuard implements CanActivate {
     const req = context.switchToHttp().getRequest<Request>();
     const raw = req.headers[API_KEY_HEADER];
 
-    if (!raw || typeof raw !== 'string') {
-      throw new UnauthorizedException('Missing API key');
+    if (!raw || typeof raw !== "string") {
+      throw new UnauthorizedException("Missing API key");
     }
 
     const key = await prisma.apiKey.findUnique({
       where: { hashedKey: hashApiKey(raw) },
     });
 
-    if (!key || key.status !== 'ACTIVE') {
-      throw new UnauthorizedException('Invalid or revoked API key');
+    if (!key || key.status !== "ACTIVE") {
+      throw new UnauthorizedException("Invalid or revoked API key");
     }
     if (key.expiresAt && key.expiresAt.getTime() < Date.now()) {
-      throw new UnauthorizedException('API key expired');
+      throw new UnauthorizedException("API key expired");
     }
 
     // Optional IP allow-list.
     if (key.ipWhitelist) {
-      const allowed = key.ipWhitelist.split(',').map((s) => s.trim());
-      const ip = req.ip ?? '';
+      const allowed = key.ipWhitelist.split(",").map((s) => s.trim());
+      const ip = req.ip ?? "";
       if (allowed.length > 0 && !allowed.includes(ip)) {
-        throw new UnauthorizedException('Source IP not allowed for this key');
+        throw new UnauthorizedException("Source IP not allowed for this key");
       }
     }
 
@@ -53,7 +52,7 @@ export class ApiKeyGuard implements CanActivate {
       tenantId: key.tenantId,
       userId: `apikey:${key.id}`,
       apiKeyId: key.id,
-      scopes: key.apiScopes?.split(',') ?? [],
+      scopes: key.apiScopes?.split(",") ?? [],
     };
 
     return true;

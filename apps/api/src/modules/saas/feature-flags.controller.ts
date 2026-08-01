@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Controller,
   Get,
@@ -47,7 +46,9 @@ const evaluateAccessSchema = z.object({
 const assignFeatureSchema = z.object({
   featureKey: z.string().min(1).max(100),
   featureName: z.string().min(1).max(255),
-  featureType: z.enum(["BOOLEAN", "SEAT_LIMITED", "USAGE_LIMITED"]).default("BOOLEAN"),
+  featureType: z
+    .enum(["BOOLEAN", "SEAT_LIMITED", "USAGE_LIMITED"])
+    .default("BOOLEAN"),
   limitValue: z.number().int().optional(),
   isActive: z.boolean().default(true),
 });
@@ -80,7 +81,10 @@ export class FeatureFlagsController {
   @Get(":key")
   async getFeatureFlag(@Req() req: AuthReq, @Param("key") key: string) {
     const feature = await this.planEngineService.db.saaSPlanFeature.findFirst({
-      where: { featureKey: key, plan: { subscriptions: { some: { tenantId: req.user.tenantId } } } },
+      where: {
+        featureKey: key,
+        plan: { subscriptions: { some: { tenantId: req.user.tenantId } } },
+      },
     });
     return feature ?? { featureKey: key, notFound: true };
   }
@@ -88,7 +92,11 @@ export class FeatureFlagsController {
   @ApiOperation({ summary: "Create a new feature flag" })
   @Permissions("saas.plan.create")
   @Post()
-  async createFeatureFlag(@Req() req: AuthReq, @ZodBody(createFeatureFlagSchema) body: z.infer<typeof createFeatureFlagSchema>) {
+  async createFeatureFlag(
+    @Req() req: AuthReq,
+    @ZodBody(createFeatureFlagSchema)
+    body: z.infer<typeof createFeatureFlagSchema>,
+  ) {
     const plan = await this.planEngineService.db.saaSPlan.findFirst({
       where: { subscriptions: { some: { tenantId: req.user.tenantId } } },
     });
@@ -107,7 +115,12 @@ export class FeatureFlagsController {
   @ApiOperation({ summary: "Update a feature flag" })
   @Permissions("saas.plan.update")
   @Patch(":id")
-  async updateFeatureFlag(@Req() req: AuthReq, @Param("id") id: string, @ZodBody(updateFeatureFlagSchema) body: z.infer<typeof updateFeatureFlagSchema>) {
+  async updateFeatureFlag(
+    @Req() req: AuthReq,
+    @Param("id") id: string,
+    @ZodBody(updateFeatureFlagSchema)
+    body: z.infer<typeof updateFeatureFlagSchema>,
+  ) {
     return this.planEngineService.updatePlanFeature(req.user.tenantId, id, {
       featureName: body.name,
       description: body.description,
@@ -126,7 +139,9 @@ export class FeatureFlagsController {
   @ApiOperation({ summary: "Evaluate feature access for a tenant" })
   @Permissions("saas.plan.read")
   @Post("evaluate")
-  async evaluateFeatureAccess(@ZodBody(evaluateAccessSchema) body: z.infer<typeof evaluateAccessSchema>) {
+  async evaluateFeatureAccess(
+    @ZodBody(evaluateAccessSchema) body: z.infer<typeof evaluateAccessSchema>,
+  ) {
     const features = await this.planEngineService.db.saaSPlanFeature.findMany({
       where: {
         featureKey: { in: body.featureKeys },
@@ -163,7 +178,11 @@ export class FeatureFlagsController {
   @ApiOperation({ summary: "Assign a feature to a plan" })
   @Permissions("saas.plan.update")
   @Post("plans/:planId/features")
-  async assignFeatureToPlan(@Req() req: AuthReq, @Param("planId") planId: string, @ZodBody(assignFeatureSchema) body: z.infer<typeof assignFeatureSchema>) {
+  async assignFeatureToPlan(
+    @Req() req: AuthReq,
+    @Param("planId") planId: string,
+    @ZodBody(assignFeatureSchema) body: z.infer<typeof assignFeatureSchema>,
+  ) {
     return this.planEngineService.addPlanFeature(req.user.tenantId, planId, {
       featureKey: body.featureKey,
       featureName: body.featureName,
@@ -177,8 +196,15 @@ export class FeatureFlagsController {
   @ApiOperation({ summary: "Remove a feature from a plan" })
   @Permissions("saas.plan.update")
   @Delete("plans/:planId/features/:featureId")
-  async removeFeatureFromPlan(@Req() req: AuthReq, @Param("planId") _planId: string, @Param("featureId") featureId: string) {
-    return this.planEngineService.removePlanFeature(req.user.tenantId, featureId);
+  async removeFeatureFromPlan(
+    @Req() req: AuthReq,
+    @Param("planId") _planId: string,
+    @Param("featureId") featureId: string,
+  ) {
+    return this.planEngineService.removePlanFeature(
+      req.user.tenantId,
+      featureId,
+    );
   }
 
   @ApiOperation({ summary: "List all feature gates" })
@@ -186,12 +212,17 @@ export class FeatureFlagsController {
   @Get("gates")
   async listFeatureGates(@Req() req: AuthReq) {
     const features = await this.planEngineService.db.saaSPlanFeature.findMany({
-      where: { plan: { subscriptions: { some: { tenantId: req.user.tenantId } } } },
+      where: {
+        plan: { subscriptions: { some: { tenantId: req.user.tenantId } } },
+      },
     });
     return features.map((f) => ({
       id: f.id,
       featureKey: f.featureKey,
-      gateExpression: f.type === "BOOLEAN" ? "always" : `limit:${f.limitValue ?? "unlimited"}`,
+      gateExpression:
+        f.type === "BOOLEAN"
+          ? "always"
+          : `limit:${f.limitValue ?? "unlimited"}`,
       description: f.description,
       priority: 0,
     }));
@@ -200,7 +231,10 @@ export class FeatureFlagsController {
   @ApiOperation({ summary: "Create a feature gate" })
   @Permissions("saas.plan.create")
   @Post("gates")
-  async createFeatureGate(@Req() req: AuthReq, @ZodBody(createGateSchema) body: z.infer<typeof createGateSchema>) {
+  async createFeatureGate(
+    @Req() req: AuthReq,
+    @ZodBody(createGateSchema) body: z.infer<typeof createGateSchema>,
+  ) {
     const plan = await this.planEngineService.db.saaSPlan.findFirst({
       where: { subscriptions: { some: { tenantId: req.user.tenantId } } },
     });
@@ -219,7 +253,11 @@ export class FeatureFlagsController {
   @ApiOperation({ summary: "Update a feature gate" })
   @Permissions("saas.plan.update")
   @Patch("gates/:id")
-  async updateFeatureGate(@Req() req: AuthReq, @Param("id") id: string, @ZodBody(updateGateSchema) body: z.infer<typeof updateGateSchema>) {
+  async updateFeatureGate(
+    @Req() req: AuthReq,
+    @Param("id") id: string,
+    @ZodBody(updateGateSchema) body: z.infer<typeof updateGateSchema>,
+  ) {
     return this.planEngineService.updatePlanFeature(req.user.tenantId, id, {
       featureName: body.featureKey,
       featureValue: body.gateExpression,
@@ -230,7 +268,10 @@ export class FeatureFlagsController {
   @ApiOperation({ summary: "Compare feature flags across plans" })
   @Permissions("saas.plan.read")
   @Get("comparison")
-  async comparePlanFeatures(@Req() req: AuthReq, @Query("planIds") planIds?: string) {
+  async comparePlanFeatures(
+    @Req() req: AuthReq,
+    @Query("planIds") planIds?: string,
+  ) {
     const ids = planIds ? planIds.split(",").map((s) => s.trim()) : [];
     return this.planEngineService.comparePlans(req.user.tenantId, ids);
   }

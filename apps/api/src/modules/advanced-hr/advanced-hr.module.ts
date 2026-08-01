@@ -1,9 +1,7 @@
-// @ts-nocheck
 import { Module } from "@nestjs/common";
 import { AdvancedHrController } from "./advanced-hr.controller";
 import { AdvancedHrService } from "./advanced-hr.service";
 import { PayrollTaxService } from "./payroll-tax.service";
-
 
 import { AdvancedHrLearningPathsDeepService } from "./advanced-hr-learning-paths-deep.service";
 import { AdvancedHrLearningPathsDeepController } from "./advanced-hr-learning-paths-deep.controller";

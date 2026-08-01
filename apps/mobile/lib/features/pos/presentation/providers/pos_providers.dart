@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 
 import 'package:equatable/equatable.dart';
@@ -24,7 +23,7 @@ final Provider<PosRepository> posRepositoryProvider =
       remote: ref.watch(posRemoteDataSourceProvider),
       cache: ref.watch(responseCacheProvider),
       tenantId: ref.watch(activeTenantIdProvider),
-    ));
+    ),);
 
 class PosListState<T extends Equatable> extends Equatable {
   const PosListState({
@@ -79,8 +78,8 @@ class _PosListController<T extends Equatable> {
     emit(r.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (p) => state.copyWith(items: p.value.data, meta: p.value.meta, query: q,
-          isLoading: false, clearFailures: true, cachedAt: p.cachedAt, clearCachedAt: !p.isFromCache),
-    ));
+          isLoading: false, clearFailures: true, cachedAt: p.cachedAt, clearCachedAt: !p.isFromCache,),
+    ),);
   }
 
   Future<void> loadMore(PosListState<T> state, void Function(PosListState<T>) emit) async {
@@ -91,8 +90,8 @@ class _PosListController<T extends Equatable> {
     emit(r.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (p) => state.copyWith(items: [...state.items, ...p.value.data], meta: p.value.meta,
-          query: next, isLoadingMore: false, clearFailures: true),
-    ));
+          query: next, isLoadingMore: false, clearFailures: true,),
+    ),);
   }
 
   void search(PosListState<T> state, void Function(PosListState<T>) emit, String term) {

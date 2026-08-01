@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { CrmPipelineDeepService } from "../crm-pipeline-deep.service";
 import { NotFoundException, BadRequestException } from "@nestjs/common";

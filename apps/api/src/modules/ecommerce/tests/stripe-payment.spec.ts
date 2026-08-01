@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { BadRequestException, NotFoundException } from "@nestjs/common";
 import * as crypto from "crypto";

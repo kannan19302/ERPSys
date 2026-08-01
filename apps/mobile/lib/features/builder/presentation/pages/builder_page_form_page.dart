@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -126,7 +125,7 @@ class _BuilderPageFormPageState extends ConsumerState<BuilderPageFormPage> {
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _layout,
+              initialValue: _layout,
               decoration: const InputDecoration(labelText: 'Layout'),
               items: const <DropdownMenuItem<String>>[
                 DropdownMenuItem<String>(value: 'default', child: Text('Default')),
@@ -139,7 +138,7 @@ class _BuilderPageFormPageState extends ConsumerState<BuilderPageFormPage> {
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _status,
+              initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: const <DropdownMenuItem<String>>[
                 DropdownMenuItem<String>(value: 'DRAFT', child: Text('Draft')),

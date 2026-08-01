@@ -1,5 +1,3 @@
-import 'dart:io';
-import 'package:dio/dio.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,14 +16,12 @@ import '../storage/secure_session_store.dart';
 final Provider<SharedPreferences> sharedPreferencesProvider =
     Provider<SharedPreferences>(
   (Ref ref) {
-    print('THROWN BY SharedPreferencesProvider');
     throw UnimplementedError('Override in bootstrap()');
   },
 );
 
 final Provider<CookieStore> cookieStoreProvider = Provider<CookieStore>(
   (Ref ref) {
-    print('THROWN BY CookieStoreProvider');
     throw UnimplementedError('Override in bootstrap()');
   },
 );

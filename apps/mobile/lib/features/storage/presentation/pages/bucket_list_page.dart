@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -60,7 +59,7 @@ class _BucketListPageState extends ConsumerState<BucketListPage> {
                     : '${state.meta.total} bucket${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -95,10 +94,10 @@ class _BucketListPageState extends ConsumerState<BucketListPage> {
                   child: Text(b.bucketName, style: Theme.of(context).textTheme.titleSmall),
                 ),
                 Text(b.provider, style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs)),
-              ]),
+              ],),
               const SizedBox(height: Spacing.x1),
               Text('${b.currentSizeGb.toStringAsFixed(1)} GB / ${b.maxQuotaGb} GB',
-                  style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs)),
+                  style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs),),
             ],
           ),
         ),

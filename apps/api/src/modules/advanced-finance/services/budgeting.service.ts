@@ -1,8 +1,7 @@
-// @ts-nocheck
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
-import { GlAccountingService } from './gl-accounting.service';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
+import { GlAccountingService } from "./gl-accounting.service";
 
 @Injectable()
 export class BudgetingService {
@@ -12,7 +11,7 @@ export class BudgetingService {
     return prisma.budget.findMany({
       where: { tenantId },
       include: { account: true },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -21,7 +20,7 @@ export class BudgetingService {
       where: { id: budgetId, tenantId },
       include: { account: true },
     });
-    if (!budget) throw new NotFoundException('Budget not found');
+    if (!budget) throw new NotFoundException("Budget not found");
     return budget;
   }
 
@@ -35,11 +34,11 @@ export class BudgetingService {
       endDate: string;
       costCenterId?: string;
       projectId?: string;
-      spreadMethod?: 'EVEN' | 'HISTORICAL_PROPORTIONAL';
+      spreadMethod?: "EVEN" | "HISTORICAL_PROPORTIONAL";
     },
   ) {
     const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
-    
+
     return prisma.$transaction(async (tx) => {
       const budget = await tx.budget.create({
         data: {
@@ -58,14 +57,18 @@ export class BudgetingService {
       // Handle monthly period amounts based on spread method
       const start = new Date(dto.startDate);
       const end = new Date(dto.endDate);
-      const periods: Array<{ date: Date; periodStr: string; monthVal: number }> = [];
-      
+      const periods: Array<{
+        date: Date;
+        periodStr: string;
+        monthVal: number;
+      }> = [];
+
       let curr = new Date(start.getFullYear(), start.getMonth(), 1);
       const endLimit = new Date(end.getFullYear(), end.getMonth(), 1);
-      
+
       while (curr <= endLimit) {
         const yr = curr.getFullYear();
-        const mo = String(curr.getMonth() + 1).padStart(2, '0');
+        const mo = String(curr.getMonth() + 1).padStart(2, "0");
         periods.push({
           date: new Date(curr),
           periodStr: `${yr}-${mo}`,
@@ -75,9 +78,9 @@ export class BudgetingService {
       }
 
       const totalPeriods = periods.length > 0 ? periods.length : 1;
-      const method = dto.spreadMethod || 'EVEN';
+      const method = dto.spreadMethod || "EVEN";
 
-      if (method === 'EVEN') {
+      if (method === "EVEN") {
         const monthlyAmount = dto.amount / totalPeriods;
         for (const p of periods) {
           await tx.budgetPeriodAmount.create({
@@ -89,7 +92,7 @@ export class BudgetingService {
             },
           });
         }
-      } else if (method === 'HISTORICAL_PROPORTIONAL') {
+      } else if (method === "HISTORICAL_PROPORTIONAL") {
         // Query previous year actuals for the same account
         const prevYear = start.getFullYear() - 1;
         const prevStart = new Date(`${prevYear}-01-01`);
@@ -102,7 +105,7 @@ export class BudgetingService {
             journal: {
               orgId: resolvedOrgId,
               date: { gte: prevStart, lte: prevEnd },
-              status: 'POSTED',
+              status: "POSTED",
             },
           },
           include: { journal: true },
@@ -136,7 +139,7 @@ export class BudgetingService {
             const histMonthIndex = p.monthVal - 1; // 0-11
             const ratio = monthlyActuals[histMonthIndex] / totalActuals;
             const periodAmt = dto.amount * ratio;
-            
+
             await tx.budgetPeriodAmount.create({
               data: {
                 tenantId,
@@ -165,8 +168,10 @@ export class BudgetingService {
       projectId?: string | null;
     },
   ) {
-    const budget = await prisma.budget.findFirst({ where: { id: budgetId, tenantId } });
-    if (!budget) throw new NotFoundException('Budget not found');
+    const budget = await prisma.budget.findFirst({
+      where: { id: budgetId, tenantId },
+    });
+    if (!budget) throw new NotFoundException("Budget not found");
 
     const data: Record<string, unknown> = {};
     if (dto.accountId !== undefined) data.accountId = dto.accountId;
@@ -184,20 +189,31 @@ export class BudgetingService {
   }
 
   async deleteBudget(tenantId: string, budgetId: string) {
-    const budget = await prisma.budget.findFirst({ where: { id: budgetId, tenantId } });
-    if (!budget) throw new NotFoundException('Budget not found');
+    const budget = await prisma.budget.findFirst({
+      where: { id: budgetId, tenantId },
+    });
+    if (!budget) throw new NotFoundException("Budget not found");
 
     await prisma.budget.delete({ where: { id: budgetId } });
     return { success: true };
   }
 
-  async getBudgetVsActuals(tenantId: string, orgId: string, fiscalYear: string) {
+  async getBudgetVsActuals(
+    tenantId: string,
+    orgId: string,
+    fiscalYear: string,
+  ) {
     const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
     const start = new Date(`${fiscalYear}-01-01`);
     const end = new Date(`${fiscalYear}-12-31`);
 
     const budgets = await prisma.budget.findMany({
-      where: { tenantId, orgId: resolvedOrgId, startDate: { gte: start }, endDate: { lte: end } },
+      where: {
+        tenantId,
+        orgId: resolvedOrgId,
+        startDate: { gte: start },
+        endDate: { lte: end },
+      },
       include: { account: true },
     });
 
@@ -206,14 +222,21 @@ export class BudgetingService {
       where: {
         tenantId,
         accountId: { in: accountIds },
-        journal: { orgId: resolvedOrgId, date: { gte: start, lte: end }, status: 'POSTED' },
+        journal: {
+          orgId: resolvedOrgId,
+          date: { gte: start, lte: end },
+          status: "POSTED",
+        },
       },
     });
 
     const actualByAccount = new Map<string, number>();
     for (const entry of entries) {
       const current = actualByAccount.get(entry.accountId) || 0;
-      actualByAccount.set(entry.accountId, current + Number(entry.debit) - Number(entry.credit));
+      actualByAccount.set(
+        entry.accountId,
+        current + Number(entry.debit) - Number(entry.credit),
+      );
     }
 
     const items = budgets.map((b) => {

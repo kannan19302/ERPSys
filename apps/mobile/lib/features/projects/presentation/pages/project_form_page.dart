@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
 import '../../../../core/utils/formatters.dart';
-import '../../domain/entities/projects.dart';
 import '../providers/projects_providers.dart';
 
 class ProjectFormPage extends ConsumerStatefulWidget {
@@ -80,7 +79,7 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
     };
 
     final result = await ref.read(projectListControllerProvider.notifier).save(
-      payload, id: widget.projectId);
+      payload, id: widget.projectId,);
 
     if (!context.mounted) return;
     setState(() => _saving = false);
@@ -138,7 +137,7 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
                     onTap: () async {
                       final picked = await showDatePicker(
                         context: context, initialDate: _startDate ?? DateTime.now(),
-                        firstDate: DateTime(2020), lastDate: DateTime(2030));
+                        firstDate: DateTime(2020), lastDate: DateTime(2030),);
                       if (picked != null) setState(() => _startDate = picked);
                     },
                     child: InputDecorator(
@@ -153,7 +152,7 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
                     onTap: () async {
                       final picked = await showDatePicker(
                         context: context, initialDate: _endDate ?? DateTime.now().add(const Duration(days: 30)),
-                        firstDate: DateTime(2020), lastDate: DateTime(2030));
+                        firstDate: DateTime(2020), lastDate: DateTime(2030),);
                       if (picked != null) setState(() => _endDate = picked);
                     },
                     child: InputDecorator(
@@ -167,12 +166,12 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _budgetCtrl,
-              keyboardType: TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(labelText: 'Budget'),
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _status,
+              initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: ['PLANNING', 'IN_PROGRESS', 'ON_HOLD', 'COMPLETED', 'CANCELLED']
                   .map((v) => DropdownMenuItem<String>(value: v, child: Text(v)))
@@ -181,7 +180,7 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _priority,
+              initialValue: _priority,
               decoration: const InputDecoration(labelText: 'Priority'),
               items: ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
                   .map((v) => DropdownMenuItem<String>(value: v, child: Text(v)))

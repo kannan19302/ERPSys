@@ -36,7 +36,7 @@ class FixedAssetsRemoteDataSourceImpl implements FixedAssetsRemoteDataSource {
   @override
   Future<Paginated<FixedAssetModel>> listFixedAssets(ListQuery query) =>
       _client.getPaginated<FixedAssetModel>(
-        ApiPaths.fixedAssets, query, FixedAssetModel.fromJson);
+        ApiPaths.fixedAssets, query, FixedAssetModel.fromJson,);
 
   @override
   Future<FixedAssetModel> getFixedAsset(String id) async =>
@@ -57,39 +57,39 @@ class FixedAssetsRemoteDataSourceImpl implements FixedAssetsRemoteDataSource {
   @override
   Future<FixedAssetModel> disposeFixedAsset(String id, Map<String, dynamic> payload) async =>
       FixedAssetModel.fromJson(
-        await _client.post('${ApiPaths.fixedAsset(id)}/dispose', body: payload));
+        await _client.post('${ApiPaths.fixedAsset(id)}/dispose', body: payload),);
 
   @override
   Future<Paginated<AssetDepreciationScheduleModel>> listDepreciationSchedules(ListQuery query) =>
       _client.getPaginated<AssetDepreciationScheduleModel>(
-        ApiPaths.assetDepreciation, query, AssetDepreciationScheduleModel.fromJson);
+        ApiPaths.assetDepreciation, query, AssetDepreciationScheduleModel.fromJson,);
 
   @override
   Future<AssetDepreciationScheduleModel> recordDepreciation(Map<String, dynamic> payload) async =>
       AssetDepreciationScheduleModel.fromJson(
-        await _client.post(ApiPaths.assetDepreciation, body: payload));
+        await _client.post(ApiPaths.assetDepreciation, body: payload),);
 
   @override
   Future<Paginated<AssetMaintenanceScheduleModel>> listMaintenanceSchedules(ListQuery query) =>
       _client.getPaginated<AssetMaintenanceScheduleModel>(
-        ApiPaths.assetMaintenance, query, AssetMaintenanceScheduleModel.fromJson);
+        ApiPaths.assetMaintenance, query, AssetMaintenanceScheduleModel.fromJson,);
 
   @override
   Future<AssetMaintenanceScheduleModel> getMaintenanceSchedule(String id) async =>
       AssetMaintenanceScheduleModel.fromJson(
-        await _client.getObject(ApiPaths.assetMaintenanceSchedule(id)));
+        await _client.getObject(ApiPaths.assetMaintenanceSchedule(id)),);
 
   @override
   Future<AssetMaintenanceScheduleModel> createMaintenanceSchedule(
-    Map<String, dynamic> payload) async =>
+    Map<String, dynamic> payload,) async =>
       AssetMaintenanceScheduleModel.fromJson(
-        await _client.post(ApiPaths.assetMaintenance, body: payload));
+        await _client.post(ApiPaths.assetMaintenance, body: payload),);
 
   @override
   Future<AssetMaintenanceScheduleModel> updateMaintenanceSchedule(
-    String id, Map<String, dynamic> payload) async =>
+    String id, Map<String, dynamic> payload,) async =>
       AssetMaintenanceScheduleModel.fromJson(
-        await _client.patch(ApiPaths.assetMaintenanceSchedule(id), body: payload));
+        await _client.patch(ApiPaths.assetMaintenanceSchedule(id), body: payload),);
 
   @override
   Future<void> deleteMaintenanceSchedule(String id) =>
@@ -98,12 +98,12 @@ class FixedAssetsRemoteDataSourceImpl implements FixedAssetsRemoteDataSource {
   @override
   Future<AssetMaintenanceScheduleModel> completeMaintenanceSchedule(String id) async =>
       AssetMaintenanceScheduleModel.fromJson(
-        await _client.post('${ApiPaths.assetMaintenanceSchedule(id)}/complete'));
+        await _client.post('${ApiPaths.assetMaintenanceSchedule(id)}/complete'),);
 
   @override
   Future<Paginated<AssetDisposalModel>> listDisposals(ListQuery query) =>
       _client.getPaginated<AssetDisposalModel>(
-        ApiPaths.assetDisposals, query, AssetDisposalModel.fromJson);
+        ApiPaths.assetDisposals, query, AssetDisposalModel.fromJson,);
 
   @override
   Future<AssetDisposalModel> getDisposal(String id) async =>

@@ -1,8 +1,7 @@
-// @ts-nocheck
-'use client';
-import styles from './error.module.css';
-import { useEffect } from 'react';
-import { ErrorFallback } from '@/components/ErrorFallback';
+"use client";
+import styles from "./error.module.css";
+import { useEffect } from "react";
+import { ErrorFallback } from "@/components/ErrorFallback";
 
 export default function DashboardErrorBoundary({
   error,
@@ -12,7 +11,7 @@ export default function DashboardErrorBoundary({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error('Dashboard runtime error:', error);
+    console.error("Dashboard runtime error:", error);
   }, [error]);
 
   return (

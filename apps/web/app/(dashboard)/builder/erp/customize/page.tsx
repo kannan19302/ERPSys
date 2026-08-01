@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 export const dynamic = "force-dynamic";
 import styles from "./page.module.css";
@@ -25,6 +24,17 @@ interface NavConfig {
   hidden: string[];
   renames: Record<string, string>;
   submodules: any[];
+}
+
+interface NavSubmodule {
+  slug: string;
+  name: string;
+  pages?: unknown[];
+}
+
+interface NavOverlayResponse {
+  config?: NavConfig;
+  submodules?: NavSubmodule[];
 }
 
 const itemKey = (it: any) => it.href || it.name;
@@ -73,7 +83,9 @@ export default function CustomizeAppPage() {
   const load = async () => {
     setLoading(true);
     try {
-      const data = await client.get(`/builder/nav-overlay/${moduleId}`);
+      const data = await client.get<NavOverlayResponse>(
+        `/builder/nav-overlay/${moduleId}`,
+      );
       setConfig({
         order: [],
         hidden: [],

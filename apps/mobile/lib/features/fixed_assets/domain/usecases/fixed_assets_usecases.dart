@@ -64,7 +64,7 @@ class ListDepreciationSchedulesUseCase
   final FixedAssetsRepository _repository;
   @override
   Future<Result<Cacheable<Paginated<AssetDepreciationSchedule>>>> call(
-    ListQuery params) =>
+    ListQuery params,) =>
       _repository.listDepreciationSchedules(params);
 }
 
@@ -74,7 +74,7 @@ class ListMaintenanceSchedulesUseCase
   final FixedAssetsRepository _repository;
   @override
   Future<Result<Cacheable<Paginated<AssetMaintenanceSchedule>>>> call(
-    ListQuery params) =>
+    ListQuery params,) =>
       _repository.listMaintenanceSchedules(params);
 }
 
@@ -135,7 +135,7 @@ class SaveMaintenanceScheduleUseCase
   final FixedAssetsRepository _repository;
   @override
   Future<Result<AssetMaintenanceSchedule>> call(
-      SaveMaintenanceScheduleParams params) {
+      SaveMaintenanceScheduleParams params,) {
     final String? id = params.id;
     return id == null
         ? _repository.createMaintenanceSchedule(params.payload)

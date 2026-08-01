@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Injectable,
   NotFoundException,
@@ -21,7 +20,9 @@ export class ApiKeysService {
 
   private maskKey(fullKey: string): string {
     if (fullKey.length <= 10) return fullKey;
-    return fullKey.substring(0, 10) + "****" + fullKey.substring(fullKey.length - 4);
+    return (
+      fullKey.substring(0, 10) + "****" + fullKey.substring(fullKey.length - 4)
+    );
   }
 
   async listApiKeys(tenantId: string) {
@@ -42,17 +43,21 @@ export class ApiKeysService {
     }));
   }
 
-  async createApiKey(tenantId: string, dto: {
-    name: string;
-    permissions?: string[];
-    allowedIps?: string[];
-    expiresAt?: string;
-    rateLimit?: number;
-  }) {
+  async createApiKey(
+    tenantId: string,
+    dto: {
+      name: string;
+      permissions?: string[];
+      allowedIps?: string[];
+      expiresAt?: string;
+      rateLimit?: number;
+    },
+  ) {
     const existing = await prisma.tenantApiKey.findUnique({
       where: { tenantId_name: { tenantId, name: dto.name } },
     });
-    if (existing) throw new ConflictException("API key with this name already exists");
+    if (existing)
+      throw new ConflictException("API key with this name already exists");
 
     const { fullKey, prefix, hash } = this.generateApiKey();
 
@@ -80,7 +85,9 @@ export class ApiKeysService {
   }
 
   async revokeApiKey(tenantId: string, id: string) {
-    const key = await prisma.tenantApiKey.findFirst({ where: { id, tenantId } });
+    const key = await prisma.tenantApiKey.findFirst({
+      where: { id, tenantId },
+    });
     if (!key) throw new NotFoundException("API key not found");
     return prisma.tenantApiKey.update({
       where: { id },
@@ -89,7 +96,9 @@ export class ApiKeysService {
   }
 
   async getApiKey(tenantId: string, id: string) {
-    const key = await prisma.tenantApiKey.findFirst({ where: { id, tenantId } });
+    const key = await prisma.tenantApiKey.findFirst({
+      where: { id, tenantId },
+    });
     if (!key) throw new NotFoundException("API key not found");
     return {
       id: key.id,
@@ -105,13 +114,19 @@ export class ApiKeysService {
     };
   }
 
-  async updateApiKey(tenantId: string, id: string, dto: {
-    name?: string;
-    permissions?: string[];
-    allowedIps?: string[];
-    rateLimit?: number;
-  }) {
-    const key = await prisma.tenantApiKey.findFirst({ where: { id, tenantId } });
+  async updateApiKey(
+    tenantId: string,
+    id: string,
+    dto: {
+      name?: string;
+      permissions?: string[];
+      allowedIps?: string[];
+      rateLimit?: number;
+    },
+  ) {
+    const key = await prisma.tenantApiKey.findFirst({
+      where: { id, tenantId },
+    });
     if (!key) throw new NotFoundException("API key not found");
     const updateData: Record<string, unknown> = {};
     if (dto.name !== undefined) updateData.name = dto.name;
@@ -121,7 +136,9 @@ export class ApiKeysService {
   }
 
   async rotateApiKey(tenantId: string, id: string) {
-    const key = await prisma.tenantApiKey.findFirst({ where: { id, tenantId } });
+    const key = await prisma.tenantApiKey.findFirst({
+      where: { id, tenantId },
+    });
     if (!key) throw new NotFoundException("API key not found");
 
     const { fullKey, prefix, hash } = this.generateApiKey();
@@ -163,15 +180,23 @@ export class ApiKeysService {
   }
 
   async getApiKeyUsage(tenantId: string, id: string) {
-    const key = await prisma.tenantApiKey.findFirst({ where: { id, tenantId } });
+    const key = await prisma.tenantApiKey.findFirst({
+      where: { id, tenantId },
+    });
     if (!key) throw new NotFoundException("API key not found");
     return prisma.tenantAuditLog.count({
       where: { tenantId, resource: "api-key", resourceId: id },
     });
   }
 
-  async setKeyExpiry(tenantId: string, id: string, body: { expiresAt: string | null }) {
-    const key = await prisma.tenantApiKey.findFirst({ where: { id, tenantId } });
+  async setKeyExpiry(
+    tenantId: string,
+    id: string,
+    body: { expiresAt: string | null },
+  ) {
+    const key = await prisma.tenantApiKey.findFirst({
+      where: { id, tenantId },
+    });
     if (!key) throw new NotFoundException("API key not found");
     return prisma.tenantApiKey.update({
       where: { id },

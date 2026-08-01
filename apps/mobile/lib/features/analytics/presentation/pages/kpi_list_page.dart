@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -52,7 +51,7 @@ class _KpiListPageState extends ConsumerState<KpiListPage> {
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
                 .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value)))
+                    value: e.key, child: Text(e.value),),)
                 .toList(),
           ),
         ],
@@ -95,7 +94,7 @@ class _KpiListPageState extends ConsumerState<KpiListPage> {
                     : '${state.meta.total} KPI${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -150,23 +149,23 @@ class _KpiTile extends StatelessWidget {
               Row(children: [
                 Expanded(
                   child: Text(kpi.name,
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
                 UiStatusBadge(
                   label: kpi.status,
                   tone: _statusTone(kpi.status),
                 ),
-              ]),
+              ],),
               const SizedBox(height: Spacing.x1),
               Row(children: [
                 Text('${kpi.value.toStringAsFixed(1)}${kpi.unit ?? ''}',
-                    style: Theme.of(context).textTheme.labelLarge),
+                    style: Theme.of(context).textTheme.labelLarge,),
                 if (kpi.target != null) ...[
                   const SizedBox(width: Spacing.x2),
                   Text('of ${kpi.target}',
-                      style: TextStyle(color: t.textSecondary, fontSize: TypeScale.sm)),
+                      style: TextStyle(color: t.textSecondary, fontSize: TypeScale.sm),),
                 ],
-              ]),
+              ],),
               if (kpi.trend != null) ...[
                 const SizedBox(height: Spacing.x1),
                 Text(kpi.trend!, style: TextStyle(color: t.textSecondary, fontSize: TypeScale.sm)),

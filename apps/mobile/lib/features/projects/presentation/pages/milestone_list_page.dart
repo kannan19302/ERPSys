@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -36,7 +35,7 @@ class _MilestoneListPageState extends ConsumerState<MilestoneListPage> {
                     : '${state.meta.total} milestone${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -82,20 +81,20 @@ class _MilestoneTile extends StatelessWidget {
             Row(children: [
               Expanded(
                 child: Text(milestone.title,
-                    style: Theme.of(context).textTheme.titleSmall),
+                    style: Theme.of(context).textTheme.titleSmall,),
               ),
               UiStatusBadge(
                 label: milestone.status,
                 tone: _statusTone(milestone.status),
               ),
-            ]),
+            ],),
             const SizedBox(height: Spacing.x1),
             Row(children: [
               Icon(Icons.event, size: TypeScale.sm, color: t.textTertiary),
               const SizedBox(width: Spacing.x0_5),
               Text('Due ${Formatters.date(milestone.dueDate)}',
-                  style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
-            ]),
+                  style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
+            ],),
           ],
         ),
       ),

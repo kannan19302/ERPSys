@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/usecase/result.dart';
 import '../providers/saas_portal_providers.dart';
 
 class SaasPortalSupportTicketFormPage extends ConsumerStatefulWidget {
@@ -67,16 +65,16 @@ class _SaasPortalSupportTicketFormPageState extends ConsumerState<SaasPortalSupp
         const SizedBox(height: Spacing.x4),
         TextFormField(controller: _descriptionCtrl, maxLines: 5, decoration: const InputDecoration(labelText: 'Description', alignLabelWithHint: true)),
         const SizedBox(height: Spacing.x4),
-        DropdownButtonFormField<String>(value: _priority, decoration: const InputDecoration(labelText: 'Priority'), items: const [
+        DropdownButtonFormField<String>(initialValue: _priority, decoration: const InputDecoration(labelText: 'Priority'), items: const [
           DropdownMenuItem(value: 'LOW', child: Text('Low')), DropdownMenuItem(value: 'MEDIUM', child: Text('Medium')),
           DropdownMenuItem(value: 'HIGH', child: Text('High')), DropdownMenuItem(value: 'URGENT', child: Text('Urgent')),
-        ], onChanged: (v) { if (v != null) setState(() => _priority = v); }),
+        ], onChanged: (v) { if (v != null) setState(() => _priority = v); },),
         const SizedBox(height: Spacing.x4),
-        DropdownButtonFormField<String>(value: _category, decoration: const InputDecoration(labelText: 'Category'), items: const [
+        DropdownButtonFormField<String>(initialValue: _category, decoration: const InputDecoration(labelText: 'Category'), items: const [
           DropdownMenuItem(value: 'GENERAL', child: Text('General')), DropdownMenuItem(value: 'BILLING', child: Text('Billing')),
           DropdownMenuItem(value: 'TECHNICAL', child: Text('Technical')), DropdownMenuItem(value: 'FEATURE', child: Text('Feature Request')),
-        ], onChanged: (v) { if (v != null) setState(() => _category = v); }),
-      ])),
+        ], onChanged: (v) { if (v != null) setState(() => _category = v); },),
+      ],),),
     );
   }
 }

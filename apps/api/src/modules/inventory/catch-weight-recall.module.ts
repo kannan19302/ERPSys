@@ -1,7 +1,6 @@
-// @ts-nocheck
-import { Module } from '@nestjs/common';
-import { CatchWeightRecallController } from './catch-weight-recall.controller';
-import { CatchWeightRecallService } from './catch-weight-recall.service';
+import { Module } from "@nestjs/common";
+import { CatchWeightRecallController } from "./catch-weight-recall.controller";
+import { CatchWeightRecallService } from "./catch-weight-recall.service";
 
 @Module({
   controllers: [CatchWeightRecallController],

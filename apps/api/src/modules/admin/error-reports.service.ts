@@ -1,7 +1,6 @@
-// @ts-nocheck
-import { Injectable } from '@nestjs/common';
-import { prisma, runWithTenantSession } from '@unerp/database';
-import { ErrorReportInput } from './error-reports.schemas';
+import { Injectable } from "@nestjs/common";
+import { prisma, runWithTenantSession } from "@unerp/database";
+import { ErrorReportInput } from "./error-reports.schemas";
 
 @Injectable()
 export class ErrorReportsService {
@@ -11,7 +10,7 @@ export class ErrorReportsService {
     // 1. Resolve tenantId if it's missing
     if (!tenantId) {
       const systemTenant = await prisma.tenant.findFirst({
-        where: { slug: 'system' },
+        where: { slug: "system" },
       });
       if (systemTenant) {
         tenantId = systemTenant.id;
@@ -23,8 +22,8 @@ export class ErrorReportsService {
       const errorLog = await prisma.errorLog.create({
         data: {
           tenantId,
-          source: 'FRONTEND',
-          level: 'ERROR',
+          source: "FRONTEND",
+          level: "ERROR",
           message: dto.message,
           stack: dto.stack || null,
           requestId: dto.requestId || null,
@@ -43,10 +42,10 @@ export class ErrorReportsService {
         await prisma.adminAlert.create({
           data: {
             tenantId,
-            type: 'USER_ERROR_REPORT',
-            severity: 'ERROR',
+            type: "USER_ERROR_REPORT",
+            severity: "ERROR",
             title: `User Error Report: ${dto.message.slice(0, 50)}`,
-            message: `A user has reported an error on ${dto.url}.\n\nUser Description: ${dto.description}\n\nEmail: ${dto.userEmail || 'Anonymous'}\nRequest ID: ${dto.requestId || 'N/A'}`,
+            message: `A user has reported an error on ${dto.url}.\n\nUser Description: ${dto.description}\n\nEmail: ${dto.userEmail || "Anonymous"}\nRequest ID: ${dto.requestId || "N/A"}`,
             metadata: {
               errorLogId: errorLog.id,
               url: dto.url,
@@ -68,7 +67,7 @@ export class ErrorReportsService {
       return runWithTenantSession(
         {
           tenantId,
-          userId: 'system-error-reporter',
+          userId: "system-error-reporter",
         },
         executeInsertions,
       );

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import React, { useState, useEffect } from "react";
 import {
@@ -80,7 +79,11 @@ export default function PwaPage() {
       header: "TTL",
       render: (r) => `${Math.round(r.maxAgeSeconds / 60)}min`,
     },
-    { key: "isActive", header: "Active", render: (r) => (r.isActive ? "Yes" : "No") },
+    {
+      key: "isActive",
+      header: "Active",
+      render: (r) => (r.isActive ? "Yes" : "No"),
+    },
   ];
 
   return (
@@ -112,8 +115,15 @@ export default function PwaPage() {
       </div>
       <div className="ui-grid-2">
         <Card padding="sm">
-          <div style={{ padding: 'var(--space-3)' }}>
-            <div className="ui-flex" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+          <div style={{ padding: "var(--space-3)" }}>
+            <div
+              className="ui-flex"
+              style={{
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "var(--space-3)",
+              }}
+            >
               <h4 className="text-xs font-semibold m-0">Cache Rules</h4>
               <Button variant="primary" size="sm">
                 <Settings size={14} /> Manage
@@ -123,8 +133,15 @@ export default function PwaPage() {
           </div>
         </Card>
         <Card padding="sm">
-          <div style={{ padding: 'var(--space-3)' }}>
-            <div className="ui-flex" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+          <div style={{ padding: "var(--space-3)" }}>
+            <div
+              className="ui-flex"
+              style={{
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "var(--space-3)",
+              }}
+            >
               <h4 className="text-xs font-semibold m-0">Install Prompt</h4>
               <Button variant="primary" size="sm">
                 <Settings size={14} /> Configure

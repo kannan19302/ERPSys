@@ -1,15 +1,9 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/widgets/ui_card.dart';
 import '../../../../core/utils/formatters.dart';
-import '../../../../core/widgets/permission_gate.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/widgets/state_views.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/utils/formatters.dart';
-import '../../../../core/widgets/state_views.dart';
 import '../../domain/entities/saas.dart';
 import '../providers/saas_providers.dart';
 
@@ -60,12 +54,12 @@ class _InvoiceDetail extends StatelessWidget {
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(invoice.invoiceNumber ?? 'Invoice', style: Theme.of(context).textTheme.titleLarge),
               Text('${invoice.currency} ${invoice.amount.toStringAsFixed(2)}', style: TextStyle(color: t.textSecondary, fontSize: TypeScale.lg, fontWeight: TypeScale.semibold)),
-            ])),
+            ],),),
             Container(padding: const EdgeInsets.symmetric(horizontal: Spacing.x2_5, vertical: Spacing.x1),
               decoration: BoxDecoration(color: statusBg, borderRadius: Radii.pill),
-              child: Text(statusLabel, style: TextStyle(color: statusColor, fontSize: TypeScale.xs, fontWeight: TypeScale.medium))),
-          ]),
-        ])),
+              child: Text(statusLabel, style: TextStyle(color: statusColor, fontSize: TypeScale.xs, fontWeight: TypeScale.medium)),),
+          ],),
+        ],),),
         const SizedBox(height: Spacing.x4),
         _SectionCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const _SectionTitle(title: 'Details'),
@@ -75,7 +69,7 @@ class _InvoiceDetail extends StatelessWidget {
           if (invoice.paidAt != null) _FieldRow('Paid At', Formatters.dateTime(invoice.paidAt!)),
           if (invoice.createdAt != null) _FieldRow('Created', Formatters.dateTime(invoice.createdAt!)),
           if (invoice.invoicePdf != null) _FieldRow('PDF', invoice.invoicePdf!),
-        ])),
+        ],),),
       ],
     );
   }

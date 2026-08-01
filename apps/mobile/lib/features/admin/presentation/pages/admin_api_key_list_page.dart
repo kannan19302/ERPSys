@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -86,7 +85,7 @@ class _AdminApiKeyListPageState extends ConsumerState<AdminApiKeyListPage> {
       emptyMessage: 'API keys for programmatic access will appear here.',
       itemBuilder: (BuildContext context, AdminApiKey key, _) => UiCard(
         onTap: () => context.pushNamed('admin-api-key-detail',
-            pathParameters: <String, String>{'id': key.id}),
+            pathParameters: <String, String>{'id': key.id},),
         padding: const EdgeInsets.all(Spacing.x3),
         child: Row(
           children: <Widget>[
@@ -106,19 +105,19 @@ class _AdminApiKeyListPageState extends ConsumerState<AdminApiKeyListPage> {
                           style: TextStyle(
                             color: key.isActive ? t.success : t.textSecondary,
                             fontSize: TypeScale.xs, fontWeight: TypeScale.medium,
-                          )),
+                          ),),
                     ),
-                  ]),
+                  ],),
                   if (key.maskedKey != null) ...<Widget>[
                     const SizedBox(height: Spacing.x1),
                     Text(key.maskedKey!, style: TextStyle(
                       color: t.textTertiary, fontSize: TypeScale.xs, fontFamily: 'monospace',
-                    )),
+                    ),),
                   ],
                   if (key.lastUsedAt != null) ...<Widget>[
                     const SizedBox(height: Spacing.x0_5),
                     Text('Last used: ${_fmt(key.lastUsedAt!)}',
-                        style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
+                        style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
                   ],
                 ],
               ),

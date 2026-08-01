@@ -1,5 +1,4 @@
-// @ts-nocheck
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
 
 /**
  * Fetch helper for the PUBLIC/unauthenticated `/store/:tenantSlug/*` storefront
@@ -14,15 +13,19 @@ export class StorefrontApiError extends Error {
   constructor(message: string, statusCode: number) {
     super(message);
     this.statusCode = statusCode;
-    this.name = 'StorefrontApiError';
+    this.name = "StorefrontApiError";
   }
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE}${path}`;
   const headers = new Headers(options.headers);
-  if (!headers.has('Content-Type') && options.body && typeof options.body === 'string') {
-    headers.set('Content-Type', 'application/json');
+  if (
+    !headers.has("Content-Type") &&
+    options.body &&
+    typeof options.body === "string"
+  ) {
+    headers.set("Content-Type", "application/json");
   }
 
   const res = await fetch(url, { ...options, headers });
@@ -48,20 +51,20 @@ export function storefrontGet<T>(path: string): Promise<T> {
 
 export function storefrontPost<T>(path: string, body?: unknown): Promise<T> {
   return request<T>(path, {
-    method: 'POST',
+    method: "POST",
     body: body != null ? JSON.stringify(body) : undefined,
   });
 }
 
 export function storefrontPatch<T>(path: string, body?: unknown): Promise<T> {
   return request<T>(path, {
-    method: 'PATCH',
+    method: "PATCH",
     body: body != null ? JSON.stringify(body) : undefined,
   });
 }
 
 export function storefrontDelete<T>(path: string): Promise<T> {
-  return request<T>(path, { method: 'DELETE' });
+  return request<T>(path, { method: "DELETE" });
 }
 
 // ─── Shared response shapes (see backend contract in ecommerce.dto.ts / services) ───
@@ -95,7 +98,12 @@ export interface StorefrontPublicProduct {
 
 export interface PaginatedProducts {
   data: StorefrontPublicProduct[];
-  pagination: { page: number; limit: number; total: number; totalPages: number };
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 export interface CartItemRow {
@@ -126,7 +134,10 @@ export interface CheckoutResult {
 
 export function formatMoney(amount: number, currency: string): string {
   try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amount);
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency,
+    }).format(amount);
   } catch {
     return `${currency} ${amount.toFixed(2)}`;
   }

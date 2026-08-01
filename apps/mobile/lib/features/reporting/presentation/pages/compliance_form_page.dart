@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/usecase/result.dart';
 import '../../../../core/utils/formatters.dart';
 import '../providers/reporting_providers.dart';
 
@@ -77,7 +75,6 @@ class _ComplianceFormPageState extends ConsumerState<ComplianceFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final t = context.tokens;
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEditing ? 'Edit Compliance' : 'New Compliance'),
@@ -107,7 +104,7 @@ class _ComplianceFormPageState extends ConsumerState<ComplianceFormPage> {
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _status,
+              initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: const [
                 DropdownMenuItem(value: 'ACTIVE', child: Text('Active')),
@@ -127,9 +124,9 @@ class _ComplianceFormPageState extends ConsumerState<ComplianceFormPage> {
                 if (picked != null) setState(() => _dueDate = picked);
               },
               child: InputDecorator(
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Due Date',
-                  suffixIcon: const Icon(Icons.calendar_today),
+                  suffixIcon: Icon(Icons.calendar_today),
                 ),
                 child: Text(_dueDate != null ? Formatters.date(_dueDate!) : 'Select date'),
               ),

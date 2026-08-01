@@ -1,11 +1,4 @@
-// @ts-nocheck
-import {
-  Controller,
-  Get,
-  Post,
-  UseGuards,
-  Query,
-} from "@nestjs/common";
+import { Controller, Get, Post, UseGuards, Query } from "@nestjs/common";
 import { z } from "zod";
 import { ZodBody } from "../../common/decorators/zod-body.decorator";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
@@ -26,7 +19,9 @@ const customAnalyticsSchema = z.object({
 @Controller("saas/analytics")
 @UseGuards(JwtAuthGuard, RbacGuard)
 export class AnalyticsExtController {
-  constructor(private readonly tenantAnalyticsService: TenantAnalyticsService) {}
+  constructor(
+    private readonly tenantAnalyticsService: TenantAnalyticsService,
+  ) {}
 
   @ApiOperation({ summary: "Get analytics dashboard overview" })
   @Permissions("saas.analytics.read")
@@ -85,23 +80,32 @@ export class AnalyticsExtController {
   @Get("revenue/forecast")
   async getRevenueForecast() {
     const mrr = await this.tenantAnalyticsService.getRevenueAnalytics("30d");
-    const activeSubs = await this.tenantAnalyticsService.db.tenantSubscription.count({
-      where: { status: { in: ["ACTIVE", "TRIAL"] } },
-    });
-    const avgRevenue = activeSubs > 0 ? (Number(mrr.totalRevenue) / activeSubs) : 0;
+    const activeSubs =
+      await this.tenantAnalyticsService.db.tenantSubscription.count({
+        where: { status: { in: ["ACTIVE", "TRIAL"] } },
+      });
+    const avgRevenue =
+      activeSubs > 0 ? Number(mrr.totalRevenue) / activeSubs : 0;
     const forecast = Array.from({ length: 6 }, (_, i) => ({
       month: i + 1,
       projectedRevenue: Math.round(Number(mrr.totalRevenue) * (1 + i * 0.03)),
       confidence: Math.max(85 - i * 5, 60),
     }));
-    return { currentMrr: Number(mrr.totalRevenue), activeSubs, arpu: Math.round(avgRevenue), forecast };
+    return {
+      currentMrr: Number(mrr.totalRevenue),
+      activeSubs,
+      arpu: Math.round(avgRevenue),
+      forecast,
+    };
   }
 
   @ApiOperation({ summary: "Get new subscriptions count" })
   @Permissions("saas.analytics.read")
   @Get("subscriptions/new")
   async getNewSubscriptions(@Query("period") period?: string) {
-    return this.tenantAnalyticsService.getTenantGrowth((period as any) ?? "30d");
+    return this.tenantAnalyticsService.getTenantGrowth(
+      (period as any) ?? "30d",
+    );
   }
 
   @ApiOperation({ summary: "Get subscription conversion rate" })
@@ -109,17 +113,33 @@ export class AnalyticsExtController {
   @Get("subscriptions/conversion")
   async getConversionRate() {
     const [totalVisitors, trialStarts, paidConversions] = await Promise.all([
-      this.tenantAnalyticsService.db.tenant.count({ where: { createdAt: { gte: new Date(Date.now() - 30 * 86400000) } } }),
-      this.tenantAnalyticsService.db.tenantSubscription.count({ where: { status: "TRIAL", startDate: { gte: new Date(Date.now() - 30 * 86400000) } } }),
-      this.tenantAnalyticsService.db.tenantSubscription.count({ where: { status: "ACTIVE", startDate: { gte: new Date(Date.now() - 30 * 86400000) } } }),
+      this.tenantAnalyticsService.db.tenant.count({
+        where: { createdAt: { gte: new Date(Date.now() - 30 * 86400000) } },
+      }),
+      this.tenantAnalyticsService.db.tenantSubscription.count({
+        where: {
+          status: "TRIAL",
+          startDate: { gte: new Date(Date.now() - 30 * 86400000) },
+        },
+      }),
+      this.tenantAnalyticsService.db.tenantSubscription.count({
+        where: {
+          status: "ACTIVE",
+          startDate: { gte: new Date(Date.now() - 30 * 86400000) },
+        },
+      }),
     ]);
     return {
       period: "30d",
       totalRegistrations: totalVisitors,
       trialStarts,
       paidConversions,
-      trialToPaidRate: trialStarts > 0 ? Math.round((paidConversions / trialStarts) * 100) : 0,
-      overallConversionRate: totalVisitors > 0 ? Math.round((paidConversions / totalVisitors) * 100) : 0,
+      trialToPaidRate:
+        trialStarts > 0 ? Math.round((paidConversions / trialStarts) * 100) : 0,
+      overallConversionRate:
+        totalVisitors > 0
+          ? Math.round((paidConversions / totalVisitors) * 100)
+          : 0,
     };
   }
 
@@ -128,15 +148,23 @@ export class AnalyticsExtController {
   @Get("subscriptions/trial")
   async getTrialConversion() {
     const [trials, converted, expired] = await Promise.all([
-      this.tenantAnalyticsService.db.tenantSubscription.findMany({ where: { status: "TRIAL" }, include: { plan: { select: { name: true } } } }),
-      this.tenantAnalyticsService.db.tenantSubscription.count({ where: { status: "ACTIVE", trialEndsAt: { not: null } } }),
-      this.tenantAnalyticsService.db.tenantSubscription.count({ where: { status: "EXPIRED" } }),
+      this.tenantAnalyticsService.db.tenantSubscription.findMany({
+        where: { status: "TRIAL" },
+        include: { plan: { select: { name: true } } },
+      }),
+      this.tenantAnalyticsService.db.tenantSubscription.count({
+        where: { status: "ACTIVE", trialEndsAt: { not: null } },
+      }),
+      this.tenantAnalyticsService.db.tenantSubscription.count({
+        where: { status: "EXPIRED" },
+      }),
     ]);
     return {
       activeTrials: trials.length,
       convertedToPaid: converted,
       expiredTrials: expired,
-      conversionRate: trials.length > 0 ? Math.round((converted / trials.length) * 100) : 0,
+      conversionRate:
+        trials.length > 0 ? Math.round((converted / trials.length) * 100) : 0,
       byPlan: trials.reduce((acc: Record<string, number>, t: any) => {
         const name = t.plan?.name ?? "Unknown";
         acc[name] = (acc[name] ?? 0) + 1;
@@ -155,19 +183,31 @@ export class AnalyticsExtController {
     const monthAgo = new Date(today.getTime() - 30 * 86400000);
 
     const [daily, weekly, monthly] = await Promise.all([
-      this.tenantAnalyticsService.db.user.count({ where: { lastLoginAt: { gte: today } } }),
-      this.tenantAnalyticsService.db.user.count({ where: { lastLoginAt: { gte: weekAgo } } }),
-      this.tenantAnalyticsService.db.user.count({ where: { lastLoginAt: { gte: monthAgo } } }),
+      this.tenantAnalyticsService.db.user.count({
+        where: { lastLoginAt: { gte: today } },
+      }),
+      this.tenantAnalyticsService.db.user.count({
+        where: { lastLoginAt: { gte: weekAgo } },
+      }),
+      this.tenantAnalyticsService.db.user.count({
+        where: { lastLoginAt: { gte: monthAgo } },
+      }),
     ]);
 
-    return { dailyActiveUsers: daily, weeklyActiveUsers: weekly, monthlyActiveUsers: monthly };
+    return {
+      dailyActiveUsers: daily,
+      weeklyActiveUsers: weekly,
+      monthlyActiveUsers: monthly,
+    };
   }
 
   @ApiOperation({ summary: "Get user growth over time" })
   @Permissions("saas.analytics.read")
   @Get("users/growth")
   async getUserGrowth(@Query("period") period?: string) {
-    return this.tenantAnalyticsService.getTenantGrowth((period as any) ?? "30d");
+    return this.tenantAnalyticsService.getTenantGrowth(
+      (period as any) ?? "30d",
+    );
   }
 
   @ApiOperation({ summary: "Get user retention rates" })
@@ -175,14 +215,20 @@ export class AnalyticsExtController {
   @Get("users/retention")
   async getUserRetention() {
     const totalUsers = await this.tenantAnalyticsService.db.user.count();
-    const activeUsers = await this.tenantAnalyticsService.db.user.count({ where: { lastLoginAt: { gte: new Date(Date.now() - 30 * 86400000) } } });
-    const retainedUsers = await this.tenantAnalyticsService.db.user.count({ where: { lastLoginAt: { gte: new Date(Date.now() - 90 * 86400000) } } });
+    const activeUsers = await this.tenantAnalyticsService.db.user.count({
+      where: { lastLoginAt: { gte: new Date(Date.now() - 30 * 86400000) } },
+    });
+    const retainedUsers = await this.tenantAnalyticsService.db.user.count({
+      where: { lastLoginAt: { gte: new Date(Date.now() - 90 * 86400000) } },
+    });
     return {
       totalUsers,
       activeUsers,
       retainedUsers,
-      retentionRate: totalUsers > 0 ? Math.round((retainedUsers / totalUsers) * 100) : 0,
-      activeRate: totalUsers > 0 ? Math.round((activeUsers / totalUsers) * 100) : 0,
+      retentionRate:
+        totalUsers > 0 ? Math.round((retainedUsers / totalUsers) * 100) : 0,
+      activeRate:
+        totalUsers > 0 ? Math.round((activeUsers / totalUsers) * 100) : 0,
     };
   }
 
@@ -199,7 +245,10 @@ export class AnalyticsExtController {
       const cohort = `${u.createdAt.getFullYear()}-${String(u.createdAt.getMonth() + 1).padStart(2, "0")}`;
       if (!cohorts[cohort]) cohorts[cohort] = { total: 0, active: 0 };
       cohorts[cohort].total++;
-      if (u.lastLoginAt && u.lastLoginAt >= new Date(Date.now() - 30 * 86400000)) {
+      if (
+        u.lastLoginAt &&
+        u.lastLoginAt >= new Date(Date.now() - 30 * 86400000)
+      ) {
         cohorts[cohort].active++;
       }
     }
@@ -208,7 +257,8 @@ export class AnalyticsExtController {
         period,
         total: data.total,
         active: data.active,
-        retentionRate: data.total > 0 ? Math.round((data.active / data.total) * 100) : 0,
+        retentionRate:
+          data.total > 0 ? Math.round((data.active / data.total) * 100) : 0,
       })),
     };
   }
@@ -239,19 +289,30 @@ export class AnalyticsExtController {
   @ApiOperation({ summary: "Run custom analytics query" })
   @Permissions("saas.analytics.read")
   @Post("custom")
-  async runCustomAnalytics(@ZodBody(customAnalyticsSchema) body: z.infer<typeof customAnalyticsSchema>) {
+  async runCustomAnalytics(
+    @ZodBody(customAnalyticsSchema) body: z.infer<typeof customAnalyticsSchema>,
+  ) {
     return this.tenantAnalyticsService.getRevenueAnalytics(body.period);
   }
 
   @ApiOperation({ summary: "Export analytics data" })
   @Permissions("saas.analytics.read")
   @Get("export")
-  async exportAnalyticsData(@Query("format") format?: string, @Query("period") period?: string) {
-    const data = await this.tenantAnalyticsService.getRevenueAnalytics((period as any) ?? "30d");
+  async exportAnalyticsData(
+    @Query("format") format?: string,
+    @Query("period") period?: string,
+  ) {
+    const data = await this.tenantAnalyticsService.getRevenueAnalytics(
+      (period as any) ?? "30d",
+    );
     const fmt = format ?? "json";
     if (fmt === "csv") {
       const header = "metric,value";
-      const rows = [`Total Revenue,${data.totalRevenue}`, `Total Invoices,${data.totalInvoices}`, `Avg Invoice Value,${data.averageInvoiceValue}`];
+      const rows = [
+        `Total Revenue,${data.totalRevenue}`,
+        `Total Invoices,${data.totalInvoices}`,
+        `Avg Invoice Value,${data.averageInvoiceValue}`,
+      ];
       return { format: "CSV", data: [header, ...rows].join("\n") };
     }
     return { format: "JSON", data };

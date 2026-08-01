@@ -1,17 +1,11 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/widgets/ui_card.dart';
-import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/permission_gate.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/widgets/state_views.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
 import '../../../../core/rbac/permissions.dart';
-import '../../../../core/widgets/permission_gate.dart';
-import '../../../../core/widgets/state_views.dart';
 import '../../domain/entities/admin.dart';
 import '../providers/admin_providers.dart';
 
@@ -38,7 +32,7 @@ class AdminRoleDetailPage extends ConsumerWidget {
                   : IconButton(
                       icon: const Icon(Icons.edit_outlined),
                       onPressed: () => context.pushNamed('admin-role-edit',
-                          pathParameters: <String, String>{'id': role.id}),
+                          pathParameters: <String, String>{'id': role.id},),
                     ),
             ) ?? const SizedBox.shrink(),
           ),
@@ -100,8 +94,8 @@ class AdminRoleDetailPage extends ConsumerWidget {
                       margin: const EdgeInsets.only(bottom: Spacing.x1_5),
                       padding: const EdgeInsets.symmetric(horizontal: Spacing.x2_5, vertical: Spacing.x1_5),
                       decoration: BoxDecoration(color: t.bgSunken, borderRadius: Radii.control),
-                      child: Text(p, style: TextStyle(fontSize: TypeScale.xs, fontFamily: 'monospace')),
-                    )),
+                      child: Text(p, style: const TextStyle(fontSize: TypeScale.xs, fontFamily: 'monospace')),
+                    ),),
                 ],
               ),
             ),

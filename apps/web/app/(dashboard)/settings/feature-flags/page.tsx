@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 
 export default function FeatureFlagsRedirectPage() {
-  redirect('/settings/general-branding?tab=feature-flags');
+  redirect("/settings/general-branding?tab=feature-flags");
 }

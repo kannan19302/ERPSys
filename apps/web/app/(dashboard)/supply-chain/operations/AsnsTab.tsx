@@ -1,12 +1,30 @@
-// @ts-nocheck
-'use client';
-import styles from './operations.module.css';
-import React, { useState, useEffect } from 'react';
+"use client";
+import styles from "./operations.module.css";
+import React, { useState, useEffect } from "react";
 import {
-  Card, Button, Badge, DataTable, type Column, Modal, TextField, FormField, Select, KPICard, Drawer, Spinner,
-} from '@unerp/ui';
-import { RouteGuard, useApiClient } from '@unerp/framework';
-import { ClipboardList, Plus, Search, Calendar, CheckCircle2, AlertTriangle, Eye } from 'lucide-react';
+  Card,
+  Button,
+  Badge,
+  DataTable,
+  type Column,
+  Modal,
+  TextField,
+  FormField,
+  Select,
+  KPICard,
+  Drawer,
+  Spinner,
+} from "@unerp/ui";
+import { RouteGuard, useApiClient } from "@unerp/framework";
+import {
+  ClipboardList,
+  Plus,
+  Search,
+  Calendar,
+  CheckCircle2,
+  AlertTriangle,
+  Eye,
+} from "lucide-react";
 
 interface ASNLineItem {
   id: string;
@@ -39,7 +57,7 @@ export default function AsnsTab() {
   const client = useApiClient();
   const [asns, setAsns] = useState<ASN[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
   const [receiveOpen, setReceiveOpen] = useState(false);
   const [selectedAsn, setSelectedAsn] = useState<ASN | null>(null);
@@ -47,30 +65,37 @@ export default function AsnsTab() {
 
   // Form states for creating ASN
   const [asnForm, setAsnForm] = useState({
-    asnNumber: '',
-    vendorId: '',
-    purchaseOrderId: '',
-    warehouseId: '',
-    shipDate: '',
-    expectedArrival: '',
-    carrierName: '',
-    trackingNumber: '',
-    notes: '',
+    asnNumber: "",
+    vendorId: "",
+    purchaseOrderId: "",
+    warehouseId: "",
+    shipDate: "",
+    expectedArrival: "",
+    carrierName: "",
+    trackingNumber: "",
+    notes: "",
   });
 
-  const [formItems, setFormItems] = useState<{ productId: string; expectedQty: number; lotNumber?: string }[]>([
-    { productId: '', expectedQty: 1 },
-  ]);
+  const [formItems, setFormItems] = useState<
+    { productId: string; expectedQty: number; lotNumber?: string }[]
+  >([{ productId: "", expectedQty: 1 }]);
 
   // Form state for receiving ASN
-  const [receiveItems, setReceiveItems] = useState<{ id: string; actualQty: number; lotNumber?: string; notes?: string }[]>([]);
+  const [receiveItems, setReceiveItems] = useState<
+    { id: string; actualQty: number; lotNumber?: string; notes?: string }[]
+  >([]);
 
   const fetchAsns = async () => {
     try {
-      const data = await client.get<ASN[] | { data?: ASN[] }>('/supply-chain/asn');
+      const data = await client.get<ASN[] | { data?: ASN[] }>(
+        "/supply-chain/asn",
+      );
       setAsns(Array.isArray(data) ? data : data.data || []);
-    } catch { /* empty */ }
-    finally { setLoading(false); }
+    } catch {
+      /* empty */
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -80,14 +105,24 @@ export default function AsnsTab() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!asnForm.asnNumber || !asnForm.vendorId || !asnForm.warehouseId || formItems.some(i => !i.productId)) return;
+    if (
+      !asnForm.asnNumber ||
+      !asnForm.vendorId ||
+      !asnForm.warehouseId ||
+      formItems.some((i) => !i.productId)
+    )
+      return;
 
     try {
-      await client.post('/supply-chain/asn', {
+      await client.post("/supply-chain/asn", {
         ...asnForm,
-        shipDate: asnForm.shipDate ? new Date(asnForm.shipDate).toISOString() : null,
-        expectedArrival: asnForm.expectedArrival ? new Date(asnForm.expectedArrival).toISOString() : null,
-        lineItems: formItems.map(item => ({
+        shipDate: asnForm.shipDate
+          ? new Date(asnForm.shipDate).toISOString()
+          : null,
+        expectedArrival: asnForm.expectedArrival
+          ? new Date(asnForm.expectedArrival).toISOString()
+          : null,
+        lineItems: formItems.map((item) => ({
           ...item,
           expectedQty: Number(item.expectedQty),
         })),
@@ -95,26 +130,28 @@ export default function AsnsTab() {
       setCreateOpen(false);
       // Reset form
       setAsnForm({
-        asnNumber: '',
-        vendorId: '',
-        purchaseOrderId: '',
-        warehouseId: '',
-        shipDate: '',
-        expectedArrival: '',
-        carrierName: '',
-        trackingNumber: '',
-        notes: '',
+        asnNumber: "",
+        vendorId: "",
+        purchaseOrderId: "",
+        warehouseId: "",
+        shipDate: "",
+        expectedArrival: "",
+        carrierName: "",
+        trackingNumber: "",
+        notes: "",
       });
-      setFormItems([{ productId: '', expectedQty: 1 }]);
+      setFormItems([{ productId: "", expectedQty: 1 }]);
       fetchAsns();
-    } catch { /* handled */ }
+    } catch {
+      /* handled */
+    }
   };
 
   const handleReceiveSubmit = async () => {
     if (!selectedAsn) return;
     try {
       await client.post(`/supply-chain/asn/${selectedAsn.id}/receive`, {
-        lineItems: receiveItems.map(item => ({
+        lineItems: receiveItems.map((item) => ({
           ...item,
           actualQty: Number(item.actualQty),
         })),
@@ -122,18 +159,20 @@ export default function AsnsTab() {
       setReceiveOpen(false);
       setSelectedAsn(null);
       fetchAsns();
-    } catch { /* handled */ }
+    } catch {
+      /* handled */
+    }
   };
 
   const openReceiveModal = (asn: ASN) => {
     setSelectedAsn(asn);
     setReceiveItems(
-      asn.lineItems.map(item => ({
+      asn.lineItems.map((item) => ({
         id: item.id,
         actualQty: item.expectedQty,
-        lotNumber: item.lotNumber || '',
-        notes: '',
-      }))
+        lotNumber: item.lotNumber || "",
+        notes: "",
+      })),
     );
     setReceiveOpen(true);
   };
@@ -143,15 +182,16 @@ export default function AsnsTab() {
     setDrawerOpen(true);
   };
 
-  const filtered = asns.filter(asn =>
-    asn.asnNumber.toLowerCase().includes(search.toLowerCase()) ||
-    (asn.carrierName || '').toLowerCase().includes(search.toLowerCase())
+  const filtered = asns.filter(
+    (asn) =>
+      asn.asnNumber.toLowerCase().includes(search.toLowerCase()) ||
+      (asn.carrierName || "").toLowerCase().includes(search.toLowerCase()),
   );
 
   const columns: Column<ASN>[] = [
     {
-      key: 'asnNumber',
-      header: 'ASN Number',
+      key: "asnNumber",
+      header: "ASN Number",
       render: (row) => (
         <div className="ui-hstack-2">
           <ClipboardList size={16} className="text-primary" />
@@ -159,37 +199,66 @@ export default function AsnsTab() {
         </div>
       ),
     },
-    { key: 'vendorId', header: 'Vendor ID', render: (row) => <span className="text-sm">{row.vendorId}</span> },
-    { key: 'warehouseId', header: 'Warehouse ID', render: (row) => <span className="text-sm">{row.warehouseId}</span> },
     {
-      key: 'expectedArrival',
-      header: 'Expected Arrival',
+      key: "vendorId",
+      header: "Vendor ID",
+      render: (row) => <span className="text-sm">{row.vendorId}</span>,
+    },
+    {
+      key: "warehouseId",
+      header: "Warehouse ID",
+      render: (row) => <span className="text-sm">{row.warehouseId}</span>,
+    },
+    {
+      key: "expectedArrival",
+      header: "Expected Arrival",
       render: (row) => (
         <span className="ui-text-xs-muted">
-          {row.expectedArrival ? new Date(row.expectedArrival).toLocaleDateString() : '—'}
+          {row.expectedArrival
+            ? new Date(row.expectedArrival).toLocaleDateString()
+            : "—"}
         </span>
       ),
     },
     {
-      key: 'status',
-      header: 'Status',
+      key: "status",
+      header: "Status",
       render: (row) => (
-        <Badge variant={row.status === 'RECEIVED' ? 'success' : row.status === 'PENDING' ? 'warning' : 'info'}>
+        <Badge
+          variant={
+            row.status === "RECEIVED"
+              ? "success"
+              : row.status === "PENDING"
+                ? "warning"
+                : "info"
+          }
+        >
           {row.status}
         </Badge>
       ),
     },
     {
-      key: 'actions',
-      header: 'Actions',
-      align: 'right',
+      key: "actions",
+      header: "Actions",
+      align: "right",
       render: (row) => (
-        <div className="ui-hstack-2 ui-justify-end" onClick={(e) => e.stopPropagation()}>
-          <Button variant="secondary" size="sm" onClick={() => openDetailsDrawer(row)}>
+        <div
+          className="ui-hstack-2 ui-justify-end"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => openDetailsDrawer(row)}
+          >
             <Eye size={12} className="mr-1" /> View
           </Button>
-          {row.status !== 'RECEIVED' && (
-            <Button variant="primary" size="sm" onClick={() => openReceiveModal(row)}>
+          {row.status !== "RECEIVED" && (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => openReceiveModal(row)}
+            >
               Receive
             </Button>
           )}
@@ -226,9 +295,24 @@ export default function AsnsTab() {
         </div>
 
         <div className="ui-grid-auto">
-          <KPICard title="Total ASNs" value={asns.length} icon={<ClipboardList size={18} />} color="var(--color-primary)" />
-          <KPICard title="Pending Receipt" value={asns.filter(a => a.status !== 'RECEIVED').length} icon={<Calendar size={18} />} color="var(--color-warning)" />
-          <KPICard title="Fully Received" value={asns.filter(a => a.status === 'RECEIVED').length} icon={<CheckCircle2 size={18} />} color="var(--color-success)" />
+          <KPICard
+            title="Total ASNs"
+            value={asns.length}
+            icon={<ClipboardList size={18} />}
+            color="var(--color-primary)"
+          />
+          <KPICard
+            title="Pending Receipt"
+            value={asns.filter((a) => a.status !== "RECEIVED").length}
+            icon={<Calendar size={18} />}
+            color="var(--color-warning)"
+          />
+          <KPICard
+            title="Fully Received"
+            value={asns.filter((a) => a.status === "RECEIVED").length}
+            icon={<CheckCircle2 size={18} />}
+            color="var(--color-success)"
+          />
         </div>
 
         <Card padding="none">
@@ -251,8 +335,12 @@ export default function AsnsTab() {
           size="lg"
           footer={
             <>
-              <Button variant="secondary" onClick={() => setCreateOpen(false)}>Cancel</Button>
-              <Button variant="primary" onClick={handleCreate}>Save ASN</Button>
+              <Button variant="secondary" onClick={() => setCreateOpen(false)}>
+                Cancel
+              </Button>
+              <Button variant="primary" onClick={handleCreate}>
+                Save ASN
+              </Button>
             </>
           }
         >
@@ -262,14 +350,18 @@ export default function AsnsTab() {
                 label="ASN Number"
                 required
                 value={asnForm.asnNumber}
-                onChange={(e) => setAsnForm({ ...asnForm, asnNumber: e.target.value })}
+                onChange={(e) =>
+                  setAsnForm({ ...asnForm, asnNumber: e.target.value })
+                }
                 placeholder="ASN-2026-0001"
               />
               <TextField
                 label="Vendor ID"
                 required
                 value={asnForm.vendorId}
-                onChange={(e) => setAsnForm({ ...asnForm, vendorId: e.target.value })}
+                onChange={(e) =>
+                  setAsnForm({ ...asnForm, vendorId: e.target.value })
+                }
                 placeholder="vendor-cuid-or-code"
               />
             </div>
@@ -278,13 +370,17 @@ export default function AsnsTab() {
                 label="Warehouse ID"
                 required
                 value={asnForm.warehouseId}
-                onChange={(e) => setAsnForm({ ...asnForm, warehouseId: e.target.value })}
+                onChange={(e) =>
+                  setAsnForm({ ...asnForm, warehouseId: e.target.value })
+                }
                 placeholder="warehouse-cuid-or-code"
               />
               <TextField
                 label="Purchase Order ID (Optional)"
                 value={asnForm.purchaseOrderId}
-                onChange={(e) => setAsnForm({ ...asnForm, purchaseOrderId: e.target.value })}
+                onChange={(e) =>
+                  setAsnForm({ ...asnForm, purchaseOrderId: e.target.value })
+                }
                 placeholder="po-cuid-or-code"
               />
             </div>
@@ -293,33 +389,43 @@ export default function AsnsTab() {
                 label="Ship Date"
                 type="datetime-local"
                 value={asnForm.shipDate}
-                onChange={(e) => setAsnForm({ ...asnForm, shipDate: e.target.value })}
+                onChange={(e) =>
+                  setAsnForm({ ...asnForm, shipDate: e.target.value })
+                }
               />
               <TextField
                 label="Expected Arrival"
                 type="datetime-local"
                 value={asnForm.expectedArrival}
-                onChange={(e) => setAsnForm({ ...asnForm, expectedArrival: e.target.value })}
+                onChange={(e) =>
+                  setAsnForm({ ...asnForm, expectedArrival: e.target.value })
+                }
               />
             </div>
             <div className="ui-grid-2 ui-gap-3">
               <TextField
                 label="Carrier Name"
                 value={asnForm.carrierName}
-                onChange={(e) => setAsnForm({ ...asnForm, carrierName: e.target.value })}
+                onChange={(e) =>
+                  setAsnForm({ ...asnForm, carrierName: e.target.value })
+                }
                 placeholder="FedEx"
               />
               <TextField
                 label="Tracking Number"
                 value={asnForm.trackingNumber}
-                onChange={(e) => setAsnForm({ ...asnForm, trackingNumber: e.target.value })}
+                onChange={(e) =>
+                  setAsnForm({ ...asnForm, trackingNumber: e.target.value })
+                }
                 placeholder="1Z999AA10123..."
               />
             </div>
             <TextField
               label="Notes"
               value={asnForm.notes}
-              onChange={(e) => setAsnForm({ ...asnForm, notes: e.target.value })}
+              onChange={(e) =>
+                setAsnForm({ ...asnForm, notes: e.target.value })
+              }
               placeholder="Add shipping notes..."
             />
 
@@ -358,7 +464,7 @@ export default function AsnsTab() {
                   <div className="ui-hstack-2">
                     <TextField
                       label={idx === 0 ? "Lot Number (Optional)" : undefined}
-                      value={item.lotNumber || ''}
+                      value={item.lotNumber || ""}
                       onChange={(e) => {
                         const updated = [...formItems];
                         const current = updated[idx];
@@ -372,7 +478,9 @@ export default function AsnsTab() {
                     {formItems.length > 1 && (
                       <Button
                         variant="secondary"
-                        onClick={() => setFormItems(formItems.filter((_, i) => i !== idx))}
+                        onClick={() =>
+                          setFormItems(formItems.filter((_, i) => i !== idx))
+                        }
                       >
                         Remove
                       </Button>
@@ -383,7 +491,12 @@ export default function AsnsTab() {
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => setFormItems([...formItems, { productId: '', expectedQty: 1 }])}
+                onClick={() =>
+                  setFormItems([
+                    ...formItems,
+                    { productId: "", expectedQty: 1 },
+                  ])
+                }
                 className="ui-self-start"
               >
                 Add Item
@@ -400,24 +513,34 @@ export default function AsnsTab() {
           size="lg"
           footer={
             <>
-              <Button variant="secondary" onClick={() => setReceiveOpen(false)}>Cancel</Button>
-              <Button variant="primary" onClick={handleReceiveSubmit}>Submit Receipt</Button>
+              <Button variant="secondary" onClick={() => setReceiveOpen(false)}>
+                Cancel
+              </Button>
+              <Button variant="primary" onClick={handleReceiveSubmit}>
+                Submit Receipt
+              </Button>
             </>
           }
         >
           <div className="ui-stack-4">
             <div className="ui-text-sm-muted mb-4">
-              Enter the actual quantities received for each line item. Any differences from expected quantities will automatically log an ASN discrepancy report.
+              Enter the actual quantities received for each line item. Any
+              differences from expected quantities will automatically log an ASN
+              discrepancy report.
             </div>
 
             {selectedAsn?.lineItems.map((item, idx) => {
-              const receiveItem = receiveItems.find(r => r.id === item.id);
+              const receiveItem = receiveItems.find((r) => r.id === item.id);
               return (
                 <Card key={item.id} padding="md" className="ui-stack-3">
                   <div className="ui-flex-between">
                     <div>
-                      <div className="ui-heading-sm">Product ID: {item.productId}</div>
-                      <div className="ui-text-xs-tertiary">Expected: {item.expectedQty} {item.uom}</div>
+                      <div className="ui-heading-sm">
+                        Product ID: {item.productId}
+                      </div>
+                      <div className="ui-text-xs-tertiary">
+                        Expected: {item.expectedQty} {item.uom}
+                      </div>
                     </div>
                     <div className="w-1/3">
                       <TextField
@@ -426,7 +549,7 @@ export default function AsnsTab() {
                         value={receiveItem?.actualQty ?? 0}
                         onChange={(e) => {
                           const updated = [...receiveItems];
-                          const target = updated.find(r => r.id === item.id);
+                          const target = updated.find((r) => r.id === item.id);
                           if (target) target.actualQty = Number(e.target.value);
                           setReceiveItems(updated);
                         }}
@@ -436,10 +559,10 @@ export default function AsnsTab() {
                   <div className="ui-grid-2 ui-gap-3 mt-2">
                     <TextField
                       label="Lot Number"
-                      value={receiveItem?.lotNumber || ''}
+                      value={receiveItem?.lotNumber || ""}
                       onChange={(e) => {
                         const updated = [...receiveItems];
-                        const target = updated.find(r => r.id === item.id);
+                        const target = updated.find((r) => r.id === item.id);
                         if (target) target.lotNumber = e.target.value;
                         setReceiveItems(updated);
                       }}
@@ -447,10 +570,10 @@ export default function AsnsTab() {
                     />
                     <TextField
                       label="Discrepancy Notes / Damage"
-                      value={receiveItem?.notes || ''}
+                      value={receiveItem?.notes || ""}
                       onChange={(e) => {
                         const updated = [...receiveItems];
-                        const target = updated.find(r => r.id === item.id);
+                        const target = updated.find((r) => r.id === item.id);
                         if (target) target.notes = e.target.value;
                         setReceiveItems(updated);
                       }}
@@ -476,39 +599,61 @@ export default function AsnsTab() {
                 <div className="ui-grid-2 ui-gap-3">
                   <div>
                     <div className="ui-text-xs-tertiary">Status</div>
-                    <Badge variant={selectedAsn.status === 'RECEIVED' ? 'success' : 'warning'}>{selectedAsn.status}</Badge>
+                    <Badge
+                      variant={
+                        selectedAsn.status === "RECEIVED"
+                          ? "success"
+                          : "warning"
+                      }
+                    >
+                      {selectedAsn.status}
+                    </Badge>
                   </div>
                   <div>
                     <div className="ui-text-xs-tertiary">Vendor ID</div>
-                    <div className="ui-text-sm font-semibold">{selectedAsn.vendorId}</div>
+                    <div className="ui-text-sm font-semibold">
+                      {selectedAsn.vendorId}
+                    </div>
                   </div>
                   <div>
                     <div className="ui-text-xs-tertiary">Warehouse ID</div>
-                    <div className="ui-text-sm font-semibold">{selectedAsn.warehouseId}</div>
+                    <div className="ui-text-sm font-semibold">
+                      {selectedAsn.warehouseId}
+                    </div>
                   </div>
                   <div>
                     <div className="ui-text-xs-tertiary">Purchase Order ID</div>
-                    <div className="ui-text-sm font-semibold">{selectedAsn.purchaseOrderId || '—'}</div>
+                    <div className="ui-text-sm font-semibold">
+                      {selectedAsn.purchaseOrderId || "—"}
+                    </div>
                   </div>
                   <div>
                     <div className="ui-text-xs-tertiary">Ship Date</div>
                     <div className="ui-text-sm font-semibold">
-                      {selectedAsn.shipDate ? new Date(selectedAsn.shipDate).toLocaleString() : '—'}
+                      {selectedAsn.shipDate
+                        ? new Date(selectedAsn.shipDate).toLocaleString()
+                        : "—"}
                     </div>
                   </div>
                   <div>
                     <div className="ui-text-xs-tertiary">Expected Arrival</div>
                     <div className="ui-text-sm font-semibold">
-                      {selectedAsn.expectedArrival ? new Date(selectedAsn.expectedArrival).toLocaleString() : '—'}
+                      {selectedAsn.expectedArrival
+                        ? new Date(selectedAsn.expectedArrival).toLocaleString()
+                        : "—"}
                     </div>
                   </div>
                   <div>
                     <div className="ui-text-xs-tertiary">Carrier</div>
-                    <div className="ui-text-sm font-semibold">{selectedAsn.carrierName || '—'}</div>
+                    <div className="ui-text-sm font-semibold">
+                      {selectedAsn.carrierName || "—"}
+                    </div>
                   </div>
                   <div>
                     <div className="ui-text-xs-tertiary">Tracking Number</div>
-                    <div className="ui-text-sm font-semibold">{selectedAsn.trackingNumber || '—'}</div>
+                    <div className="ui-text-sm font-semibold">
+                      {selectedAsn.trackingNumber || "—"}
+                    </div>
                   </div>
                 </div>
                 {selectedAsn.notes && (
@@ -532,13 +677,19 @@ export default function AsnsTab() {
                     </tr>
                   </thead>
                   <tbody>
-                    {selectedAsn.lineItems.map(item => (
+                    {selectedAsn.lineItems.map((item) => (
                       <tr key={item.id} className="border-t border-border">
                         <td className="py-2 px-3 text-sm">{item.productId}</td>
-                        <td className="py-2 px-3 text-right text-sm">{item.expectedQty}</td>
-                        <td className="py-2 px-3 text-right text-sm font-semibold">{item.receivedQty}</td>
+                        <td className="py-2 px-3 text-right text-sm">
+                          {item.expectedQty}
+                        </td>
+                        <td className="py-2 px-3 text-right text-sm font-semibold">
+                          {item.receivedQty}
+                        </td>
                         <td className="py-2 px-3 text-sm">{item.uom}</td>
-                        <td className="py-2 px-3 text-sm">{item.lotNumber || '—'}</td>
+                        <td className="py-2 px-3 text-sm">
+                          {item.lotNumber || "—"}
+                        </td>
                       </tr>
                     ))}
                   </tbody>

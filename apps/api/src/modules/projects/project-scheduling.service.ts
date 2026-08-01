@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { prisma } from "@unerp/database";
 
 interface GanttTask {
   id: string;
@@ -24,26 +23,40 @@ interface ResourceAllocation {
 
 @Injectable()
 export class ProjectSchedulingService {
-
-  async getGanttData(tenantId: string, projectId: string): Promise<GanttTask[]> {
+  async getGanttData(
+    tenantId: string,
+    projectId: string,
+  ): Promise<GanttTask[]> {
     const project = await prisma.project.findFirst({
       where: { id: projectId, tenantId, deletedAt: null },
       include: {
-        tasks: { orderBy: { createdAt: 'asc' } },
-        milestones: { orderBy: { dueDate: 'asc' } },
+        tasks: { orderBy: { createdAt: "asc" } },
+        milestones: { orderBy: { dueDate: "asc" } },
       },
     });
-    if (!project) throw new NotFoundException('Project not found');
+    if (!project) throw new NotFoundException("Project not found");
 
     const ganttTasks: GanttTask[] = [];
 
     for (const task of project.tasks) {
       const startDate = (task as any).startDate || task.createdAt;
-      const endDate = (task as any).dueDate || (task as any).endDate || new Date(new Date(startDate).getTime() + 7 * 24 * 60 * 60 * 1000);
-      const progress = task.status === 'COMPLETED' ? 100 : task.status === 'IN_PROGRESS' ? 50 : 0;
+      const endDate =
+        (task as any).dueDate ||
+        (task as any).endDate ||
+        new Date(new Date(startDate).getTime() + 7 * 24 * 60 * 60 * 1000);
+      const progress =
+        task.status === "COMPLETED"
+          ? 100
+          : task.status === "IN_PROGRESS"
+            ? 50
+            : 0;
 
       const deps = (task as any).dependencies;
-      const dependencyIds: string[] = Array.isArray(deps) ? deps : (typeof deps === 'string' ? JSON.parse(deps || '[]') : []);
+      const dependencyIds: string[] = Array.isArray(deps)
+        ? deps
+        : typeof deps === "string"
+          ? JSON.parse(deps || "[]")
+          : [];
 
       ganttTasks.push({
         id: task.id,
@@ -71,15 +84,28 @@ export class ProjectSchedulingService {
     return ganttTasks;
   }
 
-  async addTaskDependency(tenantId: string, taskId: string, dependsOnTaskId: string, type: 'FS' | 'FF' | 'SS' | 'SF' = 'FS') {
-    const task = await prisma.task.findFirst({ where: { id: taskId, tenantId } });
-    if (!task) throw new NotFoundException('Task not found');
+  async addTaskDependency(
+    tenantId: string,
+    taskId: string,
+    dependsOnTaskId: string,
+    type: "FS" | "FF" | "SS" | "SF" = "FS",
+  ) {
+    const task = await prisma.task.findFirst({
+      where: { id: taskId, tenantId },
+    });
+    if (!task) throw new NotFoundException("Task not found");
 
-    const depTask = await prisma.task.findFirst({ where: { id: dependsOnTaskId, tenantId } });
-    if (!depTask) throw new NotFoundException('Dependency task not found');
+    const depTask = await prisma.task.findFirst({
+      where: { id: dependsOnTaskId, tenantId },
+    });
+    if (!depTask) throw new NotFoundException("Dependency task not found");
 
     const existing = (task as any).dependencies;
-    const deps: string[] = Array.isArray(existing) ? existing : (typeof existing === 'string' ? JSON.parse(existing || '[]') : []);
+    const deps: string[] = Array.isArray(existing)
+      ? existing
+      : typeof existing === "string"
+        ? JSON.parse(existing || "[]")
+        : [];
 
     if (!deps.includes(dependsOnTaskId)) {
       deps.push(dependsOnTaskId);
@@ -92,12 +118,15 @@ export class ProjectSchedulingService {
     return { taskId, dependsOnTaskId, type, dependencies: deps };
   }
 
-  async getResourceAllocations(tenantId: string, projectId: string): Promise<ResourceAllocation[]> {
+  async getResourceAllocations(
+    tenantId: string,
+    projectId: string,
+  ): Promise<ResourceAllocation[]> {
     const project = await prisma.project.findFirst({
       where: { id: projectId, tenantId, deletedAt: null },
       include: { tasks: true },
     });
-    if (!project) throw new NotFoundException('Project not found');
+    if (!project) throw new NotFoundException("Project not found");
 
     const resourceMap = new Map<string, ResourceAllocation>();
 
@@ -108,10 +137,14 @@ export class ProjectSchedulingService {
       const hours = Number((task as any).estimatedHours || 8);
 
       if (!resourceMap.has(assigneeId)) {
-        const employee = await prisma.employee.findFirst({ where: { id: assigneeId, tenantId } });
+        const employee = await prisma.employee.findFirst({
+          where: { id: assigneeId, tenantId },
+        });
         resourceMap.set(assigneeId, {
           resourceId: assigneeId,
-          resourceName: employee ? `${employee.firstName} ${employee.lastName}` : assigneeId,
+          resourceName: employee
+            ? `${employee.firstName} ${employee.lastName}`
+            : assigneeId,
           totalHours: 160,
           allocatedHours: 0,
           utilization: 0,
@@ -122,7 +155,8 @@ export class ProjectSchedulingService {
       const alloc = resourceMap.get(assigneeId)!;
       alloc.allocatedHours += hours;
       alloc.tasks.push({ taskId: task.id, taskName: task.name, hours });
-      alloc.utilization = Math.round((alloc.allocatedHours / alloc.totalHours) * 1000) / 10;
+      alloc.utilization =
+        Math.round((alloc.allocatedHours / alloc.totalHours) * 1000) / 10;
     }
 
     return [...resourceMap.values()];
@@ -132,7 +166,11 @@ export class ProjectSchedulingService {
     const allocations = await this.getResourceAllocations(tenantId, projectId);
     const overallocated = allocations.filter((a) => a.utilization > 100);
 
-    const adjustments: Array<{ resourceId: string; taskId: string; action: string }> = [];
+    const adjustments: Array<{
+      resourceId: string;
+      taskId: string;
+      action: string;
+    }> = [];
 
     for (const resource of overallocated) {
       const excess = resource.allocatedHours - resource.totalHours;
@@ -161,23 +199,34 @@ export class ProjectSchedulingService {
     };
   }
 
-  async generateMilestoneInvoice(tenantId: string, projectId: string, milestoneId: string) {
-    const project = await prisma.project.findFirst({ where: { id: projectId, tenantId } });
-    if (!project) throw new NotFoundException('Project not found');
+  async generateMilestoneInvoice(
+    tenantId: string,
+    projectId: string,
+    milestoneId: string,
+  ) {
+    const project = await prisma.project.findFirst({
+      where: { id: projectId, tenantId },
+    });
+    if (!project) throw new NotFoundException("Project not found");
 
-    const milestone = await prisma.milestone.findFirst({ where: { id: milestoneId, tenantId } });
-    if (!milestone) throw new NotFoundException('Milestone not found');
+    const milestone = await prisma.milestone.findFirst({
+      where: { id: milestoneId, tenantId },
+    });
+    if (!milestone) throw new NotFoundException("Milestone not found");
 
     const budget = Number((project as any).budget || 0);
-    const milestones = await prisma.milestone.findMany({ where: { tenantId, projectId } });
-    const milestoneShare = milestones.length > 0 ? budget / milestones.length : budget;
+    const milestones = await prisma.milestone.findMany({
+      where: { tenantId, projectId },
+    });
+    const milestoneShare =
+      milestones.length > 0 ? budget / milestones.length : budget;
 
     return {
       projectId,
       milestoneId,
       milestoneName: milestone.name,
       invoiceAmount: Math.round(milestoneShare * 100) / 100,
-      status: 'DRAFT',
+      status: "DRAFT",
       description: `Milestone billing: ${milestone.name} — Project: ${project.name}`,
     };
   }

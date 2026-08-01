@@ -1,5 +1,16 @@
-// @ts-nocheck
-import { Controller, Get, Post, Put, Delete, Param, Query, Req, Body, UseGuards, UseInterceptors } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Query,
+  Req,
+  Body,
+  UseGuards,
+  UseInterceptors,
+} from "@nestjs/common";
 import { ApiTags, ApiBearerAuth, ApiOperation } from "@nestjs/swagger";
 import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
@@ -16,7 +27,13 @@ import {
 } from "./crm-knowledge-base.service";
 
 interface AuthenticatedRequest extends Request {
-  user: { tenantId: string; userId: string; email: string; roles: string[]; orgId?: string };
+  user: {
+    tenantId: string;
+    userId: string;
+    email: string;
+    roles: string[];
+    orgId?: string;
+  };
 }
 
 @ApiTags("crm-knowledge-base")
@@ -55,7 +72,11 @@ export class CrmKnowledgeBaseCategoryController {
   @Permissions("crm.knowledgebase.update")
   @TrackChanges("KnowledgeBaseCategory")
   @UseInterceptors(ChangeHistoryInterceptor)
-  async updateCategory(@Req() req: AuthenticatedRequest, @Param("id") id: string, @Body() body: any) {
+  async updateCategory(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+    @Body() body: any,
+  ) {
     const dto = updateKbCategorySchema.parse(body);
     return this.svc.updateCategory(req.user.tenantId, id, dto);
   }
@@ -63,7 +84,10 @@ export class CrmKnowledgeBaseCategoryController {
   @ApiOperation({ summary: "Delete KB category" })
   @Delete("categories/:id")
   @Permissions("crm.knowledgebase.delete")
-  async deleteCategory(@Req() req: AuthenticatedRequest, @Param("id") id: string) {
+  async deleteCategory(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
     return this.svc.deleteCategory(req.user.tenantId, id);
   }
 }
@@ -89,10 +113,13 @@ export class CrmKnowledgeBaseArticleController {
     @Query("sortOrder") sortOrder?: "asc" | "desc",
   ) {
     return this.svc.getArticles(req.user.tenantId, {
-      categoryId, status, search,
+      categoryId,
+      status,
+      search,
       page: page ? Number(page) : undefined,
       limit: limit ? Number(limit) : undefined,
-      sortBy, sortOrder,
+      sortBy,
+      sortOrder,
     });
   }
 
@@ -120,7 +147,12 @@ export class CrmKnowledgeBaseArticleController {
   @UseInterceptors(ChangeHistoryInterceptor)
   async createArticle(@Req() req: AuthenticatedRequest, @Body() body: any) {
     const dto = createKbArticleSchema.parse(body);
-    return this.svc.createArticle(req.user.tenantId, req.user.orgId, req.user.userId, dto);
+    return this.svc.createArticle(
+      req.user.tenantId,
+      req.user.orgId,
+      req.user.userId,
+      dto,
+    );
   }
 
   @ApiOperation({ summary: "Update KB article" })
@@ -128,7 +160,11 @@ export class CrmKnowledgeBaseArticleController {
   @Permissions("crm.knowledgebase.update")
   @TrackChanges("KnowledgeBaseArticle")
   @UseInterceptors(ChangeHistoryInterceptor)
-  async updateArticle(@Req() req: AuthenticatedRequest, @Param("id") id: string, @Body() body: any) {
+  async updateArticle(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+    @Body() body: any,
+  ) {
     const dto = updateKbArticleSchema.parse(body);
     return this.svc.updateArticle(req.user.tenantId, id, req.user.userId, dto);
   }
@@ -136,29 +172,46 @@ export class CrmKnowledgeBaseArticleController {
   @ApiOperation({ summary: "Publish KB article" })
   @Post("articles/:id/publish")
   @Permissions("crm.knowledgebase.update")
-  async publishArticle(@Req() req: AuthenticatedRequest, @Param("id") id: string) {
+  async publishArticle(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
     return this.svc.publishArticle(req.user.tenantId, id);
   }
 
   @ApiOperation({ summary: "Archive KB article" })
   @Post("articles/:id/archive")
   @Permissions("crm.knowledgebase.update")
-  async archiveArticle(@Req() req: AuthenticatedRequest, @Param("id") id: string) {
+  async archiveArticle(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
     return this.svc.archiveArticle(req.user.tenantId, id);
   }
 
   @ApiOperation({ summary: "Delete KB article" })
   @Delete("articles/:id")
   @Permissions("crm.knowledgebase.delete")
-  async deleteArticle(@Req() req: AuthenticatedRequest, @Param("id") id: string) {
+  async deleteArticle(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
     return this.svc.deleteArticle(req.user.tenantId, id);
   }
 
   @ApiOperation({ summary: "Record article feedback" })
   @Post("articles/:id/feedback")
   @Permissions("crm.knowledgebase.read")
-  async recordFeedback(@Req() req: AuthenticatedRequest, @Param("id") id: string, @Body() body: any) {
-    return this.svc.recordFeedback(req.user.tenantId, id, body.helpful === true);
+  async recordFeedback(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+    @Body() body: any,
+  ) {
+    return this.svc.recordFeedback(
+      req.user.tenantId,
+      id,
+      body.helpful === true,
+    );
   }
 
   @ApiOperation({ summary: "KB stats" })

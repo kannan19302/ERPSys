@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Injectable,
   BadRequestException,
@@ -155,7 +154,7 @@ export class BuilderRulesService {
     });
 
     let matched = false;
-    let output = null;
+    let output: unknown = null;
 
     for (const rule of rules) {
       try {

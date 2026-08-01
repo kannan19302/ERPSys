@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -54,24 +53,24 @@ class _SubscriptionPlanListPageState extends ConsumerState<SubscriptionPlanListP
               Row(children: [
                 Expanded(
                   child: Text(plan.name,
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
                 UiStatusBadge(
                   label: plan.isActive ? 'ACTIVE' : 'INACTIVE',
                   tone: plan.isActive ? UiTone.success : UiTone.neutral,
                 ),
-              ]),
+              ],),
               const SizedBox(height: Spacing.x1),
               Text('\$${plan.price.toStringAsFixed(2)} / ${plan.interval}',
-                  style: TextStyle(color: t.textSecondary)),
+                  style: TextStyle(color: t.textSecondary),),
               Row(children: [
                 if (plan.trialDays > 0)
                   Text('${plan.trialDays}-day trial',
-                      style: TextStyle(fontSize: TypeScale.xs, color: t.textTertiary)),
+                      style: TextStyle(fontSize: TypeScale.xs, color: t.textTertiary),),
                 const Spacer(),
                 Text('#${plan.sortOrder}',
-                    style: TextStyle(fontSize: TypeScale.xs, color: t.textTertiary)),
-              ]),
+                    style: TextStyle(fontSize: TypeScale.xs, color: t.textTertiary),),
+              ],),
             ],
           ),
         ),

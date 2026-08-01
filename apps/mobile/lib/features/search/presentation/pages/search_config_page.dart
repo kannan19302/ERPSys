@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/design_tokens.dart';
-import '../../domain/entities/search.dart' show SearchIndexConfig;
 
 class SearchConfigPage extends ConsumerWidget {
   const SearchConfigPage({super.key});
@@ -20,9 +19,9 @@ class SearchConfigPage extends ConsumerWidget {
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text('Search Settings', style: Theme.of(context).textTheme.titleLarge),
               Text('Configure index and search behaviour', style: TextStyle(color: t.textSecondary)),
-            ])),
-          ]),
-        ])),
+            ],),),
+          ],),
+        ],),),
         const SizedBox(height: Spacing.x4),
         _SectionCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const _SectionTitle(title: 'Indexed Resources'),
@@ -30,14 +29,14 @@ class SearchConfigPage extends ConsumerWidget {
           _resourceTile(t, 'Customers', true), _resourceTile(t, 'Contacts', true),
           _resourceTile(t, 'Leads', true), _resourceTile(t, 'Products', true),
           _resourceTile(t, 'Invoices', false), _resourceTile(t, 'Orders', true),
-        ])),
+        ],),),
         const SizedBox(height: Spacing.x4),
         _SectionCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const _SectionTitle(title: 'Fuzzy Search'),
           const Divider(),
           ListTile(title: const Text('Fuzzy Level'), subtitle: const Text('1 - Low (default)'), trailing: const Icon(Icons.chevron_right), contentPadding: EdgeInsets.zero, onTap: () {}),
           ListTile(title: const Text('Minimum Score'), subtitle: const Text('0.5'), trailing: const Icon(Icons.chevron_right), contentPadding: EdgeInsets.zero, onTap: () {}),
-        ])),
+        ],),),
         const SizedBox(height: Spacing.x4),
         _SectionCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const _SectionTitle(title: 'Actions'),
@@ -45,8 +44,8 @@ class SearchConfigPage extends ConsumerWidget {
           SizedBox(width: double.infinity, child: OutlinedButton.icon(icon: const Icon(Icons.refresh), label: const Text('Reindex All'), onPressed: () {})),
           const SizedBox(height: Spacing.x2),
           SizedBox(width: double.infinity, child: OutlinedButton.icon(icon: const Icon(Icons.delete_sweep), label: const Text('Clear Search Cache'), onPressed: () {})),
-        ])),
-      ]),
+        ],),),
+      ],),
     );
   }
 

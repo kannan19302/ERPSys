@@ -1,16 +1,15 @@
-// @ts-nocheck
-import { Injectable } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import { Injectable } from "@nestjs/common";
+import { prisma } from "@unerp/database";
 
 const SUPPORTED_ENTITY_TYPES = [
-  'Customer',
-  'Vendor',
-  'Product',
-  'Invoice',
-  'Employee',
-  'Lead',
-  'PurchaseOrder',
-  'SalesOrder',
+  "Customer",
+  "Vendor",
+  "Product",
+  "Invoice",
+  "Employee",
+  "Lead",
+  "PurchaseOrder",
+  "SalesOrder",
 ] as const;
 
 @Injectable()
@@ -21,7 +20,7 @@ export class CustomFieldsService {
         tenantId,
         ...(entityType && { entityType }),
       },
-      orderBy: [{ entityType: 'asc' }, { sortOrder: 'asc' }],
+      orderBy: [{ entityType: "asc" }, { sortOrder: "asc" }],
     });
   }
 
@@ -56,7 +55,7 @@ export class CustomFieldsService {
         options: data.options ?? [],
         validation: data.validation ?? {},
         sortOrder: data.sortOrder ?? 0,
-        section: data.section ?? 'Custom Fields',
+        section: data.section ?? "Custom Fields",
       },
     });
   }
@@ -80,9 +79,13 @@ export class CustomFieldsService {
       where: { id, tenantId },
       data: {
         ...(data.label !== undefined && { label: data.label }),
-        ...(data.description !== undefined && { description: data.description }),
+        ...(data.description !== undefined && {
+          description: data.description,
+        }),
         ...(data.isRequired !== undefined && { isRequired: data.isRequired }),
-        ...(data.defaultValue !== undefined && { defaultValue: data.defaultValue }),
+        ...(data.defaultValue !== undefined && {
+          defaultValue: data.defaultValue,
+        }),
         ...(data.options !== undefined && { options: data.options }),
         ...(data.validation !== undefined && { validation: data.validation }),
         ...(data.sortOrder !== undefined && { sortOrder: data.sortOrder }),

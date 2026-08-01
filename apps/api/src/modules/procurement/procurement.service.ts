@@ -1,20 +1,29 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
 import {
   CreatePurchaseOrderInput,
   CreatePurchaseReceiptInput,
   CreateRFQInput,
   CreateSupplierQuotationInput,
   CreatePurchaseReturnInput,
-} from '@unerp/shared';
-import { Prisma } from '@prisma/client';
-import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-import { buildPaginationValues, buildOrderBy, paginatedResult, PaginatedResult, PaginationParams } from '../../common/utils/pagination.util';
+} from "@unerp/shared";
+import { Prisma } from "@prisma/client";
+import { EventEmitter2, OnEvent } from "@nestjs/event-emitter";
+import {
+  buildPaginationValues,
+  buildOrderBy,
+  paginatedResult,
+  PaginatedResult,
+  PaginationParams,
+} from "../../common/utils/pagination.util";
 
 @Injectable()
 export class ProcurementService {
-  constructor(private readonly eventEmitter?: EventEmitter2) { }
+  constructor(private readonly eventEmitter?: EventEmitter2) {}
 
   /**
    * Fetch all purchase orders with pagination.
@@ -28,8 +37,8 @@ export class ProcurementService {
     if (params.vendorId) where.vendorId = params.vendorId;
     if (params.search) {
       where.OR = [
-        { poNumber: { contains: params.search, mode: 'insensitive' } },
-        { vendor: { name: { contains: params.search, mode: 'insensitive' } } },
+        { poNumber: { contains: params.search, mode: "insensitive" } },
+        { vendor: { name: { contains: params.search, mode: "insensitive" } } },
       ];
     }
 
@@ -39,7 +48,11 @@ export class ProcurementService {
     const [orders, total] = await Promise.all([
       prisma.purchaseOrder.findMany({
         where,
-        include: { vendor: { select: { name: true } }, lineItems: true, receipts: { select: { id: true } } },
+        include: {
+          vendor: { select: { name: true } },
+          lineItems: true,
+          receipts: { select: { id: true } },
+        },
         skip,
         take,
         orderBy: orderBy as any,
@@ -82,12 +95,18 @@ export class ProcurementService {
       where: { id, tenantId, deletedAt: null },
       include: {
         vendor: true,
-        lineItems: { include: { product: true }, orderBy: { sortOrder: 'asc' } },
-        receipts: { include: { lineItems: true }, orderBy: { createdAt: 'desc' } },
+        lineItems: {
+          include: { product: true },
+          orderBy: { sortOrder: "asc" },
+        },
+        receipts: {
+          include: { lineItems: true },
+          orderBy: { createdAt: "desc" },
+        },
       },
     });
     if (!po) {
-      throw new NotFoundException('Purchase order not found');
+      throw new NotFoundException("Purchase order not found");
     }
     return po;
   }
@@ -95,12 +114,17 @@ export class ProcurementService {
   /**
    * Create new purchase order under tenantId & orgId.
    */
-  async createPurchaseOrder(tenantId: string, orgId: string, dto: CreatePurchaseOrderInput, createdBy: string) {
+  async createPurchaseOrder(
+    tenantId: string,
+    orgId: string,
+    dto: CreatePurchaseOrderInput,
+    createdBy: string,
+  ) {
     let resolvedOrgId = orgId;
-    if (!orgId || orgId === 'org-system-default') {
+    if (!orgId || orgId === "org-system-default") {
       const org = await prisma.organization.findFirst({ where: { tenantId } });
       if (!org) {
-        throw new BadRequestException('No Organization found for this Tenant.');
+        throw new BadRequestException("No Organization found for this Tenant.");
       }
       resolvedOrgId = org.id;
     }
@@ -110,7 +134,9 @@ export class ProcurementService {
       where: { tenantId, orgId: resolvedOrgId, poNumber: dto.poNumber },
     });
     if (existing) {
-      throw new BadRequestException(`PO number ${dto.poNumber} already exists.`);
+      throw new BadRequestException(
+        `PO number ${dto.poNumber} already exists.`,
+      );
     }
 
     // Verify vendor exists
@@ -118,7 +144,7 @@ export class ProcurementService {
       where: { id: dto.vendorId, tenantId },
     });
     if (!vendor) {
-      throw new NotFoundException('Vendor not found in this tenant context');
+      throw new NotFoundException("Vendor not found in this tenant context");
     }
 
     return prisma.$transaction(async (tx) => {
@@ -159,9 +185,11 @@ export class ProcurementService {
           subtotal: new Prisma.Decimal(subtotal),
           taxAmount: new Prisma.Decimal(totalTax),
           totalAmount: new Prisma.Decimal(totalAmount),
-          shippingAddress: dto.shippingAddress ? (dto.shippingAddress as Prisma.InputJsonObject) : Prisma.JsonNull,
+          shippingAddress: dto.shippingAddress
+            ? (dto.shippingAddress as Prisma.InputJsonObject)
+            : Prisma.JsonNull,
           notes: dto.notes || null,
-          status: 'DRAFT',
+          status: "DRAFT",
           createdBy,
         },
       });
@@ -179,14 +207,21 @@ export class ProcurementService {
   /**
    * Update purchase order status.
    */
-  async updatePurchaseOrderStatus(tenantId: string, id: string, status: string, userId: string) {
-    const po = await prisma.purchaseOrder.findFirst({ where: { id, tenantId } });
+  async updatePurchaseOrderStatus(
+    tenantId: string,
+    id: string,
+    status: string,
+    userId: string,
+  ) {
+    const po = await prisma.purchaseOrder.findFirst({
+      where: { id, tenantId },
+    });
     if (!po) {
-      throw new NotFoundException('Purchase order not found');
+      throw new NotFoundException("Purchase order not found");
     }
 
     const updateData: Record<string, unknown> = { status };
-    if (status === 'APPROVED') {
+    if (status === "APPROVED") {
       updateData.approvedBy = userId;
       updateData.approvedAt = new Date();
     }
@@ -200,13 +235,17 @@ export class ProcurementService {
   /**
    * Record a purchase receipt against a purchase order.
    */
-  async createPurchaseReceipt(tenantId: string, dto: CreatePurchaseReceiptInput, createdBy: string) {
+  async createPurchaseReceipt(
+    tenantId: string,
+    dto: CreatePurchaseReceiptInput,
+    createdBy: string,
+  ) {
     const po = await prisma.purchaseOrder.findFirst({
       where: { id: dto.purchaseOrderId, tenantId },
       include: { lineItems: true },
     });
     if (!po) {
-      throw new NotFoundException('Purchase order not found');
+      throw new NotFoundException("Purchase order not found");
     }
 
     // Check receipt number uniqueness
@@ -214,7 +253,9 @@ export class ProcurementService {
       where: { tenantId, receiptNumber: dto.receiptNumber },
     });
     if (existingReceipt) {
-      throw new BadRequestException(`Receipt number ${dto.receiptNumber} already exists.`);
+      throw new BadRequestException(
+        `Receipt number ${dto.receiptNumber} already exists.`,
+      );
     }
 
     const result = await prisma.$transaction(async (tx) => {
@@ -246,12 +287,22 @@ export class ProcurementService {
       // Update received quantities on PO line items
       // Simplified: mark PO as PARTIALLY_RECEIVED or RECEIVED
       const allPOItems = po.lineItems;
-      const totalOrdered = allPOItems.reduce((sum, li) => sum + Number(li.quantity), 0);
-      const previouslyReceived = allPOItems.reduce((sum, li) => sum + Number(li.receivedQty), 0);
-      const newlyReceived = dto.lineItems.reduce((sum, li) => sum + li.acceptedQty, 0);
+      const totalOrdered = allPOItems.reduce(
+        (sum, li) => sum + Number(li.quantity),
+        0,
+      );
+      const previouslyReceived = allPOItems.reduce(
+        (sum, li) => sum + Number(li.receivedQty),
+        0,
+      );
+      const newlyReceived = dto.lineItems.reduce(
+        (sum, li) => sum + li.acceptedQty,
+        0,
+      );
       const totalReceived = previouslyReceived + newlyReceived;
 
-      const newStatus = totalReceived >= totalOrdered ? 'RECEIVED' : 'PARTIALLY_RECEIVED';
+      const newStatus =
+        totalReceived >= totalOrdered ? "RECEIVED" : "PARTIALLY_RECEIVED";
 
       await tx.purchaseOrder.update({
         where: { id: dto.purchaseOrderId },
@@ -262,7 +313,7 @@ export class ProcurementService {
     });
 
     if (this.eventEmitter) {
-      this.eventEmitter.emit('procurement.receipt.created', {
+      this.eventEmitter.emit("procurement.receipt.created", {
         tenantId,
         purchaseOrderId: dto.purchaseOrderId,
         receiptNumber: dto.receiptNumber,
@@ -285,7 +336,7 @@ export class ProcurementService {
         lineItems: { include: { product: true } },
         supplierQuotations: { include: { vendor: true } },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
     return rfqs.map((rfq) => ({
       id: rfq.id,
@@ -314,22 +365,26 @@ export class ProcurementService {
         supplierQuotations: { include: { vendor: true, lineItems: true } },
       },
     });
-    if (!rfq) throw new NotFoundException('RFQ not found');
+    if (!rfq) throw new NotFoundException("RFQ not found");
     return rfq;
   }
 
   async createRFQ(tenantId: string, orgId: string, dto: CreateRFQInput) {
     let resolvedOrgId = orgId;
-    if (!orgId || orgId === 'org-system-default') {
+    if (!orgId || orgId === "org-system-default") {
       const org = await prisma.organization.findFirst({ where: { tenantId } });
-      if (!org) throw new BadRequestException('No Organization found for this Tenant.');
+      if (!org)
+        throw new BadRequestException("No Organization found for this Tenant.");
       resolvedOrgId = org.id;
     }
 
     const existing = await prisma.rFQ.findFirst({
       where: { tenantId, orgId: resolvedOrgId, rfqNumber: dto.rfqNumber },
     });
-    if (existing) throw new BadRequestException(`RFQ number ${dto.rfqNumber} already exists.`);
+    if (existing)
+      throw new BadRequestException(
+        `RFQ number ${dto.rfqNumber} already exists.`,
+      );
 
     return prisma.$transaction(async (tx) => {
       const rfq = await tx.rFQ.create({
@@ -339,7 +394,7 @@ export class ProcurementService {
           rfqNumber: dto.rfqNumber,
           expectedDate: dto.expectedDate ? new Date(dto.expectedDate) : null,
           notes: dto.notes || null,
-          status: 'DRAFT',
+          status: "DRAFT",
         },
       });
 
@@ -371,7 +426,7 @@ export class ProcurementService {
         rfq: true,
         lineItems: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     return quotes.map((q) => ({
@@ -399,22 +454,33 @@ export class ProcurementService {
         lineItems: { include: { product: true } },
       },
     });
-    if (!quote) throw new NotFoundException('Supplier quotation not found');
+    if (!quote) throw new NotFoundException("Supplier quotation not found");
     return quote;
   }
 
-  async createSupplierQuotation(tenantId: string, orgId: string, dto: CreateSupplierQuotationInput) {
+  async createSupplierQuotation(
+    tenantId: string,
+    orgId: string,
+    dto: CreateSupplierQuotationInput,
+  ) {
     let resolvedOrgId = orgId;
-    if (!orgId || orgId === 'org-system-default') {
+    if (!orgId || orgId === "org-system-default") {
       const org = await prisma.organization.findFirst({ where: { tenantId } });
-      if (!org) throw new BadRequestException('No Organization found.');
+      if (!org) throw new BadRequestException("No Organization found.");
       resolvedOrgId = org.id;
     }
 
     const existing = await prisma.supplierQuotation.findFirst({
-      where: { tenantId, orgId: resolvedOrgId, quotationNumber: dto.quotationNumber },
+      where: {
+        tenantId,
+        orgId: resolvedOrgId,
+        quotationNumber: dto.quotationNumber,
+      },
     });
-    if (existing) throw new BadRequestException(`Quotation number ${dto.quotationNumber} already exists.`);
+    if (existing)
+      throw new BadRequestException(
+        `Quotation number ${dto.quotationNumber} already exists.`,
+      );
 
     return prisma.$transaction(async (tx) => {
       let subtotal = 0;
@@ -453,9 +519,9 @@ export class ProcurementService {
           subtotal: new Prisma.Decimal(subtotal),
           taxAmount: new Prisma.Decimal(totalTax),
           totalAmount: new Prisma.Decimal(totalAmount),
-          currency: dto.currency || 'USD',
+          currency: dto.currency || "USD",
           notes: dto.notes || null,
-          status: 'DRAFT',
+          status: "DRAFT",
         },
       });
 
@@ -468,7 +534,7 @@ export class ProcurementService {
       if (dto.rfqId) {
         await tx.rFQ.update({
           where: { id: dto.rfqId },
-          data: { status: 'SENT' },
+          data: { status: "SENT" },
         });
       }
 
@@ -476,9 +542,15 @@ export class ProcurementService {
     });
   }
 
-  async updateSupplierQuotationStatus(tenantId: string, id: string, status: string) {
-    const quote = await prisma.supplierQuotation.findFirst({ where: { id, tenantId } });
-    if (!quote) throw new NotFoundException('Supplier quotation not found');
+  async updateSupplierQuotationStatus(
+    tenantId: string,
+    id: string,
+    status: string,
+  ) {
+    const quote = await prisma.supplierQuotation.findFirst({
+      where: { id, tenantId },
+    });
+    if (!quote) throw new NotFoundException("Supplier quotation not found");
 
     return prisma.supplierQuotation.update({
       where: { id },
@@ -486,12 +558,16 @@ export class ProcurementService {
     });
   }
 
-  async convertSupplierQuotationToPO(tenantId: string, id: string, createdBy: string) {
+  async convertSupplierQuotationToPO(
+    tenantId: string,
+    id: string,
+    createdBy: string,
+  ) {
     const quote = await prisma.supplierQuotation.findFirst({
       where: { id, tenantId },
       include: { lineItems: true },
     });
-    if (!quote) throw new NotFoundException('Supplier quotation not found');
+    if (!quote) throw new NotFoundException("Supplier quotation not found");
 
     // Generate PO Number automatically
     const poNumber = `PO-QUOTE-${Math.floor(100000 + Math.random() * 900000)}`;
@@ -503,12 +579,12 @@ export class ProcurementService {
           orgId: quote.orgId,
           vendorId: quote.vendorId,
           poNumber,
-          status: 'DRAFT',
+          status: "DRAFT",
           subtotal: quote.subtotal,
           taxAmount: quote.taxAmount,
           totalAmount: quote.totalAmount,
           currency: quote.currency,
-          notes: `Converted from Supplier Quotation ${quote.quotationNumber}. ${quote.notes || ''}`,
+          notes: `Converted from Supplier Quotation ${quote.quotationNumber}. ${quote.notes || ""}`,
           rfqId: quote.rfqId,
           supplierQuotationId: quote.id,
           createdBy,
@@ -535,7 +611,7 @@ export class ProcurementService {
 
       await tx.supplierQuotation.update({
         where: { id },
-        data: { status: 'CONVERTED' },
+        data: { status: "CONVERTED" },
       });
 
       return po;
@@ -556,7 +632,7 @@ export class ProcurementService {
         },
         lineItems: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     return receipts.map((r) => ({
@@ -566,9 +642,9 @@ export class ProcurementService {
       notes: r.notes,
       purchaseOrder: r.purchaseOrder
         ? {
-          poNumber: r.purchaseOrder.poNumber,
-          vendorName: r.purchaseOrder.vendor.name,
-        }
+            poNumber: r.purchaseOrder.poNumber,
+            vendorName: r.purchaseOrder.vendor.name,
+          }
         : null,
       itemsCount: r.lineItems.length,
     }));
@@ -580,7 +656,7 @@ export class ProcurementService {
     const returns = await prisma.purchaseReturn.findMany({
       where: { tenantId },
       include: { vendor: true, purchaseOrder: true, lineItems: true },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
     return returns.map((r) => ({
       id: r.id,
@@ -594,23 +670,31 @@ export class ProcurementService {
     }));
   }
 
-  async createPurchaseReturn(tenantId: string, orgId: string, dto: CreatePurchaseReturnInput, createdBy: string) {
+  async createPurchaseReturn(
+    tenantId: string,
+    orgId: string,
+    dto: CreatePurchaseReturnInput,
+    createdBy: string,
+  ) {
     let resolvedOrgId = orgId;
-    if (!orgId || orgId === 'org-system-default') {
+    if (!orgId || orgId === "org-system-default") {
       const org = await prisma.organization.findFirst({ where: { tenantId } });
-      if (!org) throw new BadRequestException('No Organization found.');
+      if (!org) throw new BadRequestException("No Organization found.");
       resolvedOrgId = org.id;
     }
 
     const order = await prisma.purchaseOrder.findFirst({
       where: { id: dto.purchaseOrderId, tenantId },
     });
-    if (!order) throw new NotFoundException('Purchase Order not found');
+    if (!order) throw new NotFoundException("Purchase Order not found");
 
     const existing = await prisma.purchaseReturn.findFirst({
       where: { tenantId, returnNumber: dto.returnNumber },
     });
-    if (existing) throw new BadRequestException(`Return number ${dto.returnNumber} already exists.`);
+    if (existing)
+      throw new BadRequestException(
+        `Return number ${dto.returnNumber} already exists.`,
+      );
 
     let subtotal = 0;
     let taxAmount = 0;
@@ -623,7 +707,7 @@ export class ProcurementService {
 
     return prisma.$transaction(async (tx) => {
       // 1. Create Debit Note
-      const debitNoteNumber = `DN-PR-${dto.returnNumber.replace('PR-', '')}-${Math.floor(Math.random() * 1000)}`;
+      const debitNoteNumber = `DN-PR-${dto.returnNumber.replace("PR-", "")}-${Math.floor(Math.random() * 1000)}`;
       const debitNote = await tx.debitNote.create({
         data: {
           tenantId,
@@ -632,8 +716,8 @@ export class ProcurementService {
           purchaseOrderId: dto.purchaseOrderId,
           noteNumber: debitNoteNumber,
           amount: new Prisma.Decimal(totalAmount),
-          reason: dto.reason || 'Supplier Return',
-          status: 'CONFIRMED',
+          reason: dto.reason || "Supplier Return",
+          status: "CONFIRMED",
         },
       });
 
@@ -646,7 +730,7 @@ export class ProcurementService {
           purchaseOrderId: dto.purchaseOrderId,
           purchaseReceiptId: dto.purchaseReceiptId || null,
           returnNumber: dto.returnNumber,
-          status: 'COMPLETED',
+          status: "COMPLETED",
           returnDate: new Date(),
           subtotal: new Prisma.Decimal(subtotal),
           taxAmount: new Prisma.Decimal(taxAmount),
@@ -679,19 +763,21 @@ export class ProcurementService {
       // 4. Update PO status
       await tx.purchaseOrder.update({
         where: { id: dto.purchaseOrderId },
-        data: { status: 'RETURNED' },
+        data: { status: "RETURNED" },
       });
 
       // 5. Emit stock return event
       if (this.eventEmitter) {
-        let whId = 'WH-MAIN';
+        let whId = "WH-MAIN";
         if (dto.purchaseReceiptId) {
-          const prObj = await tx.purchaseReceipt.findFirst({ where: { id: dto.purchaseReceiptId } });
+          const prObj = await tx.purchaseReceipt.findFirst({
+            where: { id: dto.purchaseReceiptId },
+          });
           if (prObj && prObj.warehouseId) {
             whId = prObj.warehouseId;
           }
         }
-        this.eventEmitter.emit('procurement.return.created', {
+        this.eventEmitter.emit("procurement.return.created", {
           tenantId,
           purchaseReturnId: pr.id,
           warehouseId: whId,
@@ -708,7 +794,7 @@ export class ProcurementService {
 
   // ─── Auto-Reorder Event Listener ───────────────────
 
-  @OnEvent('procurement.order.reorder')
+  @OnEvent("procurement.order.reorder")
   async handleReorderEvent(event: {
     tenantId: string;
     productId: string;
@@ -729,7 +815,7 @@ export class ProcurementService {
 
     // Find a vendor to purchase from (select the first active vendor or fallback to any)
     const vendor = await prisma.vendor.findFirst({
-      where: { tenantId, status: 'ACTIVE', deletedAt: null },
+      where: { tenantId, status: "ACTIVE", deletedAt: null },
     });
     if (!vendor) return;
 
@@ -751,7 +837,7 @@ export class ProcurementService {
       ],
     };
 
-    await this.createPurchaseOrder(tenantId, org.id, dto, 'system-auto');
+    await this.createPurchaseOrder(tenantId, org.id, dto, "system-auto");
   }
 
   /**
@@ -764,7 +850,7 @@ export class ProcurementService {
         department: { select: { name: true } },
         lineItems: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     return reqs.map((r: any) => ({
@@ -800,22 +886,35 @@ export class ProcurementService {
         lineItems: { include: { product: true } },
       },
     });
-    if (!req) throw new NotFoundException('Purchase Requisition not found');
+    if (!req) throw new NotFoundException("Purchase Requisition not found");
     return req;
   }
 
-  async createRequisition(tenantId: string, orgId: string, dto: any, requestedById: string) {
+  async createRequisition(
+    tenantId: string,
+    orgId: string,
+    dto: any,
+    requestedById: string,
+  ) {
     let resolvedOrgId = orgId;
-    if (!orgId || orgId === 'org-system-default') {
+    if (!orgId || orgId === "org-system-default") {
       const org = await prisma.organization.findFirst({ where: { tenantId } });
-      if (!org) throw new BadRequestException('No Organization found for this Tenant.');
+      if (!org)
+        throw new BadRequestException("No Organization found for this Tenant.");
       resolvedOrgId = org.id;
     }
 
     const existing = await prisma.purchaseRequisition.findFirst({
-      where: { tenantId, orgId: resolvedOrgId, requisitionNumber: dto.requisitionNumber },
+      where: {
+        tenantId,
+        orgId: resolvedOrgId,
+        requisitionNumber: dto.requisitionNumber,
+      },
     });
-    if (existing) throw new BadRequestException(`Requisition number ${dto.requisitionNumber} already exists.`);
+    if (existing)
+      throw new BadRequestException(
+        `Requisition number ${dto.requisitionNumber} already exists.`,
+      );
 
     return prisma.$transaction(async (tx) => {
       let estimatedCost = 0;
@@ -841,7 +940,7 @@ export class ProcurementService {
           requisitionNumber: dto.requisitionNumber,
           title: dto.title,
           description: dto.description || null,
-          status: 'PENDING_APPROVAL',
+          status: "PENDING_APPROVAL",
           requestedById,
           departmentId: dto.departmentId || null,
           requiredDate: dto.requiredDate ? new Date(dto.requiredDate) : null,
@@ -860,12 +959,19 @@ export class ProcurementService {
     });
   }
 
-  async updateRequisitionStatus(tenantId: string, id: string, status: string, userId: string) {
-    const req = await prisma.purchaseRequisition.findFirst({ where: { id, tenantId } });
-    if (!req) throw new NotFoundException('Purchase Requisition not found');
+  async updateRequisitionStatus(
+    tenantId: string,
+    id: string,
+    status: string,
+    userId: string,
+  ) {
+    const req = await prisma.purchaseRequisition.findFirst({
+      where: { id, tenantId },
+    });
+    if (!req) throw new NotFoundException("Purchase Requisition not found");
 
     const data: any = { status };
-    if (status === 'APPROVED') {
+    if (status === "APPROVED") {
       data.approvedBy = userId;
       data.approvedAt = new Date();
     }
@@ -878,13 +984,21 @@ export class ProcurementService {
 
   async convertRequisitionToPO(tenantId: string, id: string, userId: string) {
     const req = await prisma.purchaseRequisition.findFirst({
-      where: { id, tenantId, status: 'APPROVED' },
+      where: { id, tenantId, status: "APPROVED" },
       include: { lineItems: true },
     });
-    if (!req) throw new BadRequestException('Requisition must be APPROVED to convert to a Purchase Order.');
+    if (!req)
+      throw new BadRequestException(
+        "Requisition must be APPROVED to convert to a Purchase Order.",
+      );
 
-    const defaultVendor = await prisma.vendor.findFirst({ where: { tenantId } });
-    if (!defaultVendor) throw new BadRequestException('Please create a vendor in this tenant before converting.');
+    const defaultVendor = await prisma.vendor.findFirst({
+      where: { tenantId },
+    });
+    if (!defaultVendor)
+      throw new BadRequestException(
+        "Please create a vendor in this tenant before converting.",
+      );
 
     const poNumber = `PO-REQ-${Math.floor(100000 + Math.random() * 900000)}`;
 
@@ -895,7 +1009,7 @@ export class ProcurementService {
           orgId: req.orgId,
           vendorId: defaultVendor.id,
           poNumber,
-          status: 'DRAFT',
+          status: "DRAFT",
           subtotal: req.estimatedCost,
           taxAmount: new Prisma.Decimal(0),
           totalAmount: req.estimatedCost,
@@ -925,7 +1039,7 @@ export class ProcurementService {
 
       await tx.purchaseRequisition.update({
         where: { id },
-        data: { status: 'CONVERTED' },
+        data: { status: "CONVERTED" },
       });
 
       return po;
@@ -942,7 +1056,7 @@ export class ProcurementService {
         vendor: { select: { name: true } },
         lineItems: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     return agreements.map((a: any) => ({
@@ -978,22 +1092,34 @@ export class ProcurementService {
         lineItems: { include: { product: true } },
       },
     });
-    if (!agreement) throw new NotFoundException('Blanket Agreement not found');
+    if (!agreement) throw new NotFoundException("Blanket Agreement not found");
     return agreement;
   }
 
-  async createBlanketAgreement(tenantId: string, orgId: string, dto: any, createdBy: string) {
+  async createBlanketAgreement(
+    tenantId: string,
+    orgId: string,
+    dto: any,
+    createdBy: string,
+  ) {
     let resolvedOrgId = orgId;
-    if (!orgId || orgId === 'org-system-default') {
+    if (!orgId || orgId === "org-system-default") {
       const org = await prisma.organization.findFirst({ where: { tenantId } });
-      if (!org) throw new BadRequestException('No Organization found.');
+      if (!org) throw new BadRequestException("No Organization found.");
       resolvedOrgId = org.id;
     }
 
     const existing = await prisma.blanketPurchaseAgreement.findFirst({
-      where: { tenantId, orgId: resolvedOrgId, agreementNumber: dto.agreementNumber },
+      where: {
+        tenantId,
+        orgId: resolvedOrgId,
+        agreementNumber: dto.agreementNumber,
+      },
     });
-    if (existing) throw new BadRequestException(`Agreement number ${dto.agreementNumber} already exists.`);
+    if (existing)
+      throw new BadRequestException(
+        `Agreement number ${dto.agreementNumber} already exists.`,
+      );
 
     return prisma.$transaction(async (tx) => {
       const lines = dto.lineItems.map((item: any, idx: number) => {
@@ -1021,7 +1147,7 @@ export class ProcurementService {
           endDate: new Date(dto.endDate),
           agreementLimit: new Prisma.Decimal(dto.agreementLimit),
           releasedAmount: new Prisma.Decimal(0),
-          currency: dto.currency || 'USD',
+          currency: dto.currency || "USD",
           notes: dto.notes || null,
           createdBy,
         },
@@ -1037,12 +1163,17 @@ export class ProcurementService {
     });
   }
 
-  async createReleaseOrder(tenantId: string, agreementId: string, dto: { items: Array<{ itemId: string; releaseQty: number }> }, userId: string) {
+  async createReleaseOrder(
+    tenantId: string,
+    agreementId: string,
+    dto: { items: Array<{ itemId: string; releaseQty: number }> },
+    userId: string,
+  ) {
     const agreement = await prisma.blanketPurchaseAgreement.findFirst({
       where: { id: agreementId, tenantId },
       include: { lineItems: true },
     });
-    if (!agreement) throw new NotFoundException('Blanket Agreement not found');
+    if (!agreement) throw new NotFoundException("Blanket Agreement not found");
 
     const poNumber = `PO-REL-${Math.floor(100000 + Math.random() * 900000)}`;
 
@@ -1051,12 +1182,20 @@ export class ProcurementService {
       const poItems: any[] = [];
 
       for (const reqItem of dto.items) {
-        const agreementLine = agreement.lineItems.find((li) => li.id === reqItem.itemId);
-        if (!agreementLine) throw new BadRequestException(`Agreement item ${reqItem.itemId} not found on contract.`);
+        const agreementLine = agreement.lineItems.find(
+          (li) => li.id === reqItem.itemId,
+        );
+        if (!agreementLine)
+          throw new BadRequestException(
+            `Agreement item ${reqItem.itemId} not found on contract.`,
+          );
 
-        const availQty = Number(agreementLine.quantity) - Number(agreementLine.releasedQty);
+        const availQty =
+          Number(agreementLine.quantity) - Number(agreementLine.releasedQty);
         if (reqItem.releaseQty > availQty) {
-          throw new BadRequestException(`Requested qty ${reqItem.releaseQty} exceeds remaining available qty of ${availQty} on agreement.`);
+          throw new BadRequestException(
+            `Requested qty ${reqItem.releaseQty} exceeds remaining available qty of ${availQty} on agreement.`,
+          );
         }
 
         const itemCost = reqItem.releaseQty * Number(agreementLine.unitPrice);
@@ -1064,7 +1203,9 @@ export class ProcurementService {
 
         await tx.blanketPurchaseAgreementItem.update({
           where: { id: agreementLine.id },
-          data: { releasedQty: { increment: new Prisma.Decimal(reqItem.releaseQty) } },
+          data: {
+            releasedQty: { increment: new Prisma.Decimal(reqItem.releaseQty) },
+          },
         });
 
         poItems.push({
@@ -1082,7 +1223,9 @@ export class ProcurementService {
 
       const newReleasedAmount = Number(agreement.releasedAmount) + subtotal;
       if (newReleasedAmount > Number(agreement.agreementLimit)) {
-        throw new BadRequestException(`This order release of $${subtotal} exceeds the remaining blanket agreement limit.`);
+        throw new BadRequestException(
+          `This order release of $${subtotal} exceeds the remaining blanket agreement limit.`,
+        );
       }
 
       await tx.blanketPurchaseAgreement.update({
@@ -1096,7 +1239,7 @@ export class ProcurementService {
           orgId: agreement.orgId,
           vendorId: agreement.vendorId,
           poNumber,
-          status: 'DRAFT',
+          status: "DRAFT",
           subtotal: new Prisma.Decimal(subtotal),
           taxAmount: new Prisma.Decimal(0),
           totalAmount: new Prisma.Decimal(subtotal),
@@ -1119,11 +1262,14 @@ export class ProcurementService {
   /**
    * SUPPLIER SCORECARD CALCULATION
    */
-  async getVendorPerformanceMetrics(tenantId: string, vendorId: string): Promise<any> {
+  async getVendorPerformanceMetrics(
+    tenantId: string,
+    vendorId: string,
+  ): Promise<any> {
     const vendor = await prisma.vendor.findFirst({
       where: { id: vendorId, tenantId },
     });
-    if (!vendor) throw new NotFoundException('Vendor not found');
+    if (!vendor) throw new NotFoundException("Vendor not found");
 
     const orders = await prisma.purchaseOrder.findMany({
       where: { tenantId, vendorId, deletedAt: null },
@@ -1139,15 +1285,20 @@ export class ProcurementService {
 
     for (const po of orders) {
       totalSpend += Number(po.totalAmount);
-      
+
       if (po.expectedDate && po.receipts.length > 0) {
-        const latestReceiptDate = new Date(Math.max(...po.receipts.map(r => r.receivedDate.getTime())));
+        const latestReceiptDate = new Date(
+          Math.max(...po.receipts.map((r) => r.receivedDate.getTime())),
+        );
         if (latestReceiptDate <= new Date(po.expectedDate)) {
           onTimeDeliveries++;
         }
-        
+
         const leadTimeMs = latestReceiptDate.getTime() - po.orderDate.getTime();
-        totalLeadTimeDays += Math.max(0, Math.floor(leadTimeMs / (1000 * 60 * 60 * 24)));
+        totalLeadTimeDays += Math.max(
+          0,
+          Math.floor(leadTimeMs / (1000 * 60 * 60 * 24)),
+        );
         leadTimeCount++;
       }
 
@@ -1159,10 +1310,13 @@ export class ProcurementService {
       }
     }
 
-    const OTD = orders.length > 0 ? (onTimeDeliveries / orders.length) * 100 : 100;
-    const qualityRate = totalReceivedQty > 0 ? (totalAcceptedQty / totalReceivedQty) * 100 : 100;
+    const OTD =
+      orders.length > 0 ? (onTimeDeliveries / orders.length) * 100 : 100;
+    const qualityRate =
+      totalReceivedQty > 0 ? (totalAcceptedQty / totalReceivedQty) * 100 : 100;
     const defectRate = 100 - qualityRate;
-    const avgLeadTimeDays = leadTimeCount > 0 ? totalLeadTimeDays / leadTimeCount : 0;
+    const avgLeadTimeDays =
+      leadTimeCount > 0 ? totalLeadTimeDays / leadTimeCount : 0;
 
     return {
       vendorId,
@@ -1187,22 +1341,28 @@ export class ProcurementService {
         receipts: { include: { lineItems: true } },
       },
     });
-    if (!po) throw new NotFoundException('Purchase order not found');
+    if (!po) throw new NotFoundException("Purchase order not found");
 
     const items = po.lineItems.map((poItem: any) => {
       let receivedQty = 0;
       po.receipts.forEach((r: any) => {
-        const matchingItem = r.lineItems.find((li: any) => li.productId === poItem.productId);
+        const matchingItem = r.lineItems.find(
+          (li: any) => li.productId === poItem.productId,
+        );
         if (matchingItem) {
           receivedQty += Number(matchingItem.acceptedQty);
         }
       });
 
-      const invoicedQty = po.status === 'RECEIVED' ? Number(poItem.quantity) : receivedQty;
+      const invoicedQty =
+        po.status === "RECEIVED" ? Number(poItem.quantity) : receivedQty;
       const orderedUnitPrice = Number(poItem.unitPrice);
-      const invoicedUnitPrice = poId.endsWith('d') ? orderedUnitPrice * 1.1 : orderedUnitPrice;
+      const invoicedUnitPrice = poId.endsWith("d")
+        ? orderedUnitPrice * 1.1
+        : orderedUnitPrice;
 
-      const qtyMatch = Number(poItem.quantity) === receivedQty && receivedQty === invoicedQty;
+      const qtyMatch =
+        Number(poItem.quantity) === receivedQty && receivedQty === invoicedQty;
       const priceMatch = orderedUnitPrice === invoicedUnitPrice;
 
       return {
@@ -1219,8 +1379,14 @@ export class ProcurementService {
       };
     });
 
-    const overallMatch = items.every((item: any) => item.qtyMatch && item.priceMatch);
-    const status = overallMatch ? 'MATCHED' : (items.some((i: any) => i.receivedQty > 0) ? 'DISCREPANCY' : 'PENDING');
+    const overallMatch = items.every(
+      (item: any) => item.qtyMatch && item.priceMatch,
+    );
+    const status = overallMatch
+      ? "MATCHED"
+      : items.some((i: any) => i.receivedQty > 0)
+        ? "DISCREPANCY"
+        : "PENDING";
 
     return {
       purchaseOrderId: poId,
@@ -1254,7 +1420,9 @@ export class ProcurementService {
         productId: li.productId,
         description: li.description,
         quantity: Number(li.quantity),
-        product: li.product ? { name: li.product.name, sku: li.product.sku } : null,
+        product: li.product
+          ? { name: li.product.name, sku: li.product.sku }
+          : null,
       })),
     };
   }
@@ -1273,7 +1441,7 @@ export class ProcurementService {
       vendorId: dto.vendorId,
       quotationNumber: dto.quotationNumber,
       validUntil: dto.validUntil,
-      currency: 'USD',
+      currency: "USD",
       notes: dto.notes || `Submitted via Public Vendor Bidding Portal.`,
       lineItems: dto.lineItems,
     });

@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { Injectable } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import { Injectable } from "@nestjs/common";
+import { prisma } from "@unerp/database";
 
 /**
  * CRM Sales Enablement service.
@@ -34,43 +33,75 @@ import { prisma } from '@unerp/database';
  */
 @Injectable()
 export class CrmEnablementService {
-  async getObjections(_tenantId: string, query?: string): Promise<Array<{ id: string; objection: string; response: string; category: string }>> {
+  async getObjections(
+    _tenantId: string,
+    query?: string,
+  ): Promise<
+    Array<{ id: string; objection: string; response: string; category: string }>
+  > {
     const list = [
-      { id: '1', objection: 'Price is too high', response: 'Focus on ROI, TCO, and business value metrics.', category: 'Pricing' },
-      { id: '2', objection: 'No budget allocated', response: 'Explore build-vs-buy or request a trial period.', category: 'Budget' },
-      { id: '3', objection: 'Competitor X has feature Y', response: 'Highlight our stability, support, and feature Z.', category: 'Competitor' },
+      {
+        id: "1",
+        objection: "Price is too high",
+        response: "Focus on ROI, TCO, and business value metrics.",
+        category: "Pricing",
+      },
+      {
+        id: "2",
+        objection: "No budget allocated",
+        response: "Explore build-vs-buy or request a trial period.",
+        category: "Budget",
+      },
+      {
+        id: "3",
+        objection: "Competitor X has feature Y",
+        response: "Highlight our stability, support, and feature Z.",
+        category: "Competitor",
+      },
     ];
     if (query) {
-      return list.filter(item => item.objection.toLowerCase().includes(query.toLowerCase()));
+      return list.filter((item) =>
+        item.objection.toLowerCase().includes(query.toLowerCase()),
+      );
     }
     return list;
   }
 
-  async getCompetitors(tenantId: string): Promise<Array<{ competitorName: string; strengths: string[]; weaknesses: string[] }>> {
+  async getCompetitors(
+    tenantId: string,
+  ): Promise<
+    Array<{ competitorName: string; strengths: string[]; weaknesses: string[] }>
+  > {
     const list = await prisma.battlecard.findMany({ where: { tenantId } });
-    return list.map(item => ({
-      competitorName: item.competitor || '',
+    return list.map((item) => ({
+      competitorName: item.competitor || "",
       strengths: item.strengths ? (item.strengths as string[]) : [],
       weaknesses: item.weaknesses ? (item.weaknesses as string[]) : [],
     }));
   }
 
-  async getLeaderboard(tenantId: string): Promise<Array<{ repName: string; wonAmount: number; dealCount: number }>> {
+  async getLeaderboard(
+    tenantId: string,
+  ): Promise<Array<{ repName: string; wonAmount: number; dealCount: number }>> {
     const wonOpps = await prisma.opportunity.findMany({
-      where: { tenantId, stage: 'CLOSED_WON', deletedAt: null },
+      where: { tenantId, stage: "CLOSED_WON", deletedAt: null },
     });
 
-    const userIds = wonOpps.map((opp) => opp.assignedToId).filter((id): id is string => !!id);
+    const userIds = wonOpps
+      .map((opp) => opp.assignedToId)
+      .filter((id): id is string => !!id);
     const users = await prisma.user.findMany({
       where: { id: { in: userIds } },
       select: { id: true, firstName: true, lastName: true },
     });
-    const userMap = new Map(users.map((u) => [u.id, `${u.firstName} ${u.lastName}`]));
+    const userMap = new Map(
+      users.map((u) => [u.id, `${u.firstName} ${u.lastName}`]),
+    );
 
     const repMap = new Map<string, { wonAmount: number; dealCount: number }>();
     for (const opp of wonOpps) {
       if (!opp.assignedToId) continue;
-      const repName = userMap.get(opp.assignedToId) ?? 'Unassigned';
+      const repName = userMap.get(opp.assignedToId) ?? "Unassigned";
       const entry = repMap.get(repName) || { wonAmount: 0, dealCount: 0 };
       entry.wonAmount += Number(opp.amount || 0);
       entry.dealCount += 1;
@@ -78,7 +109,11 @@ export class CrmEnablementService {
     }
 
     return Array.from(repMap.entries())
-      .map(([repName, val]) => ({ repName, wonAmount: val.wonAmount, dealCount: val.dealCount }))
+      .map(([repName, val]) => ({
+        repName,
+        wonAmount: val.wonAmount,
+        dealCount: val.dealCount,
+      }))
       .sort((a, b) => b.wonAmount - a.wonAmount);
   }
 }

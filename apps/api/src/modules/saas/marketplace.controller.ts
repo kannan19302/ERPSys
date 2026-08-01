@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Controller,
   Get,
@@ -39,12 +38,48 @@ export class MarketplaceController {
   constructor(private readonly saasService: SaasService) {}
 
   private readonly appsCatalog = [
-    { id: "crm", name: "CRM", slug: "crm", description: "Customer Relationship Management", category: "sales" },
-    { id: "hr", name: "HR", slug: "hr", description: "Human Resources", category: "people" },
-    { id: "finance", name: "Finance", slug: "finance", description: "Finance & Accounting", category: "finance" },
-    { id: "inventory", name: "Inventory", slug: "inventory", description: "Inventory Management", category: "operations" },
-    { id: "projects", name: "Projects", slug: "projects", description: "Project Management", category: "operations" },
-    { id: "manufacturing", name: "Manufacturing", slug: "manufacturing", description: "Manufacturing MRP", category: "operations" },
+    {
+      id: "crm",
+      name: "CRM",
+      slug: "crm",
+      description: "Customer Relationship Management",
+      category: "sales",
+    },
+    {
+      id: "hr",
+      name: "HR",
+      slug: "hr",
+      description: "Human Resources",
+      category: "people",
+    },
+    {
+      id: "finance",
+      name: "Finance",
+      slug: "finance",
+      description: "Finance & Accounting",
+      category: "finance",
+    },
+    {
+      id: "inventory",
+      name: "Inventory",
+      slug: "inventory",
+      description: "Inventory Management",
+      category: "operations",
+    },
+    {
+      id: "projects",
+      name: "Projects",
+      slug: "projects",
+      description: "Project Management",
+      category: "operations",
+    },
+    {
+      id: "manufacturing",
+      name: "Manufacturing",
+      slug: "manufacturing",
+      description: "Manufacturing MRP",
+      category: "operations",
+    },
   ];
 
   @ApiOperation({ summary: "List marketplace apps" })
@@ -79,15 +114,23 @@ export class MarketplaceController {
   async searchApps(@Req() _req: AuthReq, @Query("q") q?: string) {
     if (!q) return this.appsCatalog;
     const query = q.toLowerCase();
-    return this.appsCatalog.filter((a) => a.name.toLowerCase().includes(query) || a.description.toLowerCase().includes(query));
+    return this.appsCatalog.filter(
+      (a) =>
+        a.name.toLowerCase().includes(query) ||
+        a.description.toLowerCase().includes(query),
+    );
   }
 
   @ApiOperation({ summary: "Get recommended apps" })
   @Permissions("saas.marketplace.read")
   @Get("recommended")
   async getRecommendedApps(@Req() req: AuthReq) {
-    const installed: string[] = await this.saasService.getInstalledApps(req.user.tenantId).catch(() => []);
-    return this.appsCatalog.filter((a) => !installed.includes(a.id) && !installed.includes(a.slug)).slice(0, 3);
+    const installed: string[] = await this.saasService
+      .getInstalledApps(req.user.tenantId)
+      .catch(() => []);
+    return this.appsCatalog
+      .filter((a) => !installed.includes(a.id) && !installed.includes(a.slug))
+      .slice(0, 3);
   }
 
   @ApiOperation({ summary: "Get featured apps" })
@@ -101,20 +144,28 @@ export class MarketplaceController {
   @Permissions("saas.marketplace.read")
   @Post("apps/:id/install")
   async installMarketplaceApp(@Req() req: AuthReq, @Param("id") id: string) {
-    return this.saasService.installApp(req.user.tenantId, id).catch(() => ({ success: false }));
+    return this.saasService
+      .installApp(req.user.tenantId, id)
+      .catch(() => ({ success: false }));
   }
 
   @ApiOperation({ summary: "Uninstall marketplace app" })
   @Permissions("saas.marketplace.read")
   @Post("apps/:id/uninstall")
   async uninstallMarketplaceApp(@Req() req: AuthReq, @Param("id") id: string) {
-    return this.saasService.uninstallApp(req.user.tenantId, id).catch(() => ({ success: false }));
+    return this.saasService
+      .uninstallApp(req.user.tenantId, id)
+      .catch(() => ({ success: false }));
   }
 
   @ApiOperation({ summary: "Submit app review" })
   @Permissions("saas.marketplace.read")
   @Post("apps/:id/review")
-  async submitAppReview(@Req() _req: AuthReq, @Param("id") id: string, @ZodBody(submitAppReviewSchema) body: z.infer<typeof submitAppReviewSchema>) {
+  async submitAppReview(
+    @Req() _req: AuthReq,
+    @Param("id") id: string,
+    @ZodBody(submitAppReviewSchema) body: z.infer<typeof submitAppReviewSchema>,
+  ) {
     return { success: true, appId: id, rating: body.rating, title: body.title };
   }
 
@@ -135,7 +186,11 @@ export class MarketplaceController {
   @ApiOperation({ summary: "Configure app" })
   @Permissions("saas.marketplace.read")
   @Post("apps/:id/configure")
-  async configureApp(@Req() _req: AuthReq, @Param("id") id: string, @ZodBody(configureAppSchema) body: z.infer<typeof configureAppSchema>) {
+  async configureApp(
+    @Req() _req: AuthReq,
+    @Param("id") id: string,
+    @ZodBody(configureAppSchema) body: z.infer<typeof configureAppSchema>,
+  ) {
     return { success: true, appId: id, settings: body.settings };
   }
 
@@ -143,7 +198,16 @@ export class MarketplaceController {
   @Permissions("saas.marketplace.read")
   @Get("apps/:id/versions")
   async getAppVersions(@Req() _req: AuthReq, @Param("id") id: string) {
-    return { appId: id, versions: [{ version: "1.0.0", releasedAt: "2024-01-01", changelog: "Initial release" }] };
+    return {
+      appId: id,
+      versions: [
+        {
+          version: "1.0.0",
+          releasedAt: "2024-01-01",
+          changelog: "Initial release",
+        },
+      ],
+    };
   }
 
   @ApiOperation({ summary: "Upgrade marketplace app" })
@@ -158,9 +222,34 @@ export class MarketplaceController {
   @Get("bundles")
   async listBundles(@Req() _req: AuthReq) {
     return [
-      { id: "starter", name: "Starter Bundle", apps: ["crm", "finance"], price: 0, currency: "USD" },
-      { id: "business", name: "Business Bundle", apps: ["crm", "finance", "hr", "inventory"], price: 49, currency: "USD" },
-      { id: "enterprise", name: "Enterprise Bundle", apps: ["crm", "finance", "hr", "inventory", "projects", "manufacturing"], price: 199, currency: "USD" },
+      {
+        id: "starter",
+        name: "Starter Bundle",
+        apps: ["crm", "finance"],
+        price: 0,
+        currency: "USD",
+      },
+      {
+        id: "business",
+        name: "Business Bundle",
+        apps: ["crm", "finance", "hr", "inventory"],
+        price: 49,
+        currency: "USD",
+      },
+      {
+        id: "enterprise",
+        name: "Enterprise Bundle",
+        apps: [
+          "crm",
+          "finance",
+          "hr",
+          "inventory",
+          "projects",
+          "manufacturing",
+        ],
+        price: 199,
+        currency: "USD",
+      },
     ];
   }
 }

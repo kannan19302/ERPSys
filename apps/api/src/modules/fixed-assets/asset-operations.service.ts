@@ -1,10 +1,8 @@
-// @ts-nocheck
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 
 @Injectable()
 export class AssetOperationsService {
-
   // ── INSURANCE POLICIES ──
   async getInsurancePolicies(tenantId: string, query: { assetId?: string }) {
     const where: any = { tenantId };

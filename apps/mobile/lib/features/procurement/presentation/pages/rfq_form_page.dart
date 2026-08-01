@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/usecase/result.dart';
-import '../../domain/entities/procurement.dart';
 import '../providers/procurement_providers.dart';
 
 class RFQFormPage extends ConsumerStatefulWidget {
@@ -46,7 +44,7 @@ class _RFQFormPageState extends ConsumerState<RFQFormPage> {
           productNameCtrl: TextEditingController(text: item.productName ?? ''),
           qtyCtrl: TextEditingController(text: item.quantity.toString()),
           uomCtrl: TextEditingController(text: item.uom ?? ''),
-        ));
+        ),);
       }
       if (_items.isEmpty) _addItem();
     }
@@ -57,7 +55,7 @@ class _RFQFormPageState extends ConsumerState<RFQFormPage> {
       productNameCtrl: TextEditingController(),
       qtyCtrl: TextEditingController(text: '1'),
       uomCtrl: TextEditingController(text: 'pcs'),
-    )));
+    ),),);
   }
 
   void _removeItem(int index) {
@@ -72,7 +70,9 @@ class _RFQFormPageState extends ConsumerState<RFQFormPage> {
     _vendorCtrl.dispose();
     _deliveryDateCtrl.dispose();
     _notesCtrl.dispose();
-    for (final item in _items) item.dispose();
+    for (final item in _items) {
+      item.dispose();
+    }
     super.dispose();
   }
 
@@ -88,7 +88,7 @@ class _RFQFormPageState extends ConsumerState<RFQFormPage> {
         'productName': i.productNameCtrl.text.trim(),
         'quantity': double.tryParse(i.qtyCtrl.text) ?? 0,
         'uom': i.uomCtrl.text.trim(),
-      }).toList(),
+      },).toList(),
     };
 
     final result = await ref.read(rfqListControllerProvider.notifier)
@@ -140,7 +140,7 @@ class _RFQFormPageState extends ConsumerState<RFQFormPage> {
                 icon: const Icon(Icons.add, size: 18),
                 label: const Text('Add'),
               ),
-            ]),
+            ],),
             const SizedBox(height: Spacing.x2),
             ...List.generate(_items.length, (i) {
               final item = _items[i];
@@ -150,23 +150,23 @@ class _RFQFormPageState extends ConsumerState<RFQFormPage> {
                   Expanded(flex: 3, child: TextFormField(
                     controller: item.productNameCtrl,
                     decoration: const InputDecoration(labelText: 'Product', isDense: true),
-                  )),
+                  ),),
                   const SizedBox(width: Spacing.x2),
                   Expanded(flex: 1, child: TextFormField(
                     controller: item.qtyCtrl,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(labelText: 'Qty', isDense: true),
-                  )),
+                  ),),
                   const SizedBox(width: Spacing.x2),
                   Expanded(flex: 1, child: TextFormField(
                     controller: item.uomCtrl,
                     decoration: const InputDecoration(labelText: 'UOM', isDense: true),
-                  )),
+                  ),),
                   IconButton(
                     icon: const Icon(Icons.remove_circle_outline, size: 20),
                     onPressed: () => _removeItem(i),
                   ),
-                ]),
+                ],),
               );
             }),
             const SizedBox(height: Spacing.x4),

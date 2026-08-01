@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Injectable, Logger } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 import { FabricGatewayProvider } from "../providers/fabric-gateway.provider";

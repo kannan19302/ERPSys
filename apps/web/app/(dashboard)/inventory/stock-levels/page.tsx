@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { PageHeader } from "@unerp/ui";
 import { ListView, RouteGuard } from "@unerp/framework";

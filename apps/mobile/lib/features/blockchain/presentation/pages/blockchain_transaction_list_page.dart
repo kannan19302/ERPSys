@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -50,7 +49,7 @@ class _BlockchainTransactionListPageState extends ConsumerState<BlockchainTransa
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
                 .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value)))
+                    value: e.key, child: Text(e.value),),)
                 .toList(),
           ),
         ],
@@ -85,7 +84,7 @@ class _BlockchainTransactionListPageState extends ConsumerState<BlockchainTransa
                     : '${state.meta.total} tx${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -143,25 +142,25 @@ class _TxTile extends StatelessWidget {
             Row(children: [
               Expanded(
                 child: Text(tx.txHash.length > 20 ? '${tx.txHash.substring(0, 20)}...' : tx.txHash,
-                    style: Theme.of(context).textTheme.titleSmall),
+                    style: Theme.of(context).textTheme.titleSmall,),
               ),
               UiStatusBadge(
                 label: tx.status,
                 tone: _statusTone(tx.status),
               ),
-            ]),
+            ],),
             const SizedBox(height: Spacing.x1),
             if (tx.network != null)
               Text(tx.network!, style: TextStyle(color: t.textSecondary)),
             const SizedBox(height: Spacing.x1),
             Row(children: [
               Text('${tx.value.toStringAsFixed(6)} ETH',
-                  style: Theme.of(context).textTheme.labelLarge),
+                  style: Theme.of(context).textTheme.labelLarge,),
               const Spacer(),
               if (tx.confirmations > 0)
                 Text('${tx.confirmations} conf',
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
-            ]),
+                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
+            ],),
           ],
         ),
       ),

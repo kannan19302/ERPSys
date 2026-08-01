@@ -1,16 +1,10 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/widgets/ui_card.dart';
 import '../../../../core/utils/formatters.dart';
-import '../../../../core/widgets/permission_gate.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/widgets/state_views.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/utils/formatters.dart';
-import '../../../../core/widgets/state_views.dart';
 import '../../domain/entities/analytics.dart';
 import '../providers/analytics_providers.dart';
 
@@ -121,16 +115,16 @@ class _DashboardDetail extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
                                 Text(w.title ?? w.widgetType ?? 'Widget',
-                                    style: Theme.of(context).textTheme.labelLarge),
+                                    style: Theme.of(context).textTheme.labelLarge,),
                                 if (w.widgetType != null)
                                   Text(w.widgetType!,
-                                      style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
+                                      style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
                               ],
                             ),
                           ),
                         ],
                       ),
-                    )),
+                    ),),
             ],
           ),
         ),

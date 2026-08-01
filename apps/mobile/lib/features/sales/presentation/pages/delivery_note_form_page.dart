@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -32,8 +31,6 @@ class _DeliveryNoteFormPageState extends ConsumerState<DeliveryNoteFormPage> {
 
   final List<_LineItem> _items = <_LineItem>[];
 
-  bool get _isEditing => widget.deliveryNoteId != null;
-
   @override
   void dispose() {
     _customerCtrl.dispose();
@@ -52,7 +49,7 @@ class _DeliveryNoteFormPageState extends ConsumerState<DeliveryNoteFormPage> {
       _items.add(_LineItem(
         productCtrl: TextEditingController(),
         qtyCtrl: TextEditingController(text: '1'),
-      ));
+      ),);
     });
   }
 
@@ -77,7 +74,7 @@ class _DeliveryNoteFormPageState extends ConsumerState<DeliveryNoteFormPage> {
       'items': _items.map((_LineItem item) => <String, dynamic>{
         'productName': item.productCtrl.text.trim(),
         'quantity': double.tryParse(item.qtyCtrl.text) ?? 1,
-      }).toList(),
+      },).toList(),
     };
 
     final Result<DeliveryNote> result = await ref
@@ -149,9 +146,9 @@ class _DeliveryNoteFormPageState extends ConsumerState<DeliveryNoteFormPage> {
             InkWell(
               onTap: _selectDate,
               child: InputDecorator(
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Delivery Date',
-                  suffixIcon: const Icon(Icons.calendar_today_outlined),
+                  suffixIcon: Icon(Icons.calendar_today_outlined),
                 ),
                 child: Text(
                   _deliveryDate != null

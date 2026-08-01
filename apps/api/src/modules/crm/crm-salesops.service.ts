@@ -1,13 +1,17 @@
-// @ts-nocheck
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
 import {
-  CreateSalesTargetInput, UpdateSalesTargetInput,
-  CreateSalesTerritoryInput, UpdateSalesTerritoryInput, AddTeamMemberInput,
-  CreateCommissionRuleInput, UpdateCommissionRuleInput, CalculateCommissionsInput,
-} from '@unerp/shared';
-import { resolveOrgId } from './crm-shared';
+  CreateSalesTargetInput,
+  UpdateSalesTargetInput,
+  CreateSalesTerritoryInput,
+  UpdateSalesTerritoryInput,
+  AddTeamMemberInput,
+  CreateCommissionRuleInput,
+  UpdateCommissionRuleInput,
+  CalculateCommissionsInput,
+} from "@unerp/shared";
+import { resolveOrgId } from "./crm-shared";
 
 /** Resolves a target's `period` string (e.g. "2026-01", "2026-Q1", "2026") into a closed date range. */
 function periodToDateRange(period: string): { start: Date; end: Date } | null {
@@ -15,19 +19,28 @@ function periodToDateRange(period: string): { start: Date; end: Date } | null {
   if (monthMatch) {
     const year = Number(monthMatch[1]);
     const month = Number(monthMatch[2]) - 1;
-    return { start: new Date(Date.UTC(year, month, 1)), end: new Date(Date.UTC(year, month + 1, 1)) };
+    return {
+      start: new Date(Date.UTC(year, month, 1)),
+      end: new Date(Date.UTC(year, month + 1, 1)),
+    };
   }
   const quarterMatch = period.match(/^(\d{4})-Q([1-4])$/i);
   if (quarterMatch) {
     const year = Number(quarterMatch[1]);
     const q = Number(quarterMatch[2]);
     const startMonth = (q - 1) * 3;
-    return { start: new Date(Date.UTC(year, startMonth, 1)), end: new Date(Date.UTC(year, startMonth + 3, 1)) };
+    return {
+      start: new Date(Date.UTC(year, startMonth, 1)),
+      end: new Date(Date.UTC(year, startMonth + 3, 1)),
+    };
   }
   const yearMatch = period.match(/^(\d{4})$/);
   if (yearMatch) {
     const year = Number(yearMatch[1]);
-    return { start: new Date(Date.UTC(year, 0, 1)), end: new Date(Date.UTC(year + 1, 0, 1)) };
+    return {
+      start: new Date(Date.UTC(year, 0, 1)),
+      end: new Date(Date.UTC(year + 1, 0, 1)),
+    };
   }
   return null;
 }
@@ -46,44 +59,71 @@ export class CrmSalesOpsService {
    * within the target's period, scoped to the target's rep when userId is set.
    */
   async getSalesTargets(tenantId: string) {
-    const targets = await prisma.salesTarget.findMany({ where: { tenantId }, orderBy: { period: 'desc' } });
+    const targets = await prisma.salesTarget.findMany({
+      where: { tenantId },
+      orderBy: { period: "desc" },
+    });
     return Promise.all(
       targets.map(async (t) => {
         const range = periodToDateRange(t.period);
         const where: Prisma.OpportunityWhereInput = {
           tenantId,
           deletedAt: null,
-          stage: 'CLOSED_WON',
-          ...(range ? { actualCloseDate: { gte: range.start, lt: range.end } } : {}),
+          stage: "CLOSED_WON",
+          ...(range
+            ? { actualCloseDate: { gte: range.start, lt: range.end } }
+            : {}),
           ...(t.userId ? { assignedToId: t.userId } : {}),
         };
         let achieved: number;
-        if (t.targetType === 'DEALS') {
+        if (t.targetType === "DEALS") {
           achieved = await prisma.opportunity.count({ where });
         } else {
-          const agg = await prisma.opportunity.aggregate({ where, _sum: { amount: true } });
+          const agg = await prisma.opportunity.aggregate({
+            where,
+            _sum: { amount: true },
+          });
           achieved = Number(agg._sum.amount || 0);
         }
-        const name = `${t.targetType === 'DEALS' ? 'Deals' : t.targetType === 'UNITS' ? 'Units' : 'Revenue'} Target${t.userId ? '' : ' (Team)'} — ${t.period}`;
+        const name = `${t.targetType === "DEALS" ? "Deals" : t.targetType === "UNITS" ? "Units" : "Revenue"} Target${t.userId ? "" : " (Team)"} — ${t.period}`;
         return { ...t, achieved: new Prisma.Decimal(achieved), name };
       }),
     );
   }
 
-  async createSalesTarget(tenantId: string, orgId: string, dto: CreateSalesTargetInput) {
+  async createSalesTarget(
+    tenantId: string,
+    orgId: string,
+    dto: CreateSalesTargetInput,
+  ) {
     const resolvedOrgId = await resolveOrgId(tenantId, orgId);
     return prisma.salesTarget.create({
-      data: { tenantId, orgId: resolvedOrgId, userId: dto.userId || null, period: dto.period, targetType: dto.targetType || 'REVENUE', target: new Prisma.Decimal(dto.target) },
+      data: {
+        tenantId,
+        orgId: resolvedOrgId,
+        userId: dto.userId || null,
+        period: dto.period,
+        targetType: dto.targetType || "REVENUE",
+        target: new Prisma.Decimal(dto.target),
+      },
     });
   }
 
-  async updateSalesTarget(tenantId: string, id: string, dto: UpdateSalesTargetInput) {
-    const existing = await prisma.salesTarget.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Sales target not found');
+  async updateSalesTarget(
+    tenantId: string,
+    id: string,
+    dto: UpdateSalesTargetInput,
+  ) {
+    const existing = await prisma.salesTarget.findFirst({
+      where: { id, tenantId },
+    });
+    if (!existing) throw new NotFoundException("Sales target not found");
     return prisma.salesTarget.update({
       where: { id },
       data: {
-        ...(dto.target !== undefined && { target: new Prisma.Decimal(dto.target) }),
+        ...(dto.target !== undefined && {
+          target: new Prisma.Decimal(dto.target),
+        }),
         ...(dto.period !== undefined && { period: dto.period }),
         ...(dto.targetType !== undefined && { targetType: dto.targetType }),
         ...(dto.userId !== undefined && { userId: dto.userId }),
@@ -92,8 +132,10 @@ export class CrmSalesOpsService {
   }
 
   async deleteSalesTarget(tenantId: string, id: string) {
-    const existing = await prisma.salesTarget.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Sales target not found');
+    const existing = await prisma.salesTarget.findFirst({
+      where: { id, tenantId },
+    });
+    if (!existing) throw new NotFoundException("Sales target not found");
     return prisma.salesTarget.delete({ where: { id } });
   }
 
@@ -102,32 +144,51 @@ export class CrmSalesOpsService {
   async getTerritories(tenantId: string) {
     return prisma.salesTerritory.findMany({
       where: { tenantId, deletedAt: null },
-      include: { members: true, children: { select: { id: true, name: true } }, parent: { select: { id: true, name: true } } },
-      orderBy: { name: 'asc' },
+      include: {
+        members: true,
+        children: { select: { id: true, name: true } },
+        parent: { select: { id: true, name: true } },
+      },
+      orderBy: { name: "asc" },
     });
   }
 
-  async createTerritory(tenantId: string, orgId: string, dto: CreateSalesTerritoryInput) {
+  async createTerritory(
+    tenantId: string,
+    orgId: string,
+    dto: CreateSalesTerritoryInput,
+  ) {
     const resolvedOrgId = await resolveOrgId(tenantId, orgId);
     return prisma.salesTerritory.create({
       data: {
-        tenantId, orgId: resolvedOrgId, name: dto.name,
+        tenantId,
+        orgId: resolvedOrgId,
+        name: dto.name,
         description: dto.description || null,
-        criteria: dto.criteria as Prisma.InputJsonValue || {},
-        parentId: dto.parentId || null, managerId: dto.managerId || null,
+        criteria: (dto.criteria as Prisma.InputJsonValue) || {},
+        parentId: dto.parentId || null,
+        managerId: dto.managerId || null,
       },
     });
   }
 
-  async updateTerritory(tenantId: string, id: string, dto: UpdateSalesTerritoryInput) {
-    const existing = await prisma.salesTerritory.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!existing) throw new NotFoundException('Territory not found');
+  async updateTerritory(
+    tenantId: string,
+    id: string,
+    dto: UpdateSalesTerritoryInput,
+  ) {
+    const existing = await prisma.salesTerritory.findFirst({
+      where: { id, tenantId, deletedAt: null },
+    });
+    if (!existing) throw new NotFoundException("Territory not found");
     return prisma.salesTerritory.update({
       where: { id },
       data: {
         ...(dto.name !== undefined && { name: dto.name }),
         ...(dto.description !== undefined && { description: dto.description }),
-        ...(dto.criteria !== undefined && { criteria: dto.criteria as Prisma.InputJsonValue }),
+        ...(dto.criteria !== undefined && {
+          criteria: dto.criteria as Prisma.InputJsonValue,
+        }),
         ...(dto.parentId !== undefined && { parentId: dto.parentId }),
         ...(dto.managerId !== undefined && { managerId: dto.managerId }),
       },
@@ -135,20 +196,44 @@ export class CrmSalesOpsService {
   }
 
   async deleteTerritory(tenantId: string, id: string) {
-    const existing = await prisma.salesTerritory.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Territory not found');
-    return prisma.salesTerritory.update({ where: { id }, data: { deletedAt: new Date() } });
+    const existing = await prisma.salesTerritory.findFirst({
+      where: { id, tenantId },
+    });
+    if (!existing) throw new NotFoundException("Territory not found");
+    return prisma.salesTerritory.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
   }
 
-  async addTeamMember(tenantId: string, territoryId: string, dto: AddTeamMemberInput) {
-    const territory = await prisma.salesTerritory.findFirst({ where: { id: territoryId, tenantId, deletedAt: null } });
-    if (!territory) throw new NotFoundException('Territory not found');
-    return prisma.salesTeamMember.create({ data: { tenantId, territoryId, userId: dto.userId, role: dto.role || 'REP' } });
+  async addTeamMember(
+    tenantId: string,
+    territoryId: string,
+    dto: AddTeamMemberInput,
+  ) {
+    const territory = await prisma.salesTerritory.findFirst({
+      where: { id: territoryId, tenantId, deletedAt: null },
+    });
+    if (!territory) throw new NotFoundException("Territory not found");
+    return prisma.salesTeamMember.create({
+      data: {
+        tenantId,
+        territoryId,
+        userId: dto.userId,
+        role: dto.role || "REP",
+      },
+    });
   }
 
-  async removeTeamMember(tenantId: string, territoryId: string, userId: string) {
-    const member = await prisma.salesTeamMember.findFirst({ where: { territoryId, userId, tenantId } });
-    if (!member) throw new NotFoundException('Team member not found');
+  async removeTeamMember(
+    tenantId: string,
+    territoryId: string,
+    userId: string,
+  ) {
+    const member = await prisma.salesTeamMember.findFirst({
+      where: { territoryId, userId, tenantId },
+    });
+    if (!member) throw new NotFoundException("Team member not found");
     return prisma.salesTeamMember.delete({ where: { id: member.id } });
   }
 
@@ -160,14 +245,31 @@ export class CrmSalesOpsService {
     const results: any[] = [];
     for (const t of territories) {
       const memberIds = t.members.map((m) => m.userId);
-      if (memberIds.length === 0) { results.push({ territoryId: t.id, name: t.name, deals: 0, revenue: 0, members: 0 }); continue; }
+      if (memberIds.length === 0) {
+        results.push({
+          territoryId: t.id,
+          name: t.name,
+          deals: 0,
+          revenue: 0,
+          members: 0,
+        });
+        continue;
+      }
       const wonOpps = await prisma.opportunity.findMany({
-        where: { tenantId, deletedAt: null, stage: 'CLOSED_WON', assignedToId: { in: memberIds } },
+        where: {
+          tenantId,
+          deletedAt: null,
+          stage: "CLOSED_WON",
+          assignedToId: { in: memberIds },
+        },
         select: { amount: true },
       });
       results.push({
-        territoryId: t.id, name: t.name, members: memberIds.length,
-        deals: wonOpps.length, revenue: wonOpps.reduce((s, o) => s + Number(o.amount || 0), 0),
+        territoryId: t.id,
+        name: t.name,
+        members: memberIds.length,
+        deals: wonOpps.length,
+        revenue: wonOpps.reduce((s, o) => s + Number(o.amount || 0), 0),
       });
     }
     return results.sort((a, b) => b.revenue - a.revenue);
@@ -176,54 +278,93 @@ export class CrmSalesOpsService {
   // ── COMMISSIONS ───────────────────────────────
 
   async getCommissionRules(tenantId: string) {
-    return prisma.commissionRule.findMany({ where: { tenantId }, include: { _count: { select: { entries: true } } }, orderBy: { createdAt: 'desc' } });
+    return prisma.commissionRule.findMany({
+      where: { tenantId },
+      include: { _count: { select: { entries: true } } },
+      orderBy: { createdAt: "desc" },
+    });
   }
 
-  async createCommissionRule(tenantId: string, orgId: string, dto: CreateCommissionRuleInput) {
+  async createCommissionRule(
+    tenantId: string,
+    orgId: string,
+    dto: CreateCommissionRuleInput,
+  ) {
     const resolvedOrgId = await resolveOrgId(tenantId, orgId);
     return prisma.commissionRule.create({
       data: {
-        tenantId, orgId: resolvedOrgId, name: dto.name, type: dto.type || 'PERCENTAGE',
-        rate: new Prisma.Decimal(dto.rate), tiers: dto.tiers as Prisma.InputJsonValue,
-        appliesToAll: dto.appliesToAll ?? true, productIds: dto.productIds as Prisma.InputJsonValue,
+        tenantId,
+        orgId: resolvedOrgId,
+        name: dto.name,
+        type: dto.type || "PERCENTAGE",
+        rate: new Prisma.Decimal(dto.rate),
+        tiers: dto.tiers as Prisma.InputJsonValue,
+        appliesToAll: dto.appliesToAll ?? true,
+        productIds: dto.productIds as Prisma.InputJsonValue,
       },
     });
   }
 
-  async updateCommissionRule(tenantId: string, id: string, dto: UpdateCommissionRuleInput) {
-    const existing = await prisma.commissionRule.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Commission rule not found');
+  async updateCommissionRule(
+    tenantId: string,
+    id: string,
+    dto: UpdateCommissionRuleInput,
+  ) {
+    const existing = await prisma.commissionRule.findFirst({
+      where: { id, tenantId },
+    });
+    if (!existing) throw new NotFoundException("Commission rule not found");
     return prisma.commissionRule.update({
       where: { id },
       data: {
         ...(dto.name !== undefined && { name: dto.name }),
         ...(dto.type !== undefined && { type: dto.type }),
         ...(dto.rate !== undefined && { rate: new Prisma.Decimal(dto.rate) }),
-        ...(dto.tiers !== undefined && { tiers: dto.tiers as Prisma.InputJsonValue }),
-        ...(dto.appliesToAll !== undefined && { appliesToAll: dto.appliesToAll }),
-        ...(dto.productIds !== undefined && { productIds: dto.productIds as Prisma.InputJsonValue }),
+        ...(dto.tiers !== undefined && {
+          tiers: dto.tiers as Prisma.InputJsonValue,
+        }),
+        ...(dto.appliesToAll !== undefined && {
+          appliesToAll: dto.appliesToAll,
+        }),
+        ...(dto.productIds !== undefined && {
+          productIds: dto.productIds as Prisma.InputJsonValue,
+        }),
       },
     });
   }
 
   async deleteCommissionRule(tenantId: string, id: string) {
-    const existing = await prisma.commissionRule.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Commission rule not found');
+    const existing = await prisma.commissionRule.findFirst({
+      where: { id, tenantId },
+    });
+    if (!existing) throw new NotFoundException("Commission rule not found");
     return prisma.commissionRule.delete({ where: { id } });
   }
 
   async getCommissionEntries(tenantId: string, userId?: string) {
     const where: Prisma.CommissionEntryWhereInput = { tenantId };
     if (userId) where.userId = userId;
-    return prisma.commissionEntry.findMany({ where, include: { rule: { select: { name: true, type: true } } }, orderBy: { createdAt: 'desc' } });
+    return prisma.commissionEntry.findMany({
+      where,
+      include: { rule: { select: { name: true, type: true } } },
+      orderBy: { createdAt: "desc" },
+    });
   }
 
   async calculateCommissions(tenantId: string, dto: CalculateCommissionsInput) {
     const start = new Date(dto.periodStart);
     const end = new Date(dto.periodEnd);
-    const rules = await prisma.commissionRule.findMany({ where: { tenantId, isActive: true } });
+    const rules = await prisma.commissionRule.findMany({
+      where: { tenantId, isActive: true },
+    });
     const wonOpps = await prisma.opportunity.findMany({
-      where: { tenantId, deletedAt: null, stage: 'CLOSED_WON', actualCloseDate: { gte: start, lte: end }, assignedToId: { not: null } },
+      where: {
+        tenantId,
+        deletedAt: null,
+        stage: "CLOSED_WON",
+        actualCloseDate: { gte: start, lte: end },
+        assignedToId: { not: null },
+      },
       select: { id: true, amount: true, assignedToId: true },
     });
     const entries: any[] = [];
@@ -231,16 +372,36 @@ export class CrmSalesOpsService {
       for (const rule of rules) {
         const amount = Number(opp.amount || 0);
         let commission = 0;
-        if (rule.type === 'PERCENTAGE') commission = amount * Number(rule.rate) / 100;
-        else if (rule.type === 'FLAT') commission = Number(rule.rate);
-        else if (rule.type === 'TIERED') {
-          const tiers = rule.tiers as Array<{ min: number; max: number; rate: number }>;
-          for (const tier of tiers) { if (amount >= tier.min && amount <= tier.max) { commission = amount * tier.rate / 100; break; } }
+        if (rule.type === "PERCENTAGE")
+          commission = (amount * Number(rule.rate)) / 100;
+        else if (rule.type === "FLAT") commission = Number(rule.rate);
+        else if (rule.type === "TIERED") {
+          const tiers = rule.tiers as Array<{
+            min: number;
+            max: number;
+            rate: number;
+          }>;
+          for (const tier of tiers) {
+            if (amount >= tier.min && amount <= tier.max) {
+              commission = (amount * tier.rate) / 100;
+              break;
+            }
+          }
         }
         if (commission > 0) {
-          entries.push(await prisma.commissionEntry.create({
-            data: { tenantId, userId: opp.assignedToId!, opportunityId: opp.id, ruleId: rule.id, amount: new Prisma.Decimal(commission), periodStart: start, periodEnd: end },
-          }));
+          entries.push(
+            await prisma.commissionEntry.create({
+              data: {
+                tenantId,
+                userId: opp.assignedToId!,
+                opportunityId: opp.id,
+                ruleId: rule.id,
+                amount: new Prisma.Decimal(commission),
+                periodStart: start,
+                periodEnd: end,
+              },
+            }),
+          );
         }
       }
     }

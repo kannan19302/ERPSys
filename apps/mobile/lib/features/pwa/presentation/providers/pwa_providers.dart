@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -110,7 +109,7 @@ class PushSubscriptionListController extends Notifier<PushSubscriptionListState>
 
   Future<Result<void>> delete(String id) async {
     final result = await DeletePushSubscriptionUseCase(
-      ref.read(pwaRepositoryProvider))(id);
+      ref.read(pwaRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
@@ -200,7 +199,7 @@ class OfflineQueueListController extends Notifier<OfflineQueueListState> {
 final FutureProviderFamily<PwaManifestConfig, void> pwaManifestConfigProvider =
     FutureProvider.family<PwaManifestConfig, void>((Ref ref, _) async {
   final result = await GetManifestConfigUseCase(
-    ref.watch(pwaRepositoryProvider))(const NoParams());
+    ref.watch(pwaRepositoryProvider),)(const NoParams());
   return result.fold((f) => throw f, (v) => v);
 });
 

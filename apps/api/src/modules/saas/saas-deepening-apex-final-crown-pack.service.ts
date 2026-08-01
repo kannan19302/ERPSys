@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Injectable, Logger } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 
@@ -8,7 +7,9 @@ export class SaasDeepeningApexFinalCrownPackService {
     SaasDeepeningApexFinalCrownPackService.name,
   );
 
-  private get db() { return prisma; }
+  private get db() {
+    return prisma;
+  }
 
   async processApexFinalCrownOp(tenantId: string, cmd: string, body: any) {
     return {

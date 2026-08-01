@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Stable application-facing contract for AI capabilities.
  *
@@ -6,7 +5,7 @@
  * implementation. The integration module binds it to the configured provider.
  */
 export interface AiChatMessage {
-  role: 'system' | 'user' | 'assistant';
+  role: "system" | "user" | "assistant";
   content: string;
 }
 
@@ -26,5 +25,8 @@ export interface AiChatOptions {
 export abstract class AiClient {
   abstract isConfigured(): boolean;
 
-  abstract chat(messages: AiChatMessage[], options?: AiChatOptions): Promise<AiChatResponse>;
+  abstract chat(
+    messages: AiChatMessage[],
+    options?: AiChatOptions,
+  ): Promise<AiChatResponse>;
 }

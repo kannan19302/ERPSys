@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import React, { useState, useEffect } from "react";
 import { Card, KPICard, Spinner } from "@unerp/ui";
@@ -56,8 +55,12 @@ export default function ExtAnalyticsPage() {
         <Card padding="md">
           <h3 className="text-xs font-semibold m-0 mb-2">Webhook Stats</h3>
           <div className="ui-stack-1">
-            <p className="m-0 text-xs">Total Deliveries: {data.totalDeliveries || 0}</p>
-            <p className="m-0 text-xs">Success: {data.successDeliveries || 0}</p>
+            <p className="m-0 text-xs">
+              Total Deliveries: {data.totalDeliveries || 0}
+            </p>
+            <p className="m-0 text-xs">
+              Success: {data.successDeliveries || 0}
+            </p>
             <p className="m-0 text-xs">Failed: {data.failedDeliveries || 0}</p>
           </div>
         </Card>

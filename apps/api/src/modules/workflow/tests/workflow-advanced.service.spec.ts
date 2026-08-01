@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Test, TestingModule } from "@nestjs/testing";
 import { WorkflowAdvancedService } from "../workflow-advanced.service";
 

@@ -1,9 +1,8 @@
-// @ts-nocheck
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export interface Crumb {
   label: string;
@@ -22,9 +21,15 @@ export function StudioBreadcrumb({ items }: { items: Crumb[] }) {
         return (
           <React.Fragment key={`${c.label}-${i}`}>
             {c.href && !last ? (
-              <Link href={c.href} className="ui-breadcrumb-link">{c.label}</Link>
+              <Link href={c.href} className="ui-breadcrumb-link">
+                {c.label}
+              </Link>
             ) : (
-              <span className={last ? 'ui-breadcrumb-active' : 'ui-breadcrumb-link'}>{c.label}</span>
+              <span
+                className={last ? "ui-breadcrumb-active" : "ui-breadcrumb-link"}
+              >
+                {c.label}
+              </span>
             )}
             {!last && <span className="ui-breadcrumb-separator">/</span>}
           </React.Fragment>
@@ -36,42 +41,45 @@ export function StudioBreadcrumb({ items }: { items: Crumb[] }) {
 
 // Human-friendly labels for Studio path segments.
 const SEGMENT_LABELS: Record<string, string> = {
-  builder: 'Studio',
-  erp: 'App Studio',
-  web: 'Web Studio',
-  manage: 'Manage',
-  forms: 'Forms',
-  workflows: 'Workflows',
-  dashboards: 'Dashboards',
-  modules: 'Custom Apps',
-  apps: 'Apps',
-  logic: 'Business Logic',
-  data: 'Data & Import',
-  customize: 'Customize',
-  sites: 'Sites',
-  collections: 'Collections',
-  blog: 'Blog',
-  assets: 'Assets',
-  templates: 'Templates',
-  menus: 'Menus',
-  seo: 'SEO',
-  orders: 'Orders',
-  submissions: 'Submissions',
-  pages: 'Pages',
-  canvas: 'Canvas',
-  settings: 'Settings',
-  releases: 'Releases',
-  environments: 'Environments',
-  logs: 'Run Logs',
-  access: 'Access Control',
-  new: 'New',
+  builder: "Studio",
+  erp: "App Studio",
+  web: "Web Studio",
+  manage: "Manage",
+  forms: "Forms",
+  workflows: "Workflows",
+  dashboards: "Dashboards",
+  modules: "Custom Apps",
+  apps: "Apps",
+  logic: "Business Logic",
+  data: "Data & Import",
+  customize: "Customize",
+  sites: "Sites",
+  collections: "Collections",
+  blog: "Blog",
+  assets: "Assets",
+  templates: "Templates",
+  menus: "Menus",
+  seo: "SEO",
+  orders: "Orders",
+  submissions: "Submissions",
+  pages: "Pages",
+  canvas: "Canvas",
+  settings: "Settings",
+  releases: "Releases",
+  environments: "Environments",
+  logs: "Run Logs",
+  access: "Access Control",
+  new: "New",
 };
 
 function labelFor(segment: string): string {
   if (SEGMENT_LABELS[segment]) return SEGMENT_LABELS[segment];
   // Dynamic id segments (uuids / long tokens) → generic label.
-  if (/^[0-9a-f]{8,}$/i.test(segment) || segment.length > 20) return 'Detail';
-  return segment.split(/[-_]/).map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  if (/^[0-9a-f]{8,}$/i.test(segment) || segment.length > 20) return "Detail";
+  return segment
+    .split(/[-_]/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
 }
 
 /**
@@ -80,12 +88,12 @@ function labelFor(segment: string): string {
  * per-page boilerplate. Hidden on the Studio home itself.
  */
 export function StudioAutoBreadcrumb() {
-  const pathname = usePathname() || '';
-  const segments = pathname.split('/').filter(Boolean);
+  const pathname = usePathname() || "";
+  const segments = pathname.split("/").filter(Boolean);
   if (segments.length === 0) return null;
 
-  const items: Crumb[] = [{ label: 'Home', href: '/dashboard' }];
-  let acc = '';
+  const items: Crumb[] = [{ label: "Home", href: "/dashboard" }];
+  let acc = "";
   segments.forEach((seg, i) => {
     acc += `/${seg}`;
     const last = i === segments.length - 1;
@@ -93,7 +101,7 @@ export function StudioAutoBreadcrumb() {
   });
 
   return (
-    <div style={{ padding: '0 var(--space-6)', marginTop: 'var(--space-4)' }}>
+    <div style={{ padding: "0 var(--space-6)", marginTop: "var(--space-4)" }}>
       <StudioBreadcrumb items={items} />
     </div>
   );

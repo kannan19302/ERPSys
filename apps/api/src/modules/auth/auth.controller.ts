@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Controller,
   Post,
@@ -429,7 +428,7 @@ export class AuthController {
   }
 
   @ApiOperation({
-    summary: "Revoke one specific device/session (\"log out this device\")",
+    summary: 'Revoke one specific device/session ("log out this device")',
   })
   @Permissions("auth.update")
   @Delete("sessions/:id")

@@ -70,9 +70,9 @@ class BlockchainRepositoryImpl implements BlockchainRepository {
 
   @override
   Future<Result<Cacheable<Paginated<BlockchainTransaction>>>> listTransactions(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_txNamespace, query, () => _remote.listTransactions(query),
-        BlockchainTransactionModel.fromJson);
+        BlockchainTransactionModel.fromJson,);
 
   @override
   Future<Result<BlockchainTransaction>> getTransaction(String id) =>
@@ -80,9 +80,9 @@ class BlockchainRepositoryImpl implements BlockchainRepository {
 
   @override
   Future<Result<Cacheable<Paginated<BlockchainContract>>>> listContracts(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_contractNamespace, query, () => _remote.listContracts(query),
-        BlockchainContractModel.fromJson);
+        BlockchainContractModel.fromJson,);
 
   @override
   Future<Result<BlockchainContract>> getContract(String id) =>
@@ -90,9 +90,9 @@ class BlockchainRepositoryImpl implements BlockchainRepository {
 
   @override
   Future<Result<Cacheable<Paginated<BlockchainAuditEntry>>>> listAuditEntries(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_auditNamespace, query, () => _remote.listAuditEntries(query),
-        BlockchainAuditEntryModel.fromJson);
+        BlockchainAuditEntryModel.fromJson,);
 
   @override
   Future<Result<BlockchainAuditEntry>> getAuditEntry(String id) =>
@@ -100,9 +100,9 @@ class BlockchainRepositoryImpl implements BlockchainRepository {
 
   @override
   Future<Result<Cacheable<Paginated<BlockchainNetworkHealth>>>> listNetworkHealth(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_healthNamespace, query, () => _remote.listNetworkHealth(query),
-        BlockchainNetworkHealthModel.fromJson);
+        BlockchainNetworkHealthModel.fromJson,);
 
   @override
   Future<Result<BlockchainNetworkHealth>> getNetworkHealth(String id) =>

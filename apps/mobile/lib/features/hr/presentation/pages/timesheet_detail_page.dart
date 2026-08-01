@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -22,8 +21,6 @@ class TimesheetDetailPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final AsyncValue<Timesheet> asyncTs =
         ref.watch(timesheetDetailProvider(timesheetId));
-    final Palette t = context.tokens;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Timesheet'),

@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
 import '../../../../core/utils/formatters.dart';
-import '../../domain/entities/real_estate.dart';
 import '../providers/real_estate_providers.dart';
 
 class LeaseFormPage extends ConsumerStatefulWidget {
@@ -40,7 +38,13 @@ class _LeaseFormPageState extends ConsumerState<LeaseFormPage> {
 
   Future<void> _pickDate(bool isStart) async {
     final picked = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(2020), lastDate: DateTime(2035));
-    if (picked != null) setState(() { if (isStart) _startDate = picked; else _endDate = picked; });
+    if (picked != null) {
+      setState(() { if (isStart) {
+      _startDate = picked;
+    } else {
+      _endDate = picked;
+    } });
+    }
   }
 
   Future<void> _save() async {
@@ -74,27 +78,27 @@ class _LeaseFormPageState extends ConsumerState<LeaseFormPage> {
         Row(children: [
           Expanded(child: TextFormField(controller: _paymentDayCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Payment Day'))),
           const SizedBox(width: Spacing.x3),
-          Expanded(child: DropdownButtonFormField<String>(value: _currency, decoration: const InputDecoration(labelText: 'Currency'), items: const [
+          Expanded(child: DropdownButtonFormField<String>(initialValue: _currency, decoration: const InputDecoration(labelText: 'Currency'), items: const [
             DropdownMenuItem(value: 'USD', child: Text('USD')), DropdownMenuItem(value: 'EUR', child: Text('EUR')),
             DropdownMenuItem(value: 'GBP', child: Text('GBP')), DropdownMenuItem(value: 'INR', child: Text('INR')),
-          ], onChanged: (v) { if (v != null) setState(() => _currency = v); })),
-        ]),
+          ], onChanged: (v) { if (v != null) setState(() => _currency = v); },),),
+        ],),
         const SizedBox(height: Spacing.x4),
-        DropdownButtonFormField<String>(value: _status, decoration: const InputDecoration(labelText: 'Status'), items: const [
+        DropdownButtonFormField<String>(initialValue: _status, decoration: const InputDecoration(labelText: 'Status'), items: const [
           DropdownMenuItem(value: 'ACTIVE', child: Text('Active')), DropdownMenuItem(value: 'PENDING', child: Text('Pending')),
           DropdownMenuItem(value: 'EXPIRED', child: Text('Expired')), DropdownMenuItem(value: 'TERMINATED', child: Text('Terminated')),
-        ], onChanged: (v) { if (v != null) setState(() => _status = v); }),
+        ], onChanged: (v) { if (v != null) setState(() => _status = v); },),
         const SizedBox(height: Spacing.x4),
         Row(children: [
           Expanded(child: InkWell(onTap: () => _pickDate(true), child: InputDecorator(decoration: const InputDecoration(labelText: 'Start Date'), child: Text(_startDate != null ? Formatters.date(_startDate!) : 'Tap to select')))),
           const SizedBox(width: Spacing.x3),
           Expanded(child: InkWell(onTap: () => _pickDate(false), child: InputDecorator(decoration: const InputDecoration(labelText: 'End Date'), child: Text(_endDate != null ? Formatters.date(_endDate!) : 'Tap to select')))),
-        ]),
+        ],),
         const SizedBox(height: Spacing.x4),
         TextFormField(controller: _renewalTermsCtrl, maxLines: 2, decoration: const InputDecoration(labelText: 'Renewal Terms')),
         const SizedBox(height: Spacing.x4),
         TextFormField(controller: _notesCtrl, maxLines: 3, decoration: const InputDecoration(labelText: 'Notes', alignLabelWithHint: true)),
-      ])),
+      ],),),
     );
   }
 }

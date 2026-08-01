@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -140,14 +139,14 @@ class MultiCurrencyRateListController extends Notifier<MultiCurrencyRateListStat
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteMultiCurrencyRateUseCase(
-      ref.read(advancedFinanceRepositoryProvider))(id);
+      ref.read(advancedFinanceRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<MultiCurrencyRate>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveMultiCurrencyRateUseCase(
-      ref.read(advancedFinanceRepositoryProvider))(
+      ref.read(advancedFinanceRepositoryProvider),)(
       SaveMultiCurrencyRateParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -250,7 +249,7 @@ class ConsolidationReportListController extends Notifier<ConsolidationReportList
 final FutureProviderFamily<MultiCurrencyRate, String> multiCurrencyRateDetailProvider =
     FutureProvider.family<MultiCurrencyRate, String>((Ref ref, String id) async {
   final result = await GetMultiCurrencyRateUseCase(
-    ref.watch(advancedFinanceRepositoryProvider))(id);
+    ref.watch(advancedFinanceRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -349,14 +348,14 @@ class FinancialCloseTaskListController extends Notifier<FinancialCloseTaskListSt
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteFinancialCloseTaskUseCase(
-      ref.read(advancedFinanceRepositoryProvider))(id);
+      ref.read(advancedFinanceRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<FinancialCloseTask>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveFinancialCloseTaskUseCase(
-      ref.read(advancedFinanceRepositoryProvider))(
+      ref.read(advancedFinanceRepositoryProvider),)(
       SaveFinancialCloseTaskParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -367,6 +366,6 @@ class FinancialCloseTaskListController extends Notifier<FinancialCloseTaskListSt
 final FutureProviderFamily<FinancialCloseTask, String> financialCloseTaskDetailProvider =
     FutureProvider.family<FinancialCloseTask, String>((Ref ref, String id) async {
   final result = await GetFinancialCloseTaskUseCase(
-    ref.watch(advancedFinanceRepositoryProvider))(id);
+    ref.watch(advancedFinanceRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });

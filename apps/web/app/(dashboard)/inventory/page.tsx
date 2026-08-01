@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import styles from "./inventory.module.css";
 import React, { useState, useMemo } from "react";

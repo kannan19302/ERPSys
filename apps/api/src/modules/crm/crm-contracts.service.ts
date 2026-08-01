@@ -1,9 +1,12 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
-import { z } from 'zod';
-import { resolveOrgId } from './crm-shared';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
+import { z } from "zod";
+import { resolveOrgId } from "./crm-shared";
 
 export const contractLineItemSchema = z.object({
   productId: z.string(),
@@ -17,10 +20,14 @@ export const createContractSchema = z
     title: z.string().min(1),
     customerId: z.string().optional().nullable(),
     vendorId: z.string().optional().nullable(),
-    type: z.enum(['SALES', 'PURCHASE', 'SERVICE', 'NDA', 'OTHER']).default('SALES'),
-    contractType: z.enum(['ONE_TIME', 'RECURRING', 'MILESTONE', 'SUBSCRIPTION']).default('ONE_TIME'),
+    type: z
+      .enum(["SALES", "PURCHASE", "SERVICE", "NDA", "OTHER"])
+      .default("SALES"),
+    contractType: z
+      .enum(["ONE_TIME", "RECURRING", "MILESTONE", "SUBSCRIPTION"])
+      .default("ONE_TIME"),
     value: z.number().min(0),
-    currency: z.string().min(1).default('USD'),
+    currency: z.string().min(1).default("USD"),
     startDate: z.coerce.date(),
     endDate: z.coerce.date(),
     renewalDate: z.coerce.date().optional(),
@@ -29,9 +36,15 @@ export const createContractSchema = z
     terms: z.string().optional().nullable(),
     ownerId: z.string().optional().nullable(),
     revisedFromId: z.string().optional().nullable(),
-    approvalStatus: z.enum(['DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'REJECTED']).optional().default('DRAFT'),
+    approvalStatus: z
+      .enum(["DRAFT", "PENDING_APPROVAL", "APPROVED", "REJECTED"])
+      .optional()
+      .default("DRAFT"),
     approverId: z.string().optional().nullable(),
-    signatureStatus: z.enum(['UNSIGNED', 'PENDING_SIGNATURE', 'SIGNED']).optional().default('UNSIGNED'),
+    signatureStatus: z
+      .enum(["UNSIGNED", "PENDING_SIGNATURE", "SIGNED"])
+      .optional()
+      .default("UNSIGNED"),
     signerName: z.string().optional().nullable(),
     signerEmail: z.string().optional().nullable(),
     signedAt: z.coerce.date().optional().nullable(),
@@ -46,16 +59,18 @@ export const createContractSchema = z
     lineItems: z.array(contractLineItemSchema).optional(),
   })
   .refine((d) => !!d.customerId || !!d.vendorId, {
-    message: 'At least one of customerId or vendorId is required',
-    path: ['customerId'],
+    message: "At least one of customerId or vendorId is required",
+    path: ["customerId"],
   });
 
 export const updateContractSchema = z.object({
   title: z.string().min(1).optional(),
   customerId: z.string().optional().nullable(),
   vendorId: z.string().optional().nullable(),
-  type: z.enum(['SALES', 'PURCHASE', 'SERVICE', 'NDA', 'OTHER']).optional(),
-  contractType: z.enum(['ONE_TIME', 'RECURRING', 'MILESTONE', 'SUBSCRIPTION']).optional(),
+  type: z.enum(["SALES", "PURCHASE", "SERVICE", "NDA", "OTHER"]).optional(),
+  contractType: z
+    .enum(["ONE_TIME", "RECURRING", "MILESTONE", "SUBSCRIPTION"])
+    .optional(),
   value: z.number().min(0).optional(),
   currency: z.string().min(1).optional(),
   startDate: z.coerce.date().optional(),
@@ -66,9 +81,13 @@ export const updateContractSchema = z.object({
   terms: z.string().optional().nullable(),
   ownerId: z.string().optional().nullable(),
   revisedFromId: z.string().optional().nullable(),
-  approvalStatus: z.enum(['DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'REJECTED']).optional(),
+  approvalStatus: z
+    .enum(["DRAFT", "PENDING_APPROVAL", "APPROVED", "REJECTED"])
+    .optional(),
   approverId: z.string().optional().nullable(),
-  signatureStatus: z.enum(['UNSIGNED', 'PENDING_SIGNATURE', 'SIGNED']).optional(),
+  signatureStatus: z
+    .enum(["UNSIGNED", "PENDING_SIGNATURE", "SIGNED"])
+    .optional(),
   signerName: z.string().optional().nullable(),
   signerEmail: z.string().optional().nullable(),
   signedAt: z.coerce.date().optional().nullable(),
@@ -84,7 +103,14 @@ export const updateContractSchema = z.object({
 });
 
 export const contractStatusSchema = z.object({
-  status: z.enum(['DRAFT', 'ACTIVE', 'EXPIRING_SOON', 'EXPIRED', 'TERMINATED', 'RENEWED']),
+  status: z.enum([
+    "DRAFT",
+    "ACTIVE",
+    "EXPIRING_SOON",
+    "EXPIRED",
+    "TERMINATED",
+    "RENEWED",
+  ]),
 });
 
 export const renewContractSchema = z.object({
@@ -110,10 +136,10 @@ export type InviteSignInput = z.infer<typeof inviteSignSchema>;
 // renewedFrom/renewals self-relation and the dedicated renew() action, not by
 // flipping status back on the old row.
 const CONTRACT_STATUS_TRANSITIONS: Record<string, string[]> = {
-  DRAFT: ['ACTIVE', 'TERMINATED'],
-  ACTIVE: ['EXPIRING_SOON', 'EXPIRED', 'TERMINATED'],
-  EXPIRING_SOON: ['ACTIVE', 'EXPIRED', 'TERMINATED'],
-  EXPIRED: ['TERMINATED'],
+  DRAFT: ["ACTIVE", "TERMINATED"],
+  ACTIVE: ["EXPIRING_SOON", "EXPIRED", "TERMINATED"],
+  EXPIRING_SOON: ["ACTIVE", "EXPIRED", "TERMINATED"],
+  EXPIRED: ["TERMINATED"],
   TERMINATED: [],
   RENEWED: [],
 };
@@ -131,7 +157,7 @@ export class CrmContractsService {
       page?: number;
       limit?: number;
       sortBy?: string;
-      sortOrder?: 'asc' | 'desc';
+      sortOrder?: "asc" | "desc";
     } = {},
   ) {
     const where: Prisma.ContractWhereInput = { tenantId, deletedAt: null };
@@ -141,18 +167,34 @@ export class CrmContractsService {
     if (filters.vendorId) where.vendorId = filters.vendorId;
     if (filters.search) {
       where.OR = [
-        { title: { contains: filters.search, mode: 'insensitive' } },
-        { contractNumber: { contains: filters.search, mode: 'insensitive' } },
+        { title: { contains: filters.search, mode: "insensitive" } },
+        { contractNumber: { contains: filters.search, mode: "insensitive" } },
       ];
     }
 
-    const validSortFields = ['title', 'contractNumber', 'value', 'startDate', 'endDate', 'renewalDate', 'createdAt', 'status'];
-    const sortBy = filters.sortBy && validSortFields.includes(filters.sortBy) ? filters.sortBy : 'renewalDate';
-    const sortOrder = filters.sortOrder === 'desc' ? 'desc' : 'asc';
-    const orderBy: Prisma.ContractOrderByWithRelationInput = { [sortBy]: sortOrder };
+    const validSortFields = [
+      "title",
+      "contractNumber",
+      "value",
+      "startDate",
+      "endDate",
+      "renewalDate",
+      "createdAt",
+      "status",
+    ];
+    const sortBy =
+      filters.sortBy && validSortFields.includes(filters.sortBy)
+        ? filters.sortBy
+        : "renewalDate";
+    const sortOrder = filters.sortOrder === "desc" ? "desc" : "asc";
+    const orderBy: Prisma.ContractOrderByWithRelationInput = {
+      [sortBy]: sortOrder,
+    };
 
     const page = filters.page ? Math.max(1, filters.page) : 1;
-    const limit = filters.limit ? Math.max(1, Math.min(100, filters.limit)) : 20;
+    const limit = filters.limit
+      ? Math.max(1, Math.min(100, filters.limit))
+      : 20;
     const skip = (page - 1) * limit;
 
     const [data, totalCount] = await Promise.all([
@@ -182,21 +224,34 @@ export class CrmContractsService {
     const found = await prisma.contract.findFirst({
       where: { id, tenantId, deletedAt: null },
       include: {
-        customer: { select: { id: true, name: true, email: true, phone: true } },
+        customer: {
+          select: { id: true, name: true, email: true, phone: true },
+        },
         vendor: { select: { id: true, name: true, email: true, phone: true } },
-        renewedFrom: { select: { id: true, contractNumber: true, title: true } },
-        renewals: { select: { id: true, contractNumber: true, title: true, status: true, startDate: true, endDate: true } },
+        renewedFrom: {
+          select: { id: true, contractNumber: true, title: true },
+        },
+        renewals: {
+          select: {
+            id: true,
+            contractNumber: true,
+            title: true,
+            status: true,
+            startDate: true,
+            endDate: true,
+          },
+        },
         lineItems: {
           include: {
             product: { select: { id: true, name: true, sku: true } },
           },
         },
         billingMilestones: {
-          orderBy: { dueDate: 'asc' },
+          orderBy: { dueDate: "asc" },
         },
       },
     });
-    if (!found) throw new NotFoundException('Contract not found');
+    if (!found) throw new NotFoundException("Contract not found");
     return found;
   }
 
@@ -205,10 +260,13 @@ export class CrmContractsService {
     const where: Prisma.ContractWhereInput = { tenantId, deletedAt: null };
     const [total, active, expiringSoon, expired, valueAgg] = await Promise.all([
       prisma.contract.count({ where }),
-      prisma.contract.count({ where: { ...where, status: 'ACTIVE' } }),
-      prisma.contract.count({ where: { ...where, status: 'EXPIRING_SOON' } }),
-      prisma.contract.count({ where: { ...where, status: 'EXPIRED' } }),
-      prisma.contract.aggregate({ where: { ...where, status: { in: ['ACTIVE', 'EXPIRING_SOON'] } }, _sum: { value: true } }),
+      prisma.contract.count({ where: { ...where, status: "ACTIVE" } }),
+      prisma.contract.count({ where: { ...where, status: "EXPIRING_SOON" } }),
+      prisma.contract.count({ where: { ...where, status: "EXPIRED" } }),
+      prisma.contract.aggregate({
+        where: { ...where, status: { in: ["ACTIVE", "EXPIRING_SOON"] } },
+        _sum: { value: true },
+      }),
     ]);
     return {
       total,
@@ -219,22 +277,36 @@ export class CrmContractsService {
     };
   }
 
-  async createContract(tenantId: string, orgId: string, dto: CreateContractInput) {
+  async createContract(
+    tenantId: string,
+    orgId: string,
+    dto: CreateContractInput,
+  ) {
     if (dto.customerId) {
-      const customer = await prisma.customer.findFirst({ where: { id: dto.customerId, tenantId } });
-      if (!customer) throw new BadRequestException('customerId does not belong to this tenant');
+      const customer = await prisma.customer.findFirst({
+        where: { id: dto.customerId, tenantId },
+      });
+      if (!customer)
+        throw new BadRequestException(
+          "customerId does not belong to this tenant",
+        );
     }
     if (dto.vendorId) {
-      const vendor = await prisma.vendor.findFirst({ where: { id: dto.vendorId, tenantId } });
-      if (!vendor) throw new BadRequestException('vendorId does not belong to this tenant');
+      const vendor = await prisma.vendor.findFirst({
+        where: { id: dto.vendorId, tenantId },
+      });
+      if (!vendor)
+        throw new BadRequestException(
+          "vendorId does not belong to this tenant",
+        );
     }
     if (dto.endDate <= dto.startDate) {
-      throw new BadRequestException('endDate must be after startDate');
+      throw new BadRequestException("endDate must be after startDate");
     }
 
     const resolvedOrgId = await resolveOrgId(tenantId, orgId);
     const count = await prisma.contract.count({ where: { tenantId } });
-    const contractNumber = `CON-${String(count + 1).padStart(5, '0')}`;
+    const contractNumber = `CON-${String(count + 1).padStart(5, "0")}`;
 
     const renewalDate = dto.renewalDate ?? dto.endDate;
     const { lineItems, ...rest } = dto;
@@ -258,9 +330,9 @@ export class CrmContractsService {
           renewalTermMonths: rest.renewalTermMonths ?? null,
           terms: rest.terms || null,
           ownerId: rest.ownerId || null,
-          approvalStatus: rest.approvalStatus || 'DRAFT',
+          approvalStatus: rest.approvalStatus || "DRAFT",
           approverId: rest.approverId || null,
-          signatureStatus: rest.signatureStatus || 'UNSIGNED',
+          signatureStatus: rest.signatureStatus || "UNSIGNED",
           signerName: rest.signerName || null,
           signerEmail: rest.signerEmail || null,
           signedAt: rest.signedAt || null,
@@ -293,23 +365,39 @@ export class CrmContractsService {
   }
 
   async updateContract(tenantId: string, id: string, dto: UpdateContractInput) {
-    const existing = await prisma.contract.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!existing) throw new NotFoundException('Contract not found');
+    const existing = await prisma.contract.findFirst({
+      where: { id, tenantId, deletedAt: null },
+    });
+    if (!existing) throw new NotFoundException("Contract not found");
 
     if (dto.customerId === null && dto.vendorId === null) {
-      throw new BadRequestException('At least one of customerId or vendorId is required');
+      throw new BadRequestException(
+        "At least one of customerId or vendorId is required",
+      );
     }
-    if (dto.customerId !== undefined && dto.customerId === null && !(dto.vendorId || existing.vendorId)) {
-      throw new BadRequestException('At least one of customerId or vendorId is required');
+    if (
+      dto.customerId !== undefined &&
+      dto.customerId === null &&
+      !(dto.vendorId || existing.vendorId)
+    ) {
+      throw new BadRequestException(
+        "At least one of customerId or vendorId is required",
+      );
     }
-    if (dto.vendorId !== undefined && dto.vendorId === null && !(dto.customerId || existing.customerId)) {
-      throw new BadRequestException('At least one of customerId or vendorId is required');
+    if (
+      dto.vendorId !== undefined &&
+      dto.vendorId === null &&
+      !(dto.customerId || existing.customerId)
+    ) {
+      throw new BadRequestException(
+        "At least one of customerId or vendorId is required",
+      );
     }
 
     const startDate = dto.startDate ?? existing.startDate;
     const endDate = dto.endDate ?? existing.endDate;
     if (endDate <= startDate) {
-      throw new BadRequestException('endDate must be after startDate');
+      throw new BadRequestException("endDate must be after startDate");
     }
 
     const { lineItems, ...rest } = dto;
@@ -324,7 +412,9 @@ export class CrmContractsService {
       });
 
       if (lineItems !== undefined) {
-        await tx.contractLineItem.deleteMany({ where: { contractId: id, tenantId } });
+        await tx.contractLineItem.deleteMany({
+          where: { contractId: id, tenantId },
+        });
         if (lineItems.length > 0) {
           await tx.contractLineItem.createMany({
             data: lineItems.map((item) => ({
@@ -344,30 +434,40 @@ export class CrmContractsService {
   }
 
   async deleteContract(tenantId: string, id: string) {
-    const existing = await prisma.contract.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!existing) throw new NotFoundException('Contract not found');
-    return prisma.contract.update({ where: { id }, data: { deletedAt: new Date() } });
+    const existing = await prisma.contract.findFirst({
+      where: { id, tenantId, deletedAt: null },
+    });
+    if (!existing) throw new NotFoundException("Contract not found");
+    return prisma.contract.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
   }
 
   async updateStatus(tenantId: string, id: string, dto: ContractStatusInput) {
-    const existing = await prisma.contract.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!existing) throw new NotFoundException('Contract not found');
+    const existing = await prisma.contract.findFirst({
+      where: { id, tenantId, deletedAt: null },
+    });
+    if (!existing) throw new NotFoundException("Contract not found");
 
     if (dto.status !== existing.status) {
       const allowed = CONTRACT_STATUS_TRANSITIONS[existing.status] ?? [];
       if (!allowed.includes(dto.status)) {
-        if (dto.status === 'RENEWED') {
+        if (dto.status === "RENEWED") {
           throw new BadRequestException(
-            'Cannot set status to RENEWED directly — use POST /crm/contracts/:id/renew, which sets this automatically.',
+            "Cannot set status to RENEWED directly — use POST /crm/contracts/:id/renew, which sets this automatically.",
           );
         }
         throw new BadRequestException(
-          `Cannot transition contract from ${existing.status} to ${dto.status}. Allowed transitions from ${existing.status}: ${allowed.length ? allowed.join(', ') : 'none (terminal status)'}.`,
+          `Cannot transition contract from ${existing.status} to ${dto.status}. Allowed transitions from ${existing.status}: ${allowed.length ? allowed.join(", ") : "none (terminal status)"}.`,
         );
       }
     }
 
-    return prisma.contract.update({ where: { id }, data: { status: dto.status } });
+    return prisma.contract.update({
+      where: { id },
+      data: { status: dto.status },
+    });
   }
 
   /**
@@ -382,16 +482,27 @@ export class CrmContractsService {
    *    contract-renewal pattern (each term audited/signed independently) and
    *    is why it's the default.
    */
-  async renewContract(tenantId: string, orgId: string, id: string, dto: RenewContractInput) {
-    const existing = await prisma.contract.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!existing) throw new NotFoundException('Contract not found');
-    if (['TERMINATED', 'RENEWED'].includes(existing.status)) {
-      throw new BadRequestException(`Cannot renew a contract in terminal status ${existing.status}`);
+  async renewContract(
+    tenantId: string,
+    orgId: string,
+    id: string,
+    dto: RenewContractInput,
+  ) {
+    const existing = await prisma.contract.findFirst({
+      where: { id, tenantId, deletedAt: null },
+    });
+    if (!existing) throw new NotFoundException("Contract not found");
+    if (["TERMINATED", "RENEWED"].includes(existing.status)) {
+      throw new BadRequestException(
+        `Cannot renew a contract in terminal status ${existing.status}`,
+      );
     }
 
     const termMonths = dto.renewalTermMonths ?? existing.renewalTermMonths;
     if (!termMonths) {
-      throw new BadRequestException('renewalTermMonths must be provided (or set on the contract) to renew');
+      throw new BadRequestException(
+        "renewalTermMonths must be provided (or set on the contract) to renew",
+      );
     }
 
     const addMonths = (d: Date, months: number) => {
@@ -410,7 +521,7 @@ export class CrmContractsService {
           startDate: existing.startDate,
           endDate: newEndDate,
           renewalDate: newEndDate,
-          status: 'ACTIVE',
+          status: "ACTIVE",
           value: dto.newValue !== undefined ? dto.newValue : undefined,
         },
       });
@@ -418,10 +529,10 @@ export class CrmContractsService {
 
     const resolvedOrgId = await resolveOrgId(tenantId, orgId);
     const count = await prisma.contract.count({ where: { tenantId } });
-    const contractNumber = `CON-${String(count + 1).padStart(5, '0')}`;
+    const contractNumber = `CON-${String(count + 1).padStart(5, "0")}`;
 
     const [, created] = await prisma.$transaction([
-      prisma.contract.update({ where: { id }, data: { status: 'RENEWED' } }),
+      prisma.contract.update({ where: { id }, data: { status: "RENEWED" } }),
       prisma.contract.create({
         data: {
           tenantId,
@@ -441,7 +552,7 @@ export class CrmContractsService {
           terms: existing.terms,
           ownerId: existing.ownerId,
           renewedFromId: existing.id,
-          status: 'ACTIVE',
+          status: "ACTIVE",
         },
       }),
     ]);
@@ -463,51 +574,58 @@ export class CrmContractsService {
       where: {
         tenantId,
         deletedAt: null,
-        status: 'ACTIVE',
+        status: "ACTIVE",
         renewalDate: { lte: in30Days, gt: now },
       },
-      data: { status: 'EXPIRING_SOON' },
+      data: { status: "EXPIRING_SOON" },
     });
 
     const expired = await prisma.contract.updateMany({
       where: {
         tenantId,
         deletedAt: null,
-        status: { in: ['ACTIVE', 'EXPIRING_SOON'] },
+        status: { in: ["ACTIVE", "EXPIRING_SOON"] },
         endDate: { lt: now },
       },
-      data: { status: 'EXPIRED' },
+      data: { status: "EXPIRED" },
     });
 
-    return { markedExpiringSoon: expiringSoon.count, markedExpired: expired.count };
+    return {
+      markedExpiringSoon: expiringSoon.count,
+      markedExpired: expired.count,
+    };
   }
 
   async approveContract(tenantId: string, id: string, userId: string) {
-    const existing = await prisma.contract.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!existing) throw new NotFoundException('Contract not found');
-    if (existing.approvalStatus !== 'PENDING_APPROVAL') {
-      throw new BadRequestException('Contract is not pending approval');
+    const existing = await prisma.contract.findFirst({
+      where: { id, tenantId, deletedAt: null },
+    });
+    if (!existing) throw new NotFoundException("Contract not found");
+    if (existing.approvalStatus !== "PENDING_APPROVAL") {
+      throw new BadRequestException("Contract is not pending approval");
     }
     return prisma.contract.update({
       where: { id },
       data: {
-        approvalStatus: 'APPROVED',
+        approvalStatus: "APPROVED",
         approverId: userId,
-        signatureStatus: 'UNSIGNED',
+        signatureStatus: "UNSIGNED",
       },
     });
   }
 
   async rejectContract(tenantId: string, id: string, userId: string) {
-    const existing = await prisma.contract.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!existing) throw new NotFoundException('Contract not found');
-    if (existing.approvalStatus !== 'PENDING_APPROVAL') {
-      throw new BadRequestException('Contract is not pending approval');
+    const existing = await prisma.contract.findFirst({
+      where: { id, tenantId, deletedAt: null },
+    });
+    if (!existing) throw new NotFoundException("Contract not found");
+    if (existing.approvalStatus !== "PENDING_APPROVAL") {
+      throw new BadRequestException("Contract is not pending approval");
     }
     return prisma.contract.update({
       where: { id },
       data: {
-        approvalStatus: 'REJECTED',
+        approvalStatus: "REJECTED",
         approverId: userId,
       },
     });
@@ -522,7 +640,7 @@ export class CrmContractsService {
         },
       },
     });
-    if (!existing) throw new NotFoundException('Contract not found');
+    if (!existing) throw new NotFoundException("Contract not found");
 
     const valueRequiresApproval = Number(existing.value) >= 10000;
     const productRequiresApproval = (existing.lineItems || []).some(
@@ -534,8 +652,8 @@ export class CrmContractsService {
     return prisma.contract.update({
       where: { id },
       data: {
-        approvalStatus: requiresApproval ? 'PENDING_APPROVAL' : 'APPROVED',
-        signatureStatus: 'UNSIGNED',
+        approvalStatus: requiresApproval ? "PENDING_APPROVAL" : "APPROVED",
+        signatureStatus: "UNSIGNED",
       },
     });
   }
@@ -545,11 +663,11 @@ export class CrmContractsService {
       where: { id, tenantId, deletedAt: null },
       include: { lineItems: true },
     });
-    if (!existing) throw new NotFoundException('Contract not found');
+    if (!existing) throw new NotFoundException("Contract not found");
 
     const resolvedOrgId = await resolveOrgId(tenantId, orgId);
     const count = await prisma.contract.count({ where: { tenantId } });
-    const contractNumber = `CON-${String(count + 1).padStart(5, '0')}`;
+    const contractNumber = `CON-${String(count + 1).padStart(5, "0")}`;
 
     return prisma.$transaction(async (tx) => {
       const clone = await tx.contract.create({
@@ -572,9 +690,9 @@ export class CrmContractsService {
           terms: existing.terms,
           ownerId: existing.ownerId,
           revisedFromId: existing.id,
-          status: 'DRAFT',
-          approvalStatus: 'DRAFT',
-          signatureStatus: 'UNSIGNED',
+          status: "DRAFT",
+          approvalStatus: "DRAFT",
+          signatureStatus: "UNSIGNED",
         },
       });
 
@@ -595,7 +713,12 @@ export class CrmContractsService {
     });
   }
 
-  async convertToSalesOrder(tenantId: string, orgId: string, id: string, userId: string) {
+  async convertToSalesOrder(
+    tenantId: string,
+    orgId: string,
+    id: string,
+    userId: string,
+  ) {
     const contract = await prisma.contract.findFirst({
       where: { id, tenantId, deletedAt: null },
       include: {
@@ -604,23 +727,30 @@ export class CrmContractsService {
         },
       },
     });
-    if (!contract) throw new NotFoundException('Contract not found');
+    if (!contract) throw new NotFoundException("Contract not found");
     if (!contract.customerId) {
-      throw new BadRequestException('Contract must be linked to a customer to generate a sales order');
+      throw new BadRequestException(
+        "Contract must be linked to a customer to generate a sales order",
+      );
     }
 
     const existingOrder = await prisma.salesOrder.findFirst({
       where: { contractId: id, tenantId, deletedAt: null },
     });
     if (existingOrder) {
-      throw new BadRequestException(`Contract has already been converted to Sales Order ${existingOrder.orderNumber}`);
+      throw new BadRequestException(
+        `Contract has already been converted to Sales Order ${existingOrder.orderNumber}`,
+      );
     }
 
     const resolvedOrgId = await resolveOrgId(tenantId, orgId);
     const orderCount = await prisma.salesOrder.count({ where: { tenantId } });
-    const orderNumber = `SO-${String(orderCount + 1).padStart(5, '0')}`;
+    const orderNumber = `SO-${String(orderCount + 1).padStart(5, "0")}`;
 
-    const totalCalculated = Number(contract.value) + Number(contract.shippingHandlingCharges) + Number(contract.priceAdjustment);
+    const totalCalculated =
+      Number(contract.value) +
+      Number(contract.shippingHandlingCharges) +
+      Number(contract.priceAdjustment);
 
     return prisma.$transaction(async (tx) => {
       const salesOrder = await tx.salesOrder.create({
@@ -629,15 +759,17 @@ export class CrmContractsService {
           orgId: resolvedOrgId,
           customerId: contract.customerId!,
           orderNumber,
-          status: 'DRAFT',
+          status: "DRAFT",
           orderDate: new Date(),
           subtotal: contract.value,
           totalAmount: new Prisma.Decimal(totalCalculated),
           currency: contract.currency,
-          salesChannel: 'B2B',
-          paymentStatus: 'UNPAID',
-          shippingAddress: (contract.shippingAddress ? { address: contract.shippingAddress } : null) as any,
-          notes: `Generated automatically from contract ${contract.contractNumber}.${contract.deliveryNotes ? '\nDelivery Notes: ' + contract.deliveryNotes : ''}`,
+          salesChannel: "B2B",
+          paymentStatus: "UNPAID",
+          shippingAddress: (contract.shippingAddress
+            ? { address: contract.shippingAddress }
+            : null) as any,
+          notes: `Generated automatically from contract ${contract.contractNumber}.${contract.deliveryNotes ? "\nDelivery Notes: " + contract.deliveryNotes : ""}`,
           contractId: contract.id,
           shippingHandlingCharges: contract.shippingHandlingCharges,
           priceAdjustment: contract.priceAdjustment,
@@ -656,7 +788,7 @@ export class CrmContractsService {
               tenantId,
               salesOrderId: salesOrder.id,
               productId: item.productId,
-              description: item.product?.name || 'Line Item',
+              description: item.product?.name || "Line Item",
               quantity,
               unitPrice,
               totalAmount,
@@ -670,16 +802,25 @@ export class CrmContractsService {
     });
   }
 
-  async inviteToSign(tenantId: string, id: string, signerName: string, signerEmail: string) {
-    const existing = await prisma.contract.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!existing) throw new NotFoundException('Contract not found');
-    if (existing.approvalStatus !== 'APPROVED') {
-      throw new BadRequestException('Contract must be approved before inviting signers');
+  async inviteToSign(
+    tenantId: string,
+    id: string,
+    signerName: string,
+    signerEmail: string,
+  ) {
+    const existing = await prisma.contract.findFirst({
+      where: { id, tenantId, deletedAt: null },
+    });
+    if (!existing) throw new NotFoundException("Contract not found");
+    if (existing.approvalStatus !== "APPROVED") {
+      throw new BadRequestException(
+        "Contract must be approved before inviting signers",
+      );
     }
     return prisma.contract.update({
       where: { id },
       data: {
-        signatureStatus: 'PENDING_SIGNATURE',
+        signatureStatus: "PENDING_SIGNATURE",
         signerName,
         signerEmail,
       },
@@ -687,26 +828,32 @@ export class CrmContractsService {
   }
 
   async signContract(tenantId: string, id: string) {
-    const existing = await prisma.contract.findFirst({ where: { id, tenantId, deletedAt: null } });
-    if (!existing) throw new NotFoundException('Contract not found');
-    if (existing.signatureStatus !== 'PENDING_SIGNATURE') {
-      throw new BadRequestException('Contract signature is not pending');
+    const existing = await prisma.contract.findFirst({
+      where: { id, tenantId, deletedAt: null },
+    });
+    if (!existing) throw new NotFoundException("Contract not found");
+    if (existing.signatureStatus !== "PENDING_SIGNATURE") {
+      throw new BadRequestException("Contract signature is not pending");
     }
     return prisma.contract.update({
       where: { id },
       data: {
-        signatureStatus: 'SIGNED',
+        signatureStatus: "SIGNED",
         signedAt: new Date(),
-        status: 'ACTIVE',
+        status: "ACTIVE",
       },
     });
   }
 
-  async addBillingMilestone(tenantId: string, contractId: string, dto: { title: string; percentage: number; dueDate?: string }) {
+  async addBillingMilestone(
+    tenantId: string,
+    contractId: string,
+    dto: { title: string; percentage: number; dueDate?: string },
+  ) {
     const contract = await prisma.contract.findFirst({
       where: { id: contractId, tenantId, deletedAt: null },
     });
-    if (!contract) throw new NotFoundException('Contract not found');
+    if (!contract) throw new NotFoundException("Contract not found");
 
     const amount = (Number(contract.value) * dto.percentage) / 100;
 
@@ -718,49 +865,66 @@ export class CrmContractsService {
         percentage: dto.percentage,
         amount,
         dueDate: dto.dueDate ? new Date(dto.dueDate) : null,
-        status: 'PENDING',
+        status: "PENDING",
       },
     });
   }
 
-  async deleteBillingMilestone(tenantId: string, contractId: string, id: string) {
+  async deleteBillingMilestone(
+    tenantId: string,
+    contractId: string,
+    id: string,
+  ) {
     const milestone = await prisma.contractBillingMilestone.findFirst({
       where: { id, contractId, tenantId },
     });
-    if (!milestone) throw new NotFoundException('Milestone not found');
-    if (milestone.status !== 'PENDING') {
-      throw new BadRequestException('Cannot delete an invoiced/paid milestone');
+    if (!milestone) throw new NotFoundException("Milestone not found");
+    if (milestone.status !== "PENDING") {
+      throw new BadRequestException("Cannot delete an invoiced/paid milestone");
     }
     return prisma.contractBillingMilestone.delete({ where: { id } });
   }
 
-  async triggerMilestoneInvoice(tenantId: string, orgId: string, contractId: string, id: string, userId: string) {
+  async triggerMilestoneInvoice(
+    tenantId: string,
+    orgId: string,
+    contractId: string,
+    id: string,
+    userId: string,
+  ) {
     const contract = await prisma.contract.findFirst({
       where: { id: contractId, tenantId, deletedAt: null },
     });
-    if (!contract) throw new NotFoundException('Contract not found');
-    if (contract.approvalStatus !== 'APPROVED' && contract.status !== 'ACTIVE') {
-      throw new BadRequestException('Contract must be approved or active to trigger invoices');
+    if (!contract) throw new NotFoundException("Contract not found");
+    if (
+      contract.approvalStatus !== "APPROVED" &&
+      contract.status !== "ACTIVE"
+    ) {
+      throw new BadRequestException(
+        "Contract must be approved or active to trigger invoices",
+      );
     }
     if (!contract.customerId) {
-      throw new BadRequestException('Contract must be linked to a customer to invoice');
+      throw new BadRequestException(
+        "Contract must be linked to a customer to invoice",
+      );
     }
 
     const milestone = await prisma.contractBillingMilestone.findFirst({
       where: { id, contractId, tenantId },
     });
-    if (!milestone) throw new NotFoundException('Milestone not found');
-    if (milestone.status !== 'PENDING') {
-      throw new BadRequestException('Milestone is already invoiced or paid');
+    if (!milestone) throw new NotFoundException("Milestone not found");
+    if (milestone.status !== "PENDING") {
+      throw new BadRequestException("Milestone is already invoiced or paid");
     }
 
     return prisma.$transaction(async (tx) => {
-      const prefix = 'INV';
+      const prefix = "INV";
       const year = new Date().getFullYear();
       const count = await tx.invoice.count({
         where: { tenantId, invoiceNumber: { startsWith: `${prefix}-${year}` } },
       });
-      const seq = String(count + 1).padStart(5, '0');
+      const seq = String(count + 1).padStart(5, "0");
       const invoiceNumber = `${prefix}-${year}-${seq}`;
 
       const invoice = await tx.invoice.create({
@@ -769,7 +933,7 @@ export class CrmContractsService {
           orgId: orgId || contract.orgId,
           customerId: contract.customerId!,
           invoiceNumber,
-          status: 'DRAFT',
+          status: "DRAFT",
           issueDate: new Date(),
           dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
           subtotal: milestone.amount,
@@ -794,7 +958,7 @@ export class CrmContractsService {
       await tx.contractBillingMilestone.update({
         where: { id },
         data: {
-          status: 'INVOICED',
+          status: "INVOICED",
           invoiceId: invoice.id,
         },
       });

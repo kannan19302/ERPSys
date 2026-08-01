@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -154,7 +153,7 @@ class _LeadFormPageState extends ConsumerState<LeadFormPage> {
           padding: const EdgeInsets.all(Spacing.x4),
           children: <Widget>[
             DropdownButtonFormField<String>(
-              value: _salutation.isEmpty ? null : _salutation,
+              initialValue: _salutation.isEmpty ? null : _salutation,
               decoration: const InputDecoration(labelText: 'Salutation'),
               items: _salutations
                   .map(
@@ -213,7 +212,7 @@ class _LeadFormPageState extends ConsumerState<LeadFormPage> {
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _status,
+              initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: _statuses
                   .map(

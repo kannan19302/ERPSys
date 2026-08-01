@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Injectable, ForbiddenException } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 import { Prisma } from "@prisma/client";

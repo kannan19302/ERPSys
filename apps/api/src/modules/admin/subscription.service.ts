@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { Injectable } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import { Injectable } from "@nestjs/common";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class SubscriptionService {
@@ -10,18 +9,37 @@ export class SubscriptionService {
       include: { plan: true },
     });
 
-    const userCount = await prisma.user.count({ where: { tenantId, status: 'ACTIVE' } });
+    const userCount = await prisma.user.count({
+      where: { tenantId, status: "ACTIVE" },
+    });
 
     if (!subscription) {
       return {
-        plan: { name: 'Free', maxUsers: 5, maxStorage: 1024, price: 0, interval: 'monthly' },
-        usage: { users: userCount, maxUsers: 5, storageUsed: 0, maxStorage: 1024 },
-        status: 'ACTIVE',
+        plan: {
+          name: "Free",
+          maxUsers: 5,
+          maxStorage: 1024,
+          price: 0,
+          interval: "monthly",
+        },
+        usage: {
+          users: userCount,
+          maxUsers: 5,
+          storageUsed: 0,
+          maxStorage: 1024,
+        },
+        status: "ACTIVE",
       };
     }
 
     return {
-      plan: subscription.plan || { name: 'Free', maxUsers: 5, maxStorage: 1024, price: 0, interval: 'monthly' },
+      plan: subscription.plan || {
+        name: "Free",
+        maxUsers: 5,
+        maxStorage: 1024,
+        price: 0,
+        interval: "monthly",
+      },
       usage: {
         users: userCount,
         maxUsers: subscription.plan?.maxUsers || 5,
@@ -35,14 +53,14 @@ export class SubscriptionService {
 
   async getAvailablePlans() {
     return prisma.saaSPlan.findMany({
-      orderBy: { maxUsers: 'asc' },
+      orderBy: { maxUsers: "asc" },
     });
   }
 
   async changePlan(tenantId: string, planId: string) {
     const plan = await prisma.saaSPlan.findUnique({ where: { id: planId } });
     if (!plan) {
-      throw new Error('Plan not found');
+      throw new Error("Plan not found");
     }
 
     const subscription = await prisma.tenantSubscription.update({
@@ -54,7 +72,7 @@ export class SubscriptionService {
     await prisma.billingEvent.create({
       data: {
         tenantId,
-        type: 'PLAN_CHANGE',
+        type: "PLAN_CHANGE",
         amount: 0,
         description: `Plan changed to ${plan.name}`,
         metadata: { planId, planName: plan.name },
@@ -71,13 +89,13 @@ export class SubscriptionService {
     });
 
     if (!subscription) {
-      throw new Error('No active subscription found');
+      throw new Error("No active subscription found");
     }
 
     await prisma.billingEvent.create({
       data: {
         tenantId,
-        type: 'SEAT_UPDATE',
+        type: "SEAT_UPDATE",
         amount: 0,
         description: `Seats updated to ${seats}`,
         metadata: { seats, planId: subscription.planId },
@@ -93,7 +111,7 @@ export class SubscriptionService {
     const [events, total] = await Promise.all([
       prisma.billingEvent.findMany({
         where: { tenantId },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         skip,
         take: limit,
       }),

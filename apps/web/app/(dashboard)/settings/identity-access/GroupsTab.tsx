@@ -1,14 +1,29 @@
-// @ts-nocheck
-'use client';
+"use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from "react";
 import {
-  Card, Button, Spinner, TextField, FormField, Textarea, Modal,
-  EmptyState, ProtectedComponent,
-} from '@unerp/ui';
-import { Users, Plus, Trash2, Edit3, UserPlus, UserMinus, ShieldAlert, CheckCircle } from 'lucide-react';
-import { useApiClient } from '@unerp/framework';
-import styles from './GroupsTab.module.css';
+  Card,
+  Button,
+  Spinner,
+  TextField,
+  FormField,
+  Textarea,
+  Modal,
+  EmptyState,
+  ProtectedComponent,
+} from "@unerp/ui";
+import {
+  Users,
+  Plus,
+  Trash2,
+  Edit3,
+  UserPlus,
+  UserMinus,
+  ShieldAlert,
+  CheckCircle,
+} from "lucide-react";
+import { useApiClient } from "@unerp/framework";
+import styles from "./GroupsTab.module.css";
 
 interface UserGroup {
   id: string;
@@ -50,43 +65,58 @@ export default function GroupsTab() {
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
 
   // Form states
-  const [groupForm, setGroupForm] = useState({ name: '', description: '', isActive: true });
+  const [groupForm, setGroupForm] = useState({
+    name: "",
+    description: "",
+    isActive: true,
+  });
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
-  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [notification, setNotification] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const showNotification = useCallback((type: 'success' | 'error', message: string) => {
-    setNotification({ type, message });
-    setTimeout(() => setNotification(null), 4000);
-  }, []);
+  const showNotification = useCallback(
+    (type: "success" | "error", message: string) => {
+      setNotification({ type, message });
+      setTimeout(() => setNotification(null), 4000);
+    },
+    [],
+  );
 
   /* ---- Fetch Groups ---- */
   const fetchGroups = useCallback(async () => {
     setLoading(true);
     try {
-      setGroups(await client.get<UserGroup[]>('/admin/groups'));
+      setGroups(await client.get<UserGroup[]>("/admin/groups"));
     } catch {
-      showNotification('error', 'Failed to load groups');
+      showNotification("error", "Failed to load groups");
     } finally {
       setLoading(false);
     }
   }, [client, showNotification]);
 
   /* ---- Fetch Members ---- */
-  const fetchGroupMembers = useCallback(async (groupId: string) => {
-    try {
-      setMembers(await client.get<GroupMember[]>(`/admin/groups/${groupId}/members`));
-    } catch {
-      showNotification('error', 'Failed to load members');
-    }
-  }, [client, showNotification]);
+  const fetchGroupMembers = useCallback(
+    async (groupId: string) => {
+      try {
+        setMembers(
+          await client.get<GroupMember[]>(`/admin/groups/${groupId}/members`),
+        );
+      } catch {
+        showNotification("error", "Failed to load members");
+      }
+    },
+    [client, showNotification],
+  );
 
   /* ---- Fetch Users ---- */
   const fetchAllUsers = useCallback(async () => {
     try {
-      setAllUsers(await client.get<UserSummary[]>('/admin/users'));
+      setAllUsers(await client.get<UserSummary[]>("/admin/users"));
     } catch {
-      showNotification('error', 'Failed to load users');
+      showNotification("error", "Failed to load users");
     }
   }, [client, showNotification]);
 
@@ -106,13 +136,16 @@ export default function GroupsTab() {
     if (!groupForm.name) return;
     setSaving(true);
     try {
-      await client.post('/admin/groups', groupForm);
-      showNotification('success', 'Group created successfully');
+      await client.post("/admin/groups", groupForm);
+      showNotification("success", "Group created successfully");
       setShowAddGroupModal(false);
-      setGroupForm({ name: '', description: '', isActive: true });
+      setGroupForm({ name: "", description: "", isActive: true });
       void fetchGroups();
     } catch (error: unknown) {
-      showNotification('error', error instanceof Error ? error.message : 'Network error');
+      showNotification(
+        "error",
+        error instanceof Error ? error.message : "Network error",
+      );
     } finally {
       setSaving(false);
     }
@@ -124,13 +157,19 @@ export default function GroupsTab() {
     if (!selectedGroup) return;
     setSaving(true);
     try {
-      const updated = await client.patch<UserGroup>(`/admin/groups/${selectedGroup.id}`, groupForm);
-      showNotification('success', 'Group updated successfully');
+      const updated = await client.patch<UserGroup>(
+        `/admin/groups/${selectedGroup.id}`,
+        groupForm,
+      );
+      showNotification("success", "Group updated successfully");
       setShowEditGroupModal(false);
       void fetchGroups();
       setSelectedGroup(updated);
     } catch (error: unknown) {
-      showNotification('error', error instanceof Error ? error.message : 'Network error');
+      showNotification(
+        "error",
+        error instanceof Error ? error.message : "Network error",
+      );
     } finally {
       setSaving(false);
     }
@@ -138,16 +177,24 @@ export default function GroupsTab() {
 
   /* ---- Delete Group ---- */
   const handleDeleteGroup = async (groupId: string) => {
-    if (!confirm('Are you sure you want to delete this group? All memberships will be removed.')) return;
+    if (
+      !confirm(
+        "Are you sure you want to delete this group? All memberships will be removed.",
+      )
+    )
+      return;
 
     try {
       await client.delete(`/admin/groups/${groupId}`);
-      showNotification('success', 'Group deleted');
+      showNotification("success", "Group deleted");
       setSelectedGroup(null);
       setMembers([]);
       void fetchGroups();
     } catch (error: unknown) {
-      showNotification('error', error instanceof Error ? error.message : 'Network error');
+      showNotification(
+        "error",
+        error instanceof Error ? error.message : "Network error",
+      );
     }
   };
 
@@ -156,14 +203,19 @@ export default function GroupsTab() {
     if (!selectedGroup || selectedUserIds.length === 0) return;
 
     try {
-      await client.post(`/admin/groups/${selectedGroup.id}/members`, { userIds: selectedUserIds });
-      showNotification('success', 'Members added');
+      await client.post(`/admin/groups/${selectedGroup.id}/members`, {
+        userIds: selectedUserIds,
+      });
+      showNotification("success", "Members added");
       setShowAddMemberModal(false);
       setSelectedUserIds([]);
       void fetchGroupMembers(selectedGroup.id);
       void fetchGroups();
     } catch (error: unknown) {
-      showNotification('error', error instanceof Error ? error.message : 'Network error');
+      showNotification(
+        "error",
+        error instanceof Error ? error.message : "Network error",
+      );
     }
   };
 
@@ -172,12 +224,17 @@ export default function GroupsTab() {
     if (!selectedGroup) return;
 
     try {
-      await client.delete(`/admin/groups/${selectedGroup.id}/members/${userId}`);
-      showNotification('success', 'Member removed');
+      await client.delete(
+        `/admin/groups/${selectedGroup.id}/members/${userId}`,
+      );
+      showNotification("success", "Member removed");
       void fetchGroupMembers(selectedGroup.id);
       void fetchGroups();
     } catch (error: unknown) {
-      showNotification('error', error instanceof Error ? error.message : 'Network error');
+      showNotification(
+        "error",
+        error instanceof Error ? error.message : "Network error",
+      );
     }
   };
 
@@ -188,7 +245,7 @@ export default function GroupsTab() {
           <Button
             variant="primary"
             onClick={() => {
-              setGroupForm({ name: '', description: '', isActive: true });
+              setGroupForm({ name: "", description: "", isActive: true });
               setShowAddGroupModal(true);
             }}
           >
@@ -198,8 +255,24 @@ export default function GroupsTab() {
       </div>
 
       {notification && (
-        <div className={styles.s1} style={{background: notification.type === 'success' ? 'var(--color-success-light)' : 'var(--color-error-light)', color: notification.type === 'success' ? 'var(--color-success)' : 'var(--color-error)'}}>
-          {notification.type === 'success' ? <CheckCircle size={16} /> : <ShieldAlert size={16} />}
+        <div
+          className={styles.s1}
+          style={{
+            background:
+              notification.type === "success"
+                ? "var(--color-success-light)"
+                : "var(--color-error-light)",
+            color:
+              notification.type === "success"
+                ? "var(--color-success)"
+                : "var(--color-error)",
+          }}
+        >
+          {notification.type === "success" ? (
+            <CheckCircle size={16} />
+          ) : (
+            <ShieldAlert size={16} />
+          )}
           {notification.message}
         </div>
       )}
@@ -223,15 +296,27 @@ export default function GroupsTab() {
               />
             )}
             <div className={styles.s5}>
-              {groups.map(g => (
+              {groups.map((g) => (
                 <div
                   key={g.id}
                   onClick={() => selectGroup(g)}
-                  className={styles.s6} style={{border: selectedGroup?.id === g.id ? '2px solid var(--color-primary)' : '1px solid var(--color-border)', background: selectedGroup?.id === g.id ? 'var(--color-primary-light)' : 'var(--color-bg)'}}
+                  className={styles.s6}
+                  style={{
+                    border:
+                      selectedGroup?.id === g.id
+                        ? "2px solid var(--color-primary)"
+                        : "1px solid var(--color-border)",
+                    background:
+                      selectedGroup?.id === g.id
+                        ? "var(--color-primary-light)"
+                        : "var(--color-bg)",
+                  }}
                 >
                   <div>
                     <div className="ui-heading-sm">{g.name}</div>
-                    <div className="ui-text-caption">{g._count?.members || 0} members</div>
+                    <div className="ui-text-caption">
+                      {g._count?.members || 0} members
+                    </div>
                   </div>
                   <div className="ui-flex ui-gap-1">
                     <ProtectedComponent permission="admin.user-group.update">
@@ -239,7 +324,11 @@ export default function GroupsTab() {
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedGroup(g);
-                          setGroupForm({ name: g.name, description: g.description || '', isActive: g.isActive });
+                          setGroupForm({
+                            name: g.name,
+                            description: g.description || "",
+                            isActive: g.isActive,
+                          });
                           setShowEditGroupModal(true);
                         }}
                         className="ui-btn-icon ui-text-muted"
@@ -272,10 +361,15 @@ export default function GroupsTab() {
               <div className={styles.s8}>
                 <div>
                   <h2 className={styles.s9}>{selectedGroup.name}</h2>
-                  <p className={styles.s10}>{selectedGroup.description || 'No description provided.'}</p>
+                  <p className={styles.s10}>
+                    {selectedGroup.description || "No description provided."}
+                  </p>
                 </div>
                 <ProtectedComponent permission="admin.user-group.update">
-                  <Button variant="primary" onClick={() => setShowAddMemberModal(true)}>
+                  <Button
+                    variant="primary"
+                    onClick={() => setShowAddMemberModal(true)}
+                  >
                     <UserPlus size={14} className="mr-2" /> Add Members
                   </Button>
                 </ProtectedComponent>
@@ -291,10 +385,12 @@ export default function GroupsTab() {
                   />
                 ) : (
                   <div className={styles.s12}>
-                    {members.map(m => (
+                    {members.map((m) => (
                       <div key={m.id} className={styles.s13}>
                         <div>
-                          <div className="ui-heading-sm">{m.firstName} {m.lastName}</div>
+                          <div className="ui-heading-sm">
+                            {m.firstName} {m.lastName}
+                          </div>
                           <div className="ui-text-caption">{m.email}</div>
                         </div>
                         <ProtectedComponent permission="admin.user-group.update">
@@ -330,9 +426,25 @@ export default function GroupsTab() {
         size="md"
         footer={
           <>
-            <Button variant="secondary" onClick={() => setShowAddGroupModal(false)} disabled={saving}>Cancel</Button>
-            <Button variant="primary" onClick={handleCreateGroup as any} disabled={saving}>
-              {saving ? <><Spinner size="sm" /> Creating...</> : 'Create'}
+            <Button
+              variant="secondary"
+              onClick={() => setShowAddGroupModal(false)}
+              disabled={saving}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleCreateGroup as any}
+              disabled={saving}
+            >
+              {saving ? (
+                <>
+                  <Spinner size="sm" /> Creating...
+                </>
+              ) : (
+                "Create"
+              )}
             </Button>
           </>
         }
@@ -342,10 +454,18 @@ export default function GroupsTab() {
             label="Group Name"
             required
             value={groupForm.name}
-            onChange={(e) => setGroupForm({ ...groupForm, name: e.target.value })}
+            onChange={(e) =>
+              setGroupForm({ ...groupForm, name: e.target.value })
+            }
           />
           <FormField label="Description">
-            <Textarea rows={3} value={groupForm.description} onChange={(e) => setGroupForm({ ...groupForm, description: e.target.value })} />
+            <Textarea
+              rows={3}
+              value={groupForm.description}
+              onChange={(e) =>
+                setGroupForm({ ...groupForm, description: e.target.value })
+              }
+            />
           </FormField>
         </form>
       </Modal>
@@ -358,9 +478,25 @@ export default function GroupsTab() {
         size="md"
         footer={
           <>
-            <Button variant="secondary" onClick={() => setShowEditGroupModal(false)} disabled={saving}>Cancel</Button>
-            <Button variant="primary" onClick={handleUpdateGroup as any} disabled={saving}>
-              {saving ? <><Spinner size="sm" /> Saving...</> : 'Save Changes'}
+            <Button
+              variant="secondary"
+              onClick={() => setShowEditGroupModal(false)}
+              disabled={saving}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleUpdateGroup as any}
+              disabled={saving}
+            >
+              {saving ? (
+                <>
+                  <Spinner size="sm" /> Saving...
+                </>
+              ) : (
+                "Save Changes"
+              )}
             </Button>
           </>
         }
@@ -370,10 +506,18 @@ export default function GroupsTab() {
             label="Group Name"
             required
             value={groupForm.name}
-            onChange={(e) => setGroupForm({ ...groupForm, name: e.target.value })}
+            onChange={(e) =>
+              setGroupForm({ ...groupForm, name: e.target.value })
+            }
           />
           <FormField label="Description">
-            <Textarea rows={3} value={groupForm.description} onChange={(e) => setGroupForm({ ...groupForm, description: e.target.value })} />
+            <Textarea
+              rows={3}
+              value={groupForm.description}
+              onChange={(e) =>
+                setGroupForm({ ...groupForm, description: e.target.value })
+              }
+            />
           </FormField>
         </form>
       </Modal>
@@ -381,20 +525,39 @@ export default function GroupsTab() {
       {/* Add Members Modal */}
       <Modal
         open={showAddMemberModal && !!selectedGroup}
-        onClose={() => { setShowAddMemberModal(false); setSelectedUserIds([]); }}
-        title={selectedGroup ? `Add Users to ${selectedGroup.name}` : 'Add Users'}
+        onClose={() => {
+          setShowAddMemberModal(false);
+          setSelectedUserIds([]);
+        }}
+        title={
+          selectedGroup ? `Add Users to ${selectedGroup.name}` : "Add Users"
+        }
         size="md"
         footer={
           <>
-            <Button variant="secondary" onClick={() => { setShowAddMemberModal(false); setSelectedUserIds([]); }}>Cancel</Button>
-            <Button variant="primary" onClick={handleAddMembers} disabled={selectedUserIds.length === 0}>Add Selected</Button>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setShowAddMemberModal(false);
+                setSelectedUserIds([]);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleAddMembers}
+              disabled={selectedUserIds.length === 0}
+            >
+              Add Selected
+            </Button>
           </>
         }
       >
         <div className={styles.s15}>
           {allUsers
-            .filter(user => !members.some(member => member.id === user.id))
-            .map(user => {
+            .filter((user) => !members.some((member) => member.id === user.id))
+            .map((user) => {
               const isChecked = selectedUserIds.includes(user.id);
               return (
                 <div key={user.id} className={styles.s16}>
@@ -403,14 +566,18 @@ export default function GroupsTab() {
                     checked={isChecked}
                     onChange={() => {
                       if (isChecked) {
-                        setSelectedUserIds(selectedUserIds.filter(id => id !== user.id));
+                        setSelectedUserIds(
+                          selectedUserIds.filter((id) => id !== user.id),
+                        );
                       } else {
                         setSelectedUserIds([...selectedUserIds, user.id]);
                       }
                     }}
                   />
                   <div>
-                    <div className="ui-heading-sm">{user.firstName} {user.lastName}</div>
+                    <div className="ui-heading-sm">
+                      {user.firstName} {user.lastName}
+                    </div>
                     <div className="ui-text-caption">{user.email}</div>
                   </div>
                 </div>

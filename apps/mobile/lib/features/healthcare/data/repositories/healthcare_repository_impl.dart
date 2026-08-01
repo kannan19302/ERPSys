@@ -93,7 +93,7 @@ class HealthcareRepositoryImpl implements HealthcareRepository {
   @override
   Future<Result<Cacheable<Paginated<Patient>>>> listPatients(ListQuery q) =>
       _paginated(_patientNamespace, q, () => _remote.listPatients(q),
-        PatientModel.fromJson);
+        PatientModel.fromJson,);
 
   @override
   Future<Result<Patient>> getPatient(String id) =>
@@ -114,7 +114,7 @@ class HealthcareRepositoryImpl implements HealthcareRepository {
   @override
   Future<Result<Cacheable<Paginated<Appointment>>>> listAppointments(ListQuery q) =>
       _paginated(_appointmentNamespace, q, () => _remote.listAppointments(q),
-        AppointmentModel.fromJson);
+        AppointmentModel.fromJson,);
 
   @override
   Future<Result<Appointment>> getAppointment(String id) =>
@@ -135,7 +135,7 @@ class HealthcareRepositoryImpl implements HealthcareRepository {
   @override
   Future<Result<Cacheable<Paginated<Prescription>>>> listPrescriptions(ListQuery q) =>
       _paginated(_prescriptionNamespace, q, () => _remote.listPrescriptions(q),
-        PrescriptionModel.fromJson);
+        PrescriptionModel.fromJson,);
 
   @override
   Future<Result<Prescription>> getPrescription(String id) =>
@@ -148,7 +148,7 @@ class HealthcareRepositoryImpl implements HealthcareRepository {
   @override
   Future<Result<Cacheable<Paginated<LabOrder>>>> listLabOrders(ListQuery q) =>
       _paginated(_labOrderNamespace, q, () => _remote.listLabOrders(q),
-        LabOrderModel.fromJson);
+        LabOrderModel.fromJson,);
 
   @override
   Future<Result<LabOrder>> getLabOrder(String id) =>
@@ -165,7 +165,7 @@ class HealthcareRepositoryImpl implements HealthcareRepository {
   @override
   Future<Result<Cacheable<Paginated<MedicalRecord>>>> listMedicalRecords(ListQuery q) =>
       _paginated(_medicalRecordNamespace, q, () => _remote.listMedicalRecords(q),
-        MedicalRecordModel.fromJson);
+        MedicalRecordModel.fromJson,);
 
   @override
   Future<Result<MedicalRecord>> getMedicalRecord(String id) =>
@@ -178,7 +178,7 @@ class HealthcareRepositoryImpl implements HealthcareRepository {
   @override
   Future<Result<Cacheable<Paginated<InsuranceClaim>>>> listInsuranceClaims(ListQuery q) =>
       _paginated(_insuranceClaimNamespace, q, () => _remote.listInsuranceClaims(q),
-        InsuranceClaimModel.fromJson);
+        InsuranceClaimModel.fromJson,);
 
   @override
   Future<Result<InsuranceClaim>> getInsuranceClaim(String id) =>

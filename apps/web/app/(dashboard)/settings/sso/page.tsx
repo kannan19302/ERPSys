@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 
 export default function SsoRedirectPage() {
-  redirect('/settings/security-policies?tab=sso');
+  redirect("/settings/security-policies?tab=sso");
 }

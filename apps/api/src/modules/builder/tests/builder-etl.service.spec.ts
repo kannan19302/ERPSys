@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { BuilderEtlService } from "../services/builder-etl.service";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 

@@ -1,6 +1,5 @@
-// @ts-nocheck
-import * as dns from 'node:dns/promises';
-import * as net from 'node:net';
+import * as dns from "node:dns/promises";
+import * as net from "node:net";
 
 export async function isSafeUrl(urlStr: string): Promise<boolean> {
   try {
@@ -14,7 +13,7 @@ export async function isSafeUrl(urlStr: string): Promise<boolean> {
 
     // Resolve hostname to IPs
     const addresses: string[] = [];
-    
+
     // Attempt resolve4
     const v4 = await dns.resolve4(hostname).catch(() => []);
     addresses.push(...v4);
@@ -50,7 +49,7 @@ export async function isSafeUrl(urlStr: string): Promise<boolean> {
 
 function isPublicIp(ip: string): boolean {
   if (net.isIPv4(ip)) {
-    const parts = ip.split('.').map(Number);
+    const parts = ip.split(".").map(Number);
     if (parts.length !== 4) return false;
     const [p0, p1] = parts;
     if (p0 === undefined || p1 === undefined) return false;
@@ -70,13 +69,14 @@ function isPublicIp(ip: string): boolean {
   } else if (net.isIPv6(ip)) {
     const normalized = ip.toLowerCase();
     // Loopback
-    if (normalized === '::1' || normalized === '0:0:0:0:0:0:0:1') return false;
+    if (normalized === "::1" || normalized === "0:0:0:0:0:0:0:1") return false;
     // Unique local address (ULA)
-    if (normalized.startsWith('fc') || normalized.startsWith('fd')) return false;
+    if (normalized.startsWith("fc") || normalized.startsWith("fd"))
+      return false;
     // Link-local
-    if (normalized.startsWith('fe80')) return false;
+    if (normalized.startsWith("fe80")) return false;
     // Unspecified
-    if (normalized === '::' || normalized === '0:0:0:0:0:0:0:0') return false;
+    if (normalized === "::" || normalized === "0:0:0:0:0:0:0:0") return false;
     return true;
   }
   return false;

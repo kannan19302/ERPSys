@@ -1,15 +1,9 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/widgets/ui_card.dart';
 import '../../../../core/utils/formatters.dart';
-import '../../../../core/widgets/permission_gate.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/widgets/state_views.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/utils/formatters.dart';
-import '../../../../core/widgets/state_views.dart';
 import '../../domain/entities/reporting.dart';
 import '../providers/reporting_providers.dart';
 
@@ -60,14 +54,14 @@ class _ExportDetail extends StatelessWidget {
               const SizedBox(width: Spacing.x3),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(export.reportName ?? 'Export', style: Theme.of(context).textTheme.titleLarge),
-              ])),
+              ],),),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: Spacing.x2_5, vertical: Spacing.x1),
                 decoration: BoxDecoration(color: statusBg, borderRadius: Radii.pill),
                 child: Text(statusLabel, style: TextStyle(color: statusColor, fontSize: TypeScale.xs, fontWeight: TypeScale.medium)),
               ),
-            ]),
-          ]),
+            ],),
+          ],),
         ),
         const SizedBox(height: Spacing.x4),
         _SectionCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -77,7 +71,7 @@ class _ExportDetail extends StatelessWidget {
           if (export.fileUrl != null) _FieldRow('File URL', export.fileUrl!),
           if (export.fileSize != null) _FieldRow('Size', '${(export.fileSize! / 1024).toStringAsFixed(1)} KB'),
           if (export.createdAt != null) _FieldRow('Created', Formatters.dateTime(export.createdAt!)),
-        ])),
+        ],),),
       ],
     );
   }

@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 
 export default function GdprRedirectPage() {
-  redirect('/settings/compliance-governance?tab=erasure');
+  redirect("/settings/compliance-governance?tab=erasure");
 }

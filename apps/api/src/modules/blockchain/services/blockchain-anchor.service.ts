@@ -1,7 +1,6 @@
-// @ts-nocheck
-import { Injectable, Logger } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { FabricGatewayProvider } from '../providers/fabric-gateway.provider';
+import { Injectable, Logger } from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { FabricGatewayProvider } from "../providers/fabric-gateway.provider";
 import {
   DocumentRegistryContract,
   FinanceLedgerContract,
@@ -10,7 +9,7 @@ import {
   computePayloadHash,
   BlockchainTxStatus,
   FABRIC_CHAINCODES,
-} from '@unerp/blockchain';
+} from "@unerp/blockchain";
 
 export interface BlockchainAnchorEvent {
   tenantId: string;
@@ -23,35 +22,40 @@ export interface BlockchainAnchorEvent {
 }
 
 function getChaincodeForEvent(eventName: string): string {
-  if (eventName.startsWith('finance.')) return FABRIC_CHAINCODES.FINANCE_LEDGER;
-  if (eventName.startsWith('document.')) return FABRIC_CHAINCODES.DOCUMENT_REGISTRY;
-  if (eventName.startsWith('supplychain.')) return FABRIC_CHAINCODES.SUPPLY_CHAIN;
-  if (eventName.startsWith('procurement.')) return FABRIC_CHAINCODES.PROCUREMENT;
+  if (eventName.startsWith("finance.")) return FABRIC_CHAINCODES.FINANCE_LEDGER;
+  if (eventName.startsWith("document."))
+    return FABRIC_CHAINCODES.DOCUMENT_REGISTRY;
+  if (eventName.startsWith("supplychain."))
+    return FABRIC_CHAINCODES.SUPPLY_CHAIN;
+  if (eventName.startsWith("procurement."))
+    return FABRIC_CHAINCODES.PROCUREMENT;
   return FABRIC_CHAINCODES.DOCUMENT_REGISTRY;
 }
 
 function getChannelForChaincode(chaincodeName: string): string {
   const map: Record<string, string> = {
-    [FABRIC_CHAINCODES.DOCUMENT_REGISTRY]: 'unerp-channel',
-    [FABRIC_CHAINCODES.FINANCE_LEDGER]: 'unerp-channel',
-    [FABRIC_CHAINCODES.SUPPLY_CHAIN]: 'supplychain-channel',
-    [FABRIC_CHAINCODES.PROCUREMENT]: 'procurement-channel',
+    [FABRIC_CHAINCODES.DOCUMENT_REGISTRY]: "unerp-channel",
+    [FABRIC_CHAINCODES.FINANCE_LEDGER]: "unerp-channel",
+    [FABRIC_CHAINCODES.SUPPLY_CHAIN]: "supplychain-channel",
+    [FABRIC_CHAINCODES.PROCUREMENT]: "procurement-channel",
   };
-  return map[chaincodeName] ?? 'unerp-channel';
+  return map[chaincodeName] ?? "unerp-channel";
 }
 
 @Injectable()
 export class BlockchainAnchorService {
   private readonly logger = new Logger(BlockchainAnchorService.name);
 
-  constructor(
-    private readonly fabricGateway: FabricGatewayProvider,
-  ) {}
+  constructor(private readonly fabricGateway: FabricGatewayProvider) {}
 
-  async anchorEvent(event: BlockchainAnchorEvent): Promise<{ status: string; transactionId?: string }> {
+  async anchorEvent(
+    event: BlockchainAnchorEvent,
+  ): Promise<{ status: string; transactionId?: string }> {
     const dataHash = computePayloadHash(event.payload);
-    const chaincodeName = event.chaincodeName || getChaincodeForEvent(event.eventName);
-    const channelName = event.channelName || getChannelForChaincode(chaincodeName);
+    const chaincodeName =
+      event.chaincodeName || getChaincodeForEvent(event.eventName);
+    const channelName =
+      event.channelName || getChannelForChaincode(chaincodeName);
 
     const existing = await prisma.blockchainTransaction.findFirst({
       where: {
@@ -63,8 +67,13 @@ export class BlockchainAnchorService {
     });
 
     if (existing) {
-      this.logger.debug(`Blockchain record already confirmed for ${event.entityType}:${event.entityId}, skipping`);
-      return { status: BlockchainTxStatus.CONFIRMED, transactionId: existing.transactionId ?? undefined };
+      this.logger.debug(
+        `Blockchain record already confirmed for ${event.entityType}:${event.entityId}, skipping`,
+      );
+      return {
+        status: BlockchainTxStatus.CONFIRMED,
+        transactionId: existing.transactionId ?? undefined,
+      };
     }
 
     const pendingTx = await prisma.blockchainTransaction.create({
@@ -80,7 +89,11 @@ export class BlockchainAnchorService {
     });
 
     try {
-      const submitResult = await this.submitToFabric(event, dataHash, chaincodeName);
+      const submitResult = await this.submitToFabric(
+        event,
+        dataHash,
+        chaincodeName,
+      );
       await prisma.blockchainTransaction.update({
         where: { id: pendingTx.id },
         data: {
@@ -90,11 +103,19 @@ export class BlockchainAnchorService {
           confirmedAt: new Date(),
         },
       });
-      this.logger.log(`Anchored ${event.entityType}:${event.entityId} on Fabric (tx: ${submitResult.transactionId})`);
-      return { status: BlockchainTxStatus.CONFIRMED, transactionId: submitResult.transactionId };
+      this.logger.log(
+        `Anchored ${event.entityType}:${event.entityId} on Fabric (tx: ${submitResult.transactionId})`,
+      );
+      return {
+        status: BlockchainTxStatus.CONFIRMED,
+        transactionId: submitResult.transactionId,
+      };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown Fabric error';
-      this.logger.error(`Fabric submission failed for ${event.entityType}:${event.entityId}: ${errorMessage}`);
+      const errorMessage =
+        err instanceof Error ? err.message : "Unknown Fabric error";
+      this.logger.error(
+        `Fabric submission failed for ${event.entityType}:${event.entityId}: ${errorMessage}`,
+      );
       await prisma.blockchainTransaction.update({
         where: { id: pendingTx.id },
         data: {
@@ -116,10 +137,13 @@ export class BlockchainAnchorService {
     const rawContract = this.fabricGateway.getContract(ccName);
 
     if (!rawContract) {
-      throw new Error(`Fabric gateway not connected or chaincode ${ccName} unavailable`);
+      throw new Error(
+        `Fabric gateway not connected or chaincode ${ccName} unavailable`,
+      );
     }
 
-    const eventType = event.entityType || event.eventName.split('.').pop() || 'unknown';
+    const eventType =
+      event.entityType || event.eventName.split(".").pop() || "unknown";
 
     switch (ccName) {
       case FABRIC_CHAINCODES.DOCUMENT_REGISTRY: {
@@ -129,13 +153,18 @@ export class BlockchainAnchorService {
           documentId: event.entityId,
           documentHash: dataHash,
           documentType: eventType,
-          fileName: (event.payload['fileName'] as string) ?? event.entityId,
-          fileSize: (event.payload['fileSize'] as number) ?? 0,
-          mimeType: (event.payload['mimeType'] as string) ?? 'application/octet-stream',
-          uploadedBy: (event.payload['uploadedBy'] as string) ?? 'system',
-          uploadedAt: (event.payload['uploadedAt'] as string) ?? new Date().toISOString(),
+          fileName: (event.payload["fileName"] as string) ?? event.entityId,
+          fileSize: (event.payload["fileSize"] as number) ?? 0,
+          mimeType:
+            (event.payload["mimeType"] as string) ?? "application/octet-stream",
+          uploadedBy: (event.payload["uploadedBy"] as string) ?? "system",
+          uploadedAt:
+            (event.payload["uploadedAt"] as string) ?? new Date().toISOString(),
         });
-        return { transactionId: result.transactionId, blockNumber: BigInt(result.blockNumber) };
+        return {
+          transactionId: result.transactionId,
+          blockNumber: BigInt(result.blockNumber),
+        };
       }
 
       case FABRIC_CHAINCODES.FINANCE_LEDGER: {
@@ -143,16 +172,20 @@ export class BlockchainAnchorService {
         const result = await contract.recordJournalEntry({
           tenantId: event.tenantId,
           journalId: event.entityId,
-          periodId: (event.payload['periodId'] as string) ?? '',
+          periodId: (event.payload["periodId"] as string) ?? "",
           dataHash,
-          totalDebit: (event.payload['totalDebit'] as string) ?? '0',
-          totalCredit: (event.payload['totalCredit'] as string) ?? '0',
-          currency: (event.payload['currency'] as string) ?? 'USD',
-          postedBy: (event.payload['postedBy'] as string) ?? 'system',
-          postedAt: (event.payload['postedAt'] as string) ?? new Date().toISOString(),
-          description: (event.payload['description'] as string) ?? '',
+          totalDebit: (event.payload["totalDebit"] as string) ?? "0",
+          totalCredit: (event.payload["totalCredit"] as string) ?? "0",
+          currency: (event.payload["currency"] as string) ?? "USD",
+          postedBy: (event.payload["postedBy"] as string) ?? "system",
+          postedAt:
+            (event.payload["postedAt"] as string) ?? new Date().toISOString(),
+          description: (event.payload["description"] as string) ?? "",
         });
-        return { transactionId: result.transactionId, blockNumber: BigInt(result.blockNumber) };
+        return {
+          transactionId: result.transactionId,
+          blockNumber: BigInt(result.blockNumber),
+        };
       }
 
       case FABRIC_CHAINCODES.SUPPLY_CHAIN: {
@@ -161,26 +194,30 @@ export class BlockchainAnchorService {
           tenantId: event.tenantId,
           shipmentId: event.entityId,
           origin: {
-            orgId: (event.payload['origin'] as any)?.orgId ?? '',
-            location: (event.payload['origin'] as any)?.location ?? '',
-            country: (event.payload['origin'] as any)?.country ?? '',
+            orgId: (event.payload["origin"] as any)?.orgId ?? "",
+            location: (event.payload["origin"] as any)?.location ?? "",
+            country: (event.payload["origin"] as any)?.country ?? "",
           },
           destination: {
-            orgId: (event.payload['destination'] as any)?.orgId ?? '',
-            location: (event.payload['destination'] as any)?.location ?? '',
-            country: (event.payload['destination'] as any)?.country ?? '',
+            orgId: (event.payload["destination"] as any)?.orgId ?? "",
+            location: (event.payload["destination"] as any)?.location ?? "",
+            country: (event.payload["destination"] as any)?.country ?? "",
           },
-          goods: ((event.payload['goods'] as any[]) ?? []).map((g: any) => ({
-            productId: String(g.productId ?? ''),
+          goods: ((event.payload["goods"] as any[]) ?? []).map((g: any) => ({
+            productId: String(g.productId ?? ""),
             batchId: g.batchId ? String(g.batchId) : undefined,
             quantity: Number(g.quantity ?? 0),
-            unit: String(g.unit ?? ''),
+            unit: String(g.unit ?? ""),
           })),
-          expectedDelivery: (event.payload['expectedDelivery'] as string) ?? '',
-          createdBy: (event.payload['createdBy'] as string) ?? 'system',
-          createdAt: (event.payload['createdAt'] as string) ?? new Date().toISOString(),
+          expectedDelivery: (event.payload["expectedDelivery"] as string) ?? "",
+          createdBy: (event.payload["createdBy"] as string) ?? "system",
+          createdAt:
+            (event.payload["createdAt"] as string) ?? new Date().toISOString(),
         });
-        return { transactionId: result.transactionId, blockNumber: BigInt(result.blockNumber) };
+        return {
+          transactionId: result.transactionId,
+          blockNumber: BigInt(result.blockNumber),
+        };
       }
 
       case FABRIC_CHAINCODES.PROCUREMENT: {
@@ -188,23 +225,27 @@ export class BlockchainAnchorService {
         const result = await contract.createPurchaseOrder({
           tenantId: event.tenantId,
           poId: event.entityId,
-          vendorId: (event.payload['vendorId'] as string) ?? '',
-          buyerOrgId: (event.payload['buyerOrgId'] as string) ?? '',
-          lines: ((event.payload['lines'] as any[]) ?? []).map((l: any) => ({
-            lineId: String(l.lineId ?? ''),
-            productId: String(l.productId ?? ''),
+          vendorId: (event.payload["vendorId"] as string) ?? "",
+          buyerOrgId: (event.payload["buyerOrgId"] as string) ?? "",
+          lines: ((event.payload["lines"] as any[]) ?? []).map((l: any) => ({
+            lineId: String(l.lineId ?? ""),
+            productId: String(l.productId ?? ""),
             quantity: Number(l.quantity ?? 0),
-            unitPrice: String(l.unitPrice ?? '0'),
-            unit: String(l.unit ?? ''),
+            unitPrice: String(l.unitPrice ?? "0"),
+            unit: String(l.unit ?? ""),
           })),
-          totalAmount: (event.payload['totalAmount'] as string) ?? '0',
-          currency: (event.payload['currency'] as string) ?? 'USD',
-          deliveryDate: (event.payload['deliveryDate'] as string) ?? '',
-          terms: (event.payload['terms'] as string) ?? '',
-          createdBy: (event.payload['createdBy'] as string) ?? 'system',
-          createdAt: (event.payload['createdAt'] as string) ?? new Date().toISOString(),
+          totalAmount: (event.payload["totalAmount"] as string) ?? "0",
+          currency: (event.payload["currency"] as string) ?? "USD",
+          deliveryDate: (event.payload["deliveryDate"] as string) ?? "",
+          terms: (event.payload["terms"] as string) ?? "",
+          createdBy: (event.payload["createdBy"] as string) ?? "system",
+          createdAt:
+            (event.payload["createdAt"] as string) ?? new Date().toISOString(),
         });
-        return { transactionId: result.transactionId, blockNumber: BigInt(result.blockNumber) };
+        return {
+          transactionId: result.transactionId,
+          blockNumber: BigInt(result.blockNumber),
+        };
       }
 
       default:

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Injectable,
   NotFoundException,
@@ -10,20 +9,35 @@ import { prisma } from "@unerp/database";
 export class DataExportService {
   private readonly supportedFormats = [
     { id: "csv", name: "CSV", extension: ".csv", mimeType: "text/csv" },
-    { id: "json", name: "JSON", extension: ".json", mimeType: "application/json" },
-    { id: "xlsx", name: "Excel", extension: ".xlsx", mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
+    {
+      id: "json",
+      name: "JSON",
+      extension: ".json",
+      mimeType: "application/json",
+    },
+    {
+      id: "xlsx",
+      name: "Excel",
+      extension: ".xlsx",
+      mimeType:
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    },
     { id: "pdf", name: "PDF", extension: ".pdf", mimeType: "application/pdf" },
   ];
 
-  async requestExport(tenantId: string, _userId: string, dto: {
-    module: string;
-    format?: string;
-    filters?: Record<string, unknown>;
-    fields?: string[];
-    includeRelations?: boolean;
-    dateFrom?: string;
-    dateTo?: string;
-  }) {
+  async requestExport(
+    tenantId: string,
+    _userId: string,
+    dto: {
+      module: string;
+      format?: string;
+      filters?: Record<string, unknown>;
+      fields?: string[];
+      includeRelations?: boolean;
+      dateFrom?: string;
+      dateTo?: string;
+    },
+  ) {
     const format = dto.format ?? "csv";
     const valid = this.supportedFormats.find((f) => f.id === format);
     if (!valid) throw new BadRequestException(`Unsupported format: ${format}`);
@@ -56,15 +70,20 @@ export class DataExportService {
   }
 
   async getExportJob(tenantId: string, id: string) {
-    const job = await prisma.dataExportJob.findFirst({ where: { id, tenantId } });
+    const job = await prisma.dataExportJob.findFirst({
+      where: { id, tenantId },
+    });
     if (!job) throw new NotFoundException("Export job not found");
     return job;
   }
 
   async downloadExport(tenantId: string, id: string) {
-    const job = await prisma.dataExportJob.findFirst({ where: { id, tenantId } });
+    const job = await prisma.dataExportJob.findFirst({
+      where: { id, tenantId },
+    });
     if (!job) throw new NotFoundException("Export job not found");
-    if (job.status !== "COMPLETE") throw new BadRequestException("Export is not ready yet");
+    if (job.status !== "COMPLETE")
+      throw new BadRequestException("Export is not ready yet");
     if (!job.fileUrl) throw new NotFoundException("Export file not found");
 
     return {
@@ -77,10 +96,14 @@ export class DataExportService {
   }
 
   async cancelExport(tenantId: string, id: string) {
-    const job = await prisma.dataExportJob.findFirst({ where: { id, tenantId } });
+    const job = await prisma.dataExportJob.findFirst({
+      where: { id, tenantId },
+    });
     if (!job) throw new NotFoundException("Export job not found");
     if (job.status !== "PENDING" && job.status !== "PROCESSING") {
-      throw new BadRequestException("Only pending or processing exports can be cancelled");
+      throw new BadRequestException(
+        "Only pending or processing exports can be cancelled",
+      );
     }
 
     return prisma.dataExportJob.update({

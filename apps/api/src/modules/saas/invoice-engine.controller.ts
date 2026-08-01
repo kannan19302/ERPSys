@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Controller,
   Get,
@@ -28,12 +27,16 @@ const generateInvoiceSchema = z.object({
   currency: z.string().default("USD"),
   description: z.string().optional(),
   dueDate: z.string().optional(),
-  lineItems: z.array(z.object({
-    description: z.string().min(1),
-    quantity: z.number().min(1),
-    unitPrice: z.number().min(0),
-    total: z.number().min(0),
-  })).optional(),
+  lineItems: z
+    .array(
+      z.object({
+        description: z.string().min(1),
+        quantity: z.number().min(1),
+        unitPrice: z.number().min(0),
+        total: z.number().min(0),
+      }),
+    )
+    .optional(),
 });
 
 @ApiTags("saas-invoices")
@@ -84,7 +87,10 @@ export class InvoiceEngineController {
   @ApiOperation({ summary: "Generate invoice" })
   @Permissions("saas.invoice.create")
   @Post()
-  async generateInvoice(@Req() req: AuthReq, @ZodBody(generateInvoiceSchema) body: z.infer<typeof generateInvoiceSchema>) {
+  async generateInvoice(
+    @Req() req: AuthReq,
+    @ZodBody(generateInvoiceSchema) body: z.infer<typeof generateInvoiceSchema>,
+  ) {
     return this.invoiceEngineService.generateInvoice(req.user.tenantId, body);
   }
 

@@ -1,12 +1,4 @@
-// @ts-nocheck
-import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  UseGuards,
-  Req,
-} from "@nestjs/common";
+import { Controller, Get, Post, Patch, UseGuards, Req } from "@nestjs/common";
 import { z } from "zod";
 import { ZodBody } from "../../common/decorators/zod-body.decorator";
 import { Request } from "express";
@@ -59,21 +51,32 @@ export class SubscriptionLifecycleController {
   @Permissions("saas.subscription.read")
   @Get()
   async getCurrentSubscription(@Req() req: AuthReq) {
-    return this.saasService.getSubscription(req.user.tenantId).catch(() => null);
+    return this.saasService
+      .getSubscription(req.user.tenantId)
+      .catch(() => null);
   }
 
   @ApiOperation({ summary: "Get subscription history" })
   @Permissions("saas.subscription.read")
   @Get("history")
   async getSubscriptionHistory(@Req() req: AuthReq) {
-    return this.invoiceEngineService.getBillingHistory(req.user.tenantId).catch(() => []);
+    return this.invoiceEngineService
+      .getBillingHistory(req.user.tenantId)
+      .catch(() => []);
   }
 
   @ApiOperation({ summary: "Change plan" })
   @Permissions("saas.subscription.change")
   @Post("change-plan")
-  async changePlan(@Req() req: AuthReq, @ZodBody(changePlanSchema) body: z.infer<typeof changePlanSchema>) {
-    return this.billingService.changePlan(req.user.tenantId, body.planId, body.couponCode);
+  async changePlan(
+    @Req() req: AuthReq,
+    @ZodBody(changePlanSchema) body: z.infer<typeof changePlanSchema>,
+  ) {
+    return this.billingService.changePlan(
+      req.user.tenantId,
+      body.planId,
+      body.couponCode,
+    );
   }
 
   @ApiOperation({ summary: "Cancel subscription" })
@@ -107,16 +110,26 @@ export class SubscriptionLifecycleController {
   @ApiOperation({ summary: "Change billing period" })
   @Permissions("saas.subscription.change")
   @Patch("billing-period")
-  async changeBillingPeriod(@Req() req: AuthReq, @ZodBody(changeBillingPeriodSchema) body: z.infer<typeof changeBillingPeriodSchema>) {
-    return this.invoiceEngineService.scheduleRecurringInvoice(req.user.tenantId, {
-      interval: body.period === "yearly" ? "YEARLY" : "MONTHLY",
-    });
+  async changeBillingPeriod(
+    @Req() req: AuthReq,
+    @ZodBody(changeBillingPeriodSchema)
+    body: z.infer<typeof changeBillingPeriodSchema>,
+  ) {
+    return this.invoiceEngineService.scheduleRecurringInvoice(
+      req.user.tenantId,
+      {
+        interval: body.period === "yearly" ? "YEARLY" : "MONTHLY",
+      },
+    );
   }
 
   @ApiOperation({ summary: "Toggle auto renew" })
   @Permissions("saas.subscription.change")
   @Patch("auto-renew")
-  async toggleAutoRenew(@Req() _req: AuthReq, @ZodBody(z.object({ enabled: z.boolean() })) body: { enabled: boolean }) {
+  async toggleAutoRenew(
+    @Req() _req: AuthReq,
+    @ZodBody(z.object({ enabled: z.boolean() })) body: { enabled: boolean },
+  ) {
     return { success: true, autoRenew: body.enabled };
   }
 
@@ -124,32 +137,48 @@ export class SubscriptionLifecycleController {
   @Permissions("saas.invoice.read")
   @Get("receipts")
   async listReceipts(@Req() req: AuthReq) {
-    return this.invoiceEngineService.listInvoices(req.user.tenantId, 1, 50, "PAID").catch(() => ({ items: [], total: 0 }));
+    return this.invoiceEngineService
+      .listInvoices(req.user.tenantId, 1, 50, "PAID")
+      .catch(() => ({ items: [], total: 0 }));
   }
 
   @ApiOperation({ summary: "Get next bill preview" })
   @Permissions("saas.subscription.read")
   @Get("next-bill")
   async getNextBillPreview(@Req() req: AuthReq) {
-    return this.invoiceEngineService.getUpcomingInvoices(req.user.tenantId).catch(() => null);
+    return this.invoiceEngineService
+      .getUpcomingInvoices(req.user.tenantId)
+      .catch(() => null);
   }
 
   @ApiOperation({ summary: "Get trial info" })
   @Permissions("saas.subscription.read")
   @Get("trial")
   async getTrialInfo(@Req() req: AuthReq) {
-    const sub = await this.saasService.getSubscription(req.user.tenantId).catch(() => null);
+    const sub = await this.saasService
+      .getSubscription(req.user.tenantId)
+      .catch(() => null);
     return {
       isTrial: sub?.status === "TRIAL",
       trialEndsAt: sub?.trialEndsAt ?? null,
-      daysRemaining: sub?.trialEndsAt ? Math.max(0, Math.ceil((new Date(sub.trialEndsAt).getTime() - Date.now()) / 86400000)) : 0,
+      daysRemaining: sub?.trialEndsAt
+        ? Math.max(
+            0,
+            Math.ceil(
+              (new Date(sub.trialEndsAt).getTime() - Date.now()) / 86400000,
+            ),
+          )
+        : 0,
     };
   }
 
   @ApiOperation({ summary: "Extend trial [Admin]" })
   @Permissions("saas.subscription.manage")
   @Post("trial/extend")
-  async extendTrial(@Req() _req: AuthReq, @ZodBody(extendTrialSchema) body: z.infer<typeof extendTrialSchema>) {
+  async extendTrial(
+    @Req() _req: AuthReq,
+    @ZodBody(extendTrialSchema) body: z.infer<typeof extendTrialSchema>,
+  ) {
     return { success: true, extendedByDays: body.days };
   }
 
@@ -163,14 +192,24 @@ export class SubscriptionLifecycleController {
   @ApiOperation({ summary: "Add credits [Admin]" })
   @Permissions("saas.subscription.manage")
   @Post("credits/add")
-  async addCredits(@Req() _req: AuthReq, @ZodBody(addCreditsSchema) body: z.infer<typeof addCreditsSchema>) {
-    return { success: true, amount: body.amount, description: body.description };
+  async addCredits(
+    @Req() _req: AuthReq,
+    @ZodBody(addCreditsSchema) body: z.infer<typeof addCreditsSchema>,
+  ) {
+    return {
+      success: true,
+      amount: body.amount,
+      description: body.description,
+    };
   }
 
   @ApiOperation({ summary: "Redeem coupon" })
   @Permissions("saas.subscription.change")
   @Post("coupon/redeem")
-  async redeemCoupon(@Req() _req: AuthReq, @ZodBody(redeemCouponSchema) _body: z.infer<typeof redeemCouponSchema>) {
+  async redeemCoupon(
+    @Req() _req: AuthReq,
+    @ZodBody(redeemCouponSchema) _body: z.infer<typeof redeemCouponSchema>,
+  ) {
     return { success: true };
   }
 
@@ -185,7 +224,12 @@ export class SubscriptionLifecycleController {
   @Permissions("saas.subscription.read")
   @Post("validate")
   async validateSubscriptionAccess(@Req() req: AuthReq) {
-    const sub = await this.saasService.getSubscription(req.user.tenantId).catch(() => null);
-    return { valid: sub?.status === "ACTIVE" || sub?.status === "TRIAL", subscription: sub };
+    const sub = await this.saasService
+      .getSubscription(req.user.tenantId)
+      .catch(() => null);
+    return {
+      valid: sub?.status === "ACTIVE" || sub?.status === "TRIAL",
+      subscription: sub,
+    };
   }
 }

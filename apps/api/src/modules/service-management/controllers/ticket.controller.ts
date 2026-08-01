@@ -1,5 +1,13 @@
-// @ts-nocheck
-import { Controller, Post, Body, Param, Get, Patch, UseGuards, Req } from "@nestjs/common";
+import {
+  Controller,
+  Post,
+  Body,
+  Param,
+  Get,
+  Patch,
+  UseGuards,
+  Req,
+} from "@nestjs/common";
 import { TicketLifecycleService } from "../services/ticket-lifecycle.service";
 import { TicketAssignmentService } from "../services/ticket-assignment.service";
 
@@ -7,7 +15,7 @@ import { TicketAssignmentService } from "../services/ticket-assignment.service";
 export class TicketController {
   constructor(
     private readonly lifecycleService: TicketLifecycleService,
-    private readonly assignmentService: TicketAssignmentService
+    private readonly assignmentService: TicketAssignmentService,
   ) {}
 
   @Post()
@@ -20,7 +28,7 @@ export class TicketController {
       priority: body.priority,
       source: body.source || "API",
       categoryId: body.categoryId,
-      reporterId: req.user?.id
+      reporterId: req.user?.id,
     });
   }
 
@@ -31,16 +39,34 @@ export class TicketController {
   }
 
   @Patch(":id/status")
-  async updateStatus(@Req() req: any, @Param("id") id: string, @Body() body: any) {
+  async updateStatus(
+    @Req() req: any,
+    @Param("id") id: string,
+    @Body() body: any,
+  ) {
     const tenantId = req.app?.current_tenant_id || "demo";
     const actorId = req.user?.id || "system";
-    return this.lifecycleService.updateStatus(tenantId, id, body.status, actorId);
+    return this.lifecycleService.updateStatus(
+      tenantId,
+      id,
+      body.status,
+      actorId,
+    );
   }
 
   @Patch(":id/assign")
-  async assignTicket(@Req() req: any, @Param("id") id: string, @Body() body: any) {
+  async assignTicket(
+    @Req() req: any,
+    @Param("id") id: string,
+    @Body() body: any,
+  ) {
     const tenantId = req.app?.current_tenant_id || "demo";
     const actorId = req.user?.id || "system";
-    return this.assignmentService.assignTicket(tenantId, id, body.assigneeId, actorId);
+    return this.assignmentService.assignTicket(
+      tenantId,
+      id,
+      body.assigneeId,
+      actorId,
+    );
   }
 }

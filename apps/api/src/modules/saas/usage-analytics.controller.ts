@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Controller,
   Get,
@@ -47,7 +46,9 @@ export class UsageAnalyticsController {
   @Permissions("saas.metering.read")
   @Get("current")
   async getCurrentUsage(@Req() req: AuthReq) {
-    return this.billingService.getUsageSummary(req.user.tenantId).catch(() => null);
+    return this.billingService
+      .getUsageSummary(req.user.tenantId)
+      .catch(() => null);
   }
 
   @ApiOperation({ summary: "Get usage history" })
@@ -59,7 +60,9 @@ export class UsageAnalyticsController {
     @Query("from") _from?: string,
     @Query("to") _to?: string,
   ) {
-    const records = await this.saasService.getUsageRecords(req.user.tenantId).catch(() => []);
+    const records = await this.saasService
+      .getUsageRecords(req.user.tenantId)
+      .catch(() => []);
     if (metric) return records.filter((r: any) => r.metric === metric);
     return records;
   }
@@ -68,7 +71,9 @@ export class UsageAnalyticsController {
   @Permissions("saas.metering.read")
   @Get("history/:metric")
   async getMetricHistory(@Req() req: AuthReq, @Param("metric") metric: string) {
-    const records = await this.saasService.getUsageRecords(req.user.tenantId).catch(() => []);
+    const records = await this.saasService
+      .getUsageRecords(req.user.tenantId)
+      .catch(() => []);
     return records.filter((r: any) => r.metric === metric);
   }
 
@@ -76,7 +81,9 @@ export class UsageAnalyticsController {
   @Permissions("saas.metering.read")
   @Get("forecast")
   async getUsageForecast(@Req() req: AuthReq) {
-    const records = await this.saasService.getUsageRecords(req.user.tenantId).catch(() => []);
+    const records = await this.saasService
+      .getUsageRecords(req.user.tenantId)
+      .catch(() => []);
     const forecast: Record<string, number> = {};
     for (const r of records as any[]) {
       forecast[r.metric] = Math.round(r.currentValue * 1.1);
@@ -88,15 +95,21 @@ export class UsageAnalyticsController {
   @Permissions("saas.metering.read")
   @Post("refresh")
   async refreshUsageMetrics(@Req() req: AuthReq) {
-    return this.storageMetering.recomputeTenant(req.user.tenantId).catch(() => ({ perApp: {}, totalBytes: 0 }));
+    return this.storageMetering
+      .recomputeTenant(req.user.tenantId)
+      .catch(() => ({ perApp: {}, totalBytes: 0 }));
   }
 
   @ApiOperation({ summary: "Get usage breakdown" })
   @Permissions("saas.metering.read")
   @Get("breakdown")
   async getUsageBreakdown(@Req() req: AuthReq) {
-    const usage = await this.billingService.getUsageSummary(req.user.tenantId).catch(() => null);
-    const storage = await this.storageMetering.getTenantUsage(req.user.tenantId).catch(() => []);
+    const usage = await this.billingService
+      .getUsageSummary(req.user.tenantId)
+      .catch(() => null);
+    const storage = await this.storageMetering
+      .getTenantUsage(req.user.tenantId)
+      .catch(() => []);
     return { usage, perAppStorage: storage };
   }
 
@@ -104,7 +117,9 @@ export class UsageAnalyticsController {
   @Permissions("saas.metering.read")
   @Get("trends")
   async getUsageTrends(@Req() req: AuthReq) {
-    const records = await this.saasService.getUsageRecords(req.user.tenantId).catch(() => []);
+    const records = await this.saasService
+      .getUsageRecords(req.user.tenantId)
+      .catch(() => []);
     return { trends: records, period: "30d" };
   }
 
@@ -112,13 +127,21 @@ export class UsageAnalyticsController {
   @Permissions("saas.metering.read")
   @Get("peak")
   async getPeakUsage(@Req() req: AuthReq) {
-    const records = await this.saasService.getUsageRecords(req.user.tenantId).catch(() => []);
-    const peak: Record<string, { current: number; limit: number; pct: number }> = {};
+    const records = await this.saasService
+      .getUsageRecords(req.user.tenantId)
+      .catch(() => []);
+    const peak: Record<
+      string,
+      { current: number; limit: number; pct: number }
+    > = {};
     for (const r of records as any[]) {
       peak[r.metric] = {
         current: r.currentValue,
         limit: r.limitValue,
-        pct: r.limitValue > 0 ? Math.round((r.currentValue / r.limitValue) * 100) : 0,
+        pct:
+          r.limitValue > 0
+            ? Math.round((r.currentValue / r.limitValue) * 100)
+            : 0,
       };
     }
     return peak;
@@ -128,7 +151,9 @@ export class UsageAnalyticsController {
   @Permissions("saas.metering.read")
   @Get("daily")
   async getDailyUsage(@Req() req: AuthReq) {
-    const records = await this.saasService.getUsageRecords(req.user.tenantId).catch(() => []);
+    const records = await this.saasService
+      .getUsageRecords(req.user.tenantId)
+      .catch(() => []);
     return { daily: records, date: new Date().toISOString().substring(0, 10) };
   }
 
@@ -136,15 +161,22 @@ export class UsageAnalyticsController {
   @Permissions("saas.metering.read")
   @Get("monthly")
   async getMonthlyUsage(@Req() req: AuthReq) {
-    const records = await this.saasService.getUsageRecords(req.user.tenantId).catch(() => []);
-    return { monthly: records, month: new Date().toISOString().substring(0, 7) };
+    const records = await this.saasService
+      .getUsageRecords(req.user.tenantId)
+      .catch(() => []);
+    return {
+      monthly: records,
+      month: new Date().toISOString().substring(0, 7),
+    };
   }
 
   @ApiOperation({ summary: "Get usage comparison" })
   @Permissions("saas.metering.read")
   @Get("comparison")
   async getUsageComparison(@Req() req: AuthReq) {
-    const records = await this.saasService.getUsageRecords(req.user.tenantId).catch(() => []);
+    const records = await this.saasService
+      .getUsageRecords(req.user.tenantId)
+      .catch(() => []);
     return { current: records, previous: [], change: {} };
   }
 
@@ -158,42 +190,78 @@ export class UsageAnalyticsController {
   @ApiOperation({ summary: "Export usage data" })
   @Permissions("saas.metering.read")
   @Post("export")
-  async exportUsageData(@Req() req: AuthReq, @ZodBody(exportUsageSchema) body: z.infer<typeof exportUsageSchema>) {
-    const records = await this.saasService.getUsageRecords(req.user.tenantId).catch(() => []);
-    return { format: body.format, data: JSON.stringify(records), filename: `usage-export-${req.user.tenantId}.${body.format}` };
+  async exportUsageData(
+    @Req() req: AuthReq,
+    @ZodBody(exportUsageSchema) body: z.infer<typeof exportUsageSchema>,
+  ) {
+    const records = await this.saasService
+      .getUsageRecords(req.user.tenantId)
+      .catch(() => []);
+    return {
+      format: body.format,
+      data: JSON.stringify(records),
+      filename: `usage-export-${req.user.tenantId}.${body.format}`,
+    };
   }
 
   @ApiOperation({ summary: "Get app usage breakdown" })
   @Permissions("saas.metering.read")
   @Get("apps")
   async getAppUsageBreakdown(@Req() req: AuthReq) {
-    return this.storageMetering.getTenantUsage(req.user.tenantId).catch(() => []);
+    return this.storageMetering
+      .getTenantUsage(req.user.tenantId)
+      .catch(() => []);
   }
 
   @ApiOperation({ summary: "Get app usage detail" })
   @Permissions("saas.metering.read")
   @Get("apps/:appSlug")
-  async getAppUsageDetail(@Req() req: AuthReq, @Param("appSlug") appSlug: string) {
-    const apps = await this.storageMetering.getTenantUsage(req.user.tenantId).catch(() => []);
-    return (apps as any[]).find((a) => a.appSlug === appSlug) || { appSlug, rowCount: 0, estimatedBytes: 0 };
+  async getAppUsageDetail(
+    @Req() req: AuthReq,
+    @Param("appSlug") appSlug: string,
+  ) {
+    const apps = await this.storageMetering
+      .getTenantUsage(req.user.tenantId)
+      .catch(() => []);
+    return (
+      (apps as any[]).find((a) => a.appSlug === appSlug) || {
+        appSlug,
+        rowCount: 0,
+        estimatedBytes: 0,
+      }
+    );
   }
 
   @ApiOperation({ summary: "Get usage alert summary" })
   @Permissions("saas.alert.read")
   @Get("alerts")
   async getUsageAlertSummary(@Req() req: AuthReq) {
-    return this.usageAlertsService.getAlertHistory(req.user.tenantId).catch(() => ({ items: [], total: 0 }));
+    return this.usageAlertsService
+      .getAlertHistory(req.user.tenantId)
+      .catch(() => ({ items: [], total: 0 }));
   }
 
   @ApiOperation({ summary: "Get optimization recommendations" })
   @Permissions("saas.metering.read")
   @Get("recommendations")
   async getOptimizationRecommendations(@Req() req: AuthReq) {
-    const usage = await this.billingService.getUsageSummary(req.user.tenantId).catch(() => null);
+    const usage = await this.billingService
+      .getUsageSummary(req.user.tenantId)
+      .catch(() => null);
     const recommendations: any[] = [];
     if (usage && usage.users && usage.storage) {
-      if (usage.users.pct > 80) recommendations.push({ type: "users", message: "Approaching user limit", severity: "warning" });
-      if (usage.storage.pct > 80) recommendations.push({ type: "storage", message: "Storage usage is high", severity: "warning" });
+      if (usage.users.pct > 80)
+        recommendations.push({
+          type: "users",
+          message: "Approaching user limit",
+          severity: "warning",
+        });
+      if (usage.storage.pct > 80)
+        recommendations.push({
+          type: "storage",
+          message: "Storage usage is high",
+          severity: "warning",
+        });
     }
     return recommendations;
   }

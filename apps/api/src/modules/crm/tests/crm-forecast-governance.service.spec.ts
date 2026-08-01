@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { CrmForecastGovernanceService } from "../crm-forecast-governance.service";
 

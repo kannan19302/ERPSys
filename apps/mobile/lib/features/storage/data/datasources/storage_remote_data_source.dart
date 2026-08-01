@@ -31,23 +31,23 @@ class StorageRemoteDataSourceImpl implements StorageRemoteDataSource {
   @override
   Future<Paginated<StorageBucketModel>> listBuckets(ListQuery query) =>
       _client.getPaginated<StorageBucketModel>(
-        ApiPaths.storageBuckets, query, StorageBucketModel.fromJson);
+        ApiPaths.storageBuckets, query, StorageBucketModel.fromJson,);
 
   @override
   Future<StorageBucketModel> getBucket(String id) async =>
       StorageBucketModel.fromJson(
-        await _client.getObject(ApiPaths.storageBucket(id)));
+        await _client.getObject(ApiPaths.storageBucket(id)),);
 
   @override
   Future<StorageBucketModel> createBucket(Map<String, dynamic> payload) async =>
       StorageBucketModel.fromJson(
-        await _client.post(ApiPaths.storageBuckets, body: payload));
+        await _client.post(ApiPaths.storageBuckets, body: payload),);
 
   @override
   Future<StorageBucketModel> updateBucket(
-    String id, Map<String, dynamic> payload) async =>
+    String id, Map<String, dynamic> payload,) async =>
       StorageBucketModel.fromJson(
-        await _client.patch(ApiPaths.storageBucket(id), body: payload));
+        await _client.patch(ApiPaths.storageBucket(id), body: payload),);
 
   @override
   Future<void> deleteBucket(String id) =>
@@ -56,23 +56,23 @@ class StorageRemoteDataSourceImpl implements StorageRemoteDataSource {
   @override
   Future<Paginated<StorageFileModel>> listFiles(ListQuery query) =>
       _client.getPaginated<StorageFileModel>(
-        ApiPaths.storageFiles, query, StorageFileModel.fromJson);
+        ApiPaths.storageFiles, query, StorageFileModel.fromJson,);
 
   @override
   Future<StorageFileModel> getFile(String id) async =>
       StorageFileModel.fromJson(
-        await _client.getObject(ApiPaths.storageFile(id)));
+        await _client.getObject(ApiPaths.storageFile(id)),);
 
   @override
   Future<StorageFileModel> createFile(Map<String, dynamic> payload) async =>
       StorageFileModel.fromJson(
-        await _client.post(ApiPaths.storageFiles, body: payload));
+        await _client.post(ApiPaths.storageFiles, body: payload),);
 
   @override
   Future<StorageFileModel> updateFile(
-    String id, Map<String, dynamic> payload) async =>
+    String id, Map<String, dynamic> payload,) async =>
       StorageFileModel.fromJson(
-        await _client.patch(ApiPaths.storageFile(id), body: payload));
+        await _client.patch(ApiPaths.storageFile(id), body: payload),);
 
   @override
   Future<void> deleteFile(String id) =>
@@ -81,23 +81,23 @@ class StorageRemoteDataSourceImpl implements StorageRemoteDataSource {
   @override
   Future<Paginated<StoragePolicyModel>> listPolicies(ListQuery query) =>
       _client.getPaginated<StoragePolicyModel>(
-        ApiPaths.storagePolicies, query, StoragePolicyModel.fromJson);
+        ApiPaths.storagePolicies, query, StoragePolicyModel.fromJson,);
 
   @override
   Future<StoragePolicyModel> getPolicy(String id) async =>
       StoragePolicyModel.fromJson(
-        await _client.getObject(ApiPaths.storagePolicy(id)));
+        await _client.getObject(ApiPaths.storagePolicy(id)),);
 
   @override
   Future<StoragePolicyModel> createPolicy(Map<String, dynamic> payload) async =>
       StoragePolicyModel.fromJson(
-        await _client.post(ApiPaths.storagePolicies, body: payload));
+        await _client.post(ApiPaths.storagePolicies, body: payload),);
 
   @override
   Future<StoragePolicyModel> updatePolicy(
-    String id, Map<String, dynamic> payload) async =>
+    String id, Map<String, dynamic> payload,) async =>
       StoragePolicyModel.fromJson(
-        await _client.patch(ApiPaths.storagePolicy(id), body: payload));
+        await _client.patch(ApiPaths.storagePolicy(id), body: payload),);
 
   @override
   Future<void> deletePolicy(String id) =>

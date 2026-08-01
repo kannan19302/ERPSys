@@ -141,7 +141,7 @@ class _FilterSidebarState extends State<FilterSidebar>
     ).animate(CurvedAnimation(
       parent: _animationController,
       curve: Motion.easeDefault,
-    ));
+    ),);
 
     _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(

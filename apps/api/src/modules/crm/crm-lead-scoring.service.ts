@@ -1,19 +1,32 @@
-// @ts-nocheck
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { z } from 'zod';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { z } from "zod";
 
 export const createLeadScoringRuleSchema = z.object({
   name: z.string().min(1),
   field: z.string().min(1),
-  operator: z.enum(['eq', 'ne', 'contains', 'gt', 'gte', 'lt', 'lte', 'exists']),
+  operator: z.enum([
+    "eq",
+    "ne",
+    "contains",
+    "gt",
+    "gte",
+    "lt",
+    "lte",
+    "exists",
+  ]),
   value: z.string(),
   points: z.number().int(),
   active: z.boolean().optional(),
 });
-export const updateLeadScoringRuleSchema = createLeadScoringRuleSchema.partial();
-export type CreateLeadScoringRuleInput = z.infer<typeof createLeadScoringRuleSchema>;
-export type UpdateLeadScoringRuleInput = z.infer<typeof updateLeadScoringRuleSchema>;
+export const updateLeadScoringRuleSchema =
+  createLeadScoringRuleSchema.partial();
+export type CreateLeadScoringRuleInput = z.infer<
+  typeof createLeadScoringRuleSchema
+>;
+export type UpdateLeadScoringRuleInput = z.infer<
+  typeof updateLeadScoringRuleSchema
+>;
 
 /**
  * Configurable lead-scoring rules. Rules are evaluated against Lead fields
@@ -22,12 +35,17 @@ export type UpdateLeadScoringRuleInput = z.infer<typeof updateLeadScoringRuleSch
 @Injectable()
 export class CrmLeadScoringService {
   async listRules(tenantId: string) {
-    return prisma.leadScoringRule.findMany({ where: { tenantId }, orderBy: { createdAt: 'desc' } });
+    return prisma.leadScoringRule.findMany({
+      where: { tenantId },
+      orderBy: { createdAt: "desc" },
+    });
   }
 
   async getRule(tenantId: string, id: string) {
-    const rule = await prisma.leadScoringRule.findFirst({ where: { id, tenantId } });
-    if (!rule) throw new NotFoundException('Lead scoring rule not found');
+    const rule = await prisma.leadScoringRule.findFirst({
+      where: { id, tenantId },
+    });
+    if (!rule) throw new NotFoundException("Lead scoring rule not found");
     return rule;
   }
 
@@ -45,7 +63,11 @@ export class CrmLeadScoringService {
     });
   }
 
-  async updateRule(tenantId: string, id: string, dto: UpdateLeadScoringRuleInput) {
+  async updateRule(
+    tenantId: string,
+    id: string,
+    dto: UpdateLeadScoringRuleInput,
+  ) {
     await this.getRule(tenantId, id);
     return prisma.leadScoringRule.update({ where: { id }, data: dto });
   }
@@ -55,35 +77,53 @@ export class CrmLeadScoringService {
     return prisma.leadScoringRule.delete({ where: { id } });
   }
 
-  private evalRule(lead: Record<string, unknown>, rule: { field: string; operator: string; value: string; points: number }): number {
+  private evalRule(
+    lead: Record<string, unknown>,
+    rule: { field: string; operator: string; value: string; points: number },
+  ): number {
     const raw = lead[rule.field];
     const target = rule.value;
     switch (rule.operator) {
-      case 'exists':
-        return raw != null && raw !== '' ? rule.points : 0;
-      case 'eq':
+      case "exists":
+        return raw != null && raw !== "" ? rule.points : 0;
+      case "eq":
         return String(raw) === target ? rule.points : 0;
-      case 'ne':
+      case "ne":
         return String(raw) !== target ? rule.points : 0;
-      case 'contains':
-        return raw != null && String(raw).toLowerCase().includes(target.toLowerCase()) ? rule.points : 0;
-      case 'gt':
-        return typeof raw === 'number' && raw > Number(target) ? rule.points : 0;
-      case 'gte':
-        return typeof raw === 'number' && raw >= Number(target) ? rule.points : 0;
-      case 'lt':
-        return typeof raw === 'number' && raw < Number(target) ? rule.points : 0;
-      case 'lte':
-        return typeof raw === 'number' && raw <= Number(target) ? rule.points : 0;
+      case "contains":
+        return raw != null &&
+          String(raw).toLowerCase().includes(target.toLowerCase())
+          ? rule.points
+          : 0;
+      case "gt":
+        return typeof raw === "number" && raw > Number(target)
+          ? rule.points
+          : 0;
+      case "gte":
+        return typeof raw === "number" && raw >= Number(target)
+          ? rule.points
+          : 0;
+      case "lt":
+        return typeof raw === "number" && raw < Number(target)
+          ? rule.points
+          : 0;
+      case "lte":
+        return typeof raw === "number" && raw <= Number(target)
+          ? rule.points
+          : 0;
       default:
         return 0;
     }
   }
 
   async recalculateScore(tenantId: string, leadId: string) {
-    const lead = await prisma.lead.findFirst({ where: { id: leadId, tenantId, deletedAt: null } });
+    const lead = await prisma.lead.findFirst({
+      where: { id: leadId, tenantId, deletedAt: null },
+    });
     if (!lead) return;
-    const rules = await prisma.leadScoringRule.findMany({ where: { tenantId, active: true } });
+    const rules = await prisma.leadScoringRule.findMany({
+      where: { tenantId, active: true },
+    });
     let score = 0;
     for (const rule of rules) {
       score += this.evalRule(lead as unknown as Record<string, unknown>, rule);
@@ -93,7 +133,10 @@ export class CrmLeadScoringService {
   }
 
   async recalculateAll(tenantId: string) {
-    const leads = await prisma.lead.findMany({ where: { tenantId, deletedAt: null }, select: { id: true } });
+    const leads = await prisma.lead.findMany({
+      where: { tenantId, deletedAt: null },
+      select: { id: true },
+    });
     let processed = 0;
     for (const l of leads) {
       await this.recalculateScore(tenantId, l.id);

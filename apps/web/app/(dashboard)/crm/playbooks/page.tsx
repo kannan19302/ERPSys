@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 
 export default function PlaybooksRedirect() {
-  redirect('/crm/sales-enablement?tab=playbooks');
+  redirect("/crm/sales-enablement?tab=playbooks");
 }

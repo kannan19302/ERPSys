@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Controller,
   Get,
@@ -93,12 +92,16 @@ export class ActivityFeedController {
       orderBy: { createdAt: "desc" },
     });
 
-    const timeline: Record<string, { count: number; actions: Record<string, number> }> = {};
+    const timeline: Record<
+      string,
+      { count: number; actions: Record<string, number> }
+    > = {};
     for (const log of logs) {
       const key = log.createdAt.toISOString().substring(0, 10);
       if (!timeline[key]) timeline[key] = { count: 0, actions: {} };
       timeline[key].count++;
-      timeline[key].actions[log.action] = (timeline[key].actions[log.action] ?? 0) + 1;
+      timeline[key].actions[log.action] =
+        (timeline[key].actions[log.action] ?? 0) + 1;
     }
 
     return { days: numDays, totalEntries: logs.length, timeline };
@@ -107,8 +110,15 @@ export class ActivityFeedController {
   @ApiOperation({ summary: "Export activity log" })
   @Permissions("saas.audit.read")
   @Get("export")
-  async exportActivityLog(@Req() req: AuthReq, @Query("format") format?: string) {
-    return this.auditLogService.exportAuditLogs(req.user.tenantId, format ?? "csv", {});
+  async exportActivityLog(
+    @Req() req: AuthReq,
+    @Query("format") format?: string,
+  ) {
+    return this.auditLogService.exportAuditLogs(
+      req.user.tenantId,
+      format ?? "csv",
+      {},
+    );
   }
 
   @ApiOperation({ summary: "Clear all activity logs" })
@@ -148,7 +158,10 @@ export class ActivityFeedController {
   @ApiOperation({ summary: "Record a custom activity event" })
   @Permissions("saas.audit.create")
   @Post("event")
-  async recordCustomEvent(@Req() req: AuthReq, @ZodBody(recordEventSchema) body: z.infer<typeof recordEventSchema>) {
+  async recordCustomEvent(
+    @Req() req: AuthReq,
+    @ZodBody(recordEventSchema) body: z.infer<typeof recordEventSchema>,
+  ) {
     return this.auditLogService.logAction(
       req.user.tenantId,
       body.action,

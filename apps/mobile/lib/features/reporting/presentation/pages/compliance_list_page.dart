@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -49,7 +48,7 @@ class _ReportComplianceListPageState extends ConsumerState<ReportComplianceListP
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
                 .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value)))
+                    value: e.key, child: Text(e.value),),)
                 .toList(),
           ),
         ],
@@ -83,7 +82,7 @@ class _ReportComplianceListPageState extends ConsumerState<ReportComplianceListP
                     : '${state.meta.total} record${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -138,28 +137,28 @@ class _ComplianceTile extends StatelessWidget {
               Row(children: [
                 Expanded(
                   child: Text(compliance.name,
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
                 UiStatusBadge(
                   label: compliance.status,
                   tone: _statusTone(compliance.status),
                 ),
-              ]),
+              ],),
               if (compliance.regulation != null) ...[
                 const SizedBox(height: Spacing.x1),
                 Text(compliance.regulation!,
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.sm)),
+                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.sm),),
               ],
               const SizedBox(height: Spacing.x1),
               Row(children: [
                 if (compliance.findings > 0)
                   Text('${compliance.findings} finding${compliance.findings == 1 ? '' : 's'}',
-                      style: TextStyle(color: t.danger, fontSize: TypeScale.xs)),
+                      style: TextStyle(color: t.danger, fontSize: TypeScale.xs),),
                 const Spacer(),
                 if (compliance.lastRunAt != null)
                   Text('Last: ${DateFormat.yMMMd().format(compliance.lastRunAt!.toLocal())}',
-                      style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
-              ]),
+                      style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
+              ],),
               if (compliance.isOverdue) ...[
                 const SizedBox(height: Spacing.x1),
                 Text('Overdue', style: TextStyle(color: t.danger, fontSize: TypeScale.xs)),

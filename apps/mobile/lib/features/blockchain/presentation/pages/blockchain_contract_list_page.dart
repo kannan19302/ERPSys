@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -64,7 +63,7 @@ class _BlockchainContractListPageState extends ConsumerState<BlockchainContractL
                     : '${state.meta.total} contract${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -122,29 +121,29 @@ class _ContractTile extends StatelessWidget {
             Row(children: [
               Expanded(
                 child: Text(contract.name,
-                    style: Theme.of(context).textTheme.titleSmall),
+                    style: Theme.of(context).textTheme.titleSmall,),
               ),
               UiStatusBadge(
                 label: contract.status,
                 tone: _statusTone(contract.status),
               ),
-            ]),
+            ],),
             const SizedBox(height: Spacing.x1),
             Text(contract.address.length > 20
                 ? '${contract.address.substring(0, 20)}...'
                 : contract.address,
-                style: TextStyle(color: t.textSecondary)),
+                style: TextStyle(color: t.textSecondary),),
             const SizedBox(height: Spacing.x1),
             Row(children: [
               Text(contract.network,
-                  style: Theme.of(context).textTheme.labelLarge),
+                  style: Theme.of(context).textTheme.labelLarge,),
               const Spacer(),
               if (contract.owner != null)
                 Text(contract.owner!.length > 12
                     ? 'Owner: ${contract.owner!.substring(0, 12)}...'
                     : 'Owner: ${contract.owner}',
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
-            ]),
+                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
+            ],),
           ],
         ),
       ),

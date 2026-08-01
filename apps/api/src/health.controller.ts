@@ -1,17 +1,16 @@
-// @ts-nocheck
 import {
   Controller,
   Get,
   HttpCode,
   HttpException,
   HttpStatus,
-} from '@nestjs/common';
-import { InjectQueue } from '@nestjs/bullmq';
-import { Queue } from 'bullmq';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { prisma } from '@unerp/database';
+} from "@nestjs/common";
+import { InjectQueue } from "@nestjs/bullmq";
+import { Queue } from "bullmq";
+import { ApiTags, ApiOperation } from "@nestjs/swagger";
+import { prisma } from "@unerp/database";
 
-type CheckStatus = 'up' | 'down';
+type CheckStatus = "up" | "down";
 
 interface DependencyCheck {
   status: CheckStatus;
@@ -25,25 +24,25 @@ class ServiceUnavailableException extends HttpException {
   }
 }
 
-@ApiTags('health')
+@ApiTags("health")
 @Controller()
 export class HealthController {
-  constructor(@InjectQueue('email') private readonly redisProbeQueue: Queue) {}
+  constructor(@InjectQueue("email") private readonly redisProbeQueue: Queue) {}
 
-  @Get('health')
-  @ApiOperation({ summary: 'Liveness probe — process is up' })
+  @Get("health")
+  @ApiOperation({ summary: "Liveness probe — process is up" })
   check() {
     return {
-      status: 'ok',
+      status: "ok",
       timestamp: new Date().toISOString(),
-      service: 'UniERP API',
-      version: '0.0.1',
+      service: "UniERP API",
+      version: "0.0.1",
     };
   }
 
-  @Get('ready')
+  @Get("ready")
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Readiness probe — dependencies are reachable' })
+  @ApiOperation({ summary: "Readiness probe — dependencies are reachable" })
   async ready() {
     const [database, redis] = await Promise.all([
       this.checkDatabase(),
@@ -51,23 +50,23 @@ export class HealthController {
     ]);
 
     const checks = { database, redis };
-    const allUp = Object.values(checks).every((c) => c.status === 'up');
+    const allUp = Object.values(checks).every((c) => c.status === "up");
 
     if (!allUp) {
       // 503 so orchestrators (k8s, load balancers) stop routing traffic.
-      throw new ServiceUnavailableException({ status: 'unavailable', checks });
+      throw new ServiceUnavailableException({ status: "unavailable", checks });
     }
 
-    return { status: 'ready', checks };
+    return { status: "ready", checks };
   }
 
   private async checkDatabase(): Promise<DependencyCheck> {
     const start = Date.now();
     try {
       await prisma.$queryRaw`SELECT 1`;
-      return { status: 'up', latencyMs: Date.now() - start };
+      return { status: "up", latencyMs: Date.now() - start };
     } catch (err) {
-      return { status: 'down', error: (err as Error).message };
+      return { status: "down", error: (err as Error).message };
     }
   }
 
@@ -78,9 +77,9 @@ export class HealthController {
         ping: () => Promise<string>;
       };
       await client.ping();
-      return { status: 'up', latencyMs: Date.now() - start };
+      return { status: "up", latencyMs: Date.now() - start };
     } catch (err) {
-      return { status: 'down', error: (err as Error).message };
+      return { status: "down", error: (err as Error).message };
     }
   }
 }

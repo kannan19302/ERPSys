@@ -1,15 +1,30 @@
-// @ts-nocheck
-'use client';
-import styles from './page.module.css';
-import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { Card, Button, Spinner, TextField, FormField, Textarea, Select } from '@unerp/ui';
-import { ArrowLeft, CheckCircle2, AlertTriangle } from 'lucide-react';
+"use client";
+import styles from "./page.module.css";
+import React, { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import {
-  storefrontGet, storefrontPost, StorefrontApiError, formatMoney,
-  type StorefrontPublicConfig, type CartDetail, type CheckoutResult,
-} from '../../../lib/storefront-api';
-import { getStoredSessionToken, clearStoredSessionToken } from '../../../lib/cart-session';
+  Card,
+  Button,
+  Spinner,
+  TextField,
+  FormField,
+  Textarea,
+  Select,
+} from "@unerp/ui";
+import { ArrowLeft, CheckCircle2, AlertTriangle } from "lucide-react";
+import {
+  storefrontGet,
+  storefrontPost,
+  StorefrontApiError,
+  formatMoney,
+  type StorefrontPublicConfig,
+  type CartDetail,
+  type CheckoutResult,
+} from "../../../lib/storefront-api";
+import {
+  getStoredSessionToken,
+  clearStoredSessionToken,
+} from "../../../lib/cart-session";
 
 interface CheckoutFormState {
   customerName: string;
@@ -24,8 +39,15 @@ interface CheckoutFormState {
 }
 
 const EMPTY_FORM: CheckoutFormState = {
-  customerName: '', customerEmail: '', customerPhone: '',
-  street: '', city: '', state: '', zip: '', country: 'US', notes: '',
+  customerName: "",
+  customerEmail: "",
+  customerPhone: "",
+  street: "",
+  city: "",
+  state: "",
+  zip: "",
+  country: "US",
+  notes: "",
 };
 
 export default function CheckoutPage() {
@@ -46,13 +68,17 @@ export default function CheckoutPage() {
     (async () => {
       setLoading(true);
       try {
-        const cfg = await storefrontGet<StorefrontPublicConfig>(`/store/${tenantSlug}/config`);
+        const cfg = await storefrontGet<StorefrontPublicConfig>(
+          `/store/${tenantSlug}/config`,
+        );
         setConfig(cfg);
 
         const token = getStoredSessionToken(tenantSlug);
         if (token) {
           try {
-            const cartData = await storefrontGet<CartDetail>(`/store/${tenantSlug}/cart/${token}`);
+            const cartData = await storefrontGet<CartDetail>(
+              `/store/${tenantSlug}/cart/${token}`,
+            );
             setCart(cartData);
           } catch {
             setCart(null);
@@ -69,13 +95,15 @@ export default function CheckoutPage() {
 
   const validate = (): boolean => {
     const errors: Record<string, string> = {};
-    if (!form.customerName.trim()) errors.customerName = 'Name is required';
-    if (!/^\S+@\S+\.\S+$/.test(form.customerEmail)) errors.customerEmail = 'A valid email is required';
-    if (!form.street.trim()) errors.street = 'Street address is required';
-    if (!form.city.trim()) errors.city = 'City is required';
-    if (!form.state.trim()) errors.state = 'State/province is required';
-    if (!form.zip.trim()) errors.zip = 'Postal code is required';
-    if (form.country.trim().length !== 2) errors.country = 'Country must be a 2-letter code (e.g. US)';
+    if (!form.customerName.trim()) errors.customerName = "Name is required";
+    if (!/^\S+@\S+\.\S+$/.test(form.customerEmail))
+      errors.customerEmail = "A valid email is required";
+    if (!form.street.trim()) errors.street = "Street address is required";
+    if (!form.city.trim()) errors.city = "City is required";
+    if (!form.state.trim()) errors.state = "State/province is required";
+    if (!form.zip.trim()) errors.zip = "Postal code is required";
+    if (form.country.trim().length !== 2)
+      errors.country = "Country must be a 2-letter code (e.g. US)";
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -88,25 +116,32 @@ export default function CheckoutPage() {
 
     setSubmitting(true);
     try {
-      const checkoutResult = await storefrontPost<CheckoutResult>(`/store/${tenantSlug}/checkout`, {
-        sessionToken: cart.sessionToken,
-        customerName: form.customerName,
-        customerEmail: form.customerEmail,
-        customerPhone: form.customerPhone || undefined,
-        shippingAddress: {
-          street: form.street,
-          city: form.city,
-          state: form.state,
-          zip: form.zip,
-          country: form.country.toUpperCase(),
+      const checkoutResult = await storefrontPost<CheckoutResult>(
+        `/store/${tenantSlug}/checkout`,
+        {
+          sessionToken: cart.sessionToken,
+          customerName: form.customerName,
+          customerEmail: form.customerEmail,
+          customerPhone: form.customerPhone || undefined,
+          shippingAddress: {
+            street: form.street,
+            city: form.city,
+            state: form.state,
+            zip: form.zip,
+            country: form.country.toUpperCase(),
+          },
+          notes: form.notes || undefined,
         },
-        notes: form.notes || undefined,
-      });
+      );
       clearStoredSessionToken(tenantSlug);
       setResult(checkoutResult);
     } catch (err) {
       // Do NOT silently swallow a payment decline — surface it clearly with a retry option.
-      setDeclineError(err instanceof StorefrontApiError ? err.message : 'Checkout failed. Please try again.');
+      setDeclineError(
+        err instanceof StorefrontApiError
+          ? err.message
+          : "Checkout failed. Please try again.",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -130,13 +165,14 @@ export default function CheckoutPage() {
             <p className={styles.s6}>
               Thank you for your order. A confirmation has been recorded for:
             </p>
-            <div className={styles.s7}>
-              {result.orderNumber}
-            </div>
+            <div className={styles.s7}>{result.orderNumber}</div>
             <div className={styles.s8}>
               Total charged: {formatMoney(result.totalAmount, result.currency)}
             </div>
-            <Button variant="primary" onClick={() => router.push(`/store/${tenantSlug}`)}>
+            <Button
+              variant="primary"
+              onClick={() => router.push(`/store/${tenantSlug}`)}
+            >
               Continue shopping
             </Button>
           </div>
@@ -156,19 +192,27 @@ export default function CheckoutPage() {
             </p>
           </div>
         </Card>
-        <Button variant="outline" onClick={() => router.push(`/store/${tenantSlug}`)} leftIcon={<ArrowLeft size={14} />}>
+        <Button
+          variant="outline"
+          onClick={() => router.push(`/store/${tenantSlug}`)}
+          leftIcon={<ArrowLeft size={14} />}
+        >
           Back to store
         </Button>
       </div>
     );
   }
 
-  const currency = config?.currency || cart.currency || 'USD';
+  const currency = config?.currency || cart.currency || "USD";
 
   return (
     <div className={styles.s12}>
       <header className={styles.s13}>
-        <Button variant="ghost" onClick={() => router.push(`/store/${tenantSlug}/cart`)} leftIcon={<ArrowLeft size={14} />}>
+        <Button
+          variant="ghost"
+          onClick={() => router.push(`/store/${tenantSlug}/cart`)}
+          leftIcon={<ArrowLeft size={14} />}
+        >
           Back to cart
         </Button>
       </header>
@@ -185,7 +229,9 @@ export default function CheckoutPage() {
                     <AlertTriangle size={16} className={styles.s19} />
                     <div>
                       <strong>Payment was not completed.</strong>
-                      <div>{declineError} Please review your details and try again.</div>
+                      <div>
+                        {declineError} Please review your details and try again.
+                      </div>
                     </div>
                   </div>
                 )}
@@ -195,7 +241,9 @@ export default function CheckoutPage() {
                   label="Full Name"
                   required
                   value={form.customerName}
-                  onChange={(e) => setForm((f) => ({ ...f, customerName: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, customerName: e.target.value }))
+                  }
                   error={formErrors.customerName}
                 />
                 <TextField
@@ -203,13 +251,17 @@ export default function CheckoutPage() {
                   type="email"
                   required
                   value={form.customerEmail}
-                  onChange={(e) => setForm((f) => ({ ...f, customerEmail: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, customerEmail: e.target.value }))
+                  }
                   error={formErrors.customerEmail}
                 />
                 <TextField
                   label="Phone (optional)"
                   value={form.customerPhone}
-                  onChange={(e) => setForm((f) => ({ ...f, customerPhone: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, customerPhone: e.target.value }))
+                  }
                 />
 
                 <h3 className={styles.s21}>Shipping Address</h3>
@@ -217,7 +269,9 @@ export default function CheckoutPage() {
                   label="Street Address"
                   required
                   value={form.street}
-                  onChange={(e) => setForm((f) => ({ ...f, street: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, street: e.target.value }))
+                  }
                   error={formErrors.street}
                 />
                 <div className={styles.s22}>
@@ -225,14 +279,18 @@ export default function CheckoutPage() {
                     label="City"
                     required
                     value={form.city}
-                    onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, city: e.target.value }))
+                    }
                     error={formErrors.city}
                   />
                   <TextField
                     label="State / Province"
                     required
                     value={form.state}
-                    onChange={(e) => setForm((f) => ({ ...f, state: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, state: e.target.value }))
+                    }
                     error={formErrors.state}
                   />
                 </div>
@@ -241,7 +299,9 @@ export default function CheckoutPage() {
                     label="Postal Code"
                     required
                     value={form.zip}
-                    onChange={(e) => setForm((f) => ({ ...f, zip: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, zip: e.target.value }))
+                    }
                     error={formErrors.zip}
                   />
                   <TextField
@@ -249,7 +309,12 @@ export default function CheckoutPage() {
                     required
                     maxLength={2}
                     value={form.country}
-                    onChange={(e) => setForm((f) => ({ ...f, country: e.target.value.toUpperCase() }))}
+                    onChange={(e) =>
+                      setForm((f) => ({
+                        ...f,
+                        country: e.target.value.toUpperCase(),
+                      }))
+                    }
                     error={formErrors.country}
                     hint="ISO 3166-1 alpha-2, e.g. US"
                   />
@@ -257,7 +322,9 @@ export default function CheckoutPage() {
                 <FormField label="Order Notes (optional)">
                   <Textarea
                     value={form.notes}
-                    onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, notes: e.target.value }))
+                    }
                   />
                 </FormField>
 
@@ -265,8 +332,15 @@ export default function CheckoutPage() {
                   Test payment — no real charge will be made.
                 </div>
 
-                <Button type="submit" variant="primary" disabled={submitting} className={styles.s24}>
-                  {submitting ? 'Processing payment...' : `Pay ${formatMoney(cart.subtotal, currency)}`}
+                <Button
+                  type="submit"
+                  variant="primary"
+                  disabled={submitting}
+                  className={styles.s24}
+                >
+                  {submitting
+                    ? "Processing payment..."
+                    : `Pay ${formatMoney(cart.subtotal, currency)}`}
                 </Button>
               </div>
             </Card>
@@ -277,7 +351,9 @@ export default function CheckoutPage() {
               <h3 className={styles.s20}>Order Summary</h3>
               {cart.items.map((item) => (
                 <div key={item.id} className={styles.s26}>
-                  <span>{item.productName} × {item.quantity}</span>
+                  <span>
+                    {item.productName} × {item.quantity}
+                  </span>
                   <span>{formatMoney(item.lineTotal, currency)}</span>
                 </div>
               ))}

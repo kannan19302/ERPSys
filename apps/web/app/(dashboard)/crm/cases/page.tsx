@@ -1,11 +1,10 @@
-// @ts-nocheck
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Modal, PageHeader } from '@unerp/ui';
-import { ListView, FormView, RouteGuard } from '@unerp/framework';
-import { caseResource } from '@/modules/crm';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Modal, PageHeader } from "@unerp/ui";
+import { ListView, FormView, RouteGuard } from "@unerp/framework";
+import { caseResource } from "@/modules/crm";
 
 export default function CasesPage() {
   const router = useRouter();
@@ -17,7 +16,11 @@ export default function CasesPage() {
         <PageHeader
           title="Cases"
           description="Track customer support and operations cases"
-          breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'CRM', href: '/crm' }, { label: 'Cases' }]}
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "CRM", href: "/crm" },
+            { label: "Cases" },
+          ]}
         />
 
         <ListView
@@ -26,7 +29,11 @@ export default function CasesPage() {
           onCreate={() => setShowCreate(true)}
         />
 
-        <Modal open={showCreate} onClose={() => setShowCreate(false)} title="New Case">
+        <Modal
+          open={showCreate}
+          onClose={() => setShowCreate(false)}
+          title="New Case"
+        >
           <FormView
             resource={caseResource}
             onSuccess={() => setShowCreate(false)}

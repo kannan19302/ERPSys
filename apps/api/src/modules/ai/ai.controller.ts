@@ -1,23 +1,33 @@
-// @ts-nocheck
-import { Controller, Get, Post, Param, UseGuards, UseInterceptors, Req, ServiceUnavailableException } from '@nestjs/common';
-import { RbacGuard } from '../../common/guards/rbac.guard';
-import { Permissions } from '../../common/decorators/permissions.decorator';
-import { z } from 'zod';
-import { ZodBody } from '../../common/decorators/zod-body.decorator';
-import { Request } from 'express';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { TenantInterceptor } from '../../common/guards/tenant.interceptor';
-import { AiService } from './ai.service';
-import { AiCopilotService } from './ai-copilot.service';
-import { AiAgentService } from './ai-agent.service';
-import { AiConfigService } from './ai-config.service';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  UseGuards,
+  UseInterceptors,
+  Req,
+  ServiceUnavailableException,
+} from "@nestjs/common";
+import { RbacGuard } from "../../common/guards/rbac.guard";
+import { Permissions } from "../../common/decorators/permissions.decorator";
+import { z } from "zod";
+import { ZodBody } from "../../common/decorators/zod-body.decorator";
+import { Request } from "express";
+import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
+import { TenantInterceptor } from "../../common/guards/tenant.interceptor";
+import { AiService } from "./ai.service";
+import { AiCopilotService } from "./ai-copilot.service";
+import { AiAgentService } from "./ai-agent.service";
+import { AiConfigService } from "./ai-config.service";
+import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 
-interface AuthReq extends Request { user: { tenantId: string; userId: string } }
+interface AuthReq extends Request {
+  user: { tenantId: string; userId: string };
+}
 
-@ApiTags('ai')
+@ApiTags("ai")
 @ApiBearerAuth()
-@Controller('ai')
+@Controller("ai")
 @UseGuards(JwtAuthGuard, RbacGuard)
 @UseInterceptors(TenantInterceptor)
 export class AiController {
@@ -38,74 +48,117 @@ export class AiController {
   private async assertAiEnabled(tenantId: string): Promise<void> {
     const enabled = await this.aiConfigService.isEnabled(tenantId);
     if (!enabled) {
-      throw new ServiceUnavailableException('AI is disabled by your administrator.');
+      throw new ServiceUnavailableException(
+        "AI is disabled by your administrator.",
+      );
     }
   }
 
-  @ApiOperation({ summary: 'Handle request' })
-  @Permissions('ai.read')
-  @Get('status')
+  @ApiOperation({ summary: "Handle request" })
+  @Permissions("ai.read")
+  @Get("status")
   async getStatus(@Req() req: AuthReq) {
     const enabled = await this.aiConfigService.isEnabled(req.user.tenantId);
     return { configured: this.aiService.isConfigured(), enabled };
   }
 
-  @ApiOperation({ summary: 'Ask data' })
-  @Permissions('ai.create')
-  @Post('ask')
-  async askData(@Req() req: AuthReq, @ZodBody(z.any()) body: { question: string }) {
+  @ApiOperation({ summary: "Ask data" })
+  @Permissions("ai.create")
+  @Post("ask")
+  async askData(
+    @Req() req: AuthReq,
+    @ZodBody(z.any()) body: { question: string },
+  ) {
     await this.assertAiEnabled(req.user.tenantId);
     return this.copilot.askData(req.user.tenantId, body.question);
   }
 
-  @ApiOperation({ summary: 'Summarize record' })
-  @Permissions('ai.create')
-  @Post('summarize/:entityType/:entityId')
-  async summarizeRecord(@Req() req: AuthReq, @Param('entityType') entityType: string, @Param('entityId') entityId: string) {
+  @ApiOperation({ summary: "Summarize record" })
+  @Permissions("ai.create")
+  @Post("summarize/:entityType/:entityId")
+  async summarizeRecord(
+    @Req() req: AuthReq,
+    @Param("entityType") entityType: string,
+    @Param("entityId") entityId: string,
+  ) {
     await this.assertAiEnabled(req.user.tenantId);
-    return this.copilot.summarizeRecord(req.user.tenantId, entityType, entityId);
+    return this.copilot.summarizeRecord(
+      req.user.tenantId,
+      entityType,
+      entityId,
+    );
   }
 
-  @ApiOperation({ summary: 'Draft email' })
-  @Permissions('ai.create')
-  @Post('draft-email')
-  async draftEmail(@Req() req: AuthReq, @ZodBody(z.any()) body: { to: string; regarding: string; tone?: string }) {
+  @ApiOperation({ summary: "Draft email" })
+  @Permissions("ai.create")
+  @Post("draft-email")
+  async draftEmail(
+    @Req() req: AuthReq,
+    @ZodBody(z.any()) body: { to: string; regarding: string; tone?: string },
+  ) {
     await this.assertAiEnabled(req.user.tenantId);
     return this.copilot.draftEmail(req.user.tenantId, body);
   }
 
-  @ApiOperation({ summary: 'Generate form' })
-  @Permissions('ai.create')
-  @Post('generate-form')
-  async generateForm(@Req() req: AuthReq, @ZodBody(z.any()) body: { prompt: string }) {
+  @ApiOperation({ summary: "Generate form" })
+  @Permissions("ai.create")
+  @Post("generate-form")
+  async generateForm(
+    @Req() req: AuthReq,
+    @ZodBody(z.any()) body: { prompt: string },
+  ) {
     await this.assertAiEnabled(req.user.tenantId);
     return this.copilot.generateFormFromPrompt(req.user.tenantId, body.prompt);
   }
 
-  @ApiOperation({ summary: 'Generate workflow' })
-  @Permissions('ai.create')
-  @Post('generate-workflow')
-  async generateWorkflow(@Req() req: AuthReq, @ZodBody(z.any()) body: { prompt: string }) {
-    await this.assertAiEnabled(req.user.tenantId);
-    return this.copilot.generateWorkflowFromPrompt(req.user.tenantId, body.prompt);
-  }
-
-  @ApiOperation({ summary: 'Process invoice' })
-  @Permissions('ai.create')
-  @Post('process-invoice')
-  async processInvoice(@Req() req: AuthReq, @ZodBody(z.any()) body: { documentText: string; createDraft?: boolean }) {
-    await this.assertAiEnabled(req.user.tenantId);
-    return this.copilot.processInvoiceDocument(req.user.tenantId, body.documentText, body.createDraft ?? false);
-  }
-
-  @ApiOperation({ summary: 'Converse with the AI copilot agent (tool-use loop)' })
-  @Permissions('ai.create')
-  @Post('converse')
-  async converse(
+  @ApiOperation({ summary: "Generate workflow" })
+  @Permissions("ai.create")
+  @Post("generate-workflow")
+  async generateWorkflow(
     @Req() req: AuthReq,
-    @ZodBody(z.any()) body: { messages: Array<{ role: 'user' | 'assistant'; content: string }>; context?: { path?: string; module?: string } },
+    @ZodBody(z.any()) body: { prompt: string },
   ) {
     await this.assertAiEnabled(req.user.tenantId);
-    return this.agent.converse(req.user.tenantId, req.user.userId, body.messages, body.context);
+    return this.copilot.generateWorkflowFromPrompt(
+      req.user.tenantId,
+      body.prompt,
+    );
+  }
+
+  @ApiOperation({ summary: "Process invoice" })
+  @Permissions("ai.create")
+  @Post("process-invoice")
+  async processInvoice(
+    @Req() req: AuthReq,
+    @ZodBody(z.any()) body: { documentText: string; createDraft?: boolean },
+  ) {
+    await this.assertAiEnabled(req.user.tenantId);
+    return this.copilot.processInvoiceDocument(
+      req.user.tenantId,
+      body.documentText,
+      body.createDraft ?? false,
+    );
+  }
+
+  @ApiOperation({
+    summary: "Converse with the AI copilot agent (tool-use loop)",
+  })
+  @Permissions("ai.create")
+  @Post("converse")
+  async converse(
+    @Req() req: AuthReq,
+    @ZodBody(z.any())
+    body: {
+      messages: Array<{ role: "user" | "assistant"; content: string }>;
+      context?: { path?: string; module?: string };
+    },
+  ) {
+    await this.assertAiEnabled(req.user.tenantId);
+    return this.agent.converse(
+      req.user.tenantId,
+      req.user.userId,
+      body.messages,
+      body.context,
+    );
   }
 }

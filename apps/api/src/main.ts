@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Tracing must initialise before any instrumented library is imported.
 import "./tracing";
 import * as fs from "fs";

@@ -91,7 +91,7 @@ class PeopleRepositoryImpl implements PeopleRepository {
   @override
   Future<Result<Cacheable<Paginated<Person>>>> listPeople(ListQuery query) =>
       _paginated(_personNamespace, query, () => _remote.listPeople(query),
-        PersonModel.fromJson);
+        PersonModel.fromJson,);
 
   @override
   Future<Result<Person>> getPerson(String id) =>
@@ -112,7 +112,7 @@ class PeopleRepositoryImpl implements PeopleRepository {
   @override
   Future<Result<Cacheable<Paginated<PeopleTeam>>>> listTeams(ListQuery query) =>
       _paginated(_teamNamespace, query, () => _remote.listTeams(query),
-        PeopleTeamModel.fromJson);
+        PeopleTeamModel.fromJson,);
 
   @override
   Future<Result<PeopleTeam>> getTeam(String id) =>
@@ -132,10 +132,10 @@ class PeopleRepositoryImpl implements PeopleRepository {
 
   @override
   Future<Result<Cacheable<Paginated<PeopleOnboardingTask>>>> listOnboardingTasks(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_taskNamespace, query,
         () => _remote.listOnboardingTasks(query),
-        PeopleOnboardingTaskModel.fromJson);
+        PeopleOnboardingTaskModel.fromJson,);
 
   @override
   Future<Result<PeopleOnboardingTask>> getOnboardingTask(String id) =>
@@ -147,7 +147,7 @@ class PeopleRepositoryImpl implements PeopleRepository {
 
   @override
   Future<Result<PeopleOnboardingTask>> updateOnboardingTask(
-    String id, Map<String, dynamic> p) =>
+    String id, Map<String, dynamic> p,) =>
       _write(() => _remote.updateOnboardingTask(id, p));
 
   @override
@@ -160,10 +160,10 @@ class PeopleRepositoryImpl implements PeopleRepository {
 
   @override
   Future<Result<Cacheable<Paginated<PeopleRecognitionEntry>>>> listRecognitionEntries(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_recognitionNamespace, query,
         () => _remote.listRecognitionEntries(query),
-        PeopleRecognitionEntryModel.fromJson);
+        PeopleRecognitionEntryModel.fromJson,);
 
   @override
   Future<Result<PeopleRecognitionEntry>> createRecognitionEntry(Map<String, dynamic> p) =>

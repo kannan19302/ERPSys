@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Module lifecycle tiers.
  *
@@ -27,22 +26,22 @@ export interface GatedModule {
 }
 
 export const GATED_MODULES: GatedModule[] = [
-  { slug: 'finance', segments: ['finance'] },
-  { slug: 'hr', segments: ['hr'] },
-  { slug: 'crm', segments: ['crm'] },
-  { slug: 'inventory', segments: ['inventory'] },
-  { slug: 'procurement', segments: ['procurement'] },
-  { slug: 'sales', segments: ['sales'] },
-  { slug: 'supply-chain', segments: ['supply-chain'] },
-  { slug: 'projects', segments: ['projects'] },
-  { slug: 'manufacturing', segments: ['manufacturing'] },
-  { slug: 'analytics', segments: ['analytics'] },
-  { slug: 'drive', segments: ['drive', 'storage'] },
-  { slug: 'communication', segments: ['connect', 'communication'] },
-  { slug: 'pos', segments: ['pos'] },
-  { slug: 'builder', segments: ['builder'] },
-  { slug: 'ecommerce', segments: ['ecommerce'] },
-  { slug: 'ai', segments: ['ai'] },
+  { slug: "finance", segments: ["finance"] },
+  { slug: "hr", segments: ["hr"] },
+  { slug: "crm", segments: ["crm"] },
+  { slug: "inventory", segments: ["inventory"] },
+  { slug: "procurement", segments: ["procurement"] },
+  { slug: "sales", segments: ["sales"] },
+  { slug: "supply-chain", segments: ["supply-chain"] },
+  { slug: "projects", segments: ["projects"] },
+  { slug: "manufacturing", segments: ["manufacturing"] },
+  { slug: "analytics", segments: ["analytics"] },
+  { slug: "drive", segments: ["drive", "storage"] },
+  { slug: "communication", segments: ["connect", "communication"] },
+  { slug: "pos", segments: ["pos"] },
+  { slug: "builder", segments: ["builder"] },
+  { slug: "ecommerce", segments: ["ecommerce"] },
+  { slug: "ai", segments: ["ai"] },
 ];
 
 /** Set of canonical slugs that are uninstallable code-resident business modules. */
@@ -50,7 +49,7 @@ export const GATED_SLUGS = new Set(GATED_MODULES.map((m) => m.slug));
 
 /** Map a first path segment to its gated module slug, or null if the segment isn't gated. */
 export function moduleSlugForSegment(segment: string): string | null {
-  const seg = (segment || '').toLowerCase();
+  const seg = (segment || "").toLowerCase();
   for (const m of GATED_MODULES) if (m.segments.includes(seg)) return m.slug;
   return null;
 }
@@ -64,7 +63,11 @@ export function moduleSlugForSegment(segment: string): string | null {
  * remain isCore:true + metadata.isSystem in the catalog and so are still locked here —
  * that isCore/isSystem semantic is a separate pre-existing inconsistency, see follow-up.
  */
-export function isUninstallable(app: { slug: string; isCore?: boolean; metadata?: any }): boolean {
+export function isUninstallable(app: {
+  slug: string;
+  isCore?: boolean;
+  metadata?: any;
+}): boolean {
   // Kernel slugs are always locked regardless of how isCore/isSystem were set on the row —
   // this is a defense-in-depth belt-and-suspenders check, not a replacement for isCore/isSystem
   // (which remain authoritative for bundle-backed and future apps not in the kernel list).
@@ -79,6 +82,6 @@ export function isUninstallable(app: { slug: string; isCore?: boolean; metadata?
  * this file. app-slug-map.ts re-exports this same Set — import from either.
  */
 export const KERNEL_SLUGS: ReadonlySet<string> = new Set([
-  'saas-portal',  // NEW: merged saas + admin + api-keys + dashboard
-  'app-store',    // NEW: marketplace core
+  "saas-portal", // NEW: merged saas + admin + api-keys + dashboard
+  "app-store", // NEW: marketplace core
 ]);

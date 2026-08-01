@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -47,7 +46,7 @@ class _AiPromptListPageState extends ConsumerState<AiPromptListPage> {
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
                 .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value)))
+                    value: e.key, child: Text(e.value),),)
                 .toList(),
           ),
         ],
@@ -81,7 +80,7 @@ class _AiPromptListPageState extends ConsumerState<AiPromptListPage> {
                     : '${state.meta.total} prompt${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -136,21 +135,21 @@ class _PromptTile extends StatelessWidget {
               Row(children: [
                 Expanded(
                   child: Text(prompt.title ?? 'Untitled',
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
                 UiStatusBadge(
                   label: prompt.status,
                   tone: _statusTone(prompt.status),
                 ),
-              ]),
+              ],),
               const SizedBox(height: Spacing.x1),
               Text(prompt.prompt,
                   maxLines: 2, overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: t.textSecondary)),
+                  style: TextStyle(color: t.textSecondary),),
               if (prompt.responseTime != null) ...[
                 const SizedBox(height: Spacing.x1),
                 Text('${prompt.responseTime!.toStringAsFixed(1)}s',
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
+                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
               ],
             ],
           ),

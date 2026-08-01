@@ -22,30 +22,30 @@ class SaasPortalRemoteDataSourceImpl implements SaasPortalRemoteDataSource {
   @override
   Future<PortalBillingInfoModel> getBillingInfo() async =>
       PortalBillingInfoModel.fromJson(
-        await _client.getObject(ApiPaths.portalBilling));
+        await _client.getObject(ApiPaths.portalBilling),);
 
   @override
   Future<PortalBillingInfoModel> updateBillingInfo(Map<String, dynamic> payload) async =>
       PortalBillingInfoModel.fromJson(
-        await _client.patch(ApiPaths.portalBilling, body: payload));
+        await _client.patch(ApiPaths.portalBilling, body: payload),);
 
   @override
   Future<Paginated<PortalPlanModel>> listPlans(ListQuery query) =>
       _client.getPaginated<PortalPlanModel>(
-        ApiPaths.portalPlans, query, PortalPlanModel.fromJson);
+        ApiPaths.portalPlans, query, PortalPlanModel.fromJson,);
 
   @override
   Future<Paginated<PortalSupportTicketModel>> listSupportTickets(ListQuery query) =>
       _client.getPaginated<PortalSupportTicketModel>(
-        ApiPaths.portalSupport, query, PortalSupportTicketModel.fromJson);
+        ApiPaths.portalSupport, query, PortalSupportTicketModel.fromJson,);
 
   @override
   Future<PortalSupportTicketModel> getSupportTicket(String id) async =>
       PortalSupportTicketModel.fromJson(
-        await _client.getObject(ApiPaths.portalTicket(id)));
+        await _client.getObject(ApiPaths.portalTicket(id)),);
 
   @override
   Future<PortalSupportTicketModel> createSupportTicket(Map<String, dynamic> payload) async =>
       PortalSupportTicketModel.fromJson(
-        await _client.post(ApiPaths.portalSupport, body: payload));
+        await _client.post(ApiPaths.portalSupport, body: payload),);
 }

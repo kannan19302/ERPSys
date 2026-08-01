@@ -223,7 +223,7 @@ class UiNumberField extends StatelessWidget {
       onChanged: onChanged,
       inputFormatters: <TextInputFormatter>[
         FilteringTextInputFormatter.allow(
-          RegExp(r'^-?\d*\.?\d{0,' + '$decimalPlaces'),
+          RegExp(r'^-?\d*\.?\d{0,' '$decimalPlaces'),
         ),
       ],
       validator: (String? value) {
@@ -592,7 +592,7 @@ class UiDropdownField<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Palette t = context.tokens;
-    final String? displayValue = selectedItem != null ? itemLabel(selectedItem!) : null;
+    final String? displayValue = selectedItem != null ? itemLabel(selectedItem as T) : null;
 
     return UiFormField(
       label: label,

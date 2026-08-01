@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Module } from "@nestjs/common";
 import { ColdChainController } from "./controllers/cold-chain.controller";
 import { ColdChainService } from "./services/cold-chain.service";

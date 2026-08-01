@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -177,7 +176,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     const SizedBox(height: Spacing.x4),
 
                     DropdownButtonFormField<String>(
-                      value: _industry,
+                      initialValue: _industry,
                       decoration: const InputDecoration(
                         labelText: 'Industry (optional)',
                         prefixIcon: Icon(Icons.category_outlined),
@@ -203,7 +202,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         suffixIcon: IconButton(
                           icon: Icon(_obscurePassword
                               ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined),
+                              : Icons.visibility_off_outlined,),
                           onPressed: () =>
                               setState(() => _obscurePassword = !_obscurePassword),
                         ),
@@ -223,7 +222,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         suffixIcon: IconButton(
                           icon: Icon(_obscureConfirm
                               ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined),
+                              : Icons.visibility_off_outlined,),
                           onPressed: () =>
                               setState(() => _obscureConfirm = !_obscureConfirm),
                         ),

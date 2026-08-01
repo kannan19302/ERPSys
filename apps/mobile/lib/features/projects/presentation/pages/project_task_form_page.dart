@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/usecase/result.dart';
 import '../../../../core/utils/formatters.dart';
-import '../../domain/entities/projects.dart';
 import '../providers/projects_providers.dart';
 
 class ProjectTaskFormPage extends ConsumerStatefulWidget {
@@ -80,7 +77,7 @@ class _ProjectTaskFormPageState extends ConsumerState<ProjectTaskFormPage> {
     };
 
     final result = await ref.read(taskListControllerProvider.notifier).save(
-      payload, id: widget.taskId);
+      payload, id: widget.taskId,);
 
     if (!context.mounted) return;
     setState(() => _saving = false);
@@ -134,7 +131,7 @@ class _ProjectTaskFormPageState extends ConsumerState<ProjectTaskFormPage> {
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _estHoursCtrl,
-              keyboardType: TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(labelText: 'Estimated Hours'),
               validator: (v) {
                 if (v != null && v.trim().isNotEmpty && double.tryParse(v) == null) return 'Enter a valid number';
@@ -159,7 +156,7 @@ class _ProjectTaskFormPageState extends ConsumerState<ProjectTaskFormPage> {
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _priority,
+              initialValue: _priority,
               decoration: const InputDecoration(labelText: 'Priority'),
               items: ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
                   .map((v) => DropdownMenuItem<String>(value: v, child: Text(v)))
@@ -168,7 +165,7 @@ class _ProjectTaskFormPageState extends ConsumerState<ProjectTaskFormPage> {
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _status,
+              initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: ['TODO', 'IN_PROGRESS', 'IN_REVIEW', 'DONE']
                   .map((v) => DropdownMenuItem<String>(value: v, child: Text(v)))

@@ -1,11 +1,10 @@
-// @ts-nocheck
-'use client';
+"use client";
 
-import styles from './SimulatorTab.module.css';
+import styles from "./SimulatorTab.module.css";
 
-import React, { useState } from 'react';
-import { GitFork, Activity, Play } from 'lucide-react';
-import { useApiClient } from '@unerp/framework';
+import React, { useState } from "react";
+import { GitFork, Activity, Play } from "lucide-react";
+import { useApiClient } from "@unerp/framework";
 
 interface SimulationStep {
   stepOrder: number;
@@ -25,9 +24,9 @@ interface SimulationResult {
 
 export default function SimulatorTab() {
   const client = useApiClient();
-  const [simTriggerType, setSimTriggerType] = useState('PO_CREATED');
-  const [simEntityType, setSimEntityType] = useState('PurchaseOrder');
-  const [simEntityId, setSimEntityId] = useState('PO-1001');
+  const [simTriggerType, setSimTriggerType] = useState("PO_CREATED");
+  const [simEntityType, setSimEntityType] = useState("PurchaseOrder");
+  const [simEntityId, setSimEntityId] = useState("PO-1001");
   const [simResult, setSimResult] = useState<SimulationResult | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -35,10 +34,14 @@ export default function SimulatorTab() {
     e.preventDefault();
     setLoading(true);
     try {
-      const data = await client.post<SimulationResult>('/workflows/simulate', { triggerType: simTriggerType, entityType: simEntityType, entityId: simEntityId });
+      const data = await client.post<SimulationResult>("/workflows/simulate", {
+        triggerType: simTriggerType,
+        entityType: simEntityType,
+        entityId: simEntityId,
+      });
       setSimResult(data);
     } catch {
-      alert('Error simulating workflow.');
+      alert("Error simulating workflow.");
     } finally {
       setLoading(false);
     }
@@ -85,12 +88,10 @@ export default function SimulatorTab() {
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className={styles.p10}
-          >
-            {loading ? 'Running simulation dry-run...' : 'Execute Dry-run Simulation'}
+          <button type="submit" disabled={loading} className={styles.p10}>
+            {loading
+              ? "Running simulation dry-run..."
+              : "Execute Dry-run Simulation"}
           </button>
         </form>
       </div>
@@ -109,25 +110,37 @@ export default function SimulatorTab() {
             {simResult.success ? (
               <>
                 <div className={styles.p14}>
-                  Successfully matched: {simResult.workflowName} ({simResult.stepsCount} workflow steps found)
+                  Successfully matched: {simResult.workflowName} (
+                  {simResult.stepsCount} workflow steps found)
                 </div>
 
                 <div className={styles.p15}>
                   {simResult.sequence?.map((step) => (
                     <div key={step.stepOrder} className={styles.p16}>
                       <div className={styles.p17}>
-                        <span>Step {step.stepOrder}: {step.actionType}</span>
-                        <span className="ui-text-xs-muted">Assignee: {step.assigneeRole}</span>
+                        <span>
+                          Step {step.stepOrder}: {step.actionType}
+                        </span>
+                        <span className="ui-text-xs-muted">
+                          Assignee: {step.assigneeRole}
+                        </span>
                       </div>
                       {step.slaHours ? (
                         <div className={styles.p18}>
-                          <span><strong>SLA Breach Limit:</strong> {step.slaHours} hours</span>
+                          <span>
+                            <strong>SLA Breach Limit:</strong> {step.slaHours}{" "}
+                            hours
+                          </span>
                           <span>|</span>
-                          <span><strong>Backup Delegate Role:</strong> {step.backupRole || 'Admin'}</span>
+                          <span>
+                            <strong>Backup Delegate Role:</strong>{" "}
+                            {step.backupRole || "Admin"}
+                          </span>
                         </div>
                       ) : (
                         <div className={styles.p19}>
-                          No SLA policies configured for this workflow approval step.
+                          No SLA policies configured for this workflow approval
+                          step.
                         </div>
                       )}
                     </div>
@@ -136,7 +149,8 @@ export default function SimulatorTab() {
               </>
             ) : (
               <div className={styles.p20}>
-                {simResult.message || 'No matching active workflow trigger could be simulated.'}
+                {simResult.message ||
+                  "No matching active workflow trigger could be simulated."}
               </div>
             )}
           </div>

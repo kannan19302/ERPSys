@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Controller, Get, Post, UseGuards, Param, Query } from "@nestjs/common";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { RbacGuard } from "../../common/guards/rbac.guard";
@@ -23,8 +22,18 @@ export class TenantAdminController {
   @ApiOperation({ summary: "List all tenants" })
   @Permissions("saas.tenant.read")
   @Get("tenants")
-  async getTenantsList(@Query("page") page?: string, @Query("limit") limit?: string, @Query("status") status?: string, @Query("search") search?: string) {
-    return this.analytics.getTenantsList({ page: page ? parseInt(page, 10) : 1, limit: limit ? parseInt(limit, 10) : 20, status, search });
+  async getTenantsList(
+    @Query("page") page?: string,
+    @Query("limit") limit?: string,
+    @Query("status") status?: string,
+    @Query("search") search?: string,
+  ) {
+    return this.analytics.getTenantsList({
+      page: page ? parseInt(page, 10) : 1,
+      limit: limit ? parseInt(limit, 10) : 20,
+      status,
+      search,
+    });
   }
 
   @ApiOperation({ summary: "Get tenant detail" })
@@ -52,14 +61,18 @@ export class TenantAdminController {
   @Permissions("saas.analytics.read")
   @Get("analytics/revenue")
   async getRevenueAnalytics(@Query("period") period?: string) {
-    return this.analytics.getRevenueAnalytics((period || "30d") as "7d" | "30d" | "90d" | "1y");
+    return this.analytics.getRevenueAnalytics(
+      (period || "30d") as "7d" | "30d" | "90d" | "1y",
+    );
   }
 
   @ApiOperation({ summary: "Get churn analytics" })
   @Permissions("saas.analytics.read")
   @Get("analytics/churn")
   async getChurnAnalytics(@Query("period") period?: string) {
-    return this.analytics.getChurnAnalytics((period || "30d") as "7d" | "30d" | "90d" | "1y");
+    return this.analytics.getChurnAnalytics(
+      (period || "30d") as "7d" | "30d" | "90d" | "1y",
+    );
   }
 
   @ApiOperation({ summary: "Get plan distribution" })
@@ -73,7 +86,9 @@ export class TenantAdminController {
   @Permissions("saas.analytics.read")
   @Get("analytics/growth")
   async getTenantGrowth(@Query("period") period?: string) {
-    return this.analytics.getTenantGrowth((period || "30d") as "7d" | "30d" | "90d" | "1y");
+    return this.analytics.getTenantGrowth(
+      (period || "30d") as "7d" | "30d" | "90d" | "1y",
+    );
   }
 
   @ApiOperation({ summary: "Get geographic distribution" })

@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 
 export default function AnnouncementsRedirectPage() {
-  redirect('/settings/branding-communication?tab=announcements');
+  redirect("/settings/branding-communication?tab=announcements");
 }

@@ -1,5 +1,12 @@
-// @ts-nocheck
-import { Controller, Get, Post, Body, Query, Req, UseGuards } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Query,
+  Req,
+  UseGuards,
+} from "@nestjs/common";
 import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { RbacGuard } from "../../common/guards/rbac.guard";
@@ -20,37 +27,55 @@ export class PeopleOperationsController {
 
   @Get("onboarding")
   @Permissions("people.onboarding.read")
-  async getOnboardingTasks(@Req() req: AuthenticatedRequest, @Query() query: any) {
+  async getOnboardingTasks(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: any,
+  ) {
     return this.service.getOnboardingTasks(req.user.tenantId, query);
   }
 
   @Post("onboarding")
   @Permissions("people.onboarding.create")
-  async createOnboardingTask(@Req() req: AuthenticatedRequest, @Body() body: any) {
+  async createOnboardingTask(
+    @Req() req: AuthenticatedRequest,
+    @Body() body: any,
+  ) {
     return this.service.createOnboardingTask(req.user.tenantId, body);
   }
 
   @Get("time-off")
   @Permissions("people.time-off.read")
-  async getTimeOffRequests(@Req() req: AuthenticatedRequest, @Query() query: any) {
+  async getTimeOffRequests(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: any,
+  ) {
     return this.service.getTimeOffRequests(req.user.tenantId, query);
   }
 
   @Post("time-off")
   @Permissions("people.time-off.create")
-  async createTimeOffRequest(@Req() req: AuthenticatedRequest, @Body() body: any) {
+  async createTimeOffRequest(
+    @Req() req: AuthenticatedRequest,
+    @Body() body: any,
+  ) {
     return this.service.createTimeOffRequest(req.user.tenantId, body);
   }
 
   @Get("recognition")
   @Permissions("people.recognition.read")
-  async getPeerRecognitions(@Req() req: AuthenticatedRequest, @Query() query: any) {
+  async getPeerRecognitions(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: any,
+  ) {
     return this.service.getPeerRecognitions(req.user.tenantId, query);
   }
 
   @Post("recognition")
   @Permissions("people.recognition.create")
-  async createPeerRecognition(@Req() req: AuthenticatedRequest, @Body() body: any) {
+  async createPeerRecognition(
+    @Req() req: AuthenticatedRequest,
+    @Body() body: any,
+  ) {
     return this.service.createPeerRecognition(req.user.tenantId, body);
   }
 }

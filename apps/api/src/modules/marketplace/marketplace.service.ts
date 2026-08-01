@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Injectable,
   Logger,
@@ -23,10 +22,22 @@ const CORE_VERSION = process.env.CORE_VERSION || "2.0.0";
 
 /** Every catalog app slug that should be seeded (kernel + all gated core modules). */
 const ALL_SEED_SLUGS = Array.from(KERNEL_SLUGS).concat([
-  "finance", "hr", "crm", "inventory", "procurement", "sales",
-  "supply-chain", "projects", "manufacturing", "analytics",
-  "drive", "communication", "pos", "builder",
-  "ecommerce", "ai",
+  "finance",
+  "hr",
+  "crm",
+  "inventory",
+  "procurement",
+  "sales",
+  "supply-chain",
+  "projects",
+  "manufacturing",
+  "analytics",
+  "drive",
+  "communication",
+  "pos",
+  "builder",
+  "ecommerce",
+  "ai",
 ]);
 
 @Injectable()
@@ -1605,7 +1616,8 @@ export class MarketplaceService {
       {
         slug: "ecommerce",
         name: "E-Commerce Storefront",
-        description: "Online storefront with product listings, categories, and order management.",
+        description:
+          "Online storefront with product listings, categories, and order management.",
         category: "Sales",
         publisher: "UniERP",
         version: "1.0.0",
@@ -1627,7 +1639,8 @@ export class MarketplaceService {
       {
         slug: "ai",
         name: "AI Copilot",
-        description: "AI-powered assistant for natural language queries, invoice scanning, and workflow generation.",
+        description:
+          "AI-powered assistant for natural language queries, invoice scanning, and workflow generation.",
         category: "AI & Automation",
         publisher: "UniERP",
         version: "1.0.0",

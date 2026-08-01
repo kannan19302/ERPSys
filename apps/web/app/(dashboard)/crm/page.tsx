@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 
 import { useCrmKeyMigration, type CrmTab } from "@/components/crm/CrmTabLayout";
@@ -219,11 +218,16 @@ export default function CrmPage() {
               <div className="p-2 bg-[var(--color-warning-light)] rounded-lg">
                 <Target size={20} />
               </div>
-              <span className="text-[var(--color-text)]">Customer Relationship Management</span>
+              <span className="text-[var(--color-text)]">
+                Customer Relationship Management
+              </span>
             </div>
           }
           description="Manage leads, opportunities, and customer relationships."
-          breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'CRM' }]}
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "CRM" },
+          ]}
         />
       </div>
       <div style={{ position: "relative" }}>

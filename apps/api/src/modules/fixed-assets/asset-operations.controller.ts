@@ -1,5 +1,12 @@
-// @ts-nocheck
-import { Controller, Get, Post, Body, Query, Req, UseGuards } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Query,
+  Req,
+  UseGuards,
+} from "@nestjs/common";
 import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { RbacGuard } from "../../common/guards/rbac.guard";
@@ -20,37 +27,55 @@ export class AssetOperationsController {
 
   @Get("insurance")
   @Permissions("fixed-assets.insurance.read")
-  async getInsurancePolicies(@Req() req: AuthenticatedRequest, @Query() query: any) {
+  async getInsurancePolicies(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: any,
+  ) {
     return this.service.getInsurancePolicies(req.user.tenantId, query);
   }
 
   @Post("insurance")
   @Permissions("fixed-assets.insurance.create")
-  async createInsurancePolicy(@Req() req: AuthenticatedRequest, @Body() body: any) {
+  async createInsurancePolicy(
+    @Req() req: AuthenticatedRequest,
+    @Body() body: any,
+  ) {
     return this.service.createInsurancePolicy(req.user.tenantId, body);
   }
 
   @Get("revaluation")
   @Permissions("fixed-assets.revaluation.read")
-  async getAssetRevaluations(@Req() req: AuthenticatedRequest, @Query() query: any) {
+  async getAssetRevaluations(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: any,
+  ) {
     return this.service.getAssetRevaluations(req.user.tenantId, query);
   }
 
   @Post("revaluation")
   @Permissions("fixed-assets.revaluation.create")
-  async createAssetRevaluation(@Req() req: AuthenticatedRequest, @Body() body: any) {
+  async createAssetRevaluation(
+    @Req() req: AuthenticatedRequest,
+    @Body() body: any,
+  ) {
     return this.service.createAssetRevaluation(req.user.tenantId, body);
   }
 
   @Get("physical-audit")
   @Permissions("fixed-assets.physical-audit.read")
-  async getPhysicalAudits(@Req() req: AuthenticatedRequest, @Query() query: any) {
+  async getPhysicalAudits(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: any,
+  ) {
     return this.service.getPhysicalAudits(req.user.tenantId, query);
   }
 
   @Post("physical-audit")
   @Permissions("fixed-assets.physical-audit.create")
-  async createPhysicalAudit(@Req() req: AuthenticatedRequest, @Body() body: any) {
+  async createPhysicalAudit(
+    @Req() req: AuthenticatedRequest,
+    @Body() body: any,
+  ) {
     return this.service.createPhysicalAudit(req.user.tenantId, body);
   }
 }

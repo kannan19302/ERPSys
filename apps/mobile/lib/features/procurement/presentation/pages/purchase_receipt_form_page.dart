@@ -34,7 +34,7 @@ class _PurchaseReceiptFormPageState extends ConsumerState<PurchaseReceiptFormPag
       productCtrl: TextEditingController(),
       receivedCtrl: TextEditingController(text: '0'),
       acceptedCtrl: TextEditingController(text: '0'),
-    )));
+    ),),);
   }
 
   void _removeItem(int index) {
@@ -44,7 +44,9 @@ class _PurchaseReceiptFormPageState extends ConsumerState<PurchaseReceiptFormPag
   @override
   void dispose() {
     _poRefCtrl.dispose(); _warehouseCtrl.dispose(); _dateCtrl.dispose(); _notesCtrl.dispose();
-    for (final i in _items) i.dispose();
+    for (final i in _items) {
+      i.dispose();
+    }
     super.dispose();
   }
 
@@ -61,7 +63,7 @@ class _PurchaseReceiptFormPageState extends ConsumerState<PurchaseReceiptFormPag
         'productName': i.productCtrl.text.trim(),
         'receivedQuantity': double.tryParse(i.receivedCtrl.text) ?? 0,
         'acceptedQuantity': double.tryParse(i.acceptedCtrl.text) ?? 0,
-      }).toList(),
+      },).toList(),
     };
 
     final result = await ref.read(purchaseReceiptListControllerProvider.notifier)
@@ -115,7 +117,7 @@ class _PurchaseReceiptFormPageState extends ConsumerState<PurchaseReceiptFormPag
               TextButton.icon(
                 onPressed: _addItem, icon: const Icon(Icons.add, size: 18), label: const Text('Add'),
               ),
-            ]),
+            ],),
             ...List.generate(_items.length, (i) {
               final item = _items[i];
               return Padding(
@@ -124,24 +126,24 @@ class _PurchaseReceiptFormPageState extends ConsumerState<PurchaseReceiptFormPag
                   Expanded(flex: 2, child: TextFormField(
                     controller: item.productCtrl,
                     decoration: const InputDecoration(labelText: 'Product', isDense: true),
-                  )),
+                  ),),
                   const SizedBox(width: Spacing.x2),
                   Expanded(flex: 1, child: TextFormField(
                     controller: item.receivedCtrl,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(labelText: 'Received', isDense: true),
-                  )),
+                  ),),
                   const SizedBox(width: Spacing.x2),
                   Expanded(flex: 1, child: TextFormField(
                     controller: item.acceptedCtrl,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(labelText: 'Accepted', isDense: true),
-                  )),
+                  ),),
                   IconButton(
                     icon: const Icon(Icons.remove_circle_outline, size: 20),
                     onPressed: () => _removeItem(i),
                   ),
-                ]),
+                ],),
               );
             }),
             const SizedBox(height: Spacing.x4),

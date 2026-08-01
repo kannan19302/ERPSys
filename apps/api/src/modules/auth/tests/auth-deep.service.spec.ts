@@ -1,14 +1,25 @@
-// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { AuthDeepService } from "../auth-deep.service";
 
 vi.mock("@unerp/database", () => ({
   prisma: {
-    authApiToken: { findMany: vi.fn(), create: vi.fn(), findFirst: vi.fn(), delete: vi.fn() },
+    authApiToken: {
+      findMany: vi.fn(),
+      create: vi.fn(),
+      findFirst: vi.fn(),
+      delete: vi.fn(),
+    },
     loginHistory: { findMany: vi.fn(), count: vi.fn() },
     userSession: { findMany: vi.fn(), findFirst: vi.fn(), update: vi.fn() },
     setting: { findUnique: vi.fn(), upsert: vi.fn() },
-    ipRestriction: { findMany: vi.fn(), findUnique: vi.fn(), create: vi.fn(), findFirst: vi.fn(), update: vi.fn(), delete: vi.fn() },
+    ipRestriction: {
+      findMany: vi.fn(),
+      findUnique: vi.fn(),
+      create: vi.fn(),
+      findFirst: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+    },
   },
   runWithTenantSession: vi.fn((_ctx, cb) => cb()),
 }));
@@ -26,18 +37,40 @@ describe("AuthDeepService", () => {
 
   describe("api tokens", () => {
     it("should list api tokens", async () => {
-      const mockTokens = [{ id: "1", name: "Test", scopes: ["*"], expiresAt: null, lastUsedAt: null, createdAt: mockDate }];
+      const mockTokens = [
+        {
+          id: "1",
+          name: "Test",
+          scopes: ["*"],
+          expiresAt: null,
+          lastUsedAt: null,
+          createdAt: mockDate,
+        },
+      ];
       const { prisma } = require("@unerp/database");
       prisma.authApiToken.findMany.mockResolvedValue(mockTokens);
       const result = await service.listApiTokens("tenant-1", "user-1");
       expect(result).toEqual(mockTokens);
-      expect(prisma.authApiToken.findMany).toHaveBeenCalledWith({ where: { tenantId: "tenant-1", userId: "user-1" }, orderBy: { createdAt: "desc" }, select: expect.any(Object) });
+      expect(prisma.authApiToken.findMany).toHaveBeenCalledWith({
+        where: { tenantId: "tenant-1", userId: "user-1" },
+        orderBy: { createdAt: "desc" },
+        select: expect.any(Object),
+      });
     });
 
     it("should create an api token", async () => {
       const { prisma } = require("@unerp/database");
-      prisma.authApiToken.create.mockResolvedValue({ id: "1", name: "My Token", tokenHash: "hash", scopes: ["read"], expiresAt: null });
-      const result = await service.createApiToken("tenant-1", "user-1", { name: "My Token", scopes: ["read"] });
+      prisma.authApiToken.create.mockResolvedValue({
+        id: "1",
+        name: "My Token",
+        tokenHash: "hash",
+        scopes: ["read"],
+        expiresAt: null,
+      });
+      const result = await service.createApiToken("tenant-1", "user-1", {
+        name: "My Token",
+        scopes: ["read"],
+      });
       expect(result.name).toBe("My Token");
       expect(result.token).toBeDefined();
       expect(result.token.length).toBe(64);
@@ -45,7 +78,11 @@ describe("AuthDeepService", () => {
 
     it("should delete an api token", async () => {
       const { prisma } = require("@unerp/database");
-      prisma.authApiToken.findFirst.mockResolvedValue({ id: "1", tenantId: "tenant-1", userId: "user-1" });
+      prisma.authApiToken.findFirst.mockResolvedValue({
+        id: "1",
+        tenantId: "tenant-1",
+        userId: "user-1",
+      });
       const result = await service.deleteApiToken("tenant-1", "user-1", "1");
       expect(result).toEqual({ message: "Token revoked" });
     });
@@ -56,7 +93,10 @@ describe("AuthDeepService", () => {
       const { prisma } = require("@unerp/database");
       prisma.loginHistory.findMany.mockResolvedValue([]);
       prisma.loginHistory.count.mockResolvedValue(0);
-      const result = await service.listLoginHistory("t-1", "u-1", { page: 1, limit: 50 });
+      const result = await service.listLoginHistory("t-1", "u-1", {
+        page: 1,
+        limit: 50,
+      });
       expect(result.page).toBe(1);
       expect(result.total).toBe(0);
     });

@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -74,7 +73,7 @@ class _SearchResultPageState extends ConsumerState<SearchResultPage> {
                       : '${state.meta.total} result${state.meta.total == 1 ? '' : 's'}',
                   style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
                 ),
-              ]),
+              ],),
             ),
           Expanded(child: _body(state, controller)),
         ],
@@ -119,24 +118,24 @@ class _SearchResultPageState extends ConsumerState<SearchResultPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(result.title,
-                        style: Theme.of(context).textTheme.titleSmall),
+                        style: Theme.of(context).textTheme.titleSmall,),
                     if (result.subtitle != null) ...[
                       const SizedBox(height: Spacing.x1),
                       Text(result.subtitle!,
-                          style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs)),
+                          style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs),),
                     ],
                     if (result.description != null) ...[
                       const SizedBox(height: Spacing.x1),
                       Text(result.description!,
                           maxLines: 2, overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: palette.textTertiary, fontSize: TypeScale.xs)),
+                          style: TextStyle(color: palette.textTertiary, fontSize: TypeScale.xs),),
                     ],
                   ],
                 ),
               ),
               if (result.score != null)
                 Text(result.score!.toStringAsFixed(1),
-                    style: TextStyle(fontSize: TypeScale.xs, color: palette.textTertiary)),
+                    style: TextStyle(fontSize: TypeScale.xs, color: palette.textTertiary),),
             ],
           ),
         ),

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Test, TestingModule } from "@nestjs/testing";
 import { DocumentsDeepService } from "../documents-deep.service";
 
@@ -56,19 +55,26 @@ describe("DocumentsDeepService", () => {
   describe("renderTemplate variable substitution", () => {
     it("should replace {{variables}} in content", async () => {
       const tenantId = "tenant-1";
-      const tpl = await (service as any).renderTemplate(tenantId, "nonexistent", { name: "John" });
+      const tpl = await (service as any).renderTemplate(
+        tenantId,
+        "nonexistent",
+        { name: "John" },
+      );
       // This would throw NotFoundException since the template doesn't exist in DB
       // We test the substitution logic separately
     });
 
     it("should replace multiple instances of the same variable", () => {
-      const content = "Hello {{name}}, your order {{orderId}} is ready. Thank you {{name}}!";
+      const content =
+        "Hello {{name}}, your order {{orderId}} is ready. Thank you {{name}}!";
       const values = { name: "Alice", orderId: "12345" };
       let rendered = content;
       for (const [key, val] of Object.entries(values)) {
         rendered = rendered.replace(new RegExp(`\\{\\{${key}\\}\\}`, "g"), val);
       }
-      expect(rendered).toBe("Hello Alice, your order 12345 is ready. Thank you Alice!");
+      expect(rendered).toBe(
+        "Hello Alice, your order 12345 is ready. Thank you Alice!",
+      );
     });
   });
 });

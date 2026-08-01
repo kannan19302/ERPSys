@@ -1,20 +1,51 @@
-// @ts-nocheck
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { randomUUID } from "node:crypto";
+
+interface CorsConfigRecord {
+  id: string;
+  tenantId: string;
+  origin: string;
+  methods: string[];
+  headers: string[];
+}
+
+interface IntegrationTemplateRecord {
+  id: string;
+  tenantId: string;
+  name: string;
+  description: string | null;
+  provider: string;
+  config: unknown;
+  isPrebuilt: boolean;
+}
+
+interface HealthCheckRecord {
+  id: string;
+  tenantId: string;
+  name: string;
+  endpoint: string;
+  intervalSec: number;
+  isActive: boolean;
+}
 
 @Injectable()
 export class ApiPlatformDeepV2Service {
+  private corsConfigs: CorsConfigRecord[] = [];
+  private integrationTemplates: IntegrationTemplateRecord[] = [];
+  private healthChecks: HealthCheckRecord[] = [];
+
   async rotateApiKey(tenantId: string, id: string) {
     const key = await prisma.apiKey.findFirst({ where: { id, tenantId } });
     if (!key) throw new NotFoundException("API key not found");
     return prisma.apiKey.update({
       where: { id },
-      data: { keyHash: "rotated-" + Date.now(), lastUsedAt: new Date() },
+      data: { hashedKey: "rotated-" + Date.now() },
     });
   }
   async getApiKeyStats(tenantId: string) {
     const [active, total, expired] = await Promise.all([
-      prisma.apiKey.count({ where: { tenantId, isActive: true } }),
+      prisma.apiKey.count({ where: { tenantId, status: "ACTIVE" } }),
       prisma.apiKey.count({ where: { tenantId } }),
       prisma.apiKey.count({
         where: { tenantId, expiresAt: { lte: new Date() } },
@@ -25,19 +56,21 @@ export class ApiPlatformDeepV2Service {
   async revokeApiKey(tenantId: string, id: string) {
     await prisma.apiKey.updateMany({
       where: { id, tenantId },
-      data: { isActive: false },
+      data: { status: "REVOKED" },
     });
     return { revoked: true };
   }
   async bulkRevokeApiKeys(tenantId: string, ids: string[]) {
     await prisma.apiKey.updateMany({
       where: { id: { in: ids }, tenantId },
-      data: { isActive: false },
+      data: { status: "REVOKED" },
     });
     return { revoked: ids.length };
   }
   async getRateLimitStats(tenantId: string) {
-    const limits = await prisma.apiRateLimit.findMany({ where: { tenantId } });
+    const limits = await prisma.apiRateLimitRule.findMany({
+      where: { tenantId },
+    });
     return {
       total: limits.length,
       active: limits.filter((l) => l.isActive).length,
@@ -47,7 +80,7 @@ export class ApiPlatformDeepV2Service {
     return { usage: 0, limit: 100, remaining: 100 };
   }
   async resetRateLimits(tenantId: string) {
-    await prisma.apiRateLimit.updateMany({
+    await prisma.apiRateLimitRule.updateMany({
       where: { tenantId },
       data: { isActive: true },
     });
@@ -58,8 +91,8 @@ export class ApiPlatformDeepV2Service {
     webhookId: string,
     page: number = 1,
   ) {
-    const items = await prisma.apiWebhookDelivery.findMany({
-      where: { webhookId, tenantId },
+    const items = await prisma.webhookDeliveryLog.findMany({
+      where: { subscriptionId: webhookId, tenantId },
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * 20,
       take: 20,
@@ -67,107 +100,136 @@ export class ApiPlatformDeepV2Service {
     return { items, page };
   }
   async getWebhookDelivery(tenantId: string, id: string) {
-    const item = await prisma.apiWebhookDelivery.findFirst({
+    const item = await prisma.webhookDeliveryLog.findFirst({
       where: { id, tenantId },
     });
     if (!item) throw new NotFoundException("Delivery not found");
     return item;
   }
   async retryWebhookDelivery(tenantId: string, id: string) {
-    await prisma.apiWebhookDelivery.updateMany({
+    await prisma.webhookDeliveryLog.updateMany({
       where: { id, tenantId, status: { not: "SUCCESS" } },
-      data: { attempt: { increment: 1 }, status: "RETRYING" },
+      data: { attempts: { increment: 1 }, status: "RETRYING" },
     });
     return { retried: true };
   }
   async getWebhookStats(tenantId: string) {
     const [total, active, failed] = await Promise.all([
-      prisma.apiWebhook.count({ where: { tenantId } }),
-      prisma.apiWebhook.count({ where: { tenantId, isActive: true } }),
-      prisma.apiWebhook.count({ where: { tenantId, isActive: false } }),
+      prisma.webhookSubscription.count({ where: { tenantId } }),
+      prisma.webhookSubscription.count({
+        where: { tenantId, status: "ACTIVE" },
+      }),
+      prisma.webhookSubscription.count({
+        where: { tenantId, status: "INACTIVE" },
+      }),
     ]);
     return { total, active, failed };
   }
   async testWebhook(tenantId: string, id: string) {
-    const webhook = await prisma.apiWebhook.findFirst({
+    const webhook = await prisma.webhookSubscription.findFirst({
       where: { id, tenantId },
     });
     return {
       success: true,
-      webhook: webhook ? { id: webhook.id, url: webhook.url } : null,
+      webhook: webhook ? { id: webhook.id, url: webhook.targetUrl } : null,
       statusCode: 200,
     };
   }
   async listCorsConfigs(tenantId: string) {
-    return prisma.apiCorsConfig.findMany({ where: { tenantId } });
+    return this.corsConfigs.filter((c) => c.tenantId === tenantId);
   }
   async createCorsConfig(tenantId: string, data: any) {
-    return prisma.apiCorsConfig.create({
-      data: {
-        tenantId,
-        origin: data.origin,
-        methods: data.methods ?? ["GET", "POST", "PUT", "DELETE"],
-        headers: data.headers ?? ["Content-Type", "Authorization"],
-      },
-    });
+    const record: CorsConfigRecord = {
+      id: randomUUID(),
+      tenantId,
+      origin: data.origin,
+      methods: data.methods ?? ["GET", "POST", "PUT", "DELETE"],
+      headers: data.headers ?? ["Content-Type", "Authorization"],
+    };
+    this.corsConfigs.push(record);
+    return record;
   }
   async updateCorsConfig(tenantId: string, origin: string, data: any) {
-    return prisma.apiCorsConfig.update({
-      where: { tenantId_origin: { tenantId, origin } },
-      data,
-    });
+    const existing = this.corsConfigs.find(
+      (c) => c.tenantId === tenantId && c.origin === origin,
+    );
+    if (existing) {
+      existing.methods = data.methods ?? existing.methods;
+      existing.headers = data.headers ?? existing.headers;
+      return existing;
+    }
+    const record: CorsConfigRecord = {
+      id: randomUUID(),
+      tenantId,
+      origin,
+      methods: data.methods ?? [],
+      headers: data.headers ?? [],
+    };
+    this.corsConfigs.push(record);
+    return record;
   }
   async deleteCorsConfig(tenantId: string, origin: string) {
-    await prisma.apiCorsConfig.deleteMany({ where: { tenantId, origin } });
+    this.corsConfigs = this.corsConfigs.filter(
+      (c) => !(c.tenantId === tenantId && c.origin === origin),
+    );
     return { deleted: true };
   }
   async listSchemas(tenantId: string) {
-    return prisma.apiSchemaRegistry.findMany({ where: { tenantId } });
+    return prisma.schemaRegistry.findMany({ where: { tenantId } });
   }
   async registerSchema(tenantId: string, data: any) {
-    return prisma.apiSchemaRegistry.create({
+    return prisma.schemaRegistry.create({
       data: {
         tenantId,
+        module: "api-platform",
         name: data.name,
-        version: data.version ?? "1.0",
-        schema: data.schema,
-        format: data.format ?? "openapi",
+        slug: data.name,
+        fields: data.schema,
+        settings: {
+          version: data.version ?? "1.0",
+          format: data.format ?? "openapi",
+        },
+        status: "ACTIVE",
       },
     });
   }
   async deleteSchema(tenantId: string, id: string) {
-    await prisma.apiSchemaRegistry.deleteMany({ where: { id, tenantId } });
+    await prisma.schemaRegistry.deleteMany({ where: { id, tenantId } });
     return { deleted: true };
   }
   async listIntegrationTemplates(tenantId: string) {
-    return prisma.apiIntegrationTemplate.findMany({ where: { tenantId } });
+    return this.integrationTemplates.filter((t) => t.tenantId === tenantId);
   }
   async createIntegrationTemplate(tenantId: string, data: any) {
-    return prisma.apiIntegrationTemplate.create({
-      data: {
-        tenantId,
-        name: data.name,
-        provider: data.provider,
-        config: data.config,
-        description: data.description,
-      },
-    });
+    const record: IntegrationTemplateRecord = {
+      id: randomUUID(),
+      tenantId,
+      name: data.name,
+      provider: data.provider,
+      config: data.config,
+      description: data.description ?? null,
+      isPrebuilt: false,
+    };
+    this.integrationTemplates.push(record);
+    return record;
   }
   async deleteIntegrationTemplate(tenantId: string, id: string) {
-    await prisma.apiIntegrationTemplate.deleteMany({ where: { id, tenantId } });
+    this.integrationTemplates = this.integrationTemplates.filter(
+      (t) => !(t.id === id && t.tenantId === tenantId),
+    );
     return { deleted: true };
   }
   async getIntegrationTemplateStats(tenantId: string) {
-    const templates = await prisma.apiIntegrationTemplate.findMany({
-      where: { tenantId },
-    });
+    const templates = this.integrationTemplates.filter(
+      (t) => t.tenantId === tenantId,
+    );
     return {
       total: templates.length,
       prebuilt: templates.filter((t) => t.isPrebuilt).length,
     };
   }
   async listDataExports(tenantId: string, page: number = 1) {
-    const items = await prisma.apiDataExport.findMany({
+    const items = await prisma.dataExportJob.findMany({
       where: { tenantId },
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * 20,
@@ -176,73 +238,78 @@ export class ApiPlatformDeepV2Service {
     return { items, page };
   }
   async createDataExport(tenantId: string, userId: string, data: any) {
-    return prisma.apiDataExport.create({
+    return prisma.dataExportJob.create({
       data: {
         tenantId,
-        name: data.name,
+        type: "EXPORT",
         format: data.format,
         scope: data.scope,
-        createdBy: userId,
+        status: "PENDING",
       },
     });
   }
   async downloadDataExport(tenantId: string, id: string) {
-    const item = await prisma.apiDataExport.findFirst({
+    const item = await prisma.dataExportJob.findFirst({
       where: { id, tenantId },
     });
     if (!item) throw new NotFoundException("Export not found");
     return item;
   }
   async deleteDataExport(tenantId: string, id: string) {
-    await prisma.apiDataExport.deleteMany({ where: { id, tenantId } });
+    await prisma.dataExportJob.deleteMany({ where: { id, tenantId } });
     return { deleted: true };
   }
   async listDataImports(tenantId: string) {
-    return prisma.apiDataImport.findMany({
+    return prisma.dataImportJob.findMany({
       where: { tenantId },
       orderBy: { createdAt: "desc" },
     });
   }
   async createDataImport(tenantId: string, userId: string, data: any) {
-    return prisma.apiDataImport.create({
+    return prisma.dataImportJob.create({
       data: {
         tenantId,
         name: data.name,
-        format: data.format,
-        mapping: data.mapping,
+        targetModel: data.name,
+        fileName: data.name,
+        fileSize: 0,
+        columnMapping: data.mapping ?? {},
+        status: "PENDING",
         createdBy: userId,
       },
     });
   }
   async listHealthChecks(tenantId: string) {
-    return prisma.apiHealthCheck.findMany({ where: { tenantId } });
+    return this.healthChecks.filter((h) => h.tenantId === tenantId);
   }
   async createHealthCheck(tenantId: string, data: any) {
-    return prisma.apiHealthCheck.create({
-      data: {
-        tenantId,
-        name: data.name,
-        endpoint: data.endpoint,
-        intervalSec: data.intervalSec ?? 300,
-      },
-    });
+    const record: HealthCheckRecord = {
+      id: randomUUID(),
+      tenantId,
+      name: data.name,
+      endpoint: data.endpoint,
+      intervalSec: data.intervalSec ?? 300,
+      isActive: true,
+    };
+    this.healthChecks.push(record);
+    return record;
   }
   async toggleHealthCheck(tenantId: string, id: string) {
-    const hc = await prisma.apiHealthCheck.findFirst({
-      where: { id, tenantId },
-    });
+    const hc = this.healthChecks.find(
+      (h) => h.id === id && h.tenantId === tenantId,
+    );
     if (!hc) throw new NotFoundException("Health check not found");
-    return prisma.apiHealthCheck.update({
-      where: { id },
-      data: { isActive: !hc.isActive },
-    });
+    hc.isActive = !hc.isActive;
+    return hc;
   }
   async deleteHealthCheck(tenantId: string, id: string) {
-    await prisma.apiHealthCheck.deleteMany({ where: { id, tenantId } });
+    this.healthChecks = this.healthChecks.filter(
+      (h) => !(h.id === id && h.tenantId === tenantId),
+    );
     return { deleted: true };
   }
   async listAccessLogs(tenantId: string, page: number = 1) {
-    const items = await prisma.apiAccessLog.findMany({
+    const items = await prisma.apiUsageMetric.findMany({
       where: { tenantId },
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * 50,
@@ -252,21 +319,21 @@ export class ApiPlatformDeepV2Service {
   }
   async getAccessLogStats(tenantId: string) {
     const [total, today, errors] = await Promise.all([
-      prisma.apiAccessLog.count({ where: { tenantId } }),
-      prisma.apiAccessLog.count({
+      prisma.apiUsageMetric.count({ where: { tenantId } }),
+      prisma.apiUsageMetric.count({
         where: {
           tenantId,
           createdAt: { gte: new Date(Date.now() - 86400000) },
         },
       }),
-      prisma.apiAccessLog.count({
+      prisma.apiUsageMetric.count({
         where: { tenantId, statusCode: { gte: 500 } },
       }),
     ]);
     return { total, today, errors };
   }
   async exportAccessLogs(tenantId: string) {
-    const data = await prisma.apiAccessLog.findMany({
+    const data = await prisma.apiUsageMetric.findMany({
       where: { tenantId },
       orderBy: { createdAt: "desc" },
     });
@@ -275,14 +342,8 @@ export class ApiPlatformDeepV2Service {
   async getUsageSummary(tenantId: string) {
     const [apiKeys, webhooks, endpoints] = await Promise.all([
       prisma.apiKey.count({ where: { tenantId } }),
-      prisma.apiWebhook.count({ where: { tenantId } }),
-      prisma.apiAccessLog
-        .count({
-          where: { tenantId },
-          orderBy: { createdAt: "desc" },
-          take: 1000,
-        })
-        .then((c) => c),
+      prisma.webhookSubscription.count({ where: { tenantId } }),
+      prisma.apiUsageMetric.count({ where: { tenantId } }),
     ]);
     return { apiKeys, webhooks, recentAccessLogs: endpoints };
   }
@@ -303,25 +364,37 @@ export class ApiPlatformDeepV2Service {
     };
   }
   async listUsageQuotas(tenantId: string) {
-    return prisma.apiRateLimit.findMany({ where: { tenantId } });
+    return prisma.apiRateLimitRule.findMany({ where: { tenantId } });
   }
   async updateUsageQuota(tenantId: string, metric: string, limit: number) {
-    return prisma.apiRateLimit.upsert({
-      where: { tenantId_endpoint: { tenantId, endpoint: metric } },
-      create: { tenantId, endpoint: metric, maxRequests: limit },
-      update: { maxRequests: limit },
+    const existing = await prisma.apiRateLimitRule.findFirst({
+      where: { tenantId, endpointPath: metric },
+    });
+    if (existing) {
+      return prisma.apiRateLimitRule.update({
+        where: { id: existing.id },
+        data: { limitPerMinute: limit },
+      });
+    }
+    return prisma.apiRateLimitRule.create({
+      data: {
+        tenantId,
+        name: metric,
+        endpointPath: metric,
+        limitPerMinute: limit,
+      },
     });
   }
   async listIpAccessRules(tenantId: string) {
-    return prisma.apiCorsConfig.findMany({ where: { tenantId } });
+    return prisma.ipRestriction.findMany({ where: { tenantId } });
   }
   async createIpAccessRule(tenantId: string, data: any) {
-    return prisma.apiCorsConfig.create({
-      data: { tenantId, origin: data.cidr },
+    return prisma.ipRestriction.create({
+      data: { tenantId, ipRange: data.cidr, ruleType: data.type ?? "ALLOW" },
     });
   }
   async deleteIpAccessRule(tenantId: string, id: string) {
-    await prisma.apiCorsConfig.deleteMany({ where: { id, tenantId } });
+    await prisma.ipRestriction.deleteMany({ where: { id, tenantId } });
     return { deleted: true };
   }
   async listEndpoints(tenantId: string) {
@@ -340,7 +413,7 @@ export class ApiPlatformDeepV2Service {
     ];
   }
   async getApiAnalytics(tenantId: string) {
-    const logs = await prisma.apiAccessLog.findMany({
+    const logs = await prisma.apiUsageMetric.findMany({
       where: { tenantId },
       orderBy: { createdAt: "desc" },
       take: 1000,
@@ -354,7 +427,7 @@ export class ApiPlatformDeepV2Service {
     };
   }
   async exportApiAnalytics(tenantId: string) {
-    const data = await prisma.apiAccessLog.findMany({
+    const data = await prisma.apiUsageMetric.findMany({
       where: { tenantId },
       orderBy: { createdAt: "desc" },
       take: 1000,

@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -165,15 +164,15 @@ class AdminUserListController extends Notifier<AdminUserListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteAdminUserUseCase(
-      ref.read(adminRepositoryProvider))(id);
+      ref.read(adminRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<AdminUser>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveAdminUserUseCase(
-      ref.read(adminRepositoryProvider))(
-      SaveAdminUserParams(id: id, payload: payload));
+      ref.read(adminRepositoryProvider),)(
+      SaveAdminUserParams(id: id, payload: payload),);
     if (result.isOk) await refresh();
     return result;
   }
@@ -249,15 +248,15 @@ class AdminRoleListController extends Notifier<AdminRoleListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteAdminRoleUseCase(
-      ref.read(adminRepositoryProvider))(id);
+      ref.read(adminRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<AdminRole>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveAdminRoleUseCase(
-      ref.read(adminRepositoryProvider))(
-      SaveAdminRoleParams(id: id, payload: payload));
+      ref.read(adminRepositoryProvider),)(
+      SaveAdminRoleParams(id: id, payload: payload),);
     if (result.isOk) await refresh();
     return result;
   }
@@ -266,14 +265,14 @@ class AdminRoleListController extends Notifier<AdminRoleListState> {
 final FutureProviderFamily<AdminRole, String> adminRoleDetailProvider =
     FutureProvider.family<AdminRole, String>((Ref ref, String id) async {
   final result = await GetAdminRoleUseCase(
-    ref.watch(adminRepositoryProvider))(id);
+    ref.watch(adminRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
 FutureProvider<AdminRole?> getAdminRoleProvider(String id) =>
     FutureProvider<AdminRole?>((ref) async {
       final result = await GetAdminRoleUseCase(
-        ref.watch(adminRepositoryProvider))(id);
+        ref.watch(adminRepositoryProvider),)(id);
       return result.fold((f) => null, (v) => v);
     });
 
@@ -372,8 +371,8 @@ class AdminSettingListController extends Notifier<AdminSettingListState> {
 
   Future<Result<AdminSetting>> updateValue(String key, Object value) async {
     final result = await UpdateAdminSettingUseCase(
-      ref.read(adminRepositoryProvider))(
-      <String, dynamic>{'key': key, 'value': {'value': value}});
+      ref.read(adminRepositoryProvider),)(
+      <String, dynamic>{'key': key, 'value': {'value': value}},);
     if (result.isOk) await refresh();
     return result;
   }
@@ -467,7 +466,7 @@ class AuditLogListController extends Notifier<AuditLogListState> {
 final FutureProviderFamily<SystemHealth, void> systemHealthProvider =
     FutureProvider.family<SystemHealth, void>((Ref ref, _) async {
   final result = await GetSystemHealthUseCase(
-    ref.watch(adminRepositoryProvider))(const NoParams());
+    ref.watch(adminRepositoryProvider),)(const NoParams());
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -566,7 +565,7 @@ class AdminApiKeyListController extends Notifier<AdminApiKeyListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteAdminApiKeyUseCase(
-      ref.read(adminRepositoryProvider))(id);
+      ref.read(adminRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
@@ -575,7 +574,7 @@ class AdminApiKeyListController extends Notifier<AdminApiKeyListState> {
 final FutureProviderFamily<AdminApiKey, String> adminApiKeyDetailProvider =
     FutureProvider.family<AdminApiKey, String>((Ref ref, String id) async {
   final result = await GetAdminApiKeyUseCase(
-    ref.watch(adminRepositoryProvider))(id);
+    ref.watch(adminRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -681,7 +680,7 @@ class AdminTenantListController extends Notifier<AdminTenantListState> {
 final FutureProviderFamily<AdminTenant, String> adminTenantDetailProvider =
     FutureProvider.family<AdminTenant, String>((Ref ref, String id) async {
   final result = await GetAdminTenantUseCase(
-    ref.watch(adminRepositoryProvider))(id);
+    ref.watch(adminRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -749,7 +748,7 @@ class AdminDashboardController extends Notifier<AdminDashboardState> {
     state = state.copyWith(isLoading: true, clearFailures: true);
     try {
       final healthResult = await GetSystemHealthUseCase(
-        ref.read(adminRepositoryProvider))(const NoParams());
+        ref.read(adminRepositoryProvider),)(const NoParams());
       SystemHealth? health;
       if (healthResult.isOk) health = healthResult.valueOrNull;
 
@@ -778,12 +777,12 @@ class AuthSessionListState extends Equatable {
     this.failure,
   });
 
-  final List items;
+  final List<dynamic> items;
   final bool isLoading;
   final Failure? failure;
 
   AuthSessionListState copyWith({
-    List? items, bool? isLoading, Failure? failure, bool clearFailures = false,
+    List<dynamic>? items, bool? isLoading, Failure? failure, bool clearFailures = false,
   }) =>
       AuthSessionListState(
         items: items ?? this.items,

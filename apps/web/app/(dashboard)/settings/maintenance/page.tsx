@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 
 export default function MaintenanceRedirectPage() {
-  redirect('/settings/branding-communication?tab=maintenance');
+  redirect("/settings/branding-communication?tab=maintenance");
 }

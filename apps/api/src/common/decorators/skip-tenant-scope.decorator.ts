@@ -1,7 +1,6 @@
-// @ts-nocheck
-import { SetMetadata } from '@nestjs/common';
+import { SetMetadata } from "@nestjs/common";
 
-export const SKIP_TENANT_SCOPE_KEY = 'skipTenantScope';
+export const SKIP_TENANT_SCOPE_KEY = "skipTenantScope";
 
 /**
  * Opts a controller/handler out of automatic tenant-session scoping.

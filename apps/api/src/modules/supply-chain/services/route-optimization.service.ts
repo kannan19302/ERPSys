@@ -1,5 +1,4 @@
-// @ts-nocheck
-import { Injectable } from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
 
 export interface Stop {
   id: string;
@@ -17,7 +16,6 @@ export interface RouteResult {
 
 @Injectable()
 export class RouteOptimizationService {
-
   optimizeRoute(stops: Stop[], startLat = 0, startLng = 0): RouteResult {
     if (stops.length <= 1) {
       return { orderedStops: stops, totalDistance: 0, estimatedDuration: 0 };
@@ -39,7 +37,9 @@ export class RouteOptimizationService {
         const dist = this.haversine(currentLat, currentLng, stop.lat, stop.lng);
 
         // Priority boost: higher priority stops get a distance reduction
-        const priorityFactor = stop.priority ? 1 - (stop.priority / 100) * 0.3 : 1;
+        const priorityFactor = stop.priority
+          ? 1 - (stop.priority / 100) * 0.3
+          : 1;
         const adjustedDist = dist * priorityFactor;
 
         if (adjustedDist < nearestDist) {
@@ -49,7 +49,12 @@ export class RouteOptimizationService {
       }
 
       const next = remaining.splice(nearestIdx, 1)[0]!;
-      const realDist = this.haversine(currentLat, currentLng, next.lat, next.lng);
+      const realDist = this.haversine(
+        currentLat,
+        currentLng,
+        next.lat,
+        next.lng,
+      );
       totalDistance += realDist;
       currentLat = next.lat;
       currentLng = next.lng;
@@ -57,7 +62,9 @@ export class RouteOptimizationService {
     }
 
     // Estimate duration: average speed 40 km/h + 15 min per stop
-    const estimatedDuration = Math.round((totalDistance / 40) * 60 + ordered.length * 15);
+    const estimatedDuration = Math.round(
+      (totalDistance / 40) * 60 + ordered.length * 15,
+    );
 
     return {
       orderedStops: ordered,
@@ -70,7 +77,11 @@ export class RouteOptimizationService {
     const R = 6371; // km
     const dLat = this.toRad(lat2 - lat1);
     const dLng = this.toRad(lng2 - lng1);
-    const a = Math.sin(dLat / 2) ** 2 + Math.cos(this.toRad(lat1)) * Math.cos(this.toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(this.toRad(lat1)) *
+        Math.cos(this.toRad(lat2)) *
+        Math.sin(dLng / 2) ** 2;
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   }
 

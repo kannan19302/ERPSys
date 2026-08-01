@@ -33,23 +33,23 @@ class AiRemoteDataSourceImpl implements AiRemoteDataSource {
   @override
   Future<Paginated<AiModelModel>> listModels(ListQuery query) =>
       _client.getPaginated<AiModelModel>(
-        ApiPaths.aiModels, query, AiModelModel.fromJson);
+        ApiPaths.aiModels, query, AiModelModel.fromJson,);
 
   @override
   Future<AiModelModel> getModel(String id) async =>
       AiModelModel.fromJson(
-        await _client.getObject(ApiPaths.aiModel(id)));
+        await _client.getObject(ApiPaths.aiModel(id)),);
 
   @override
   Future<AiModelModel> createModel(Map<String, dynamic> payload) async =>
       AiModelModel.fromJson(
-        await _client.post(ApiPaths.aiModels, body: payload));
+        await _client.post(ApiPaths.aiModels, body: payload),);
 
   @override
   Future<AiModelModel> updateModel(
-    String id, Map<String, dynamic> payload) async =>
+    String id, Map<String, dynamic> payload,) async =>
       AiModelModel.fromJson(
-        await _client.patch(ApiPaths.aiModel(id), body: payload));
+        await _client.patch(ApiPaths.aiModel(id), body: payload),);
 
   @override
   Future<void> deleteModel(String id) =>
@@ -58,23 +58,23 @@ class AiRemoteDataSourceImpl implements AiRemoteDataSource {
   @override
   Future<Paginated<AiPromptModel>> listPrompts(ListQuery query) =>
       _client.getPaginated<AiPromptModel>(
-        ApiPaths.aiPrompts, query, AiPromptModel.fromJson);
+        ApiPaths.aiPrompts, query, AiPromptModel.fromJson,);
 
   @override
   Future<AiPromptModel> getPrompt(String id) async =>
       AiPromptModel.fromJson(
-        await _client.getObject(ApiPaths.aiPrompt(id)));
+        await _client.getObject(ApiPaths.aiPrompt(id)),);
 
   @override
   Future<AiPromptModel> createPrompt(Map<String, dynamic> payload) async =>
       AiPromptModel.fromJson(
-        await _client.post(ApiPaths.aiPrompts, body: payload));
+        await _client.post(ApiPaths.aiPrompts, body: payload),);
 
   @override
   Future<AiPromptModel> updatePrompt(
-    String id, Map<String, dynamic> payload) async =>
+    String id, Map<String, dynamic> payload,) async =>
       AiPromptModel.fromJson(
-        await _client.patch(ApiPaths.aiPrompt(id), body: payload));
+        await _client.patch(ApiPaths.aiPrompt(id), body: payload),);
 
   @override
   Future<void> deletePrompt(String id) =>
@@ -83,17 +83,17 @@ class AiRemoteDataSourceImpl implements AiRemoteDataSource {
   @override
   Future<Paginated<AiTrainingDataModel>> listTrainingData(ListQuery query) =>
       _client.getPaginated<AiTrainingDataModel>(
-        ApiPaths.aiTrainingData, query, AiTrainingDataModel.fromJson);
+        ApiPaths.aiTrainingData, query, AiTrainingDataModel.fromJson,);
 
   @override
   Future<AiTrainingDataModel> getTrainingData(String id) async =>
       AiTrainingDataModel.fromJson(
-        await _client.getObject(ApiPaths.aiTrainingDataItem(id)));
+        await _client.getObject(ApiPaths.aiTrainingDataItem(id)),);
 
   @override
   Future<AiTrainingDataModel> createTrainingData(Map<String, dynamic> payload) async =>
       AiTrainingDataModel.fromJson(
-        await _client.post(ApiPaths.aiTrainingData, body: payload));
+        await _client.post(ApiPaths.aiTrainingData, body: payload),);
 
   @override
   Future<void> deleteTrainingData(String id) =>
@@ -102,10 +102,10 @@ class AiRemoteDataSourceImpl implements AiRemoteDataSource {
   @override
   Future<Paginated<AiPredictionModel>> listPredictions(ListQuery query) =>
       _client.getPaginated<AiPredictionModel>(
-        ApiPaths.aiPredict, query, AiPredictionModel.fromJson);
+        ApiPaths.aiPredict, query, AiPredictionModel.fromJson,);
 
   @override
   Future<AiPredictionModel> createPrediction(Map<String, dynamic> payload) async =>
       AiPredictionModel.fromJson(
-        await _client.post(ApiPaths.aiPredict, body: payload));
+        await _client.post(ApiPaths.aiPredict, body: payload),);
 }

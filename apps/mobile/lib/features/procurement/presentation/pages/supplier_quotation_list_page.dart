@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -88,7 +87,7 @@ class _SupplierQuotationListPageState extends ConsumerState<SupplierQuotationLis
                   controller.applyFilters(v == null ? const {} : {'status': v});
                 },
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -122,10 +121,10 @@ class _SupplierQuotationListPageState extends ConsumerState<SupplierQuotationLis
                 Row(children: [
                   Expanded(child: Text(q.vendorName ?? 'Quotation', style: Theme.of(context).textTheme.titleSmall)),
                   UiStatusBadge(label: q.status, tone: _statusTone(q.status)),
-                ]),
+                ],),
                 const SizedBox(height: Spacing.x1),
                 Text('\$${q.totalAmount.toStringAsFixed(2)}', style: TextStyle(color: context.tokens.textSecondary)),
-                if (q.rfqNumber != null) Text('RFQ: ${q.rfqNumber}', style: TextStyle(fontSize: TypeScale.xs)),
+                if (q.rfqNumber != null) Text('RFQ: ${q.rfqNumber}', style: const TextStyle(fontSize: TypeScale.xs)),
               ],
             ),
           ),

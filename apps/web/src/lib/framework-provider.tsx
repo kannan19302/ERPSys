@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 
 import { FrameworkProvider } from "@unerp/framework";

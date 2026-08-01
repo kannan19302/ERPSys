@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -83,11 +82,11 @@ class _PurchaseOrderDetail extends StatelessWidget {
             Row(children: [
               Expanded(child: Text(po.poNumber, style: Theme.of(context).textTheme.titleLarge)),
               UiStatusBadge(label: po.status, tone: _statusTone(po.status)),
-            ]),
+            ],),
             const SizedBox(height: Spacing.x1),
             Text(po.vendorName, style: TextStyle(color: t.textSecondary)),
           ],
-        )),
+        ),),
         const SizedBox(height: Spacing.x4),
         UiCard(child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -100,15 +99,15 @@ class _PurchaseOrderDetail extends StatelessWidget {
                 Text('${item.quantity} \u00d7 \$${item.rate.toStringAsFixed(2)}'),
                 const SizedBox(width: Spacing.x2),
                 Text('\$${item.amount.toStringAsFixed(2)}',
-                    style: Theme.of(context).textTheme.labelLarge),
-              ]),
-            )),
+                    style: Theme.of(context).textTheme.labelLarge,),
+              ],),
+            ),),
             const Divider(height: Spacing.x4),
             _Row('Subtotal', Formatters.currency(po.subtotal)),
             _Row('Tax', Formatters.currency(po.taxTotal)),
             _Row('Total', Formatters.currency(po.totalAmount)),
           ],
-        )),
+        ),),
         const SizedBox(height: Spacing.x4),
         UiCard(child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -120,7 +119,7 @@ class _PurchaseOrderDetail extends StatelessWidget {
             if (po.notes != null && po.notes!.isNotEmpty) _Row('Notes', po.notes!),
             if (po.createdAt != null) _Row('Created', Formatters.dateTime(po.createdAt!)),
           ],
-        )),
+        ),),
       ],
     );
   }
@@ -144,7 +143,7 @@ class _Row extends StatelessWidget {
       child: Row(children: [
         Expanded(child: Text(label, style: TextStyle(color: t.textSecondary))),
         Text(value, style: Theme.of(context).textTheme.labelLarge),
-      ]),
+      ],),
     );
   }
 }

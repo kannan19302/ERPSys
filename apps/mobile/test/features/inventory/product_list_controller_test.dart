@@ -55,7 +55,7 @@ class FakeInventoryRepository extends Mock implements InventoryRepository {
   final List<ListQuery> receivedQueries = <ListQuery>[];
   Future<Result<Cacheable<Paginated<Product>>>> Function(ListQuery)? listHandler;
   int deleteCalls = 0;
-  Result<void> deleteResult = Result<void>.ok(null);
+  Result<void> deleteResult = const Result<void>.ok(null);
 
   @override
   Future<Result<Cacheable<Paginated<Product>>>> listProducts(ListQuery query) async {
@@ -69,19 +69,19 @@ class FakeInventoryRepository extends Mock implements InventoryRepository {
   }
 
   @override
-  Future<Result<Product>> getProduct(String id) async => Result<Product>.ok(_productA);
+  Future<Result<Product>> getProduct(String id) async => const Result<Product>.ok(_productA);
 
   @override
   Future<Result<InventoryStats>> stats() async =>
-      Result<InventoryStats>.ok(InventoryStats.zero());
+      const Result<InventoryStats>.ok(InventoryStats.zero());
 
   @override
   Future<Result<Product>> createProduct(Map<String, dynamic> payload) async =>
-      Result<Product>.ok(_productA);
+      const Result<Product>.ok(_productA);
 
   @override
   Future<Result<Product>> updateProduct(String id, Map<String, dynamic> payload) async =>
-      Result<Product>.ok(_productA);
+      const Result<Product>.ok(_productA);
 
   @override
   Future<Result<void>> deleteProduct(String id) async {
@@ -91,7 +91,7 @@ class FakeInventoryRepository extends Mock implements InventoryRepository {
 
   @override
   Future<Result<void>> adjustStock(Map<String, dynamic> payload) async =>
-      Result<void>.ok(null);
+      const Result<void>.ok(null);
 }
 
 void main() {
@@ -124,7 +124,7 @@ void main() {
 
   test('a repository failure on first load surfaces without clearing to empty silently', () async {
     fakeRepository.listHandler = (ListQuery q) async =>
-        Result<Cacheable<Paginated<Product>>>.err(ServerFailure('down'));
+        const Result<Cacheable<Paginated<Product>>>.err(ServerFailure('down'));
     container.read(productListControllerProvider);
     await Future<void>.delayed(Duration.zero);
 

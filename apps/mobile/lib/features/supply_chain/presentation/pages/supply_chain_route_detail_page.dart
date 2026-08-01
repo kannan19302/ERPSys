@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -50,7 +49,7 @@ class _RouteDetail extends StatelessWidget {
                   label: route.isActive ? 'Active' : 'Inactive',
                   tone: route.isActive ? UiTone.success : UiTone.neutral,
                 ),
-              ]),
+              ],),
             ],
           ),
         ),
@@ -95,7 +94,7 @@ class _Row extends StatelessWidget {
       child: Row(children: [
         Expanded(child: Text(label, style: TextStyle(color: t.textSecondary))),
         Text(value, style: Theme.of(context).textTheme.labelLarge),
-      ]),
+      ],),
     );
   }
 }

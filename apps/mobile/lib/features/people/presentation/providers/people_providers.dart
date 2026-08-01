@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -146,7 +145,7 @@ class PersonListController extends Notifier<PersonListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeletePersonUseCase(
-      ref.read(peopleRepositoryProvider))(id);
+      ref.read(peopleRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
@@ -155,7 +154,7 @@ class PersonListController extends Notifier<PersonListState> {
 final FutureProviderFamily<Person, String> personDetailProvider =
     FutureProvider.family<Person, String>((Ref ref, String id) async {
   final result = await GetPersonUseCase(
-    ref.watch(peopleRepositoryProvider))(id);
+    ref.watch(peopleRepositoryProvider),)(id);
   return result.fold((f) => throw f, (p) => p);
 });
 

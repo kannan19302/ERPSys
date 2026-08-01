@@ -1,7 +1,6 @@
-// @ts-nocheck
-import { Module } from '@nestjs/common';
-import { HazmatController } from './hazmat.controller';
-import { HazmatService } from './hazmat.service';
+import { Module } from "@nestjs/common";
+import { HazmatController } from "./hazmat.controller";
+import { HazmatService } from "./hazmat.service";
 
 @Module({
   controllers: [HazmatController],

@@ -92,7 +92,7 @@ class RealEstateRepositoryImpl implements RealEstateRepository {
   @override
   Future<Result<Cacheable<Paginated<Property>>>> listProperties(ListQuery query) =>
       _paginated(_propertyNamespace, query, () => _remote.listProperties(query),
-        PropertyModel.fromJson);
+        PropertyModel.fromJson,);
 
   @override
   Future<Result<Property>> getProperty(String id) =>
@@ -113,7 +113,7 @@ class RealEstateRepositoryImpl implements RealEstateRepository {
   @override
   Future<Result<Cacheable<Paginated<Lease>>>> listLeases(ListQuery query) =>
       _paginated(_leaseNamespace, query, () => _remote.listLeases(query),
-        LeaseModel.fromJson);
+        LeaseModel.fromJson,);
 
   @override
   Future<Result<Lease>> getLease(String id) =>
@@ -134,7 +134,7 @@ class RealEstateRepositoryImpl implements RealEstateRepository {
   @override
   Future<Result<Cacheable<Paginated<TenantDetail>>>> listTenants(ListQuery query) =>
       _paginated(_tenantNamespace, query, () => _remote.listTenants(query),
-        TenantDetailModel.fromJson);
+        TenantDetailModel.fromJson,);
 
   @override
   Future<Result<TenantDetail>> getTenant(String id) =>
@@ -154,10 +154,10 @@ class RealEstateRepositoryImpl implements RealEstateRepository {
 
   @override
   Future<Result<Cacheable<Paginated<MaintenanceOrder>>>> listMaintenanceOrders(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_maintenanceNamespace, query,
         () => _remote.listMaintenanceOrders(query),
-        MaintenanceOrderModel.fromJson);
+        MaintenanceOrderModel.fromJson,);
 
   @override
   Future<Result<MaintenanceOrder>> getMaintenanceOrder(String id) =>
@@ -169,7 +169,7 @@ class RealEstateRepositoryImpl implements RealEstateRepository {
 
   @override
   Future<Result<MaintenanceOrder>> updateMaintenanceOrder(
-    String id, Map<String, dynamic> p) =>
+    String id, Map<String, dynamic> p,) =>
       _write(() => _remote.updateMaintenanceOrder(id, p));
 
   @override
@@ -182,10 +182,10 @@ class RealEstateRepositoryImpl implements RealEstateRepository {
 
   @override
   Future<Result<Cacheable<Paginated<PropertyValuation>>>> listPropertyValuations(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_valuationNamespace, query,
         () => _remote.listPropertyValuations(query),
-        PropertyValuationModel.fromJson);
+        PropertyValuationModel.fromJson,);
 
   @override
   Future<Result<PropertyValuation>> createPropertyValuation(Map<String, dynamic> p) =>

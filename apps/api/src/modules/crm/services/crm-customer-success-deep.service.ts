@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 
@@ -64,12 +63,17 @@ export class CrmCustomerSuccessDeepService {
         customerId,
         score: finalScore,
         status,
-        reason: "Auto-computed from NPS, engagement, product, support, renewal metrics",
+        reason:
+          "Auto-computed from NPS, engagement, product, support, renewal metrics",
       },
     });
   }
 
-  async listSuccessPlans(tenantId: string, customerId?: string, status?: string) {
+  async listSuccessPlans(
+    tenantId: string,
+    customerId?: string,
+    status?: string,
+  ) {
     const where: any = { tenantId };
     if (customerId) where.customerId = customerId;
     if (status) where.status = status;
@@ -99,7 +103,12 @@ export class CrmCustomerSuccessDeepService {
     });
   }
 
-  async updateSuccessPlan(tenantId: string, id: string, data: any, userId: string) {
+  async updateSuccessPlan(
+    tenantId: string,
+    id: string,
+    data: any,
+    userId: string,
+  ) {
     const existing = await prisma.customerSuccessPlan.findFirst({
       where: { id, tenantId },
     });
@@ -113,7 +122,9 @@ export class CrmCustomerSuccessDeepService {
         arr: data.arr ?? existing.arr,
         nrrTarget: data.nrrTarget ?? existing.nrrTarget,
         churnRiskLevel: data.churnRiskLevel ?? existing.churnRiskLevel,
-        targetDate: data.targetDate ? new Date(data.targetDate) : existing.targetDate,
+        targetDate: data.targetDate
+          ? new Date(data.targetDate)
+          : existing.targetDate,
         goals: data.goals ?? existing.goals,
         notes: data.notes ?? existing.notes,
       },
@@ -141,7 +152,12 @@ export class CrmCustomerSuccessDeepService {
     });
   }
 
-  async listNpsResponses(tenantId: string, surveyId?: string, dateFrom?: string, dateTo?: string) {
+  async listNpsResponses(
+    tenantId: string,
+    surveyId?: string,
+    dateFrom?: string,
+    dateTo?: string,
+  ) {
     const where: any = { tenantId };
     if (surveyId) where.surveyId = surveyId;
     if (dateFrom || dateTo) {
@@ -208,7 +224,9 @@ export class CrmCustomerSuccessDeepService {
   async getChurnAnalysis(tenantId: string, period?: string) {
     const where: any = { tenantId };
     if (period === "current") {
-      where.createdAt = { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) };
+      where.createdAt = {
+        gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+      };
     }
     const records = await prisma.churnAnalysis.findMany({
       where,
@@ -217,7 +235,8 @@ export class CrmCustomerSuccessDeepService {
     const total = records.length;
     const avgChurnScore =
       total > 0
-        ? records.reduce((s: number, r: any) => s + Number(r.churnScore), 0) / total
+        ? records.reduce((s: number, r: any) => s + Number(r.churnScore), 0) /
+          total
         : 0;
     return {
       totalRecords: total,
@@ -237,13 +256,18 @@ export class CrmCustomerSuccessDeepService {
   async getExpansionRevenue(tenantId: string, period?: string) {
     const where: any = { tenantId };
     if (period === "current") {
-      where.recognizedAt = { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) };
+      where.recognizedAt = {
+        gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+      };
     }
     const records = await prisma.expansionRevenue.findMany({
       where,
       orderBy: { recognizedAt: "desc" },
     });
-    const totalAmount = records.reduce((s: number, r: any) => s + Number(r.amount), 0);
+    const totalAmount = records.reduce(
+      (s: number, r: any) => s + Number(r.amount),
+      0,
+    );
     return {
       totalAmount,
       totalRecords: records.length,

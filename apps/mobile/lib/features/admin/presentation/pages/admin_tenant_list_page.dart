@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -105,7 +104,7 @@ class _AdminTenantListPageState extends ConsumerState<AdminTenantListPage> {
                   controller.applyFilters(filters);
                 },
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller, t)),
         ],
@@ -126,7 +125,7 @@ class _AdminTenantListPageState extends ConsumerState<AdminTenantListPage> {
       emptyMessage: 'Tenants are organizations using the system.',
       itemBuilder: (BuildContext context, AdminTenant tenant, _) => UiCard(
         onTap: () => context.pushNamed('admin-tenant-detail',
-            pathParameters: <String, String>{'id': tenant.id}),
+            pathParameters: <String, String>{'id': tenant.id},),
         padding: const EdgeInsets.all(Spacing.x3),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -143,9 +142,9 @@ class _AdminTenantListPageState extends ConsumerState<AdminTenantListPage> {
                     style: TextStyle(
                       color: tenant.status == 'ACTIVE' ? t.success : (tenant.status == 'SUSPENDED' ? t.warning : t.textSecondary),
                       fontSize: TypeScale.xs, fontWeight: TypeScale.medium,
-                    )),
+                    ),),
               ),
-            ]),
+            ],),
             const SizedBox(height: Spacing.x1),
             Text(tenant.slug, style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
             if (tenant.domain != null) Text(tenant.domain!, style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
@@ -158,7 +157,7 @@ class _AdminTenantListPageState extends ConsumerState<AdminTenantListPage> {
                 decoration: BoxDecoration(color: t.primaryLight, borderRadius: Radii.pill),
                 child: Text(tenant.plan, style: TextStyle(color: t.primary, fontSize: TypeScale.xs)),
               ),
-            ]),
+            ],),
           ],
         ),
       ),

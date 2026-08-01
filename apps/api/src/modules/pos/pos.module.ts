@@ -1,11 +1,10 @@
-// @ts-nocheck
-import { Module } from '@nestjs/common';
-import { EventEmitterModule } from '@nestjs/event-emitter';
-import { PosController } from './pos.controller';
-import { PosService } from './pos.service';
-import { PosExpansionController } from './pos-expansion.controller';
-import { PosExpansionService } from './pos-expansion.service';
-import { PosEnterpriseModule } from './pos-enterprise.module';
+import { Module } from "@nestjs/common";
+import { EventEmitterModule } from "@nestjs/event-emitter";
+import { PosController } from "./pos.controller";
+import { PosService } from "./pos.service";
+import { PosExpansionController } from "./pos-expansion.controller";
+import { PosExpansionService } from "./pos-expansion.service";
+import { PosEnterpriseModule } from "./pos-enterprise.module";
 
 @Module({
   imports: [EventEmitterModule, PosEnterpriseModule],
@@ -13,4 +12,4 @@ import { PosEnterpriseModule } from './pos-enterprise.module';
   providers: [PosService, PosExpansionService],
   exports: [PosService, PosExpansionService],
 })
-export class PosModule { }
+export class PosModule {}

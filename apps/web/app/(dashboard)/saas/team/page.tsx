@@ -1,16 +1,7 @@
-// @ts-nocheck
 "use client";
 import React, { useState, useEffect } from "react";
 import { Card, PageHeader, DataTable } from "@unerp/ui";
-import {
-  UserPlus,
-  Send,
-  X,
-  RefreshCw,
-  Users,
-  Shield,
-  Ban,
-} from "lucide-react";
+import { UserPlus, Send, X, RefreshCw, Users, Shield, Ban } from "lucide-react";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
 interface TeamMember {
@@ -61,7 +52,9 @@ export default function SaasTeamPage() {
     }
   };
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    loadData();
+  }, []);
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,8 +96,12 @@ export default function SaasTeamPage() {
   };
 
   const statusBadge = (status: string) => {
-    const cls = status === "ACTIVE" ? "ui-badge-success" :
-      status === "INVITED" ? "ui-badge-warning" : "ui-badge-neutral";
+    const cls =
+      status === "ACTIVE"
+        ? "ui-badge-success"
+        : status === "INVITED"
+          ? "ui-badge-warning"
+          : "ui-badge-neutral";
     return <span className={`ui-badge ${cls}`}>{status}</span>;
   };
 
@@ -131,16 +128,26 @@ export default function SaasTeamPage() {
 
         <div className="ui-list-toolbar">
           <div className="ui-hstack-3">
-            <span className="ui-heading-sm">{activeMembers.length} Active Members</span>
+            <span className="ui-heading-sm">
+              {activeMembers.length} Active Members
+            </span>
             {pendingInvites.length > 0 && (
-              <span className="ui-badge ui-badge-warning">{pendingInvites.length} Pending</span>
+              <span className="ui-badge ui-badge-warning">
+                {pendingInvites.length} Pending
+              </span>
             )}
           </div>
           <div className="ui-hstack-2">
-            <button className="ui-btn ui-btn-secondary" onClick={() => setShowRolePanel(!showRolePanel)}>
+            <button
+              className="ui-btn ui-btn-secondary"
+              onClick={() => setShowRolePanel(!showRolePanel)}
+            >
               <Shield size={14} /> Roles
             </button>
-            <button className="ui-btn ui-btn-primary" onClick={() => setShowInvite(true)}>
+            <button
+              className="ui-btn ui-btn-primary"
+              onClick={() => setShowInvite(true)}
+            >
               <UserPlus size={14} /> Invite Member
             </button>
           </div>
@@ -156,25 +163,43 @@ export default function SaasTeamPage() {
               { key: "lastActive", header: "Last Active" },
               { key: "actions", header: "" },
             ]}
-            data={members.map((m) => ({
-              ...m,
-              name: `${m.firstName} ${m.lastName}`.trim() || m.email,
-              roles: m.roles.map((r) => r.name).join(", ") || "User",
-              status: statusBadge(m.status),
-              lastActive: m.lastActiveAt ? new Date(m.lastActiveAt).toLocaleDateString() : "Never",
-              actions: (
-                <div className="ui-table-actions">
-                  {m.status === "INVITED" && (
-                    <button className="ui-table-action-btn" onClick={(e) => { e.stopPropagation(); handleResend(m.id); }} title="Resend">
-                      <RefreshCw size={14} />
+            data={
+              members.map((m) => ({
+                ...m,
+                name: `${m.firstName} ${m.lastName}`.trim() || m.email,
+                roles: m.roles.map((r) => r.name).join(", ") || "User",
+                status: statusBadge(m.status),
+                lastActive: m.lastActiveAt
+                  ? new Date(m.lastActiveAt).toLocaleDateString()
+                  : "Never",
+                actions: (
+                  <div className="ui-table-actions">
+                    {m.status === "INVITED" && (
+                      <button
+                        className="ui-table-action-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleResend(m.id);
+                        }}
+                        title="Resend"
+                      >
+                        <RefreshCw size={14} />
+                      </button>
+                    )}
+                    <button
+                      className="ui-table-action-btn ui-table-action-btn-danger"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRevoke(m.id);
+                      }}
+                      title="Remove"
+                    >
+                      <Ban size={14} />
                     </button>
-                  )}
-                  <button className="ui-table-action-btn ui-table-action-btn-danger" onClick={(e) => { e.stopPropagation(); handleRevoke(m.id); }} title="Remove">
-                    <Ban size={14} />
-                  </button>
-                </div>
-              ),
-            })) as unknown as Record<string, unknown>[]}
+                  </div>
+                ),
+              })) as unknown as Record<string, unknown>[]
+            }
             emptyTitle="No team members"
             emptyMessage="Invite your first team member to get started."
           />
@@ -184,7 +209,10 @@ export default function SaasTeamPage() {
           <Card padding="lg">
             <div className="ui-flex-between ui-mb-4">
               <h3 className="ui-heading-base">Roles & Permissions</h3>
-              <button className="ui-btn-icon" onClick={() => setShowRolePanel(false)}>
+              <button
+                className="ui-btn-icon"
+                onClick={() => setShowRolePanel(false)}
+              >
                 <X size={16} />
               </button>
             </div>
@@ -193,7 +221,11 @@ export default function SaasTeamPage() {
                 <p className="ui-text-xs-muted">No roles defined.</p>
               )}
               {roles.map((role) => (
-                <div key={role.id} className="ui-card" style={{ padding: "var(--space-4)" }}>
+                <div
+                  key={role.id}
+                  className="ui-card"
+                  style={{ padding: "var(--space-4)" }}
+                >
                   <div className="ui-hstack-3 ui-mb-2">
                     <Shield size={16} className="ui-text-primary" />
                     <span className="font-semibold text-sm">{role.name}</span>
@@ -206,11 +238,17 @@ export default function SaasTeamPage() {
         )}
 
         {showInvite && (
-          <div className="ui-modal-overlay" onClick={() => setShowInvite(false)}>
+          <div
+            className="ui-modal-overlay"
+            onClick={() => setShowInvite(false)}
+          >
             <div className="ui-modal" onClick={(e) => e.stopPropagation()}>
               <div className="ui-modal-header">
                 <span>Invite Team Member</span>
-                <button className="ui-btn-icon" onClick={() => setShowInvite(false)}>
+                <button
+                  className="ui-btn-icon"
+                  onClick={() => setShowInvite(false)}
+                >
                   <X size={16} />
                 </button>
               </div>
@@ -218,13 +256,26 @@ export default function SaasTeamPage() {
                 <div className="ui-modal-body ui-stack-4">
                   <div className="ui-form-group">
                     <label className="ui-label">Email Address</label>
-                    <input className="ui-input" type="email" required placeholder="colleague@company.com" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} />
+                    <input
+                      className="ui-input"
+                      type="email"
+                      required
+                      placeholder="colleague@company.com"
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                    />
                   </div>
                   <div className="ui-form-group">
                     <label className="ui-label">Role</label>
-                    <select className="ui-select" value={inviteRole} onChange={(e) => setInviteRole(e.target.value)}>
+                    <select
+                      className="ui-select"
+                      value={inviteRole}
+                      onChange={(e) => setInviteRole(e.target.value)}
+                    >
                       {roles.map((r) => (
-                        <option key={r.id} value={r.name.toLowerCase()}>{r.name}</option>
+                        <option key={r.id} value={r.name.toLowerCase()}>
+                          {r.name}
+                        </option>
                       ))}
                       {roles.length === 0 && (
                         <>
@@ -237,9 +288,23 @@ export default function SaasTeamPage() {
                   </div>
                 </div>
                 <div className="ui-modal-footer">
-                  <button type="button" className="ui-btn ui-btn-secondary" onClick={() => setShowInvite(false)}>Cancel</button>
-                  <button type="submit" className="ui-btn ui-btn-primary" disabled={sending}>
-                    {sending ? <RefreshCw size={14} className="animate-spin" /> : <Send size={14} />}
+                  <button
+                    type="button"
+                    className="ui-btn ui-btn-secondary"
+                    onClick={() => setShowInvite(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="ui-btn ui-btn-primary"
+                    disabled={sending}
+                  >
+                    {sending ? (
+                      <RefreshCw size={14} className="animate-spin" />
+                    ) : (
+                      <Send size={14} />
+                    )}
                     {sending ? "Sending..." : "Send Invite"}
                   </button>
                 </div>

@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/widgets/ui_card.dart';
 import 'package:flutter/material.dart';
@@ -74,8 +73,8 @@ class PrescriptionDetailPage extends ConsumerWidget {
 }
 
 class _StatusBadge extends StatelessWidget {
-  final String status;
   const _StatusBadge({required this.status});
+  final String status;
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +87,7 @@ class _StatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Text(
@@ -100,9 +99,9 @@ class _StatusBadge extends StatelessWidget {
 }
 
 class _DetailRow extends StatelessWidget {
+  const _DetailRow({required this.label, required this.value});
   final String label;
   final String value;
-  const _DetailRow({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) => Padding(

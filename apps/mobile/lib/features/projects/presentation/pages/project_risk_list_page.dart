@@ -1,7 +1,5 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../../../../app/theme/design_tokens.dart';
 import '../../../../core/widgets/paginated_list_view.dart';
 import '../../../../core/widgets/state_views.dart';
@@ -26,28 +24,10 @@ class _ProjectRiskListPageState extends ConsumerState<ProjectRiskListPage> {
     super.dispose();
   }
 
-  UiTone _severityTone(String probability, String impact) {
-    final Map<String, int> levels = <String, int>{'LOW': 1, 'MEDIUM': 2, 'HIGH': 3, 'CRITICAL': 4};
-    final int p = levels[probability] ?? 1;
-    final int i = levels[impact] ?? 1;
-    final int combined = p * i;
-    if (combined >= 9) return UiTone.danger;
-    if (combined >= 4) return UiTone.warning;
-    return UiTone.neutral;
-  }
-
-  Color _severityColor(UiTone tone, Palette t) => switch (tone) {
-        UiTone.danger => t.danger,
-        UiTone.warning => t.warning,
-        UiTone.info => t.info,
-        _ => t.textSecondary,
-      };
-
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(projectRiskListControllerProvider);
     final controller = ref.read(projectRiskListControllerProvider.notifier);
-    final t = context.tokens;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Project Risks')),
@@ -81,9 +61,9 @@ class _ProjectRiskListPageState extends ConsumerState<ProjectRiskListPage> {
 }
 
 class _RiskTile extends StatelessWidget {
-  Color _severityColor(dynamic a, [dynamic b]) => Colors.red;
 
   const _RiskTile({required this.risk});
+  Color _severityColor(dynamic a, [dynamic b]) => Colors.red;
   final ProjectRisk risk;
 
   UiTone _severityTone(String probability, String impact) {
@@ -134,7 +114,7 @@ class _RiskTile extends StatelessWidget {
               const SizedBox(width: Spacing.x2),
               Expanded(child: Text(risk.title, style: Theme.of(context).textTheme.titleSmall)),
               UiStatusBadge(label: risk.status, tone: _statusTone(risk.status)),
-            ]),
+            ],),
             if (risk.description != null && risk.description!.isNotEmpty) ...[
               const SizedBox(height: Spacing.x1),
               Text(risk.description!, style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),

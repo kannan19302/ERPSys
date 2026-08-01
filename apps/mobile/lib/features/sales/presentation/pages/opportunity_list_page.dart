@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -27,7 +26,6 @@ class OpportunityListPage extends ConsumerStatefulWidget {
 class _OpportunityListPageState extends ConsumerState<OpportunityListPage> {
   final TextEditingController _search = TextEditingController();
   String? _stageFilter;
-  String? _statusFilter;
 
   static const Map<String, String> _sortOptions = <String, String>{
     '-createdAt': 'Recently created',

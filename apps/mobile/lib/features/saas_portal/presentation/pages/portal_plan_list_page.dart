@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -54,18 +53,18 @@ class _PortalPlanListPageState extends ConsumerState<PortalPlanListPage> {
               Row(children: [
                 Expanded(
                   child: Text(plan.name,
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
                 if (plan.isPopular)
-                  UiStatusBadge(label: 'POPULAR', tone: UiTone.success),
-              ]),
+                  const UiStatusBadge(label: 'POPULAR', tone: UiTone.success),
+              ],),
               const SizedBox(height: Spacing.x1),
               Text('\$${plan.price.toStringAsFixed(2)} / ${plan.billingInterval}',
-                  style: TextStyle(color: t.textSecondary, fontSize: TypeScale.lg)),
+                  style: TextStyle(color: t.textSecondary, fontSize: TypeScale.lg),),
               if (plan.description != null) ...[
                 const SizedBox(height: Spacing.x1),
                 Text(plan.description!,
-                    style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
+                    style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
               ],
               if (plan.features.isNotEmpty) ...[
                 const SizedBox(height: Spacing.x2),
@@ -74,9 +73,9 @@ class _PortalPlanListPageState extends ConsumerState<PortalPlanListPage> {
                   child: Row(children: [
                     Icon(Icons.check, size: TypeScale.sm, color: t.success),
                     const SizedBox(width: Spacing.x1),
-                    Text(f, style: TextStyle(fontSize: TypeScale.xs)),
-                  ]),
-                )),
+                    Text(f, style: const TextStyle(fontSize: TypeScale.xs)),
+                  ],),
+                ),),
               ],
             ],
           ),

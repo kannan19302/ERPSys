@@ -1,8 +1,11 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
-import { z } from 'zod';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
+import { z } from "zod";
 
 export const createCustomerConsignmentSchema = z.object({
   customerId: z.string().min(1),
@@ -14,10 +17,15 @@ export const createCustomerConsignmentSchema = z.object({
   reorderPoint: z.number().optional(),
   notes: z.string().optional(),
 });
-export type CreateCustomerConsignmentInput = z.infer<typeof createCustomerConsignmentSchema>;
+export type CreateCustomerConsignmentInput = z.infer<
+  typeof createCustomerConsignmentSchema
+>;
 
-export const updateCustomerConsignmentSchema = createCustomerConsignmentSchema.partial();
-export type UpdateCustomerConsignmentInput = z.infer<typeof updateCustomerConsignmentSchema>;
+export const updateCustomerConsignmentSchema =
+  createCustomerConsignmentSchema.partial();
+export type UpdateCustomerConsignmentInput = z.infer<
+  typeof updateCustomerConsignmentSchema
+>;
 
 export const recordConsumptionSchema = z.object({
   consignmentId: z.string().min(1),
@@ -30,10 +38,15 @@ export type RecordConsumptionInput = z.infer<typeof recordConsumptionSchema>;
 
 @Injectable()
 export class InventoryCustomerConsignmentService {
-
   async listConsignments(
     tenantId: string,
-    query: { customerId?: string; productId?: string; status?: string; page?: number; limit?: number },
+    query: {
+      customerId?: string;
+      productId?: string;
+      status?: string;
+      page?: number;
+      limit?: number;
+    },
   ) {
     const page = Math.max(1, query.page ?? 1);
     const limit = Math.min(100, query.limit ?? 20);
@@ -45,25 +58,34 @@ export class InventoryCustomerConsignmentService {
     const [data, total] = await Promise.all([
       prisma.customerConsignmentStock.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         skip: (page - 1) * limit,
         take: limit,
       }),
       prisma.customerConsignmentStock.count({ where }),
     ]);
-    return { data, total, page, limit, totalPages: Math.max(1, Math.ceil(total / limit)) };
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+    };
   }
 
   async getConsignment(tenantId: string, id: string) {
     const record = await prisma.customerConsignmentStock.findFirst({
       where: { id, tenantId },
-      include: { consumptions: { orderBy: { consumedAt: 'desc' } } },
+      include: { consumptions: { orderBy: { consumedAt: "desc" } } },
     });
-    if (!record) throw new NotFoundException('Consignment not found');
+    if (!record) throw new NotFoundException("Consignment not found");
     return record;
   }
 
-  async createConsignment(tenantId: string, dto: CreateCustomerConsignmentInput) {
+  async createConsignment(
+    tenantId: string,
+    dto: CreateCustomerConsignmentInput,
+  ) {
     const quantityOnHand = new Prisma.Decimal(dto.quantityOnHand);
     const unitPrice = new Prisma.Decimal(dto.unitPrice);
     const totalValue = quantityOnHand.mul(unitPrice);
@@ -77,28 +99,48 @@ export class InventoryCustomerConsignmentService {
         quantityOnHand,
         unitPrice,
         totalValue,
-        maxQuantity: dto.maxQuantity !== undefined ? new Prisma.Decimal(dto.maxQuantity) : null,
-        reorderPoint: dto.reorderPoint !== undefined ? new Prisma.Decimal(dto.reorderPoint) : null,
+        maxQuantity:
+          dto.maxQuantity !== undefined
+            ? new Prisma.Decimal(dto.maxQuantity)
+            : null,
+        reorderPoint:
+          dto.reorderPoint !== undefined
+            ? new Prisma.Decimal(dto.reorderPoint)
+            : null,
         notes: dto.notes ?? null,
       },
     });
   }
 
-  async updateConsignment(tenantId: string, id: string, dto: UpdateCustomerConsignmentInput) {
-    const record = await prisma.customerConsignmentStock.findFirst({ where: { id, tenantId } });
-    if (!record) throw new NotFoundException('Consignment not found');
+  async updateConsignment(
+    tenantId: string,
+    id: string,
+    dto: UpdateCustomerConsignmentInput,
+  ) {
+    const record = await prisma.customerConsignmentStock.findFirst({
+      where: { id, tenantId },
+    });
+    if (!record) throw new NotFoundException("Consignment not found");
 
     const data: any = {};
     if (dto.customerId !== undefined) data.customerId = dto.customerId;
     if (dto.productId !== undefined) data.productId = dto.productId;
     if (dto.warehouseId !== undefined) data.warehouseId = dto.warehouseId;
     if (dto.notes !== undefined) data.notes = dto.notes;
-    if (dto.maxQuantity !== undefined) data.maxQuantity = new Prisma.Decimal(dto.maxQuantity);
-    if (dto.reorderPoint !== undefined) data.reorderPoint = new Prisma.Decimal(dto.reorderPoint);
+    if (dto.maxQuantity !== undefined)
+      data.maxQuantity = new Prisma.Decimal(dto.maxQuantity);
+    if (dto.reorderPoint !== undefined)
+      data.reorderPoint = new Prisma.Decimal(dto.reorderPoint);
 
     if (dto.quantityOnHand !== undefined || dto.unitPrice !== undefined) {
-      const qoh = dto.quantityOnHand !== undefined ? new Prisma.Decimal(dto.quantityOnHand) : record.quantityOnHand;
-      const up = dto.unitPrice !== undefined ? new Prisma.Decimal(dto.unitPrice) : record.unitPrice;
+      const qoh =
+        dto.quantityOnHand !== undefined
+          ? new Prisma.Decimal(dto.quantityOnHand)
+          : record.quantityOnHand;
+      const up =
+        dto.unitPrice !== undefined
+          ? new Prisma.Decimal(dto.unitPrice)
+          : record.unitPrice;
       data.quantityOnHand = qoh;
       data.unitPrice = up;
       data.totalValue = qoh.mul(up);
@@ -108,26 +150,34 @@ export class InventoryCustomerConsignmentService {
   }
 
   async closeConsignment(tenantId: string, id: string) {
-    const record = await prisma.customerConsignmentStock.findFirst({ where: { id, tenantId } });
-    if (!record) throw new NotFoundException('Consignment not found');
-    if (record.status === 'CLOSED') throw new BadRequestException('Consignment is already closed');
-    return prisma.customerConsignmentStock.update({ where: { id }, data: { status: 'CLOSED' } });
+    const record = await prisma.customerConsignmentStock.findFirst({
+      where: { id, tenantId },
+    });
+    if (!record) throw new NotFoundException("Consignment not found");
+    if (record.status === "CLOSED")
+      throw new BadRequestException("Consignment is already closed");
+    return prisma.customerConsignmentStock.update({
+      where: { id },
+      data: { status: "CLOSED" },
+    });
   }
 
   async recordConsumption(tenantId: string, dto: RecordConsumptionInput) {
     const consignment = await prisma.customerConsignmentStock.findFirst({
       where: { id: dto.consignmentId, tenantId },
     });
-    if (!consignment) throw new NotFoundException('Consignment not found');
-    if (consignment.status === 'CLOSED') throw new BadRequestException('Consignment is closed');
+    if (!consignment) throw new NotFoundException("Consignment not found");
+    if (consignment.status === "CLOSED")
+      throw new BadRequestException("Consignment is closed");
 
     const quantity = new Prisma.Decimal(dto.quantity);
     const newQoh = consignment.quantityOnHand.sub(quantity);
-    if (newQoh.isNegative()) throw new BadRequestException('Insufficient consignment stock');
+    if (newQoh.isNegative())
+      throw new BadRequestException("Insufficient consignment stock");
 
     const consumedAt = dto.consumedAt ? new Date(dto.consumedAt) : new Date();
 
-    const newStatus = newQoh.isZero() ? 'DEPLETED' : 'ACTIVE';
+    const newStatus = newQoh.isZero() ? "DEPLETED" : "ACTIVE";
 
     const [consumption] = await Promise.all([
       prisma.customerConsignmentConsumption.create({
@@ -142,7 +192,11 @@ export class InventoryCustomerConsignmentService {
       }),
       prisma.customerConsignmentStock.update({
         where: { id: dto.consignmentId },
-        data: { quantityOnHand: newQoh, lastConsumedAt: consumedAt, status: newStatus },
+        data: {
+          quantityOnHand: newQoh,
+          lastConsumedAt: consumedAt,
+          status: newStatus,
+        },
       }),
     ]);
 
@@ -151,9 +205,11 @@ export class InventoryCustomerConsignmentService {
 
   async getConsignmentDashboard(tenantId: string) {
     const [activeCount, totalValueAgg, totalConsumedAgg] = await Promise.all([
-      prisma.customerConsignmentStock.count({ where: { tenantId, status: 'ACTIVE' } }),
+      prisma.customerConsignmentStock.count({
+        where: { tenantId, status: "ACTIVE" },
+      }),
       prisma.customerConsignmentStock.aggregate({
-        where: { tenantId, status: { in: ['ACTIVE', 'DEPLETED'] } },
+        where: { tenantId, status: { in: ["ACTIVE", "DEPLETED"] } },
         _sum: { totalValue: true },
       }),
       prisma.customerConsignmentConsumption.aggregate({

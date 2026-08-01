@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import '../../../../core/usecase/result.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
@@ -109,15 +108,15 @@ class SubscriptionPlanListController extends Notifier<SubscriptionPlanListState>
 
   Future<Result<SubscriptionPlan>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveSubscriptionPlanUseCase(
-      ref.read(subscriptionsRepositoryProvider))(
-      SaveSubscriptionPlanParams(id: id, payload: payload));
+      ref.read(subscriptionsRepositoryProvider),)(
+      SaveSubscriptionPlanParams(id: id, payload: payload),);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<ChurnSurveyResponse>> saveChurn(Map<String, dynamic> payload) async {
     final result = await SubmitChurnSurveyUseCase(
-      ref.read(subscriptionsRepositoryProvider))(payload);
+      ref.read(subscriptionsRepositoryProvider),)(payload);
     return result;
   }
 }
@@ -125,7 +124,7 @@ class SubscriptionPlanListController extends Notifier<SubscriptionPlanListState>
 final FutureProviderFamily<SubscriptionPlan, String> subscriptionPlanDetailProvider =
     FutureProvider.family<SubscriptionPlan, String>((Ref ref, String id) async {
   final result = await GetSubscriptionPlanUseCase(
-    ref.watch(subscriptionsRepositoryProvider))(id);
+    ref.watch(subscriptionsRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -211,8 +210,8 @@ class SubscriptionBillingCycleListController extends Notifier<SubscriptionBillin
 
   Future<Result<SubscriptionBillingCycle>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveSubscriptionBillingCycleUseCase(
-      ref.read(subscriptionsRepositoryProvider))(
-      SaveBillingCycleParams(id: id, payload: payload));
+      ref.read(subscriptionsRepositoryProvider),)(
+      SaveBillingCycleParams(id: id, payload: payload),);
     if (result.isOk) await refresh();
     return result;
   }
@@ -221,7 +220,7 @@ class SubscriptionBillingCycleListController extends Notifier<SubscriptionBillin
 final FutureProviderFamily<SubscriptionBillingCycle, String> subscriptionBillingCycleDetailProvider =
     FutureProvider.family<SubscriptionBillingCycle, String>((Ref ref, String id) async {
   final result = await GetSubscriptionBillingCycleUseCase(
-    ref.watch(subscriptionsRepositoryProvider))(id);
+    ref.watch(subscriptionsRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 

@@ -1,7 +1,6 @@
-// @ts-nocheck
-import { Injectable, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
+import { Injectable, BadRequestException } from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
 
 @Injectable()
 export class BudgetControlService {
@@ -17,7 +16,7 @@ export class BudgetControlService {
       config = await prisma.budgetControlConfig.create({
         data: {
           tenantId,
-          enforcementAction: 'WARN',
+          enforcementAction: "WARN",
           checkInvoices: true,
           checkJournals: true,
           checkExpenses: true,
@@ -46,7 +45,8 @@ export class BudgetControlService {
     await this.getControlConfig(tenantId);
 
     const data: Record<string, any> = {};
-    if (dto.enforcementAction !== undefined) data.enforcementAction = dto.enforcementAction;
+    if (dto.enforcementAction !== undefined)
+      data.enforcementAction = dto.enforcementAction;
     if (dto.checkInvoices !== undefined) data.checkInvoices = dto.checkInvoices;
     if (dto.checkJournals !== undefined) data.checkJournals = dto.checkJournals;
     if (dto.checkExpenses !== undefined) data.checkExpenses = dto.checkExpenses;
@@ -69,23 +69,32 @@ export class BudgetControlService {
     accountId: string,
     amount: number,
     date: Date,
-    dimensions: { costCenterId?: string | null; projectId?: string | null } = {},
+    dimensions: {
+      costCenterId?: string | null;
+      projectId?: string | null;
+    } = {},
   ): Promise<{
     allowed: boolean;
-    action: 'ALLOW' | 'WARN' | 'BLOCK';
+    action: "ALLOW" | "WARN" | "BLOCK";
     limit: number;
     actual: number;
     proposed: number;
     message?: string;
   }> {
     const config = await this.getControlConfig(tenantId);
-    if (config.enforcementAction === 'ALLOW') {
-      return { allowed: true, action: 'ALLOW', limit: 0, actual: 0, proposed: amount };
+    if (config.enforcementAction === "ALLOW") {
+      return {
+        allowed: true,
+        action: "ALLOW",
+        limit: 0,
+        actual: 0,
+        proposed: amount,
+      };
     }
 
     // Determine period string (YYYY-MM)
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, "0");
     const periodStr = `${year}-${month}`;
 
     // Find active budget
@@ -107,7 +116,13 @@ export class BudgetControlService {
     });
 
     if (!budget) {
-      return { allowed: true, action: 'ALLOW', limit: 0, actual: 0, proposed: amount };
+      return {
+        allowed: true,
+        action: "ALLOW",
+        limit: 0,
+        actual: 0,
+        proposed: amount,
+      };
     }
 
     // Calculate budget limit for this period
@@ -118,7 +133,10 @@ export class BudgetControlService {
       // Default to monthly split
       const start = new Date(budget.startDate);
       const end = new Date(budget.endDate);
-      const diffMonths = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1;
+      const diffMonths =
+        (end.getFullYear() - start.getFullYear()) * 12 +
+        (end.getMonth() - start.getMonth()) +
+        1;
       const budgetMonths = diffMonths > 0 ? diffMonths : 1;
       periodLimit = Number(budget.amount) / budgetMonths;
     }
@@ -135,7 +153,7 @@ export class BudgetControlService {
         journal: {
           orgId,
           date: { gte: startOfMonth, lte: endOfMonth },
-          status: { in: ['POSTED', 'SUBMITTED'] },
+          status: { in: ["POSTED", "SUBMITTED"] },
         },
       },
     });
@@ -150,10 +168,10 @@ export class BudgetControlService {
     const proposedTotal = actualSum + amount;
 
     if (proposedTotal > allowedLimit) {
-      const enforcementAction = config.enforcementAction as 'WARN' | 'BLOCK';
+      const enforcementAction = config.enforcementAction as "WARN" | "BLOCK";
       const message = `Transaction of ${amount} exceeds the budget limit of ${periodLimit.toFixed(2)} (Current Actuals: ${actualSum.toFixed(2)}, Proposed Total: ${proposedTotal.toFixed(2)})`;
 
-      if (enforcementAction === 'BLOCK') {
+      if (enforcementAction === "BLOCK") {
         throw new BadRequestException(message);
       }
 
@@ -169,7 +187,7 @@ export class BudgetControlService {
 
     return {
       allowed: true,
-      action: 'ALLOW',
+      action: "ALLOW",
       limit: periodLimit,
       actual: actualSum,
       proposed: amount,

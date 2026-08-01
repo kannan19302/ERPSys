@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/usecase/result.dart';
 import '../../domain/entities/education.dart';
 import '../providers/education_providers.dart';
 
@@ -108,11 +106,11 @@ class _StudentFormPageState extends ConsumerState<StudentFormPage> {
           children: <Widget>[
             Row(children: <Widget>[
               Expanded(child: TextFormField(controller: _firstNameCtrl, decoration: const InputDecoration(labelText: 'First Name *'),
-                validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null)),
+                validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,),),
               const SizedBox(width: Spacing.x4),
               Expanded(child: TextFormField(controller: _lastNameCtrl, decoration: const InputDecoration(labelText: 'Last Name *'),
-                validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null)),
-            ]),
+                validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,),),
+            ],),
             const SizedBox(height: Spacing.x4),
             TextFormField(controller: _emailCtrl, keyboardType: TextInputType.emailAddress, decoration: const InputDecoration(labelText: 'Email')),
             const SizedBox(height: Spacing.x4),
@@ -120,14 +118,14 @@ class _StudentFormPageState extends ConsumerState<StudentFormPage> {
             const SizedBox(height: Spacing.x4),
             Row(children: <Widget>[
               Expanded(child: DropdownButtonFormField<String>(
-                value: _gender, decoration: const InputDecoration(labelText: 'Gender'),
+                initialValue: _gender, decoration: const InputDecoration(labelText: 'Gender'),
                 items: const [
                   DropdownMenuItem(value: 'MALE', child: Text('Male')),
                   DropdownMenuItem(value: 'FEMALE', child: Text('Female')),
                   DropdownMenuItem(value: 'NOT_SPECIFIED', child: Text('Not Specified')),
                 ],
                 onChanged: (v) { if (v != null) setState(() => _gender = v); },
-              )),
+              ),),
               const SizedBox(width: Spacing.x4),
               Expanded(child: TextFormField(
                 readOnly: true,
@@ -147,8 +145,8 @@ class _StudentFormPageState extends ConsumerState<StudentFormPage> {
                 controller: TextEditingController(
                   text: _dateOfBirth != null ? '${_dateOfBirth!.toLocal()}'.substring(0, 10) : '',
                 ),
-              )),
-            ]),
+              ),),
+            ],),
             const SizedBox(height: Spacing.x4),
             TextFormField(controller: _addressCtrl, maxLines: 2, decoration: const InputDecoration(labelText: 'Address', alignLabelWithHint: true)),
             const SizedBox(height: Spacing.x4),
@@ -159,7 +157,7 @@ class _StudentFormPageState extends ConsumerState<StudentFormPage> {
             TextFormField(controller: _guardianPhoneCtrl, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'Guardian Phone')),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _status, decoration: const InputDecoration(labelText: 'Status'),
+              initialValue: _status, decoration: const InputDecoration(labelText: 'Status'),
               items: const [
                 DropdownMenuItem(value: 'ACTIVE', child: Text('Active')),
                 DropdownMenuItem(value: 'INACTIVE', child: Text('Inactive')),

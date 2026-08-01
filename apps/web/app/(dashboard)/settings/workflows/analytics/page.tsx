@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 
 export default function WorkflowAnalyticsRedirectPage() {
-  redirect('/settings/approval-operations?tab=analytics');
+  redirect("/settings/approval-operations?tab=analytics");
 }

@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -62,7 +61,7 @@ class _SaasTenantListPageState extends ConsumerState<SaasTenantListPage> {
                     : '${state.meta.total} tenant${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -96,29 +95,29 @@ class _SaasTenantListPageState extends ConsumerState<SaasTenantListPage> {
               Row(children: [
                 Expanded(
                   child: Text(tenant.organizationName,
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
                 UiStatusBadge(
                   label: tenant.status,
                   tone: tenant.status == 'ACTIVE' ? UiTone.success : UiTone.neutral,
                 ),
-              ]),
+              ],),
               const SizedBox(height: Spacing.x1),
               if (tenant.domain != null)
                 Text(tenant.domain!,
-                    style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs)),
+                    style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs),),
               if (tenant.planName != null) ...[
                 const SizedBox(height: Spacing.x1),
                 Text('Plan: ${tenant.planName}',
-                    style: TextStyle(fontSize: TypeScale.xs, color: palette.textTertiary)),
+                    style: TextStyle(fontSize: TypeScale.xs, color: palette.textTertiary),),
               ],
               Row(children: [
                 Text('${tenant.userCount} users',
-                    style: TextStyle(fontSize: TypeScale.xs, color: palette.textTertiary)),
+                    style: TextStyle(fontSize: TypeScale.xs, color: palette.textTertiary),),
                 const SizedBox(width: Spacing.x4),
                 Text('${tenant.storageUsed.toStringAsFixed(0)} MB',
-                    style: TextStyle(fontSize: TypeScale.xs, color: palette.textTertiary)),
-              ]),
+                    style: TextStyle(fontSize: TypeScale.xs, color: palette.textTertiary),),
+              ],),
             ],
           ),
         ),

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Controller,
   Get,
@@ -65,14 +64,21 @@ export class UsageAlertsController {
   @ApiOperation({ summary: "Create alert rule" })
   @Permissions("saas.alert.create")
   @Post("rules")
-  async createAlertRule(@Req() req: AuthReq, @ZodBody(createAlertRuleSchema) body: z.infer<typeof createAlertRuleSchema>) {
+  async createAlertRule(
+    @Req() req: AuthReq,
+    @ZodBody(createAlertRuleSchema) body: z.infer<typeof createAlertRuleSchema>,
+  ) {
     return this.usageAlertsService.createAlertRule(req.user.tenantId, body);
   }
 
   @ApiOperation({ summary: "Update alert rule" })
   @Permissions("saas.alert.update")
   @Patch("rules/:id")
-  async updateAlertRule(@Req() req: AuthReq, @Param("id") id: string, @ZodBody(updateAlertRuleSchema) body: z.infer<typeof updateAlertRuleSchema>) {
+  async updateAlertRule(
+    @Req() req: AuthReq,
+    @Param("id") id: string,
+    @ZodBody(updateAlertRuleSchema) body: z.infer<typeof updateAlertRuleSchema>,
+  ) {
     return this.usageAlertsService.updateAlertRule(req.user.tenantId, id, body);
   }
 
@@ -86,7 +92,10 @@ export class UsageAlertsController {
   @ApiOperation({ summary: "Bulk update alert rules" })
   @Permissions("saas.alert.update")
   @Put("rules/bulk")
-  async bulkUpdateRules(@Req() req: AuthReq, @ZodBody(bulkUpdateRulesSchema) body: z.infer<typeof bulkUpdateRulesSchema>) {
+  async bulkUpdateRules(
+    @Req() req: AuthReq,
+    @ZodBody(bulkUpdateRulesSchema) body: z.infer<typeof bulkUpdateRulesSchema>,
+  ) {
     return this.usageAlertsService.bulkUpdateRules(req.user.tenantId, body);
   }
 

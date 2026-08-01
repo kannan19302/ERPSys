@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -52,7 +51,7 @@ class _ShipmentListPageState extends ConsumerState<ShipmentListPage> {
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
                 .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value)))
+                    value: e.key, child: Text(e.value),),)
                 .toList(),
           ),
         ],
@@ -95,7 +94,7 @@ class _ShipmentListPageState extends ConsumerState<ShipmentListPage> {
                     : '${state.meta.total} shipment${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -153,30 +152,30 @@ class _ShipmentTile extends StatelessWidget {
               Row(children: [
                 Expanded(
                   child: Text(shipment.shipmentNumber,
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
                 UiStatusBadge(
                   label: shipment.status,
                   tone: _statusTone(shipment.status),
                 ),
-              ]),
+              ],),
               const SizedBox(height: Spacing.x1),
               Text(shipment.carrierName,
-                  style: TextStyle(color: t.textSecondary)),
+                  style: TextStyle(color: t.textSecondary),),
               const SizedBox(height: Spacing.x1),
               Row(children: [
                 Icon(Icons.trip_origin, size: TypeScale.sm, color: t.textTertiary),
                 const SizedBox(width: Spacing.x1),
                 Expanded(child: Text(shipment.origin,
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs))),
-              ]),
+                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),),
+              ],),
               const SizedBox(height: Spacing.x0_5),
               Row(children: [
                 Icon(Icons.location_on, size: TypeScale.sm, color: t.textTertiary),
                 const SizedBox(width: Spacing.x1),
                 Expanded(child: Text(shipment.destination,
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs))),
-              ]),
+                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),),
+              ],),
             ],
           ),
         ),

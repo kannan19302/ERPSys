@@ -1,16 +1,10 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/widgets/ui_card.dart';
 import '../../../../core/utils/formatters.dart';
-import '../../../../core/widgets/permission_gate.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/widgets/state_views.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/utils/formatters.dart';
-import '../../../../core/widgets/state_views.dart';
 import '../../domain/entities/storage.dart';
 import '../providers/storage_providers.dart';
 
@@ -47,21 +41,21 @@ class _BucketDetail extends StatelessWidget {
           Row(children: [
             Icon(Icons.cloud_outlined, color: t.primary, size: 40), const SizedBox(width: Spacing.x3),
             Expanded(child: Text(bucket.bucketName, style: Theme.of(context).textTheme.titleLarge)),
-          ]),
-        ])),
+          ],),
+        ],),),
         const SizedBox(height: Spacing.x4),
         _SectionCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const _SectionTitle(title: 'Configuration'),
           _FieldRow('Provider', bucket.provider), _FieldRow('Region', bucket.region),
           _FieldRow('Quota', '${bucket.maxQuotaGb} GB'), _FieldRow('Used', '${bucket.currentSizeGb.toStringAsFixed(2)} GB'),
           _FieldRow('Public', bucket.isPublic ? 'Yes' : 'No'), _FieldRow('Versioning', bucket.versioning ? 'Enabled' : 'Disabled'),
-        ])),
+        ],),),
         const SizedBox(height: Spacing.x4),
         _SectionCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const _SectionTitle(title: 'Timeline'),
           if (bucket.createdAt != null) _FieldRow('Created', Formatters.dateTime(bucket.createdAt!)),
           if (bucket.updatedAt != null) _FieldRow('Updated', Formatters.dateTime(bucket.updatedAt!)),
-        ])),
+        ],),),
       ],
     );
   }
@@ -101,22 +95,22 @@ class _FileDetail extends StatelessWidget {
             Icon(Icons.insert_drive_file_outlined, color: t.primary, size: 40), const SizedBox(width: Spacing.x3),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(file.name, style: Theme.of(context).textTheme.titleLarge), if (file.mimeType != null) Text(file.mimeType!, style: TextStyle(color: t.textSecondary)),
-            ])),
-          ]),
-        ])),
+            ],),),
+          ],),
+        ],),),
         const SizedBox(height: Spacing.x4),
         _SectionCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const _SectionTitle(title: 'File Info'),
           _FieldRow('Size', file.size > 0 ? '${(file.size / 1024).toStringAsFixed(1)} KB' : '—'),
           _FieldRow('MIME Type', file.mimeType ?? '—'), _FieldRow('Bucket', file.bucket),
           _FieldRow('Key', file.fileKey),
-        ])),
+        ],),),
         const SizedBox(height: Spacing.x4),
         _SectionCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const _SectionTitle(title: 'Timeline'),
           if (file.createdAt != null) _FieldRow('Created', Formatters.dateTime(file.createdAt!)),
           if (file.updatedAt != null) _FieldRow('Updated', Formatters.dateTime(file.updatedAt!)),
-        ])),
+        ],),),
       ],
     );
   }

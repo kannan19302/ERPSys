@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { SubscriptionsGeneratedController } from "./subscriptions-generated.controller";
 import { SubscriptionsGeneratedService } from "./subscriptions-generated.service";
 import { Module } from "@nestjs/common";

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Injectable, Logger } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 
@@ -6,7 +5,9 @@ import { prisma } from "@unerp/database";
 export class SalesOmnichannelDealsDeepService {
   private readonly logger = new Logger(SalesOmnichannelDealsDeepService.name);
 
-  private get db() { return prisma; }
+  private get db() {
+    return prisma;
+  }
 
   // 1. Omnichannel Channel Orchestration & Partner Routing (25 methods)
   async registerSalesChannel(tenantId: string, channel: any) {

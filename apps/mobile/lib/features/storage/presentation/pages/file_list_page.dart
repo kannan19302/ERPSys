@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -60,7 +59,7 @@ class _StorageFileListPageState extends ConsumerState<StorageFileListPage> {
                     : '${state.meta.total} file${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -96,10 +95,10 @@ class _StorageFileListPageState extends ConsumerState<StorageFileListPage> {
                 Expanded(
                   child: Text(f.name, style: Theme.of(context).textTheme.titleSmall),
                 ),
-              ]),
+              ],),
               const SizedBox(height: Spacing.x1),
               Text('${f.bucket} · ${f.mimeType ?? "unknown type"}',
-                  style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs)),
+                  style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs),),
             ],
           ),
         ),

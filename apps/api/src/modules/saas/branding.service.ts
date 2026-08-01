@@ -1,8 +1,4 @@
-// @ts-nocheck
-import {
-  Injectable,
-  NotFoundException,
-} from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 
 @Injectable()
@@ -27,16 +23,19 @@ export class BrandingService {
     return branding;
   }
 
-  async updateBranding(tenantId: string, dto: {
-    primaryColor?: string;
-    accentColor?: string;
-    companyName?: string;
-    supportEmail?: string;
-    supportUrl?: string;
-    customCss?: string;
-    customDomainId?: string;
-    isActive?: boolean;
-  }) {
+  async updateBranding(
+    tenantId: string,
+    dto: {
+      primaryColor?: string;
+      accentColor?: string;
+      companyName?: string;
+      supportEmail?: string;
+      supportUrl?: string;
+      customCss?: string;
+      customDomainId?: string;
+      isActive?: boolean;
+    },
+  ) {
     const branding = await prisma.tenantBranding.findUnique({
       where: { tenantId },
     });
@@ -60,7 +59,10 @@ export class BrandingService {
     });
   }
 
-  async uploadLogo(tenantId: string, file: { filename: string; path: string; mimetype: string }) {
+  async uploadLogo(
+    tenantId: string,
+    file: { filename: string; path: string; mimetype: string },
+  ) {
     const branding = await prisma.tenantBranding.findUnique({
       where: { tenantId },
     });
@@ -77,7 +79,10 @@ export class BrandingService {
     });
   }
 
-  async uploadFavicon(tenantId: string, file: { filename: string; path: string; mimetype: string }) {
+  async uploadFavicon(
+    tenantId: string,
+    file: { filename: string; path: string; mimetype: string },
+  ) {
     const branding = await prisma.tenantBranding.findUnique({
       where: { tenantId },
     });

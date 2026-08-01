@@ -82,7 +82,7 @@ final Timesheet _timesheetA = Timesheet(
   createdAt: DateTime(2026, 6, 15),
 );
 
-final ProjectBudget _budgetA = ProjectBudget(
+const ProjectBudget _budgetA = ProjectBudget(
   id: 'b1',
   projectId: 'prj1',
   category: 'Labor',
@@ -130,7 +130,7 @@ Paginated<T> _page<T>(List<T> items, {int page = 1, bool hasMore = false}) =>
 class FakeProjectsRepository implements ProjectsRepository {
   int deleteCalls = 0;
   int saveCalls = 0;
-  Result<void> deleteResult = Result<void>.ok(null);
+  Result<void> deleteResult = const Result<void>.ok(null);
   Result<Cacheable<Paginated<Project>>> listProjectsResult =
       Result<Cacheable<Paginated<Project>>>.ok(
     Cacheable<Paginated<Project>>(value: _page(<Project>[_projectA, _projectB])),
@@ -160,7 +160,7 @@ class FakeProjectsRepository implements ProjectsRepository {
     Cacheable<Paginated<ProjectBudget>>(value: _page(<ProjectBudget>[_budgetA])),
   );
   Result<ProjectBudget> saveProjectBudgetResult =
-      Result<ProjectBudget>.ok(_budgetA);
+      const Result<ProjectBudget>.ok(_budgetA);
 
   Result<Cacheable<Paginated<ProjectRisk>>> listProjectRisksResult =
       Result<Cacheable<Paginated<ProjectRisk>>>.ok(
@@ -332,7 +332,7 @@ class FakeProjectsRepository implements ProjectsRepository {
 
   @override
   Future<Result<ProjectBudget>> getProjectBudget(String id) async =>
-      Result<ProjectBudget>.ok(_budgetA);
+      const Result<ProjectBudget>.ok(_budgetA);
 
   @override
   Future<Result<ProjectBudget>> createProjectBudget(
@@ -572,7 +572,7 @@ void main() {
     test('repository failure surfaces as state.failure without crashing',
         () async {
       fakeRepository.listProjectsResult =
-          Result<Cacheable<Paginated<Project>>>.err(
+          const Result<Cacheable<Paginated<Project>>>.err(
         ServerFailure('API is down'),
       );
       container.read(projectListControllerProvider);
@@ -585,7 +585,7 @@ void main() {
     });
 
     test('delete failure surfaces from repository', () async {
-      fakeRepository.deleteResult = Result<void>.err(
+      fakeRepository.deleteResult = const Result<void>.err(
         ServerFailure('Cannot delete'),
       );
       container.read(projectListControllerProvider);
@@ -659,7 +659,7 @@ void main() {
 
     test('repository failure surfaces without crashing', () async {
       fakeRepository.listTasksResult =
-          Result<Cacheable<Paginated<Task>>>.err(
+          const Result<Cacheable<Paginated<Task>>>.err(
         ServerFailure('Tasks unavailable'),
       );
       container.read(taskListControllerProvider);
@@ -685,7 +685,7 @@ void main() {
 
     test('repository failure surfaces without crashing', () async {
       fakeRepository.listMilestonesResult =
-          Result<Cacheable<Paginated<Milestone>>>.err(
+          const Result<Cacheable<Paginated<Milestone>>>.err(
         ServerFailure('Milestones unavailable'),
       );
       container.read(milestoneListControllerProvider);
@@ -733,7 +733,7 @@ void main() {
 
     test('repository failure surfaces without crashing', () async {
       fakeRepository.listProjectBudgetsResult =
-          Result<Cacheable<Paginated<ProjectBudget>>>.err(
+          const Result<Cacheable<Paginated<ProjectBudget>>>.err(
         ServerFailure('Budgets unavailable'),
       );
       container.read(projectBudgetListControllerProvider);
@@ -766,7 +766,7 @@ void main() {
 
     test('repository failure surfaces without crashing', () async {
       fakeRepository.listProjectRisksResult =
-          Result<Cacheable<Paginated<ProjectRisk>>>.err(
+          const Result<Cacheable<Paginated<ProjectRisk>>>.err(
         ServerFailure('Risks unavailable'),
       );
       container.read(projectRiskListControllerProvider);
@@ -821,7 +821,7 @@ void main() {
 
     test('repository failure surfaces without crashing', () async {
       fakeRepository.listProjectPortfoliosResult =
-          Result<Cacheable<Paginated<ProjectPortfolio>>>.err(
+          const Result<Cacheable<Paginated<ProjectPortfolio>>>.err(
         ServerFailure('Portfolios unavailable'),
       );
       container.read(projectPortfolioListControllerProvider);
@@ -864,7 +864,7 @@ void main() {
 
     test('repository failure surfaces without crashing', () async {
       fakeRepository.listTimesheetsResult =
-          Result<Cacheable<Paginated<Timesheet>>>.err(
+          const Result<Cacheable<Paginated<Timesheet>>>.err(
         ServerFailure('Timesheets unavailable'),
       );
       container.read(timesheetListControllerProvider);

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Injectable,
   NotFoundException,
@@ -8,7 +7,9 @@ import { prisma } from "@unerp/database";
 
 @Injectable()
 export class PlanEngineService {
-  public get db(): typeof prisma { return prisma; }
+  public get db(): typeof prisma {
+    return prisma;
+  }
   async listPlans(_tenantId?: string) {
     return prisma.saaSPlan.findMany({
       where: { status: { not: "ARCHIVED" } },
@@ -33,23 +34,33 @@ export class PlanEngineService {
     return plan;
   }
 
-  async createPlan(_tenantId: string, dto: {
-    name: string;
-    description?: string;
-    price: number;
-    currency?: string;
-    interval?: string;
-    maxUsers: number;
-    maxStorage: number;
-    maxApiCalls?: number;
-    trialPeriodDays?: number;
-    isActive?: boolean;
-    sortOrder?: number;
-    stripePriceId?: string;
-  }) {
-    const stripePriceId = dto.stripePriceId ?? `${dto.name.toLowerCase().replace(/\s+/g, "-")}_${Date.now()}`;
-    const existing = await prisma.saaSPlan.findUnique({ where: { stripePriceId } });
-    if (existing) throw new ConflictException("Plan with this Stripe price ID already exists");
+  async createPlan(
+    _tenantId: string,
+    dto: {
+      name: string;
+      description?: string;
+      price: number;
+      currency?: string;
+      interval?: string;
+      maxUsers: number;
+      maxStorage: number;
+      maxApiCalls?: number;
+      trialPeriodDays?: number;
+      isActive?: boolean;
+      sortOrder?: number;
+      stripePriceId?: string;
+    },
+  ) {
+    const stripePriceId =
+      dto.stripePriceId ??
+      `${dto.name.toLowerCase().replace(/\s+/g, "-")}_${Date.now()}`;
+    const existing = await prisma.saaSPlan.findUnique({
+      where: { stripePriceId },
+    });
+    if (existing)
+      throw new ConflictException(
+        "Plan with this Stripe price ID already exists",
+      );
 
     return prisma.saaSPlan.create({
       data: {
@@ -66,7 +77,8 @@ export class PlanEngineService {
           create: {
             currency: dto.currency ?? "USD",
             region: "US",
-            monthly: dto.interval === "year" ? Math.round(dto.price / 12) : dto.price,
+            monthly:
+              dto.interval === "year" ? Math.round(dto.price / 12) : dto.price,
             yearly: dto.interval === "year" ? dto.price : dto.price * 12,
           },
         },
@@ -75,19 +87,23 @@ export class PlanEngineService {
     });
   }
 
-  async updatePlan(_tenantId: string, id: string, dto: {
-    name?: string;
-    description?: string;
-    price?: number;
-    currency?: string;
-    interval?: string;
-    maxUsers?: number;
-    maxStorage?: number;
-    maxApiCalls?: number;
-    trialPeriodDays?: number;
-    isActive?: boolean;
-    sortOrder?: number;
-  }) {
+  async updatePlan(
+    _tenantId: string,
+    id: string,
+    dto: {
+      name?: string;
+      description?: string;
+      price?: number;
+      currency?: string;
+      interval?: string;
+      maxUsers?: number;
+      maxStorage?: number;
+      maxApiCalls?: number;
+      trialPeriodDays?: number;
+      isActive?: boolean;
+      sortOrder?: number;
+    },
+  ) {
     const plan = await prisma.saaSPlan.findUnique({ where: { id } });
     if (!plan) throw new NotFoundException("Plan not found");
 
@@ -178,59 +194,82 @@ export class PlanEngineService {
     });
   }
 
-  async setPlanPrice(_tenantId: string, planId: string, dto: {
-    amount: number;
-    currency: string;
-    interval: string;
-    billingPeriods?: number;
-    isActive?: boolean;
-    stripePriceId?: string;
-  }) {
+  async setPlanPrice(
+    _tenantId: string,
+    planId: string,
+    dto: {
+      amount: number;
+      currency: string;
+      interval: string;
+      billingPeriods?: number;
+      isActive?: boolean;
+      stripePriceId?: string;
+    },
+  ) {
     const plan = await prisma.saaSPlan.findUnique({ where: { id: planId } });
     if (!plan) throw new NotFoundException("Plan not found");
 
     const region = "US";
     const existing = await prisma.saaSPlanPrice.findUnique({
-      where: { planId_currency_region: { planId, currency: dto.currency, region } },
+      where: {
+        planId_currency_region: { planId, currency: dto.currency, region },
+      },
     });
-    if (existing) throw new ConflictException("Price already exists for this plan/currency/region");
+    if (existing)
+      throw new ConflictException(
+        "Price already exists for this plan/currency/region",
+      );
 
     return prisma.saaSPlanPrice.create({
       data: {
         planId,
         currency: dto.currency,
         region,
-        monthly: dto.interval === "year" ? Math.round(dto.amount / 12) : dto.amount,
+        monthly:
+          dto.interval === "year" ? Math.round(dto.amount / 12) : dto.amount,
         yearly: dto.interval === "year" ? dto.amount : dto.amount * 12,
         isActive: dto.isActive ?? true,
       },
     });
   }
 
-  async updatePlanPrice(_tenantId: string, priceId: string, dto: {
-    amount?: number;
-    currency?: string;
-    interval?: string;
-    billingPeriods?: number;
-    isActive?: boolean;
-    stripePriceId?: string;
-  }) {
-    const price = await prisma.saaSPlanPrice.findUnique({ where: { id: priceId } });
+  async updatePlanPrice(
+    _tenantId: string,
+    priceId: string,
+    dto: {
+      amount?: number;
+      currency?: string;
+      interval?: string;
+      billingPeriods?: number;
+      isActive?: boolean;
+      stripePriceId?: string;
+    },
+  ) {
+    const price = await prisma.saaSPlanPrice.findUnique({
+      where: { id: priceId },
+    });
     if (!price) throw new NotFoundException("Plan price not found");
 
     const updateData: Record<string, unknown> = {};
     if (dto.amount !== undefined) {
-      updateData.monthly = dto.interval === "year" ? Math.round(dto.amount / 12) : dto.amount;
-      updateData.yearly = dto.interval === "year" ? dto.amount : dto.amount * 12;
+      updateData.monthly =
+        dto.interval === "year" ? Math.round(dto.amount / 12) : dto.amount;
+      updateData.yearly =
+        dto.interval === "year" ? dto.amount : dto.amount * 12;
     }
     if (dto.currency !== undefined) updateData.currency = dto.currency;
     if (dto.isActive !== undefined) updateData.isActive = dto.isActive;
 
-    return prisma.saaSPlanPrice.update({ where: { id: priceId }, data: updateData });
+    return prisma.saaSPlanPrice.update({
+      where: { id: priceId },
+      data: updateData,
+    });
   }
 
   async deletePlanPrice(_tenantId: string, priceId: string) {
-    const price = await prisma.saaSPlanPrice.findUnique({ where: { id: priceId } });
+    const price = await prisma.saaSPlanPrice.findUnique({
+      where: { id: priceId },
+    });
     if (!price) throw new NotFoundException("Plan price not found");
     return prisma.saaSPlanPrice.delete({ where: { id: priceId } });
   }
@@ -243,24 +282,34 @@ export class PlanEngineService {
     });
   }
 
-  async addPlanFeature(_tenantId: string, planId: string, dto: {
-    featureKey: string;
-    featureName: string;
-    featureType?: string;
-    featureValue?: string;
-    description?: string;
-    isHighlighted?: boolean;
-    sortOrder?: number;
-  }) {
+  async addPlanFeature(
+    _tenantId: string,
+    planId: string,
+    dto: {
+      featureKey: string;
+      featureName: string;
+      featureType?: string;
+      featureValue?: string;
+      description?: string;
+      isHighlighted?: boolean;
+      sortOrder?: number;
+    },
+  ) {
     const plan = await prisma.saaSPlan.findUnique({ where: { id: planId } });
     if (!plan) throw new NotFoundException("Plan not found");
 
-    const typeMap: Record<string, string> = { boolean: "BOOLEAN", numeric: "USAGE_LIMITED", text: "BOOLEAN", select: "BOOLEAN" };
+    const typeMap: Record<string, string> = {
+      boolean: "BOOLEAN",
+      numeric: "USAGE_LIMITED",
+      text: "BOOLEAN",
+      select: "BOOLEAN",
+    };
 
     const existing = await prisma.saaSPlanFeature.findUnique({
       where: { planId_featureKey: { planId, featureKey: dto.featureKey } },
     });
-    if (existing) throw new ConflictException("Feature already exists for this plan");
+    if (existing)
+      throw new ConflictException("Feature already exists for this plan");
 
     return prisma.saaSPlanFeature.create({
       data: {
@@ -269,35 +318,55 @@ export class PlanEngineService {
         name: dto.featureName,
         description: dto.description,
         type: typeMap[dto.featureType ?? "boolean"] ?? "BOOLEAN",
-        limitValue: dto.featureValue ? parseInt(dto.featureValue, 10) || null : null,
+        limitValue: dto.featureValue
+          ? parseInt(dto.featureValue, 10) || null
+          : null,
       },
     });
   }
 
-  async updatePlanFeature(_tenantId: string, featureId: string, dto: {
-    featureName?: string;
-    featureType?: string;
-    featureValue?: string;
-    description?: string;
-    isHighlighted?: boolean;
-    sortOrder?: number;
-  }) {
-    const feature = await prisma.saaSPlanFeature.findUnique({ where: { id: featureId } });
+  async updatePlanFeature(
+    _tenantId: string,
+    featureId: string,
+    dto: {
+      featureName?: string;
+      featureType?: string;
+      featureValue?: string;
+      description?: string;
+      isHighlighted?: boolean;
+      sortOrder?: number;
+    },
+  ) {
+    const feature = await prisma.saaSPlanFeature.findUnique({
+      where: { id: featureId },
+    });
     if (!feature) throw new NotFoundException("Plan feature not found");
 
-    const typeMap: Record<string, string> = { boolean: "BOOLEAN", numeric: "USAGE_LIMITED", text: "BOOLEAN", select: "BOOLEAN" };
+    const typeMap: Record<string, string> = {
+      boolean: "BOOLEAN",
+      numeric: "USAGE_LIMITED",
+      text: "BOOLEAN",
+      select: "BOOLEAN",
+    };
 
     const updateData: Record<string, unknown> = {};
     if (dto.featureName !== undefined) updateData.name = dto.featureName;
     if (dto.description !== undefined) updateData.description = dto.description;
-    if (dto.featureType !== undefined) updateData.type = typeMap[dto.featureType] ?? "BOOLEAN";
-    if (dto.featureValue !== undefined) updateData.limitValue = parseInt(dto.featureValue, 10) || null;
+    if (dto.featureType !== undefined)
+      updateData.type = typeMap[dto.featureType] ?? "BOOLEAN";
+    if (dto.featureValue !== undefined)
+      updateData.limitValue = parseInt(dto.featureValue, 10) || null;
 
-    return prisma.saaSPlanFeature.update({ where: { id: featureId }, data: updateData });
+    return prisma.saaSPlanFeature.update({
+      where: { id: featureId },
+      data: updateData,
+    });
   }
 
   async removePlanFeature(_tenantId: string, featureId: string) {
-    const feature = await prisma.saaSPlanFeature.findUnique({ where: { id: featureId } });
+    const feature = await prisma.saaSPlanFeature.findUnique({
+      where: { id: featureId },
+    });
     if (!feature) throw new NotFoundException("Plan feature not found");
     return prisma.saaSPlanFeature.delete({ where: { id: featureId } });
   }

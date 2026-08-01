@@ -1,9 +1,8 @@
-// @ts-nocheck
-import { Injectable, Logger } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
-import { SalesService, CreateOnlineOrderInput } from './sales.service';
-import type { OutboxEventPayload } from '../outbox/outbox-handler.registry';
+import { Injectable, Logger } from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
+import { SalesService, CreateOnlineOrderInput } from "./sales.service";
+import type { OutboxEventPayload } from "../outbox/outbox-handler.registry";
 
 /** Shape of the payload written by the ecommerce module's checkout flow. */
 export interface EcommerceCheckoutCompletedPayload {
@@ -21,7 +20,7 @@ export interface EcommerceCheckoutCompletedPayload {
   };
 }
 
-const DESTINATION = 'sales.createOrder';
+const DESTINATION = "sales.createOrder";
 
 @Injectable()
 export class SalesOutboxHandler {
@@ -34,10 +33,13 @@ export class SalesOutboxHandler {
   }
 
   async handle(event: OutboxEventPayload): Promise<void> {
-    const payload = event.payload as unknown as EcommerceCheckoutCompletedPayload;
+    const payload =
+      event.payload as unknown as EcommerceCheckoutCompletedPayload;
     const { tenantId } = event;
 
-    this.logger.log(`Processing outbox event ${event.eventId} for cart ${payload.cartId}`);
+    this.logger.log(
+      `Processing outbox event ${event.eventId} for cart ${payload.cartId}`,
+    );
 
     try {
       const salesOrder = await this.salesService.createConfirmedOnlineOrder(
@@ -53,7 +55,7 @@ export class SalesOutboxHandler {
           salesOrderId: salesOrder.id,
           provider: payload.paymentInfo.provider,
           providerIntentId: payload.paymentInfo.providerIntentId,
-          status: 'SUCCEEDED',
+          status: "SUCCEEDED",
           amount: payload.paymentInfo.amount,
           currency: payload.paymentInfo.currency,
           rawResponse: payload.paymentInfo.rawResponse as Prisma.InputJsonValue,
@@ -61,18 +63,22 @@ export class SalesOutboxHandler {
       });
 
       await prisma.storefrontCheckoutState.updateMany({
-        where: { tenantId, cartId: payload.cartId, status: 'ORDER_CREATING' },
-        data: { status: 'ORDER_COMPLETED', salesOrderId: salesOrder.id },
+        where: { tenantId, cartId: payload.cartId, status: "ORDER_CREATING" },
+        data: { status: "ORDER_COMPLETED", salesOrderId: salesOrder.id },
       });
 
-      this.logger.log(`Order ${salesOrder.id} created for cart ${payload.cartId}`);
+      this.logger.log(
+        `Order ${salesOrder.id} created for cart ${payload.cartId}`,
+      );
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
-      this.logger.error(`Failed to create order for cart ${payload.cartId}: ${message}`);
+      const message = err instanceof Error ? err.message : "Unknown error";
+      this.logger.error(
+        `Failed to create order for cart ${payload.cartId}: ${message}`,
+      );
 
       await prisma.storefrontCheckoutState.updateMany({
-        where: { tenantId, cartId: payload.cartId, status: 'ORDER_CREATING' },
-        data: { status: 'ORDER_FAILED', errorMessage: message },
+        where: { tenantId, cartId: payload.cartId, status: "ORDER_CREATING" },
+        data: { status: "ORDER_FAILED", errorMessage: message },
       });
 
       throw err;

@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -60,8 +59,6 @@ class _PayrollRunDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Palette t = context.tokens;
-
     final (String label, UiTone tone) = switch (run.status) {
       PayrollRunStatus.draft => ('Draft', UiTone.neutral),
       PayrollRunStatus.completed => ('Completed', UiTone.success),
@@ -89,7 +86,7 @@ class _PayrollRunDetail extends StatelessWidget {
               ),
               const SizedBox(height: Spacing.x3),
               _Row('Period',
-                  '${Formatters.date(run.periodStart)} – ${Formatters.date(run.periodEnd)}'),
+                  '${Formatters.date(run.periodStart)} – ${Formatters.date(run.periodEnd)}',),
               _Row('Employees', '${run.totalEmployees}'),
               _Row('Total Salary', Formatters.currency(run.totalSalary)),
               if (run.runDate != null)

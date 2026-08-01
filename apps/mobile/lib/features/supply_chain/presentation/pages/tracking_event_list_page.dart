@@ -1,11 +1,9 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/paginated_list_view.dart';
 import '../../../../core/widgets/state_views.dart';
-import '../../../../core/widgets/ui_card.dart';
 import '../../domain/entities/supply_chain.dart';
 import '../providers/supply_chain_providers.dart';
 
@@ -33,8 +31,8 @@ class _TrackingEventListPageState extends ConsumerState<TrackingEventListPage> {
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
             child: Row(children: [
               Text(state.isLoading ? 'Loading...' : '${state.meta.total} event${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
-            ]),
+                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -91,21 +89,21 @@ class _EventTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(event.status ?? 'Update',
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                   if (event.location != null) ...[
                     const SizedBox(height: Spacing.x0_5),
                     Text(event.location!,
-                        style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
+                        style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
                   ],
                   if (event.description != null) ...[
                     const SizedBox(height: Spacing.x0_5),
                     Text(event.description!,
-                        style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
+                        style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
                   ],
                   if (event.timestamp != null) ...[
                     const SizedBox(height: Spacing.x0_5),
                     Text(Formatters.dateTime(event.timestamp!),
-                        style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
+                        style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
                   ],
                 ],
               ),

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import React, { useState, useEffect } from "react";
 import { KeyRound, Plus, Eye, Trash2, Copy, AlertTriangle } from "lucide-react";

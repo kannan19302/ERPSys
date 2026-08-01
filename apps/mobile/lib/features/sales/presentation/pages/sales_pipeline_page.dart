@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -56,7 +55,6 @@ class _PipelineView extends StatelessWidget {
   Widget build(BuildContext context) {
     // For simplicity, use the first pipeline
     final SalesPipeline pipeline = pipelines.first;
-    final Palette t = context.tokens;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -110,7 +108,7 @@ class _StageColumn extends StatelessWidget {
               children: <Widget>[
                 Text(
                   stage.name,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontWeight: TypeScale.semibold,
                     fontSize: TypeScale.sm,
                   ),
@@ -176,7 +174,7 @@ class _StageColumn extends StatelessWidget {
                                 const SizedBox(height: Spacing.x1),
                                 Text(
                                   Formatters.currency(opp.expectedRevenue!),
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontWeight: TypeScale.semibold,
                                     fontSize: TypeScale.sm,
                                   ),

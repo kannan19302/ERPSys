@@ -1,6 +1,10 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
 
 export interface ExportManifest {
   tenant: Record<string, unknown>;
@@ -19,11 +23,11 @@ export interface ExportManifest {
 export class TenantLifecycleService {
   async getLifecycleStatus(tenantId: string) {
     const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
-    if (!tenant) throw new NotFoundException('Tenant not found');
+    if (!tenant) throw new NotFoundException("Tenant not found");
 
     const events = await prisma.tenantLifecycleEvent.findMany({
       where: { tenantId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take: 50,
     });
 
@@ -47,16 +51,26 @@ export class TenantLifecycleService {
     };
   }
 
-  async exportTenant(tenantId: string, options: { format?: string; includeFiles?: boolean } = {}) {
+  async exportTenant(
+    tenantId: string,
+    options: { format?: string; includeFiles?: boolean } = {},
+  ) {
     const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
-    if (!tenant) throw new NotFoundException('Tenant not found');
+    if (!tenant) throw new NotFoundException("Tenant not found");
 
-    const format = options.format ?? 'json';
+    const format = options.format ?? "json";
 
     const [users, organizations, roles] = await Promise.all([
       prisma.user.findMany({
         where: { tenantId },
-        select: { id: true, email: true, firstName: true, lastName: true, status: true, createdAt: true },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          status: true,
+          createdAt: true,
+        },
       }),
       prisma.organization.findMany({ where: { tenantId } }),
       prisma.role.findMany({ where: { tenantId } }),
@@ -86,8 +100,8 @@ export class TenantLifecycleService {
     await prisma.tenantLifecycleEvent.create({
       data: {
         tenantId,
-        eventType: 'EXPORT',
-        status: 'COMPLETED',
+        eventType: "EXPORT",
+        status: "COMPLETED",
         completedAt: new Date(),
         payload: {
           format,
@@ -102,14 +116,16 @@ export class TenantLifecycleService {
 
   async suspendTenant(tenantId: string, initiatedBy?: string) {
     const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
-    if (!tenant) throw new NotFoundException('Tenant not found');
-    if (tenant.status === 'SUSPENDED') throw new ConflictException('Tenant is already suspended');
-    if (tenant.status === 'PURGED') throw new BadRequestException('Cannot suspend a purged tenant');
+    if (!tenant) throw new NotFoundException("Tenant not found");
+    if (tenant.status === "SUSPENDED")
+      throw new ConflictException("Tenant is already suspended");
+    if (tenant.status === "PURGED")
+      throw new BadRequestException("Cannot suspend a purged tenant");
 
     await prisma.$transaction(async (tx) => {
       await tx.tenant.update({
         where: { id: tenantId },
-        data: { status: 'SUSPENDED' },
+        data: { status: "SUSPENDED" },
       });
 
       await tx.userSession.deleteMany({
@@ -119,47 +135,62 @@ export class TenantLifecycleService {
       await tx.tenantLifecycleEvent.create({
         data: {
           tenantId,
-          eventType: 'SUSPEND',
-          status: 'COMPLETED',
+          eventType: "SUSPEND",
+          status: "COMPLETED",
           initiatedBy,
           completedAt: new Date(),
         },
       });
     });
 
-    return { message: 'Tenant suspended successfully', tenantId, status: 'SUSPENDED' };
+    return {
+      message: "Tenant suspended successfully",
+      tenantId,
+      status: "SUSPENDED",
+    };
   }
 
   async unsuspendTenant(tenantId: string, initiatedBy?: string) {
     const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
-    if (!tenant) throw new NotFoundException('Tenant not found');
-    if (tenant.status !== 'SUSPENDED') throw new ConflictException('Tenant is not currently suspended');
+    if (!tenant) throw new NotFoundException("Tenant not found");
+    if (tenant.status !== "SUSPENDED")
+      throw new ConflictException("Tenant is not currently suspended");
 
     await prisma.$transaction(async (tx) => {
       await tx.tenant.update({
         where: { id: tenantId },
-        data: { status: 'ACTIVE' },
+        data: { status: "ACTIVE" },
       });
 
       await tx.tenantLifecycleEvent.create({
         data: {
           tenantId,
-          eventType: 'UNSUSPEND',
-          status: 'COMPLETED',
+          eventType: "UNSUSPEND",
+          status: "COMPLETED",
           initiatedBy,
           completedAt: new Date(),
         },
       });
     });
 
-    return { message: 'Tenant unsuspended successfully', tenantId, status: 'ACTIVE' };
+    return {
+      message: "Tenant unsuspended successfully",
+      tenantId,
+      status: "ACTIVE",
+    };
   }
 
-  async offboardTenant(tenantId: string, retentionDays: number = 90, initiatedBy?: string) {
+  async offboardTenant(
+    tenantId: string,
+    retentionDays: number = 90,
+    initiatedBy?: string,
+  ) {
     const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
-    if (!tenant) throw new NotFoundException('Tenant not found');
-    if (tenant.status === 'PURGED') throw new BadRequestException('Tenant has already been purged');
-    if (tenant.status === 'OFFBOARDING') throw new ConflictException('Tenant is already being offboarded');
+    if (!tenant) throw new NotFoundException("Tenant not found");
+    if (tenant.status === "PURGED")
+      throw new BadRequestException("Tenant has already been purged");
+    if (tenant.status === "OFFBOARDING")
+      throw new ConflictException("Tenant is already being offboarded");
 
     const offboardDate = new Date();
     offboardDate.setDate(offboardDate.getDate() + retentionDays);
@@ -167,14 +198,14 @@ export class TenantLifecycleService {
     await prisma.$transaction(async (tx) => {
       await tx.tenant.update({
         where: { id: tenantId },
-        data: { status: 'OFFBOARDING' },
+        data: { status: "OFFBOARDING" },
       });
 
       await tx.tenantLifecycleEvent.create({
         data: {
           tenantId,
-          eventType: 'OFFBOARD',
-          status: 'COMPLETED',
+          eventType: "OFFBOARD",
+          status: "COMPLETED",
           initiatedBy,
           retentionDays,
           completedAt: new Date(),
@@ -184,9 +215,9 @@ export class TenantLifecycleService {
     });
 
     return {
-      message: 'Tenant offboarding initiated',
+      message: "Tenant offboarding initiated",
       tenantId,
-      status: 'OFFBOARDING',
+      status: "OFFBOARDING",
       retentionDays,
       autoPurgeDate: offboardDate.toISOString(),
     };
@@ -194,33 +225,41 @@ export class TenantLifecycleService {
 
   async cancelOffboarding(tenantId: string, initiatedBy?: string) {
     const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
-    if (!tenant) throw new NotFoundException('Tenant not found');
-    if (tenant.status !== 'OFFBOARDING') throw new ConflictException('Tenant is not currently in offboarding state');
+    if (!tenant) throw new NotFoundException("Tenant not found");
+    if (tenant.status !== "OFFBOARDING")
+      throw new ConflictException(
+        "Tenant is not currently in offboarding state",
+      );
 
     await prisma.$transaction(async (tx) => {
       await tx.tenant.update({
         where: { id: tenantId },
-        data: { status: 'ACTIVE' },
+        data: { status: "ACTIVE" },
       });
 
       await tx.tenantLifecycleEvent.create({
         data: {
           tenantId,
-          eventType: 'CANCEL_OFFBOARD',
-          status: 'COMPLETED',
+          eventType: "CANCEL_OFFBOARD",
+          status: "COMPLETED",
           initiatedBy,
           completedAt: new Date(),
         },
       });
     });
 
-    return { message: 'Offboarding cancelled, tenant restored to active', tenantId, status: 'ACTIVE' };
+    return {
+      message: "Offboarding cancelled, tenant restored to active",
+      tenantId,
+      status: "ACTIVE",
+    };
   }
 
   async purgeTenant(tenantId: string, initiatedBy?: string) {
     const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
-    if (!tenant) throw new NotFoundException('Tenant not found');
-    if (tenant.status === 'PURGED') throw new ConflictException('Tenant has already been purged');
+    if (!tenant) throw new NotFoundException("Tenant not found");
+    if (tenant.status === "PURGED")
+      throw new ConflictException("Tenant has already been purged");
 
     const models = await this.getAllTenantScopedModels();
     let totalDeleted = 0;
@@ -229,7 +268,12 @@ export class TenantLifecycleService {
       for (const modelName of models) {
         try {
           const model = (tx as any)[modelName] as
-            { deleteMany: (args: { where: { tenantId: string } }) => Promise<{ count: number }> } | undefined;
+            | {
+                deleteMany: (args: {
+                  where: { tenantId: string };
+                }) => Promise<{ count: number }>;
+              }
+            | undefined;
           if (model?.deleteMany) {
             const result = await model.deleteMany({ where: { tenantId } });
             totalDeleted += result.count;
@@ -242,8 +286,8 @@ export class TenantLifecycleService {
       await tx.tenantLifecycleEvent.create({
         data: {
           tenantId,
-          eventType: 'PURGE',
-          status: 'COMPLETED',
+          eventType: "PURGE",
+          status: "COMPLETED",
           initiatedBy,
           completedAt: new Date(),
           payload: { recordsDeleted: totalDeleted },
@@ -253,25 +297,33 @@ export class TenantLifecycleService {
       await tx.tenant.delete({ where: { id: tenantId } });
     });
 
-    return { message: 'Tenant permanently purged', recordsDeleted: totalDeleted };
+    return {
+      message: "Tenant permanently purged",
+      recordsDeleted: totalDeleted,
+    };
   }
 
   async getExportHistory(tenantId: string) {
     return prisma.tenantLifecycleEvent.findMany({
-      where: { tenantId, eventType: 'EXPORT' },
-      orderBy: { createdAt: 'desc' },
+      where: { tenantId, eventType: "EXPORT" },
+      orderBy: { createdAt: "desc" },
       take: 50,
     });
   }
 
-  private async getTenantModelCounts(tenantId: string): Promise<Record<string, { model: string; count: number }>> {
+  private async getTenantModelCounts(
+    tenantId: string,
+  ): Promise<Record<string, { model: string; count: number }>> {
     const models = await this.getAllTenantScopedModels();
     const counts: Record<string, { model: string; count: number }> = {};
 
     for (const modelName of models) {
       try {
         const model = (prisma as any)[modelName] as
-          { count: (args: { where: { tenantId: string } }) => Promise<number> } | undefined;
+          | {
+              count: (args: { where: { tenantId: string } }) => Promise<number>;
+            }
+          | undefined;
         if (model?.count) {
           const count = await model.count({ where: { tenantId } });
           if (count > 0) {
@@ -287,10 +339,16 @@ export class TenantLifecycleService {
   }
 
   private async getAllTenantScopedModels(): Promise<string[]> {
-    const dmmf = (prisma as any)._dmmf as { datamodel?: { models?: Array<{ name: string; fields: Array<{ name: string }> }> } } | undefined;
+    const dmmf = (prisma as any)._dmmf as
+      | {
+          datamodel?: {
+            models?: Array<{ name: string; fields: Array<{ name: string }> }>;
+          };
+        }
+      | undefined;
     if (dmmf?.datamodel?.models) {
       return dmmf.datamodel.models
-        .filter((m) => m.fields.some((f) => f.name === 'tenantId'))
+        .filter((m) => m.fields.some((f) => f.name === "tenantId"))
         .map((m) => m.name.charAt(0).toLowerCase() + m.name.slice(1));
     }
 
@@ -299,10 +357,22 @@ export class TenantLifecycleService {
 
   private getDefaultModelNames(): string[] {
     return [
-      'user', 'organization', 'role', 'userRole', 'userSession', 'userGroup',
-      'userGroupMember', 'accessPackage', 'ssoConfig', 'ipRestriction',
-      'savedView', 'installedApp', 'demoDataRecord', 'passwordResetToken',
-      'dataRetentionPolicy', 'dataErasureRequest',
+      "user",
+      "organization",
+      "role",
+      "userRole",
+      "userSession",
+      "userGroup",
+      "userGroupMember",
+      "accessPackage",
+      "ssoConfig",
+      "ipRestriction",
+      "savedView",
+      "installedApp",
+      "demoDataRecord",
+      "passwordResetToken",
+      "dataRetentionPolicy",
+      "dataErasureRequest",
     ];
   }
 }

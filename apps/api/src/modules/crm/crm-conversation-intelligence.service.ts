@@ -1,7 +1,10 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { z } from 'zod';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { z } from "zod";
 
 export const logCallSchema = z.object({
   subject: z.string().min(1).max(200),
@@ -17,12 +20,37 @@ export const logCallSchema = z.object({
 export type LogCallInput = z.infer<typeof logCallSchema>;
 
 const POSITIVE_WORDS = [
-  'great', 'excited', 'happy', 'love', 'perfect', 'awesome', 'yes', 'agree', 'interested',
-  'ready to move forward', 'sounds good', 'looking forward', 'thank you', 'appreciate',
+  "great",
+  "excited",
+  "happy",
+  "love",
+  "perfect",
+  "awesome",
+  "yes",
+  "agree",
+  "interested",
+  "ready to move forward",
+  "sounds good",
+  "looking forward",
+  "thank you",
+  "appreciate",
 ];
 const NEGATIVE_WORDS = [
-  'concerned', 'worried', 'expensive', 'too much', 'not sure', 'hesitant', 'competitor',
-  'cancel', 'disappointed', 'unhappy', 'frustrated', 'issue', 'problem', 'delay', 'no budget',
+  "concerned",
+  "worried",
+  "expensive",
+  "too much",
+  "not sure",
+  "hesitant",
+  "competitor",
+  "cancel",
+  "disappointed",
+  "unhappy",
+  "frustrated",
+  "issue",
+  "problem",
+  "delay",
+  "no budget",
 ];
 const ACTION_ITEM_PATTERNS = [
   /\b(will|going to|plan to)\s+([a-z][^.?!]{3,80})/gi,
@@ -45,8 +73,15 @@ const ACTION_ITEM_PATTERNS = [
 @Injectable()
 export class CrmConversationIntelligenceService {
   async logCall(tenantId: string, orgId: string, dto: LogCallInput) {
-    if (!dto.opportunityId && !dto.leadId && !dto.customerId && !dto.contactId) {
-      throw new BadRequestException('A call must be linked to at least one of opportunity/lead/customer/contact');
+    if (
+      !dto.opportunityId &&
+      !dto.leadId &&
+      !dto.customerId &&
+      !dto.contactId
+    ) {
+      throw new BadRequestException(
+        "A call must be linked to at least one of opportunity/lead/customer/contact",
+      );
     }
 
     const analysis = this.analyzeTranscript(dto.transcriptText);
@@ -55,7 +90,7 @@ export class CrmConversationIntelligenceService {
       data: {
         tenantId,
         orgId,
-        type: 'CALL',
+        type: "CALL",
         subject: dto.subject,
         description: analysis.summary,
         opportunityId: dto.opportunityId ?? null,
@@ -78,9 +113,12 @@ export class CrmConversationIntelligenceService {
 
   /** Re-run analysis on an existing CALL activity (e.g. transcript was edited/corrected). */
   async regenerateSummary(tenantId: string, activityId: string) {
-    const activity = await prisma.activity.findFirst({ where: { id: activityId, tenantId, type: 'CALL' } });
-    if (!activity) throw new NotFoundException('Call activity not found');
-    if (!activity.transcriptText) throw new BadRequestException('Activity has no transcript to analyze');
+    const activity = await prisma.activity.findFirst({
+      where: { id: activityId, tenantId, type: "CALL" },
+    });
+    if (!activity) throw new NotFoundException("Call activity not found");
+    if (!activity.transcriptText)
+      throw new BadRequestException("Activity has no transcript to analyze");
 
     const analysis = this.analyzeTranscript(activity.transcriptText);
     return prisma.activity.update({
@@ -97,33 +135,46 @@ export class CrmConversationIntelligenceService {
   }
 
   async getCall(tenantId: string, activityId: string) {
-    const activity = await prisma.activity.findFirst({ where: { id: activityId, tenantId, type: 'CALL' } });
-    if (!activity) throw new NotFoundException('Call activity not found');
+    const activity = await prisma.activity.findFirst({
+      where: { id: activityId, tenantId, type: "CALL" },
+    });
+    if (!activity) throw new NotFoundException("Call activity not found");
     return activity;
   }
 
   async listCalls(
     tenantId: string,
-    filters?: { opportunityId?: string; leadId?: string; customerId?: string; sentiment?: string },
+    filters?: {
+      opportunityId?: string;
+      leadId?: string;
+      customerId?: string;
+      sentiment?: string;
+    },
   ) {
     return prisma.activity.findMany({
       where: {
         tenantId,
-        type: 'CALL',
-        ...(filters?.opportunityId ? { opportunityId: filters.opportunityId } : {}),
+        type: "CALL",
+        ...(filters?.opportunityId
+          ? { opportunityId: filters.opportunityId }
+          : {}),
         ...(filters?.leadId ? { leadId: filters.leadId } : {}),
         ...(filters?.customerId ? { customerId: filters.customerId } : {}),
         ...(filters?.sentiment ? { aiSentiment: filters.sentiment } : {}),
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
   /** Tenant-wide conversation intelligence rollup: sentiment mix, avg talk-track score, top action-item volume. */
   async getInsightsSummary(tenantId: string) {
     const calls = await prisma.activity.findMany({
-      where: { tenantId, type: 'CALL', aiSummaryGeneratedAt: { not: null } },
-      select: { aiSentiment: true, aiTalkTrackScore: true, aiActionItems: true },
+      where: { tenantId, type: "CALL", aiSummaryGeneratedAt: { not: null } },
+      select: {
+        aiSentiment: true,
+        aiTalkTrackScore: true,
+        aiActionItems: true,
+      },
     });
 
     const bySentiment: Record<string, number> = {};
@@ -131,18 +182,21 @@ export class CrmConversationIntelligenceService {
     let scoreCount = 0;
     let totalActionItems = 0;
     for (const c of calls) {
-      if (c.aiSentiment) bySentiment[c.aiSentiment] = (bySentiment[c.aiSentiment] ?? 0) + 1;
-      if (typeof c.aiTalkTrackScore === 'number') {
+      if (c.aiSentiment)
+        bySentiment[c.aiSentiment] = (bySentiment[c.aiSentiment] ?? 0) + 1;
+      if (typeof c.aiTalkTrackScore === "number") {
         scoreSum += c.aiTalkTrackScore;
         scoreCount++;
       }
-      if (Array.isArray(c.aiActionItems)) totalActionItems += c.aiActionItems.length;
+      if (Array.isArray(c.aiActionItems))
+        totalActionItems += c.aiActionItems.length;
     }
 
     return {
       totalCallsAnalyzed: calls.length,
       bySentiment,
-      averageTalkTrackScore: scoreCount > 0 ? Math.round(scoreSum / scoreCount) : null,
+      averageTalkTrackScore:
+        scoreCount > 0 ? Math.round(scoreSum / scoreCount) : null,
       totalActionItemsExtracted: totalActionItems,
     };
   }
@@ -156,7 +210,7 @@ export class CrmConversationIntelligenceService {
    */
   private analyzeTranscript(transcript: string): {
     summary: string;
-    sentiment: 'POSITIVE' | 'NEUTRAL' | 'NEGATIVE';
+    sentiment: "POSITIVE" | "NEUTRAL" | "NEGATIVE";
     actionItems: string[];
     talkTrackScore: number;
   } {
@@ -167,16 +221,21 @@ export class CrmConversationIntelligenceService {
     let negativeHits = 0;
     for (const w of NEGATIVE_WORDS) if (lower.includes(w)) negativeHits++;
 
-    const sentiment: 'POSITIVE' | 'NEUTRAL' | 'NEGATIVE' =
-      positiveHits - negativeHits >= 2 ? 'POSITIVE' : negativeHits - positiveHits >= 2 ? 'NEGATIVE' : 'NEUTRAL';
+    const sentiment: "POSITIVE" | "NEUTRAL" | "NEGATIVE" =
+      positiveHits - negativeHits >= 2
+        ? "POSITIVE"
+        : negativeHits - positiveHits >= 2
+          ? "NEGATIVE"
+          : "NEUTRAL";
 
     const actionItems = new Set<string>();
     for (const pattern of ACTION_ITEM_PATTERNS) {
       pattern.lastIndex = 0;
       let match: RegExpExecArray | null;
       while ((match = pattern.exec(transcript)) !== null) {
-        const captured = (match[2] ?? match[1] ?? '').trim();
-        if (captured.length >= 4) actionItems.add(captured.replace(/\s+/g, ' ').slice(0, 140));
+        const captured = (match[2] ?? match[1] ?? "").trim();
+        if (captured.length >= 4)
+          actionItems.add(captured.replace(/\s+/g, " ").slice(0, 140));
         if (actionItems.size >= 10) break;
       }
     }
@@ -190,19 +249,31 @@ export class CrmConversationIntelligenceService {
 
     // 0-100 heuristic: baseline on sentence/word richness, +engagement for
     // questions asked (discovery), -penalty for heavy negative-keyword density.
-    let talkTrackScore = Math.min(70, Math.round((wordCount / 20) + sentences.length * 2));
+    let talkTrackScore = Math.min(
+      70,
+      Math.round(wordCount / 20 + sentences.length * 2),
+    );
     talkTrackScore += Math.min(20, questionCount * 4);
     talkTrackScore -= negativeHits * 5;
     talkTrackScore += positiveHits * 3;
     talkTrackScore = Math.max(0, Math.min(100, talkTrackScore));
 
     const openingLine = sentences[0] ?? transcript.slice(0, 140);
-    const closingLine = sentences.length > 1 ? sentences[sentences.length - 1] : '';
-    const actionSummary = actionItems.size > 0 ? ` Action items: ${Array.from(actionItems).slice(0, 3).join('; ')}.` : '';
+    const closingLine =
+      sentences.length > 1 ? sentences[sentences.length - 1] : "";
+    const actionSummary =
+      actionItems.size > 0
+        ? ` Action items: ${Array.from(actionItems).slice(0, 3).join("; ")}.`
+        : "";
     const summary =
-      `${sentiment === 'POSITIVE' ? 'Positive' : sentiment === 'NEGATIVE' ? 'At-risk' : 'Neutral'} call. ` +
-      `${openingLine}${closingLine ? ` ... ${closingLine}` : ''}${actionSummary}`.trim();
+      `${sentiment === "POSITIVE" ? "Positive" : sentiment === "NEGATIVE" ? "At-risk" : "Neutral"} call. ` +
+      `${openingLine}${closingLine ? ` ... ${closingLine}` : ""}${actionSummary}`.trim();
 
-    return { summary, sentiment, actionItems: Array.from(actionItems), talkTrackScore };
+    return {
+      summary,
+      sentiment,
+      actionItems: Array.from(actionItems),
+      talkTrackScore,
+    };
   }
 }

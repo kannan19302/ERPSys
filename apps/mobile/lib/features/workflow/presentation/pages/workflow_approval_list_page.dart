@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -55,7 +54,7 @@ class _WorkflowApprovalListPageState extends ConsumerState<WorkflowApprovalListP
                     : '${state.meta.total} task${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -128,15 +127,15 @@ class _ApprovalTaskTile extends StatelessWidget {
               label: task.status,
               tone: _statusTone(task.status),
             ),
-          ]),
+          ],),
           const SizedBox(height: Spacing.x1),
           if (task.assignedTo != null)
             Text('Assigned to: ${task.assignedTo}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.sm)),
+                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.sm),),
           const SizedBox(height: Spacing.x1),
           Row(children: [
             Text('Created ${Formatters.relative(task.createdAt)}',
-                style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
+                style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
             if (task.dueDate != null) ...[
               const Spacer(),
               Icon(Icons.access_time, size: 14, color: task.dueDate!.isBefore(DateTime.now()) ? t.danger : t.textTertiary),
@@ -149,7 +148,7 @@ class _ApprovalTaskTile extends StatelessWidget {
                 ),
               ),
             ],
-          ]),
+          ],),
           if (onApprove != null || onReject != null) ...[
             const SizedBox(height: Spacing.x3),
             Row(

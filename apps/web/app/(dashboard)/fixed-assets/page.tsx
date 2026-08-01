@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import React, { useState, useEffect } from "react";
 import {
@@ -43,7 +42,10 @@ export default function FixedAssetsPage() {
 
   return (
     <div>
-      <PageHeader title="Asset Registry" description={`${assets.length} assets`} />
+      <PageHeader
+        title="Asset Registry"
+        description={`${assets.length} assets`}
+      />
       <StatCardRow
         stats={[
           { label: "Total Assets", value: summary?.totalAssets || 0 },

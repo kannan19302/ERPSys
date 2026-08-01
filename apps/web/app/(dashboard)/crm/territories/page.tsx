@@ -1,13 +1,31 @@
-// @ts-nocheck
-'use client';
-import styles from './page.module.css';
-import React, { useState, useEffect, useCallback } from 'react';
-import { Card, PageHeader, Button, Spinner, Badge, useToast, DataTable, type Column, type SortOrder } from '@unerp/ui';
+"use client";
+import styles from "./page.module.css";
+import React, { useState, useEffect, useCallback } from "react";
 import {
-  Plus, X, MapPin, Users, DollarSign, TrendingUp,
-  ChevronRight, AlertCircle, Award, Layers, Trash2
-} from 'lucide-react';
-import { useApiClient, RouteGuard } from '@unerp/framework';
+  Card,
+  PageHeader,
+  Button,
+  Spinner,
+  Badge,
+  useToast,
+  DataTable,
+  type Column,
+  type SortOrder,
+} from "@unerp/ui";
+import {
+  Plus,
+  X,
+  MapPin,
+  Users,
+  DollarSign,
+  TrendingUp,
+  ChevronRight,
+  AlertCircle,
+  Award,
+  Layers,
+  Trash2,
+} from "lucide-react";
+import { useApiClient, RouteGuard } from "@unerp/framework";
 
 interface Territory {
   id: string;
@@ -39,10 +57,10 @@ export default function TerritoriesPage() {
   const [submitting, setSubmitting] = useState(false);
   const [modalSuccess, setModalSuccess] = useState(false);
 
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [parentId, setParentId] = useState('');
-  const [managerId, setManagerId] = useState('');
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [parentId, setParentId] = useState("");
+  const [managerId, setManagerId] = useState("");
 
   const toast = useToast();
   const client = useApiClient();
@@ -52,14 +70,17 @@ export default function TerritoriesPage() {
     setError(null);
     try {
       const [terrRes, perfRes] = await Promise.all([
-        client.get<any>('/crm/territories'),
-        client.get<any>('/crm/analytics/territory-performance'),
+        client.get<any>("/crm/territories"),
+        client.get<any>("/crm/analytics/territory-performance"),
       ]);
-      setTerritories(Array.isArray(terrRes) ? terrRes : (terrRes?.data || []));
-      setPerformance(Array.isArray(perfRes) ? perfRes : (perfRes?.data || []));
+      setTerritories(Array.isArray(terrRes) ? terrRes : terrRes?.data || []);
+      setPerformance(Array.isArray(perfRes) ? perfRes : perfRes?.data || []);
     } catch (err) {
-      setError('Could not load territories. Please try again.');
-      toast.error('Could not load territories', err instanceof Error ? err.message : undefined);
+      setError("Could not load territories. Please try again.");
+      toast.error(
+        "Could not load territories",
+        err instanceof Error ? err.message : undefined,
+      );
       setTerritories([]);
       setPerformance([]);
     } finally {
@@ -67,67 +88,127 @@ export default function TerritoriesPage() {
     }
   }, [client]);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    const payload = { name, description: description || undefined, parentId: parentId || undefined, managerId: managerId || undefined };
+    const payload = {
+      name,
+      description: description || undefined,
+      parentId: parentId || undefined,
+      managerId: managerId || undefined,
+    };
 
     try {
-      await client.post('/crm/territories', payload);
+      await client.post("/crm/territories", payload);
       setModalSuccess(true);
-      toast.success('Territory created', `"${name}" has been added.`);
-      setTimeout(() => { setIsModalOpen(false); resetForm(); loadData(); }, 1200);
+      toast.success("Territory created", `"${name}" has been added.`);
+      setTimeout(() => {
+        setIsModalOpen(false);
+        resetForm();
+        loadData();
+      }, 1200);
     } catch (err) {
-      toast.error('Could not create territory', err instanceof Error ? err.message : 'Please try again.');
+      toast.error(
+        "Could not create territory",
+        err instanceof Error ? err.message : "Please try again.",
+      );
     } finally {
       setSubmitting(false);
     }
   };
 
-  const resetForm = () => { setName(''); setDescription(''); setParentId(''); setManagerId(''); setModalSuccess(false); };
+  const resetForm = () => {
+    setName("");
+    setDescription("");
+    setParentId("");
+    setManagerId("");
+    setModalSuccess(false);
+  };
 
   const handleDeleteTerritory = async (t: Territory) => {
-    if (!window.confirm(`Delete territory "${t.name}"? This cannot be undone.`)) return;
+    if (!window.confirm(`Delete territory "${t.name}"? This cannot be undone.`))
+      return;
     try {
       await client.delete(`/crm/territories/${t.id}`);
-      toast.success('Territory deleted.');
+      toast.success("Territory deleted.");
       loadData();
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Failed to delete territory.');
+      toast.error(
+        err instanceof Error ? err.message : "Failed to delete territory.",
+      );
     }
   };
 
-  const [perfSortBy, setPerfSortBy] = useState<string>('revenue');
-  const [perfSortOrder, setPerfSortOrder] = useState<SortOrder>('desc');
+  const [perfSortBy, setPerfSortBy] = useState<string>("revenue");
+  const [perfSortOrder, setPerfSortOrder] = useState<SortOrder>("desc");
   const handlePerfSortChange = (key: string, order: SortOrder) => {
     setPerfSortBy(key);
     setPerfSortOrder(order);
   };
 
-  const totalMembers = territories.reduce((a, t) => a + (t._count?.members || 0), 0);
+  const totalMembers = territories.reduce(
+    (a, t) => a + (t._count?.members || 0),
+    0,
+  );
   const sortedPerf = [...performance].sort((a, b) => {
     const key = perfSortBy as keyof TerritoryPerformance;
-    const av = a[key], bv = b[key];
+    const av = a[key],
+      bv = b[key];
     let cmp = 0;
-    if (typeof av === 'number' && typeof bv === 'number') cmp = av - bv;
+    if (typeof av === "number" && typeof bv === "number") cmp = av - bv;
     else cmp = String(av).localeCompare(String(bv));
-    return perfSortOrder === 'desc' ? -cmp : cmp;
+    return perfSortOrder === "desc" ? -cmp : cmp;
   });
-  const topTerritory = [...performance].sort((a, b) => b.revenue - a.revenue)[0];
+  const topTerritory = [...performance].sort(
+    (a, b) => b.revenue - a.revenue,
+  )[0];
 
   const perfColumns: Column<TerritoryPerformance>[] = [
-    { key: 'territoryName', header: 'Territory', sortable: true, render: (p) => <span className="font-semibold">{p.territoryName}</span> },
-    { key: 'memberCount', header: 'Members', align: 'right', sortable: true },
-    { key: 'dealCount', header: 'Deals', align: 'right', sortable: true },
-    { key: 'revenue', header: 'Revenue', align: 'right', sortable: true, render: (p) => <span className={styles.style0}>${p.revenue.toLocaleString()}</span> },
+    {
+      key: "territoryName",
+      header: "Territory",
+      sortable: true,
+      render: (p) => <span className="font-semibold">{p.territoryName}</span>,
+    },
+    { key: "memberCount", header: "Members", align: "right", sortable: true },
+    { key: "dealCount", header: "Deals", align: "right", sortable: true },
+    {
+      key: "revenue",
+      header: "Revenue",
+      align: "right",
+      sortable: true,
+      render: (p) => (
+        <span className={styles.style0}>${p.revenue.toLocaleString()}</span>
+      ),
+    },
   ];
 
-  const labelStyle: React.CSSProperties = { display: 'block', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', marginBottom: 'var(--space-1.5)' };
-  const inputStyle: React.CSSProperties = { width: '100%', height: '38px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: '0 var(--space-3)' };
-  const thStyle: React.CSSProperties = { textAlign: 'left', padding: 'var(--space-3) var(--space-4)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)' };
-  const tdStyle: React.CSSProperties = { padding: 'var(--space-3.5) var(--space-4)' };
+  const labelStyle: React.CSSProperties = {
+    display: "block",
+    fontSize: "var(--text-xs)",
+    fontWeight: "var(--weight-semibold)",
+    marginBottom: "var(--space-1.5)",
+  };
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    height: "38px",
+    border: "1px solid var(--color-border)",
+    borderRadius: "var(--radius-md)",
+    padding: "0 var(--space-3)",
+  };
+  const thStyle: React.CSSProperties = {
+    textAlign: "left",
+    padding: "var(--space-3) var(--space-4)",
+    fontWeight: "var(--weight-semibold)",
+    color: "var(--color-text-secondary)",
+  };
+  const tdStyle: React.CSSProperties = {
+    padding: "var(--space-3.5) var(--space-4)",
+  };
 
   return (
     <RouteGuard permission="crm.read">
@@ -135,9 +216,17 @@ export default function TerritoriesPage() {
         <PageHeader
           title="Territories"
           description="Manage sales territories, assign members, and track regional performance."
-          breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'CRM', href: '/crm' }, { label: 'Territories' }]}
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "CRM", href: "/crm" },
+            { label: "Territories" },
+          ]}
           actions={
-            <Button onClick={() => setIsModalOpen(true)} variant="primary" className="ui-hstack-2">
+            <Button
+              onClick={() => setIsModalOpen(true)}
+              variant="primary"
+              className="ui-hstack-2"
+            >
               <Plus size={16} />
               <span>New Territory</span>
             </Button>
@@ -153,14 +242,34 @@ export default function TerritoriesPage() {
         {/* KPIs */}
         <div className={styles.style2}>
           {[
-            { icon: <MapPin size={20} />, label: 'Total Territories', value: territories.length, color: 'var(--color-primary)' },
-            { icon: <Users size={20} />, label: 'Total Members', value: totalMembers, color: 'var(--color-info)' },
-            { icon: <DollarSign size={20} />, label: 'Top Revenue Territory', value: topTerritory ? topTerritory.territoryName : 'N/A', sub: topTerritory ? `$${topTerritory.revenue.toLocaleString()}` : '', color: 'var(--color-success)' },
+            {
+              icon: <MapPin size={20} />,
+              label: "Total Territories",
+              value: territories.length,
+              color: "var(--color-primary)",
+            },
+            {
+              icon: <Users size={20} />,
+              label: "Total Members",
+              value: totalMembers,
+              color: "var(--color-info)",
+            },
+            {
+              icon: <DollarSign size={20} />,
+              label: "Top Revenue Territory",
+              value: topTerritory ? topTerritory.territoryName : "N/A",
+              sub: topTerritory
+                ? `$${topTerritory.revenue.toLocaleString()}`
+                : "",
+              color: "var(--color-success)",
+            },
           ].map((kpi, i) => (
             <Card key={i}>
               <div className="p-5 ui-hstack-4">
                 <div style={{ background: kpi.color }} className={styles.s1}>
-                  <div style={{ color: kpi.color }} className={styles.s2}>{kpi.icon}</div>
+                  <div style={{ color: kpi.color }} className={styles.s2}>
+                    {kpi.icon}
+                  </div>
                 </div>
                 <div>
                   <div className={styles.style3}>{kpi.label}</div>
@@ -178,29 +287,56 @@ export default function TerritoriesPage() {
             <h3 className="ui-heading-base">Territory Hierarchy</h3>
           </div>
           {loading ? (
-            <div className="ui-center-pad"><Spinner size="lg" /></div>
+            <div className="ui-center-pad">
+              <Spinner size="lg" />
+            </div>
           ) : territories.length === 0 ? (
             <div className="ui-empty-state">
               <MapPin size={48} className="ui-hr-faded" />
               <div className="font-semibold">No Territories Found</div>
-              <div className="text-sm">Create a territory to organize your sales regions.</div>
+              <div className="text-sm">
+                Create a territory to organize your sales regions.
+              </div>
             </div>
           ) : (
             <div className={styles.style7}>
-              {territories.map(t => (
+              {territories.map((t) => (
                 <div key={t.id} className={styles.style8}>
                   <div className={styles.style9}>
                     <div className={styles.style10}>{t.name}</div>
                     <div className="ui-hstack-2">
-                      <Badge variant="default">{t._count?.members || 0} members</Badge>
-                      <button title="Delete" onClick={() => handleDeleteTerritory(t)} className={styles.style11}><Trash2 size={14} /></button>
+                      <Badge variant="default">
+                        {t._count?.members || 0} members
+                      </Badge>
+                      <button
+                        title="Delete"
+                        onClick={() => handleDeleteTerritory(t)}
+                        className={styles.style11}
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </div>
                   </div>
-                  {t.description && <div className={styles.style12}>{t.description}</div>}
+                  {t.description && (
+                    <div className={styles.style12}>{t.description}</div>
+                  )}
                   <div className={styles.style13}>
-                    {t.parent && <div><span className="font-semibold">Parent:</span> {t.parent.name}</div>}
-                    {t.manager && <div><span className="font-semibold">Manager:</span> {t.manager.name}</div>}
-                    <div><span className="font-semibold">Sub-territories:</span> {t._count?.children || 0}</div>
+                    {t.parent && (
+                      <div>
+                        <span className="font-semibold">Parent:</span>{" "}
+                        {t.parent.name}
+                      </div>
+                    )}
+                    {t.manager && (
+                      <div>
+                        <span className="font-semibold">Manager:</span>{" "}
+                        {t.manager.name}
+                      </div>
+                    )}
+                    <div>
+                      <span className="font-semibold">Sub-territories:</span>{" "}
+                      {t._count?.children || 0}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -231,39 +367,87 @@ export default function TerritoriesPage() {
             <div className={styles.style16}>
               <div className={styles.style17}>
                 <h3 className="ui-heading-base">Create Territory</h3>
-                <button onClick={() => setIsModalOpen(false)} className="ui-btn-icon ui-text-muted"><X size={18} /></button>
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="ui-btn-icon ui-text-muted"
+                >
+                  <X size={18} />
+                </button>
               </div>
               {modalSuccess ? (
                 <div className={styles.style18}>
                   <Award size={48} className={styles.style19} />
-                  <div className="ui-heading-base">Territory Created Successfully</div>
+                  <div className="ui-heading-base">
+                    Territory Created Successfully
+                  </div>
                 </div>
               ) : (
                 <form onSubmit={handleCreate} className="p-6 ui-stack-4">
                   <div>
                     <label style={labelStyle}>Territory Name</label>
-                    <input type="text" required placeholder="e.g. US West Coast" value={name} onChange={e => setName(e.target.value)} className="ui-input" style={inputStyle} />
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. US West Coast"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="ui-input"
+                      style={inputStyle}
+                    />
                   </div>
                   <div>
                     <label style={labelStyle}>Description</label>
-                    <textarea placeholder="Describe this territory..." value={description} onChange={e => setDescription(e.target.value)} className={`ui-input ${styles.s3}`} style={{ ...inputStyle }} />
+                    <textarea
+                      placeholder="Describe this territory..."
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      className={`ui-input ${styles.s3}`}
+                      style={{ ...inputStyle }}
+                    />
                   </div>
                   <div className="ui-grid-2">
                     <div>
                       <label style={labelStyle}>Parent Territory</label>
-                      <select value={parentId} onChange={e => setParentId(e.target.value)} className="ui-input" style={inputStyle}>
+                      <select
+                        value={parentId}
+                        onChange={(e) => setParentId(e.target.value)}
+                        className="ui-input"
+                        style={inputStyle}
+                      >
                         <option value="">None (Root)</option>
-                        {territories.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                        {territories.map((t) => (
+                          <option key={t.id} value={t.id}>
+                            {t.name}
+                          </option>
+                        ))}
                       </select>
                     </div>
                     <div>
                       <label style={labelStyle}>Manager ID</label>
-                      <input type="text" placeholder="User ID" value={managerId} onChange={e => setManagerId(e.target.value)} className="ui-input" style={inputStyle} />
+                      <input
+                        type="text"
+                        placeholder="User ID"
+                        value={managerId}
+                        onChange={(e) => setManagerId(e.target.value)}
+                        className="ui-input"
+                        style={inputStyle}
+                      />
                     </div>
                   </div>
                   <div className={styles.style20}>
-                    <Button variant="secondary" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-                    <Button variant="primary" type="submit" disabled={submitting}>{submitting ? 'Creating...' : 'Create Territory'}</Button>
+                    <Button
+                      variant="secondary"
+                      onClick={() => setIsModalOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="primary"
+                      type="submit"
+                      disabled={submitting}
+                    >
+                      {submitting ? "Creating..." : "Create Territory"}
+                    </Button>
                   </div>
                 </form>
               )}

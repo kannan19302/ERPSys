@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import React, { useState, useEffect } from "react";
 import {
@@ -123,8 +122,15 @@ export default function OutboxPage() {
         />
       </div>
       <Card padding="sm">
-        <div style={{ padding: 'var(--space-3)' }}>
-          <div className="ui-flex" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+        <div style={{ padding: "var(--space-3)" }}>
+          <div
+            className="ui-flex"
+            style={{
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "var(--space-3)",
+            }}
+          >
             <h4 className="text-xs font-semibold m-0">Dead Letter Queue</h4>
             <Button variant="primary" size="sm">
               <Eye size={14} /> View All

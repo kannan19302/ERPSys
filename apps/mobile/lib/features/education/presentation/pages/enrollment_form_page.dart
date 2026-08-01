@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/usecase/result.dart';
-import '../../domain/entities/education.dart';
 import '../providers/education_providers.dart';
 
 class EnrollmentFormPage extends ConsumerStatefulWidget {
@@ -58,7 +55,7 @@ class _EnrollmentFormPageState extends ConsumerState<EnrollmentFormPage> {
       'academicYear': _academicYearCtrl.text.trim().isEmpty ? null : _academicYearCtrl.text.trim(),
       'status': _status,
       'enrollmentDate': DateTime.now().toIso8601String(),
-    }, id: widget.enrollmentId);
+    }, id: widget.enrollmentId,);
     if (!context.mounted) return;
     setState(() => _saving = false);
     result.fold(
@@ -77,7 +74,7 @@ class _EnrollmentFormPageState extends ConsumerState<EnrollmentFormPage> {
           child: _saving
               ? const SizedBox(height: Spacing.x5, width: Spacing.x5, child: CircularProgressIndicator(strokeWidth: 2))
               : const Text('Save'),
-        )],
+        ),],
       ),
       body: Form(
         key: _formKey,
@@ -85,19 +82,19 @@ class _EnrollmentFormPageState extends ConsumerState<EnrollmentFormPage> {
           padding: const EdgeInsets.all(Spacing.x4),
           children: [
             TextFormField(controller: _studentIdCtrl, decoration: const InputDecoration(labelText: 'Student ID *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null),
+              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,),
             const SizedBox(height: Spacing.x4),
             TextFormField(controller: _courseIdCtrl, decoration: const InputDecoration(labelText: 'Course ID *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null),
+              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,),
             const SizedBox(height: Spacing.x4),
             Row(children: [
               Expanded(child: TextFormField(controller: _semesterCtrl, decoration: const InputDecoration(labelText: 'Semester'))),
               const SizedBox(width: Spacing.x4),
               Expanded(child: TextFormField(controller: _academicYearCtrl, decoration: const InputDecoration(labelText: 'Academic Year'))),
-            ]),
+            ],),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _status, decoration: const InputDecoration(labelText: 'Status'),
+              initialValue: _status, decoration: const InputDecoration(labelText: 'Status'),
               items: const [
                 DropdownMenuItem(value: 'ACTIVE', child: Text('Active')),
                 DropdownMenuItem(value: 'INACTIVE', child: Text('Inactive')),

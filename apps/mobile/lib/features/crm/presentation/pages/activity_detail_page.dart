@@ -1,6 +1,4 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/widgets/ui_card.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/permission_gate.dart';
 import '../../../../core/error/failures.dart';
@@ -8,11 +6,7 @@ import '../../../../core/widgets/state_views.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
 import '../../../../core/rbac/permissions.dart';
-import '../../../../core/utils/formatters.dart';
-import '../../../../core/widgets/permission_gate.dart';
-import '../../../../core/widgets/state_views.dart';
 import '../../domain/entities/crm.dart';
 import '../providers/crm_providers.dart';
 
@@ -190,7 +184,7 @@ class _TypeBadge extends StatelessWidget {
         vertical: Spacing.x1,
       ),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: Radii.pill,
       ),
       child: Row(

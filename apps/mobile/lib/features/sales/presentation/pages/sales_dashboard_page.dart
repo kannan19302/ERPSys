@@ -1,9 +1,7 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/ui_card.dart';
@@ -18,7 +16,6 @@ class SalesDashboardPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final Palette t = context.tokens;
     final SalesListState<SalesOrder> ordersState =
         ref.watch(salesOrdersProvider);
 
@@ -251,7 +248,7 @@ class _RecentOrderRow extends StatelessWidget {
           ),
           Text(
             Formatters.currency(order.totalAmount),
-            style: TextStyle(fontWeight: TypeScale.semibold),
+            style: const TextStyle(fontWeight: TypeScale.semibold),
           ),
         ],
       ),

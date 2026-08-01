@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/usecase/result.dart';
-import '../../domain/entities/procurement.dart';
 import '../providers/procurement_providers.dart';
 
 class PurchaseOrderFormPage extends ConsumerStatefulWidget {
@@ -53,7 +51,7 @@ class _PurchaseOrderFormPageState extends ConsumerState<PurchaseOrderFormPage> {
           qtyCtrl: TextEditingController(text: item.quantity.toString()),
           rateCtrl: TextEditingController(text: item.rate.toString()),
           taxCtrl: TextEditingController(text: item.taxRate.toString()),
-        ));
+        ),);
       }
       if (_items.isEmpty) _addItem();
     }
@@ -65,7 +63,7 @@ class _PurchaseOrderFormPageState extends ConsumerState<PurchaseOrderFormPage> {
       qtyCtrl: TextEditingController(text: '1'),
       rateCtrl: TextEditingController(),
       taxCtrl: TextEditingController(),
-    )));
+    ),),);
   }
 
   void _removeItem(int index) {
@@ -89,7 +87,9 @@ class _PurchaseOrderFormPageState extends ConsumerState<PurchaseOrderFormPage> {
   void dispose() {
     _vendorCtrl.dispose(); _orderDateCtrl.dispose(); _deliveryDateCtrl.dispose();
     _shippingCtrl.dispose(); _notesCtrl.dispose(); _termsCtrl.dispose();
-    for (final i in _items) i.dispose();
+    for (final i in _items) {
+      i.dispose();
+    }
     super.dispose();
   }
 
@@ -110,7 +110,7 @@ class _PurchaseOrderFormPageState extends ConsumerState<PurchaseOrderFormPage> {
         'quantity': double.tryParse(i.qtyCtrl.text) ?? 0,
         'rate': double.tryParse(i.rateCtrl.text) ?? 0,
         'taxRate': double.tryParse(i.taxCtrl.text) ?? 0,
-      }).toList(),
+      },).toList(),
     };
 
     final result = await ref.read(purchaseOrderListControllerProvider.notifier)
@@ -165,7 +165,7 @@ class _PurchaseOrderFormPageState extends ConsumerState<PurchaseOrderFormPage> {
               TextButton.icon(
                 onPressed: _addItem, icon: const Icon(Icons.add, size: 18), label: const Text('Add'),
               ),
-            ]),
+            ],),
             ...List.generate(_items.length, (i) {
               final item = _items[i];
               return Padding(
@@ -174,35 +174,35 @@ class _PurchaseOrderFormPageState extends ConsumerState<PurchaseOrderFormPage> {
                   Expanded(flex: 2, child: TextFormField(
                     controller: item.productCtrl,
                     decoration: const InputDecoration(labelText: 'Product', isDense: true),
-                  )),
+                  ),),
                   const SizedBox(width: Spacing.x1),
                   Expanded(flex: 1, child: TextFormField(
                     controller: item.qtyCtrl,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(labelText: 'Qty', isDense: true),
-                  )),
+                  ),),
                   const SizedBox(width: Spacing.x1),
                   Expanded(flex: 1, child: TextFormField(
                     controller: item.rateCtrl,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(labelText: 'Rate', isDense: true),
-                  )),
+                  ),),
                   const SizedBox(width: Spacing.x1),
                   Expanded(flex: 1, child: TextFormField(
                     controller: item.taxCtrl,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(labelText: 'Tax%', isDense: true),
-                  )),
+                  ),),
                   IconButton(
                     icon: const Icon(Icons.remove_circle_outline, size: 20),
                     onPressed: () => _removeItem(i),
                   ),
-                ]),
+                ],),
               );
             }),
             const SizedBox(height: Spacing.x2),
             Text('Subtotal: \$${_subtotal.toStringAsFixed(2)}',
-                style: Theme.of(context).textTheme.labelLarge),
+                style: Theme.of(context).textTheme.labelLarge,),
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _shippingCtrl,

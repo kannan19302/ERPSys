@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -136,7 +135,7 @@ class _FinancialCloseTaskFormPageState extends ConsumerState<FinancialCloseTaskF
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _status,
+              initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: const <DropdownMenuItem<String>>[
                 DropdownMenuItem<String>(value: 'PENDING', child: Text('Pending')),
@@ -149,7 +148,7 @@ class _FinancialCloseTaskFormPageState extends ConsumerState<FinancialCloseTaskF
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _priority,
+              initialValue: _priority,
               decoration: const InputDecoration(labelText: 'Priority'),
               items: const <DropdownMenuItem<String>>[
                 DropdownMenuItem<String>(value: 'LOW', child: Text('Low')),

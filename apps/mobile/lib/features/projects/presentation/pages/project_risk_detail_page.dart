@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -45,8 +44,6 @@ class _RiskDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = context.tokens;
-
     return ListView(
       padding: const EdgeInsets.all(Spacing.x4),
       children: [
@@ -56,13 +53,13 @@ class _RiskDetail extends StatelessWidget {
             Row(children: [
               Expanded(child: Text(risk.title, style: Theme.of(context).textTheme.titleLarge)),
               UiStatusBadge(label: risk.status, tone: _statusTone(risk.status)),
-            ]),
+            ],),
             if (risk.description != null && risk.description!.isNotEmpty) ...[
               const SizedBox(height: Spacing.x1),
               Text(risk.description!),
             ],
           ],
-        )),
+        ),),
         const SizedBox(height: Spacing.x4),
         UiCard(child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,7 +69,7 @@ class _RiskDetail extends StatelessWidget {
             _Row('Impact', risk.impact),
             _Row('Severity', '${risk.probability}/${risk.impact}'),
           ],
-        )),
+        ),),
         if (risk.mitigationPlan != null && risk.mitigationPlan!.isNotEmpty) ...[
           const SizedBox(height: Spacing.x4),
           UiCard(child: Column(
@@ -81,7 +78,7 @@ class _RiskDetail extends StatelessWidget {
               const UiSectionHeader(title: 'Mitigation Plan'),
               Text(risk.mitigationPlan!),
             ],
-          )),
+          ),),
         ],
       ],
     );
@@ -100,7 +97,7 @@ class _Row extends StatelessWidget {
       child: Row(children: [
         Expanded(child: Text(label, style: TextStyle(color: t.textSecondary))),
         Text(value, style: Theme.of(context).textTheme.labelLarge),
-      ]),
+      ],),
     );
   }
 }

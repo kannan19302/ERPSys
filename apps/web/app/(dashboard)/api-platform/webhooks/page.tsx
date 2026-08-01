@@ -1,13 +1,6 @@
-// @ts-nocheck
 "use client";
 import React, { useState, useEffect } from "react";
-import {
-  PageHeader,
-  Button,
-  Spinner,
-  DataTable,
-  type Column,
-} from "@unerp/ui";
+import { PageHeader, Button, Spinner, DataTable, type Column } from "@unerp/ui";
 import { apiGet } from "@/lib/api";
 import { Plus } from "lucide-react";
 

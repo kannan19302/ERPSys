@@ -1,20 +1,9 @@
--- DropForeignKey
-ALTER TABLE "AppInstallation" DROP CONSTRAINT "AppInstallation_tenantId_fkey";
 
--- DropForeignKey
-ALTER TABLE "AppSettings" DROP CONSTRAINT "AppSettings_roleId_fkey";
 
--- DropForeignKey
-ALTER TABLE "AppSettings" DROP CONSTRAINT "AppSettings_tenantId_fkey";
 
--- DropForeignKey
-ALTER TABLE "compensation_grades" DROP CONSTRAINT "compensation_grades_department_id_fkey";
-
--- DropForeignKey
-ALTER TABLE "compensation_recommendations" DROP CONSTRAINT "compensation_recommendations_cycle_id_fkey";
-
--- DropForeignKey
-ALTER TABLE "compensation_recommendations" DROP CONSTRAINT "compensation_recommendations_grade_id_fkey";
+-- Drop archived copies of tables re-created below (education/real-estate archive round-trip)
+DROP TABLE IF EXISTS "_archived_book_transactions";
+DROP TABLE IF EXISTS "_archived_student_fees";
 
 -- DropForeignKey
 ALTER TABLE "dunning_levels" DROP CONSTRAINT "dunning_levels_org_id_fkey";
@@ -30,9 +19,6 @@ DROP INDEX "customer_statements_tenant_id_customer_id_idx";
 
 -- DropIndex
 DROP INDEX "dunning_levels_tenant_id_org_id_days_overdue_key";
-
--- DropIndex
-DROP INDEX "pos_orders_tenant_id_client_txn_id_key";
 
 -- DropIndex
 DROP INDEX "recurring_invoice_templates_org_id_idx";
@@ -128,10 +114,6 @@ ADD COLUMN     "total_amount" DECIMAL(15,2) NOT NULL;
 ALTER TABLE "invoices" ADD COLUMN     "type" TEXT NOT NULL DEFAULT 'SALE';
 
 -- AlterTable
-ALTER TABLE "pos_orders" DROP COLUMN "client_txn_id",
-DROP COLUMN "synced_at";
-
--- AlterTable
 ALTER TABLE "recurring_invoice_templates" DROP COLUMN "currency",
 DROP COLUMN "cycles_run",
 DROP COLUMN "description",
@@ -171,116 +153,8 @@ ALTER TABLE "vendor_bills" ADD COLUMN     "deleted_at" TIMESTAMP(3),
 ADD COLUMN     "discount_amount" DECIMAL(15,2) NOT NULL DEFAULT 0,
 ADD COLUMN     "paid_amount" DECIMAL(15,2) NOT NULL DEFAULT 0;
 
--- DropTable
-DROP TABLE "AppInstallation";
 
--- DropTable
-DROP TABLE "AppSettings";
 
--- DropTable
-DROP TABLE "compensation_cycles";
-
--- DropTable
-DROP TABLE "compensation_grades";
-
--- DropTable
-DROP TABLE "compensation_recommendations";
-
--- DropEnum
-DROP TYPE "AppInstallStatus";
-
--- DropEnum
-DROP TYPE "SettingScope";
-
--- CreateTable
-CREATE TABLE "app_settings" (
-    "id" TEXT NOT NULL,
-    "tenant_id" TEXT NOT NULL,
-    "app_slug" TEXT NOT NULL,
-    "key" TEXT NOT NULL,
-    "value" JSONB NOT NULL,
-    "scope" TEXT NOT NULL DEFAULT 'TENANT',
-    "role_id" TEXT NOT NULL DEFAULT '',
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "app_settings_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "platform_credentials" (
-    "id" TEXT NOT NULL,
-    "provider" TEXT NOT NULL,
-    "key" TEXT NOT NULL,
-    "value" TEXT NOT NULL,
-    "is_sensitive" BOOLEAN NOT NULL DEFAULT false,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-    "updated_by" TEXT,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "platform_credentials_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "knowledge_base_categories" (
-    "id" TEXT NOT NULL,
-    "tenant_id" TEXT NOT NULL,
-    "org_id" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "slug" TEXT NOT NULL,
-    "description" TEXT,
-    "icon" TEXT,
-    "color" TEXT,
-    "parent_id" TEXT,
-    "sort_order" INTEGER NOT NULL DEFAULT 0,
-    "is_active" BOOLEAN NOT NULL DEFAULT true,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-    "deleted_at" TIMESTAMP(3),
-
-    CONSTRAINT "knowledge_base_categories_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "knowledge_base_articles" (
-    "id" TEXT NOT NULL,
-    "tenant_id" TEXT NOT NULL,
-    "org_id" TEXT NOT NULL,
-    "category_id" TEXT,
-    "title" TEXT NOT NULL,
-    "slug" TEXT NOT NULL,
-    "content" TEXT NOT NULL,
-    "excerpt" TEXT,
-    "status" TEXT NOT NULL DEFAULT 'DRAFT',
-    "author_id" TEXT NOT NULL,
-    "published_at" TIMESTAMP(3),
-    "view_count" INTEGER NOT NULL DEFAULT 0,
-    "helpful_count" INTEGER NOT NULL DEFAULT 0,
-    "not_helpful_count" INTEGER NOT NULL DEFAULT 0,
-    "tags" JSONB NOT NULL DEFAULT '[]',
-    "is_internal" BOOLEAN NOT NULL DEFAULT false,
-    "sort_order" INTEGER NOT NULL DEFAULT 0,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-    "deleted_at" TIMESTAMP(3),
-
-    CONSTRAINT "knowledge_base_articles_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "knowledge_base_article_versions" (
-    "id" TEXT NOT NULL,
-    "tenant_id" TEXT NOT NULL,
-    "article_id" TEXT NOT NULL,
-    "version" INTEGER NOT NULL,
-    "title" TEXT NOT NULL,
-    "content" TEXT NOT NULL,
-    "change_log" TEXT,
-    "author_id" TEXT NOT NULL,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "knowledge_base_article_versions_pkey" PRIMARY KEY ("id")
-);
 
 -- CreateTable
 CREATE TABLE "customer_price_lists" (
@@ -5812,6 +5686,9 @@ CREATE TABLE "ai_document_chunks" (
     CONSTRAINT "ai_document_chunks_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateExtension
+CREATE EXTENSION IF NOT EXISTS vector;
+
 -- CreateTable
 CREATE TABLE "ai_embeddings" (
     "id" TEXT NOT NULL,
@@ -6197,44 +6074,14 @@ CREATE TABLE "_RecurringOrderTemplateToSalesOrder" (
     CONSTRAINT "_RecurringOrderTemplateToSalesOrder_AB_pkey" PRIMARY KEY ("A","B")
 );
 
--- CreateIndex
-CREATE INDEX "app_settings_tenant_id_app_slug_idx" ON "app_settings"("tenant_id", "app_slug");
 
--- CreateIndex
-CREATE UNIQUE INDEX "app_settings_tenant_id_app_slug_key_scope_role_id_key" ON "app_settings"("tenant_id", "app_slug", "key", "scope", "role_id");
 
--- CreateIndex
-CREATE UNIQUE INDEX "platform_credentials_provider_key_key" ON "platform_credentials"("provider", "key");
 
--- CreateIndex
-CREATE INDEX "knowledge_base_categories_tenant_id_idx" ON "knowledge_base_categories"("tenant_id");
 
--- CreateIndex
-CREATE INDEX "knowledge_base_categories_tenant_id_parent_id_idx" ON "knowledge_base_categories"("tenant_id", "parent_id");
 
--- CreateIndex
-CREATE UNIQUE INDEX "knowledge_base_categories_tenant_id_slug_key" ON "knowledge_base_categories"("tenant_id", "slug");
 
--- CreateIndex
-CREATE INDEX "knowledge_base_articles_tenant_id_idx" ON "knowledge_base_articles"("tenant_id");
 
--- CreateIndex
-CREATE INDEX "knowledge_base_articles_tenant_id_category_id_idx" ON "knowledge_base_articles"("tenant_id", "category_id");
 
--- CreateIndex
-CREATE INDEX "knowledge_base_articles_tenant_id_status_idx" ON "knowledge_base_articles"("tenant_id", "status");
-
--- CreateIndex
-CREATE UNIQUE INDEX "knowledge_base_articles_tenant_id_slug_key" ON "knowledge_base_articles"("tenant_id", "slug");
-
--- CreateIndex
-CREATE INDEX "knowledge_base_article_versions_tenant_id_idx" ON "knowledge_base_article_versions"("tenant_id");
-
--- CreateIndex
-CREATE INDEX "knowledge_base_article_versions_article_id_idx" ON "knowledge_base_article_versions"("article_id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "knowledge_base_article_versions_article_id_version_key" ON "knowledge_base_article_versions"("article_id", "version");
 
 -- CreateIndex
 CREATE INDEX "customer_price_lists_tenant_id_idx" ON "customer_price_lists"("tenant_id");
@@ -8384,14 +8231,8 @@ CREATE INDEX "vendor_bills_tenant_id_status_idx" ON "vendor_bills"("tenant_id", 
 -- AddForeignKey
 ALTER TABLE "vendor_bill_line_items" ADD CONSTRAINT "vendor_bill_line_items_vendor_bill_id_fkey" FOREIGN KEY ("vendor_bill_id") REFERENCES "vendor_bills"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- AddForeignKey
-ALTER TABLE "knowledge_base_categories" ADD CONSTRAINT "knowledge_base_categories_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "knowledge_base_categories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
--- AddForeignKey
-ALTER TABLE "knowledge_base_articles" ADD CONSTRAINT "knowledge_base_articles_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "knowledge_base_categories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
--- AddForeignKey
-ALTER TABLE "knowledge_base_article_versions" ADD CONSTRAINT "knowledge_base_article_versions_article_id_fkey" FOREIGN KEY ("article_id") REFERENCES "knowledge_base_articles"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "customer_price_list_items" ADD CONSTRAINT "customer_price_list_items_price_list_id_fkey" FOREIGN KEY ("price_list_id") REFERENCES "customer_price_lists"("id") ON DELETE CASCADE ON UPDATE CASCADE;

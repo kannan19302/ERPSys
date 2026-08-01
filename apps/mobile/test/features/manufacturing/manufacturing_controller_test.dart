@@ -195,7 +195,7 @@ Paginated<T> _page<T>(List<T> items, {int page = 1, bool hasMore = false}) =>
     );
 
 Cacheable<Paginated<T>> _cachedPage<T>(List<T> items,
-        {int page = 1, bool hasMore = false}) =>
+        {int page = 1, bool hasMore = false,}) =>
     Cacheable<Paginated<T>>(
       value: _page<T>(items, page: page, hasMore: hasMore),
     );
@@ -212,22 +212,22 @@ class FakeManufacturingRepository implements ManufacturingRepository {
   int updateWorkOrderCalls = 0;
   int startWorkOrderCalls = 0;
   int completeWorkOrderCalls = 0;
-  Result<void> deleteWorkOrderResult = Result<void>.ok(null);
-  Result<WorkOrder> startWorkOrderResult = Result<WorkOrder>.ok(_workOrderB);
-  Result<WorkOrder> completeWorkOrderResult = Result<WorkOrder>.ok(_workOrderA);
+  Result<void> deleteWorkOrderResult = const Result<void>.ok(null);
+  Result<WorkOrder> startWorkOrderResult = const Result<WorkOrder>.ok(_workOrderB);
+  Result<WorkOrder> completeWorkOrderResult = const Result<WorkOrder>.ok(_workOrderA);
 
   // BOMs
   Future<Result<Cacheable<Paginated<Bom>>>> Function(ListQuery)?
       listBomsHandler;
   int deleteBomCalls = 0;
   int createBomCalls = 0;
-  Result<void> deleteBomResult = Result<void>.ok(null);
+  Result<void> deleteBomResult = const Result<void>.ok(null);
 
   // MRP Runs
   Future<Result<Cacheable<Paginated<MrpRun>>>> Function(ListQuery)?
       listMrpRunsHandler;
   int createMrpRunCalls = 0;
-  Result<MrpRun> createMrpRunResult = Result<MrpRun>.ok(_mrpRunA);
+  Result<MrpRun> createMrpRunResult = const Result<MrpRun>.ok(_mrpRunA);
 
   // Workstations
   Future<Result<Cacheable<Paginated<Workstation>>>> Function(ListQuery)?
@@ -247,11 +247,11 @@ class FakeManufacturingRepository implements ManufacturingRepository {
 
   // Engineering Change Orders
   Future<Result<Cacheable<Paginated<EngineeringChangeOrder>>>> Function(
-      ListQuery)? listEngineeringChangeOrdersHandler;
+      ListQuery,)? listEngineeringChangeOrdersHandler;
   int createEngineeringChangeOrderCalls = 0;
   int approveEngineeringChangeOrderCalls = 0;
   Result<EngineeringChangeOrder> approveEngineeringChangeOrderResult =
-      Result<EngineeringChangeOrder>.ok(_ecoB);
+      const Result<EngineeringChangeOrder>.ok(_ecoB);
 
   // ── BOM ──
 
@@ -267,18 +267,18 @@ class FakeManufacturingRepository implements ManufacturingRepository {
 
   @override
   Future<Result<Bom>> getBom(String id) async =>
-      Result<Bom>.ok(_bomA);
+      const Result<Bom>.ok(_bomA);
 
   @override
   Future<Result<Bom>> createBom(Map<String, dynamic> payload) async {
     createBomCalls++;
-    return Result<Bom>.ok(_bomA);
+    return const Result<Bom>.ok(_bomA);
   }
 
   @override
   Future<Result<Bom>> updateBom(String id, Map<String, dynamic> payload) async {
     updateWorkOrderCalls++;
-    return Result<Bom>.ok(_bomA);
+    return const Result<Bom>.ok(_bomA);
   }
 
   @override
@@ -291,7 +291,7 @@ class FakeManufacturingRepository implements ManufacturingRepository {
 
   @override
   Future<Result<Cacheable<Paginated<WorkOrder>>>> listWorkOrders(
-      ListQuery query) async {
+      ListQuery query,) async {
     receivedQueries.add(query);
     final handler = listWorkOrdersHandler;
     if (handler != null) return handler(query);
@@ -302,19 +302,19 @@ class FakeManufacturingRepository implements ManufacturingRepository {
 
   @override
   Future<Result<WorkOrder>> getWorkOrder(String id) async =>
-      Result<WorkOrder>.ok(_workOrderA);
+      const Result<WorkOrder>.ok(_workOrderA);
 
   @override
   Future<Result<WorkOrder>> createWorkOrder(Map<String, dynamic> payload) async {
     createWorkOrderCalls++;
-    return Result<WorkOrder>.ok(_workOrderA);
+    return const Result<WorkOrder>.ok(_workOrderA);
   }
 
   @override
   Future<Result<WorkOrder>> updateWorkOrder(
-      String id, Map<String, dynamic> payload) async {
+      String id, Map<String, dynamic> payload,) async {
     updateWorkOrderCalls++;
-    return Result<WorkOrder>.ok(_workOrderA);
+    return const Result<WorkOrder>.ok(_workOrderA);
   }
 
   @override
@@ -337,13 +337,13 @@ class FakeManufacturingRepository implements ManufacturingRepository {
 
   @override
   Future<Result<WorkOrder>> cancelWorkOrder(String id) async =>
-      Result<WorkOrder>.ok(_workOrderA);
+      const Result<WorkOrder>.ok(_workOrderA);
 
   // ── MRP Run ──
 
   @override
   Future<Result<Cacheable<Paginated<MrpRun>>>> listMrpRuns(
-      ListQuery query) async {
+      ListQuery query,) async {
     receivedQueries.add(query);
     final handler = listMrpRunsHandler;
     if (handler != null) return handler(query);
@@ -354,7 +354,7 @@ class FakeManufacturingRepository implements ManufacturingRepository {
 
   @override
   Future<Result<MrpRun>> getMrpRun(String id) async =>
-      Result<MrpRun>.ok(_mrpRunA);
+      const Result<MrpRun>.ok(_mrpRunA);
 
   @override
   Future<Result<MrpRun>> createMrpRun(Map<String, dynamic> payload) async {
@@ -366,7 +366,7 @@ class FakeManufacturingRepository implements ManufacturingRepository {
 
   @override
   Future<Result<Cacheable<Paginated<Workstation>>>> listWorkstations(
-      ListQuery query) async {
+      ListQuery query,) async {
     receivedQueries.add(query);
     final handler = listWorkstationsHandler;
     if (handler != null) return handler(query);
@@ -377,29 +377,29 @@ class FakeManufacturingRepository implements ManufacturingRepository {
 
   @override
   Future<Result<Workstation>> getWorkstation(String id) async =>
-      Result<Workstation>.ok(_workstationA);
+      const Result<Workstation>.ok(_workstationA);
 
   @override
   Future<Result<Workstation>> createWorkstation(
-      Map<String, dynamic> payload) async {
+      Map<String, dynamic> payload,) async {
     createWorkstationCalls++;
-    return Result<Workstation>.ok(_workstationA);
+    return const Result<Workstation>.ok(_workstationA);
   }
 
   @override
   Future<Result<Workstation>> updateWorkstation(
-      String id, Map<String, dynamic> payload) async =>
-      Result<Workstation>.ok(_workstationA);
+      String id, Map<String, dynamic> payload,) async =>
+      const Result<Workstation>.ok(_workstationA);
 
   @override
   Future<Result<void>> deleteWorkstation(String id) async =>
-      Result<void>.ok(null);
+      const Result<void>.ok(null);
 
   // ── Routing ──
 
   @override
   Future<Result<Cacheable<Paginated<Routing>>>> listRoutings(
-      ListQuery query) async {
+      ListQuery query,) async {
     receivedQueries.add(query);
     final handler = listRoutingsHandler;
     if (handler != null) return handler(query);
@@ -410,28 +410,28 @@ class FakeManufacturingRepository implements ManufacturingRepository {
 
   @override
   Future<Result<Routing>> getRouting(String id) async =>
-      Result<Routing>.ok(_routingA);
+      const Result<Routing>.ok(_routingA);
 
   @override
   Future<Result<Routing>> createRouting(Map<String, dynamic> payload) async {
     createRoutingCalls++;
-    return Result<Routing>.ok(_routingA);
+    return const Result<Routing>.ok(_routingA);
   }
 
   @override
   Future<Result<Routing>> updateRouting(
-      String id, Map<String, dynamic> payload) async =>
-      Result<Routing>.ok(_routingA);
+      String id, Map<String, dynamic> payload,) async =>
+      const Result<Routing>.ok(_routingA);
 
   @override
   Future<Result<void>> deleteRouting(String id) async =>
-      Result<void>.ok(null);
+      const Result<void>.ok(null);
 
   // ── Quality Inspection ──
 
   @override
   Future<Result<Cacheable<Paginated<QualityInspection>>>> listQualityInspections(
-      ListQuery query) async {
+      ListQuery query,) async {
     receivedQueries.add(query);
     final handler = listQualityInspectionsHandler;
     if (handler != null) return handler(query);
@@ -442,25 +442,25 @@ class FakeManufacturingRepository implements ManufacturingRepository {
 
   @override
   Future<Result<QualityInspection>> getQualityInspection(String id) async =>
-      Result<QualityInspection>.ok(_qualityInspectionA);
+      const Result<QualityInspection>.ok(_qualityInspectionA);
 
   @override
   Future<Result<QualityInspection>> createQualityInspection(
-      Map<String, dynamic> payload) async {
+      Map<String, dynamic> payload,) async {
     createQualityInspectionCalls++;
-    return Result<QualityInspection>.ok(_qualityInspectionA);
+    return const Result<QualityInspection>.ok(_qualityInspectionA);
   }
 
   @override
   Future<Result<QualityInspection>> updateQualityInspection(
-      String id, Map<String, dynamic> payload) async {
+      String id, Map<String, dynamic> payload,) async {
     updateQualityInspectionCalls++;
-    return Result<QualityInspection>.ok(_qualityInspectionA);
+    return const Result<QualityInspection>.ok(_qualityInspectionA);
   }
 
   @override
   Future<Result<void>> deleteQualityInspection(String id) async =>
-      Result<void>.ok(null);
+      const Result<void>.ok(null);
 
   // ── Engineering Change Order ──
 
@@ -477,28 +477,28 @@ class FakeManufacturingRepository implements ManufacturingRepository {
 
   @override
   Future<Result<EngineeringChangeOrder>> getEngineeringChangeOrder(
-          String id) async =>
-      Result<EngineeringChangeOrder>.ok(_ecoA);
+          String id,) async =>
+      const Result<EngineeringChangeOrder>.ok(_ecoA);
 
   @override
   Future<Result<EngineeringChangeOrder>> createEngineeringChangeOrder(
-      Map<String, dynamic> payload) async {
+      Map<String, dynamic> payload,) async {
     createEngineeringChangeOrderCalls++;
-    return Result<EngineeringChangeOrder>.ok(_ecoA);
+    return const Result<EngineeringChangeOrder>.ok(_ecoA);
   }
 
   @override
   Future<Result<EngineeringChangeOrder>> updateEngineeringChangeOrder(
-      String id, Map<String, dynamic> payload) async =>
-      Result<EngineeringChangeOrder>.ok(_ecoA);
+      String id, Map<String, dynamic> payload,) async =>
+      const Result<EngineeringChangeOrder>.ok(_ecoA);
 
   @override
   Future<Result<void>> deleteEngineeringChangeOrder(String id) async =>
-      Result<void>.ok(null);
+      const Result<void>.ok(null);
 
   @override
   Future<Result<EngineeringChangeOrder>> approveEngineeringChangeOrder(
-      String id) async {
+      String id,) async {
     approveEngineeringChangeOrderCalls++;
     return approveEngineeringChangeOrderResult;
   }
@@ -569,7 +569,7 @@ void main() {
               Result<Cacheable<Paginated<WorkOrder>>>.ok(
                 _cachedPage<WorkOrder>(
                   <WorkOrder>[
-                    if (q.page == 1) _workOrderA else _workOrderB
+                    if (q.page == 1) _workOrderA else _workOrderB,
                   ],
                   page: q.page,
                   hasMore: q.page == 1,
@@ -584,7 +584,7 @@ void main() {
 
       final state = container.read(workOrderListControllerProvider);
       expect(state.items.map((WorkOrder wo) => wo.id),
-          <String>['wo1', 'wo2']);
+          <String>['wo1', 'wo2'],);
       expect(
         fakeRepository.receivedQueries.map((ListQuery q) => q.page),
         <int>[1, 2],
@@ -627,7 +627,7 @@ void main() {
 
     test('submit failure surfaces the error', () async {
       fakeRepository.startWorkOrderResult =
-          Result<WorkOrder>.err(ServerFailure('Cannot start'));
+          const Result<WorkOrder>.err(ServerFailure('Cannot start'));
       container.read(workOrderListControllerProvider);
       await Future<void>.delayed(Duration.zero);
 
@@ -649,7 +649,7 @@ void main() {
 
     test('complete failure surfaces the error', () async {
       fakeRepository.completeWorkOrderResult =
-          Result<WorkOrder>.err(ServerFailure('Cannot complete'));
+          const Result<WorkOrder>.err(ServerFailure('Cannot complete'));
       container.read(workOrderListControllerProvider);
       await Future<void>.delayed(Duration.zero);
 
@@ -675,8 +675,8 @@ void main() {
     test('a repository failure on build surfaces without clearing silently',
         () async {
       fakeRepository.listWorkOrdersHandler = (ListQuery q) async =>
-          Result<Cacheable<Paginated<WorkOrder>>>.err(
-              ServerFailure('down'));
+          const Result<Cacheable<Paginated<WorkOrder>>>.err(
+              ServerFailure('down'),);
       container.read(workOrderListControllerProvider);
       await Future<void>.delayed(Duration.zero);
 
@@ -732,8 +732,8 @@ void main() {
     test('a repository failure on build surfaces without clearing silently',
         () async {
       fakeRepository.listBomsHandler = (ListQuery q) async =>
-          Result<Cacheable<Paginated<Bom>>>.err(
-              ServerFailure('down'));
+          const Result<Cacheable<Paginated<Bom>>>.err(
+              ServerFailure('down'),);
       container.read(bomListControllerProvider);
       await Future<void>.delayed(Duration.zero);
 
@@ -771,7 +771,7 @@ void main() {
 
     test('run failure surfaces the error', () async {
       fakeRepository.createMrpRunResult =
-          Result<MrpRun>.err(ServerFailure('MRP run failed'));
+          const Result<MrpRun>.err(ServerFailure('MRP run failed'));
       container.read(mrpRunListControllerProvider);
       await Future<void>.delayed(Duration.zero);
 
@@ -814,8 +814,8 @@ void main() {
     test('a repository failure on build surfaces without clearing silently',
         () async {
       fakeRepository.listWorkstationsHandler = (ListQuery q) async =>
-          Result<Cacheable<Paginated<Workstation>>>.err(
-              ServerFailure('down'));
+          const Result<Cacheable<Paginated<Workstation>>>.err(
+              ServerFailure('down'),);
       container.read(workstationListControllerProvider);
       await Future<void>.delayed(Duration.zero);
 
@@ -857,8 +857,8 @@ void main() {
     test('a repository failure on build surfaces without clearing silently',
         () async {
       fakeRepository.listRoutingsHandler = (ListQuery q) async =>
-          Result<Cacheable<Paginated<Routing>>>.err(
-              ServerFailure('down'));
+          const Result<Cacheable<Paginated<Routing>>>.err(
+              ServerFailure('down'),);
       container.read(routingListControllerProvider);
       await Future<void>.delayed(Duration.zero);
 
@@ -900,8 +900,8 @@ void main() {
     test('a repository failure on build surfaces without clearing silently',
         () async {
       fakeRepository.listQualityInspectionsHandler = (ListQuery q) async =>
-          Result<Cacheable<Paginated<QualityInspection>>>.err(
-              ServerFailure('down'));
+          const Result<Cacheable<Paginated<QualityInspection>>>.err(
+              ServerFailure('down'),);
       container.read(qualityInspectionListControllerProvider);
       await Future<void>.delayed(Duration.zero);
 
@@ -957,8 +957,8 @@ void main() {
     test('a repository failure on build surfaces without clearing silently',
         () async {
       fakeRepository.listEngineeringChangeOrdersHandler = (ListQuery q) async =>
-          Result<Cacheable<Paginated<EngineeringChangeOrder>>>.err(
-              ServerFailure('down'));
+          const Result<Cacheable<Paginated<EngineeringChangeOrder>>>.err(
+              ServerFailure('down'),);
       container.read(engineeringChangeOrderListControllerProvider);
       await Future<void>.delayed(Duration.zero);
 

@@ -1,8 +1,11 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
-import { z } from 'zod';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
+import { z } from "zod";
 
 // ─── Input schemas ────────────────────────────────────────────────────────────
 
@@ -27,8 +30,15 @@ export const createNcrSchema = z.object({
   warehouseId: z.string().optional(),
   referenceId: z.string().optional(),
   referenceType: z.string().optional(),
-  defectType: z.enum(['DIMENSIONAL', 'COSMETIC', 'FUNCTIONAL', 'DOCUMENTATION', 'LABELING', 'QUANTITY']),
-  severity: z.enum(['MINOR', 'MAJOR', 'CRITICAL']).default('MINOR'),
+  defectType: z.enum([
+    "DIMENSIONAL",
+    "COSMETIC",
+    "FUNCTIONAL",
+    "DOCUMENTATION",
+    "LABELING",
+    "QUANTITY",
+  ]),
+  severity: z.enum(["MINOR", "MAJOR", "CRITICAL"]).default("MINOR"),
   defectQty: z.number().int().min(0).default(0),
   totalQty: z.number().int().min(0).default(0),
   description: z.string().min(1),
@@ -60,7 +70,6 @@ export type RespondCarInput = z.infer<typeof respondCarSchema>;
 
 @Injectable()
 export class SupplierQualityService {
-
   // ─── Scorecards ──────────────────────────────────────────────────────────
 
   async listScorecards(tenantId: string, vendorId?: string) {
@@ -69,7 +78,7 @@ export class SupplierQualityService {
     return prisma.supplierScorecard.findMany({
       where,
       include: { vendor: { select: { id: true, name: true } } },
-      orderBy: { periodStart: 'desc' },
+      orderBy: { periodStart: "desc" },
     });
   }
 
@@ -78,15 +87,21 @@ export class SupplierQualityService {
     const existing = await prisma.supplierScorecard.findFirst({
       where: { tenantId, vendorId: dto.vendorId, periodStart },
     });
-    if (existing) throw new BadRequestException('Scorecard for this vendor and period already exists');
+    if (existing)
+      throw new BadRequestException(
+        "Scorecard for this vendor and period already exists",
+      );
 
     // Compute overall score as weighted average of provided dimensions
-    const scores = [dto.qualityScore, dto.deliveryScore, dto.fillRateScore].filter(
-      (s): s is number => s !== undefined,
-    );
-    const overallScore = scores.length > 0
-      ? scores.reduce((a, b) => a + b, 0) / scores.length
-      : null;
+    const scores = [
+      dto.qualityScore,
+      dto.deliveryScore,
+      dto.fillRateScore,
+    ].filter((s): s is number => s !== undefined);
+    const overallScore =
+      scores.length > 0
+        ? scores.reduce((a, b) => a + b, 0) / scores.length
+        : null;
 
     return prisma.supplierScorecard.create({
       data: {
@@ -94,10 +109,22 @@ export class SupplierQualityService {
         vendorId: dto.vendorId,
         periodStart,
         periodEnd: new Date(dto.periodEnd),
-        qualityScore: dto.qualityScore != null ? new Prisma.Decimal(dto.qualityScore.toFixed(2)) : null,
-        deliveryScore: dto.deliveryScore != null ? new Prisma.Decimal(dto.deliveryScore.toFixed(2)) : null,
-        fillRateScore: dto.fillRateScore != null ? new Prisma.Decimal(dto.fillRateScore.toFixed(2)) : null,
-        overallScore: overallScore != null ? new Prisma.Decimal(overallScore.toFixed(2)) : null,
+        qualityScore:
+          dto.qualityScore != null
+            ? new Prisma.Decimal(dto.qualityScore.toFixed(2))
+            : null,
+        deliveryScore:
+          dto.deliveryScore != null
+            ? new Prisma.Decimal(dto.deliveryScore.toFixed(2))
+            : null,
+        fillRateScore:
+          dto.fillRateScore != null
+            ? new Prisma.Decimal(dto.fillRateScore.toFixed(2))
+            : null,
+        overallScore:
+          overallScore != null
+            ? new Prisma.Decimal(overallScore.toFixed(2))
+            : null,
         onTimeDeliveries: dto.onTimeDeliveries,
         lateDeliveries: dto.lateDeliveries,
         defectiveUnits: dto.defectiveUnits,
@@ -109,19 +136,28 @@ export class SupplierQualityService {
   }
 
   async getVendorScoreHistory(tenantId: string, vendorId: string) {
-    const vendor = await prisma.vendor.findFirst({ where: { id: vendorId, tenantId } });
-    if (!vendor) throw new NotFoundException('Vendor not found');
+    const vendor = await prisma.vendor.findFirst({
+      where: { id: vendorId, tenantId },
+    });
+    if (!vendor) throw new NotFoundException("Vendor not found");
     const scorecards = await prisma.supplierScorecard.findMany({
       where: { tenantId, vendorId },
-      orderBy: { periodStart: 'asc' },
+      orderBy: { periodStart: "asc" },
     });
     const latest = scorecards[scorecards.length - 1];
-    return { vendor: { id: vendor.id, name: vendor.name }, scorecards, latestOverallScore: latest?.overallScore ?? null };
+    return {
+      vendor: { id: vendor.id, name: vendor.name },
+      scorecards,
+      latestOverallScore: latest?.overallScore ?? null,
+    };
   }
 
   // ─── NCRs ────────────────────────────────────────────────────────────────
 
-  async listNcrs(tenantId: string, query: { vendorId?: string; severity?: string; status?: string }) {
+  async listNcrs(
+    tenantId: string,
+    query: { vendorId?: string; severity?: string; status?: string },
+  ) {
     const where: Prisma.SupplierNcrWhereInput = { tenantId };
     if (query.vendorId) where.vendorId = query.vendorId;
     if (query.severity) where.severity = query.severity;
@@ -132,7 +168,7 @@ export class SupplierQualityService {
         vendor: { select: { id: true, name: true } },
         _count: { select: { carRequests: true } },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -160,11 +196,16 @@ export class SupplierQualityService {
 
   async closeNcr(tenantId: string, id: string, dto: CloseNcrInput) {
     const ncr = await prisma.supplierNcr.findFirst({ where: { id, tenantId } });
-    if (!ncr) throw new NotFoundException('NCR not found');
-    if (ncr.status === 'CLOSED') throw new BadRequestException('NCR is already closed');
+    if (!ncr) throw new NotFoundException("NCR not found");
+    if (ncr.status === "CLOSED")
+      throw new BadRequestException("NCR is already closed");
     return prisma.supplierNcr.update({
       where: { id },
-      data: { status: 'CLOSED', resolution: dto.resolution, closedAt: new Date() },
+      data: {
+        status: "CLOSED",
+        resolution: dto.resolution,
+        closedAt: new Date(),
+      },
     });
   }
 
@@ -179,14 +220,17 @@ export class SupplierQualityService {
         ncr: { select: { id: true, ncrNumber: true, severity: true } },
         vendor: { select: { id: true, name: true } },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
   async createCar(tenantId: string, dto: CreateCarInput) {
-    const ncr = await prisma.supplierNcr.findFirst({ where: { id: dto.ncrId, tenantId } });
-    if (!ncr) throw new NotFoundException('NCR not found');
-    if (ncr.status === 'CLOSED') throw new BadRequestException('Cannot raise CAR on a closed NCR');
+    const ncr = await prisma.supplierNcr.findFirst({
+      where: { id: dto.ncrId, tenantId },
+    });
+    if (!ncr) throw new NotFoundException("NCR not found");
+    if (ncr.status === "CLOSED")
+      throw new BadRequestException("Cannot raise CAR on a closed NCR");
 
     const carNumber = `CAR-${Date.now()}-${Math.random().toString(36).slice(2, 5).toUpperCase()}`;
     const [car] = await prisma.$transaction([
@@ -201,16 +245,23 @@ export class SupplierQualityService {
           dueDate: dto.dueDate ? new Date(dto.dueDate) : null,
         },
       }),
-      prisma.supplierNcr.update({ where: { id: dto.ncrId }, data: { status: 'CAR_RAISED' } }),
+      prisma.supplierNcr.update({
+        where: { id: dto.ncrId },
+        data: { status: "CAR_RAISED" },
+      }),
     ]);
     return car;
   }
 
   async respondToCar(tenantId: string, id: string, dto: RespondCarInput) {
-    const car = await prisma.supplierCarRequest.findFirst({ where: { id, tenantId } });
-    if (!car) throw new NotFoundException('CAR not found');
-    if (!['PENDING', 'SUBMITTED'].includes(car.status)) {
-      throw new BadRequestException(`CAR is ${car.status.toLowerCase()}, cannot respond`);
+    const car = await prisma.supplierCarRequest.findFirst({
+      where: { id, tenantId },
+    });
+    if (!car) throw new NotFoundException("CAR not found");
+    if (!["PENDING", "SUBMITTED"].includes(car.status)) {
+      throw new BadRequestException(
+        `CAR is ${car.status.toLowerCase()}, cannot respond`,
+      );
     }
     return prisma.supplierCarRequest.update({
       where: { id },
@@ -218,47 +269,60 @@ export class SupplierQualityService {
         vendorResponse: dto.vendorResponse,
         rootCause: dto.rootCause ?? car.rootCause,
         correctiveAction: dto.correctiveAction ?? car.correctiveAction,
-        status: 'SUBMITTED',
+        status: "SUBMITTED",
         respondedAt: new Date(),
       },
     });
   }
 
   async acceptCar(tenantId: string, id: string) {
-    const car = await prisma.supplierCarRequest.findFirst({ where: { id, tenantId } });
-    if (!car) throw new NotFoundException('CAR not found');
-    if (car.status !== 'SUBMITTED') throw new BadRequestException('CAR must be SUBMITTED to accept');
+    const car = await prisma.supplierCarRequest.findFirst({
+      where: { id, tenantId },
+    });
+    if (!car) throw new NotFoundException("CAR not found");
+    if (car.status !== "SUBMITTED")
+      throw new BadRequestException("CAR must be SUBMITTED to accept");
     return prisma.supplierCarRequest.update({
       where: { id },
-      data: { status: 'ACCEPTED', closedAt: new Date() },
+      data: { status: "ACCEPTED", closedAt: new Date() },
     });
   }
 
   async rejectCar(tenantId: string, id: string) {
-    const car = await prisma.supplierCarRequest.findFirst({ where: { id, tenantId } });
-    if (!car) throw new NotFoundException('CAR not found');
-    if (car.status !== 'SUBMITTED') throw new BadRequestException('CAR must be SUBMITTED to reject');
+    const car = await prisma.supplierCarRequest.findFirst({
+      where: { id, tenantId },
+    });
+    if (!car) throw new NotFoundException("CAR not found");
+    if (car.status !== "SUBMITTED")
+      throw new BadRequestException("CAR must be SUBMITTED to reject");
     return prisma.supplierCarRequest.update({
       where: { id },
-      data: { status: 'REJECTED' },
+      data: { status: "REJECTED" },
     });
   }
 
   // ─── Quality Dashboard ────────────────────────────────────────────────────
 
   async getQualityDashboard(tenantId: string) {
-    const [totalNcrs, openNcrs, criticalNcrs, pendingCars, recentScorecards] = await Promise.all([
-      prisma.supplierNcr.count({ where: { tenantId } }),
-      prisma.supplierNcr.count({ where: { tenantId, status: { not: 'CLOSED' } } }),
-      prisma.supplierNcr.count({ where: { tenantId, severity: 'CRITICAL', status: { not: 'CLOSED' } } }),
-      prisma.supplierCarRequest.count({ where: { tenantId, status: { in: ['PENDING', 'SUBMITTED'] } } }),
-      prisma.supplierScorecard.findMany({
-        where: { tenantId },
-        orderBy: { periodStart: 'desc' },
-        take: 5,
-        include: { vendor: { select: { id: true, name: true } } },
-      }),
-    ]);
+    const [totalNcrs, openNcrs, criticalNcrs, pendingCars, recentScorecards] =
+      await Promise.all([
+        prisma.supplierNcr.count({ where: { tenantId } }),
+        prisma.supplierNcr.count({
+          where: { tenantId, status: { not: "CLOSED" } },
+        }),
+        prisma.supplierNcr.count({
+          where: { tenantId, severity: "CRITICAL", status: { not: "CLOSED" } },
+        }),
+        prisma.supplierCarRequest.count({
+          where: { tenantId, status: { in: ["PENDING", "SUBMITTED"] } },
+        }),
+        prisma.supplierScorecard.findMany({
+          where: { tenantId },
+          orderBy: { periodStart: "desc" },
+          take: 5,
+          include: { vendor: { select: { id: true, name: true } } },
+        }),
+      ]);
 
     return { totalNcrs, openNcrs, criticalNcrs, pendingCars, recentScorecards };
   }

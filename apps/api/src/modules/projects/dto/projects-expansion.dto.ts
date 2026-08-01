@@ -1,9 +1,8 @@
-// @ts-nocheck
-import { z } from 'zod';
+import { z } from "zod";
 
 export const PortfolioMemberSchema = z.object({
   userId: z.string(),
-  role: z.enum(['OWNER', 'MANAGER', 'MEMBER', 'VIEWER']).default('MEMBER'),
+  role: z.enum(["OWNER", "MANAGER", "MEMBER", "VIEWER"]).default("MEMBER"),
 });
 
 export const RiskMitigationSchema = z.object({
@@ -17,7 +16,7 @@ export const RiskMitigationSchema = z.object({
 export const ResourceAllocationSchema = z.object({
   projectId: z.string(),
   resourceId: z.string(),
-  resourceType: z.enum(['EMPLOYEE', 'EQUIPMENT', 'MATERIAL']),
+  resourceType: z.enum(["EMPLOYEE", "EQUIPMENT", "MATERIAL"]),
   allocatedHours: z.number().positive(),
   startDate: z.string(),
   endDate: z.string(),
@@ -26,7 +25,14 @@ export const ResourceAllocationSchema = z.object({
 
 export const BudgetLineSchema = z.object({
   projectId: z.string(),
-  category: z.enum(['LABOR', 'MATERIAL', 'EQUIPMENT', 'TRAVEL', 'OVERHEAD', 'OTHER']),
+  category: z.enum([
+    "LABOR",
+    "MATERIAL",
+    "EQUIPMENT",
+    "TRAVEL",
+    "OVERHEAD",
+    "OTHER",
+  ]),
   allocated: z.number().positive(),
   committed: z.number().default(0),
   fiscalYear: z.string().optional(),
@@ -36,7 +42,7 @@ export const BudgetLineSchema = z.object({
 export const ProjectDocumentSchema = z.object({
   projectId: z.string(),
   name: z.string().min(1),
-  type: z.enum(['FILE', 'LINK', 'NOTE']).default('FILE'),
+  type: z.enum(["FILE", "LINK", "NOTE"]).default("FILE"),
   fileUrl: z.string().optional(),
   mimeType: z.string().optional(),
   fileSize: z.number().int().optional(),

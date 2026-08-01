@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 
 export default function AssetsRedirect() {
-  redirect('/hr/advanced/operations-service?tab=assets');
+  redirect("/hr/advanced/operations-service?tab=assets");
 }

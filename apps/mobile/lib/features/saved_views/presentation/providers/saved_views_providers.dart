@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -120,15 +119,15 @@ class SavedViewListController extends Notifier<SavedViewListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteSavedViewUseCase(
-      ref.read(savedViewsRepositoryProvider))(id);
+      ref.read(savedViewsRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<SavedView>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveSavedViewUseCase(
-      ref.read(savedViewsRepositoryProvider))(
-      SaveSavedViewParams(id: id, payload: payload));
+      ref.read(savedViewsRepositoryProvider),)(
+      SaveSavedViewParams(id: id, payload: payload),);
     if (result.isOk) await refresh();
     return result;
   }
@@ -137,6 +136,6 @@ class SavedViewListController extends Notifier<SavedViewListState> {
 final FutureProviderFamily<SavedView, String> savedViewDetailProvider =
     FutureProvider.family<SavedView, String>((Ref ref, String id) async {
   final result = await GetSavedViewUseCase(
-    ref.watch(savedViewsRepositoryProvider))(id);
+    ref.watch(savedViewsRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });

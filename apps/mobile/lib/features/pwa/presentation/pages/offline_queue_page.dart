@@ -57,14 +57,14 @@ class _QueueCard extends StatelessWidget {
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(item.actionType, style: TextStyle(fontWeight: TypeScale.semibold, color: t.text)),
             Text('Retry #${item.retryCount}', style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
-          ])),
+          ],),),
           Text(item.status, style: TextStyle(color: color, fontSize: TypeScale.xs, fontWeight: TypeScale.medium)),
-        ]),
+        ],),
         const SizedBox(height: Spacing.x2),
         Text('Created: ${item.createdAt != null ? Formatters.dateTime(item.createdAt!) : "—"}', style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
         if (item.errorMessage != null) Padding(padding: const EdgeInsets.only(top: Spacing.x1), child: Text(item.errorMessage!, style: TextStyle(color: t.danger, fontSize: TypeScale.xs))),
         if (item.syncedAt != null) Padding(padding: const EdgeInsets.only(top: Spacing.x1), child: Text('Synced: ${Formatters.dateTime(item.syncedAt!)}', style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs))),
-      ]),
+      ],),
     );
   }
 }

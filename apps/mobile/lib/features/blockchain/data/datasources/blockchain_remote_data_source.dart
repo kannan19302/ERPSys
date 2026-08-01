@@ -25,40 +25,40 @@ class BlockchainRemoteDataSourceImpl implements BlockchainRemoteDataSource {
   @override
   Future<Paginated<BlockchainTransactionModel>> listTransactions(ListQuery query) =>
       _client.getPaginated<BlockchainTransactionModel>(
-        ApiPaths.blockchainExplorer, query, BlockchainTransactionModel.fromJson);
+        ApiPaths.blockchainExplorer, query, BlockchainTransactionModel.fromJson,);
 
   @override
   Future<BlockchainTransactionModel> getTransaction(String id) async =>
       BlockchainTransactionModel.fromJson(
-        await _client.getObject(ApiPaths.blockchainExplorer));
+        await _client.getObject(ApiPaths.blockchainExplorer),);
 
   @override
   Future<Paginated<BlockchainContractModel>> listContracts(ListQuery query) =>
       _client.getPaginated<BlockchainContractModel>(
-        ApiPaths.blockchainContracts, query, BlockchainContractModel.fromJson);
+        ApiPaths.blockchainContracts, query, BlockchainContractModel.fromJson,);
 
   @override
   Future<BlockchainContractModel> getContract(String id) async =>
       BlockchainContractModel.fromJson(
-        await _client.getObject(ApiPaths.blockchainContracts));
+        await _client.getObject(ApiPaths.blockchainContracts),);
 
   @override
   Future<Paginated<BlockchainAuditEntryModel>> listAuditEntries(ListQuery query) =>
       _client.getPaginated<BlockchainAuditEntryModel>(
-        ApiPaths.blockchainAudit, query, BlockchainAuditEntryModel.fromJson);
+        ApiPaths.blockchainAudit, query, BlockchainAuditEntryModel.fromJson,);
 
   @override
   Future<BlockchainAuditEntryModel> getAuditEntry(String id) async =>
       BlockchainAuditEntryModel.fromJson(
-        await _client.getObject(ApiPaths.blockchainAudit));
+        await _client.getObject(ApiPaths.blockchainAudit),);
 
   @override
   Future<Paginated<BlockchainNetworkHealthModel>> listNetworkHealth(ListQuery query) =>
       _client.getPaginated<BlockchainNetworkHealthModel>(
-        ApiPaths.blockchainNetworkHealth, query, BlockchainNetworkHealthModel.fromJson);
+        ApiPaths.blockchainNetworkHealth, query, BlockchainNetworkHealthModel.fromJson,);
 
   @override
   Future<BlockchainNetworkHealthModel> getNetworkHealth(String id) async =>
       BlockchainNetworkHealthModel.fromJson(
-        await _client.getObject(ApiPaths.blockchainNetworkHealth));
+        await _client.getObject(ApiPaths.blockchainNetworkHealth),);
 }

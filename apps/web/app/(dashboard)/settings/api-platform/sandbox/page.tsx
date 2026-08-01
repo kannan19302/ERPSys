@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 
 export default function ApiPlatformSandboxRedirectPage() {
-  redirect('/settings/api-platform?tab=sandbox');
+  redirect("/settings/api-platform?tab=sandbox");
 }

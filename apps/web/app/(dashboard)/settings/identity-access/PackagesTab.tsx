@@ -1,15 +1,23 @@
-// @ts-nocheck
-'use client';
+"use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from "react";
 import {
-  Card, Badge, Spinner, Button, Modal, TextField, FormField,
-  Textarea, DataTable, type Column, ProtectedComponent,
-} from '@unerp/ui';
-import { Package, Plus, Edit2, Trash2 } from 'lucide-react';
-import { PERMISSION_REGISTRY, getPermissionsByModule } from '@unerp/shared';
-import { useApiClient } from '@unerp/framework';
-import styles from './PackagesTab.module.css';
+  Card,
+  Badge,
+  Spinner,
+  Button,
+  Modal,
+  TextField,
+  FormField,
+  Textarea,
+  DataTable,
+  type Column,
+  ProtectedComponent,
+} from "@unerp/ui";
+import { Package, Plus, Edit2, Trash2 } from "lucide-react";
+import { PERMISSION_REGISTRY, getPermissionsByModule } from "@unerp/shared";
+import { useApiClient } from "@unerp/framework";
+import styles from "./PackagesTab.module.css";
 
 interface AccessPackageData {
   id: string;
@@ -36,7 +44,9 @@ export default function PackagesTab() {
   const fetchPackages = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await client.get<AccessPackageData[] | { data?: AccessPackageData[] }>('/admin/access-packages');
+      const data = await client.get<
+        AccessPackageData[] | { data?: AccessPackageData[] }
+      >("/admin/access-packages");
       setPackages(Array.isArray(data) ? data : data?.data || []);
     } catch {
       setPackages([]);
@@ -51,7 +61,9 @@ export default function PackagesTab() {
 
   const columns: Column<AccessPackageData>[] = [
     {
-      key: 'name', header: 'Package', width: '35%',
+      key: "name",
+      header: "Package",
+      width: "35%",
       render: (row) => (
         <div className="ui-hstack-3">
           <div className={styles.s1}>
@@ -65,25 +77,40 @@ export default function PackagesTab() {
       ),
     },
     {
-      key: 'permissions', header: 'Contents',
+      key: "permissions",
+      header: "Contents",
       render: (row) => (
         <div className={styles.s2}>
           <Badge variant="info">{row.permissions.length} perms</Badge>
-          {row.fieldAccessRules.length > 0 && <Badge variant="warning">{row.fieldAccessRules.length} field rules</Badge>}
-          {row.recordFilters.length > 0 && <Badge variant="default">{row.recordFilters.length} filters</Badge>}
+          {row.fieldAccessRules.length > 0 && (
+            <Badge variant="warning">
+              {row.fieldAccessRules.length} field rules
+            </Badge>
+          )}
+          {row.recordFilters.length > 0 && (
+            <Badge variant="default">{row.recordFilters.length} filters</Badge>
+          )}
         </div>
       ),
     },
     {
-      key: 'assignedRoles', header: 'Assigned To',
+      key: "assignedRoles",
+      header: "Assigned To",
       render: (row) => (
         <div className={styles.s3}>
-          {row.assignedRoles.map((r) => <Badge key={r} variant="success">{r}</Badge>)}
+          {row.assignedRoles.map((r) => (
+            <Badge key={r} variant="success">
+              {r}
+            </Badge>
+          ))}
         </div>
       ),
     },
     {
-      key: 'actions', header: '', align: 'right' as const, width: '80px',
+      key: "actions",
+      header: "",
+      align: "right" as const,
+      width: "80px",
       render: () => (
         <ProtectedComponent permission="admin.access-package.update">
           <div className={styles.s4}>
@@ -124,19 +151,30 @@ export default function PackagesTab() {
       <CreatePackageModal
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        onCreated={() => { setCreateOpen(false); fetchPackages(); }}
+        onCreated={() => {
+          setCreateOpen(false);
+          fetchPackages();
+        }}
       />
     </div>
   );
 }
 
-function CreatePackageModal({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: () => void }) {
+function CreatePackageModal({
+  open,
+  onClose,
+  onCreated,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onCreated: () => void;
+}) {
   const client = useApiClient();
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const [selectedPerms, setSelectedPerms] = useState<Set<string>>(new Set());
-  const [fieldRules, setFieldRules] = useState('');
-  const [recordFilters, setRecordFilters] = useState('');
+  const [fieldRules, setFieldRules] = useState("");
+  const [recordFilters, setRecordFilters] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const modules = allModules();
@@ -151,14 +189,19 @@ function CreatePackageModal({ open, onClose, onCreated }: { open: boolean; onClo
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) { setError('Package name is required'); return; }
+    if (!name.trim()) {
+      setError("Package name is required");
+      return;
+    }
     setSaving(true);
     setError(null);
     try {
-      await client.post('/admin/access-packages', {
-        name, description, permissions: Array.from(selectedPerms),
-        fieldAccessRules: fieldRules.split('\n').filter(Boolean),
-        recordFilters: recordFilters.split('\n').filter(Boolean),
+      await client.post("/admin/access-packages", {
+        name,
+        description,
+        permissions: Array.from(selectedPerms),
+        fieldAccessRules: fieldRules.split("\n").filter(Boolean),
+        recordFilters: recordFilters.split("\n").filter(Boolean),
       });
       onCreated();
     } catch {
@@ -177,22 +220,41 @@ function CreatePackageModal({ open, onClose, onCreated }: { open: boolean; onClo
       size="lg"
       footer={
         <>
-          <Button variant="secondary" onClick={onClose} disabled={saving}>Cancel</Button>
-          <Button variant="primary" onClick={handleSubmit as any} disabled={saving}>
-            {saving ? <><Spinner size="sm" /> Creating...</> : 'Create Package'}
+          <Button variant="secondary" onClick={onClose} disabled={saving}>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleSubmit as any}
+            disabled={saving}
+          >
+            {saving ? (
+              <>
+                <Spinner size="sm" /> Creating...
+              </>
+            ) : (
+              "Create Package"
+            )}
           </Button>
         </>
       }
     >
       <form onSubmit={handleSubmit} className="ui-stack-4">
-        {error && (
-          <div className={styles.s7}>
-            {error}
-          </div>
-        )}
+        {error && <div className={styles.s7}>{error}</div>}
 
-        <TextField label="Package Name" placeholder="e.g. Finance Full Access" required value={name} onChange={(e) => setName(e.target.value)} />
-        <TextField label="Description" placeholder="What does this package grant?" value={description} onChange={(e) => setDescription(e.target.value)} />
+        <TextField
+          label="Package Name"
+          placeholder="e.g. Finance Full Access"
+          required
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <TextField
+          label="Description"
+          placeholder="What does this package grant?"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
 
         <FormField label={`Permissions (${selectedPerms.size} selected)`}>
           <div className={styles.s8}>
@@ -204,7 +266,12 @@ function CreatePackageModal({ open, onClose, onCreated }: { open: boolean; onClo
                   <div className={styles.s11}>
                     {modPerms.map((perm) => (
                       <label key={perm.code} className={styles.s12}>
-                        <input type="checkbox" checked={selectedPerms.has(perm.code)} onChange={() => togglePerm(perm.code)} className={styles.s13} />
+                        <input
+                          type="checkbox"
+                          checked={selectedPerms.has(perm.code)}
+                          onChange={() => togglePerm(perm.code)}
+                          className={styles.s13}
+                        />
                         {perm.description || perm.code}
                       </label>
                     ))}
@@ -215,12 +282,28 @@ function CreatePackageModal({ open, onClose, onCreated }: { open: boolean; onClo
           </div>
         </FormField>
 
-        <FormField label="Field Access Rules" hint="One rule per line, e.g. finance.invoice.amount:hidden">
-          <Textarea rows={3} value={fieldRules} onChange={(e) => setFieldRules(e.target.value)} placeholder="finance.invoice.amount:hidden" />
+        <FormField
+          label="Field Access Rules"
+          hint="One rule per line, e.g. finance.invoice.amount:hidden"
+        >
+          <Textarea
+            rows={3}
+            value={fieldRules}
+            onChange={(e) => setFieldRules(e.target.value)}
+            placeholder="finance.invoice.amount:hidden"
+          />
         </FormField>
 
-        <FormField label="Record Filters" hint="One filter per line, e.g. crm.lead:owned_by_user">
-          <Textarea rows={3} value={recordFilters} onChange={(e) => setRecordFilters(e.target.value)} placeholder="crm.lead:owned_by_user" />
+        <FormField
+          label="Record Filters"
+          hint="One filter per line, e.g. crm.lead:owned_by_user"
+        >
+          <Textarea
+            rows={3}
+            value={recordFilters}
+            onChange={(e) => setRecordFilters(e.target.value)}
+            placeholder="crm.lead:owned_by_user"
+          />
         </FormField>
       </form>
     </Modal>

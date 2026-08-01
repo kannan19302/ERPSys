@@ -41,7 +41,7 @@ class RealEstateRemoteDataSourceImpl implements RealEstateRemoteDataSource {
   @override
   Future<Paginated<PropertyModel>> listProperties(ListQuery query) =>
       _client.getPaginated<PropertyModel>(
-        ApiPaths.properties, query, PropertyModel.fromJson);
+        ApiPaths.properties, query, PropertyModel.fromJson,);
 
   @override
   Future<PropertyModel> getProperty(String id) async =>
@@ -102,7 +102,7 @@ class RealEstateRemoteDataSourceImpl implements RealEstateRemoteDataSource {
   @override
   Future<Paginated<MaintenanceOrderModel>> listMaintenanceOrders(ListQuery query) =>
       _client.getPaginated<MaintenanceOrderModel>(
-        ApiPaths.maintenanceOrders, query, MaintenanceOrderModel.fromJson);
+        ApiPaths.maintenanceOrders, query, MaintenanceOrderModel.fromJson,);
 
   @override
   Future<MaintenanceOrderModel> getMaintenanceOrder(String id) async =>
@@ -111,13 +111,13 @@ class RealEstateRemoteDataSourceImpl implements RealEstateRemoteDataSource {
   @override
   Future<MaintenanceOrderModel> createMaintenanceOrder(Map<String, dynamic> payload) async =>
       MaintenanceOrderModel.fromJson(
-        await _client.post(ApiPaths.maintenanceOrders, body: payload));
+        await _client.post(ApiPaths.maintenanceOrders, body: payload),);
 
   @override
   Future<MaintenanceOrderModel> updateMaintenanceOrder(
-    String id, Map<String, dynamic> payload) async =>
+    String id, Map<String, dynamic> payload,) async =>
       MaintenanceOrderModel.fromJson(
-        await _client.patch(ApiPaths.maintenanceOrder(id), body: payload));
+        await _client.patch(ApiPaths.maintenanceOrder(id), body: payload),);
 
   @override
   Future<void> deleteMaintenanceOrder(String id) =>
@@ -126,15 +126,15 @@ class RealEstateRemoteDataSourceImpl implements RealEstateRemoteDataSource {
   @override
   Future<MaintenanceOrderModel> completeMaintenanceOrder(String id) async =>
       MaintenanceOrderModel.fromJson(
-        await _client.post('${ApiPaths.maintenanceOrder(id)}/complete'));
+        await _client.post('${ApiPaths.maintenanceOrder(id)}/complete'),);
 
   @override
   Future<Paginated<PropertyValuationModel>> listPropertyValuations(ListQuery query) =>
       _client.getPaginated<PropertyValuationModel>(
-        ApiPaths.propertyValuations, query, PropertyValuationModel.fromJson);
+        ApiPaths.propertyValuations, query, PropertyValuationModel.fromJson,);
 
   @override
   Future<PropertyValuationModel> createPropertyValuation(Map<String, dynamic> payload) async =>
       PropertyValuationModel.fromJson(
-        await _client.post(ApiPaths.propertyValuations, body: payload));
+        await _client.post(ApiPaths.propertyValuations, body: payload),);
 }

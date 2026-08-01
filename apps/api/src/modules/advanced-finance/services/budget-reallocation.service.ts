@@ -1,7 +1,10 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
 
 @Injectable()
 export class BudgetReallocationService {
@@ -17,7 +20,7 @@ export class BudgetReallocationService {
           },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -34,7 +37,8 @@ export class BudgetReallocationService {
         },
       },
     });
-    if (!reallocation) throw new NotFoundException('Budget reallocation not found');
+    if (!reallocation)
+      throw new NotFoundException("Budget reallocation not found");
     return reallocation;
   }
 
@@ -45,16 +49,18 @@ export class BudgetReallocationService {
       description?: string;
       lines: Array<{
         budgetId: string;
-        type: 'SOURCE' | 'DESTINATION';
+        type: "SOURCE" | "DESTINATION";
         amount: number;
       }>;
     },
     requestedBy: string,
   ) {
     // Generate a unique number
-    const count = await prisma.budgetReallocation.count({ where: { tenantId } });
+    const count = await prisma.budgetReallocation.count({
+      where: { tenantId },
+    });
     const year = new Date().getFullYear();
-    const sequence = String(count + 1).padStart(4, '0');
+    const sequence = String(count + 1).padStart(4, "0");
     const number = `BR-${year}-${sequence}`;
 
     // Validate lines sum
@@ -63,8 +69,8 @@ export class BudgetReallocationService {
     let destSum = 0;
 
     for (const line of dto.lines) {
-      if (line.type === 'SOURCE') sourceSum += line.amount;
-      if (line.type === 'DESTINATION') destSum += line.amount;
+      if (line.type === "SOURCE") sourceSum += line.amount;
+      if (line.type === "DESTINATION") destSum += line.amount;
 
       // Verify budget exists
       const budget = await prisma.budget.findFirst({
@@ -75,13 +81,17 @@ export class BudgetReallocationService {
       }
 
       // Source budget must have sufficient funds
-      if (line.type === 'SOURCE' && Number(budget.amount) < line.amount) {
-        throw new BadRequestException(`Insufficient funds in source budget ${line.budgetId}. Available: ${budget.amount}`);
+      if (line.type === "SOURCE" && Number(budget.amount) < line.amount) {
+        throw new BadRequestException(
+          `Insufficient funds in source budget ${line.budgetId}. Available: ${budget.amount}`,
+        );
       }
     }
 
     if (Math.abs(sourceSum - destSum) > 0.01) {
-      throw new BadRequestException(`Source reallocation sum (${sourceSum}) must equal destination sum (${destSum})`);
+      throw new BadRequestException(
+        `Source reallocation sum (${sourceSum}) must equal destination sum (${destSum})`,
+      );
     }
 
     return prisma.budgetReallocation.create({
@@ -90,7 +100,7 @@ export class BudgetReallocationService {
         orgId,
         number,
         description: dto.description || null,
-        status: 'DRAFT',
+        status: "DRAFT",
         requestedBy,
         lines: {
           create: dto.lines.map((l) => ({
@@ -111,14 +121,17 @@ export class BudgetReallocationService {
     const reallocation = await prisma.budgetReallocation.findFirst({
       where: { id, tenantId },
     });
-    if (!reallocation) throw new NotFoundException('Budget reallocation not found');
-    if (reallocation.status !== 'DRAFT') {
-      throw new BadRequestException('Only DRAFT reallocations can be submitted.');
+    if (!reallocation)
+      throw new NotFoundException("Budget reallocation not found");
+    if (reallocation.status !== "DRAFT") {
+      throw new BadRequestException(
+        "Only DRAFT reallocations can be submitted.",
+      );
     }
 
     return prisma.budgetReallocation.update({
       where: { id },
-      data: { status: 'SUBMITTED' },
+      data: { status: "SUBMITTED" },
     });
   }
 
@@ -127,9 +140,12 @@ export class BudgetReallocationService {
       where: { id, tenantId },
       include: { lines: true },
     });
-    if (!reallocation) throw new NotFoundException('Budget reallocation not found');
-    if (reallocation.status !== 'SUBMITTED') {
-      throw new BadRequestException('Only SUBMITTED reallocations can be approved.');
+    if (!reallocation)
+      throw new NotFoundException("Budget reallocation not found");
+    if (reallocation.status !== "SUBMITTED") {
+      throw new BadRequestException(
+        "Only SUBMITTED reallocations can be approved.",
+      );
     }
 
     return prisma.$transaction(async (tx) => {
@@ -140,15 +156,18 @@ export class BudgetReallocationService {
           include: { periodAmounts: true },
         });
 
-        if (!budget) throw new NotFoundException(`Budget ${line.budgetId} not found`);
+        if (!budget)
+          throw new NotFoundException(`Budget ${line.budgetId} not found`);
 
         const adjustment = Number(line.amount);
         let newAmount = Number(budget.amount);
 
-        if (line.type === 'SOURCE') {
+        if (line.type === "SOURCE") {
           newAmount -= adjustment;
           if (newAmount < 0) {
-            throw new BadRequestException(`Insufficient funds in source budget ${line.budgetId} during final execution.`);
+            throw new BadRequestException(
+              `Insufficient funds in source budget ${line.budgetId} during final execution.`,
+            );
           }
         } else {
           newAmount += adjustment;
@@ -176,7 +195,7 @@ export class BudgetReallocationService {
       return tx.budgetReallocation.update({
         where: { id },
         data: {
-          status: 'APPROVED',
+          status: "APPROVED",
           approvedBy,
           approvedAt: new Date(),
         },
@@ -184,19 +203,27 @@ export class BudgetReallocationService {
     });
   }
 
-  async rejectReallocation(tenantId: string, id: string, notes: string, approvedBy: string) {
+  async rejectReallocation(
+    tenantId: string,
+    id: string,
+    notes: string,
+    approvedBy: string,
+  ) {
     const reallocation = await prisma.budgetReallocation.findFirst({
       where: { id, tenantId },
     });
-    if (!reallocation) throw new NotFoundException('Budget reallocation not found');
-    if (reallocation.status !== 'SUBMITTED') {
-      throw new BadRequestException('Only SUBMITTED reallocations can be rejected.');
+    if (!reallocation)
+      throw new NotFoundException("Budget reallocation not found");
+    if (reallocation.status !== "SUBMITTED") {
+      throw new BadRequestException(
+        "Only SUBMITTED reallocations can be rejected.",
+      );
     }
 
     return prisma.budgetReallocation.update({
       where: { id },
       data: {
-        status: 'REJECTED',
+        status: "REJECTED",
         approvedBy,
         approvedAt: new Date(),
         notes: notes || null,

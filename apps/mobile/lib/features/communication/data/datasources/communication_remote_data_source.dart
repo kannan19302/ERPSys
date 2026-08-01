@@ -40,7 +40,7 @@ class CommunicationRemoteDataSourceImpl implements CommunicationRemoteDataSource
   @override
   Future<Paginated<ChannelModel>> listChannels(ListQuery query) =>
       _client.getPaginated<ChannelModel>(
-        ApiPaths.channels, query, ChannelModel.fromJson);
+        ApiPaths.channels, query, ChannelModel.fromJson,);
 
   @override
   Future<ChannelModel> getChannel(String id) async =>
@@ -68,7 +68,7 @@ class CommunicationRemoteDataSourceImpl implements CommunicationRemoteDataSource
   @override
   Future<Paginated<MessageModel>> listChannelMessages(String channelId, ListQuery query) =>
       _client.getPaginated<MessageModel>(
-        ApiPaths.channelMessages(channelId), query, MessageModel.fromJson);
+        ApiPaths.channelMessages(channelId), query, MessageModel.fromJson,);
 
   @override
   Future<MessageModel> getMessage(String id) async =>
@@ -77,7 +77,7 @@ class CommunicationRemoteDataSourceImpl implements CommunicationRemoteDataSource
   @override
   Future<MessageModel> sendMessage(Map<String, dynamic> payload) async =>
       MessageModel.fromJson(
-        await _client.post(ApiPaths.directMessages, body: payload));
+        await _client.post(ApiPaths.directMessages, body: payload),);
 
   @override
   Future<MessageModel> updateMessage(String id, Map<String, dynamic> payload) async =>
@@ -89,32 +89,32 @@ class CommunicationRemoteDataSourceImpl implements CommunicationRemoteDataSource
   @override
   Future<MessageModel> reactToMessage(String id, Map<String, dynamic> payload) async =>
       MessageModel.fromJson(
-        await _client.post(ApiPaths.messageReact(id), body: payload));
+        await _client.post(ApiPaths.messageReact(id), body: payload),);
 
   @override
   Future<MessageModel> replyToMessage(String id, Map<String, dynamic> payload) async =>
       MessageModel.fromJson(
-        await _client.post(ApiPaths.messageReply(id), body: payload));
+        await _client.post(ApiPaths.messageReply(id), body: payload),);
 
   @override
   Future<MessageModel> forwardMessage(String id, Map<String, dynamic> payload) async =>
       MessageModel.fromJson(
-        await _client.post(ApiPaths.messageForward(id), body: payload));
+        await _client.post(ApiPaths.messageForward(id), body: payload),);
 
   @override
   Future<Paginated<DirectMessageModel>> listDirectMessages(ListQuery query) =>
       _client.getPaginated<DirectMessageModel>(
-        ApiPaths.directMessages, query, DirectMessageModel.fromJson);
+        ApiPaths.directMessages, query, DirectMessageModel.fromJson,);
 
   @override
   Future<DirectMessageModel> sendDirectMessage(Map<String, dynamic> payload) async =>
       DirectMessageModel.fromJson(
-        await _client.post(ApiPaths.directMessages, body: payload));
+        await _client.post(ApiPaths.directMessages, body: payload),);
 
   @override
   Future<Paginated<MeetingModel>> listMeetings(ListQuery query) =>
       _client.getPaginated<MeetingModel>(
-        ApiPaths.meetings, query, MeetingModel.fromJson);
+        ApiPaths.meetings, query, MeetingModel.fromJson,);
 
   @override
   Future<MeetingModel> getMeeting(String id) async =>

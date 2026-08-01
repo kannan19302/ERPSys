@@ -18,15 +18,15 @@ abstract class FixedAssetsRepository {
   Future<Result<FixedAsset>> disposeFixedAsset(String id, Map<String, dynamic> payload);
 
   Future<Result<Cacheable<Paginated<AssetDepreciationSchedule>>>> listDepreciationSchedules(
-    ListQuery query);
+    ListQuery query,);
   Future<Result<AssetDepreciationSchedule>> recordDepreciation(Map<String, dynamic> payload);
 
   Future<Result<Cacheable<Paginated<AssetMaintenanceSchedule>>>> listMaintenanceSchedules(
-    ListQuery query);
+    ListQuery query,);
   Future<Result<AssetMaintenanceSchedule>> getMaintenanceSchedule(String id);
   Future<Result<AssetMaintenanceSchedule>> createMaintenanceSchedule(Map<String, dynamic> payload);
   Future<Result<AssetMaintenanceSchedule>> updateMaintenanceSchedule(
-    String id, Map<String, dynamic> payload);
+    String id, Map<String, dynamic> payload,);
   Future<Result<void>> deleteMaintenanceSchedule(String id);
   Future<Result<AssetMaintenanceSchedule>> completeMaintenanceSchedule(String id);
 

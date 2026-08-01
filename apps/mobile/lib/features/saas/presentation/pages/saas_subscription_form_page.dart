@@ -2,8 +2,6 @@ import '../../../../core/utils/formatters.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/usecase/result.dart';
 import '../providers/saas_providers.dart';
 
 class SaasSubscriptionFormPage extends ConsumerStatefulWidget {
@@ -57,7 +55,6 @@ class _SaasSubscriptionFormPageState extends ConsumerState<SaasSubscriptionFormP
 
   @override
   Widget build(BuildContext context) {
-    final t = context.tokens;
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEditing ? 'Edit Subscription' : 'New Subscription'),
@@ -98,16 +95,16 @@ class _SaasSubscriptionFormPageState extends ConsumerState<SaasSubscriptionFormP
                 if (picked != null) setState(() => _startDate = picked);
               },
               child: InputDecorator(
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Start Date',
-                  suffixIcon: const Icon(Icons.calendar_today),
+                  suffixIcon: Icon(Icons.calendar_today),
                 ),
                 child: Text(_startDate != null ? Formatters.date(_startDate!) : 'Select date'),
               ),
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _billingCycle,
+              initialValue: _billingCycle,
               decoration: const InputDecoration(labelText: 'Billing Cycle'),
               items: const [
                 DropdownMenuItem(value: 'MONTHLY', child: Text('Monthly')),
@@ -118,7 +115,7 @@ class _SaasSubscriptionFormPageState extends ConsumerState<SaasSubscriptionFormP
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _status,
+              initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: const [
                 DropdownMenuItem(value: 'ACTIVE', child: Text('Active')),

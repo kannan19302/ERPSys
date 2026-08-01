@@ -1,12 +1,4 @@
-// @ts-nocheck
-import {
-  Controller,
-  Get,
-  Post,
-  UseGuards,
-  Req,
-  Query,
-} from "@nestjs/common";
+import { Controller, Get, Post, UseGuards, Req, Query } from "@nestjs/common";
 import { z } from "zod";
 import { ZodBody } from "../../common/decorators/zod-body.decorator";
 import { Request } from "express";
@@ -54,14 +46,18 @@ export class BillingAdminController {
   @Permissions("saas.analytics.read")
   @Get("revenue")
   async getRevenueData(@Req() _req: AuthReq, @Query("period") period?: string) {
-    return this.tenantAnalyticsService.getRevenueAnalytics((period as any) || "30d");
+    return this.tenantAnalyticsService.getRevenueAnalytics(
+      (period as any) || "30d",
+    );
   }
 
   @ApiOperation({ summary: "Get MRR data [Admin]" })
   @Permissions("saas.analytics.read")
   @Get("revenue/mrr")
   async getMrrData(@Req() _req: AuthReq) {
-    const overview = await this.tenantAnalyticsService.getPlatformOverview().catch(() => null);
+    const overview = await this.tenantAnalyticsService
+      .getPlatformOverview()
+      .catch(() => null);
     return { mrr: (overview as any)?.mrr || 0, currency: "USD", trend: [] };
   }
 
@@ -69,7 +65,9 @@ export class BillingAdminController {
   @Permissions("saas.analytics.read")
   @Get("revenue/arr")
   async getArrData(@Req() _req: AuthReq) {
-    const overview = await this.tenantAnalyticsService.getPlatformOverview().catch(() => null);
+    const overview = await this.tenantAnalyticsService
+      .getPlatformOverview()
+      .catch(() => null);
     return { arr: (overview as any)?.arr || 0, currency: "USD", trend: [] };
   }
 
@@ -77,26 +75,38 @@ export class BillingAdminController {
   @Permissions("saas.analytics.read")
   @Get("revenue/arpu")
   async getArpuData(@Req() _req: AuthReq) {
-    const overview = await this.tenantAnalyticsService.getPlatformOverview().catch(() => null);
+    const overview = await this.tenantAnalyticsService
+      .getPlatformOverview()
+      .catch(() => null);
     const active = (overview as any)?.activeTenants || 1;
     const mrr = (overview as any)?.mrr || 0;
-    return { arpu: Math.round(mrr / active * 100) / 100, currency: "USD" };
+    return { arpu: Math.round((mrr / active) * 100) / 100, currency: "USD" };
   }
 
   @ApiOperation({ summary: "Get LTV data [Admin]" })
   @Permissions("saas.analytics.read")
   @Get("revenue/ltv")
   async getLtvData(@Req() _req: AuthReq) {
-    const overview = await this.tenantAnalyticsService.getPlatformOverview().catch(() => null);
-    const arpu = ((overview as any)?.mrr || 0) / Math.max((overview as any)?.activeTenants || 1, 1);
-    return { ltv: Math.round(arpu * 24 * 100) / 100, currency: "USD", averageLifetimeMonths: 24 };
+    const overview = await this.tenantAnalyticsService
+      .getPlatformOverview()
+      .catch(() => null);
+    const arpu =
+      ((overview as any)?.mrr || 0) /
+      Math.max((overview as any)?.activeTenants || 1, 1);
+    return {
+      ltv: Math.round(arpu * 24 * 100) / 100,
+      currency: "USD",
+      averageLifetimeMonths: 24,
+    };
   }
 
   @ApiOperation({ summary: "Get churn data [Admin]" })
   @Permissions("saas.analytics.read")
   @Get("churn")
   async getChurnData(@Req() _req: AuthReq, @Query("period") period?: string) {
-    return this.tenantAnalyticsService.getChurnAnalytics((period as any) || "30d");
+    return this.tenantAnalyticsService.getChurnAnalytics(
+      (period as any) || "30d",
+    );
   }
 
   @ApiOperation({ summary: "Get cohort analysis [Admin]" })
@@ -110,22 +120,32 @@ export class BillingAdminController {
   @Permissions("saas.analytics.read")
   @Get("subscriptions")
   async listAllSubscriptions(@Req() _req: AuthReq) {
-    return this.tenantAnalyticsService.db.tenantSubscription.findMany({
-      include: { plan: { select: { name: true } }, tenant: { select: { name: true } } },
-      orderBy: { createdAt: "desc" },
-      take: 100,
-    }).catch(() => []);
+    return this.tenantAnalyticsService.db.tenantSubscription
+      .findMany({
+        include: {
+          plan: { select: { name: true } },
+          tenant: { select: { name: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 100,
+      })
+      .catch(() => []);
   }
 
   @ApiOperation({ summary: "Get active subscriptions [Admin]" })
   @Permissions("saas.analytics.read")
   @Get("subscriptions/active")
   async getActiveSubscriptions(@Req() _req: AuthReq) {
-    return this.tenantAnalyticsService.db.tenantSubscription.findMany({
-      where: { status: "ACTIVE" },
-      include: { plan: { select: { name: true } }, tenant: { select: { name: true } } },
-      orderBy: { createdAt: "desc" },
-    }).catch(() => []);
+    return this.tenantAnalyticsService.db.tenantSubscription
+      .findMany({
+        where: { status: "ACTIVE" },
+        include: {
+          plan: { select: { name: true } },
+          tenant: { select: { name: true } },
+        },
+        orderBy: { createdAt: "desc" },
+      })
+      .catch(() => []);
   }
 
   @ApiOperation({ summary: "Get expiring subscriptions [Admin]" })
@@ -133,57 +153,81 @@ export class BillingAdminController {
   @Get("subscriptions/expiring")
   async getExpiringSubscriptions(@Req() _req: AuthReq) {
     const weekFromNow = new Date(Date.now() + 7 * 86400000);
-    return this.tenantAnalyticsService.db.tenantSubscription.findMany({
-      where: { endDate: { lte: weekFromNow, gte: new Date() }, status: { in: ["ACTIVE", "TRIAL"] } },
-      include: { plan: { select: { name: true } }, tenant: { select: { name: true } } },
-    }).catch(() => []);
+    return this.tenantAnalyticsService.db.tenantSubscription
+      .findMany({
+        where: {
+          endDate: { lte: weekFromNow, gte: new Date() },
+          status: { in: ["ACTIVE", "TRIAL"] },
+        },
+        include: {
+          plan: { select: { name: true } },
+          tenant: { select: { name: true } },
+        },
+      })
+      .catch(() => []);
   }
 
   @ApiOperation({ summary: "List all invoices [Admin]" })
   @Permissions("saas.analytics.read")
   @Get("invoices")
   async listAllInvoices(@Req() _req: AuthReq) {
-    return this.tenantAnalyticsService.db.saaSInvoice.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 100,
-    }).catch(() => []);
+    return this.tenantAnalyticsService.db.saaSInvoice
+      .findMany({
+        orderBy: { createdAt: "desc" },
+        take: 100,
+      })
+      .catch(() => []);
   }
 
   @ApiOperation({ summary: "Adjust invoice [Admin]" })
   @Permissions("saas.analytics.create")
   @Post("invoices/adjust")
-  async adjustInvoice(@Req() _req: AuthReq, @ZodBody(adjustInvoiceSchema) body: z.infer<typeof adjustInvoiceSchema>) {
-    return this.tenantAnalyticsService.db.saaSInvoice.update({
-      where: { id: body.invoiceId },
-      data: { totalAmount: { increment: body.adjustmentAmount } },
-    }).catch(() => ({ success: false }));
+  async adjustInvoice(
+    @Req() _req: AuthReq,
+    @ZodBody(adjustInvoiceSchema) body: z.infer<typeof adjustInvoiceSchema>,
+  ) {
+    return this.tenantAnalyticsService.db.saaSInvoice
+      .update({
+        where: { id: body.invoiceId },
+        data: { totalAmount: { increment: body.adjustmentAmount } },
+      })
+      .catch(() => ({ success: false }));
   }
 
   @ApiOperation({ summary: "List all payments [Admin]" })
   @Permissions("saas.analytics.read")
   @Get("payments")
   async listAllPayments(@Req() _req: AuthReq) {
-    return this.tenantAnalyticsService.db.paymentTransaction.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 100,
-    }).catch(() => []);
+    return this.tenantAnalyticsService.db.paymentTransaction
+      .findMany({
+        orderBy: { createdAt: "desc" },
+        take: 100,
+      })
+      .catch(() => []);
   }
 
   @ApiOperation({ summary: "Process refund [Admin]" })
   @Permissions("saas.analytics.create")
   @Post("payments/refund")
-  async processRefund(@Req() req: AuthReq, @ZodBody(processRefundSchema) body: z.infer<typeof processRefundSchema>) {
-    return this.paymentMethodsService.requestRefund(req.user.tenantId, body.transactionId, {
-      amount: body.amount,
-      reason: body.reason,
-    }).catch(() => ({ success: false }));
+  async processRefund(
+    @Req() req: AuthReq,
+    @ZodBody(processRefundSchema) body: z.infer<typeof processRefundSchema>,
+  ) {
+    return this.paymentMethodsService
+      .requestRefund(req.user.tenantId, body.transactionId, {
+        amount: body.amount,
+        reason: body.reason,
+      })
+      .catch(() => ({ success: false }));
   }
 
   @ApiOperation({ summary: "Get financial reports [Admin]" })
   @Permissions("saas.analytics.read")
   @Get("financial-reports")
   async getFinancialReports(@Req() _req: AuthReq) {
-    const overview = await this.tenantAnalyticsService.getPlatformOverview().catch(() => null);
+    const overview = await this.tenantAnalyticsService
+      .getPlatformOverview()
+      .catch(() => null);
     return { overview, reports: [] };
   }
 }

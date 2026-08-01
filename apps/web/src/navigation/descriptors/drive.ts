@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { registerModule } from "@unerp/shared/module-registry";
 
 const driveNav = [

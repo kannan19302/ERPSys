@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   WebSocketGateway,
   WebSocketServer,
@@ -7,33 +6,41 @@ import {
   SubscribeMessage,
   MessageBody,
   ConnectedSocket,
-} from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
-import { OnEvent } from '@nestjs/event-emitter';
-import { verifyToken } from '@unerp/auth';
-import { RealtimeClient } from '../../common/integrations/realtime-client';
+} from "@nestjs/websockets";
+import { Server, Socket } from "socket.io";
+import { OnEvent } from "@nestjs/event-emitter";
+import { verifyToken } from "@unerp/auth";
+import { RealtimeClient } from "../../common/integrations/realtime-client";
 
 @WebSocketGateway({
   cors: {
-    origin: process.env.NEXTAUTH_URL ?? 'http://localhost:3000',
+    origin: process.env.NEXTAUTH_URL ?? "http://localhost:3000",
     credentials: true,
   },
-  namespace: '/ws',
+  namespace: "/ws",
 })
-export class NotificationsGateway extends RealtimeClient implements OnGatewayConnection, OnGatewayDisconnect {
+export class NotificationsGateway
+  extends RealtimeClient
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer()
   server!: Server;
 
   private userSockets = new Map<string, Set<string>>();
 
   handleConnection(client: Socket) {
-    const token = client.handshake.auth?.token || client.handshake.headers?.authorization?.replace('Bearer ', '');
+    const token =
+      client.handshake.auth?.token ||
+      client.handshake.headers?.authorization?.replace("Bearer ", "");
     if (!token) {
       client.disconnect();
       return;
     }
 
-    const decoded = verifyToken(token) as { userId?: string; tenantId?: string } | null;
+    const decoded = verifyToken(token) as {
+      userId?: string;
+      tenantId?: string;
+    } | null;
     if (!decoded?.userId) {
       client.disconnect();
       return;
@@ -49,9 +56,9 @@ export class NotificationsGateway extends RealtimeClient implements OnGatewayCon
     sockets.add(client.id);
     this.userSockets.set(decoded.userId, sockets);
 
-    this.server.to(`tenant:${decoded.tenantId}`).emit('presence', {
+    this.server.to(`tenant:${decoded.tenantId}`).emit("presence", {
       userId: decoded.userId,
-      status: 'ONLINE',
+      status: "ONLINE",
       timestamp: new Date().toISOString(),
     });
   }
@@ -67,9 +74,9 @@ export class NotificationsGateway extends RealtimeClient implements OnGatewayCon
         if (sockets.size === 0) {
           this.userSockets.delete(userId);
           if (tenantId) {
-            this.server.to(`tenant:${tenantId}`).emit('presence', {
+            this.server.to(`tenant:${tenantId}`).emit("presence", {
               userId,
-              status: 'OFFLINE',
+              status: "OFFLINE",
               timestamp: new Date().toISOString(),
             });
           }
@@ -78,13 +85,19 @@ export class NotificationsGateway extends RealtimeClient implements OnGatewayCon
     }
   }
 
-  @SubscribeMessage('join:channel')
-  handleJoinChannel(@ConnectedSocket() client: Socket, @MessageBody() data: { channelId: string }) {
+  @SubscribeMessage("join:channel")
+  handleJoinChannel(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { channelId: string },
+  ) {
     client.join(`channel:${data.channelId}`);
   }
 
-  @SubscribeMessage('leave:channel')
-  handleLeaveChannel(@ConnectedSocket() client: Socket, @MessageBody() data: { channelId: string }) {
+  @SubscribeMessage("leave:channel")
+  handleLeaveChannel(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { channelId: string },
+  ) {
     client.leave(`channel:${data.channelId}`);
   }
 
@@ -95,12 +108,15 @@ export class NotificationsGateway extends RealtimeClient implements OnGatewayCon
    * `broadcastChatMessage()` below, called from CommunicationService.createMessage after the
    * message has a real id/timestamp from Postgres. Do not use this handler as the persistence path.
    */
-  @SubscribeMessage('chat:message')
-  handleChatMessage(@ConnectedSocket() client: Socket, @MessageBody() data: { channelId: string; content: string }) {
+  @SubscribeMessage("chat:message")
+  handleChatMessage(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { channelId: string; content: string },
+  ) {
     const userId = (client as any).userId;
     const tenantId = (client as any).tenantId;
 
-    this.server.to(`channel:${data.channelId}`).emit('chat:message', {
+    this.server.to(`channel:${data.channelId}`).emit("chat:message", {
       channelId: data.channelId,
       userId,
       tenantId,
@@ -109,13 +125,18 @@ export class NotificationsGateway extends RealtimeClient implements OnGatewayCon
     });
   }
 
-  @SubscribeMessage('typing')
-  handleTyping(@ConnectedSocket() client: Socket, @MessageBody() data: { channelId: string }) {
+  @SubscribeMessage("typing")
+  handleTyping(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { channelId: string },
+  ) {
     const userId = (client as any).userId;
     // Ephemeral only — no persistence. Broadcast to everyone else in the room; the sender's own
     // client already knows it's typing, so `client.to(...)` (not `this.server.to(...)`) is used
     // to exclude the sender, matching Slack/Teams typing-indicator semantics.
-    client.to(`channel:${data.channelId}`).emit('typing', { userId, channelId: data.channelId });
+    client
+      .to(`channel:${data.channelId}`)
+      .emit("typing", { userId, channelId: data.channelId });
   }
 
   /**
@@ -124,7 +145,7 @@ export class NotificationsGateway extends RealtimeClient implements OnGatewayCon
    * written to Postgres, so `payload` carries the real id/createdAt, not an ephemeral guess.
    */
   broadcastChatMessage(channelId: string, payload: Record<string, unknown>) {
-    this.server?.to(`channel:${channelId}`).emit('chat:message', payload);
+    this.server?.to(`channel:${channelId}`).emit("chat:message", payload);
   }
 
   /**
@@ -134,26 +155,40 @@ export class NotificationsGateway extends RealtimeClient implements OnGatewayCon
    * socket liveness, not the user's chosen presence status (ACTIVE/AWAY/BRB/DND/OOO).
    */
   broadcastPresenceUpdate(tenantId: string, payload: Record<string, unknown>) {
-    this.server?.to(`tenant:${tenantId}`).emit('presence', payload);
+    this.server?.to(`tenant:${tenantId}`).emit("presence", payload);
   }
 
-  @OnEvent('notification.send')
-  handleNotificationEvent(payload: { userId: string; tenantId: string; type: string; title: string; body?: string }) {
-    this.server.to(`user:${payload.userId}`).emit('notification', {
+  @OnEvent("notification.send")
+  handleNotificationEvent(payload: {
+    userId: string;
+    tenantId: string;
+    type: string;
+    title: string;
+    body?: string;
+  }) {
+    this.server.to(`user:${payload.userId}`).emit("notification", {
       type: payload.type,
       title: payload.title,
-      body: payload.body || '',
+      body: payload.body || "",
       timestamp: new Date().toISOString(),
     });
   }
 
-  @OnEvent('workflow.executed')
-  handleWorkflowEvent(payload: { tenantId: string; workflowId: string; entityType: string }) {
-    this.server.to(`tenant:${payload.tenantId}`).emit('workflow:completed', payload);
+  @OnEvent("workflow.executed")
+  handleWorkflowEvent(payload: {
+    tenantId: string;
+    workflowId: string;
+    entityType: string;
+  }) {
+    this.server
+      .to(`tenant:${payload.tenantId}`)
+      .emit("workflow:completed", payload);
   }
 
   getOnlineUsers(tenantId: string): string[] {
-    const room = this.server?.sockets?.adapter?.rooms?.get(`tenant:${tenantId}`);
+    const room = this.server?.sockets?.adapter?.rooms?.get(
+      `tenant:${tenantId}`,
+    );
     if (!room) return [];
 
     const userIds = new Set<string>();

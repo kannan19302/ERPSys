@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Injectable,
   NotFoundException,
@@ -9,7 +8,10 @@ import {
   onboardingChecklistResponseSchema,
   type OnboardingChecklistResponse,
 } from "@unerp/shared";
-import { INDUSTRY_APP_PRIORITY, DEFAULT_APP_PRIORITY } from "../../common/app-slug-map";
+import {
+  INDUSTRY_APP_PRIORITY,
+  DEFAULT_APP_PRIORITY,
+} from "../../common/app-slug-map";
 
 export const ONBOARDING_CHECKLIST_KEYS = [
   "profile",

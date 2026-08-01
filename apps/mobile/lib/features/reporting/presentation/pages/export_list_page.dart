@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -48,7 +47,7 @@ class _ReportExportListPageState extends ConsumerState<ReportExportListPage> {
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
                 .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value)))
+                    value: e.key, child: Text(e.value),),)
                 .toList(),
           ),
         ],
@@ -82,7 +81,7 @@ class _ReportExportListPageState extends ConsumerState<ReportExportListPage> {
                     : '${state.meta.total} export${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -137,26 +136,26 @@ class _ExportTile extends StatelessWidget {
               Row(children: [
                 Expanded(
                   child: Text(exportItem.reportName ?? exportItem.id,
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
                 UiStatusBadge(
                   label: exportItem.status,
                   tone: _statusTone(exportItem.status),
                 ),
-              ]),
+              ],),
               const SizedBox(height: Spacing.x1),
               Row(children: [
                 Text(exportItem.format,
-                    style: Theme.of(context).textTheme.labelLarge),
+                    style: Theme.of(context).textTheme.labelLarge,),
                 const SizedBox(width: Spacing.x2),
                 if (exportItem.fileSize != null)
                   Text(_formatSize(exportItem.fileSize!),
-                      style: TextStyle(color: t.textSecondary, fontSize: TypeScale.sm)),
-              ]),
+                      style: TextStyle(color: t.textSecondary, fontSize: TypeScale.sm),),
+              ],),
               if (exportItem.createdAt != null) ...[
                 const SizedBox(height: Spacing.x1),
                 Text(DateFormat.yMMMd().add_jm().format(exportItem.createdAt!.toLocal()),
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
+                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
               ],
             ],
           ),

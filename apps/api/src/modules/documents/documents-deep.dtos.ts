@@ -1,16 +1,19 @@
-// @ts-nocheck
 import { z } from "zod";
 
 export const createTemplateSchema = z.object({
   name: z.string().min(1),
   category: z.string().optional(),
   content: z.string().min(1),
-  variables: z.array(z.object({
-    key: z.string(),
-    label: z.string(),
-    type: z.enum(["text", "number", "date", "select"]).default("text"),
-    options: z.array(z.string()).optional(),
-  })).optional(),
+  variables: z
+    .array(
+      z.object({
+        key: z.string(),
+        label: z.string(),
+        type: z.enum(["text", "number", "date", "select"]).default("text"),
+        options: z.array(z.string()).optional(),
+      }),
+    )
+    .optional(),
 });
 
 export const updateTemplateSchema = createTemplateSchema.partial();
@@ -36,11 +39,13 @@ export type CreateCategoryInput = z.infer<typeof createCategorySchema>;
 export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>;
 
 export const bulkUploadSchema = z.object({
-  files: z.array(z.object({
-    name: z.string().min(1),
-    folderId: z.string().optional(),
-    content: z.string().optional(),
-  })),
+  files: z.array(
+    z.object({
+      name: z.string().min(1),
+      folderId: z.string().optional(),
+      content: z.string().optional(),
+    }),
+  ),
 });
 
 export type BulkUploadInput = z.infer<typeof bulkUploadSchema>;

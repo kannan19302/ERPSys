@@ -1,13 +1,12 @@
-// @ts-nocheck
-import { Controller, Get, Patch, UseGuards, Req } from '@nestjs/common';
-import { z } from 'zod';
-import { ZodBody } from '../../common/decorators/zod-body.decorator';
-import { Request } from 'express';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { RbacGuard } from '../../common/guards/rbac.guard';
-import { Permissions } from '../../common/decorators/permissions.decorator';
-import { NotificationsService } from './notifications.service';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { Controller, Get, Patch, UseGuards, Req } from "@nestjs/common";
+import { z } from "zod";
+import { ZodBody } from "../../common/decorators/zod-body.decorator";
+import { Request } from "express";
+import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
+import { RbacGuard } from "../../common/guards/rbac.guard";
+import { Permissions } from "../../common/decorators/permissions.decorator";
+import { NotificationsService } from "./notifications.service";
+import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -18,26 +17,36 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
-@ApiTags('notifications')
+@ApiTags("notifications")
 @ApiBearerAuth()
-@Controller('notifications')
+@Controller("notifications")
 @UseGuards(JwtAuthGuard, RbacGuard)
 export class NotificationPreferencesController {
   constructor(private readonly service: NotificationsService) {}
 
-  @ApiOperation({ summary: 'Get user preferences' })
-  @Get('preferences')
-  @Permissions('communication.notification.read')
+  @ApiOperation({ summary: "Get user preferences" })
+  @Get("preferences")
+  @Permissions("communication.notification.read")
   async getUserPreferences(@Req() req: AuthenticatedRequest) {
-    return this.service.getUserNotificationPreferences(req.user.tenantId, req.user.userId);
+    return this.service.getUserNotificationPreferences(
+      req.user.tenantId,
+      req.user.userId,
+    );
   }
 
-  @ApiOperation({ summary: 'Update user preferences' })
-  @Patch('preferences')
-  @Permissions('communication.notification.update')
+  @ApiOperation({ summary: "Update user preferences" })
+  @Patch("preferences")
+  @Permissions("communication.notification.update")
   async updateUserPreferences(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.any()) dto: { category: string; inApp?: boolean; email?: boolean; sms?: boolean; push?: boolean },
+    @ZodBody(z.any())
+    dto: {
+      category: string;
+      inApp?: boolean;
+      email?: boolean;
+      sms?: boolean;
+      push?: boolean;
+    },
   ) {
     return this.service.updateUserNotificationPreferences(
       req.user.tenantId,

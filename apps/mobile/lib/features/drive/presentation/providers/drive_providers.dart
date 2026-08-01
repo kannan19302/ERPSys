@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -72,14 +71,14 @@ final NotifierProvider<DriveFileListController, DriveFileListState>
 final FutureProviderFamily<DriveFile, String> driveFileDetailProvider =
     FutureProvider.family<DriveFile, String>((Ref ref, String id) async {
   final result = await GetDriveFileUseCase(
-    ref.watch(driveRepositoryProvider))(id);
+    ref.watch(driveRepositoryProvider),)(id);
   return result.fold((f) => throw f, (f) => f);
 });
 
 final FutureProviderFamily<DriveFolder, String> driveFolderDetailProvider =
     FutureProvider.family<DriveFolder, String>((Ref ref, String id) async {
   final result = await GetDriveFolderUseCase(
-    ref.watch(driveRepositoryProvider))(id);
+    ref.watch(driveRepositoryProvider),)(id);
   return result.fold((f) => throw f, (f) => f);
 });
 
@@ -134,14 +133,14 @@ class DriveFileListController extends Notifier<DriveFileListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteDriveFileUseCase(
-      ref.read(driveRepositoryProvider))(id);
+      ref.read(driveRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<DriveFile>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveDriveFileUseCase(
-      ref.read(driveRepositoryProvider))(SaveDriveFileParams(payload: payload, id: id));
+      ref.read(driveRepositoryProvider),)(SaveDriveFileParams(payload: payload, id: id));
     if (result.isOk) await refresh();
     return result;
   }
@@ -229,14 +228,14 @@ class DriveFolderListController extends Notifier<DriveFolderListState> {
 
   Future<Result<DriveFolder>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveDriveFolderUseCase(
-      ref.read(driveRepositoryProvider))(SaveDriveFolderParams(payload: payload, id: id));
+      ref.read(driveRepositoryProvider),)(SaveDriveFolderParams(payload: payload, id: id));
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteDriveFolderUseCase(
-      ref.read(driveRepositoryProvider))(id);
+      ref.read(driveRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }

@@ -91,7 +91,7 @@ class DriveRepositoryImpl implements DriveRepository {
   @override
   Future<Result<Cacheable<Paginated<DriveFile>>>> listFiles(ListQuery q) =>
       _paginated(_fileNamespace, q, () => _remote.listFiles(q),
-        DriveFileModel.fromJson);
+        DriveFileModel.fromJson,);
 
   @override
   Future<Result<DriveFile>> getFile(String id) =>
@@ -120,7 +120,7 @@ class DriveRepositoryImpl implements DriveRepository {
   @override
   Future<Result<Cacheable<Paginated<DriveFolder>>>> listFolders(ListQuery q) =>
       _paginated(_folderNamespace, q, () => _remote.listFolders(q),
-        DriveFolderModel.fromJson);
+        DriveFolderModel.fromJson,);
 
   @override
   Future<Result<DriveFolder>> getFolder(String id) =>
@@ -141,7 +141,7 @@ class DriveRepositoryImpl implements DriveRepository {
   @override
   Future<Result<Cacheable<Paginated<DriveTrashItem>>>> listTrash(ListQuery q) =>
       _paginated(_trashNamespace, q, () => _remote.listTrash(q),
-        DriveTrashItemModel.fromJson);
+        DriveTrashItemModel.fromJson,);
 
   @override
   Future<Result<void>> restoreTrashItem(String id) =>
@@ -154,7 +154,7 @@ class DriveRepositoryImpl implements DriveRepository {
   @override
   Future<Result<Cacheable<Paginated<DriveTag>>>> listTags(ListQuery q) =>
       _paginated(_tagNamespace, q, () => _remote.listTags(q),
-        DriveTagModel.fromJson);
+        DriveTagModel.fromJson,);
 
   @override
   Future<Result<DriveTag>> createTag(Map<String, dynamic> p) =>

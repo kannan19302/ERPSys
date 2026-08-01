@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Controller,
   Get,
@@ -70,14 +69,20 @@ export class CustomerBillingController {
   @Permissions("saas.payment.read")
   @Get("profile")
   async getCustomerProfile(@Req() req: AuthReq) {
-    const sub = await this.saasService.getSubscription(req.user.tenantId).catch(() => null);
+    const sub = await this.saasService
+      .getSubscription(req.user.tenantId)
+      .catch(() => null);
     return { tenantId: req.user.tenantId, subscription: sub };
   }
 
   @ApiOperation({ summary: "Update customer profile" })
   @Permissions("saas.payment.create")
   @Put("profile")
-  async updateCustomerProfile(@Req() _req: AuthReq, @ZodBody(updateCustomerProfileSchema) body: z.infer<typeof updateCustomerProfileSchema>) {
+  async updateCustomerProfile(
+    @Req() _req: AuthReq,
+    @ZodBody(updateCustomerProfileSchema)
+    body: z.infer<typeof updateCustomerProfileSchema>,
+  ) {
     return { success: true, ...body };
   }
 
@@ -85,21 +90,27 @@ export class CustomerBillingController {
   @Permissions("saas.payment.read")
   @Get("payment-history")
   async getPaymentHistory(@Req() req: AuthReq) {
-    return this.paymentMethodsService.listTransactions(req.user.tenantId).catch(() => []);
+    return this.paymentMethodsService
+      .listTransactions(req.user.tenantId)
+      .catch(() => []);
   }
 
   @ApiOperation({ summary: "Get customer invoices" })
   @Permissions("saas.invoice.read")
   @Get("invoices")
   async getCustomerInvoices(@Req() req: AuthReq) {
-    return this.invoiceEngineService.listInvoices(req.user.tenantId, 1, 100).catch(() => ({ items: [], total: 0 }));
+    return this.invoiceEngineService
+      .listInvoices(req.user.tenantId, 1, 100)
+      .catch(() => ({ items: [], total: 0 }));
   }
 
   @ApiOperation({ summary: "Retry payment" })
   @Permissions("saas.invoice.pay")
   @Post("invoices/:id/retry")
   async retryPayment(@Req() req: AuthReq, @Param("id") id: string) {
-    return this.invoiceEngineService.payInvoice(req.user.tenantId, id).catch(() => ({ success: false }));
+    return this.invoiceEngineService
+      .payInvoice(req.user.tenantId, id)
+      .catch(() => ({ success: false }));
   }
 
   @ApiOperation({ summary: "Get credits" })
@@ -112,7 +123,11 @@ export class CustomerBillingController {
   @ApiOperation({ summary: "Apply credit balance" })
   @Permissions("saas.payment.create")
   @Post("credits/apply")
-  async applyCreditBalance(@Req() _req: AuthReq, @ZodBody(applyCreditBalanceSchema) body: z.infer<typeof applyCreditBalanceSchema>) {
+  async applyCreditBalance(
+    @Req() _req: AuthReq,
+    @ZodBody(applyCreditBalanceSchema)
+    body: z.infer<typeof applyCreditBalanceSchema>,
+  ) {
     return { success: true, amount: body.amount, invoiceId: body.invoiceId };
   }
 
@@ -126,7 +141,11 @@ export class CustomerBillingController {
   @ApiOperation({ summary: "Apply discount code" })
   @Permissions("saas.payment.create")
   @Post("discounts/apply")
-  async applyDiscountCode(@Req() _req: AuthReq, @ZodBody(applyDiscountCodeSchema) body: z.infer<typeof applyDiscountCodeSchema>) {
+  async applyDiscountCode(
+    @Req() _req: AuthReq,
+    @ZodBody(applyDiscountCodeSchema)
+    body: z.infer<typeof applyDiscountCodeSchema>,
+  ) {
     return { success: true, code: body.code };
   }
 
@@ -140,7 +159,11 @@ export class CustomerBillingController {
   @ApiOperation({ summary: "Set billing currency" })
   @Permissions("saas.payment.create")
   @Put("currency")
-  async setBillingCurrency(@Req() _req: AuthReq, @ZodBody(setBillingCurrencySchema) body: z.infer<typeof setBillingCurrencySchema>) {
+  async setBillingCurrency(
+    @Req() _req: AuthReq,
+    @ZodBody(setBillingCurrencySchema)
+    body: z.infer<typeof setBillingCurrencySchema>,
+  ) {
     return { success: true, currency: body.currency };
   }
 
@@ -148,13 +171,22 @@ export class CustomerBillingController {
   @Permissions("saas.payment.read")
   @Get("communication-prefs")
   async getBillingCommunicationPrefs(@Req() _req: AuthReq) {
-    return { emailInvoices: true, emailReceipts: true, emailPaymentFailures: true, emailPromotions: false };
+    return {
+      emailInvoices: true,
+      emailReceipts: true,
+      emailPaymentFailures: true,
+      emailPromotions: false,
+    };
   }
 
   @ApiOperation({ summary: "Update billing communication prefs" })
   @Permissions("saas.payment.create")
   @Put("communication-prefs")
-  async updateBillingCommunicationPrefs(@Req() _req: AuthReq, @ZodBody(updateBillingCommPrefsSchema) body: z.infer<typeof updateBillingCommPrefsSchema>) {
+  async updateBillingCommunicationPrefs(
+    @Req() _req: AuthReq,
+    @ZodBody(updateBillingCommPrefsSchema)
+    body: z.infer<typeof updateBillingCommPrefsSchema>,
+  ) {
     return { success: true, ...body };
   }
 
@@ -162,13 +194,21 @@ export class CustomerBillingController {
   @Permissions("saas.payment.read")
   @Get("dunning")
   async getDunningStatus(@Req() _req: AuthReq) {
-    return { status: "CLEAR", attempts: 0, lastAttempt: null, nextAttempt: null };
+    return {
+      status: "CLEAR",
+      attempts: 0,
+      lastAttempt: null,
+      nextAttempt: null,
+    };
   }
 
   @ApiOperation({ summary: "Resolve dunning" })
   @Permissions("saas.payment.create")
   @Post("dunning/resolve")
-  async resolveDunning(@Req() _req: AuthReq, @ZodBody(resolveDunningSchema) body: z.infer<typeof resolveDunningSchema>) {
+  async resolveDunning(
+    @Req() _req: AuthReq,
+    @ZodBody(resolveDunningSchema) body: z.infer<typeof resolveDunningSchema>,
+  ) {
     return { success: true, action: body.action };
   }
 
@@ -176,6 +216,8 @@ export class CustomerBillingController {
   @Permissions("saas.invoice.download")
   @Get("invoices/:id/pdf")
   async downloadInvoicePdf(@Req() req: AuthReq, @Param("id") id: string) {
-    return this.invoiceEngineService.downloadPdf(req.user.tenantId, id).catch(() => null);
+    return this.invoiceEngineService
+      .downloadPdf(req.user.tenantId, id)
+      .catch(() => null);
   }
 }

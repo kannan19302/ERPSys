@@ -1,5 +1,4 @@
-// @ts-nocheck
-import { Injectable } from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
 
 export type OutboxEventPayload = {
   eventId: string;
@@ -14,9 +13,7 @@ export type OutboxEventPayload = {
   causationId?: string;
 };
 
-export type OutboxEventHandler = (
-  event: OutboxEventPayload,
-) => Promise<void>;
+export type OutboxEventHandler = (event: OutboxEventPayload) => Promise<void>;
 
 @Injectable()
 export class OutboxHandlerRegistry {
@@ -24,7 +21,9 @@ export class OutboxHandlerRegistry {
 
   register(destination: string, handler: OutboxEventHandler): void {
     if (this.handlers.has(destination)) {
-      throw new Error(`Handler already registered for destination: ${destination}`);
+      throw new Error(
+        `Handler already registered for destination: ${destination}`,
+      );
     }
     this.handlers.set(destination, handler);
   }

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Controller,
   Get,
@@ -25,7 +24,9 @@ interface AuthReq extends Request {
 
 const createContractSchema = z.object({
   title: z.string().min(1).max(255),
-  type: z.enum(["SALES", "PURCHASE", "SERVICE", "NDA", "OTHER"]).default("SERVICE"),
+  type: z
+    .enum(["SALES", "PURCHASE", "SERVICE", "NDA", "OTHER"])
+    .default("SERVICE"),
   value: z.number().min(0),
   currency: z.string().default("USD"),
   startDate: z.string().min(1),
@@ -41,7 +42,9 @@ const updateContractSchema = createContractSchema.partial();
 
 const createTemplateSchema = z.object({
   name: z.string().min(1).max(255),
-  type: z.enum(["SALES", "PURCHASE", "SERVICE", "NDA", "OTHER"]).default("SERVICE"),
+  type: z
+    .enum(["SALES", "PURCHASE", "SERVICE", "NDA", "OTHER"])
+    .default("SERVICE"),
   content: z.string().min(1),
   isActive: z.boolean().default(true),
 });
@@ -83,15 +86,28 @@ export class ContractsController {
       }),
       this.expansionService.db.contract.count({ where: where as any }),
     ]);
-    return { items, total, page: p, limit: l, totalPages: Math.ceil(total / l) };
+    return {
+      items,
+      total,
+      page: p,
+      limit: l,
+      totalPages: Math.ceil(total / l),
+    };
   }
 
   @ApiOperation({ summary: "Create a new contract" })
   @Permissions("saas.subscription.create")
   @Post()
-  async createContract(@Req() req: AuthReq, @ZodBody(createContractSchema) body: z.infer<typeof createContractSchema>) {
-    const org = await this.expansionService.db.organization.findFirst({ where: { tenantId: req.user.tenantId } });
-    const count = await this.expansionService.db.contract.count({ where: { tenantId: req.user.tenantId } });
+  async createContract(
+    @Req() req: AuthReq,
+    @ZodBody(createContractSchema) body: z.infer<typeof createContractSchema>,
+  ) {
+    const org = await this.expansionService.db.organization.findFirst({
+      where: { tenantId: req.user.tenantId },
+    });
+    const count = await this.expansionService.db.contract.count({
+      where: { tenantId: req.user.tenantId },
+    });
     return this.expansionService.db.contract.create({
       data: {
         tenantId: req.user.tenantId,
@@ -119,13 +135,19 @@ export class ContractsController {
   @Permissions("saas.subscription.read")
   @Get(":id")
   async getContract(@Req() req: AuthReq, @Param("id") id: string) {
-    return this.expansionService.db.contract.findFirst({ where: { id, tenantId: req.user.tenantId } });
+    return this.expansionService.db.contract.findFirst({
+      where: { id, tenantId: req.user.tenantId },
+    });
   }
 
   @ApiOperation({ summary: "Update a contract" })
   @Permissions("saas.subscription.update")
   @Patch(":id")
-  async updateContract(@Req() req: AuthReq, @Param("id") id: string, @ZodBody(updateContractSchema) body: z.infer<typeof updateContractSchema>) {
+  async updateContract(
+    @Req() req: AuthReq,
+    @Param("id") id: string,
+    @ZodBody(updateContractSchema) body: z.infer<typeof updateContractSchema>,
+  ) {
     const data: Record<string, unknown> = {};
     if (body.title) data.title = body.title;
     if (body.type) data.type = body.type;
@@ -148,7 +170,9 @@ export class ContractsController {
   @Permissions("saas.subscription.delete")
   @Delete(":id")
   async deleteContract(@Req() req: AuthReq, @Param("id") id: string) {
-    return this.expansionService.db.contract.deleteMany({ where: { id, tenantId: req.user.tenantId } });
+    return this.expansionService.db.contract.deleteMany({
+      where: { id, tenantId: req.user.tenantId },
+    });
   }
 
   @ApiOperation({ summary: "Sign a contract" })
@@ -157,7 +181,11 @@ export class ContractsController {
   async signContract(@Req() req: AuthReq, @Param("id") id: string) {
     await this.expansionService.db.contract.updateMany({
       where: { id, tenantId: req.user.tenantId },
-      data: { signatureStatus: "SIGNED", signedAt: new Date(), status: "ACTIVE" },
+      data: {
+        signatureStatus: "SIGNED",
+        signedAt: new Date(),
+        status: "ACTIVE",
+      },
     });
     return { id, signatureStatus: "SIGNED", signedAt: new Date() };
   }
@@ -166,7 +194,9 @@ export class ContractsController {
   @Permissions("saas.subscription.update")
   @Post(":id/renew")
   async renewContract(@Req() req: AuthReq, @Param("id") id: string) {
-    const contract = await this.expansionService.db.contract.findFirst({ where: { id, tenantId: req.user.tenantId } });
+    const contract = await this.expansionService.db.contract.findFirst({
+      where: { id, tenantId: req.user.tenantId },
+    });
     if (!contract) return { error: "Contract not found" };
     const newEnd = new Date(contract.endDate);
     newEnd.setMonth(newEnd.getMonth() + (contract.renewalTermMonths ?? 12));
@@ -174,7 +204,9 @@ export class ContractsController {
       where: { id, tenantId: req.user.tenantId },
       data: { status: "RENEWED", renewalDate: newEnd, autoRenew: true },
     });
-    const count = await this.expansionService.db.contract.count({ where: { tenantId: req.user.tenantId } });
+    const count = await this.expansionService.db.contract.count({
+      where: { tenantId: req.user.tenantId },
+    });
     return this.expansionService.db.contract.create({
       data: {
         tenantId: req.user.tenantId,
@@ -210,7 +242,9 @@ export class ContractsController {
   @Permissions("saas.subscription.read")
   @Get(":id/download")
   async downloadContractPdf(@Req() req: AuthReq, @Param("id") id: string) {
-    const contract = await this.expansionService.db.contract.findFirst({ where: { id, tenantId: req.user.tenantId } });
+    const contract = await this.expansionService.db.contract.findFirst({
+      where: { id, tenantId: req.user.tenantId },
+    });
     if (!contract) return { error: "Contract not found" };
     return {
       id,
@@ -231,7 +265,9 @@ export class ContractsController {
   @ApiOperation({ summary: "Create a contract template" })
   @Permissions("saas.subscription.create")
   @Post("templates")
-  async createContractTemplate(@ZodBody(createTemplateSchema) body: z.infer<typeof createTemplateSchema>) {
+  async createContractTemplate(
+    @ZodBody(createTemplateSchema) body: z.infer<typeof createTemplateSchema>,
+  ) {
     return { id: `tmpl-${Date.now()}`, ...body, createdAt: new Date() };
   }
 

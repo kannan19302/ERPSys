@@ -291,17 +291,17 @@ class FormSkeleton extends StatelessWidget {
           physics: const NeverScrollableScrollPhysics(),
           padding: const EdgeInsets.all(Spacing.x4),
           children: List<Widget>.generate(fieldCount, (int index) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: Spacing.x5),
+            return const Padding(
+              padding: EdgeInsets.only(bottom: Spacing.x5),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   // Label
-                  const SkeletonLine(width: 80, height: 12),
-                  const SizedBox(height: Spacing.x2),
+                  SkeletonLine(width: 80, height: 12),
+                  SizedBox(height: Spacing.x2),
                   // Field
-                  const SkeletonBlock(height: 48, borderRadius: BorderRadius.all(Radius.circular(Radii.lg))),
+                  SkeletonBlock(height: 48, borderRadius: BorderRadius.all(Radius.circular(Radii.lg))),
                 ],
               ),
             );
@@ -333,7 +333,7 @@ class CardSkeleton extends StatelessWidget {
             horizontal: Spacing.x4,
             vertical: Spacing.x2,
           ),
-          child: Container(
+          child: SizedBox(
             height: height,
 child: Padding(
               padding: const EdgeInsets.all(Spacing.x4),
@@ -344,11 +344,11 @@ child: Padding(
                       padding: EdgeInsets.only(right: Spacing.x3),
                       child: SkeletonLine(width: 48, height: 48, borderRadius: 24),
                     ),
-                  Expanded(
+                  const Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
-                      children: const <Widget>[
+                      children: <Widget>[
                         SkeletonLine(width: 160, height: 16),
                         SizedBox(height: Spacing.x2),
                         SkeletonLine(width: 100, height: 12),

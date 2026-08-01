@@ -1,8 +1,7 @@
-// @ts-nocheck
-import { Module } from '@nestjs/common';
-import { NotificationsModule } from '../../modules/notifications/notifications.module';
-import { NotificationsGateway } from '../../modules/notifications/notifications.gateway';
-import { RealtimeClient } from './realtime-client';
+import { Module } from "@nestjs/common";
+import { NotificationsModule } from "../../modules/notifications/notifications.module";
+import { NotificationsGateway } from "../../modules/notifications/notifications.gateway";
+import { RealtimeClient } from "./realtime-client";
 
 /** Composition-layer adapter for the platform WebSocket publisher. */
 @Module({

@@ -1,7 +1,6 @@
-// @ts-nocheck
-import { Module } from '@nestjs/common';
-import { ColdChainWriteoffController } from './cold-chain-writeoff.controller';
-import { ColdChainWriteoffService } from './cold-chain-writeoff.service';
+import { Module } from "@nestjs/common";
+import { ColdChainWriteoffController } from "./cold-chain-writeoff.controller";
+import { ColdChainWriteoffService } from "./cold-chain-writeoff.service";
 
 @Module({
   controllers: [ColdChainWriteoffController],

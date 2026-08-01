@@ -59,7 +59,7 @@ class _ProjectBudgetFormPageState extends ConsumerState<ProjectBudgetFormPage> {
     };
 
     final result = await ref.read(projectBudgetListControllerProvider.notifier).save(
-      payload, id: widget.budgetId);
+      payload, id: widget.budgetId,);
 
     if (!context.mounted) return;
     setState(() => _saving = false);
@@ -102,7 +102,7 @@ class _ProjectBudgetFormPageState extends ConsumerState<ProjectBudgetFormPage> {
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _estimatedCtrl,
-              keyboardType: TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(labelText: 'Estimated Amount *'),
               validator: (v) {
                 if (v == null || v.trim().isEmpty) return 'Required';

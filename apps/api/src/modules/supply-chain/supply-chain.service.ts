@@ -1,8 +1,16 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { CreateShipmentInput } from '@unerp/shared';
-import { Prisma, Shipment, AsnDiscrepancyType, ShipmentExceptionStatus } from '@prisma/client';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { CreateShipmentInput } from "@unerp/shared";
+import {
+  Prisma,
+  Shipment,
+  AsnDiscrepancyType,
+  ShipmentExceptionStatus,
+} from "@prisma/client";
 import {
   CreateCarrierDto,
   CreateCarrierServiceLevelDto,
@@ -13,7 +21,7 @@ import {
   AddTrackingEventDto,
   ReportExceptionDto,
   ResolveExceptionDto,
-} from './dto/supply-chain.dto';
+} from "./dto/supply-chain.dto";
 
 @Injectable()
 export class SupplyChainService {
@@ -23,7 +31,7 @@ export class SupplyChainService {
   async getShipments(tenantId: string) {
     const shipments = await prisma.shipment.findMany({
       where: { tenantId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     return shipments.map((s: Shipment) => ({
@@ -53,7 +61,7 @@ export class SupplyChainService {
       where: { id, tenantId },
     });
     if (!shipment) {
-      throw new NotFoundException('Shipment not found');
+      throw new NotFoundException("Shipment not found");
     }
     return shipment;
   }
@@ -61,11 +69,17 @@ export class SupplyChainService {
   /**
    * Create new shipment.
    */
-  async createShipment(tenantId: string, orgId: string, dto: CreateShipmentInput, createdBy: string) {
+  async createShipment(
+    tenantId: string,
+    orgId: string,
+    dto: CreateShipmentInput,
+    createdBy: string,
+  ) {
     let resolvedOrgId = orgId;
-    if (!orgId || orgId === 'org-system-default') {
+    if (!orgId || orgId === "org-system-default") {
       const org = await prisma.organization.findFirst({ where: { tenantId } });
-      if (!org) throw new BadRequestException('No Organization found for this Tenant.');
+      if (!org)
+        throw new BadRequestException("No Organization found for this Tenant.");
       resolvedOrgId = org.id;
     }
 
@@ -73,7 +87,9 @@ export class SupplyChainService {
       where: { tenantId, shipmentNumber: dto.shipmentNumber },
     });
     if (existing) {
-      throw new BadRequestException(`Shipment number ${dto.shipmentNumber} already exists.`);
+      throw new BadRequestException(
+        `Shipment number ${dto.shipmentNumber} already exists.`,
+      );
     }
 
     return prisma.shipment.create({
@@ -81,17 +97,26 @@ export class SupplyChainService {
         tenantId,
         orgId: resolvedOrgId,
         shipmentNumber: dto.shipmentNumber,
-        type: dto.type ?? 'OUTBOUND',
-        status: 'PENDING',
+        type: dto.type ?? "OUTBOUND",
+        status: "PENDING",
         carrierName: dto.carrierName || null,
         trackingNumber: dto.trackingNumber || null,
         trackingUrl: dto.trackingUrl || null,
-        originAddress: dto.originAddress ? (dto.originAddress as Prisma.InputJsonObject) : Prisma.JsonNull,
-        destAddress: dto.destAddress ? (dto.destAddress as Prisma.InputJsonObject) : Prisma.JsonNull,
+        originAddress: dto.originAddress
+          ? (dto.originAddress as Prisma.InputJsonObject)
+          : Prisma.JsonNull,
+        destAddress: dto.destAddress
+          ? (dto.destAddress as Prisma.InputJsonObject)
+          : Prisma.JsonNull,
         weight: dto.weight != null ? new Prisma.Decimal(dto.weight) : null,
-        weightUnit: dto.weightUnit ?? 'KG',
-        shippingCost: dto.shippingCost != null ? new Prisma.Decimal(dto.shippingCost) : null,
-        estimatedDelivery: dto.estimatedDelivery ? new Date(dto.estimatedDelivery) : null,
+        weightUnit: dto.weightUnit ?? "KG",
+        shippingCost:
+          dto.shippingCost != null
+            ? new Prisma.Decimal(dto.shippingCost)
+            : null,
+        estimatedDelivery: dto.estimatedDelivery
+          ? new Date(dto.estimatedDelivery)
+          : null,
         notes: dto.notes || null,
         createdBy,
       },
@@ -102,16 +127,18 @@ export class SupplyChainService {
    * Update shipment status.
    */
   async updateShipmentStatus(tenantId: string, id: string, status: string) {
-    const shipment = await prisma.shipment.findFirst({ where: { id, tenantId } });
+    const shipment = await prisma.shipment.findFirst({
+      where: { id, tenantId },
+    });
     if (!shipment) {
-      throw new NotFoundException('Shipment not found');
+      throw new NotFoundException("Shipment not found");
     }
 
     const updateData: Record<string, unknown> = { status };
-    if (status === 'PICKED_UP' || status === 'IN_TRANSIT') {
+    if (status === "PICKED_UP" || status === "IN_TRANSIT") {
       updateData.shippedAt = new Date();
     }
-    if (status === 'DELIVERED') {
+    if (status === "DELIVERED") {
       updateData.actualDelivery = new Date();
     }
 
@@ -135,7 +162,7 @@ export class SupplyChainService {
           tenantId,
           productId: product.id,
           salesOrder: {
-            status: { in: ['CONFIRMED', 'PROCESSING', 'DELIVERED'] },
+            status: { in: ["CONFIRMED", "PROCESSING", "DELIVERED"] },
           },
         },
         include: {
@@ -143,9 +170,15 @@ export class SupplyChainService {
         },
       });
 
-      const totalQuantity = salesItems.reduce((sum: number, item: { quantity: any }) => sum + Number(item.quantity), 0);
-      const averageMonthlySales = salesItems.length > 0 ? totalQuantity / Math.max(1, salesItems.length) : 0;
-      
+      const totalQuantity = salesItems.reduce(
+        (sum: number, item: { quantity: any }) => sum + Number(item.quantity),
+        0,
+      );
+      const averageMonthlySales =
+        salesItems.length > 0
+          ? totalQuantity / Math.max(1, salesItems.length)
+          : 0;
+
       // Predict next month: baseline average monthly sales + 10% trend buffer
       const forecastedQuantity = Math.round(averageMonthlySales * 1.1);
 
@@ -171,7 +204,7 @@ export class SupplyChainService {
     return prisma.shippingCarrier.findMany({
       where: { tenantId },
       include: { serviceLevels: true },
-      orderBy: { name: 'asc' },
+      orderBy: { name: "asc" },
     });
   }
 
@@ -180,7 +213,7 @@ export class SupplyChainService {
       where: { id, tenantId },
       include: { serviceLevels: true },
     });
-    if (!carrier) throw new NotFoundException('Carrier not found');
+    if (!carrier) throw new NotFoundException("Carrier not found");
     return carrier;
   }
 
@@ -188,7 +221,8 @@ export class SupplyChainService {
     const existing = await prisma.shippingCarrier.findFirst({
       where: { tenantId, code: dto.code },
     });
-    if (existing) throw new BadRequestException(`Carrier code ${dto.code} already exists.`);
+    if (existing)
+      throw new BadRequestException(`Carrier code ${dto.code} already exists.`);
 
     return prisma.shippingCarrier.create({
       data: {
@@ -203,9 +237,15 @@ export class SupplyChainService {
     });
   }
 
-  async updateCarrier(tenantId: string, id: string, dto: Partial<CreateCarrierDto>) {
-    const carrier = await prisma.shippingCarrier.findFirst({ where: { id, tenantId } });
-    if (!carrier) throw new NotFoundException('Carrier not found');
+  async updateCarrier(
+    tenantId: string,
+    id: string,
+    dto: Partial<CreateCarrierDto>,
+  ) {
+    const carrier = await prisma.shippingCarrier.findFirst({
+      where: { id, tenantId },
+    });
+    if (!carrier) throw new NotFoundException("Carrier not found");
 
     return prisma.shippingCarrier.update({
       where: { id },
@@ -220,8 +260,10 @@ export class SupplyChainService {
   }
 
   async deleteCarrier(tenantId: string, id: string) {
-    const carrier = await prisma.shippingCarrier.findFirst({ where: { id, tenantId } });
-    if (!carrier) throw new NotFoundException('Carrier not found');
+    const carrier = await prisma.shippingCarrier.findFirst({
+      where: { id, tenantId },
+    });
+    if (!carrier) throw new NotFoundException("Carrier not found");
 
     return prisma.shippingCarrier.update({
       where: { id },
@@ -230,22 +272,33 @@ export class SupplyChainService {
   }
 
   async getCarrierServiceLevels(tenantId: string, carrierId: string) {
-    const carrier = await prisma.shippingCarrier.findFirst({ where: { id: carrierId, tenantId } });
-    if (!carrier) throw new NotFoundException('Carrier not found');
+    const carrier = await prisma.shippingCarrier.findFirst({
+      where: { id: carrierId, tenantId },
+    });
+    if (!carrier) throw new NotFoundException("Carrier not found");
 
     return prisma.carrierServiceLevel.findMany({
       where: { tenantId, carrierId },
     });
   }
 
-  async createCarrierServiceLevel(tenantId: string, carrierId: string, dto: CreateCarrierServiceLevelDto) {
-    const carrier = await prisma.shippingCarrier.findFirst({ where: { id: carrierId, tenantId } });
-    if (!carrier) throw new NotFoundException('Carrier not found');
+  async createCarrierServiceLevel(
+    tenantId: string,
+    carrierId: string,
+    dto: CreateCarrierServiceLevelDto,
+  ) {
+    const carrier = await prisma.shippingCarrier.findFirst({
+      where: { id: carrierId, tenantId },
+    });
+    if (!carrier) throw new NotFoundException("Carrier not found");
 
     const existing = await prisma.carrierServiceLevel.findFirst({
       where: { tenantId, carrierId, code: dto.code },
     });
-    if (existing) throw new BadRequestException(`Service level code ${dto.code} already exists for this carrier.`);
+    if (existing)
+      throw new BadRequestException(
+        `Service level code ${dto.code} already exists for this carrier.`,
+      );
 
     return prisma.carrierServiceLevel.create({
       data: {
@@ -267,7 +320,7 @@ export class SupplyChainService {
     return prisma.advanceShippingNotice.findMany({
       where: { tenantId },
       include: { lineItems: true },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -276,7 +329,7 @@ export class SupplyChainService {
       where: { id, tenantId },
       include: { lineItems: true },
     });
-    if (!asn) throw new NotFoundException('ASN not found');
+    if (!asn) throw new NotFoundException("ASN not found");
     return asn;
   }
 
@@ -284,7 +337,10 @@ export class SupplyChainService {
     const existing = await prisma.advanceShippingNotice.findFirst({
       where: { tenantId, asnNumber: dto.asnNumber },
     });
-    if (existing) throw new BadRequestException(`ASN number ${dto.asnNumber} already exists.`);
+    if (existing)
+      throw new BadRequestException(
+        `ASN number ${dto.asnNumber} already exists.`,
+      );
 
     return prisma.$transaction(async (tx) => {
       const asn = await tx.advanceShippingNotice.create({
@@ -295,21 +351,23 @@ export class SupplyChainService {
           purchaseOrderId: dto.purchaseOrderId || null,
           warehouseId: dto.warehouseId,
           shipDate: dto.shipDate ? new Date(dto.shipDate) : null,
-          expectedArrival: dto.expectedArrival ? new Date(dto.expectedArrival) : null,
+          expectedArrival: dto.expectedArrival
+            ? new Date(dto.expectedArrival)
+            : null,
           carrierName: dto.carrierName || null,
           trackingNumber: dto.trackingNumber || null,
           notes: dto.notes || null,
-          status: 'PENDING',
+          status: "PENDING",
         },
       });
 
-      const lineItemsData = dto.lineItems.map(item => ({
+      const lineItemsData = dto.lineItems.map((item) => ({
         tenantId,
         asnId: asn.id,
         productId: item.productId,
         expectedQty: new Prisma.Decimal(item.expectedQty),
         receivedQty: new Prisma.Decimal(0),
-        uom: item.uom || 'EA',
+        uom: item.uom || "EA",
         lotNumber: item.lotNumber || null,
         serialNos: item.serialNos || null,
         notes: item.notes || null,
@@ -326,18 +384,29 @@ export class SupplyChainService {
     });
   }
 
-  async receiveAsn(tenantId: string, id: string, dto: ReceiveAsnDto, userId: string) {
+  async receiveAsn(
+    tenantId: string,
+    id: string,
+    dto: ReceiveAsnDto,
+    userId: string,
+  ) {
     const asn = await prisma.advanceShippingNotice.findFirst({
       where: { id, tenantId },
       include: { lineItems: true },
     });
-    if (!asn) throw new NotFoundException('ASN not found');
-    if (asn.status === 'RECEIVED') throw new BadRequestException('ASN has already been fully received.');
+    if (!asn) throw new NotFoundException("ASN not found");
+    if (asn.status === "RECEIVED")
+      throw new BadRequestException("ASN has already been fully received.");
 
     return prisma.$transaction(async (tx) => {
       for (const receiveItem of dto.lineItems) {
-        const lineItem = asn.lineItems.find(item => item.id === receiveItem.id);
-        if (!lineItem) throw new BadRequestException(`Line item ID ${receiveItem.id} not found in this ASN.`);
+        const lineItem = asn.lineItems.find(
+          (item) => item.id === receiveItem.id,
+        );
+        if (!lineItem)
+          throw new BadRequestException(
+            `Line item ID ${receiveItem.id} not found in this ASN.`,
+          );
 
         const expected = Number(lineItem.expectedQty);
         const actual = Number(receiveItem.actualQty);
@@ -356,7 +425,8 @@ export class SupplyChainService {
         // Check for discrepancies
         if (expected !== actual) {
           const diff = actual - expected;
-          const discrepancyType = diff < 0 ? AsnDiscrepancyType.SHORTAGE : AsnDiscrepancyType.OVERAGE;
+          const discrepancyType =
+            diff < 0 ? AsnDiscrepancyType.SHORTAGE : AsnDiscrepancyType.OVERAGE;
 
           await tx.asnDiscrepancy.create({
             data: {
@@ -367,15 +437,17 @@ export class SupplyChainService {
               productId: lineItem.productId,
               expectedQty: lineItem.expectedQty,
               actualQty: new Prisma.Decimal(actual),
-              notes: receiveItem.notes || `Discrepancy of ${diff} detected during receipt.`,
+              notes:
+                receiveItem.notes ||
+                `Discrepancy of ${diff} detected during receipt.`,
               reportedBy: userId,
             },
           });
         }
       }
 
-      const receivedStatus = 'RECEIVED';
-      
+      const receivedStatus = "RECEIVED";
+
       const updatedAsn = await tx.advanceShippingNotice.update({
         where: { id },
         data: {
@@ -392,7 +464,7 @@ export class SupplyChainService {
   async getAsnDiscrepancies(tenantId: string, asnId: string) {
     return prisma.asnDiscrepancy.findMany({
       where: { tenantId, asnId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -404,7 +476,7 @@ export class SupplyChainService {
     return prisma.inboundShipment.findMany({
       where: { tenantId },
       include: { carrier: true, trackingEvents: true },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -413,7 +485,7 @@ export class SupplyChainService {
       where: { id, tenantId },
       include: { carrier: true, trackingEvents: true },
     });
-    if (!shipment) throw new NotFoundException('Inbound shipment not found');
+    if (!shipment) throw new NotFoundException("Inbound shipment not found");
     return shipment;
   }
 
@@ -421,7 +493,10 @@ export class SupplyChainService {
     const existing = await prisma.inboundShipment.findFirst({
       where: { tenantId, shipmentNumber: dto.shipmentNumber },
     });
-    if (existing) throw new BadRequestException(`Shipment number ${dto.shipmentNumber} already exists.`);
+    if (existing)
+      throw new BadRequestException(
+        `Shipment number ${dto.shipmentNumber} already exists.`,
+      );
 
     return prisma.inboundShipment.create({
       data: {
@@ -431,11 +506,15 @@ export class SupplyChainService {
         carrierId: dto.carrierId || null,
         warehouseId: dto.warehouseId,
         trackingNumber: dto.trackingNumber || null,
-        status: 'EXPECTED',
-        expectedArrival: dto.expectedArrival ? new Date(dto.expectedArrival) : null,
+        status: "EXPECTED",
+        expectedArrival: dto.expectedArrival
+          ? new Date(dto.expectedArrival)
+          : null,
         totalPallets: dto.totalPallets || null,
         totalCartons: dto.totalCartons || null,
-        totalWeight: dto.totalWeight ? new Prisma.Decimal(dto.totalWeight) : null,
+        totalWeight: dto.totalWeight
+          ? new Prisma.Decimal(dto.totalWeight)
+          : null,
         notes: dto.notes || null,
       },
     });
@@ -449,7 +528,7 @@ export class SupplyChainService {
     return prisma.outboundShipment.findMany({
       where: { tenantId },
       include: { carrier: true, trackingEvents: true },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -458,15 +537,21 @@ export class SupplyChainService {
       where: { id, tenantId },
       include: { carrier: true, trackingEvents: true },
     });
-    if (!shipment) throw new NotFoundException('Outbound shipment not found');
+    if (!shipment) throw new NotFoundException("Outbound shipment not found");
     return shipment;
   }
 
-  async createOutboundShipment(tenantId: string, dto: CreateOutboundShipmentDto) {
+  async createOutboundShipment(
+    tenantId: string,
+    dto: CreateOutboundShipmentDto,
+  ) {
     const existing = await prisma.outboundShipment.findFirst({
       where: { tenantId, shipmentNumber: dto.shipmentNumber },
     });
-    if (existing) throw new BadRequestException(`Shipment number ${dto.shipmentNumber} already exists.`);
+    if (existing)
+      throw new BadRequestException(
+        `Shipment number ${dto.shipmentNumber} already exists.`,
+      );
 
     return prisma.outboundShipment.create({
       data: {
@@ -477,11 +562,15 @@ export class SupplyChainService {
         serviceLevelId: dto.serviceLevelId || null,
         warehouseId: dto.warehouseId,
         trackingNumber: dto.trackingNumber || null,
-        status: 'PENDING',
-        estimatedDelivery: dto.estimatedDelivery ? new Date(dto.estimatedDelivery) : null,
+        status: "PENDING",
+        estimatedDelivery: dto.estimatedDelivery
+          ? new Date(dto.estimatedDelivery)
+          : null,
         totalPallets: dto.totalPallets || null,
         totalCartons: dto.totalCartons || null,
-        totalWeight: dto.totalWeight ? new Prisma.Decimal(dto.totalWeight) : null,
+        totalWeight: dto.totalWeight
+          ? new Prisma.Decimal(dto.totalWeight)
+          : null,
         recipientName: dto.recipientName || null,
         recipientAddr: dto.recipientAddr || null,
         notes: dto.notes || null,
@@ -495,7 +584,7 @@ export class SupplyChainService {
 
   async addTrackingEvent(
     tenantId: string,
-    shipmentType: 'inbound' | 'outbound',
+    shipmentType: "inbound" | "outbound",
     shipmentId: string,
     dto: AddTrackingEventDto,
   ) {
@@ -503,61 +592,79 @@ export class SupplyChainService {
       const event = await tx.shipmentTrackingEvent.create({
         data: {
           tenantId,
-          inboundShipmentId: shipmentType === 'inbound' ? shipmentId : null,
-          outboundShipmentId: shipmentType === 'outbound' ? shipmentId : null,
+          inboundShipmentId: shipmentType === "inbound" ? shipmentId : null,
+          outboundShipmentId: shipmentType === "outbound" ? shipmentId : null,
           eventCode: dto.eventCode,
           description: dto.description,
           location: dto.location || null,
           occurredAt: dto.occurredAt ? new Date(dto.occurredAt) : new Date(),
-          source: dto.source || 'MANUAL',
+          source: dto.source || "MANUAL",
         },
       });
 
       // Update shipment status based on the tracking event
-      if (shipmentType === 'inbound') {
+      if (shipmentType === "inbound") {
         const inboundShipment = await tx.inboundShipment.findFirst({
           where: { id: shipmentId, tenantId },
         });
-        if (!inboundShipment) throw new NotFoundException('Inbound shipment not found');
+        if (!inboundShipment)
+          throw new NotFoundException("Inbound shipment not found");
 
         let status = inboundShipment.status;
-        if (dto.eventCode === 'DELIVERED') {
-          status = 'COMPLETE';
-        } else if (dto.eventCode === 'EXCEPTION') {
-          status = 'EXCEPTION';
-        } else if (dto.eventCode === 'IN_TRANSIT') {
-          status = 'IN_TRANSIT';
+        if (dto.eventCode === "DELIVERED") {
+          status = "COMPLETE";
+        } else if (dto.eventCode === "EXCEPTION") {
+          status = "EXCEPTION";
+        } else if (dto.eventCode === "IN_TRANSIT") {
+          status = "IN_TRANSIT";
         }
 
         await tx.inboundShipment.update({
           where: { id: shipmentId },
           data: {
             status,
-            arrivedAt: dto.eventCode === 'DELIVERED' ? new Date() : inboundShipment.arrivedAt,
-            completedAt: dto.eventCode === 'DELIVERED' ? new Date() : inboundShipment.completedAt,
+            arrivedAt:
+              dto.eventCode === "DELIVERED"
+                ? new Date()
+                : inboundShipment.arrivedAt,
+            completedAt:
+              dto.eventCode === "DELIVERED"
+                ? new Date()
+                : inboundShipment.completedAt,
           },
         });
       } else {
         const outboundShipment = await tx.outboundShipment.findFirst({
           where: { id: shipmentId, tenantId },
         });
-        if (!outboundShipment) throw new NotFoundException('Outbound shipment not found');
+        if (!outboundShipment)
+          throw new NotFoundException("Outbound shipment not found");
 
         let status = outboundShipment.status;
-        if (dto.eventCode === 'DELIVERED') {
-          status = 'DELIVERED';
-        } else if (dto.eventCode === 'EXCEPTION') {
-          status = 'EXCEPTION';
-        } else if (dto.eventCode === 'IN_TRANSIT' || dto.eventCode === 'PICKED_UP' || dto.eventCode === 'OUT_FOR_DELIVERY') {
-          status = 'IN_TRANSIT';
+        if (dto.eventCode === "DELIVERED") {
+          status = "DELIVERED";
+        } else if (dto.eventCode === "EXCEPTION") {
+          status = "EXCEPTION";
+        } else if (
+          dto.eventCode === "IN_TRANSIT" ||
+          dto.eventCode === "PICKED_UP" ||
+          dto.eventCode === "OUT_FOR_DELIVERY"
+        ) {
+          status = "IN_TRANSIT";
         }
 
         await tx.outboundShipment.update({
           where: { id: shipmentId },
           data: {
             status,
-            deliveredAt: dto.eventCode === 'DELIVERED' ? new Date() : outboundShipment.deliveredAt,
-            shipDate: dto.eventCode === 'PICKED_UP' ? new Date() : outboundShipment.shipDate,
+            deliveredAt:
+              dto.eventCode === "DELIVERED"
+                ? new Date()
+                : outboundShipment.deliveredAt,
+            shipDate:
+              dto.eventCode === "PICKED_UP"
+                ? new Date()
+                : outboundShipment.shipDate,
           },
         });
       }
@@ -566,14 +673,18 @@ export class SupplyChainService {
     });
   }
 
-  async getTrackingEvents(tenantId: string, shipmentType: 'inbound' | 'outbound', shipmentId: string) {
+  async getTrackingEvents(
+    tenantId: string,
+    shipmentType: "inbound" | "outbound",
+    shipmentId: string,
+  ) {
     return prisma.shipmentTrackingEvent.findMany({
       where: {
         tenantId,
-        inboundShipmentId: shipmentType === 'inbound' ? shipmentId : null,
-        outboundShipmentId: shipmentType === 'outbound' ? shipmentId : null,
+        inboundShipmentId: shipmentType === "inbound" ? shipmentId : null,
+        outboundShipmentId: shipmentType === "outbound" ? shipmentId : null,
       },
-      orderBy: { occurredAt: 'desc' },
+      orderBy: { occurredAt: "desc" },
     });
   }
 
@@ -590,7 +701,7 @@ export class SupplyChainService {
         shipmentId,
         exceptionCode: dto.exceptionCode,
         description: dto.description,
-        severity: dto.severity || 'MEDIUM',
+        severity: dto.severity || "MEDIUM",
         status: ShipmentExceptionStatus.OPEN,
         reportedBy: userId,
       },
@@ -606,7 +717,7 @@ export class SupplyChainService {
     const exception = await prisma.shipmentException.findFirst({
       where: { id: exceptionId, tenantId },
     });
-    if (!exception) throw new NotFoundException('Exception record not found');
+    if (!exception) throw new NotFoundException("Exception record not found");
 
     return prisma.shipmentException.update({
       where: { id: exceptionId },
@@ -622,7 +733,7 @@ export class SupplyChainService {
   async getExceptions(tenantId: string, shipmentId: string) {
     return prisma.shipmentException.findMany({
       where: { tenantId, shipmentId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 }

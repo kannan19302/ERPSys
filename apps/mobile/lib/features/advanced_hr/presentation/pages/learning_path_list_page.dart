@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -64,7 +63,7 @@ class _LearningPathListPageState extends ConsumerState<LearningPathListPage> {
                     : '${state.meta.total} path${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -115,27 +114,27 @@ class _PathTile extends StatelessWidget {
             Row(children: [
               Expanded(
                 child: Text(path.title,
-                    style: Theme.of(context).textTheme.titleSmall),
+                    style: Theme.of(context).textTheme.titleSmall,),
               ),
               UiStatusBadge(
                 label: path.status,
                 tone: path.status == 'ACTIVE' ? UiTone.success : UiTone.neutral,
               ),
-            ]),
+            ],),
             const SizedBox(height: Spacing.x1),
             Text(path.category,
-                style: TextStyle(color: t.textSecondary)),
+                style: TextStyle(color: t.textSecondary),),
             const SizedBox(height: Spacing.x1),
             Row(children: [
               Text('${path.estimatedHours}h',
-                  style: Theme.of(context).textTheme.labelLarge),
+                  style: Theme.of(context).textTheme.labelLarge,),
               const SizedBox(width: Spacing.x4),
               Text('${path.enrolledCount} enrolled',
-                  style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
+                  style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
               const Spacer(),
               Text('${path.completionRate.toStringAsFixed(0)}% complete',
-                  style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
-            ]),
+                  style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
+            ],),
           ],
         ),
       ),

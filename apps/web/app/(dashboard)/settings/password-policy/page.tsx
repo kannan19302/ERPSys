@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 
 export default function PasswordPolicyRedirectPage() {
-  redirect('/settings/security-policies?tab=password-policy');
+  redirect("/settings/security-policies?tab=password-policy");
 }

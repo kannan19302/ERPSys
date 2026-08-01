@@ -1,4 +1,3 @@
-// @ts-nocheck
 export interface ReportingSemanticField {
   name: string;
   label: string;
@@ -17,10 +16,13 @@ export interface ReportingQueryOptions {
   filters?: Record<string, unknown>;
   groupBy?: string[];
   orderBy?: string;
-  orderDir?: 'asc' | 'desc';
+  orderDir?: "asc" | "desc";
   limit?: number;
   offset?: number;
-  aggregations?: Array<{ field: string; fn: 'SUM' | 'AVG' | 'COUNT' | 'MIN' | 'MAX' }>;
+  aggregations?: Array<{
+    field: string;
+    fn: "SUM" | "AVG" | "COUNT" | "MIN" | "MAX";
+  }>;
 }
 
 export interface ReportingQueryResult {

@@ -1,5 +1,12 @@
-// @ts-nocheck
-import { Controller, Get, Post, Body, Query, Req, UseGuards } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Query,
+  Req,
+  UseGuards,
+} from "@nestjs/common";
 import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { RbacGuard } from "../../common/guards/rbac.guard";
@@ -32,25 +39,37 @@ export class FieldServiceOperationsController {
 
   @Get("expenses")
   @Permissions("field-service.expenses.read")
-  async getWorkOrderExpenses(@Req() req: AuthenticatedRequest, @Query() query: any) {
+  async getWorkOrderExpenses(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: any,
+  ) {
     return this.service.getWorkOrderExpenses(req.user.tenantId, query);
   }
 
   @Post("expenses")
   @Permissions("field-service.expenses.create")
-  async createWorkOrderExpense(@Req() req: AuthenticatedRequest, @Body() body: any) {
+  async createWorkOrderExpense(
+    @Req() req: AuthenticatedRequest,
+    @Body() body: any,
+  ) {
     return this.service.createWorkOrderExpense(req.user.tenantId, body);
   }
 
   @Get("checklists")
   @Permissions("field-service.checklists.read")
-  async getInspectionChecklists(@Req() req: AuthenticatedRequest, @Query() query: any) {
+  async getInspectionChecklists(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: any,
+  ) {
     return this.service.getInspectionChecklists(req.user.tenantId, query);
   }
 
   @Post("checklists")
   @Permissions("field-service.checklists.create")
-  async createInspectionChecklist(@Req() req: AuthenticatedRequest, @Body() body: any) {
+  async createInspectionChecklist(
+    @Req() req: AuthenticatedRequest,
+    @Body() body: any,
+  ) {
     return this.service.createInspectionChecklist(req.user.tenantId, body);
   }
 }

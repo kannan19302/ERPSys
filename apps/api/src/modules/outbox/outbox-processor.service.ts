@@ -1,11 +1,10 @@
-// @ts-nocheck
-import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
-import { Job } from 'bullmq';
-import { Logger } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
-import { OutboxHandlerRegistry } from './outbox-handler.registry';
-import { OutboxMetricsService } from './outbox-metrics.service';
+import { Processor, WorkerHost, OnWorkerEvent } from "@nestjs/bullmq";
+import { Job } from "bullmq";
+import { Logger } from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
+import { OutboxHandlerRegistry } from "./outbox-handler.registry";
+import { OutboxMetricsService } from "./outbox-metrics.service";
 
 const MAX_ATTEMPTS = 10;
 
@@ -16,7 +15,7 @@ interface OutboxJobData {
   destination: string;
 }
 
-@Processor('outbox')
+@Processor("outbox")
 export class OutboxProcessorService extends WorkerHost {
   private readonly logger = new Logger(OutboxProcessorService.name);
 
@@ -35,12 +34,15 @@ export class OutboxProcessorService extends WorkerHost {
     });
 
     if (!delivery) {
-      this.logger.warn({ deliveryId }, 'Delivery not found, skipping');
+      this.logger.warn({ deliveryId }, "Delivery not found, skipping");
       return;
     }
 
-    if (delivery.status !== 'LEASED' && delivery.status !== 'PENDING') {
-      this.logger.debug({ deliveryId, status: delivery.status }, 'Delivery already processed');
+    if (delivery.status !== "LEASED" && delivery.status !== "PENDING") {
+      this.logger.debug(
+        { deliveryId, status: delivery.status },
+        "Delivery already processed",
+      );
       return;
     }
 
@@ -49,14 +51,17 @@ export class OutboxProcessorService extends WorkerHost {
     });
 
     if (!event) {
-      this.logger.error({ outboxEventId }, 'OutboxEvent not found');
-      await this.failDelivery(deliveryId, 'OutboxEvent not found');
+      this.logger.error({ outboxEventId }, "OutboxEvent not found");
+      await this.failDelivery(deliveryId, "OutboxEvent not found");
       return;
     }
 
     if (event.tenantId !== tenantId) {
-      this.logger.error({ deliveryId, eventTenant: event.tenantId, jobTenant: tenantId }, 'Tenant mismatch');
-      await this.failDelivery(deliveryId, 'Tenant mismatch');
+      this.logger.error(
+        { deliveryId, eventTenant: event.tenantId, jobTenant: tenantId },
+        "Tenant mismatch",
+      );
+      await this.failDelivery(deliveryId, "Tenant mismatch");
       return;
     }
 
@@ -89,7 +94,7 @@ export class OutboxProcessorService extends WorkerHost {
           await tx.outboxDelivery.update({
             where: { id: deliveryId },
             data: {
-              status: 'COMPLETED',
+              status: "COMPLETED",
               completedAt: new Date(),
             },
           });
@@ -107,14 +112,14 @@ export class OutboxProcessorService extends WorkerHost {
           await tx.outboxDelivery.update({
             where: { id: deliveryId },
             data: {
-              status: 'COMPLETED',
+              status: "COMPLETED",
               completedAt: new Date(),
             },
           });
         });
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
+      const message = err instanceof Error ? err.message : "Unknown error";
       await this.handleRetry(deliveryId, message);
     }
   }
@@ -130,39 +135,48 @@ export class OutboxProcessorService extends WorkerHost {
       await prisma.outboxDelivery.update({
         where: { id: deliveryId },
         data: {
-          status: 'DEAD',
+          status: "DEAD",
           lastError: error,
           failedAt: new Date(),
         },
       });
       this.metrics.incrementTerminalFailure();
-      this.logger.warn({ deliveryId, attempts: delivery.attempts }, 'Delivery moved to DEAD');
+      this.logger.warn(
+        { deliveryId, attempts: delivery.attempts },
+        "Delivery moved to DEAD",
+      );
       return;
     }
 
     const baseDelay = 1000;
-    const delay = Math.min(baseDelay * Math.pow(2, delivery.attempts - 1), 60000);
+    const delay = Math.min(
+      baseDelay * Math.pow(2, delivery.attempts - 1),
+      60000,
+    );
     const jitter = Math.random() * 1000;
     const availableAt = new Date(Date.now() + delay + jitter);
 
     await prisma.outboxDelivery.update({
       where: { id: deliveryId },
       data: {
-        status: 'PENDING',
+        status: "PENDING",
         lastError: error,
         availableAt,
       },
     });
 
     this.metrics.incrementRetry();
-    this.logger.debug({ deliveryId, attempt: delivery.attempts, delay }, 'Delivery queued for retry');
+    this.logger.debug(
+      { deliveryId, attempt: delivery.attempts, delay },
+      "Delivery queued for retry",
+    );
   }
 
   private async failDelivery(deliveryId: string, error: string): Promise<void> {
     await prisma.outboxDelivery.update({
       where: { id: deliveryId },
       data: {
-        status: 'DEAD',
+        status: "DEAD",
         lastError: error,
         failedAt: new Date(),
       },
@@ -170,9 +184,19 @@ export class OutboxProcessorService extends WorkerHost {
     this.metrics.incrementTerminalFailure();
   }
 
-  @OnWorkerEvent('failed')
-  async onFailed(job: Job<OutboxJobData> | undefined, error: Error): Promise<void> {
+  @OnWorkerEvent("failed")
+  async onFailed(
+    job: Job<OutboxJobData> | undefined,
+    error: Error,
+  ): Promise<void> {
     if (!job) return;
-    this.logger.error({ deliveryId: job.data.deliveryId, error: error.message, attempts: job.attemptsMade }, 'Worker job failed');
+    this.logger.error(
+      {
+        deliveryId: job.data.deliveryId,
+        error: error.message,
+        attempts: job.attemptsMade,
+      },
+      "Worker job failed",
+    );
   }
 }

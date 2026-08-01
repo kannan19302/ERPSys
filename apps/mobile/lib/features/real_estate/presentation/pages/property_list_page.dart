@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -50,7 +49,7 @@ class _PropertyListPageState extends ConsumerState<PropertyListPage> {
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
                 .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value)))
+                    value: e.key, child: Text(e.value),),)
                 .toList(),
           ),
         ],
@@ -85,7 +84,7 @@ class _PropertyListPageState extends ConsumerState<PropertyListPage> {
                     : '${state.meta.total} property${state.meta.total == 1 ? '' : 'ies'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -131,25 +130,25 @@ class _PropertyTile extends StatelessWidget {
           Row(children: [
             Expanded(
               child: Text(property.name,
-                  style: Theme.of(context).textTheme.titleSmall),
+                  style: Theme.of(context).textTheme.titleSmall,),
             ),
             UiStatusBadge(
               label: property.status,
               tone: _statusTone(property.status),
             ),
-          ]),
+          ],),
           const SizedBox(height: Spacing.x1),
           Text('${property.propertyType} - ${property.city ?? property.state ?? 'N/A'}',
-              style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
+              style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
           const SizedBox(height: Spacing.x1),
           Row(children: [
             if (property.totalArea > 0)
               Text('${property.totalArea.toStringAsFixed(0)} ${property.areaUnit}',
-                  style: Theme.of(context).textTheme.labelMedium),
+                  style: Theme.of(context).textTheme.labelMedium,),
             const Spacer(),
             Text('${property.occupiedUnits}/${property.totalUnits} units',
-                style: TextStyle(fontSize: TypeScale.xs, color: t.textSecondary)),
-          ]),
+                style: TextStyle(fontSize: TypeScale.xs, color: t.textSecondary),),
+          ],),
         ],
       ),
     );

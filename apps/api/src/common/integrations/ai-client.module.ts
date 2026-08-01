@@ -1,8 +1,7 @@
-// @ts-nocheck
-import { Module } from '@nestjs/common';
-import { AiModule } from '../../modules/ai/ai.module';
-import { AiService } from '../../modules/ai/ai.service';
-import { AiClient } from './ai-client';
+import { Module } from "@nestjs/common";
+import { AiModule } from "../../modules/ai/ai.module";
+import { AiService } from "../../modules/ai/ai.service";
+import { AiClient } from "./ai-client";
 
 /**
  * Composition-layer adapter that exposes AI capabilities through the common

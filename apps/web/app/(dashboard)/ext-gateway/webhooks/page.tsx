@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import React, { useState, useEffect } from "react";
 import {
@@ -46,7 +45,11 @@ export default function WebhooksPage() {
   const columns: Column<Webhook>[] = [
     { key: "name", header: "Name", sortable: true },
     { key: "url", header: "URL", render: (r) => r.url.slice(0, 40) + "..." },
-    { key: "eventTypes", header: "Events", render: (r) => r.eventTypes?.join(", ") || "-" },
+    {
+      key: "eventTypes",
+      header: "Events",
+      render: (r) => r.eventTypes?.join(", ") || "-",
+    },
     { key: "format", header: "Format" },
     { key: "retryPolicy", header: "Retry" },
     {

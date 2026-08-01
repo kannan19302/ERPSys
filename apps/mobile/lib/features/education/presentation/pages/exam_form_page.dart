@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/usecase/result.dart';
 import '../providers/education_providers.dart';
 
 class ExamFormPage extends ConsumerStatefulWidget {
@@ -63,7 +61,7 @@ class _ExamFormPageState extends ConsumerState<ExamFormPage> {
       'examType': _examType, 'maxScore': double.tryParse(_maxScoreCtrl.text) ?? 100,
       'durationMinutes': int.tryParse(_durationCtrl.text), 'room': _roomCtrl.text.trim().isEmpty ? null : _roomCtrl.text.trim(),
       'notes': _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
-    }, id: widget.examId);
+    }, id: widget.examId,);
     if (!context.mounted) return;
     setState(() => _saving = false);
     result.fold(
@@ -82,7 +80,7 @@ class _ExamFormPageState extends ConsumerState<ExamFormPage> {
           child: _saving
               ? const SizedBox(height: Spacing.x5, width: Spacing.x5, child: CircularProgressIndicator(strokeWidth: 2))
               : const Text('Save'),
-        )],
+        ),],
       ),
       body: Form(
         key: _formKey,
@@ -90,14 +88,14 @@ class _ExamFormPageState extends ConsumerState<ExamFormPage> {
           padding: const EdgeInsets.all(Spacing.x4),
           children: [
             TextFormField(controller: _titleCtrl, decoration: const InputDecoration(labelText: 'Title *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null),
+              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,),
             const SizedBox(height: Spacing.x4),
             TextFormField(controller: _courseIdCtrl, decoration: const InputDecoration(labelText: 'Course ID *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null),
+              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,),
             const SizedBox(height: Spacing.x4),
             Row(children: [
               Expanded(child: DropdownButtonFormField<String>(
-                value: _examType, decoration: const InputDecoration(labelText: 'Exam Type'),
+                initialValue: _examType, decoration: const InputDecoration(labelText: 'Exam Type'),
                 items: const [
                   DropdownMenuItem(value: 'MIDTERM', child: Text('Midterm')),
                   DropdownMenuItem(value: 'FINAL', child: Text('Final')),
@@ -105,10 +103,10 @@ class _ExamFormPageState extends ConsumerState<ExamFormPage> {
                   DropdownMenuItem(value: 'ASSIGNMENT', child: Text('Assignment')),
                 ],
                 onChanged: (v) { if (v != null) setState(() => _examType = v); },
-              )),
+              ),),
               const SizedBox(width: Spacing.x4),
               Expanded(child: DropdownButtonFormField<String>(
-                value: _status, decoration: const InputDecoration(labelText: 'Status'),
+                initialValue: _status, decoration: const InputDecoration(labelText: 'Status'),
                 items: const [
                   DropdownMenuItem(value: 'SCHEDULED', child: Text('Scheduled')),
                   DropdownMenuItem(value: 'IN_PROGRESS', child: Text('In Progress')),
@@ -116,8 +114,8 @@ class _ExamFormPageState extends ConsumerState<ExamFormPage> {
                   DropdownMenuItem(value: 'CANCELLED', child: Text('Cancelled')),
                 ],
                 onChanged: (v) { if (v != null) setState(() => _status = v); },
-              )),
-            ]),
+              ),),
+            ],),
             const SizedBox(height: Spacing.x4),
             InkWell(
               onTap: () async {
@@ -137,7 +135,7 @@ class _ExamFormPageState extends ConsumerState<ExamFormPage> {
               Expanded(child: TextFormField(controller: _maxScoreCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Max Score'))),
               const SizedBox(width: Spacing.x4),
               Expanded(child: TextFormField(controller: _durationCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Duration (min)'))),
-            ]),
+            ],),
             const SizedBox(height: Spacing.x4),
             TextFormField(controller: _roomCtrl, decoration: const InputDecoration(labelText: 'Room')),
             const SizedBox(height: Spacing.x4),

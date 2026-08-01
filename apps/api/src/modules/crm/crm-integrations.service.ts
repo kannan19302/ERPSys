@@ -1,7 +1,6 @@
-// @ts-nocheck
-import { Injectable } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Injectable } from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 
 interface CalendarEvent {
   id?: string;
@@ -26,15 +25,18 @@ export class CrmIntegrationsService {
   async syncEmails(
     tenantId: string,
     _userId: string,
-    provider: 'GOOGLE' | 'MICROSOFT',
+    provider: "GOOGLE" | "MICROSOFT",
     accessToken: string,
     sinceDate?: string,
   ): Promise<EmailSyncResult> {
-    const since = sinceDate ? new Date(sinceDate) : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const since = sinceDate
+      ? new Date(sinceDate)
+      : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-    const emails = provider === 'GOOGLE'
-      ? await this.fetchGmailMessages(accessToken, since)
-      : await this.fetchOutlookMessages(accessToken, since);
+    const emails =
+      provider === "GOOGLE"
+        ? await this.fetchGmailMessages(accessToken, since)
+        : await this.fetchOutlookMessages(accessToken, since);
 
     let synced = 0;
     let errors = 0;
@@ -51,7 +53,7 @@ export class CrmIntegrationsService {
             data: {
               tenantId,
               orgId: contact.orgId,
-              type: 'EMAIL',
+              type: "EMAIL",
               subject: email.subject,
               description: email.body.substring(0, 2000),
               contactId: contact.id,
@@ -66,22 +68,25 @@ export class CrmIntegrationsService {
       }
     }
 
-    this.eventEmitter.emit('crm.email.synced', { tenantId, synced, errors });
+    this.eventEmitter.emit("crm.email.synced", { tenantId, synced, errors });
     return { synced, errors, lastSyncAt: new Date().toISOString() };
   }
 
   async syncCalendarEvents(
     tenantId: string,
     _userId: string,
-    provider: 'GOOGLE' | 'MICROSOFT',
+    provider: "GOOGLE" | "MICROSOFT",
     accessToken: string,
     sinceDate?: string,
   ) {
-    const since = sinceDate ? new Date(sinceDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const since = sinceDate
+      ? new Date(sinceDate)
+      : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-    const events = provider === 'GOOGLE'
-      ? await this.fetchGoogleCalendarEvents(accessToken, since)
-      : await this.fetchOutlookCalendarEvents(accessToken, since);
+    const events =
+      provider === "GOOGLE"
+        ? await this.fetchGoogleCalendarEvents(accessToken, since)
+        : await this.fetchOutlookCalendarEvents(accessToken, since);
 
     let synced = 0;
 
@@ -95,9 +100,9 @@ export class CrmIntegrationsService {
           data: {
             tenantId,
             orgId: contact.orgId,
-            type: 'MEETING',
+            type: "MEETING",
             subject: event.subject,
-            description: event.description || '',
+            description: event.description || "",
             contactId: contact.id,
             customerId: contact.customerId,
             dueDate: new Date(event.start),
@@ -112,7 +117,11 @@ export class CrmIntegrationsService {
 
   async bulkRecalculateScores(tenantId: string) {
     const leads = await prisma.lead.findMany({
-      where: { tenantId, deletedAt: null, status: { notIn: ['CONVERTED', 'LOST', 'DISQUALIFIED'] } },
+      where: {
+        tenantId,
+        deletedAt: null,
+        status: { notIn: ["CONVERTED", "LOST", "DISQUALIFIED"] },
+      },
       include: { activities: true },
     });
 
@@ -154,8 +163,13 @@ export class CrmIntegrationsService {
     score += Math.min(30, completedActivities.length * 10);
 
     if (activities.length > 0) {
-      const latestActivity = new Date(Math.max(...activities.map((a: any) => new Date(a.createdAt).getTime())));
-      const daysSinceActivity = (Date.now() - latestActivity.getTime()) / (1000 * 60 * 60 * 24);
+      const latestActivity = new Date(
+        Math.max(
+          ...activities.map((a: any) => new Date(a.createdAt).getTime()),
+        ),
+      );
+      const daysSinceActivity =
+        (Date.now() - latestActivity.getTime()) / (1000 * 60 * 60 * 24);
       if (daysSinceActivity < 7) score += 15;
       else if (daysSinceActivity < 30) score += 10;
       else if (daysSinceActivity > 90) score -= 10;
@@ -166,10 +180,24 @@ export class CrmIntegrationsService {
 
   // Provider stubs — structured for OAuth integration
   private async fetchGmailMessages(_accessToken: string, _since: Date) {
-    return [] as Array<{ messageId: string; from: string; to: string[]; subject: string; body: string; date: string }>;
+    return [] as Array<{
+      messageId: string;
+      from: string;
+      to: string[];
+      subject: string;
+      body: string;
+      date: string;
+    }>;
   }
   private async fetchOutlookMessages(_accessToken: string, _since: Date) {
-    return [] as Array<{ messageId: string; from: string; to: string[]; subject: string; body: string; date: string }>;
+    return [] as Array<{
+      messageId: string;
+      from: string;
+      to: string[];
+      subject: string;
+      body: string;
+      date: string;
+    }>;
   }
   private async fetchGoogleCalendarEvents(_accessToken: string, _since: Date) {
     return [] as CalendarEvent[];

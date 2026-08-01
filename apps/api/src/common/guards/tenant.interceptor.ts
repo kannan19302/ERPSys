@@ -1,30 +1,37 @@
-// @ts-nocheck
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler, UnauthorizedException } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { Observable, from } from 'rxjs';
-import { prisma, runWithTenantSession } from '@unerp/database';
-import { SKIP_TENANT_SCOPE_KEY } from '../decorators/skip-tenant-scope.decorator';
+import {
+  Injectable,
+  NestInterceptor,
+  ExecutionContext,
+  CallHandler,
+  UnauthorizedException,
+} from "@nestjs/common";
+import { Reflector } from "@nestjs/core";
+import { Observable, from } from "rxjs";
+import { prisma, runWithTenantSession } from "@unerp/database";
+import { SKIP_TENANT_SCOPE_KEY } from "../decorators/skip-tenant-scope.decorator";
 
 @Injectable()
 export class TenantInterceptor implements NestInterceptor {
-  constructor(private readonly reflector: Reflector) { }
+  constructor(private readonly reflector: Reflector) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
-    const skip = this.reflector.getAllAndOverride<boolean>(SKIP_TENANT_SCOPE_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const skip = this.reflector.getAllAndOverride<boolean>(
+      SKIP_TENANT_SCOPE_KEY,
+      [context.getHandler(), context.getClass()],
+    );
     if (skip) {
       return next.handle();
     }
 
     const request = context.switchToHttp().getRequest();
-    const user = request.user as { tenantId: string; userId?: string; sub?: string } | undefined;
+    const user = request.user as
+      | { tenantId: string; userId?: string; sub?: string }
+      | undefined;
 
     if (user && user.tenantId) {
       const userId = user.userId || user.sub;
       if (!userId) {
-        throw new UnauthorizedException('User ID not found in session');
+        throw new UnauthorizedException("User ID not found in session");
       }
       return from(
         runWithTenantSession(
@@ -39,7 +46,7 @@ export class TenantInterceptor implements NestInterceptor {
             // session-lifetime: set_config(..., false) scopes to session level
             // so it persists across transactions within the same connection.
             await prisma.$executeRaw`SELECT set_config('app.current_tenant_id', ${user.tenantId}, false)`;
-            const { lastValueFrom } = await import('rxjs');
+            const { lastValueFrom } = await import("rxjs");
             return lastValueFrom(next.handle());
           },
         ),

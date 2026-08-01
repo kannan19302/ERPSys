@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -112,7 +111,7 @@ class _EmployeeDetail extends StatelessWidget {
                         : null,
                     child: employee.imageUrl == null
                         ? Icon(Icons.person_outline,
-                            size: TypeScale.x2l, color: t.textSecondary)
+                            size: TypeScale.x2l, color: t.textSecondary,)
                         : null,
                   ),
                   const SizedBox(width: Spacing.x3),
@@ -141,12 +140,12 @@ class _EmployeeDetail extends StatelessWidget {
               const SizedBox(height: Spacing.x3),
               if (employee.position != null) ...<Widget>[
                 Text(employee.position!,
-                    style: TextStyle(color: t.textSecondary)),
+                    style: TextStyle(color: t.textSecondary),),
                 const SizedBox(height: Spacing.x2),
               ],
               if (employee.department != null)
                 Text(employee.department!,
-                    style: TextStyle(color: t.textSecondary)),
+                    style: TextStyle(color: t.textSecondary),),
             ],
           ),
         ),

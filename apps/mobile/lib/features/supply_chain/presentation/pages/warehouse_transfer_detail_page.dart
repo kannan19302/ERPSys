@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -55,9 +54,9 @@ class _WarehouseTransferDetail extends StatelessWidget {
             children: [
               Row(children: [
                 Expanded(child: Text(transfer.reference ?? 'Warehouse Transfer',
-                    style: Theme.of(context).textTheme.titleLarge)),
+                    style: Theme.of(context).textTheme.titleLarge,),),
                 UiStatusBadge(label: transfer.status, tone: _statusTone(transfer.status)),
-              ]),
+              ],),
             ],
           ),
         ),
@@ -102,7 +101,7 @@ class _Row extends StatelessWidget {
       child: Row(children: [
         Expanded(child: Text(label, style: TextStyle(color: t.textSecondary))),
         Text(value, style: Theme.of(context).textTheme.labelLarge),
-      ]),
+      ],),
     );
   }
 }

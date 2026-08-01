@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Controller, Get, Param, Query, UseGuards, Req } from "@nestjs/common";
 import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
@@ -17,8 +16,16 @@ export class HealthcareEnterpriseController {
 
   @Get("clinical-outcomes")
   @Permissions("healthcare.enterprise.read")
-  async getClinicalOutcomes(@Req() req: AuthenticatedRequest, @Query("periodStart") periodStart?: string, @Query("periodEnd") periodEnd?: string) {
-    return this.service.getClinicalOutcomes(req.user.tenantId, periodStart, periodEnd);
+  async getClinicalOutcomes(
+    @Req() req: AuthenticatedRequest,
+    @Query("periodStart") periodStart?: string,
+    @Query("periodEnd") periodEnd?: string,
+  ) {
+    return this.service.getClinicalOutcomes(
+      req.user.tenantId,
+      periodStart,
+      periodEnd,
+    );
   }
 
   @Get("patient-demographics")
@@ -29,38 +36,74 @@ export class HealthcareEnterpriseController {
 
   @Get("revenue-cycle")
   @Permissions("healthcare.enterprise.read")
-  async getRevenueCycleAnalytics(@Req() req: AuthenticatedRequest, @Query("periodStart") periodStart?: string, @Query("periodEnd") periodEnd?: string) {
-    return this.service.getRevenueCycleAnalytics(req.user.tenantId, periodStart, periodEnd);
+  async getRevenueCycleAnalytics(
+    @Req() req: AuthenticatedRequest,
+    @Query("periodStart") periodStart?: string,
+    @Query("periodEnd") periodEnd?: string,
+  ) {
+    return this.service.getRevenueCycleAnalytics(
+      req.user.tenantId,
+      periodStart,
+      periodEnd,
+    );
   }
 
   @Get("population-health")
   @Permissions("healthcare.enterprise.read")
-  async getPopulationHealth(@Req() req: AuthenticatedRequest, @Query("criteria") criteria?: string) {
-    return this.service.getPopulationHealth(req.user.tenantId, criteria ? JSON.parse(criteria) : undefined);
+  async getPopulationHealth(
+    @Req() req: AuthenticatedRequest,
+    @Query("criteria") criteria?: string,
+  ) {
+    return this.service.getPopulationHealth(
+      req.user.tenantId,
+      criteria ? JSON.parse(criteria) : undefined,
+    );
   }
 
   @Get("pharmacy-analytics")
   @Permissions("healthcare.enterprise.read")
-  async getPharmacyAnalytics(@Req() req: AuthenticatedRequest, @Query("periodStart") periodStart?: string, @Query("periodEnd") periodEnd?: string) {
-    return this.service.getPharmacyAnalytics(req.user.tenantId, periodStart, periodEnd);
+  async getPharmacyAnalytics(
+    @Req() req: AuthenticatedRequest,
+    @Query("periodStart") periodStart?: string,
+    @Query("periodEnd") periodEnd?: string,
+  ) {
+    return this.service.getPharmacyAnalytics(
+      req.user.tenantId,
+      periodStart,
+      periodEnd,
+    );
   }
 
   @Get("operational-metrics")
   @Permissions("healthcare.enterprise.read")
-  async getOperationalMetrics(@Req() req: AuthenticatedRequest, @Query("dateRange") dateRange?: string) {
+  async getOperationalMetrics(
+    @Req() req: AuthenticatedRequest,
+    @Query("dateRange") dateRange?: string,
+  ) {
     return this.service.getOperationalMetrics(req.user.tenantId, dateRange);
   }
 
   @Get("compliance-audit")
   @Permissions("healthcare.enterprise.read")
-  async getComplianceAudit(@Req() req: AuthenticatedRequest, @Query("dateRange") dateRange?: string) {
+  async getComplianceAudit(
+    @Req() req: AuthenticatedRequest,
+    @Query("dateRange") dateRange?: string,
+  ) {
     return this.service.getComplianceAudit(req.user.tenantId, dateRange);
   }
 
   @Get("patient-satisfaction")
   @Permissions("healthcare.enterprise.read")
-  async getPatientSatisfaction(@Req() req: AuthenticatedRequest, @Query("periodStart") periodStart?: string, @Query("periodEnd") periodEnd?: string) {
-    return this.service.getPatientSatisfaction(req.user.tenantId, periodStart, periodEnd);
+  async getPatientSatisfaction(
+    @Req() req: AuthenticatedRequest,
+    @Query("periodStart") periodStart?: string,
+    @Query("periodEnd") periodEnd?: string,
+  ) {
+    return this.service.getPatientSatisfaction(
+      req.user.tenantId,
+      periodStart,
+      periodEnd,
+    );
   }
 
   @Get("dashboard-kpis")

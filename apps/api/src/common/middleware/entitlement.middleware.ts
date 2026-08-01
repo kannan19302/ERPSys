@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Request, Response, NextFunction } from "express";
 import { verifyToken } from "@unerp/auth";
 import { prisma, runWithTenantSession } from "@unerp/database";

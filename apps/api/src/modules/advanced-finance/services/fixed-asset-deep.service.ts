@@ -1,18 +1,23 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class FixedAssetDeepService {
   private async getAsset(tenantId: string, assetId: string) {
-    const a = await prisma.fixedAsset.findFirst({ where: { id: assetId, tenantId } });
-    if (!a) throw new NotFoundException('Fixed asset not found');
+    const a = await prisma.fixedAsset.findFirst({
+      where: { id: assetId, tenantId },
+    });
+    if (!a) throw new NotFoundException("Fixed asset not found");
     return a;
   }
 
   private async resolveOrgId(tenantId: string): Promise<string> {
     const org = await prisma.organization.findFirst({ where: { tenantId } });
-    return org?.id ?? 'org-system-default';
+    return org?.id ?? "org-system-default";
   }
 
   // ── DEPRECIATION SCHEDULE PREVIEW ──────────────────────────────────
@@ -23,22 +28,39 @@ export class FixedAssetDeepService {
     const salvage = Number(asset.salvageValue ?? 0);
     const usefulLifeMonths = (asset.usefulLifeYears ?? 5) * 12;
     const monthlyDepreciation = (costBasis - salvage) / usefulLifeMonths;
-    const schedule: { month: number; period: string; depreciation: number; accumulatedDepreciation: number; bookValue: number }[] = [];
+    const schedule: {
+      month: number;
+      period: string;
+      depreciation: number;
+      accumulatedDepreciation: number;
+      bookValue: number;
+    }[] = [];
 
     let accumulated = 0;
     const startDate = asset.purchaseDate ?? new Date();
     for (let m = 1; m <= usefulLifeMonths; m++) {
-      const d = new Date(startDate.getFullYear(), startDate.getMonth() + m - 1, 1);
+      const d = new Date(
+        startDate.getFullYear(),
+        startDate.getMonth() + m - 1,
+        1,
+      );
       accumulated += monthlyDepreciation;
       schedule.push({
         month: m,
-        period: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+        period: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
         depreciation: Math.round(monthlyDepreciation * 100) / 100,
         accumulatedDepreciation: Math.round(accumulated * 100) / 100,
         bookValue: Math.round((costBasis - accumulated) * 100) / 100,
       });
     }
-    return { assetId, costBasis, salvageValue: salvage, usefulLifeMonths, monthlyDepreciation, schedule };
+    return {
+      assetId,
+      costBasis,
+      salvageValue: salvage,
+      usefulLifeMonths,
+      monthlyDepreciation,
+      schedule,
+    };
   }
 
   // ── ASSET INSURANCE ──────────────────────────────────
@@ -46,15 +68,25 @@ export class FixedAssetDeepService {
   async listInsurances(tenantId: string, assetId?: string) {
     return prisma.assetInsurance.findMany({
       where: { tenantId, ...(assetId && { assetId }) },
-      orderBy: { renewalDate: 'asc' },
+      orderBy: { renewalDate: "asc" },
     });
   }
 
-  async createInsurance(tenantId: string, dto: {
-    assetId: string; policyNumber: string; insurer: string; coverageType: string;
-    coverageAmount: number; premium: number; startDate: string; renewalDate: string;
-    documentUrl?: string; notes?: string;
-  }) {
+  async createInsurance(
+    tenantId: string,
+    dto: {
+      assetId: string;
+      policyNumber: string;
+      insurer: string;
+      coverageType: string;
+      coverageAmount: number;
+      premium: number;
+      startDate: string;
+      renewalDate: string;
+      documentUrl?: string;
+      notes?: string;
+    },
+  ) {
     await this.getAsset(tenantId, dto.assetId);
     return prisma.assetInsurance.create({
       data: {
@@ -69,42 +101,66 @@ export class FixedAssetDeepService {
         renewalDate: new Date(dto.renewalDate),
         documentUrl: dto.documentUrl,
         notes: dto.notes,
-        status: 'ACTIVE',
+        status: "ACTIVE",
       },
     });
   }
 
-  async updateInsurance(tenantId: string, id: string, dto: Partial<{
-    status: string; renewalDate: string; premium: number; notes: string;
-  }>) {
-    const ins = await prisma.assetInsurance.findFirst({ where: { id, tenantId } });
-    if (!ins) throw new NotFoundException('Insurance policy not found');
+  async updateInsurance(
+    tenantId: string,
+    id: string,
+    dto: Partial<{
+      status: string;
+      renewalDate: string;
+      premium: number;
+      notes: string;
+    }>,
+  ) {
+    const ins = await prisma.assetInsurance.findFirst({
+      where: { id, tenantId },
+    });
+    if (!ins) throw new NotFoundException("Insurance policy not found");
     return prisma.assetInsurance.update({
       where: { id },
-      data: { ...dto, ...(dto.renewalDate ? { renewalDate: new Date(dto.renewalDate) } : {}) },
+      data: {
+        ...dto,
+        ...(dto.renewalDate ? { renewalDate: new Date(dto.renewalDate) } : {}),
+      },
     });
   }
 
   async getExpiringInsurances(tenantId: string, daysAhead: number = 30) {
     const end = new Date(Date.now() + daysAhead * 86400000);
     return prisma.assetInsurance.findMany({
-      where: { tenantId, renewalDate: { lte: end }, status: 'ACTIVE' },
-      orderBy: { renewalDate: 'asc' },
+      where: { tenantId, renewalDate: { lte: end }, status: "ACTIVE" },
+      orderBy: { renewalDate: "asc" },
     });
   }
 
   // ── ASSET IMPAIRMENT ──────────────────────────────────
 
   async listImpairments(tenantId: string) {
-    return prisma.assetImpairment.findMany({ where: { tenantId }, orderBy: { testDate: 'desc' } });
+    return prisma.assetImpairment.findMany({
+      where: { tenantId },
+      orderBy: { testDate: "desc" },
+    });
   }
 
-  async createImpairment(tenantId: string, dto: {
-    assetId: string; testDate: string; carryingAmount: number;
-    recoverableAmount: number; reason?: string;
-  }) {
+  async createImpairment(
+    tenantId: string,
+    dto: {
+      assetId: string;
+      testDate: string;
+      carryingAmount: number;
+      recoverableAmount: number;
+      reason?: string;
+    },
+  ) {
     await this.getAsset(tenantId, dto.assetId);
-    const impairmentLoss = Math.max(0, dto.carryingAmount - dto.recoverableAmount);
+    const impairmentLoss = Math.max(
+      0,
+      dto.carryingAmount - dto.recoverableAmount,
+    );
     return prisma.assetImpairment.create({
       data: {
         tenantId,
@@ -114,16 +170,22 @@ export class FixedAssetDeepService {
         recoverableAmount: dto.recoverableAmount,
         impairmentLoss,
         reason: dto.reason,
-        status: 'DRAFT',
+        status: "DRAFT",
       },
     });
   }
 
   async postImpairment(tenantId: string, id: string) {
-    const imp = await prisma.assetImpairment.findFirst({ where: { id, tenantId } });
-    if (!imp) throw new NotFoundException('Impairment not found');
-    if (imp.status !== 'DRAFT') throw new BadRequestException('Only DRAFT impairments can be posted');
-    return prisma.assetImpairment.update({ where: { id }, data: { status: 'POSTED', postedAt: new Date() } });
+    const imp = await prisma.assetImpairment.findFirst({
+      where: { id, tenantId },
+    });
+    if (!imp) throw new NotFoundException("Impairment not found");
+    if (imp.status !== "DRAFT")
+      throw new BadRequestException("Only DRAFT impairments can be posted");
+    return prisma.assetImpairment.update({
+      where: { id },
+      data: { status: "POSTED", postedAt: new Date() },
+    });
   }
 
   // ── CAPITAL PROJECTS ──────────────────────────────────
@@ -132,65 +194,126 @@ export class FixedAssetDeepService {
     return prisma.capitalProject.findMany({
       where: { tenantId, ...(status && { status }) },
       include: { costs: true },
-      orderBy: { startDate: 'desc' },
+      orderBy: { startDate: "desc" },
     });
   }
 
   async getCapitalProject(tenantId: string, id: string) {
-    const p = await prisma.capitalProject.findFirst({ where: { id, tenantId }, include: { costs: true } });
-    if (!p) throw new NotFoundException('Capital project not found');
+    const p = await prisma.capitalProject.findFirst({
+      where: { id, tenantId },
+      include: { costs: true },
+    });
+    if (!p) throw new NotFoundException("Capital project not found");
     return p;
   }
 
-  async createCapitalProject(tenantId: string, dto: {
-    code: string; name: string; description?: string; budgetAmount: number;
-    startDate: string; expectedCompletion?: string; costGlAccountId?: string;
-  }) {
+  async createCapitalProject(
+    tenantId: string,
+    dto: {
+      code: string;
+      name: string;
+      description?: string;
+      budgetAmount: number;
+      startDate: string;
+      expectedCompletion?: string;
+      costGlAccountId?: string;
+    },
+  ) {
     const orgId = await this.resolveOrgId(tenantId);
     return prisma.capitalProject.create({
       data: {
-        tenantId, orgId,
-        code: dto.code, name: dto.name, description: dto.description,
+        tenantId,
+        orgId,
+        code: dto.code,
+        name: dto.name,
+        description: dto.description,
         budgetAmount: dto.budgetAmount,
         startDate: new Date(dto.startDate),
-        expectedCompletion: dto.expectedCompletion ? new Date(dto.expectedCompletion) : null,
+        expectedCompletion: dto.expectedCompletion
+          ? new Date(dto.expectedCompletion)
+          : null,
         costGlAccountId: dto.costGlAccountId,
-        status: 'PLANNED',
+        status: "PLANNED",
       },
     });
   }
 
-  async addProjectCost(tenantId: string, projectId: string, dto: {
-    costDate: string; description?: string; costType: string; amount: number;
-    vendorId?: string; invoiceId?: string; glAccountId?: string;
-  }) {
+  async addProjectCost(
+    tenantId: string,
+    projectId: string,
+    dto: {
+      costDate: string;
+      description?: string;
+      costType: string;
+      amount: number;
+      vendorId?: string;
+      invoiceId?: string;
+      glAccountId?: string;
+    },
+  ) {
     await this.getCapitalProject(tenantId, projectId);
     const cost = await prisma.capitalProjectCost.create({
-      data: { tenantId, capitalProjectId: projectId, ...dto, costDate: new Date(dto.costDate) },
+      data: {
+        tenantId,
+        capitalProjectId: projectId,
+        ...dto,
+        costDate: new Date(dto.costDate),
+      },
     });
     // Update actualSpend
-    const agg = await prisma.capitalProjectCost.aggregate({ where: { capitalProjectId: projectId }, _sum: { amount: true } });
-    await prisma.capitalProject.update({ where: { id: projectId }, data: { actualSpend: Number(agg._sum.amount ?? 0) } });
+    const agg = await prisma.capitalProjectCost.aggregate({
+      where: { capitalProjectId: projectId },
+      _sum: { amount: true },
+    });
+    await prisma.capitalProject.update({
+      where: { id: projectId },
+      data: { actualSpend: Number(agg._sum.amount ?? 0) },
+    });
     return cost;
   }
 
-  async updateCapitalProject(tenantId: string, id: string, dto: Partial<{
-    status: string; completedDate: string; notes: string;
-  }>) {
+  async updateCapitalProject(
+    tenantId: string,
+    id: string,
+    dto: Partial<{
+      status: string;
+      completedDate: string;
+      notes: string;
+    }>,
+  ) {
     await this.getCapitalProject(tenantId, id);
     return prisma.capitalProject.update({
       where: { id },
-      data: { ...dto, ...(dto.completedDate ? { completedDate: new Date(dto.completedDate) } : {}) },
+      data: {
+        ...dto,
+        ...(dto.completedDate
+          ? { completedDate: new Date(dto.completedDate) }
+          : {}),
+      },
     });
   }
 
-  async convertProjectToAsset(tenantId: string, projectId: string, dto: {
-    assetName: string; categoryId: string; assetDate: string;
-  }) {
+  async convertProjectToAsset(
+    tenantId: string,
+    projectId: string,
+    dto: {
+      assetName: string;
+      categoryId: string;
+      assetDate: string;
+    },
+  ) {
     const project = await this.getCapitalProject(tenantId, projectId);
-    if (project.status !== 'COMPLETED') throw new BadRequestException('Project must be COMPLETED to convert to asset');
+    if (project.status !== "COMPLETED")
+      throw new BadRequestException(
+        "Project must be COMPLETED to convert to asset",
+      );
     // Record asset reference in project
-    const assetRef = { name: dto.assetName, categoryId: dto.categoryId, date: dto.assetDate, amount: Number(project.actualSpend) };
+    const assetRef = {
+      name: dto.assetName,
+      categoryId: dto.categoryId,
+      date: dto.assetDate,
+      amount: Number(project.actualSpend),
+    };
     return prisma.capitalProject.update({
       where: { id: projectId },
       data: { convertedAssets: [assetRef] as never },
@@ -198,7 +321,7 @@ export class FixedAssetDeepService {
   }
 
   async getNbvRollForward(tenantId: string, period: string) {
-    const parts = (period || '').split('-');
+    const parts = (period || "").split("-");
     const year = parts[0] ? parseInt(parts[0], 10) : new Date().getFullYear();
     const month = parts[1] ? parseInt(parts[1], 10) : new Date().getMonth() + 1;
     const start = new Date(year, month - 1, 1);
@@ -210,7 +333,10 @@ export class FixedAssetDeepService {
       _sum: { amount: true },
     });
 
-    const totalCost = assets.reduce((s, a) => s + Number(a.purchaseValue ?? 0), 0);
+    const totalCost = assets.reduce(
+      (s, a) => s + Number(a.purchaseValue ?? 0),
+      0,
+    );
     const totalDepreciation = Number(depAgg._sum?.amount ?? 0);
     const netBookValue = totalCost - totalDepreciation;
 
@@ -227,12 +353,25 @@ export class FixedAssetDeepService {
 
   // ── ASSET TAG MANAGEMENT ──────────────────────────────────
 
-  async bulkUploadAssets(tenantId: string, rows: {
-    name: string; categoryId?: string; purchaseDate: string; purchaseCost?: number; purchaseValue?: number;
-    salvageValue?: number; usefulLifeYears?: number; locationId?: string; assetCode?: string;
-    depreciationMethod?: string; depreciationRate?: number; accountId?: string; accumDepAccountId?: string;
-    custodianId?: string;
-  }[]) {
+  async bulkUploadAssets(
+    tenantId: string,
+    rows: {
+      name: string;
+      categoryId?: string;
+      purchaseDate: string;
+      purchaseCost?: number;
+      purchaseValue?: number;
+      salvageValue?: number;
+      usefulLifeYears?: number;
+      locationId?: string;
+      assetCode?: string;
+      depreciationMethod?: string;
+      depreciationRate?: number;
+      accountId?: string;
+      accumDepAccountId?: string;
+      custodianId?: string;
+    }[],
+  ) {
     const orgId = await this.resolveOrgId(tenantId);
     const created: any[] = [];
     for (const row of rows) {
@@ -241,21 +380,23 @@ export class FixedAssetDeepService {
         data: {
           tenantId,
           orgId,
-          assetCode: row.assetCode || `AST-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`,
+          assetCode:
+            row.assetCode ||
+            `AST-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`,
           name: row.name,
           categoryId: row.categoryId || null,
           purchaseDate: new Date(row.purchaseDate),
           purchaseValue: value,
           salvageValue: row.salvageValue ?? 0,
           usefulLifeYears: row.usefulLifeYears ?? 5,
-          depreciationMethod: row.depreciationMethod || 'SLM',
+          depreciationMethod: row.depreciationMethod || "SLM",
           depreciationRate: row.depreciationRate ?? null,
           currentValue: value,
-          accountId: row.accountId || 'acc-asset-default',
-          accumDepAccountId: row.accumDepAccountId || 'acc-accum-dep-default',
+          accountId: row.accountId || "acc-asset-default",
+          accumDepAccountId: row.accumDepAccountId || "acc-accum-dep-default",
           locationId: row.locationId || null,
           custodianId: row.custodianId || null,
-          status: 'ACTIVE',
+          status: "ACTIVE",
         },
       });
       created.push(asset);

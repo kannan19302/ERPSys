@@ -1,7 +1,10 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { z } from 'zod';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { z } from "zod";
 
 export const rubricCriterionSchema = z.object({
   key: z.string().min(1).max(60),
@@ -43,7 +46,13 @@ export type CreateScorecardInput = z.infer<typeof createScorecardSchema>;
 
 export const createLibraryItemSchema = z.object({
   title: z.string().min(1).max(200),
-  category: z.enum(['OBJECTION_HANDLING', 'DISCOVERY', 'CLOSING', 'NEGOTIATION', 'DEMO']),
+  category: z.enum([
+    "OBJECTION_HANDLING",
+    "DISCOVERY",
+    "CLOSING",
+    "NEGOTIATION",
+    "DEMO",
+  ]),
   sourceActivityId: z.string().optional(),
   notes: z.string().max(2000).optional(),
   tags: z.array(z.string().max(40)).optional(),
@@ -63,20 +72,28 @@ export class CrmCoachingService {
   // ── Rubrics ──────────────────────────────────────────
   async createRubric(tenantId: string, orgId: string, dto: CreateRubricInput) {
     return prisma.coachingRubric.create({
-      data: { tenantId, orgId, name: dto.name, description: dto.description ?? null, criteria: dto.criteria },
+      data: {
+        tenantId,
+        orgId,
+        name: dto.name,
+        description: dto.description ?? null,
+        criteria: dto.criteria,
+      },
     });
   }
 
   async listRubrics(tenantId: string, activeOnly?: boolean) {
     return prisma.coachingRubric.findMany({
       where: { tenantId, ...(activeOnly ? { isActive: true } : {}) },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
   async getRubric(tenantId: string, id: string) {
-    const rubric = await prisma.coachingRubric.findFirst({ where: { id, tenantId } });
-    if (!rubric) throw new NotFoundException('Coaching rubric not found');
+    const rubric = await prisma.coachingRubric.findFirst({
+      where: { id, tenantId },
+    });
+    if (!rubric) throw new NotFoundException("Coaching rubric not found");
     return rubric;
   }
 
@@ -86,7 +103,9 @@ export class CrmCoachingService {
       where: { id },
       data: {
         ...(dto.name !== undefined ? { name: dto.name } : {}),
-        ...(dto.description !== undefined ? { description: dto.description } : {}),
+        ...(dto.description !== undefined
+          ? { description: dto.description }
+          : {}),
         ...(dto.criteria !== undefined ? { criteria: dto.criteria } : {}),
         ...(dto.isActive !== undefined ? { isActive: dto.isActive } : {}),
       },
@@ -94,15 +113,28 @@ export class CrmCoachingService {
   }
 
   // ── Scorecards ───────────────────────────────────────
-  async createScorecard(tenantId: string, orgId: string, reviewerId: string, dto: CreateScorecardInput) {
-    const activity = await prisma.activity.findFirst({ where: { id: dto.activityId, tenantId, type: 'CALL' } });
-    if (!activity) throw new NotFoundException('Call activity not found');
+  async createScorecard(
+    tenantId: string,
+    orgId: string,
+    reviewerId: string,
+    dto: CreateScorecardInput,
+  ) {
+    const activity = await prisma.activity.findFirst({
+      where: { id: dto.activityId, tenantId, type: "CALL" },
+    });
+    if (!activity) throw new NotFoundException("Call activity not found");
     const rubric = await this.getRubric(tenantId, dto.rubricId);
 
-    const rubricKeys = new Set((rubric.criteria as Array<{ key: string }>).map((c) => c.key));
+    const rubricKeys = new Set(
+      (rubric.criteria as Array<{ key: string }>).map((c) => c.key),
+    );
     for (const cs of dto.criteriaScores) {
-      if (!rubricKeys.has(cs.key)) throw new BadRequestException(`Unknown criterion key "${cs.key}" for this rubric`);
-      if (cs.score > cs.maxScore) throw new BadRequestException(`Score for "${cs.key}" exceeds its max`);
+      if (!rubricKeys.has(cs.key))
+        throw new BadRequestException(
+          `Unknown criterion key "${cs.key}" for this rubric`,
+        );
+      if (cs.score > cs.maxScore)
+        throw new BadRequestException(`Score for "${cs.key}" exceeds its max`);
     }
 
     const totalScore = dto.criteriaScores.reduce((s, c) => s + c.score, 0);
@@ -122,7 +154,7 @@ export class CrmCoachingService {
         objectionHandlingScore: dto.objectionHandlingScore ?? null,
         nextStepsSet: dto.nextStepsSet ?? false,
         managerNotes: dto.managerNotes ?? null,
-        status: 'SUBMITTED',
+        status: "SUBMITTED",
       },
     });
   }
@@ -131,25 +163,30 @@ export class CrmCoachingService {
     return prisma.callScorecard.findMany({
       where: { tenantId, activityId },
       include: { rubric: { select: { name: true } } },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
   async getScorecard(tenantId: string, id: string) {
     const sc = await prisma.callScorecard.findFirst({
       where: { id, tenantId },
-      include: { rubric: true, activity: { select: { subject: true, assignedToId: true, aiSentiment: true } } },
+      include: {
+        rubric: true,
+        activity: {
+          select: { subject: true, assignedToId: true, aiSentiment: true },
+        },
+      },
     });
-    if (!sc) throw new NotFoundException('Scorecard not found');
+    if (!sc) throw new NotFoundException("Scorecard not found");
     return sc;
   }
 
   async acknowledgeScorecard(tenantId: string, id: string) {
     const sc = await this.getScorecard(tenantId, id);
-    if (sc.status === 'ACKNOWLEDGED') return sc;
+    if (sc.status === "ACKNOWLEDGED") return sc;
     return prisma.callScorecard.update({
       where: { id },
-      data: { status: 'ACKNOWLEDGED', acknowledgedAt: new Date() },
+      data: { status: "ACKNOWLEDGED", acknowledgedAt: new Date() },
     });
   }
 
@@ -157,29 +194,57 @@ export class CrmCoachingService {
   async getRepCoachingSummary(tenantId: string, repUserId: string) {
     const scorecards = await prisma.callScorecard.findMany({
       where: { tenantId, activity: { assignedToId: repUserId } },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take: 50,
-      select: { totalScore: true, maxScore: true, talkRatio: true, objectionHandlingScore: true, nextStepsSet: true, createdAt: true },
+      select: {
+        totalScore: true,
+        maxScore: true,
+        talkRatio: true,
+        objectionHandlingScore: true,
+        nextStepsSet: true,
+        createdAt: true,
+      },
     });
 
     if (scorecards.length === 0) {
-      return { repUserId, scorecardsReviewed: 0, averageScorePct: null, averageTalkRatio: null, nextStepsSetRate: null, trend: [] };
+      return {
+        repUserId,
+        scorecardsReviewed: 0,
+        averageScorePct: null,
+        averageTalkRatio: null,
+        nextStepsSetRate: null,
+        trend: [],
+      };
     }
 
-    const scorePctSum = scorecards.reduce((s, c) => s + (c.maxScore > 0 ? (c.totalScore / c.maxScore) * 100 : 0), 0);
-    const talkRatios = scorecards.filter((c) => c.talkRatio != null).map((c) => c.talkRatio as number);
+    const scorePctSum = scorecards.reduce(
+      (s, c) => s + (c.maxScore > 0 ? (c.totalScore / c.maxScore) * 100 : 0),
+      0,
+    );
+    const talkRatios = scorecards
+      .filter((c) => c.talkRatio != null)
+      .map((c) => c.talkRatio as number);
     const nextStepsCount = scorecards.filter((c) => c.nextStepsSet).length;
 
     return {
       repUserId,
       scorecardsReviewed: scorecards.length,
       averageScorePct: Math.round(scorePctSum / scorecards.length),
-      averageTalkRatio: talkRatios.length > 0 ? Math.round(talkRatios.reduce((s, v) => s + v, 0) / talkRatios.length) : null,
+      averageTalkRatio:
+        talkRatios.length > 0
+          ? Math.round(
+              talkRatios.reduce((s, v) => s + v, 0) / talkRatios.length,
+            )
+          : null,
       nextStepsSetRate: Math.round((nextStepsCount / scorecards.length) * 100),
-      trend: scorecards.slice(0, 10).reverse().map((c) => ({
-        date: c.createdAt,
-        scorePct: c.maxScore > 0 ? Math.round((c.totalScore / c.maxScore) * 100) : 0,
-      })),
+      trend: scorecards
+        .slice(0, 10)
+        .reverse()
+        .map((c) => ({
+          date: c.createdAt,
+          scorePct:
+            c.maxScore > 0 ? Math.round((c.totalScore / c.maxScore) * 100) : 0,
+        })),
     };
   }
 
@@ -190,11 +255,25 @@ export class CrmCoachingService {
       include: { activity: { select: { assignedToId: true } } },
     });
 
-    const byRep = new Map<string, { totalScorePct: number; count: number; talkRatioSum: number; talkRatioCount: number }>();
+    const byRep = new Map<
+      string,
+      {
+        totalScorePct: number;
+        count: number;
+        talkRatioSum: number;
+        talkRatioCount: number;
+      }
+    >();
     for (const sc of scorecards) {
-      const repId = sc.activity.assignedToId ?? 'unassigned';
-      const entry = byRep.get(repId) ?? { totalScorePct: 0, count: 0, talkRatioSum: 0, talkRatioCount: 0 };
-      entry.totalScorePct += sc.maxScore > 0 ? (sc.totalScore / sc.maxScore) * 100 : 0;
+      const repId = sc.activity.assignedToId ?? "unassigned";
+      const entry = byRep.get(repId) ?? {
+        totalScorePct: 0,
+        count: 0,
+        talkRatioSum: 0,
+        talkRatioCount: 0,
+      };
+      entry.totalScorePct +=
+        sc.maxScore > 0 ? (sc.totalScore / sc.maxScore) * 100 : 0;
       entry.count += 1;
       if (sc.talkRatio != null) {
         entry.talkRatioSum += sc.talkRatio;
@@ -203,16 +282,27 @@ export class CrmCoachingService {
       byRep.set(repId, entry);
     }
 
-    return Array.from(byRep.entries()).map(([repUserId, e]) => ({
-      repUserId,
-      scorecardsReviewed: e.count,
-      averageScorePct: e.count > 0 ? Math.round(e.totalScorePct / e.count) : 0,
-      averageTalkRatio: e.talkRatioCount > 0 ? Math.round(e.talkRatioSum / e.talkRatioCount) : null,
-    })).sort((a, b) => b.averageScorePct - a.averageScorePct);
+    return Array.from(byRep.entries())
+      .map(([repUserId, e]) => ({
+        repUserId,
+        scorecardsReviewed: e.count,
+        averageScorePct:
+          e.count > 0 ? Math.round(e.totalScorePct / e.count) : 0,
+        averageTalkRatio:
+          e.talkRatioCount > 0
+            ? Math.round(e.talkRatioSum / e.talkRatioCount)
+            : null,
+      }))
+      .sort((a, b) => b.averageScorePct - a.averageScorePct);
   }
 
   // ── Coaching library ─────────────────────────────────
-  async createLibraryItem(tenantId: string, orgId: string, createdById: string, dto: CreateLibraryItemInput) {
+  async createLibraryItem(
+    tenantId: string,
+    orgId: string,
+    createdById: string,
+    dto: CreateLibraryItemInput,
+  ) {
     return prisma.coachingLibraryItem.create({
       data: {
         tenantId,
@@ -230,14 +320,16 @@ export class CrmCoachingService {
   async listLibraryItems(tenantId: string, category?: string) {
     return prisma.coachingLibraryItem.findMany({
       where: { tenantId, ...(category ? { category } : {}) },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
   async deleteLibraryItem(tenantId: string, id: string) {
-    const item = await prisma.coachingLibraryItem.findFirst({ where: { id, tenantId } });
-    if (!item) throw new NotFoundException('Coaching library item not found');
+    const item = await prisma.coachingLibraryItem.findFirst({
+      where: { id, tenantId },
+    });
+    if (!item) throw new NotFoundException("Coaching library item not found");
     await prisma.coachingLibraryItem.delete({ where: { id } });
-    return { status: 'deleted' };
+    return { status: "deleted" };
   }
 }

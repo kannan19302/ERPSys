@@ -1,16 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../../core/widgets/ui_card.dart';
-import '../../../../core/utils/formatters.dart';
-import '../../../../core/widgets/permission_gate.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/widgets/state_views.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/utils/formatters.dart';
-import '../../../../core/widgets/state_views.dart';
-import '../../domain/entities/saas_portal.dart';
 import '../providers/saas_portal_providers.dart';
 
 class PortalPlanDetailPage extends ConsumerWidget {
@@ -28,10 +19,10 @@ class PortalPlanDetailPage extends ConsumerWidget {
           Row(children: [Icon(Icons.card_membership, color: context.tokens.primary, size: 40), const SizedBox(width: Spacing.x3),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text('Plan', style: Theme.of(context).textTheme.titleLarge), Text('ID: $planId', style: TextStyle(color: context.tokens.textSecondary)),
-            ])),
-          ]),
-        ])),
-      ]),
+            ],),),
+          ],),
+        ],),),
+      ],),
     );
   }
 }
@@ -51,10 +42,10 @@ class PortalSupportTicketDetailPage extends ConsumerWidget {
           Row(children: [Icon(Icons.support_agent, color: context.tokens.primary, size: 40), const SizedBox(width: Spacing.x3),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text('Support Ticket', style: Theme.of(context).textTheme.titleLarge), Text('ID: $ticketId', style: TextStyle(color: context.tokens.textSecondary)),
-            ])),
-          ]),
-        ])),
-      ]),
+            ],),),
+          ],),
+        ],),),
+      ],),
     );
   }
 }
@@ -100,16 +91,16 @@ class _PortalSupportTicketFormPageState extends ConsumerState<PortalSupportTicke
         const SizedBox(height: Spacing.x4),
         TextFormField(controller: _descriptionCtrl, maxLines: 5, decoration: const InputDecoration(labelText: 'Description', alignLabelWithHint: true)),
         const SizedBox(height: Spacing.x4),
-        DropdownButtonFormField<String>(value: _priority, decoration: const InputDecoration(labelText: 'Priority'), items: const [
+        DropdownButtonFormField<String>(initialValue: _priority, decoration: const InputDecoration(labelText: 'Priority'), items: const [
           DropdownMenuItem(value: 'LOW', child: Text('Low')), DropdownMenuItem(value: 'MEDIUM', child: Text('Medium')),
           DropdownMenuItem(value: 'HIGH', child: Text('High')), DropdownMenuItem(value: 'URGENT', child: Text('Urgent')),
-        ], onChanged: (v) { if (v != null) setState(() => _priority = v); }),
+        ], onChanged: (v) { if (v != null) setState(() => _priority = v); },),
         const SizedBox(height: Spacing.x4),
-        DropdownButtonFormField<String>(value: _category, decoration: const InputDecoration(labelText: 'Category'), items: const [
+        DropdownButtonFormField<String>(initialValue: _category, decoration: const InputDecoration(labelText: 'Category'), items: const [
           DropdownMenuItem(value: 'GENERAL', child: Text('General')), DropdownMenuItem(value: 'BILLING', child: Text('Billing')),
           DropdownMenuItem(value: 'TECHNICAL', child: Text('Technical')), DropdownMenuItem(value: 'FEATURE', child: Text('Feature Request')),
-        ], onChanged: (v) { if (v != null) setState(() => _category = v); }),
-      ])),
+        ], onChanged: (v) { if (v != null) setState(() => _category = v); },),
+      ],),),
     );
   }
 }

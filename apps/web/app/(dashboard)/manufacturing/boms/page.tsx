@@ -1,9 +1,16 @@
-// @ts-nocheck
-'use client';
-import styles from './page.module.css';
-import React, { useState, useEffect } from 'react';
-import { ClipboardList, GitCommit, GitPullRequest, Check, X, ShieldAlert, ArrowDownUp } from 'lucide-react';
-import { useApiClient } from '@unerp/framework';
+"use client";
+import styles from "./page.module.css";
+import React, { useState, useEffect } from "react";
+import {
+  ClipboardList,
+  GitCommit,
+  GitPullRequest,
+  Check,
+  X,
+  ShieldAlert,
+  ArrowDownUp,
+} from "lucide-react";
+import { useApiClient } from "@unerp/framework";
 
 interface BOMItem {
   id: string;
@@ -66,26 +73,28 @@ export default function BOMsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [ecos, setEcos] = useState<ECO[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Modals
   const [isBOMModalOpen, setIsBOMModalOpen] = useState(false);
   const [isECOModalOpen, setIsECOModalOpen] = useState(false);
   const [isTreeModalOpen, setIsTreeModalOpen] = useState(false);
-  
-  const [selectedBomForTree, setSelectedBomForTree] = useState<string | null>(null);
+
+  const [selectedBomForTree, setSelectedBomForTree] = useState<string | null>(
+    null,
+  );
   const [bomTreeData, setBomTreeData] = useState<BOMTree | null>(null);
   const [treeLoading, setTreeLoading] = useState(false);
 
   const [newBOM, setNewBOM] = useState({
-    name: '',
-    code: '',
-    productId: '',
-    items: [{ productId: '', quantity: '1' }],
+    name: "",
+    code: "",
+    productId: "",
+    items: [{ productId: "", quantity: "1" }],
   });
 
   const [newECO, setNewECO] = useState({
-    bomId: '',
-    changeDescription: '',
+    bomId: "",
+    changeDescription: "",
   });
 
   useEffect(() => {
@@ -96,12 +105,14 @@ export default function BOMsPage() {
     try {
       setLoading(true);
       const [bomsData, productsData, ecosData] = await Promise.all([
-        client.get<BOM[] | { data?: BOM[] }>('/manufacturing/boms'),
-        client.get<Product[] | { data?: Product[] }>('/inventory/products'),
-        client.get<ECO[] | { data?: ECO[] }>('/manufacturing/ecos'),
+        client.get<BOM[] | { data?: BOM[] }>("/manufacturing/boms"),
+        client.get<Product[] | { data?: Product[] }>("/inventory/products"),
+        client.get<ECO[] | { data?: ECO[] }>("/manufacturing/ecos"),
       ]);
       setBoms(Array.isArray(bomsData) ? bomsData : bomsData.data || []);
-      setProducts(Array.isArray(productsData) ? productsData : productsData.data || []);
+      setProducts(
+        Array.isArray(productsData) ? productsData : productsData.data || [],
+      );
       setEcos(Array.isArray(ecosData) ? ecosData : ecosData.data || []);
     } catch {
       // Ignored
@@ -113,7 +124,9 @@ export default function BOMsPage() {
   const fetchBOMTree = async (bomId: string) => {
     try {
       setTreeLoading(true);
-      setBomTreeData(await client.get<BOMTree>(`/manufacturing/boms/${bomId}/tree`));
+      setBomTreeData(
+        await client.get<BOMTree>(`/manufacturing/boms/${bomId}/tree`),
+      );
     } catch {
       // Ignored
     } finally {
@@ -124,18 +137,23 @@ export default function BOMsPage() {
   const handleCreateBOM = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await client.post('/manufacturing/boms', {
-          ...newBOM,
-          items: newBOM.items.map((item) => ({
-            productId: item.productId,
-            quantity: parseFloat(item.quantity),
-          })),
+      await client.post("/manufacturing/boms", {
+        ...newBOM,
+        items: newBOM.items.map((item) => ({
+          productId: item.productId,
+          quantity: parseFloat(item.quantity),
+        })),
       });
       setIsBOMModalOpen(false);
-      setNewBOM({ name: '', code: '', productId: '', items: [{ productId: '', quantity: '1' }] });
+      setNewBOM({
+        name: "",
+        code: "",
+        productId: "",
+        items: [{ productId: "", quantity: "1" }],
+      });
       fetchData();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Error');
+      alert(err instanceof Error ? err.message : "Error");
     }
   };
 
@@ -146,21 +164,21 @@ export default function BOMsPage() {
   };
 
   const handleOpenECO = (bomId: string) => {
-    setNewECO({ bomId, changeDescription: '' });
+    setNewECO({ bomId, changeDescription: "" });
     setIsECOModalOpen(true);
   };
 
   const handleSubmitECO = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await client.post('/manufacturing/ecos', {
-          ...newECO,
-          requestedBy: 'admin@unerp.dev',
+      await client.post("/manufacturing/ecos", {
+        ...newECO,
+        requestedBy: "admin@unerp.dev",
       });
       setIsECOModalOpen(false);
       fetchData();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Error');
+      alert(err instanceof Error ? err.message : "Error");
     }
   };
 
@@ -169,7 +187,7 @@ export default function BOMsPage() {
       await client.post(`/manufacturing/ecos/${id}/resolve`, { status });
       fetchData();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Error');
+      alert(err instanceof Error ? err.message : "Error");
     }
   };
 
@@ -178,19 +196,22 @@ export default function BOMsPage() {
     return (
       <div key={node.id} className={styles.p1}>
         <div className={styles.p2}>
-          <GitCommit size={14} style={{ color: node.hasSubAssembly ? 'var(--color-primary)' : 'var(--color-text-secondary)' }} />
+          <GitCommit
+            size={14}
+            style={{
+              color: node.hasSubAssembly
+                ? "var(--color-primary)"
+                : "var(--color-text-secondary)",
+            }}
+          />
           <span className={styles.p3}>{node.productName}</span>
           <span className="ui-text-xs-muted">({node.sku})</span>
-          <span className={styles.p4}>
-            Qty: {node.quantity}
-          </span>
+          <span className={styles.p4}>Qty: {node.quantity}</span>
           {node.hasSubAssembly && (
-            <span className={styles.p5}>
-              Sub-Assembly
-            </span>
+            <span className={styles.p5}>Sub-Assembly</span>
           )}
         </div>
-        {node.children && node.children.map(child => renderTreeNode(child))}
+        {node.children && node.children.map((child) => renderTreeNode(child))}
       </div>
     );
   };
@@ -205,13 +226,11 @@ export default function BOMsPage() {
             Bills of Materials (BOM)
           </h1>
           <p className={styles.p7}>
-            Configure product recipe components, raw materials breakdowns, revision controls, and engineering modifications.
+            Configure product recipe components, raw materials breakdowns,
+            revision controls, and engineering modifications.
           </p>
         </div>
-        <button
-          onClick={() => setIsBOMModalOpen(true)}
-          className={styles.p8}
-        >
+        <button onClick={() => setIsBOMModalOpen(true)} className={styles.p8}>
           New BOM Formula
         </button>
       </div>
@@ -232,10 +251,20 @@ export default function BOMsPage() {
                       <p className={styles.p12}>Code: {bom.code}</p>
                     </div>
                     <div className={styles.p13}>
-                      <span className={styles.p14}>
-                        Rev v{bom.version}
-                      </span>
-                      <span style={{ background: bom.status === 'APPROVED' ? 'var(--color-success-light)' : 'var(--color-danger-light)', color: bom.status === 'APPROVED' ? 'var(--color-success)' : 'var(--color-danger)' }} className={styles.s1}>
+                      <span className={styles.p14}>Rev v{bom.version}</span>
+                      <span
+                        style={{
+                          background:
+                            bom.status === "APPROVED"
+                              ? "var(--color-success-light)"
+                              : "var(--color-danger-light)",
+                          color:
+                            bom.status === "APPROVED"
+                              ? "var(--color-success)"
+                              : "var(--color-danger)",
+                        }}
+                        className={styles.s1}
+                      >
                         {bom.status}
                       </span>
                     </div>
@@ -243,15 +272,18 @@ export default function BOMsPage() {
 
                   <div className={styles.p15}>
                     <p className={styles.p16}>RECIPE ITEMS</p>
-                    {bom.items && bom.items.slice(0, 3).map((item, idx) => {
-                      const p = products.find((pr) => pr.id === item.productId);
-                      return (
-                        <div key={idx} className={styles.p17}>
-                          <span>{p ? p.name : 'Unknown Component'}</span>
-                          <span>Qty: {Number(item.quantity)}</span>
-                        </div>
-                      );
-                    })}
+                    {bom.items &&
+                      bom.items.slice(0, 3).map((item, idx) => {
+                        const p = products.find(
+                          (pr) => pr.id === item.productId,
+                        );
+                        return (
+                          <div key={idx} className={styles.p17}>
+                            <span>{p ? p.name : "Unknown Component"}</span>
+                            <span>Qty: {Number(item.quantity)}</span>
+                          </div>
+                        );
+                      })}
                     {bom.items && bom.items.length > 3 && (
                       <p className={styles.p18}>
                         + {bom.items.length - 3} more ingredients
@@ -289,24 +321,42 @@ export default function BOMsPage() {
               {ecos.map((eco) => (
                 <div key={eco.id} className={styles.p24}>
                   <div className="ui-flex-between">
-                    <span className={styles.p25}>{eco.bom.code} ECO Request</span>
-                    <span style={{ background: eco.status === 'APPROVED' ? 'var(--color-success-light)' : eco.status === 'PENDING' ? 'var(--color-warning-light)' : 'var(--color-danger-light)', color: eco.status === 'APPROVED' ? 'var(--color-success)' : eco.status === 'PENDING' ? 'var(--color-warning)' : 'var(--color-danger)' }} className={styles.s2}>
+                    <span className={styles.p25}>
+                      {eco.bom.code} ECO Request
+                    </span>
+                    <span
+                      style={{
+                        background:
+                          eco.status === "APPROVED"
+                            ? "var(--color-success-light)"
+                            : eco.status === "PENDING"
+                              ? "var(--color-warning-light)"
+                              : "var(--color-danger-light)",
+                        color:
+                          eco.status === "APPROVED"
+                            ? "var(--color-success)"
+                            : eco.status === "PENDING"
+                              ? "var(--color-warning)"
+                              : "var(--color-danger)",
+                      }}
+                      className={styles.s2}
+                    >
                       {eco.status}
                     </span>
                   </div>
                   <p className="ui-text-xs-muted">{eco.changeDescription}</p>
                   <div className={styles.p26}>
                     <span className={styles.p27}>By: {eco.requestedBy}</span>
-                    {eco.status === 'PENDING' && (
+                    {eco.status === "PENDING" && (
                       <div className={styles.p28}>
                         <button
-                          onClick={() => handleResolveECO(eco.id, 'APPROVED')}
+                          onClick={() => handleResolveECO(eco.id, "APPROVED")}
                           className={styles.p29}
                         >
                           <Check size={12} />
                         </button>
                         <button
-                          onClick={() => handleResolveECO(eco.id, 'REJECTED')}
+                          onClick={() => handleResolveECO(eco.id, "REJECTED")}
                           className={styles.p30}
                         >
                           <X size={12} />
@@ -332,19 +382,30 @@ export default function BOMsPage() {
           <div className={styles.p33}>
             <div className={styles.p34}>
               <h3 className="ui-heading-lg">Hierarchical BOM Tree Explosion</h3>
-              <button onClick={() => setIsTreeModalOpen(false)} className={styles.p35}>&times;</button>
+              <button
+                onClick={() => setIsTreeModalOpen(false)}
+                className={styles.p35}
+              >
+                &times;
+              </button>
             </div>
 
             {treeLoading ? (
-              <div className={styles.p36}>Exploding recipe configurations...</div>
+              <div className={styles.p36}>
+                Exploding recipe configurations...
+              </div>
             ) : bomTreeData ? (
               <div className={styles.p37}>
                 <div className={styles.p38}>
                   ROOT: {bomTreeData.name} ({bomTreeData.code})
                 </div>
                 <div className="ui-stack-1">
-                  {bomTreeData.children && bomTreeData.children.map((child: TreeNode) => renderTreeNode(child))}
-                  {(!bomTreeData.children || bomTreeData.children.length === 0) && (
+                  {bomTreeData.children &&
+                    bomTreeData.children.map((child: TreeNode) =>
+                      renderTreeNode(child),
+                    )}
+                  {(!bomTreeData.children ||
+                    bomTreeData.children.length === 0) && (
                     <p className={styles.p39}>No component ingredients.</p>
                   )}
                 </div>
@@ -352,7 +413,12 @@ export default function BOMsPage() {
             ) : null}
 
             <div className={styles.p40}>
-              <button onClick={() => setIsTreeModalOpen(false)} className={styles.p41}>Close tree</button>
+              <button
+                onClick={() => setIsTreeModalOpen(false)}
+                className={styles.p41}
+              >
+                Close tree
+              </button>
             </div>
           </div>
         </div>
@@ -364,13 +430,31 @@ export default function BOMsPage() {
           <form onSubmit={handleSubmitECO} className={styles.p43}>
             <h3 className="ui-heading-lg">Submit Revision Change Order</h3>
             <div>
-              <label className="ui-text-xs-label">Describe Engineering Changes Required</label>
-              <textarea required placeholder="Explain why this formula needs updating..." value={newECO.changeDescription} onChange={(e) => setNewECO({ ...newECO, changeDescription: e.target.value })} className={styles.p44} />
+              <label className="ui-text-xs-label">
+                Describe Engineering Changes Required
+              </label>
+              <textarea
+                required
+                placeholder="Explain why this formula needs updating..."
+                value={newECO.changeDescription}
+                onChange={(e) =>
+                  setNewECO({ ...newECO, changeDescription: e.target.value })
+                }
+                className={styles.p44}
+              />
             </div>
 
             <div className="ui-flex-end ui-gap-2">
-              <button type="button" onClick={() => setIsECOModalOpen(false)} className={styles.p45}>Cancel</button>
-              <button type="submit" className={styles.p46}>Submit Request</button>
+              <button
+                type="button"
+                onClick={() => setIsECOModalOpen(false)}
+                className={styles.p45}
+              >
+                Cancel
+              </button>
+              <button type="submit" className={styles.p46}>
+                Submit Request
+              </button>
             </div>
           </form>
         </div>
@@ -381,34 +465,71 @@ export default function BOMsPage() {
         <div className={styles.p47}>
           <form onSubmit={handleCreateBOM} className={styles.p48}>
             <h3 className="ui-heading-lg">Create New Bill of Materials</h3>
-            
+
             <div className="ui-grid-2 ui-gap-3">
               <div>
                 <label className="ui-text-xs-label">Formula Name</label>
-                <input required type="text" placeholder="e.g. Laptop assembly" value={newBOM.name} onChange={(e) => setNewBOM({ ...newBOM, name: e.target.value })} className={styles.p49} />
+                <input
+                  required
+                  type="text"
+                  placeholder="e.g. Laptop assembly"
+                  value={newBOM.name}
+                  onChange={(e) =>
+                    setNewBOM({ ...newBOM, name: e.target.value })
+                  }
+                  className={styles.p49}
+                />
               </div>
               <div>
                 <label className="ui-text-xs-label">BOM Code</label>
-                <input required type="text" placeholder="e.g. BOM-LAP-001" value={newBOM.code} onChange={(e) => setNewBOM({ ...newBOM, code: e.target.value })} className={styles.p50} />
+                <input
+                  required
+                  type="text"
+                  placeholder="e.g. BOM-LAP-001"
+                  value={newBOM.code}
+                  onChange={(e) =>
+                    setNewBOM({ ...newBOM, code: e.target.value })
+                  }
+                  className={styles.p50}
+                />
               </div>
             </div>
 
             <div>
               <label className="ui-text-xs-label">Product to Manufacture</label>
-              <select required value={newBOM.productId} onChange={(e) => setNewBOM({ ...newBOM, productId: e.target.value })} className={styles.p51}>
+              <select
+                required
+                value={newBOM.productId}
+                onChange={(e) =>
+                  setNewBOM({ ...newBOM, productId: e.target.value })
+                }
+                className={styles.p51}
+              >
                 <option value="">Select Target Product...</option>
                 {products.map((p) => (
-                  <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>
+                  <option key={p.id} value={p.id}>
+                    {p.name} ({p.sku})
+                  </option>
                 ))}
               </select>
             </div>
 
             <div>
               <div className="ui-flex-between mb-2">
-                <label className="ui-text-xs-label">Formula Ingredients / Component Products</label>
+                <label className="ui-text-xs-label">
+                  Formula Ingredients / Component Products
+                </label>
                 <button
                   type="button"
-                  onClick={() => setNewBOM({ ...newBOM, items: [...newBOM.items, { productId: '', quantity: '1' }] })}
+                  onClick={() =>
+                    setNewBOM({
+                      ...newBOM,
+                      items: [
+                        ...newBOM.items,
+                        { productId: "", quantity: "1" },
+                      ],
+                    })
+                  }
                   className={styles.p52}
                 >
                   + Add Component
@@ -418,27 +539,44 @@ export default function BOMsPage() {
               <div className={styles.p53}>
                 {newBOM.items.map((item, idx) => (
                   <div key={idx} className={styles.p54}>
-                    <select required value={item.productId} onChange={(e) => {
-                      const updated = [...newBOM.items];
-                      updated[idx]!.productId = e.target.value;
-                      setNewBOM({ ...newBOM, items: updated });
-                    }} className={styles.p55}>
+                    <select
+                      required
+                      value={item.productId}
+                      onChange={(e) => {
+                        const updated = [...newBOM.items];
+                        updated[idx]!.productId = e.target.value;
+                        setNewBOM({ ...newBOM, items: updated });
+                      }}
+                      className={styles.p55}
+                    >
                       <option value="">Select product...</option>
                       {products.map((p) => (
-                        <option key={p.id} value={p.id}>{p.name}</option>
+                        <option key={p.id} value={p.id}>
+                          {p.name}
+                        </option>
                       ))}
                     </select>
 
-                    <input required type="number" min="0.001" step="any" value={item.quantity} onChange={(e) => {
-                      const updated = [...newBOM.items];
-                      updated[idx]!.quantity = e.target.value;
-                      setNewBOM({ ...newBOM, items: updated });
-                    }} className={styles.p56} />
+                    <input
+                      required
+                      type="number"
+                      min="0.001"
+                      step="any"
+                      value={item.quantity}
+                      onChange={(e) => {
+                        const updated = [...newBOM.items];
+                        updated[idx]!.quantity = e.target.value;
+                        setNewBOM({ ...newBOM, items: updated });
+                      }}
+                      className={styles.p56}
+                    />
 
                     <button
                       type="button"
                       onClick={() => {
-                        const updated = newBOM.items.filter((_, i) => i !== idx);
+                        const updated = newBOM.items.filter(
+                          (_, i) => i !== idx,
+                        );
                         setNewBOM({ ...newBOM, items: updated });
                       }}
                       className={styles.p57}
@@ -451,8 +589,16 @@ export default function BOMsPage() {
             </div>
 
             <div className="ui-flex-end ui-gap-2 mt-2">
-              <button type="button" onClick={() => setIsBOMModalOpen(false)} className={styles.p58}>Cancel</button>
-              <button type="submit" className={styles.p59}>Save formula</button>
+              <button
+                type="button"
+                onClick={() => setIsBOMModalOpen(false)}
+                className={styles.p58}
+              >
+                Cancel
+              </button>
+              <button type="submit" className={styles.p59}>
+                Save formula
+              </button>
             </div>
           </form>
         </div>

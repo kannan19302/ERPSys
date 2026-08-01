@@ -1,16 +1,23 @@
-// @ts-nocheck
-'use client';
+"use client";
 
-import React, { Suspense } from 'react';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { 
-  Menu, ChevronLeft, Home, ClipboardList, FileText, 
-  BarChart3, Activity, Settings, FolderOpen, LayoutGrid 
-} from 'lucide-react';
-import { useResolvedNav } from '@/navigation/useResolvedNav';
-import type { ModuleNav } from '@/navigation';
-import styles from './AppSidebar.module.css';
+import React, { Suspense } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import {
+  Menu,
+  ChevronLeft,
+  Home,
+  ClipboardList,
+  FileText,
+  BarChart3,
+  Activity,
+  Settings,
+  FolderOpen,
+  LayoutGrid,
+} from "lucide-react";
+import { useResolvedNav } from "@/navigation/useResolvedNav";
+import type { ModuleNav } from "@/navigation";
+import styles from "./AppSidebar.module.css";
 
 interface SidebarItem {
   name: string;
@@ -27,10 +34,23 @@ interface AppSidebarProps {
   setCollapsed: (collapsed: boolean) => void;
   appNav: ModuleNav;
   pathname: string;
-  user: { firstName: string; lastName: string; email: string; avatar?: string } | null;
+  user: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    avatar?: string;
+  } | null;
 }
 
-function SidebarNavigation({ appNav, pathname, collapsed }: { appNav: ModuleNav; pathname: string; collapsed: boolean }) {
+function SidebarNavigation({
+  appNav,
+  pathname,
+  collapsed,
+}: {
+  appNav: ModuleNav;
+  pathname: string;
+  collapsed: boolean;
+}) {
   const searchParams = useSearchParams();
   const enhancedItems = useResolvedNav(appNav, pathname);
 
@@ -50,43 +70,52 @@ function SidebarNavigation({ appNav, pathname, collapsed }: { appNav: ModuleNav;
       }
       return (
         <div key={itemKey} className={styles.subHeader}>
-          <div className={styles.subHeaderTitle}>
-            {item.name}
-          </div>
+          <div className={styles.subHeaderTitle}>{item.name}</div>
           {item.items?.map((sub, subIdx) => renderItem(sub, true, subIdx))}
         </div>
       );
     }
 
-    const href = item.href || '#';
+    const href = item.href || "#";
     const isActive = (() => {
-      const parts = href.split('?');
-      const itemPath = parts[0] || '';
-      const itemQuery = parts[1] || '';
+      const parts = href.split("?");
+      const itemPath = parts[0] || "";
+      const itemQuery = parts[1] || "";
 
-      const isPathMatch = (itemPath === '/inventory' || itemPath === '/builder' || itemPath === '/dashboard' || itemPath === '/drive' || itemPath === '/storage')
-        ? pathname === itemPath
-        : (pathname === itemPath || pathname.startsWith(itemPath + '/'));
+      const isPathMatch =
+        itemPath === "/inventory" ||
+        itemPath === "/builder" ||
+        itemPath === "/dashboard" ||
+        itemPath === "/drive" ||
+        itemPath === "/storage"
+          ? pathname === itemPath
+          : pathname === itemPath || pathname.startsWith(itemPath + "/");
 
       if (!isPathMatch) return false;
 
-      if (itemPath === '/drive') {
-        const activeView = searchParams.get('view') || 'personal';
+      if (itemPath === "/drive") {
+        const activeView = searchParams.get("view") || "personal";
         const itemParams = new URLSearchParams(itemQuery);
-        const itemView = itemParams.get('view') || 'personal';
+        const itemView = itemParams.get("view") || "personal";
         return activeView === itemView;
       }
 
-      if ((itemPath.includes('/hr/advanced') || itemPath.includes('/inventory/advanced')) && itemQuery) {
-        const activeTab = searchParams.get('tab') || (itemPath.includes('/hr/advanced') ? 'payroll' : 'entries');
+      if (
+        (itemPath.includes("/hr/advanced") ||
+          itemPath.includes("/inventory/advanced")) &&
+        itemQuery
+      ) {
+        const activeTab =
+          searchParams.get("tab") ||
+          (itemPath.includes("/hr/advanced") ? "payroll" : "entries");
         const itemParams = new URLSearchParams(itemQuery);
-        const itemTab = itemParams.get('tab');
+        const itemTab = itemParams.get("tab");
         return pathname === itemPath && activeTab === itemTab;
       }
 
       return true;
     })();
-    
+
     const Icon = item.icon;
 
     return (
@@ -96,19 +125,20 @@ function SidebarNavigation({ appNav, pathname, collapsed }: { appNav: ModuleNav;
         // The "(i) what does this do?" affordance: explicit description when the
         // nav registry provides one; the item name when collapsed to icon-only.
         title={item.description ?? (collapsed ? item.name : undefined)}
-        aria-current={isActive ? 'page' : undefined}
-        className={`${styles.navItem} ${isActive ? styles.navItemActive : ''} ${collapsed ? styles.navItemCollapsed : styles.navItemExpanded}`}
+        aria-current={isActive ? "page" : undefined}
+        className={`${styles.navItem} ${isActive ? styles.navItemActive : ""} ${collapsed ? styles.navItemCollapsed : styles.navItemExpanded}`}
         style={{
-          paddingLeft: isSub && !collapsed ? 'var(--space-5)' : 'var(--space-3)',
+          paddingLeft:
+            isSub && !collapsed ? "var(--space-5)" : "var(--space-3)",
         }}
       >
         {Icon && (
-          <Icon 
-            size={20} 
-            style={{ 
-              flexShrink: 0, 
-              color: isActive ? 'var(--color-primary)' : 'inherit' 
-            }} 
+          <Icon
+            size={20}
+            style={{
+              flexShrink: 0,
+              color: isActive ? "var(--color-primary)" : "inherit",
+            }}
           />
         )}
         {!collapsed && <span>{item.name}</span>}
@@ -116,25 +146,29 @@ function SidebarNavigation({ appNav, pathname, collapsed }: { appNav: ModuleNav;
     );
   };
 
-  return (
-    <>
-      {enhancedItems.map((item, idx) => renderItem(item, false, idx))}
-    </>
-  );
+  return <>{enhancedItems.map((item, idx) => renderItem(item, false, idx))}</>;
 }
 
-export function AppSidebar({ collapsed, setCollapsed, appNav, pathname, user }: AppSidebarProps) {
+export function AppSidebar({
+  collapsed,
+  setCollapsed,
+  appNav,
+  pathname,
+  user,
+}: AppSidebarProps) {
   return (
     <>
       {/* Mobile Sidebar backdrop */}
       {!collapsed && (
         <div className={styles.backdrop} onClick={() => setCollapsed(true)} />
       )}
-      
+
       <aside
-        className={`${styles.sidebar} ${!collapsed ? styles.sidebarOpen : ''}`}
+        className={`${styles.sidebar} ${!collapsed ? styles.sidebarOpen : ""}`}
         style={{
-          width: collapsed ? 'var(--sidebar-collapsed-width)' : 'var(--sidebar-width)',
+          width: collapsed
+            ? "var(--sidebar-collapsed-width)"
+            : "var(--sidebar-width)",
         }}
       >
         {/* Sidebar Header / Brand Logo */}
@@ -147,7 +181,7 @@ export function AppSidebar({ collapsed, setCollapsed, appNav, pathname, user }: 
               <span>{appNav.title}</span>
             </div>
           )}
-          
+
           <button
             onClick={() => setCollapsed(!collapsed)}
             className={styles.toggleBtn}
@@ -168,12 +202,13 @@ export function AppSidebar({ collapsed, setCollapsed, appNav, pathname, user }: 
         )}
 
         {/* Navigation Items */}
-        <nav
-          aria-label="Module navigation"
-          className={styles.nav}
-        >
+        <nav aria-label="Module navigation" className={styles.nav}>
           <Suspense fallback={<div className="flex-1" />}>
-            <SidebarNavigation appNav={appNav} pathname={pathname} collapsed={collapsed} />
+            <SidebarNavigation
+              appNav={appNav}
+              pathname={pathname}
+              collapsed={collapsed}
+            />
           </Suspense>
         </nav>
 
@@ -192,14 +227,14 @@ export function AppSidebar({ collapsed, setCollapsed, appNav, pathname, user }: 
           ) : (
             <div className={styles.userContainer}>
               <div className={styles.avatar}>
-                {user ? `${user.firstName[0]}${user.lastName[0]}` : 'SU'}
+                {user ? `${user.firstName[0]}${user.lastName[0]}` : "SU"}
               </div>
               <div className={styles.userInfo}>
                 <p className={styles.userName}>
-                  {user ? `${user.firstName} ${user.lastName}` : 'Super Admin'}
+                  {user ? `${user.firstName} ${user.lastName}` : "Super Admin"}
                 </p>
                 <p className={styles.userEmail}>
-                  {user ? user.email : 'admin@uni-erp.com'}
+                  {user ? user.email : "admin@uni-erp.com"}
                 </p>
               </div>
             </div>

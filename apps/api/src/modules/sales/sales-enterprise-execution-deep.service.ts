@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 
@@ -8,7 +7,9 @@ export class SalesEnterpriseExecutionDeepService {
     SalesEnterpriseExecutionDeepService.name,
   );
 
-  private get db() { return prisma; }
+  private get db() {
+    return prisma;
+  }
 
   // 1. Deal Desk & Approval Matrix (20 methods)
   async createDealDeskRequest(tenantId: string, data: any) {

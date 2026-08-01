@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Injectable } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 
@@ -6,7 +5,10 @@ import { prisma } from "@unerp/database";
 export class HealthcareService {
   // ── Patients ──
   async getPatients(tenantId: string) {
-    return prisma.healthcarePatient.findMany({ where: { tenantId }, orderBy: { createdAt: "desc" } });
+    return prisma.healthcarePatient.findMany({
+      where: { tenantId },
+      orderBy: { createdAt: "desc" },
+    });
   }
   async getPatientById(tenantId: string, id: string) {
     return prisma.healthcarePatient.findFirst({ where: { tenantId, id } });
@@ -17,10 +19,15 @@ export class HealthcareService {
 
   // ── Practitioners ──
   async getPractitioners(tenantId: string) {
-    return prisma.healthcarePractitioner.findMany({ where: { tenantId }, orderBy: { createdAt: "desc" } });
+    return prisma.healthcarePractitioner.findMany({
+      where: { tenantId },
+      orderBy: { createdAt: "desc" },
+    });
   }
   async createPractitioner(tenantId: string, data: any) {
-    return prisma.healthcarePractitioner.create({ data: { ...data, tenantId } });
+    return prisma.healthcarePractitioner.create({
+      data: { ...data, tenantId },
+    });
   }
 
   // ── Appointments ──
@@ -47,7 +54,9 @@ export class HealthcareService {
     });
   }
   async createPrescription(tenantId: string, data: any) {
-    return prisma.healthcarePrescription.create({ data: { ...data, tenantId } });
+    return prisma.healthcarePrescription.create({
+      data: { ...data, tenantId },
+    });
   }
 
   // ── Encounters ──
@@ -64,7 +73,10 @@ export class HealthcareService {
 
   // ── Drugs ──
   async getDrugs(tenantId: string) {
-    return prisma.healthcareDrug.findMany({ where: { tenantId }, orderBy: { createdAt: "desc" } });
+    return prisma.healthcareDrug.findMany({
+      where: { tenantId },
+      orderBy: { createdAt: "desc" },
+    });
   }
 
   // ── Vitals ──

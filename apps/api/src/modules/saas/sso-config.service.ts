@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Injectable,
   NotFoundException,
@@ -38,27 +37,33 @@ export class SsoConfigService {
     return config;
   }
 
-  async createSsoConfig(tenantId: string, dto: {
-    provider: string;
-    clientId: string;
-    clientSecret: string;
-    issuerUrl?: string;
-    authorizeUrl?: string;
-    tokenUrl?: string;
-    userInfoUrl?: string;
-    jwksUri?: string;
-    scopes?: string[];
-    domains?: string[];
-    autoProvision?: boolean;
-    defaultRole?: string;
-    metadataUrl?: string;
-    certificate?: string;
-    enforced?: boolean;
-  }) {
+  async createSsoConfig(
+    tenantId: string,
+    dto: {
+      provider: string;
+      clientId: string;
+      clientSecret: string;
+      issuerUrl?: string;
+      authorizeUrl?: string;
+      tokenUrl?: string;
+      userInfoUrl?: string;
+      jwksUri?: string;
+      scopes?: string[];
+      domains?: string[];
+      autoProvision?: boolean;
+      defaultRole?: string;
+      metadataUrl?: string;
+      certificate?: string;
+      enforced?: boolean;
+    },
+  ) {
     const existing = await prisma.tenantSsoConfig.findUnique({
       where: { tenantId },
     });
-    if (existing) throw new BadRequestException("SSO config already exists for this tenant");
+    if (existing)
+      throw new BadRequestException(
+        "SSO config already exists for this tenant",
+      );
 
     return prisma.tenantSsoConfig.create({
       data: {
@@ -71,7 +76,11 @@ export class SsoConfigService {
         tokenUrl: dto.tokenUrl,
         userInfoUrl: dto.userInfoUrl,
         jwksUrl: dto.jwksUri,
-        attributeMapping: { scopes: dto.scopes ?? ["openid", "email", "profile"], autoProvision: dto.autoProvision ?? false, defaultRole: dto.defaultRole } as any,
+        attributeMapping: {
+          scopes: dto.scopes ?? ["openid", "email", "profile"],
+          autoProvision: dto.autoProvision ?? false,
+          defaultRole: dto.defaultRole,
+        } as any,
         domains: (dto.domains ?? []) as any,
         requireMfa: dto.enforced ?? false,
         isEnabled: false,
@@ -79,34 +88,40 @@ export class SsoConfigService {
     });
   }
 
-  async updateSsoConfig(tenantId: string, dto: {
-    provider?: string;
-    clientId?: string;
-    clientSecret?: string;
-    issuerUrl?: string;
-    authorizeUrl?: string;
-    tokenUrl?: string;
-    userInfoUrl?: string;
-    jwksUri?: string;
-    scopes?: string[];
-    domains?: string[];
-    autoProvision?: boolean;
-    defaultRole?: string;
-    metadataUrl?: string;
-    certificate?: string;
-    enforced?: boolean;
-  }) {
+  async updateSsoConfig(
+    tenantId: string,
+    dto: {
+      provider?: string;
+      clientId?: string;
+      clientSecret?: string;
+      issuerUrl?: string;
+      authorizeUrl?: string;
+      tokenUrl?: string;
+      userInfoUrl?: string;
+      jwksUri?: string;
+      scopes?: string[];
+      domains?: string[];
+      autoProvision?: boolean;
+      defaultRole?: string;
+      metadataUrl?: string;
+      certificate?: string;
+      enforced?: boolean;
+    },
+  ) {
     const config = await prisma.tenantSsoConfig.findUnique({
       where: { tenantId },
     });
     if (!config) throw new NotFoundException("SSO config not found");
 
     const updateData: Record<string, unknown> = {};
-    if (dto.provider !== undefined) updateData.provider = this.providerMap[dto.provider] ?? "OIDC";
+    if (dto.provider !== undefined)
+      updateData.provider = this.providerMap[dto.provider] ?? "OIDC";
     if (dto.clientId !== undefined) updateData.clientId = dto.clientId;
-    if (dto.clientSecret !== undefined) updateData.clientSecret = dto.clientSecret;
+    if (dto.clientSecret !== undefined)
+      updateData.clientSecret = dto.clientSecret;
     if (dto.issuerUrl !== undefined) updateData.issuerUrl = dto.issuerUrl;
-    if (dto.authorizeUrl !== undefined) updateData.authorizationUrl = dto.authorizeUrl;
+    if (dto.authorizeUrl !== undefined)
+      updateData.authorizationUrl = dto.authorizeUrl;
     if (dto.tokenUrl !== undefined) updateData.tokenUrl = dto.tokenUrl;
     if (dto.userInfoUrl !== undefined) updateData.userInfoUrl = dto.userInfoUrl;
     if (dto.jwksUri !== undefined) updateData.jwksUrl = dto.jwksUri;

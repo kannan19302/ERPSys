@@ -49,7 +49,7 @@ class AdvancedFinanceRemoteDataSourceImpl implements AdvancedFinanceRemoteDataSo
   @override
   Future<Paginated<MultiCurrencyRateModel>> listMultiCurrencyRates(ListQuery query) =>
       _client.getPaginated<MultiCurrencyRateModel>(
-        ApiPaths.multiCurrencyRates, query, MultiCurrencyRateModel.fromJson);
+        ApiPaths.multiCurrencyRates, query, MultiCurrencyRateModel.fromJson,);
 
   @override
   Future<MultiCurrencyRateModel> getMultiCurrencyRate(String id) async =>
@@ -58,13 +58,13 @@ class AdvancedFinanceRemoteDataSourceImpl implements AdvancedFinanceRemoteDataSo
   @override
   Future<MultiCurrencyRateModel> createMultiCurrencyRate(Map<String, dynamic> payload) async =>
       MultiCurrencyRateModel.fromJson(
-        await _client.post(ApiPaths.multiCurrencyRates, body: payload));
+        await _client.post(ApiPaths.multiCurrencyRates, body: payload),);
 
   @override
   Future<MultiCurrencyRateModel> updateMultiCurrencyRate(
-    String id, Map<String, dynamic> payload) async =>
+    String id, Map<String, dynamic> payload,) async =>
       MultiCurrencyRateModel.fromJson(
-        await _client.patch(ApiPaths.multiCurrencyRates, body: payload));
+        await _client.patch(ApiPaths.multiCurrencyRates, body: payload),);
 
   @override
   Future<void> deleteMultiCurrencyRate(String id) =>
@@ -73,37 +73,37 @@ class AdvancedFinanceRemoteDataSourceImpl implements AdvancedFinanceRemoteDataSo
   @override
   Future<Paginated<ConsolidationReportModel>> listConsolidationReports(ListQuery query) =>
       _client.getPaginated<ConsolidationReportModel>(
-        ApiPaths.consolidationReports, query, ConsolidationReportModel.fromJson);
+        ApiPaths.consolidationReports, query, ConsolidationReportModel.fromJson,);
 
   @override
   Future<ConsolidationReportModel> getConsolidationReport(String id) async =>
       ConsolidationReportModel.fromJson(
-        await _client.getObject(ApiPaths.consolidationReports));
+        await _client.getObject(ApiPaths.consolidationReports),);
 
   @override
   Future<ConsolidationReportModel> createConsolidationReport(Map<String, dynamic> payload) async =>
       ConsolidationReportModel.fromJson(
-        await _client.post(ApiPaths.consolidationReports, body: payload));
+        await _client.post(ApiPaths.consolidationReports, body: payload),);
 
   @override
   Future<Paginated<IntercompanyAgreementModel>> listIntercompanyAgreements(ListQuery query) =>
       _client.getPaginated<IntercompanyAgreementModel>(
-        ApiPaths.intercompanyAgreements, query, IntercompanyAgreementModel.fromJson);
+        ApiPaths.intercompanyAgreements, query, IntercompanyAgreementModel.fromJson,);
 
   @override
   Future<IntercompanyAgreementModel> getIntercompanyAgreement(String id) async =>
       IntercompanyAgreementModel.fromJson(
-        await _client.getObject(ApiPaths.intercompanyAgreements));
+        await _client.getObject(ApiPaths.intercompanyAgreements),);
 
   @override
   Future<IntercompanyAgreementModel> createIntercompanyAgreement(Map<String, dynamic> payload) async =>
       IntercompanyAgreementModel.fromJson(
-        await _client.post(ApiPaths.intercompanyAgreements, body: payload));
+        await _client.post(ApiPaths.intercompanyAgreements, body: payload),);
 
   @override
   Future<Paginated<CostAllocationModel>> listCostAllocations(ListQuery query) =>
       _client.getPaginated<CostAllocationModel>(
-        ApiPaths.costAllocations, query, CostAllocationModel.fromJson);
+        ApiPaths.costAllocations, query, CostAllocationModel.fromJson,);
 
   @override
   Future<CostAllocationModel> getCostAllocation(String id) async =>
@@ -112,39 +112,39 @@ class AdvancedFinanceRemoteDataSourceImpl implements AdvancedFinanceRemoteDataSo
   @override
   Future<CostAllocationModel> createCostAllocation(Map<String, dynamic> payload) async =>
       CostAllocationModel.fromJson(
-        await _client.post(ApiPaths.costAllocations, body: payload));
+        await _client.post(ApiPaths.costAllocations, body: payload),);
 
   @override
   Future<CostAllocationModel> updateCostAllocation(
-    String id, Map<String, dynamic> payload) async =>
+    String id, Map<String, dynamic> payload,) async =>
       CostAllocationModel.fromJson(
-        await _client.patch(ApiPaths.costAllocations, body: payload));
+        await _client.patch(ApiPaths.costAllocations, body: payload),);
 
   @override
   Future<Paginated<RevenueRecognitionEntryModel>> listRevenueRecognitionEntries(ListQuery query) =>
       _client.getPaginated<RevenueRecognitionEntryModel>(
-        ApiPaths.revenueRecognition, query, RevenueRecognitionEntryModel.fromJson);
+        ApiPaths.revenueRecognition, query, RevenueRecognitionEntryModel.fromJson,);
 
   @override
   Future<RevenueRecognitionEntryModel> getRevenueRecognitionEntry(String id) async =>
       RevenueRecognitionEntryModel.fromJson(
-        await _client.getObject(ApiPaths.revenueRecognition));
+        await _client.getObject(ApiPaths.revenueRecognition),);
 
   @override
   Future<RevenueRecognitionEntryModel> createRevenueRecognitionEntry(
-    Map<String, dynamic> payload) async =>
+    Map<String, dynamic> payload,) async =>
       RevenueRecognitionEntryModel.fromJson(
-        await _client.post(ApiPaths.revenueRecognition, body: payload));
+        await _client.post(ApiPaths.revenueRecognition, body: payload),);
 
   @override
   Future<RevenueRecognitionEntryModel> recognizeRevenue(String id) async =>
       RevenueRecognitionEntryModel.fromJson(
-        await _client.post(ApiPaths.revenueRecognition));
+        await _client.post(ApiPaths.revenueRecognition),);
 
   @override
   Future<Paginated<BudgetVersionModel>> listBudgetVersions(ListQuery query) =>
       _client.getPaginated<BudgetVersionModel>(
-        ApiPaths.budgetVersions, query, BudgetVersionModel.fromJson);
+        ApiPaths.budgetVersions, query, BudgetVersionModel.fromJson,);
 
   @override
   Future<BudgetVersionModel> getBudgetVersion(String id) async =>
@@ -153,32 +153,32 @@ class AdvancedFinanceRemoteDataSourceImpl implements AdvancedFinanceRemoteDataSo
   @override
   Future<BudgetVersionModel> createBudgetVersion(Map<String, dynamic> payload) async =>
       BudgetVersionModel.fromJson(
-        await _client.post(ApiPaths.budgetVersions, body: payload));
+        await _client.post(ApiPaths.budgetVersions, body: payload),);
 
   @override
   Future<Paginated<FinancialCloseTaskModel>> listFinancialCloseTasks(ListQuery query) =>
       _client.getPaginated<FinancialCloseTaskModel>(
-        ApiPaths.financialCloseTasks, query, FinancialCloseTaskModel.fromJson);
+        ApiPaths.financialCloseTasks, query, FinancialCloseTaskModel.fromJson,);
 
   @override
   Future<FinancialCloseTaskModel> getFinancialCloseTask(String id) async =>
       FinancialCloseTaskModel.fromJson(
-        await _client.getObject(ApiPaths.financialCloseTasks));
+        await _client.getObject(ApiPaths.financialCloseTasks),);
 
   @override
   Future<FinancialCloseTaskModel> createFinancialCloseTask(Map<String, dynamic> payload) async =>
       FinancialCloseTaskModel.fromJson(
-        await _client.post(ApiPaths.financialCloseTasks, body: payload));
+        await _client.post(ApiPaths.financialCloseTasks, body: payload),);
 
   @override
   Future<FinancialCloseTaskModel> completeFinancialCloseTask(String id) async =>
       FinancialCloseTaskModel.fromJson(
-        await _client.post(ApiPaths.financialCloseTasks));
+        await _client.post(ApiPaths.financialCloseTasks),);
 
   @override
   Future<Paginated<AuditTrailEntryModel>> listAuditTrails(ListQuery query) =>
       _client.getPaginated<AuditTrailEntryModel>(
-        ApiPaths.auditTrails, query, AuditTrailEntryModel.fromJson);
+        ApiPaths.auditTrails, query, AuditTrailEntryModel.fromJson,);
 
   @override
   Future<AuditTrailEntryModel> getAuditTrail(String id) async =>

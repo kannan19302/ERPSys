@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -141,7 +140,7 @@ class _WarehouseDetail extends StatelessWidget {
               if (warehouse.address != null && warehouse.address!.isNotEmpty) ...<Widget>[
                 const SizedBox(height: Spacing.x1),
                 Text(warehouse.address!,
-                    style: TextStyle(color: t.textSecondary)),
+                    style: TextStyle(color: t.textSecondary),),
               ],
             ],
           ),

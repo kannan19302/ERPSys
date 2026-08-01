@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import React, { useState, useEffect } from "react";
 import { Card, PageHeader, DataTable } from "@unerp/ui";
@@ -40,11 +39,16 @@ interface DeliveryLog {
 }
 
 const AVAILABLE_EVENTS = [
-  "subscription.created", "subscription.updated", "subscription.cancelled",
-  "invoice.paid", "invoice.overdue",
-  "user.invited", "user.removed",
+  "subscription.created",
+  "subscription.updated",
+  "subscription.cancelled",
+  "invoice.paid",
+  "invoice.overdue",
+  "user.invited",
+  "user.removed",
   "usage.threshold_exceeded",
-  "domain.verified", "domain.failed",
+  "domain.verified",
+  "domain.failed",
 ];
 
 export default function SaasWebhooksPage() {
@@ -54,7 +58,8 @@ export default function SaasWebhooksPage() {
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [showLogs, setShowLogs] = useState(false);
-  const [selectedEndpoint, setSelectedEndpoint] = useState<WebhookEndpoint | null>(null);
+  const [selectedEndpoint, setSelectedEndpoint] =
+    useState<WebhookEndpoint | null>(null);
   const [showSecret, setShowSecret] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -78,13 +83,17 @@ export default function SaasWebhooksPage() {
     }
   };
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    loadData();
+  }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const res = await client.post<WebhookEndpoint>("/saas/webhooks", {
-        name, url, events,
+        name,
+        url,
+        events,
       });
       setShowCreate(false);
       setShowSecret(res.secret);
@@ -105,14 +114,18 @@ export default function SaasWebhooksPage() {
   const handleToggle = async (endpoint: WebhookEndpoint) => {
     const newStatus = endpoint.status === "ACTIVE" ? "DISABLED" : "ACTIVE";
     try {
-      await client.patch(`/saas/webhooks/${endpoint.id}`, { status: newStatus });
+      await client.patch(`/saas/webhooks/${endpoint.id}`, {
+        status: newStatus,
+      });
       loadData();
     } catch {}
   };
 
   const handleRotateSecret = async (id: string) => {
     try {
-      const res = await client.post<{ secret: string }>(`/saas/webhooks/${id}/rotate-secret`);
+      const res = await client.post<{ secret: string }>(
+        `/saas/webhooks/${id}/rotate-secret`,
+      );
       setShowSecret(res.secret);
       loadData();
     } catch {}
@@ -137,8 +150,12 @@ export default function SaasWebhooksPage() {
   };
 
   const statusBadge = (status: string) => {
-    const cls = status === "ACTIVE" ? "ui-badge-success" :
-      status === "DISABLED" ? "ui-badge-neutral" : "ui-badge-danger";
+    const cls =
+      status === "ACTIVE"
+        ? "ui-badge-success"
+        : status === "DISABLED"
+          ? "ui-badge-neutral"
+          : "ui-badge-danger";
     return <span className={`ui-badge ${cls}`}>{status}</span>;
   };
 
@@ -165,13 +182,21 @@ export default function SaasWebhooksPage() {
         <div className="ui-list-toolbar">
           <div className="ui-hstack-3">
             <span className="ui-heading-sm">{endpoints.length} Endpoints</span>
-            <span className="ui-badge ui-badge-info">{deliveryLogs.length} Recent Deliveries</span>
+            <span className="ui-badge ui-badge-info">
+              {deliveryLogs.length} Recent Deliveries
+            </span>
           </div>
           <div className="ui-hstack-2">
-            <button className="ui-btn ui-btn-secondary" onClick={() => setShowLogs(!showLogs)}>
+            <button
+              className="ui-btn ui-btn-secondary"
+              onClick={() => setShowLogs(!showLogs)}
+            >
               <Eye size={14} /> Delivery Logs
             </button>
-            <button className="ui-btn ui-btn-primary" onClick={() => setShowCreate(true)}>
+            <button
+              className="ui-btn ui-btn-primary"
+              onClick={() => setShowCreate(true)}
+            >
               <Plus size={14} /> Add Endpoint
             </button>
           </div>
@@ -182,13 +207,25 @@ export default function SaasWebhooksPage() {
             <div className="ui-flex-between">
               <div>
                 <p className="font-semibold text-sm">New Webhook Secret</p>
-                <p className="ui-text-xs-muted">Copy this secret now. You won&apos;t be able to see it again.</p>
+                <p className="ui-text-xs-muted">
+                  Copy this secret now. You won&apos;t be able to see it again.
+                </p>
               </div>
-              <button className="ui-btn-icon" onClick={() => setShowSecret(null)}><X size={16} /></button>
+              <button
+                className="ui-btn-icon"
+                onClick={() => setShowSecret(null)}
+              >
+                <X size={16} />
+              </button>
             </div>
             <div className="ui-hstack-2 ui-mt-3">
-              <code className="flex-1 ui-field-box font-mono text-xs">{showSecret}</code>
-              <button className="ui-btn ui-btn-primary" onClick={() => handleCopy(showSecret)}>
+              <code className="flex-1 ui-field-box font-mono text-xs">
+                {showSecret}
+              </code>
+              <button
+                className="ui-btn ui-btn-primary"
+                onClick={() => handleCopy(showSecret)}
+              >
                 {copied ? <Check size={14} /> : <Copy size={14} />}
               </button>
             </div>
@@ -205,38 +242,82 @@ export default function SaasWebhooksPage() {
               { key: "lastDelivery", header: "Last Delivery" },
               { key: "actions", header: "" },
             ]}
-            data={endpoints.map((ep) => ({
-              ...ep,
-              url: <span className="font-mono text-xs">{ep.url}</span>,
-              events: <span className="text-xs">{ep.events.slice(0, 2).join(", ")}{ep.events.length > 2 ? ` +${ep.events.length - 2}` : ""}</span>,
-              status: statusBadge(ep.status),
-              lastDelivery: ep.lastDeliveryAt ? (
-                <div className="ui-hstack-2">
-                  <span className="text-xs">{new Date(ep.lastDeliveryAt).toLocaleDateString()}</span>
-                  {ep.lastDeliveryStatus === "SUCCESS" ? (
-                    <span className="ui-badge ui-badge-success">OK</span>
-                  ) : ep.lastDeliveryStatus === "FAILED" ? (
-                    <span className="ui-badge ui-badge-danger">FAILED</span>
-                  ) : null}
-                </div>
-              ) : <span className="ui-text-xs-muted">Never</span>,
-              actions: (
-                <div className="ui-table-actions">
-                  <button className="ui-table-action-btn" onClick={(e) => { e.stopPropagation(); handleTest(ep.id); }} disabled={testing} title="Test">
-                    <Play size={14} />
-                  </button>
-                  <button className="ui-table-action-btn" onClick={(e) => { e.stopPropagation(); handleRotateSecret(ep.id); }} title="Rotate Secret">
-                    <RefreshCw size={14} />
-                  </button>
-                  <button className="ui-table-action-btn" onClick={(e) => { e.stopPropagation(); handleToggle(ep); }} title="Toggle">
-                    {ep.status === "ACTIVE" ? <X size={14} /> : <RefreshCw size={14} />}
-                  </button>
-                  <button className="ui-table-action-btn ui-table-action-btn-danger" onClick={(e) => { e.stopPropagation(); handleDelete(ep.id); }} title="Delete">
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              ),
-            })) as unknown as Record<string, unknown>[]}
+            data={
+              endpoints.map((ep) => ({
+                ...ep,
+                url: <span className="font-mono text-xs">{ep.url}</span>,
+                events: (
+                  <span className="text-xs">
+                    {ep.events.slice(0, 2).join(", ")}
+                    {ep.events.length > 2 ? ` +${ep.events.length - 2}` : ""}
+                  </span>
+                ),
+                status: statusBadge(ep.status),
+                lastDelivery: ep.lastDeliveryAt ? (
+                  <div className="ui-hstack-2">
+                    <span className="text-xs">
+                      {new Date(ep.lastDeliveryAt).toLocaleDateString()}
+                    </span>
+                    {ep.lastDeliveryStatus === "SUCCESS" ? (
+                      <span className="ui-badge ui-badge-success">OK</span>
+                    ) : ep.lastDeliveryStatus === "FAILED" ? (
+                      <span className="ui-badge ui-badge-danger">FAILED</span>
+                    ) : null}
+                  </div>
+                ) : (
+                  <span className="ui-text-xs-muted">Never</span>
+                ),
+                actions: (
+                  <div className="ui-table-actions">
+                    <button
+                      className="ui-table-action-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleTest(ep.id);
+                      }}
+                      disabled={testing}
+                      title="Test"
+                    >
+                      <Play size={14} />
+                    </button>
+                    <button
+                      className="ui-table-action-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRotateSecret(ep.id);
+                      }}
+                      title="Rotate Secret"
+                    >
+                      <RefreshCw size={14} />
+                    </button>
+                    <button
+                      className="ui-table-action-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggle(ep);
+                      }}
+                      title="Toggle"
+                    >
+                      {ep.status === "ACTIVE" ? (
+                        <X size={14} />
+                      ) : (
+                        <RefreshCw size={14} />
+                      )}
+                    </button>
+                    <button
+                      className="ui-table-action-btn ui-table-action-btn-danger"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(ep.id);
+                      }}
+                      title="Delete"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ),
+              })) as unknown as Record<string, unknown>[]
+            }
             emptyTitle="No webhook endpoints"
             emptyMessage="Create your first endpoint to start receiving events."
           />
@@ -246,7 +327,12 @@ export default function SaasWebhooksPage() {
           <Card padding="lg">
             <div className="ui-flex-between ui-mb-4">
               <h3 className="ui-heading-base">Delivery Logs</h3>
-              <button className="ui-btn-icon" onClick={() => setShowLogs(false)}><X size={16} /></button>
+              <button
+                className="ui-btn-icon"
+                onClick={() => setShowLogs(false)}
+              >
+                <X size={16} />
+              </button>
             </div>
             <DataTable
               columns={[
@@ -256,13 +342,20 @@ export default function SaasWebhooksPage() {
                 { key: "duration", header: "Duration" },
                 { key: "date", header: "Date" },
               ]}
-              data={deliveryLogs.slice(0, 50).map((log) => ({
-                ...log,
-                status: log.status === "SUCCESS" ? <span className="ui-badge ui-badge-success">Success</span> : <span className="ui-badge ui-badge-danger">Failed</span>,
-                code: log.statusCode,
-                duration: `${log.durationMs}ms`,
-                date: new Date(log.createdAt).toLocaleString(),
-              })) as unknown as Record<string, unknown>[]}
+              data={
+                deliveryLogs.slice(0, 50).map((log) => ({
+                  ...log,
+                  status:
+                    log.status === "SUCCESS" ? (
+                      <span className="ui-badge ui-badge-success">Success</span>
+                    ) : (
+                      <span className="ui-badge ui-badge-danger">Failed</span>
+                    ),
+                  code: log.statusCode,
+                  duration: `${log.durationMs}ms`,
+                  date: new Date(log.createdAt).toLocaleString(),
+                })) as unknown as Record<string, unknown>[]
+              }
               emptyTitle="No delivery logs"
               emptyMessage="Webhook deliveries will appear here."
             />
@@ -270,11 +363,20 @@ export default function SaasWebhooksPage() {
         )}
 
         {showCreate && (
-          <div className="ui-modal-overlay" onClick={() => setShowCreate(false)}>
-            <div className="ui-modal ui-modal-lg" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="ui-modal-overlay"
+            onClick={() => setShowCreate(false)}
+          >
+            <div
+              className="ui-modal ui-modal-lg"
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="ui-modal-header">
                 <span>Create Webhook Endpoint</span>
-                <button className="ui-btn-icon" onClick={() => setShowCreate(false)}>
+                <button
+                  className="ui-btn-icon"
+                  onClick={() => setShowCreate(false)}
+                >
                   <X size={16} />
                 </button>
               </div>
@@ -282,11 +384,24 @@ export default function SaasWebhooksPage() {
                 <div className="ui-modal-body ui-stack-4">
                   <div className="ui-form-group">
                     <label className="ui-label">Endpoint Name</label>
-                    <input className="ui-input" required placeholder="e.g. Production Slack Notifier" value={name} onChange={(e) => setName(e.target.value)} />
+                    <input
+                      className="ui-input"
+                      required
+                      placeholder="e.g. Production Slack Notifier"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                    />
                   </div>
                   <div className="ui-form-group">
                     <label className="ui-label">Payload URL</label>
-                    <input className="ui-input" required type="url" placeholder="https://hooks.example.com/webhook" value={url} onChange={(e) => setUrl(e.target.value)} />
+                    <input
+                      className="ui-input"
+                      required
+                      type="url"
+                      placeholder="https://hooks.example.com/webhook"
+                      value={url}
+                      onChange={(e) => setUrl(e.target.value)}
+                    />
                   </div>
                   <div className="ui-form-group">
                     <label className="ui-label">Subscribe to Events</label>
@@ -305,8 +420,16 @@ export default function SaasWebhooksPage() {
                   </div>
                 </div>
                 <div className="ui-modal-footer">
-                  <button type="button" className="ui-btn ui-btn-secondary" onClick={() => setShowCreate(false)}>Cancel</button>
-                  <button type="submit" className="ui-btn ui-btn-primary">Create Endpoint</button>
+                  <button
+                    type="button"
+                    className="ui-btn ui-btn-secondary"
+                    onClick={() => setShowCreate(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="ui-btn ui-btn-primary">
+                    Create Endpoint
+                  </button>
                 </div>
               </form>
             </div>

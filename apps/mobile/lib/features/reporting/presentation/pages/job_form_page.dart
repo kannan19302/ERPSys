@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/usecase/result.dart';
 import '../providers/reporting_providers.dart';
 
 class ReportJobFormPage extends ConsumerStatefulWidget {
@@ -90,7 +88,7 @@ class _ReportJobFormPageState extends ConsumerState<ReportJobFormPage> {
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _format,
+              initialValue: _format,
               decoration: const InputDecoration(labelText: 'Output Format'),
               items: const [
                 DropdownMenuItem(value: 'PDF', child: Text('PDF')),

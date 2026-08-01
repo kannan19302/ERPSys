@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { CommDeepExpansionService } from "../services/comm-deep-expansion.service";
 

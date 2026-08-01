@@ -1,13 +1,12 @@
-// @ts-nocheck
-import { Injectable } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import { Injectable } from "@nestjs/common";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class AutomationRulesService {
   async getRules(tenantId: string) {
     return prisma.automationRule.findMany({
       where: { tenantId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -41,7 +40,7 @@ export class AutomationRulesService {
         triggerConfig: data.triggerConfig ?? {},
         conditions: data.conditions ?? [],
         actions: data.actions ?? [],
-        status: data.status ?? 'DRAFT',
+        status: data.status ?? "DRAFT",
         settings: data.settings ?? {},
       },
     });
@@ -65,9 +64,13 @@ export class AutomationRulesService {
       where: { id, tenantId },
       data: {
         ...(data.name !== undefined && { name: data.name }),
-        ...(data.description !== undefined && { description: data.description }),
+        ...(data.description !== undefined && {
+          description: data.description,
+        }),
         ...(data.trigger !== undefined && { trigger: data.trigger }),
-        ...(data.triggerConfig !== undefined && { triggerConfig: data.triggerConfig }),
+        ...(data.triggerConfig !== undefined && {
+          triggerConfig: data.triggerConfig,
+        }),
         ...(data.conditions !== undefined && { conditions: data.conditions }),
         ...(data.actions !== undefined && { actions: data.actions }),
         ...(data.status !== undefined && { status: data.status }),
@@ -91,19 +94,19 @@ export class AutomationRulesService {
     const matchedConditions = conditions.filter((condition: any) => {
       const fieldValue = data[condition.field];
       switch (condition.operator) {
-        case 'equals':
+        case "equals":
           return fieldValue === condition.value;
-        case 'not_equals':
+        case "not_equals":
           return fieldValue !== condition.value;
-        case 'contains':
+        case "contains":
           return String(fieldValue).includes(String(condition.value));
-        case 'greater_than':
+        case "greater_than":
           return Number(fieldValue) > Number(condition.value);
-        case 'less_than':
+        case "less_than":
           return Number(fieldValue) < Number(condition.value);
-        case 'is_empty':
+        case "is_empty":
           return !fieldValue;
-        case 'is_not_empty':
+        case "is_not_empty":
           return !!fieldValue;
         default:
           return false;
@@ -123,10 +126,8 @@ export class AutomationRulesService {
     const conditions = rule.conditions as any[];
     const actions = rule.actions as any[];
 
-    const { matchedConditions, allConditionsMet } = AutomationRulesService.evaluateConditions(
-      conditions,
-      sampleData,
-    );
+    const { matchedConditions, allConditionsMet } =
+      AutomationRulesService.evaluateConditions(conditions, sampleData);
     const actionsToFire = allConditionsMet ? actions : [];
     const durationMs = Date.now() - startTime;
 
@@ -134,7 +135,7 @@ export class AutomationRulesService {
       data: {
         tenantId,
         ruleId: id,
-        status: 'TEST',
+        status: "TEST",
         triggerData: sampleData,
         result: { matchedConditions, actionsToFire, allConditionsMet },
         durationMs,
@@ -150,7 +151,7 @@ export class AutomationRulesService {
         tenantId,
         ...(ruleId && { ruleId }),
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take: limit,
     });
   }

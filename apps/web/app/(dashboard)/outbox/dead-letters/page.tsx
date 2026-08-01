@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import React, { useState, useEffect } from "react";
 import {
@@ -55,7 +54,11 @@ export default function DeadLettersPage() {
       render: (r) =>
         r.action ? <Badge variant="info">{r.action}</Badge> : "-",
     },
-    { key: "actionedBy", header: "Actioned By", render: (r) => r.actionedBy || "-" },
+    {
+      key: "actionedBy",
+      header: "Actioned By",
+      render: (r) => r.actionedBy || "-",
+    },
     {
       key: "deadLetterAt",
       header: "Dead Since",

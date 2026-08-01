@@ -96,7 +96,7 @@ class _VerifyEmailPendingPageState extends ConsumerState<VerifyEmailPendingPage>
                             style: TextStyle(color: t.warning, fontSize: TypeScale.xs),
                           ),
                           const SizedBox(height: Spacing.x1),
-                          SelectableText(devLink, style: TextStyle(fontSize: TypeScale.xs)),
+                          SelectableText(devLink, style: const TextStyle(fontSize: TypeScale.xs)),
                         ],
                       ),
                     ),

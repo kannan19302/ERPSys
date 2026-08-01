@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Test, TestingModule } from "@nestjs/testing";
 import { DocumentsAdvancedService } from "../documents-advanced.service";
 

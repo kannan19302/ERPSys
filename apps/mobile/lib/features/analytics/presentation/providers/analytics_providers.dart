@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -137,14 +136,14 @@ class KpiListController extends Notifier<KpiListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteKpiUseCase(
-      ref.read(analyticsRepositoryProvider))(id);
+      ref.read(analyticsRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<AnalyticsKpi>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveKpiUseCase(
-      ref.read(analyticsRepositoryProvider))(
+      ref.read(analyticsRepositoryProvider),)(
       SaveKpiParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -155,7 +154,7 @@ class KpiListController extends Notifier<KpiListState> {
 final FutureProviderFamily<AnalyticsKpi, String> analyticsKpiDetailProvider =
     FutureProvider.family<AnalyticsKpi, String>((Ref ref, String id) async {
   final result = await GetKpiUseCase(
-    ref.watch(analyticsRepositoryProvider))(id);
+    ref.watch(analyticsRepositoryProvider),)(id);
   return result.fold((f) => throw f, (kpi) => kpi);
 });
 
@@ -257,14 +256,14 @@ class DashboardListController extends Notifier<DashboardListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteDashboardUseCase(
-      ref.read(analyticsRepositoryProvider))(id);
+      ref.read(analyticsRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<AnalyticsDashboard>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveDashboardUseCase(
-      ref.read(analyticsRepositoryProvider))(
+      ref.read(analyticsRepositoryProvider),)(
       SaveDashboardParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -275,7 +274,7 @@ class DashboardListController extends Notifier<DashboardListState> {
 final FutureProviderFamily<AnalyticsDashboard, String> analyticsDashboardDetailProvider =
     FutureProvider.family<AnalyticsDashboard, String>((Ref ref, String id) async {
   final result = await GetDashboardUseCase(
-    ref.watch(analyticsRepositoryProvider))(id);
+    ref.watch(analyticsRepositoryProvider),)(id);
   return result.fold((f) => throw f, (d) => d);
 });
 
@@ -377,14 +376,14 @@ class ReportListController extends Notifier<ReportListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteReportUseCase(
-      ref.read(analyticsRepositoryProvider))(id);
+      ref.read(analyticsRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<AnalyticsReport>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveReportUseCase(
-      ref.read(analyticsRepositoryProvider))(
+      ref.read(analyticsRepositoryProvider),)(
       SaveReportParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -395,7 +394,7 @@ class ReportListController extends Notifier<ReportListState> {
 final FutureProviderFamily<AnalyticsReport, String> analyticsReportDetailProvider =
     FutureProvider.family<AnalyticsReport, String>((Ref ref, String id) async {
   final result = await GetReportUseCase(
-    ref.watch(analyticsRepositoryProvider))(id);
+    ref.watch(analyticsRepositoryProvider),)(id);
   return result.fold((f) => throw f, (r) => r);
 });
 
@@ -499,6 +498,6 @@ class PipelineListController extends Notifier<PipelineListState> {
 final FutureProviderFamily<AnalyticsPipeline, String> analyticsPipelineDetailProvider =
     FutureProvider.family<AnalyticsPipeline, String>((Ref ref, String id) async {
   final result = await GetPipelineUseCase(
-    ref.watch(analyticsRepositoryProvider))(id);
+    ref.watch(analyticsRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });

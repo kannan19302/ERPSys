@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -89,7 +88,7 @@ class _DockAppointmentListPageState extends ConsumerState<DockAppointmentListPag
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
             child: Row(children: [
               Text(state.isLoading ? 'Loading...' : '${state.meta.total} appointment${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
+                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
               const Spacer(),
               DropdownButton<String?>(
                 value: _statusFilter,
@@ -105,7 +104,7 @@ class _DockAppointmentListPageState extends ConsumerState<DockAppointmentListPag
                   else { controller.applyFilters({'status': v}); }
                 },
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -133,7 +132,7 @@ class _DockAppointmentListPageState extends ConsumerState<DockAppointmentListPag
       itemBuilder: (_, DockAppointment appt, __) => _AppointmentTile(
         appointment: appt,
         onTap: () => context.pushNamed('dock-appointment-detail',
-          pathParameters: <String, String>{'id': appt.id}),
+          pathParameters: <String, String>{'id': appt.id},),
       ),
     );
   }
@@ -166,20 +165,20 @@ class _AppointmentTile extends StatelessWidget {
             children: [
               Row(children: [
                 Expanded(child: Text(appointment.reference ?? 'Dock appointment',
-                    style: Theme.of(context).textTheme.titleSmall)),
+                    style: Theme.of(context).textTheme.titleSmall,),),
                 UiStatusBadge(label: appointment.status, tone: _statusTone(appointment.status)),
-              ]),
+              ],),
               const SizedBox(height: Spacing.x1),
               Row(children: [
                 Icon(Icons.warehouse, size: TypeScale.sm, color: t.textTertiary),
                 const SizedBox(width: Spacing.x1),
                 Expanded(child: Text(appointment.warehouseName ?? '—',
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs))),
-              ]),
+                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),),
+              ],),
               if (appointment.scheduledAt != null) ...[
                 const SizedBox(height: Spacing.x0_5),
                 Text('Scheduled: ${Formatters.dateTime(appointment.scheduledAt!)}',
-                    style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
+                    style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
               ],
             ],
           ),

@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 
 export default function EmailTemplatesRedirect() {
-  redirect('/crm/marketing-outreach?tab=templates');
+  redirect("/crm/marketing-outreach?tab=templates");
 }

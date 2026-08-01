@@ -1,12 +1,9 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/di/providers.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecase/result.dart';
-import '../../data/repositories/hr_repository_impl.dart';
 import '../../domain/entities/hr.dart';
 import '../../domain/repositories/hr_repository.dart';
 import '../../domain/usecases/hr_usecases.dart';
@@ -76,7 +73,7 @@ class _LeaveTypeFormPageState extends ConsumerState<LeaveTypeFormPage> {
     setState(() => _saving = true);
 
     final String hex =
-        '#${_selectedColor.value.toRadixString(16).substring(2).toUpperCase()}';
+        '#${_selectedColor.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
 
     final Map<String, dynamic> payload = <String, dynamic>{
       'name': _nameCtrl.text.trim(),
@@ -164,12 +161,12 @@ class _LeaveTypeFormPageState extends ConsumerState<LeaveTypeFormPage> {
                       height: Spacing.x6,
                       decoration: BoxDecoration(
                         color: _selectedColor,
-                        borderRadius: BorderRadius.all(Radius.circular(Radii.sm)),
+                        borderRadius: const BorderRadius.all(Radius.circular(Radii.sm)),
                       ),
                     ),
                     const SizedBox(width: Spacing.x2),
                     Text(
-                      '#${_selectedColor.value.toRadixString(16).substring(2).toUpperCase()}',
+                      '#${_selectedColor.toARGB32().toRadixString(16).substring(2).toUpperCase()}',
                       style: const TextStyle(fontSize: TypeScale.sm),
                     ),
                   ],
@@ -224,7 +221,7 @@ class _LeaveTypeFormPageState extends ConsumerState<LeaveTypeFormPage> {
                   height: Spacing.x8,
                   decoration: BoxDecoration(
                     color: color,
-                    borderRadius: BorderRadius.all(Radius.circular(Radii.sm)),
+                    borderRadius: const BorderRadius.all(Radius.circular(Radii.sm)),
                     border: color == _selectedColor
                         ? Border.all(color: Colors.white, width: 3)
                         : null,

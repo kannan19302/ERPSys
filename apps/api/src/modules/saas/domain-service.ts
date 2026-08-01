@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Injectable,
   NotFoundException,
@@ -20,10 +19,13 @@ export class DomainService {
     });
   }
 
-  async addDomain(tenantId: string, dto: {
-    domain: string;
-    isPrimary?: boolean;
-  }) {
+  async addDomain(
+    tenantId: string,
+    dto: {
+      domain: string;
+      isPrimary?: boolean;
+    },
+  ) {
     const existing = await prisma.tenantDomain.findUnique({
       where: { domain: dto.domain },
     });
@@ -49,7 +51,9 @@ export class DomainService {
   }
 
   async verifyDomain(tenantId: string, id: string) {
-    const domain = await prisma.tenantDomain.findFirst({ where: { id, tenantId } });
+    const domain = await prisma.tenantDomain.findFirst({
+      where: { id, tenantId },
+    });
     if (!domain) throw new NotFoundException("Domain not found");
 
     return prisma.tenantDomain.update({
@@ -59,7 +63,9 @@ export class DomainService {
   }
 
   async removeDomain(tenantId: string, id: string) {
-    const domain = await prisma.tenantDomain.findFirst({ where: { id, tenantId } });
+    const domain = await prisma.tenantDomain.findFirst({
+      where: { id, tenantId },
+    });
     if (!domain) throw new NotFoundException("Domain not found");
 
     await prisma.tenantBranding.updateMany({
@@ -71,7 +77,9 @@ export class DomainService {
   }
 
   async setPrimaryDomain(tenantId: string, id: string) {
-    const domain = await prisma.tenantDomain.findFirst({ where: { id, tenantId } });
+    const domain = await prisma.tenantDomain.findFirst({
+      where: { id, tenantId },
+    });
     if (!domain) throw new NotFoundException("Domain not found");
 
     await prisma.tenantDomain.updateMany({
@@ -86,13 +94,17 @@ export class DomainService {
   }
 
   async getDomain(tenantId: string, id: string) {
-    const domain = await prisma.tenantDomain.findFirst({ where: { id, tenantId } });
+    const domain = await prisma.tenantDomain.findFirst({
+      where: { id, tenantId },
+    });
     if (!domain) throw new NotFoundException("Domain not found");
     return domain;
   }
 
   async requestSslCertificate(tenantId: string, id: string) {
-    const domain = await prisma.tenantDomain.findFirst({ where: { id, tenantId } });
+    const domain = await prisma.tenantDomain.findFirst({
+      where: { id, tenantId },
+    });
     if (!domain) throw new NotFoundException("Domain not found");
 
     return prisma.tenantDomain.update({
@@ -102,7 +114,9 @@ export class DomainService {
   }
 
   async checkSslStatus(tenantId: string, id: string) {
-    const domain = await prisma.tenantDomain.findFirst({ where: { id, tenantId } });
+    const domain = await prisma.tenantDomain.findFirst({
+      where: { id, tenantId },
+    });
     if (!domain) throw new NotFoundException("Domain not found");
 
     return {

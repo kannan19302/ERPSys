@@ -1,5 +1,4 @@
 import '../../domain/entities/localization.dart';
-import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,7 +9,6 @@ import '../../../../core/usecase/result.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../data/datasources/localization_remote_data_source.dart';
 import '../../data/repositories/localization_repository_impl.dart';
-import '../../domain/entities/localization.dart';
 import '../../domain/repositories/localization_repository.dart';
 import '../../domain/usecases/localization_usecases.dart';
 

@@ -1,5 +1,4 @@
-// @ts-nocheck
-import { randomUUID } from 'node:crypto';
+import { randomUUID } from "node:crypto";
 
 /**
  * Resolve a collision-free slug by probing `exists` for sequential suffixes

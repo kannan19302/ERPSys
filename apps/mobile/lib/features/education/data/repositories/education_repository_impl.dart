@@ -93,7 +93,7 @@ class EducationRepositoryImpl implements EducationRepository {
   @override
   Future<Result<Cacheable<Paginated<Student>>>> listStudents(ListQuery q) =>
       _paginated(_studentNamespace, q, () => _remote.listStudents(q),
-        StudentModel.fromJson);
+        StudentModel.fromJson,);
 
   @override
   Future<Result<Student>> getStudent(String id) =>
@@ -114,7 +114,7 @@ class EducationRepositoryImpl implements EducationRepository {
   @override
   Future<Result<Cacheable<Paginated<Course>>>> listCourses(ListQuery q) =>
       _paginated(_courseNamespace, q, () => _remote.listCourses(q),
-        CourseModel.fromJson);
+        CourseModel.fromJson,);
 
   @override
   Future<Result<Course>> getCourse(String id) =>
@@ -135,7 +135,7 @@ class EducationRepositoryImpl implements EducationRepository {
   @override
   Future<Result<Cacheable<Paginated<Enrollment>>>> listEnrollments(ListQuery q) =>
       _paginated(_enrollmentNamespace, q, () => _remote.listEnrollments(q),
-        EnrollmentModel.fromJson);
+        EnrollmentModel.fromJson,);
 
   @override
   Future<Result<Enrollment>> getEnrollment(String id) =>
@@ -152,7 +152,7 @@ class EducationRepositoryImpl implements EducationRepository {
   @override
   Future<Result<Cacheable<Paginated<GradeEntry>>>> listGradeEntries(ListQuery q) =>
       _paginated(_gradeNamespace, q, () => _remote.listGradeEntries(q),
-        GradeEntryModel.fromJson);
+        GradeEntryModel.fromJson,);
 
   @override
   Future<Result<GradeEntry>> createGradeEntry(Map<String, dynamic> p) =>
@@ -165,7 +165,7 @@ class EducationRepositoryImpl implements EducationRepository {
   @override
   Future<Result<Cacheable<Paginated<EducationFeeInvoice>>>> listEducationFeeInvoices(ListQuery q) =>
       _paginated(_feeNamespace, q, () => _remote.listEducationFeeInvoices(q),
-        EducationFeeInvoiceModel.fromJson);
+        EducationFeeInvoiceModel.fromJson,);
 
   @override
   Future<Result<EducationFeeInvoice>> getEducationFeeInvoice(String id) =>
@@ -178,7 +178,7 @@ class EducationRepositoryImpl implements EducationRepository {
   @override
   Future<Result<Cacheable<Paginated<Exam>>>> listExams(ListQuery q) =>
       _paginated(_examNamespace, q, () => _remote.listExams(q),
-        ExamModel.fromJson);
+        ExamModel.fromJson,);
 
   @override
   Future<Result<Exam>> createExam(Map<String, dynamic> p) =>

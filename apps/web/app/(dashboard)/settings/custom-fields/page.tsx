@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 
 export default function CustomFieldsRedirectPage() {
-  redirect('/settings/general-branding?tab=custom-fields');
+  redirect("/settings/general-branding?tab=custom-fields");
 }

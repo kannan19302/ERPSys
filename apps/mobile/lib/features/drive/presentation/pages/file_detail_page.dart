@@ -1,16 +1,10 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/widgets/ui_card.dart';
 import '../../../../core/utils/formatters.dart';
-import '../../../../core/widgets/permission_gate.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/widgets/state_views.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/utils/formatters.dart';
-import '../../../../core/widgets/state_views.dart';
 import '../../domain/entities/drive.dart';
 import '../providers/drive_providers.dart';
 
@@ -32,14 +26,14 @@ class DriveFileDetailPage extends ConsumerWidget {
             final confirmed = await showDialog<bool>(context: context, builder: (c) => AlertDialog(
               title: const Text('Delete file?'), content: const Text('Move to trash.'),
               actions: [TextButton(onPressed: () => Navigator.of(c).pop(false), child: const Text('Cancel')),
-                FilledButton(onPressed: () => Navigator.of(c).pop(true), child: const Text('Delete'))],
-            ));
+                FilledButton(onPressed: () => Navigator.of(c).pop(true), child: const Text('Delete')),],
+            ),);
             if (confirmed != true || !context.mounted) return;
             final r = await ref.read(driveFileListControllerProvider.notifier).delete(fileId);
             if (!context.mounted) return;
             r.fold((f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))), (_) => Navigator.of(context).pop());
           },
-        )],
+        ),],
       ),
       body: async.when(
         loading: () => const LoadingView(),
@@ -84,11 +78,11 @@ class _DriveFileDetail extends StatelessWidget {
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(file.name, style: Theme.of(context).textTheme.titleLarge),
               Text(_formatSize(file.size), style: TextStyle(color: t.textSecondary)),
-            ])),
+            ],),),
             if (file.isStarred) Icon(Icons.star, color: t.warning, size: 24),
-          ]),
+          ],),
           if (file.description != null && file.description!.isNotEmpty) Padding(padding: const EdgeInsets.only(top: Spacing.x2), child: Text(file.description!, style: TextStyle(color: t.textSecondary))),
-        ])),
+        ],),),
         const SizedBox(height: Spacing.x4),
         _SectionCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const _SectionTitle(title: 'Details'),
@@ -97,21 +91,21 @@ class _DriveFileDetail extends StatelessWidget {
           _FieldRow('Size', _formatSize(file.size)),
           _FieldRow('Version', 'v${file.currentVersion}'),
           _FieldRow('Checksum', file.checksum != null ? file.checksum!.substring(0, 16) : '—'),
-        ])),
+        ],),),
         const SizedBox(height: Spacing.x4),
         _SectionCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const _SectionTitle(title: 'Storage'),
           _FieldRow('Path', file.storagePath),
           _FieldRow('Owner', file.ownerId),
           if (file.isDeleted && file.deletedAt != null) _FieldRow('Deleted', Formatters.dateTime(file.deletedAt!)),
-        ])),
+        ],),),
         if (file.createdAt != null) ...[
           const SizedBox(height: Spacing.x4),
           _SectionCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             const _SectionTitle(title: 'Timeline'),
             _FieldRow('Created', Formatters.dateTime(file.createdAt!)),
             if (file.updatedAt != null) _FieldRow('Modified', Formatters.dateTime(file.updatedAt!)),
-          ])),
+          ],),),
         ],
       ],
     );
@@ -136,14 +130,14 @@ class DriveFolderDetailPage extends ConsumerWidget {
             final confirmed = await showDialog<bool>(context: context, builder: (c) => AlertDialog(
               title: const Text('Delete folder?'), content: const Text('Move to trash.'),
               actions: [TextButton(onPressed: () => Navigator.of(c).pop(false), child: const Text('Cancel')),
-                FilledButton(onPressed: () => Navigator.of(c).pop(true), child: const Text('Delete'))],
-            ));
+                FilledButton(onPressed: () => Navigator.of(c).pop(true), child: const Text('Delete')),],
+            ),);
             if (confirmed != true || !context.mounted) return;
             final r = await ref.read(driveFolderListControllerProvider.notifier).delete(folderId);
             if (!context.mounted) return;
             r.fold((f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))), (_) => Navigator.of(context).pop());
           },
-        )],
+        ),],
       ),
       body: async.when(
         loading: () => const LoadingView(),
@@ -172,11 +166,11 @@ class _DriveFolderDetail extends StatelessWidget {
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(folder.name, style: Theme.of(context).textTheme.titleLarge),
               if (folder.path != null) Text(folder.path!, style: TextStyle(color: t.textSecondary)),
-            ])),
+            ],),),
             if (folder.isStarred) Icon(Icons.star, color: t.warning, size: 24),
-          ]),
+          ],),
           if (folder.description != null && folder.description!.isNotEmpty) Padding(padding: const EdgeInsets.only(top: Spacing.x2), child: Text(folder.description!, style: TextStyle(color: t.textSecondary))),
-        ])),
+        ],),),
         const SizedBox(height: Spacing.x4),
         _SectionCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const _SectionTitle(title: 'Details'),
@@ -184,14 +178,14 @@ class _DriveFolderDetail extends StatelessWidget {
           _FieldRow('Size', '${folder.size} bytes'),
           _FieldRow('Owner', folder.ownerId),
           if (folder.parentId != null) _FieldRow('Parent', folder.parentId!),
-        ])),
+        ],),),
         if (folder.createdAt != null) ...[
           const SizedBox(height: Spacing.x4),
           _SectionCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             const _SectionTitle(title: 'Timeline'),
             _FieldRow('Created', Formatters.dateTime(folder.createdAt!)),
             if (folder.updatedAt != null) _FieldRow('Modified', Formatters.dateTime(folder.updatedAt!)),
-          ])),
+          ],),),
         ],
       ],
     );

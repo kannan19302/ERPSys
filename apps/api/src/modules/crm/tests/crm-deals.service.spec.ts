@@ -1,9 +1,8 @@
-// @ts-nocheck
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { CrmDealsService } from '../crm-deals.service';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { CrmDealsService } from "../crm-deals.service";
+import { NotFoundException, BadRequestException } from "@nestjs/common";
 
-vi.mock('@unerp/database', () => ({
+vi.mock("@unerp/database", () => ({
   prisma: {
     opportunity: {
       findMany: vi.fn(),
@@ -55,11 +54,11 @@ vi.mock('@unerp/database', () => ({
   },
 }));
 
-import { prisma } from '@unerp/database';
+import { prisma } from "@unerp/database";
 
-const TENANT = 'tenant-1';
+const TENANT = "tenant-1";
 
-describe('CrmDealsService', () => {
+describe("CrmDealsService", () => {
   let service: CrmDealsService;
 
   beforeEach(() => {
@@ -67,176 +66,235 @@ describe('CrmDealsService', () => {
     service = new CrmDealsService();
   });
 
-  describe('exportOpportunities', () => {
-    it('exports opportunities as CSV-ready objects with flat fields', async () => {
+  describe("exportOpportunities", () => {
+    it("exports opportunities as CSV-ready objects with flat fields", async () => {
       const mockOpps = [
         {
-          id: 'opp-1',
-          name: 'Deal 1',
+          id: "opp-1",
+          name: "Deal 1",
           amount: 10000,
-          stage: 'PROSPECTING',
-          pipelineId: 'pipeline-1',
-          expectedCloseDate: new Date('2026-12-31'),
+          stage: "PROSPECTING",
+          pipelineId: "pipeline-1",
+          expectedCloseDate: new Date("2026-12-31"),
           actualCloseDate: null,
           probability: 25,
-          createdAt: new Date('2026-01-01'),
-          updatedAt: new Date('2026-01-01'),
+          createdAt: new Date("2026-01-01"),
+          updatedAt: new Date("2026-01-01"),
         },
         {
-          id: 'opp-2',
-          name: 'Deal 2',
+          id: "opp-2",
+          name: "Deal 2",
           amount: 50000,
-          stage: 'NEGOTIATION',
-          pipelineId: 'pipeline-1',
-          expectedCloseDate: new Date('2026-06-30'),
+          stage: "NEGOTIATION",
+          pipelineId: "pipeline-1",
+          expectedCloseDate: new Date("2026-06-30"),
           actualCloseDate: null,
           probability: 75,
-          createdAt: new Date('2026-02-01'),
-          updatedAt: new Date('2026-02-01'),
+          createdAt: new Date("2026-02-01"),
+          updatedAt: new Date("2026-02-01"),
         },
       ];
-      (prisma.opportunity.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(mockOpps);
+      (
+        prisma.opportunity.findMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(mockOpps);
 
       const result = await service.exportOpportunities(TENANT);
 
       expect(result).toHaveLength(2);
       expect(result[0]).toEqual(mockOpps[0]);
       expect(result[1]).toEqual(mockOpps[1]);
-      expect(prisma.opportunity.findMany).toHaveBeenCalledWith(expect.objectContaining({
-        where: { tenantId: TENANT, deletedAt: null },
-        orderBy: { name: 'asc' },
-      }));
+      expect(prisma.opportunity.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { tenantId: TENANT, deletedAt: null },
+          orderBy: { name: "asc" },
+        }),
+      );
     });
 
-    it('filters opportunities by pipelineId when provided', async () => {
-      (prisma.opportunity.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+    it("filters opportunities by pipelineId when provided", async () => {
+      (
+        prisma.opportunity.findMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([]);
 
-      await service.exportOpportunities(TENANT, { pipelineId: 'pipeline-1' });
+      await service.exportOpportunities(TENANT, { pipelineId: "pipeline-1" });
 
-      const call = (prisma.opportunity.findMany as ReturnType<typeof vi.fn>).mock.calls[0][0];
-      expect(call.where.pipelineId).toBe('pipeline-1');
+      const call = (prisma.opportunity.findMany as ReturnType<typeof vi.fn>)
+        .mock.calls[0][0];
+      expect(call.where.pipelineId).toBe("pipeline-1");
     });
 
-    it('filters opportunities by stage when provided', async () => {
-      (prisma.opportunity.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+    it("filters opportunities by stage when provided", async () => {
+      (
+        prisma.opportunity.findMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([]);
 
-      await service.exportOpportunities(TENANT, { stage: 'CLOSED_WON' });
+      await service.exportOpportunities(TENANT, { stage: "CLOSED_WON" });
 
-      const call = (prisma.opportunity.findMany as ReturnType<typeof vi.fn>).mock.calls[0][0];
-      expect(call.where.stage).toBe('CLOSED_WON');
+      const call = (prisma.opportunity.findMany as ReturnType<typeof vi.fn>)
+        .mock.calls[0][0];
+      expect(call.where.stage).toBe("CLOSED_WON");
     });
 
-    it('filters opportunities by search term (name) when provided', async () => {
-      (prisma.opportunity.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+    it("filters opportunities by search term (name) when provided", async () => {
+      (
+        prisma.opportunity.findMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([]);
 
-      await service.exportOpportunities(TENANT, { search: 'Enterprise Deal' });
+      await service.exportOpportunities(TENANT, { search: "Enterprise Deal" });
 
-      const call = (prisma.opportunity.findMany as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      const call = (prisma.opportunity.findMany as ReturnType<typeof vi.fn>)
+        .mock.calls[0][0];
       expect(call.where.OR).toBeDefined();
-      expect(call.where.OR[0].name).toEqual({ contains: 'Enterprise Deal', mode: 'insensitive' });
+      expect(call.where.OR[0].name).toEqual({
+        contains: "Enterprise Deal",
+        mode: "insensitive",
+      });
     });
 
-    it('combines multiple filters', async () => {
-      (prisma.opportunity.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+    it("combines multiple filters", async () => {
+      (
+        prisma.opportunity.findMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([]);
 
       await service.exportOpportunities(TENANT, {
-        pipelineId: 'pipeline-1',
-        stage: 'NEGOTIATION',
-        search: 'Acme',
+        pipelineId: "pipeline-1",
+        stage: "NEGOTIATION",
+        search: "Acme",
       });
 
-      const call = (prisma.opportunity.findMany as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      const call = (prisma.opportunity.findMany as ReturnType<typeof vi.fn>)
+        .mock.calls[0][0];
       expect(call.where.tenantId).toBe(TENANT);
-      expect(call.where.pipelineId).toBe('pipeline-1');
-      expect(call.where.stage).toBe('NEGOTIATION');
+      expect(call.where.pipelineId).toBe("pipeline-1");
+      expect(call.where.stage).toBe("NEGOTIATION");
       expect(call.where.OR).toBeDefined();
     });
   });
 
-  describe('bulkUpdateOpportunityStage', () => {
-    it('updates multiple opportunities to a new stage', async () => {
-      (prisma.opportunity.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({ count: 3 });
+  describe("bulkUpdateOpportunityStage", () => {
+    it("updates multiple opportunities to a new stage", async () => {
+      (
+        prisma.opportunity.updateMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({ count: 3 });
 
-      const result = await service.bulkUpdateOpportunityStage(TENANT, ['opp-1', 'opp-2', 'opp-3'], 'CLOSED_WON');
+      const result = await service.bulkUpdateOpportunityStage(
+        TENANT,
+        ["opp-1", "opp-2", "opp-3"],
+        "CLOSED_WON",
+      );
 
-      expect(result).toEqual({ updated: 3, stage: 'CLOSED_WON' });
+      expect(result).toEqual({ updated: 3, stage: "CLOSED_WON" });
       expect(prisma.opportunity.updateMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { id: { in: ['opp-1', 'opp-2', 'opp-3'] }, tenantId: TENANT, deletedAt: null },
-          data: expect.objectContaining({ stage: 'CLOSED_WON' }),
-        })
+          where: {
+            id: { in: ["opp-1", "opp-2", "opp-3"] },
+            tenantId: TENANT,
+            deletedAt: null,
+          },
+          data: expect.objectContaining({ stage: "CLOSED_WON" }),
+        }),
       );
     });
 
-    it('sets stageEnteredAt to current time when updating stage', async () => {
+    it("sets stageEnteredAt to current time when updating stage", async () => {
       const beforeUpdate = Date.now();
-      (prisma.opportunity.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({ count: 1 });
+      (
+        prisma.opportunity.updateMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({ count: 1 });
 
-      await service.bulkUpdateOpportunityStage(TENANT, ['opp-1'], 'PROPOSAL');
+      await service.bulkUpdateOpportunityStage(TENANT, ["opp-1"], "PROPOSAL");
 
-      const updateCall = (prisma.opportunity.updateMany as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      const updateCall = (
+        prisma.opportunity.updateMany as ReturnType<typeof vi.fn>
+      ).mock.calls[0][0];
       const stageEnteredAt = updateCall.data.stageEnteredAt;
       expect(stageEnteredAt).toBeInstanceOf(Date);
       expect(stageEnteredAt.getTime()).toBeGreaterThanOrEqual(beforeUpdate);
     });
 
-    it('throws BadRequestException if ids array is empty', async () => {
-      await expect(service.bulkUpdateOpportunityStage(TENANT, [], 'CLOSED_WON')).rejects.toThrow(BadRequestException);
+    it("throws BadRequestException if ids array is empty", async () => {
+      await expect(
+        service.bulkUpdateOpportunityStage(TENANT, [], "CLOSED_WON"),
+      ).rejects.toThrow(BadRequestException);
     });
 
-    it('throws BadRequestException if ids array is not provided', async () => {
-      await expect(service.bulkUpdateOpportunityStage(TENANT, undefined as any, 'CLOSED_WON')).rejects.toThrow(BadRequestException);
+    it("throws BadRequestException if ids array is not provided", async () => {
+      await expect(
+        service.bulkUpdateOpportunityStage(
+          TENANT,
+          undefined as any,
+          "CLOSED_WON",
+        ),
+      ).rejects.toThrow(BadRequestException);
     });
 
-    it('throws BadRequestException if stage is empty string', async () => {
-      await expect(service.bulkUpdateOpportunityStage(TENANT, ['opp-1'], '')).rejects.toThrow(BadRequestException);
+    it("throws BadRequestException if stage is empty string", async () => {
+      await expect(
+        service.bulkUpdateOpportunityStage(TENANT, ["opp-1"], ""),
+      ).rejects.toThrow(BadRequestException);
     });
 
-    it('throws BadRequestException if stage is whitespace only', async () => {
-      await expect(service.bulkUpdateOpportunityStage(TENANT, ['opp-1'], '   ')).rejects.toThrow(BadRequestException);
+    it("throws BadRequestException if stage is whitespace only", async () => {
+      await expect(
+        service.bulkUpdateOpportunityStage(TENANT, ["opp-1"], "   "),
+      ).rejects.toThrow(BadRequestException);
     });
 
-    it('throws BadRequestException if stage is not a string', async () => {
-      await expect(service.bulkUpdateOpportunityStage(TENANT, ['opp-1'], null as any)).rejects.toThrow(BadRequestException);
+    it("throws BadRequestException if stage is not a string", async () => {
+      await expect(
+        service.bulkUpdateOpportunityStage(TENANT, ["opp-1"], null as any),
+      ).rejects.toThrow(BadRequestException);
     });
 
-    it('returns zero count when no opportunities match the filter', async () => {
-      (prisma.opportunity.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({ count: 0 });
+    it("returns zero count when no opportunities match the filter", async () => {
+      (
+        prisma.opportunity.updateMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({ count: 0 });
 
-      const result = await service.bulkUpdateOpportunityStage(TENANT, ['missing-1', 'missing-2'], 'CLOSED_WON');
+      const result = await service.bulkUpdateOpportunityStage(
+        TENANT,
+        ["missing-1", "missing-2"],
+        "CLOSED_WON",
+      );
 
-      expect(result).toEqual({ updated: 0, stage: 'CLOSED_WON' });
+      expect(result).toEqual({ updated: 0, stage: "CLOSED_WON" });
     });
   });
 
-  describe('getOpportunitySummary', () => {
-    it('throws if the opportunity does not exist', async () => {
-      (prisma.opportunity.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(null);
-      await expect(service.getOpportunitySummary(TENANT, 'missing')).rejects.toThrow(NotFoundException);
+  describe("getOpportunitySummary", () => {
+    it("throws if the opportunity does not exist", async () => {
+      (
+        prisma.opportunity.findFirst as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(null);
+      await expect(
+        service.getOpportunitySummary(TENANT, "missing"),
+      ).rejects.toThrow(NotFoundException);
     });
 
-    it('computes weighted pipeline value, days in stage, and aging bucket for an open deal', async () => {
+    it("computes weighted pipeline value, days in stage, and aging bucket for an open deal", async () => {
       const stageEnteredAt = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000); // 10 days ago
-      (prisma.opportunity.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue({
-        id: 'opp-1',
-        stage: 'PROPOSAL',
+      (
+        prisma.opportunity.findFirst as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({
+        id: "opp-1",
+        stage: "PROPOSAL",
         amount: 10000,
         probability: 40,
         stageEnteredAt,
         updatedAt: stageEnteredAt,
         createdAt: stageEnteredAt,
-        activities: [{ id: 'a1' }, { id: 'a2' }],
+        activities: [{ id: "a1" }, { id: "a2" }],
         lineItems: [
-          { id: 'li1', totalAmount: 6000, product: null },
-          { id: 'li2', totalAmount: 4000, product: null },
+          { id: "li1", totalAmount: 6000, product: null },
+          { id: "li2", totalAmount: 4000, product: null },
         ],
       });
 
-      const result = await service.getOpportunitySummary(TENANT, 'opp-1');
+      const result = await service.getOpportunitySummary(TENANT, "opp-1");
 
       expect(result.metrics.weightedPipelineValue).toBe(4000); // 10000 * 0.4
       expect(result.metrics.daysInCurrentStage).toBeGreaterThanOrEqual(9);
-      expect(result.metrics.agingBucket).toBe('aging'); // 8-30 days
+      expect(result.metrics.agingBucket).toBe("aging"); // 8-30 days
       expect(result.metrics.isClosed).toBe(false);
       expect(result.metrics.lineItemsTotal).toBe(10000);
       expect(result.metrics.lineItemsCount).toBe(2);
@@ -246,9 +304,11 @@ describe('CrmDealsService', () => {
 
     it('marks a CLOSED_WON opportunity with a "closed" aging bucket regardless of age', async () => {
       const oldDate = new Date(Date.now() - 200 * 24 * 60 * 60 * 1000);
-      (prisma.opportunity.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue({
-        id: 'opp-2',
-        stage: 'CLOSED_WON',
+      (
+        prisma.opportunity.findFirst as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({
+        id: "opp-2",
+        stage: "CLOSED_WON",
         amount: 5000,
         probability: 100,
         stageEnteredAt: oldDate,
@@ -258,17 +318,19 @@ describe('CrmDealsService', () => {
         lineItems: [],
       });
 
-      const result = await service.getOpportunitySummary(TENANT, 'opp-2');
-      expect(result.metrics.agingBucket).toBe('closed');
+      const result = await service.getOpportunitySummary(TENANT, "opp-2");
+      expect(result.metrics.agingBucket).toBe("closed");
       expect(result.metrics.isClosed).toBe(true);
       expect(result.metrics.isWon).toBe(true);
     });
 
-    it('flags a stale open deal older than 30 days in-stage as rotting', async () => {
+    it("flags a stale open deal older than 30 days in-stage as rotting", async () => {
       const oldDate = new Date(Date.now() - 45 * 24 * 60 * 60 * 1000);
-      (prisma.opportunity.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue({
-        id: 'opp-3',
-        stage: 'NEGOTIATION',
+      (
+        prisma.opportunity.findFirst as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({
+        id: "opp-3",
+        stage: "NEGOTIATION",
         amount: 20000,
         probability: 60,
         stageEnteredAt: oldDate,
@@ -278,14 +340,14 @@ describe('CrmDealsService', () => {
         lineItems: [],
       });
 
-      const result = await service.getOpportunitySummary(TENANT, 'opp-3');
-      expect(result.metrics.agingBucket).toBe('stale'); // 31-60 days
+      const result = await service.getOpportunitySummary(TENANT, "opp-3");
+      expect(result.metrics.agingBucket).toBe("stale"); // 31-60 days
       expect(result.metrics.isRotting).toBe(true);
     });
   });
 
-  describe('getForecast', () => {
-    it('returns pipelineDeals alongside dealCount so the UI KPI card renders', async () => {
+  describe("getForecast", () => {
+    it("returns pipelineDeals alongside dealCount so the UI KPI card renders", async () => {
       (prisma.opportunity.findMany as any).mockResolvedValue([
         { amount: 1000, probability: 95, expectedCloseDate: new Date() },
         { amount: 2000, probability: 75, expectedCloseDate: new Date() },
@@ -302,52 +364,73 @@ describe('CrmDealsService', () => {
     });
   });
 
-  describe('getRepPerformance', () => {
-    it('resolves rep id/name/revenue fields the UI leaderboard consumes', async () => {
+  describe("getRepPerformance", () => {
+    it("resolves rep id/name/revenue fields the UI leaderboard consumes", async () => {
       (prisma.opportunity.findMany as any).mockResolvedValue([
-        { assignedToId: 'user-1', amount: 5000, createdAt: new Date('2026-01-01'), actualCloseDate: new Date('2026-01-11') },
-        { assignedToId: 'user-1', amount: 3000, createdAt: new Date('2026-01-01'), actualCloseDate: new Date('2026-01-06') },
+        {
+          assignedToId: "user-1",
+          amount: 5000,
+          createdAt: new Date("2026-01-01"),
+          actualCloseDate: new Date("2026-01-11"),
+        },
+        {
+          assignedToId: "user-1",
+          amount: 3000,
+          createdAt: new Date("2026-01-01"),
+          actualCloseDate: new Date("2026-01-06"),
+        },
       ]);
       (prisma.user.findMany as any).mockResolvedValue([
-        { id: 'user-1', firstName: 'Ada', lastName: 'Lovelace' },
+        { id: "user-1", firstName: "Ada", lastName: "Lovelace" },
       ]);
 
       const [rep] = await service.getRepPerformance(TENANT);
 
-      expect(rep.id).toBe('user-1');
-      expect(rep.name).toBe('Ada Lovelace');
+      expect(rep.id).toBe("user-1");
+      expect(rep.name).toBe("Ada Lovelace");
       expect(rep.revenue).toBe(8000);
       expect(rep.dealsWon).toBe(2);
       expect(rep.avgDealSize).toBe(4000);
     });
   });
 
-  describe('getConversionFunnel', () => {
-    it('returns a FunnelStage[] the UI can .map() over, not a flat aggregate object', async () => {
-      (prisma.lead.count as any).mockResolvedValueOnce(100).mockResolvedValueOnce(40);
-      (prisma.opportunity.count as any).mockResolvedValueOnce(40).mockResolvedValueOnce(10);
+  describe("getConversionFunnel", () => {
+    it("returns a FunnelStage[] the UI can .map() over, not a flat aggregate object", async () => {
+      (prisma.lead.count as any)
+        .mockResolvedValueOnce(100)
+        .mockResolvedValueOnce(40);
+      (prisma.opportunity.count as any)
+        .mockResolvedValueOnce(40)
+        .mockResolvedValueOnce(10);
 
       const result = await service.getConversionFunnel(TENANT);
 
       expect(Array.isArray(result)).toBe(true);
-      expect(result.map((s: any) => s.label)).toEqual(['Leads', 'Converted Leads', 'Opportunities', 'Closed Won']);
-      expect(result.every((s: any) => typeof s.percentage === 'number')).toBe(true);
+      expect(result.map((s: any) => s.label)).toEqual([
+        "Leads",
+        "Converted Leads",
+        "Opportunities",
+        "Closed Won",
+      ]);
+      expect(result.every((s: any) => typeof s.percentage === "number")).toBe(
+        true,
+      );
     });
   });
 
-  describe('getWeightedForecastByRep', () => {
-    it('sums open-Opportunity amount * probability grouped by rep', async () => {
+  describe("getWeightedForecastByRep", () => {
+    it("sums open-Opportunity amount * probability grouped by rep", async () => {
       (prisma.opportunity.findMany as any).mockResolvedValue([
-        { assignedToId: 'user-1', amount: 10000, probability: 50 },
-        { assignedToId: 'user-1', amount: 20000, probability: 25 },
+        { assignedToId: "user-1", amount: 10000, probability: 50 },
+        { assignedToId: "user-1", amount: 20000, probability: 25 },
       ]);
       (prisma.user.findMany as any).mockResolvedValue([
-        { id: 'user-1', firstName: 'Ada', lastName: 'Lovelace' },
+        { id: "user-1", firstName: "Ada", lastName: "Lovelace" },
       ]);
 
       const [rep] = await service.getWeightedForecastByRep(TENANT);
 
-      expect(rep.name).toBe('Ada Lovelace');
+      expect(rep.name).toBe("Ada Lovelace");
       expect(rep.pipelineAmount).toBe(30000);
       expect(rep.weightedAmount).toBe(10000); // 10000*0.5 + 20000*0.25
       expect(rep.openDeals).toBe(2);

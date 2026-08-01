@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -54,20 +53,20 @@ class _SubscriptionBillingListPageState extends ConsumerState<SubscriptionBillin
               Row(children: [
                 Expanded(
                   child: Text('${cycle.periodStart.toString().substring(0, 10)} - ${cycle.periodEnd.toString().substring(0, 10)}',
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
                 UiStatusBadge(
                   label: cycle.status,
                   tone: cycle.status == 'PAID' ? UiTone.success : UiTone.warning,
                 ),
-              ]),
+              ],),
               const SizedBox(height: Spacing.x1),
               Text('\$${cycle.amount.toStringAsFixed(2)} ${cycle.currency}',
-                  style: TextStyle(color: t.textSecondary)),
+                  style: TextStyle(color: t.textSecondary),),
               if (cycle.paidAt != null) ...[
                 const SizedBox(height: Spacing.x1),
                 Text('Paid ${_formatDate(cycle.paidAt!)}',
-                    style: TextStyle(fontSize: TypeScale.xs, color: t.textTertiary)),
+                    style: TextStyle(fontSize: TypeScale.xs, color: t.textTertiary),),
               ],
             ],
           ),

@@ -1,9 +1,13 @@
-// @ts-nocheck
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { verifyTypedToken, TOKEN_TYPE } from '@unerp/auth';
-import { prisma, runWithTenantSession } from '@unerp/database';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  UnauthorizedException,
+} from "@nestjs/common";
+import { verifyTypedToken, TOKEN_TYPE } from "@unerp/auth";
+import { prisma, runWithTenantSession } from "@unerp/database";
 
-const AUTH_COOKIE = 'auth_token';
+const AUTH_COOKIE = "auth_token";
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -16,23 +20,26 @@ export class JwtAuthGuard implements CanActivate {
     // 2. Fall back to Authorization header (backwards-compat during migration)
     if (!token) {
       const authHeader = request.headers.authorization;
-      if (authHeader?.startsWith('Bearer ')) {
-        token = authHeader.split(' ')[1];
+      if (authHeader?.startsWith("Bearer ")) {
+        token = authHeader.split(" ")[1];
       }
     }
 
     if (!token) {
-      throw new UnauthorizedException('Missing authentication credentials');
+      throw new UnauthorizedException("Missing authentication credentials");
     }
 
     // Purpose-scoped: a password-reset or MFA-challenge token carries a valid
     // signature but must never be accepted as a session.
-    const decoded = verifyTypedToken<{ sid?: string; tenantId?: string; userId?: string }>(
-      token,
-      TOKEN_TYPE.SESSION,
-    );
+    const decoded = verifyTypedToken<{
+      sid?: string;
+      tenantId?: string;
+      userId?: string;
+    }>(token, TOKEN_TYPE.SESSION);
     if (!decoded) {
-      throw new UnauthorizedException('Invalid or expired authentication token');
+      throw new UnauthorizedException(
+        "Invalid or expired authentication token",
+      );
     }
 
     // 3. Revocable sessions: if the token carries a session id, the session must
@@ -46,13 +53,17 @@ export class JwtAuthGuard implements CanActivate {
     if (decoded.sid) {
       const session = decoded.tenantId
         ? await runWithTenantSession(
-            { tenantId: decoded.tenantId, userId: decoded.userId ?? '' },
+            { tenantId: decoded.tenantId, userId: decoded.userId ?? "" },
             () => prisma.userSession.findUnique({ where: { id: decoded.sid } }),
           )
         : await prisma.userSession.findUnique({ where: { id: decoded.sid } });
       const now = new Date();
-      if (!session || !session.isActive || (session.expiresAt && session.expiresAt < now)) {
-        throw new UnauthorizedException('Session has been revoked or expired');
+      if (
+        !session ||
+        !session.isActive ||
+        (session.expiresAt && session.expiresAt < now)
+      ) {
+        throw new UnauthorizedException("Session has been revoked or expired");
       }
     }
 

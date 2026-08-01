@@ -1,6 +1,10 @@
-// @ts-nocheck
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { verifyToken } from '@unerp/auth';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  UnauthorizedException,
+} from "@nestjs/common";
+import { verifyToken } from "@unerp/auth";
 
 /**
  * Guards the customer self-service portal's own endpoints (`/portal/*`).
@@ -15,24 +19,34 @@ export class CustomerPortalAuthGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
 
-    let token: string | undefined = request.cookies?.['portal_auth_token'];
+    let token: string | undefined = request.cookies?.["portal_auth_token"];
     if (!token) {
       const authHeader = request.headers.authorization;
-      if (authHeader?.startsWith('Bearer ')) {
-        token = authHeader.split(' ')[1];
+      if (authHeader?.startsWith("Bearer ")) {
+        token = authHeader.split(" ")[1];
       }
     }
 
     if (!token) {
-      throw new UnauthorizedException('Missing portal authentication credentials');
+      throw new UnauthorizedException(
+        "Missing portal authentication credentials",
+      );
     }
 
-    const decoded = verifyToken(token) as
-      | { tenantId?: string; userId?: string; customerId?: string; portal?: boolean }
-      | null;
+    const decoded = verifyToken(token) as {
+      tenantId?: string;
+      userId?: string;
+      customerId?: string;
+      portal?: boolean;
+    } | null;
 
-    if (!decoded || decoded.portal !== true || !decoded.tenantId || !decoded.customerId) {
-      throw new UnauthorizedException('Invalid or expired portal session');
+    if (
+      !decoded ||
+      decoded.portal !== true ||
+      !decoded.tenantId ||
+      !decoded.customerId
+    ) {
+      throw new UnauthorizedException("Invalid or expired portal session");
     }
 
     request.user = decoded;

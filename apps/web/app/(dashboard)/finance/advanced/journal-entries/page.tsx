@@ -1,11 +1,10 @@
-// @ts-nocheck
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Modal, PageHeader } from '@unerp/ui';
-import { ListView, FormView, RouteGuard } from '@unerp/framework';
-import { journalResource } from '@/modules/finance';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Modal, PageHeader } from "@unerp/ui";
+import { ListView, FormView, RouteGuard } from "@unerp/framework";
+import { journalResource } from "@/modules/finance";
 
 export default function JournalEntriesPage() {
   const router = useRouter();
@@ -17,16 +16,26 @@ export default function JournalEntriesPage() {
         <PageHeader
           title="Journal Entries"
           description="Record and post financial transactions to general ledger accounts"
-          breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'Finance', href: '/finance' }, { label: 'Journal Entries' }]}
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "Finance", href: "/finance" },
+            { label: "Journal Entries" },
+          ]}
         />
 
         <ListView
           resource={journalResource}
-          onRowClick={(row) => router.push(`/finance/advanced/journal-entries/${row.id}`)}
+          onRowClick={(row) =>
+            router.push(`/finance/advanced/journal-entries/${row.id}`)
+          }
           onCreate={() => setShowCreate(true)}
         />
 
-        <Modal open={showCreate} onClose={() => setShowCreate(false)} title="New Journal Entry">
+        <Modal
+          open={showCreate}
+          onClose={() => setShowCreate(false)}
+          title="New Journal Entry"
+        >
           <FormView
             resource={journalResource}
             onSuccess={() => setShowCreate(false)}

@@ -1,11 +1,10 @@
-// @ts-nocheck
-import { z } from 'zod';
+import { z } from "zod";
 
 export const createCarrierSchema = z.object({
   code: z.string().min(1),
   name: z.string().min(1),
-  trackingUrl: z.string().url().optional().or(z.literal('')),
-  contactEmail: z.string().email().optional().or(z.literal('')),
+  trackingUrl: z.string().url().optional().or(z.literal("")),
+  contactEmail: z.string().email().optional().or(z.literal("")),
   contactPhone: z.string().optional(),
   isActive: z.boolean().optional(),
 });
@@ -16,12 +15,14 @@ export const createCarrierServiceLevelSchema = z.object({
   name: z.string().min(1),
   transitDays: z.number().int().positive().optional(),
 });
-export type CreateCarrierServiceLevelDto = z.infer<typeof createCarrierServiceLevelSchema>;
+export type CreateCarrierServiceLevelDto = z.infer<
+  typeof createCarrierServiceLevelSchema
+>;
 
 export const createAsnLineItemSchema = z.object({
   productId: z.string().min(1),
   expectedQty: z.number().positive(),
-  uom: z.string().default('EA'),
+  uom: z.string().default("EA"),
   lotNumber: z.string().optional(),
   serialNos: z.string().optional(),
   notes: z.string().optional(),
@@ -67,7 +68,9 @@ export const createInboundShipmentSchema = z.object({
   totalWeight: z.number().positive().optional().nullable(),
   notes: z.string().optional().nullable(),
 });
-export type CreateInboundShipmentDto = z.infer<typeof createInboundShipmentSchema>;
+export type CreateInboundShipmentDto = z.infer<
+  typeof createInboundShipmentSchema
+>;
 
 export const createOutboundShipmentSchema = z.object({
   shipmentNumber: z.string().min(1),
@@ -84,22 +87,30 @@ export const createOutboundShipmentSchema = z.object({
   recipientAddr: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
 });
-export type CreateOutboundShipmentDto = z.infer<typeof createOutboundShipmentSchema>;
+export type CreateOutboundShipmentDto = z.infer<
+  typeof createOutboundShipmentSchema
+>;
 
 export const addTrackingEventSchema = z.object({
-  eventCode: z.enum(['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED', 'EXCEPTION']),
+  eventCode: z.enum([
+    "PICKED_UP",
+    "IN_TRANSIT",
+    "OUT_FOR_DELIVERY",
+    "DELIVERED",
+    "EXCEPTION",
+  ]),
   description: z.string().min(1),
   location: z.string().optional().nullable(),
   occurredAt: z.string().datetime().optional().nullable(),
-  source: z.enum(['MANUAL', 'CARRIER_API', 'WEBHOOK']).default('MANUAL'),
+  source: z.enum(["MANUAL", "CARRIER_API", "WEBHOOK"]).default("MANUAL"),
 });
 export type AddTrackingEventDto = z.infer<typeof addTrackingEventSchema>;
 
 export const reportExceptionSchema = z.object({
-  direction: z.enum(['INBOUND', 'OUTBOUND']),
+  direction: z.enum(["INBOUND", "OUTBOUND"]),
   exceptionCode: z.string().min(1),
   description: z.string().min(1),
-  severity: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).default('MEDIUM'),
+  severity: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]).default("MEDIUM"),
 });
 export type ReportExceptionDto = z.infer<typeof reportExceptionSchema>;
 
@@ -123,12 +134,14 @@ export const createVendorReturnSchema = z.object({
 export type CreateVendorReturnDto = z.infer<typeof createVendorReturnSchema>;
 
 export const updateVendorReturnStatusSchema = z.object({
-  status: z.enum(['PENDING', 'PACKED', 'SHIPPED', 'DELIVERED', 'LOST']),
+  status: z.enum(["PENDING", "PACKED", "SHIPPED", "DELIVERED", "LOST"]),
   trackingNumber: z.string().optional().nullable(),
   creditMemoRef: z.string().optional().nullable(),
   creditAmount: z.number().positive().optional().nullable(),
 });
-export type UpdateVendorReturnStatusDto = z.infer<typeof updateVendorReturnStatusSchema>;
+export type UpdateVendorReturnStatusDto = z.infer<
+  typeof updateVendorReturnStatusSchema
+>;
 
 // ── Cross-Docking ──
 
@@ -141,11 +154,15 @@ export const createCrossDockStationSchema = z.object({
   isOutbound: z.boolean().default(true),
   notes: z.string().optional().nullable(),
 });
-export type CreateCrossDockStationDto = z.infer<typeof createCrossDockStationSchema>;
+export type CreateCrossDockStationDto = z.infer<
+  typeof createCrossDockStationSchema
+>;
 
 export const createCrossDockOrderSchema = z.object({
   orderNumber: z.string().min(1),
-  type: z.enum(['OPPORTUNISTIC', 'PLANNED', 'FLOW_THROUGH']).default('OPPORTUNISTIC'),
+  type: z
+    .enum(["OPPORTUNISTIC", "PLANNED", "FLOW_THROUGH"])
+    .default("OPPORTUNISTIC"),
   warehouseId: z.string().min(1),
   stationId: z.string().optional().nullable(),
   productId: z.string().min(1),
@@ -157,15 +174,26 @@ export const createCrossDockOrderSchema = z.object({
   expectedArrival: z.string().datetime().optional().nullable(),
   expectedDispatch: z.string().datetime().optional().nullable(),
 });
-export type CreateCrossDockOrderDto = z.infer<typeof createCrossDockOrderSchema>;
+export type CreateCrossDockOrderDto = z.infer<
+  typeof createCrossDockOrderSchema
+>;
 
 export const updateCrossDockOrderStatusSchema = z.object({
-  status: z.enum(['PENDING', 'RECEIVING', 'STAGING', 'DISPATCHED', 'COMPLETED', 'CANCELLED']),
+  status: z.enum([
+    "PENDING",
+    "RECEIVING",
+    "STAGING",
+    "DISPATCHED",
+    "COMPLETED",
+    "CANCELLED",
+  ]),
   receivedQty: z.number().nonnegative().optional().nullable(),
   dispatchedQty: z.number().nonnegative().optional().nullable(),
   cancelReason: z.string().optional().nullable(),
 });
-export type UpdateCrossDockOrderStatusDto = z.infer<typeof updateCrossDockOrderStatusSchema>;
+export type UpdateCrossDockOrderStatusDto = z.infer<
+  typeof updateCrossDockOrderStatusSchema
+>;
 
 // ── Route Optimization ──
 

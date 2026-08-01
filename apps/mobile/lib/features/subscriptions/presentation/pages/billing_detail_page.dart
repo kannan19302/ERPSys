@@ -1,15 +1,9 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/widgets/ui_card.dart';
 import '../../../../core/utils/formatters.dart';
-import '../../../../core/widgets/permission_gate.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/widgets/state_views.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/utils/formatters.dart';
-import '../../../../core/widgets/state_views.dart';
 import '../../domain/entities/subscriptions.dart';
 import '../providers/subscriptions_providers.dart';
 
@@ -60,18 +54,18 @@ class _BillingDetail extends StatelessWidget {
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(billing.currency, style: Theme.of(context).textTheme.titleLarge),
               Text(Formatters.currency(billing.amount), style: TextStyle(color: t.textSecondary, fontSize: TypeScale.lg, fontWeight: TypeScale.semibold)),
-            ])),
+            ],),),
             Container(padding: const EdgeInsets.symmetric(horizontal: Spacing.x2_5, vertical: Spacing.x1),
               decoration: BoxDecoration(color: statusBg, borderRadius: Radii.pill),
-              child: Text(statusLabel, style: TextStyle(color: statusColor, fontSize: TypeScale.xs, fontWeight: TypeScale.medium))),
-          ]),
-        ])),
+              child: Text(statusLabel, style: TextStyle(color: statusColor, fontSize: TypeScale.xs, fontWeight: TypeScale.medium)),),
+          ],),
+        ],),),
         const SizedBox(height: Spacing.x4),
         _SectionCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const _SectionTitle(title: 'Period'),
           _FieldRow('Start', Formatters.date(billing.periodStart)),
           _FieldRow('End', Formatters.date(billing.periodEnd)),
-        ])),
+        ],),),
         const SizedBox(height: Spacing.x4),
         _SectionCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const _SectionTitle(title: 'Details'),
@@ -80,7 +74,7 @@ class _BillingDetail extends StatelessWidget {
           _FieldRow('Status', statusLabel),
           if (billing.paidAt != null) _FieldRow('Paid At', Formatters.dateTime(billing.paidAt!)),
           if (billing.createdAt != null) _FieldRow('Created', Formatters.dateTime(billing.createdAt!)),
-        ])),
+        ],),),
       ],
     );
   }

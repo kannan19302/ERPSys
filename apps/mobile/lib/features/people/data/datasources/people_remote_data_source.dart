@@ -36,7 +36,7 @@ class PeopleRemoteDataSourceImpl implements PeopleRemoteDataSource {
   @override
   Future<Paginated<PersonModel>> listPeople(ListQuery query) =>
       _client.getPaginated<PersonModel>(
-        ApiPaths.peopleDirectory, query, PersonModel.fromJson);
+        ApiPaths.peopleDirectory, query, PersonModel.fromJson,);
 
   @override
   Future<PersonModel> getPerson(String id) async =>
@@ -77,24 +77,24 @@ class PeopleRemoteDataSourceImpl implements PeopleRemoteDataSource {
   @override
   Future<Paginated<PeopleOnboardingTaskModel>> listOnboardingTasks(ListQuery query) =>
       _client.getPaginated<PeopleOnboardingTaskModel>(
-        ApiPaths.peopleOnboardingTasks, query, PeopleOnboardingTaskModel.fromJson);
+        ApiPaths.peopleOnboardingTasks, query, PeopleOnboardingTaskModel.fromJson,);
 
   @override
   Future<PeopleOnboardingTaskModel> getOnboardingTask(String id) async =>
       PeopleOnboardingTaskModel.fromJson(
-        await _client.getObject(ApiPaths.peopleOnboardingTask(id)));
+        await _client.getObject(ApiPaths.peopleOnboardingTask(id)),);
 
   @override
   Future<PeopleOnboardingTaskModel> createOnboardingTask(
-    Map<String, dynamic> payload) async =>
+    Map<String, dynamic> payload,) async =>
       PeopleOnboardingTaskModel.fromJson(
-        await _client.post(ApiPaths.peopleOnboardingTasks, body: payload));
+        await _client.post(ApiPaths.peopleOnboardingTasks, body: payload),);
 
   @override
   Future<PeopleOnboardingTaskModel> updateOnboardingTask(
-    String id, Map<String, dynamic> payload) async =>
+    String id, Map<String, dynamic> payload,) async =>
       PeopleOnboardingTaskModel.fromJson(
-        await _client.patch(ApiPaths.peopleOnboardingTask(id), body: payload));
+        await _client.patch(ApiPaths.peopleOnboardingTask(id), body: payload),);
 
   @override
   Future<void> deleteOnboardingTask(String id) =>
@@ -103,18 +103,18 @@ class PeopleRemoteDataSourceImpl implements PeopleRemoteDataSource {
   @override
   Future<PeopleOnboardingTaskModel> completeOnboardingTask(String id) async =>
       PeopleOnboardingTaskModel.fromJson(
-        await _client.post('${ApiPaths.peopleOnboardingTask(id)}/complete'));
+        await _client.post('${ApiPaths.peopleOnboardingTask(id)}/complete'),);
 
   @override
   Future<Paginated<PeopleRecognitionEntryModel>> listRecognitionEntries(ListQuery query) =>
       _client.getPaginated<PeopleRecognitionEntryModel>(
-        ApiPaths.peopleRecognition, query, PeopleRecognitionEntryModel.fromJson);
+        ApiPaths.peopleRecognition, query, PeopleRecognitionEntryModel.fromJson,);
 
   @override
   Future<PeopleRecognitionEntryModel> createRecognitionEntry(
-    Map<String, dynamic> payload) async =>
+    Map<String, dynamic> payload,) async =>
       PeopleRecognitionEntryModel.fromJson(
-        await _client.post(ApiPaths.peopleRecognition, body: payload));
+        await _client.post(ApiPaths.peopleRecognition, body: payload),);
 
   @override
   Future<void> deleteRecognitionEntry(String id) =>

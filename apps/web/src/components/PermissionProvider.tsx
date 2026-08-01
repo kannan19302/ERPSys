@@ -1,9 +1,8 @@
-// @ts-nocheck
-'use client';
+"use client";
 
-import React, { useEffect, useMemo, useState } from 'react';
-import { PermissionContext } from '@unerp/ui';
-import { apiGet } from '@/lib/api';
+import React, { useEffect, useMemo, useState } from "react";
+import { PermissionContext } from "@unerp/ui";
+import { apiGet } from "@/lib/api";
 
 interface MeResponse {
   permissions?: string[];
@@ -28,11 +27,15 @@ interface MeResponse {
  *
  * Deliberately generic — no module-specific logic lives here.
  */
-export function PermissionProvider({ children }: { children: React.ReactNode }) {
+export function PermissionProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [permissions, setPermissions] = useState<string[]>(() => {
-    if (typeof window === 'undefined') return [];
+    if (typeof window === "undefined") return [];
     try {
-      const stored = localStorage.getItem('user');
+      const stored = localStorage.getItem("user");
       if (!stored) return [];
       const parsed = JSON.parse(stored) as { permissions?: string[] };
       return Array.isArray(parsed.permissions) ? parsed.permissions : [];
@@ -44,7 +47,7 @@ export function PermissionProvider({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     let mounted = true;
 
-    apiGet<MeResponse>('/auth/me')
+    apiGet<MeResponse>("/auth/me")
       .then((me) => {
         if (mounted && Array.isArray(me.permissions)) {
           setPermissions(me.permissions);

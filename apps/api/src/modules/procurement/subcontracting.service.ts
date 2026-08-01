@@ -1,12 +1,24 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
-import { buildPaginationValues, buildOrderBy, paginatedResult, PaginatedResult, PaginationParams } from '../../common/utils/pagination.util';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
+import {
+  buildPaginationValues,
+  buildOrderBy,
+  paginatedResult,
+  PaginatedResult,
+  PaginationParams,
+} from "../../common/utils/pagination.util";
 
 @Injectable()
 export class SubcontractingService {
-  async list(tenantId: string, params: PaginationParams & { status?: string; vendorId?: string } = {}): Promise<PaginatedResult<any>> {
+  async list(
+    tenantId: string,
+    params: PaginationParams & { status?: string; vendorId?: string } = {},
+  ): Promise<PaginatedResult<any>> {
     const where: any = { tenantId };
     if (params.status) where.status = params.status;
     if (params.vendorId) where.vendorId = params.vendorId;
@@ -16,8 +28,17 @@ export class SubcontractingService {
 
     const [orders, total] = await Promise.all([
       prisma.subcontractingOrder.findMany({
-        where, skip, take, orderBy: orderBy as any,
-        include: { vendor: { select: { name: true, id: true } }, product: { select: { name: true, sku: true } }, materials: { include: { product: { select: { name: true, sku: true } } } } },
+        where,
+        skip,
+        take,
+        orderBy: orderBy as any,
+        include: {
+          vendor: { select: { name: true, id: true } },
+          product: { select: { name: true, sku: true } },
+          materials: {
+            include: { product: { select: { name: true, sku: true } } },
+          },
+        },
       }),
       prisma.subcontractingOrder.count({ where }),
     ]);
@@ -27,18 +48,37 @@ export class SubcontractingService {
   async getById(tenantId: string, id: string) {
     const order = await prisma.subcontractingOrder.findFirst({
       where: { id, tenantId },
-      include: { vendor: true, product: true, materials: { include: { product: true } } },
+      include: {
+        vendor: true,
+        product: true,
+        materials: { include: { product: true } },
+      },
     });
-    if (!order) throw new NotFoundException('Subcontracting order not found');
+    if (!order) throw new NotFoundException("Subcontracting order not found");
     return order;
   }
 
-  async create(tenantId: string, dto: { vendorId: string; productId: string; quantity: number; unitCost: number; bomId?: string; deliveryDate?: string; materials?: Array<{ productId: string; requiredQty: number }> }) {
-    const vendor = await prisma.vendor.findFirst({ where: { id: dto.vendorId, tenantId } });
-    if (!vendor) throw new NotFoundException('Vendor not found');
+  async create(
+    tenantId: string,
+    dto: {
+      vendorId: string;
+      productId: string;
+      quantity: number;
+      unitCost: number;
+      bomId?: string;
+      deliveryDate?: string;
+      materials?: Array<{ productId: string; requiredQty: number }>;
+    },
+  ) {
+    const vendor = await prisma.vendor.findFirst({
+      where: { id: dto.vendorId, tenantId },
+    });
+    if (!vendor) throw new NotFoundException("Vendor not found");
 
-    const product = await prisma.product.findFirst({ where: { id: dto.productId, tenantId } });
-    if (!product) throw new NotFoundException('Product not found');
+    const product = await prisma.product.findFirst({
+      where: { id: dto.productId, tenantId },
+    });
+    if (!product) throw new NotFoundException("Product not found");
 
     const totalCost = new Prisma.Decimal(dto.unitCost).mul(dto.quantity);
 
@@ -52,93 +92,178 @@ export class SubcontractingService {
         totalCost,
         bomId: dto.bomId,
         deliveryDate: dto.deliveryDate ? new Date(dto.deliveryDate) : null,
-        materials: dto.materials ? {
-          create: dto.materials.map(m => ({ tenantId, productId: m.productId, requiredQty: m.requiredQty })),
-        } : undefined,
+        materials: dto.materials
+          ? {
+              create: dto.materials.map((m) => ({
+                tenantId,
+                productId: m.productId,
+                requiredQty: m.requiredQty,
+              })),
+            }
+          : undefined,
       },
-      include: { vendor: true, product: true, materials: { include: { product: true } } },
+      include: {
+        vendor: true,
+        product: true,
+        materials: { include: { product: true } },
+      },
     });
   }
 
   async updateStatus(tenantId: string, id: string, status: string) {
-    const order = await prisma.subcontractingOrder.findFirst({ where: { id, tenantId } });
-    if (!order) throw new NotFoundException('Subcontracting order not found');
+    const order = await prisma.subcontractingOrder.findFirst({
+      where: { id, tenantId },
+    });
+    if (!order) throw new NotFoundException("Subcontracting order not found");
 
-    const validTransitions: Record<string, string[]> = { SENT: ['MATERIALS_SHIPPED', 'CANCELLED'], MATERIALS_SHIPPED: ['RECEIVED', 'CANCELLED'], RECEIVED: ['COMPLETED', 'CANCELLED'] };
+    const validTransitions: Record<string, string[]> = {
+      SENT: ["MATERIALS_SHIPPED", "CANCELLED"],
+      MATERIALS_SHIPPED: ["RECEIVED", "CANCELLED"],
+      RECEIVED: ["COMPLETED", "CANCELLED"],
+    };
     const allowed = validTransitions[order.status];
     if (!allowed || !allowed.includes(status)) {
-      throw new BadRequestException(`Cannot transition from ${order.status} to ${status}`);
+      throw new BadRequestException(
+        `Cannot transition from ${order.status} to ${status}`,
+      );
     }
 
     return prisma.subcontractingOrder.update({
       where: { id },
       data: { status },
-      include: { vendor: { select: { name: true } }, product: { select: { name: true } } },
+      include: {
+        vendor: { select: { name: true } },
+        product: { select: { name: true } },
+      },
     });
   }
 
-  async issueMaterial(tenantId: string, id: string, materialId: string, issuedQty: number) {
-    const order = await prisma.subcontractingOrder.findFirst({ where: { id, tenantId } });
-    if (!order) throw new NotFoundException('Subcontracting order not found');
+  async issueMaterial(
+    tenantId: string,
+    id: string,
+    materialId: string,
+    issuedQty: number,
+  ) {
+    const order = await prisma.subcontractingOrder.findFirst({
+      where: { id, tenantId },
+    });
+    if (!order) throw new NotFoundException("Subcontracting order not found");
 
-    const material = await prisma.subcontractingMaterial.findFirst({ where: { id: materialId, subcontractingOrderId: id } });
-    if (!material) throw new NotFoundException('Material line not found');
+    const material = await prisma.subcontractingMaterial.findFirst({
+      where: { id: materialId, subcontractingOrderId: id },
+    });
+    if (!material) throw new NotFoundException("Material line not found");
 
-    return prisma.subcontractingMaterial.update({ where: { id: materialId }, data: { issuedQty: new Prisma.Decimal(issuedQty) } });
+    return prisma.subcontractingMaterial.update({
+      where: { id: materialId },
+      data: { issuedQty: new Prisma.Decimal(issuedQty) },
+    });
   }
 
-  async recordConsumption(tenantId: string, id: string, materialId: string, consumedQty: number) {
-    const order = await prisma.subcontractingOrder.findFirst({ where: { id, tenantId } });
-    if (!order) throw new NotFoundException('Subcontracting order not found');
+  async recordConsumption(
+    tenantId: string,
+    id: string,
+    materialId: string,
+    consumedQty: number,
+  ) {
+    const order = await prisma.subcontractingOrder.findFirst({
+      where: { id, tenantId },
+    });
+    if (!order) throw new NotFoundException("Subcontracting order not found");
 
-    return prisma.subcontractingMaterial.update({ where: { id: materialId }, data: { consumedQty: new Prisma.Decimal(consumedQty) } });
+    return prisma.subcontractingMaterial.update({
+      where: { id: materialId },
+      data: { consumedQty: new Prisma.Decimal(consumedQty) },
+    });
   }
 
   async getStats(tenantId: string) {
-    const orders = await prisma.subcontractingOrder.findMany({ where: { tenantId } });
+    const orders = await prisma.subcontractingOrder.findMany({
+      where: { tenantId },
+    });
     return {
       total: orders.length,
-      byStatus: orders.reduce((acc: Record<string, number>, o) => { acc[o.status] = (acc[o.status] || 0) + 1; return acc; }, {}),
+      byStatus: orders.reduce((acc: Record<string, number>, o) => {
+        acc[o.status] = (acc[o.status] || 0) + 1;
+        return acc;
+      }, {}),
       totalCost: orders.reduce((sum, o) => sum + Number(o.totalCost), 0),
     };
   }
 
-  async updateOrder(tenantId: string, id: string, dto: { quantity?: number; unitCost?: number; deliveryDate?: string; notes?: string }) {
-    const order = await prisma.subcontractingOrder.findFirst({ where: { id, tenantId } });
-    if (!order) throw new NotFoundException('Subcontracting order not found');
+  async updateOrder(
+    tenantId: string,
+    id: string,
+    dto: {
+      quantity?: number;
+      unitCost?: number;
+      deliveryDate?: string;
+      notes?: string;
+    },
+  ) {
+    const order = await prisma.subcontractingOrder.findFirst({
+      where: { id, tenantId },
+    });
+    if (!order) throw new NotFoundException("Subcontracting order not found");
 
     const updateData: any = {};
-    if (dto.quantity !== undefined) { updateData.quantity = dto.quantity; updateData.totalCost = new Prisma.Decimal(dto.unitCost ?? order.unitCost).mul(dto.quantity); }
-    if (dto.unitCost !== undefined) { updateData.unitCost = dto.unitCost; updateData.totalCost = new Prisma.Decimal(dto.unitCost).mul(dto.quantity ?? order.quantity); }
+    if (dto.quantity !== undefined) {
+      updateData.quantity = dto.quantity;
+      updateData.totalCost = new Prisma.Decimal(
+        dto.unitCost ?? order.unitCost,
+      ).mul(dto.quantity);
+    }
+    if (dto.unitCost !== undefined) {
+      updateData.unitCost = dto.unitCost;
+      updateData.totalCost = new Prisma.Decimal(dto.unitCost).mul(
+        dto.quantity ?? order.quantity,
+      );
+    }
     if (dto.deliveryDate) updateData.deliveryDate = new Date(dto.deliveryDate);
 
     return prisma.subcontractingOrder.update({
       where: { id },
       data: updateData,
-      include: { vendor: { select: { name: true } }, product: { select: { name: true } } },
+      include: {
+        vendor: { select: { name: true } },
+        product: { select: { name: true } },
+      },
     });
   }
 
   async closeOrder(tenantId: string, id: string) {
-    const order = await prisma.subcontractingOrder.findFirst({ where: { id, tenantId } });
-    if (!order) throw new NotFoundException('Subcontracting order not found');
-    if (order.status === 'COMPLETED') throw new BadRequestException('Order is already completed');
+    const order = await prisma.subcontractingOrder.findFirst({
+      where: { id, tenantId },
+    });
+    if (!order) throw new NotFoundException("Subcontracting order not found");
+    if (order.status === "COMPLETED")
+      throw new BadRequestException("Order is already completed");
 
     return prisma.subcontractingOrder.update({
       where: { id },
-      data: { status: 'COMPLETED' },
-      include: { vendor: { select: { name: true } }, product: { select: { name: true } } },
+      data: { status: "COMPLETED" },
+      include: {
+        vendor: { select: { name: true } },
+        product: { select: { name: true } },
+      },
     });
   }
 
-  async getOrdersBySubcontractor(tenantId: string, vendorId: string, params: PaginationParams = {}): Promise<PaginatedResult<any>> {
+  async getOrdersBySubcontractor(
+    tenantId: string,
+    vendorId: string,
+    params: PaginationParams = {},
+  ): Promise<PaginatedResult<any>> {
     const where = { tenantId, vendorId };
     const { skip, take } = buildPaginationValues(params);
     const orderBy = buildOrderBy(params.sort);
 
     const [orders, total] = await Promise.all([
       prisma.subcontractingOrder.findMany({
-        where, skip, take, orderBy: orderBy as any,
+        where,
+        skip,
+        take,
+        orderBy: orderBy as any,
         include: { product: { select: { name: true, sku: true } } },
       }),
       prisma.subcontractingOrder.count({ where }),
@@ -146,7 +271,12 @@ export class SubcontractingService {
     return paginatedResult(orders, total, params);
   }
 
-  async getMaterialConsumptionReport(tenantId: string, vendorId?: string, startDate?: string, endDate?: string) {
+  async getMaterialConsumptionReport(
+    tenantId: string,
+    vendorId?: string,
+    startDate?: string,
+    endDate?: string,
+  ) {
     const where: any = { tenantId };
     if (vendorId) where.vendorId = vendorId;
     if (startDate || endDate) where.createdAt = {};
@@ -157,21 +287,32 @@ export class SubcontractingService {
       where,
       include: {
         product: { select: { name: true, sku: true } },
-        subcontractingOrder: { select: { id: true, status: true, vendorId: true } },
+        subcontractingOrder: {
+          select: { id: true, status: true, vendorId: true },
+        },
       },
     });
 
-    const totalRequired = materials.reduce((s, m) => s + Number(m.requiredQty), 0);
+    const totalRequired = materials.reduce(
+      (s, m) => s + Number(m.requiredQty),
+      0,
+    );
     const totalIssued = materials.reduce((s, m) => s + Number(m.issuedQty), 0);
-    const totalConsumed = materials.reduce((s, m) => s + Number(m.consumedQty), 0);
+    const totalConsumed = materials.reduce(
+      (s, m) => s + Number(m.consumedQty),
+      0,
+    );
 
     return {
       totalMaterials: materials.length,
       totalRequired,
       totalIssued,
       totalConsumed,
-      utilizationRate: totalIssued > 0 ? Math.round((totalConsumed / totalIssued) * 10000) / 100 : 0,
-      materials: materials.map(m => ({
+      utilizationRate:
+        totalIssued > 0
+          ? Math.round((totalConsumed / totalIssued) * 10000) / 100
+          : 0,
+      materials: materials.map((m) => ({
         productName: m.product.name,
         productSku: m.product.sku,
         requiredQty: Number(m.requiredQty),

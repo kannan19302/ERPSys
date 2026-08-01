@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import '../../../../core/usecase/result.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
@@ -224,7 +223,7 @@ class BlockchainContractListController extends Notifier<BlockchainContractListSt
 final FutureProviderFamily<BlockchainTransaction, String> blockchainTransactionDetailProvider =
     FutureProvider.family<BlockchainTransaction, String>((Ref ref, String id) async {
   final result = await GetBlockchainTransactionUseCase(
-    ref.watch(blockchainRepositoryProvider))(id);
+    ref.watch(blockchainRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 

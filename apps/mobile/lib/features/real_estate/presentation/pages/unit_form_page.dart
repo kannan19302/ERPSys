@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/usecase/result.dart';
-import '../../domain/entities/real_estate.dart';
 import '../providers/real_estate_providers.dart';
 
 class UnitFormPage extends ConsumerStatefulWidget {
@@ -48,16 +45,16 @@ class _UnitFormPageState extends ConsumerState<UnitFormPage> {
       body: Form(key: _formKey, child: ListView(padding: const EdgeInsets.all(Spacing.x4), children: [
         TextFormField(controller: _labelCtrl, decoration: const InputDecoration(labelText: 'Unit Label *', hintText: 'e.g. 101'), validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null),
         const SizedBox(height: Spacing.x4),
-        DropdownButtonFormField<String>(value: _status, decoration: const InputDecoration(labelText: 'Status'), items: const [
+        DropdownButtonFormField<String>(initialValue: _status, decoration: const InputDecoration(labelText: 'Status'), items: const [
           DropdownMenuItem(value: 'VACANT', child: Text('Vacant')), DropdownMenuItem(value: 'OCCUPIED', child: Text('Occupied')),
           DropdownMenuItem(value: 'MAINTENANCE', child: Text('Maintenance')), DropdownMenuItem(value: 'RESERVED', child: Text('Reserved')),
-        ], onChanged: (v) { if (v != null) setState(() => _status = v); }),
+        ], onChanged: (v) { if (v != null) setState(() => _status = v); },),
         const SizedBox(height: Spacing.x4),
         Row(children: [Expanded(child: TextFormField(controller: _areaCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Area (sqft)'))), const SizedBox(width: Spacing.x3), Expanded(child: TextFormField(controller: _rentCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Rent')))],
         ),
         const SizedBox(height: Spacing.x4),
         TextFormField(controller: _descriptionCtrl, maxLines: 3, decoration: const InputDecoration(labelText: 'Description', alignLabelWithHint: true)),
-      ])),
+      ],),),
     );
   }
 }
@@ -110,14 +107,14 @@ class _TenantFormPageState extends ConsumerState<TenantFormPage> {
         const SizedBox(height: Spacing.x4), TextFormField(controller: _phoneCtrl, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'Phone')),
         const SizedBox(height: Spacing.x4), TextFormField(controller: _companyCtrl, decoration: const InputDecoration(labelText: 'Company')),
         const SizedBox(height: Spacing.x4),
-        DropdownButtonFormField<String>(value: _status, decoration: const InputDecoration(labelText: 'Status'), items: const [
+        DropdownButtonFormField<String>(initialValue: _status, decoration: const InputDecoration(labelText: 'Status'), items: const [
           DropdownMenuItem(value: 'ACTIVE', child: Text('Active')), DropdownMenuItem(value: 'INACTIVE', child: Text('Inactive')),
-        ], onChanged: (v) { if (v != null) setState(() => _status = v); }),
+        ], onChanged: (v) { if (v != null) setState(() => _status = v); },),
         const SizedBox(height: Spacing.x4),
         Row(children: [Expanded(child: TextFormField(controller: _emergencyContactCtrl, decoration: const InputDecoration(labelText: 'Emergency Contact'))), const SizedBox(width: Spacing.x3), Expanded(child: TextFormField(controller: _emergencyPhoneCtrl, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'Emergency Phone')))]),
         const SizedBox(height: Spacing.x4),
         TextFormField(controller: _notesCtrl, maxLines: 3, decoration: const InputDecoration(labelText: 'Notes', alignLabelWithHint: true)),
-      ])),
+      ],),),
     );
   }
 }

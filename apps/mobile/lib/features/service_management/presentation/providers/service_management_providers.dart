@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -125,14 +124,14 @@ class ServiceCatalogListController extends Notifier<ServiceCatalogListState> {
 
   Future<Result<ServiceCatalog>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveServiceCatalogUseCase(ref.read(serviceManagementRepositoryProvider))(
-      SaveServiceCatalogParams(payload: payload, id: id));
+      SaveServiceCatalogParams(payload: payload, id: id),);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteServiceCatalogUseCase(
-      ref.read(serviceManagementRepositoryProvider))(id);
+      ref.read(serviceManagementRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
@@ -236,7 +235,7 @@ class ServiceRequestListController extends Notifier<ServiceRequestListState> {
 
   Future<Result<ServiceRequest>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveServiceRequestUseCase(ref.read(serviceManagementRepositoryProvider))(
-      SaveServiceRequestParams(payload: payload, id: id));
+      SaveServiceRequestParams(payload: payload, id: id),);
     if (result.isOk) await refresh();
     return result;
   }
@@ -341,7 +340,7 @@ void search(String term) {
 
   Future<Result<ServiceLevelAgreement>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveServiceSlaUseCase(ref.read(serviceManagementRepositoryProvider))(
-      SaveServiceSlaParams(payload: payload, id: id));
+      SaveServiceSlaParams(payload: payload, id: id),);
     if (result.isOk) await refresh();
     return result;
   }
@@ -356,21 +355,21 @@ void search(String term) {
 final FutureProviderFamily<ServiceCatalog, String> serviceCatalogDetailProvider =
     FutureProvider.family<ServiceCatalog, String>((Ref ref, String id) async {
   final result = await GetServiceCatalogUseCase(
-    ref.watch(serviceManagementRepositoryProvider))(id);
+    ref.watch(serviceManagementRepositoryProvider),)(id);
   return result.fold((f) => throw f, (c) => c);
 });
 
 final FutureProviderFamily<ServiceRequest, String> serviceRequestDetailProvider =
     FutureProvider.family<ServiceRequest, String>((Ref ref, String id) async {
   final result = await GetServiceRequestUseCase(
-    ref.watch(serviceManagementRepositoryProvider))(id);
+    ref.watch(serviceManagementRepositoryProvider),)(id);
   return result.fold((f) => throw f, (r) => r);
 });
 
 final FutureProviderFamily<ServiceLevelAgreement, String> serviceSlaDetailProvider =
     FutureProvider.family<ServiceLevelAgreement, String>((Ref ref, String id) async {
   final result = await GetServiceSlaUseCase(
-    ref.watch(serviceManagementRepositoryProvider))(id);
+    ref.watch(serviceManagementRepositoryProvider),)(id);
   return result.fold((f) => throw f, (s) => s);
 });
 

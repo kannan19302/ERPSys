@@ -87,259 +87,259 @@ const Vendor _vendorActive = Vendor(
 class FakeProcurementRepository implements ProcurementRepository {
   @override
   Future<Result<Cacheable<Paginated<PurchaseOrder>>>> listPurchaseOrders(
-          ListQuery query) async =>
-      Result<Cacheable<Paginated<PurchaseOrder>>>.ok(
+          ListQuery query,) async =>
+      const Result<Cacheable<Paginated<PurchaseOrder>>>.ok(
         Cacheable<Paginated<PurchaseOrder>>(
           value: Paginated<PurchaseOrder>(
             data: <PurchaseOrder>[_poDraft, _poSubmitted],
-            meta: const PaginationMeta(
-                page: 1, limit: 25, total: 2, totalPages: 1),
+            meta: PaginationMeta(
+                page: 1, limit: 25, total: 2, totalPages: 1,),
           ),
         ),
       );
 
   @override
   Future<Result<PurchaseOrder>> getPurchaseOrder(String id) async =>
-      Result<PurchaseOrder>.ok(_poDraft);
+      const Result<PurchaseOrder>.ok(_poDraft);
 
   @override
   Future<Result<PurchaseOrder>> createPurchaseOrder(
-          Map<String, dynamic> payload) async =>
-      Result<PurchaseOrder>.ok(_poDraft);
+          Map<String, dynamic> payload,) async =>
+      const Result<PurchaseOrder>.ok(_poDraft);
 
   @override
   Future<Result<PurchaseOrder>> updatePurchaseOrder(
-          String id, Map<String, dynamic> payload) async =>
-      Result<PurchaseOrder>.ok(_poDraft);
+          String id, Map<String, dynamic> payload,) async =>
+      const Result<PurchaseOrder>.ok(_poDraft);
 
   @override
   Future<Result<void>> deletePurchaseOrder(String id) async =>
-      Result<void>.ok(null);
+      const Result<void>.ok(null);
 
   @override
   Future<Result<PurchaseOrder>> submitPurchaseOrder(String id) async =>
-      Result<PurchaseOrder>.ok(_poSubmitted);
+      const Result<PurchaseOrder>.ok(_poSubmitted);
 
   @override
   Future<Result<PurchaseOrder>> approvePurchaseOrder(String id) async =>
-      Result<PurchaseOrder>.ok(_poSubmitted);
+      const Result<PurchaseOrder>.ok(_poSubmitted);
 
   @override
   Future<Result<PurchaseOrder>> receivePurchaseOrder(String id) async =>
-      Result<PurchaseOrder>.ok(_poDraft);
+      const Result<PurchaseOrder>.ok(_poDraft);
 
   @override
   Future<Result<PurchaseOrder>> cancelPurchaseOrder(String id) async =>
-      Result<PurchaseOrder>.ok(_poCancelled);
+      const Result<PurchaseOrder>.ok(_poCancelled);
 
   @override
   Future<Result<Cacheable<Paginated<Vendor>>>> listVendors(
-          ListQuery query) async =>
-      Result<Cacheable<Paginated<Vendor>>>.ok(
+          ListQuery query,) async =>
+      const Result<Cacheable<Paginated<Vendor>>>.ok(
         Cacheable<Paginated<Vendor>>(
           value: Paginated<Vendor>(
             data: <Vendor>[_vendorActive],
-            meta: const PaginationMeta(
-                page: 1, limit: 25, total: 1, totalPages: 1),
+            meta: PaginationMeta(
+                page: 1, limit: 25, total: 1, totalPages: 1,),
           ),
         ),
       );
 
   @override
   Future<Result<Vendor>> getVendor(String id) async =>
-      Result<Vendor>.ok(_vendorActive);
+      const Result<Vendor>.ok(_vendorActive);
 
   @override
   Future<Result<Vendor>> createVendor(Map<String, dynamic> payload) async =>
-      Result<Vendor>.ok(_vendorActive);
+      const Result<Vendor>.ok(_vendorActive);
 
   @override
   Future<Result<Vendor>> updateVendor(
-          String id, Map<String, dynamic> payload) async =>
-      Result<Vendor>.ok(_vendorActive);
+          String id, Map<String, dynamic> payload,) async =>
+      const Result<Vendor>.ok(_vendorActive);
 
   @override
   Future<Result<void>> deleteVendor(String id) async =>
-      Result<void>.ok(null);
+      const Result<void>.ok(null);
 
   @override
   Future<Result<Cacheable<Paginated<RFQ>>>> listRFQs(
-          ListQuery query) async =>
-      Result<Cacheable<Paginated<RFQ>>>.ok(
+          ListQuery query,) async =>
+      const Result<Cacheable<Paginated<RFQ>>>.ok(
         Cacheable<Paginated<RFQ>>(
           value: Paginated<RFQ>(
             data: <RFQ>[],
-            meta: const PaginationMeta(
-                page: 1, limit: 25, total: 0, totalPages: 0),
+            meta: PaginationMeta(
+                page: 1, limit: 25, total: 0, totalPages: 0,),
           ),
         ),
       );
 
   @override
   Future<Result<RFQ>> getRFQ(String id) async =>
-      Result<RFQ>.ok(RFQ(id: 'rfq1', rfqNumber: 'RFQ-0001', status: 'DRAFT'));
+      const Result<RFQ>.ok(RFQ(id: 'rfq1', rfqNumber: 'RFQ-0001', status: 'DRAFT'));
 
   @override
   Future<Result<RFQ>> createRFQ(Map<String, dynamic> payload) async =>
-      Result<RFQ>.ok(RFQ(id: 'rfq1', rfqNumber: 'RFQ-0001', status: 'DRAFT'));
+      const Result<RFQ>.ok(RFQ(id: 'rfq1', rfqNumber: 'RFQ-0001', status: 'DRAFT'));
 
   @override
   Future<Result<RFQ>> updateRFQ(
-          String id, Map<String, dynamic> payload) async =>
-      Result<RFQ>.ok(RFQ(id: 'rfq1', rfqNumber: 'RFQ-0001', status: 'DRAFT'));
+          String id, Map<String, dynamic> payload,) async =>
+      const Result<RFQ>.ok(RFQ(id: 'rfq1', rfqNumber: 'RFQ-0001', status: 'DRAFT'));
 
   @override
   Future<Result<RFQ>> submitRFQ(String id) async =>
-      Result<RFQ>.ok(RFQ(id: 'rfq1', rfqNumber: 'RFQ-0001', status: 'SUBMITTED'));
+      const Result<RFQ>.ok(RFQ(id: 'rfq1', rfqNumber: 'RFQ-0001', status: 'SUBMITTED'));
 
   @override
   Future<Result<RFQ>> closeRFQ(String id) async =>
-      Result<RFQ>.ok(RFQ(id: 'rfq1', rfqNumber: 'RFQ-0001', status: 'CLOSED'));
+      const Result<RFQ>.ok(RFQ(id: 'rfq1', rfqNumber: 'RFQ-0001', status: 'CLOSED'));
 
   @override
   Future<Result<Cacheable<Paginated<SupplierQuotation>>>>
       listSupplierQuotations(ListQuery query) async =>
-      Result<Cacheable<Paginated<SupplierQuotation>>>.ok(
+      const Result<Cacheable<Paginated<SupplierQuotation>>>.ok(
         Cacheable<Paginated<SupplierQuotation>>(
           value: Paginated<SupplierQuotation>(
             data: <SupplierQuotation>[],
-            meta: const PaginationMeta(
-                page: 1, limit: 25, total: 0, totalPages: 0),
+            meta: PaginationMeta(
+                page: 1, limit: 25, total: 0, totalPages: 0,),
           ),
         ),
       );
 
   @override
   Future<Result<SupplierQuotation>> getSupplierQuotation(String id) async =>
-      Result<SupplierQuotation>.ok(
+      const Result<SupplierQuotation>.ok(
         SupplierQuotation(id: 'sq1', status: 'DRAFT'),
       );
 
   @override
   Future<Result<SupplierQuotation>> createSupplierQuotation(
-          Map<String, dynamic> payload) async =>
-      Result<SupplierQuotation>.ok(
+          Map<String, dynamic> payload,) async =>
+      const Result<SupplierQuotation>.ok(
         SupplierQuotation(id: 'sq1', status: 'DRAFT'),
       );
 
   @override
   Future<Result<SupplierQuotation>> updateSupplierQuotation(
-          String id, Map<String, dynamic> payload) async =>
-      Result<SupplierQuotation>.ok(
+          String id, Map<String, dynamic> payload,) async =>
+      const Result<SupplierQuotation>.ok(
         SupplierQuotation(id: 'sq1', status: 'DRAFT'),
       );
 
   @override
   Future<Result<SupplierQuotation>> approveSupplierQuotation(
-          String id) async =>
-      Result<SupplierQuotation>.ok(
+          String id,) async =>
+      const Result<SupplierQuotation>.ok(
         SupplierQuotation(id: 'sq1', status: 'APPROVED'),
       );
 
   @override
   Future<Result<SupplierQuotation>> rejectSupplierQuotation(
-          String id) async =>
-      Result<SupplierQuotation>.ok(
+          String id,) async =>
+      const Result<SupplierQuotation>.ok(
         SupplierQuotation(id: 'sq1', status: 'REJECTED'),
       );
 
   @override
   Future<Result<SupplierQuotation>> convertSupplierQuotation(
-          String id) async =>
-      Result<SupplierQuotation>.ok(
+          String id,) async =>
+      const Result<SupplierQuotation>.ok(
         SupplierQuotation(id: 'sq1', status: 'CONVERTED'),
       );
 
   @override
   Future<Result<Cacheable<Paginated<PurchaseRequisition>>>>
       listPurchaseRequisitions(ListQuery query) async =>
-      Result<Cacheable<Paginated<PurchaseRequisition>>>.ok(
+      const Result<Cacheable<Paginated<PurchaseRequisition>>>.ok(
         Cacheable<Paginated<PurchaseRequisition>>(
           value: Paginated<PurchaseRequisition>(
             data: <PurchaseRequisition>[],
-            meta: const PaginationMeta(
-                page: 1, limit: 25, total: 0, totalPages: 0),
+            meta: PaginationMeta(
+                page: 1, limit: 25, total: 0, totalPages: 0,),
           ),
         ),
       );
 
   @override
   Future<Result<PurchaseRequisition>> getPurchaseRequisition(
-          String id) async =>
-      Result<PurchaseRequisition>.ok(
+          String id,) async =>
+      const Result<PurchaseRequisition>.ok(
         PurchaseRequisition(id: 'pr1', title: 'Office Supply', status: 'DRAFT'),
       );
 
   @override
   Future<Result<PurchaseRequisition>> createPurchaseRequisition(
-          Map<String, dynamic> payload) async =>
-      Result<PurchaseRequisition>.ok(
+          Map<String, dynamic> payload,) async =>
+      const Result<PurchaseRequisition>.ok(
         PurchaseRequisition(id: 'pr1', title: 'Office Supply', status: 'DRAFT'),
       );
 
   @override
   Future<Result<PurchaseRequisition>> updatePurchaseRequisition(
-          String id, Map<String, dynamic> payload) async =>
-      Result<PurchaseRequisition>.ok(
+          String id, Map<String, dynamic> payload,) async =>
+      const Result<PurchaseRequisition>.ok(
         PurchaseRequisition(id: 'pr1', title: 'Office Supply', status: 'DRAFT'),
       );
 
   @override
   Future<Result<PurchaseRequisition>> approvePurchaseRequisition(
-          String id) async =>
-      Result<PurchaseRequisition>.ok(
+          String id,) async =>
+      const Result<PurchaseRequisition>.ok(
         PurchaseRequisition(id: 'pr1', title: 'Office Supply', status: 'APPROVED'),
       );
 
   @override
   Future<Result<Cacheable<Paginated<PurchaseReceipt>>>>
       listPurchaseReceipts(ListQuery query) async =>
-      Result<Cacheable<Paginated<PurchaseReceipt>>>.ok(
+      const Result<Cacheable<Paginated<PurchaseReceipt>>>.ok(
         Cacheable<Paginated<PurchaseReceipt>>(
           value: Paginated<PurchaseReceipt>(
             data: <PurchaseReceipt>[],
-            meta: const PaginationMeta(
-                page: 1, limit: 25, total: 0, totalPages: 0),
+            meta: PaginationMeta(
+                page: 1, limit: 25, total: 0, totalPages: 0,),
           ),
         ),
       );
 
   @override
   Future<Result<PurchaseReceipt>> getPurchaseReceipt(String id) async =>
-      Result<PurchaseReceipt>.ok(
+      const Result<PurchaseReceipt>.ok(
         PurchaseReceipt(id: 'prc1', receiptNumber: 'PREC-0001', status: 'DRAFT'),
       );
 
   @override
   Future<Result<PurchaseReceipt>> createPurchaseReceipt(
-          Map<String, dynamic> payload) async =>
-      Result<PurchaseReceipt>.ok(
+          Map<String, dynamic> payload,) async =>
+      const Result<PurchaseReceipt>.ok(
         PurchaseReceipt(id: 'prc1', receiptNumber: 'PREC-0001', status: 'DRAFT'),
       );
 
   @override
   Future<Result<PurchaseReceipt>> updatePurchaseReceipt(
-          String id, Map<String, dynamic> payload) async =>
-      Result<PurchaseReceipt>.ok(
+          String id, Map<String, dynamic> payload,) async =>
+      const Result<PurchaseReceipt>.ok(
         PurchaseReceipt(id: 'prc1', receiptNumber: 'PREC-0001', status: 'DRAFT'),
       );
 
   @override
   Future<Result<Cacheable<Paginated<SupplierContract>>>>
       listSupplierContracts(ListQuery query) async =>
-      Result<Cacheable<Paginated<SupplierContract>>>.ok(
+      const Result<Cacheable<Paginated<SupplierContract>>>.ok(
         Cacheable<Paginated<SupplierContract>>(
           value: Paginated<SupplierContract>(
             data: <SupplierContract>[],
-            meta: const PaginationMeta(
-                page: 1, limit: 25, total: 0, totalPages: 0),
+            meta: PaginationMeta(
+                page: 1, limit: 25, total: 0, totalPages: 0,),
           ),
         ),
       );
 
   @override
   Future<Result<SupplierContract>> getSupplierContract(String id) async =>
-      Result<SupplierContract>.ok(
+      const Result<SupplierContract>.ok(
         SupplierContract(
           id: 'sc1',
           contractNumber: 'CTR-0001',
@@ -352,8 +352,8 @@ class FakeProcurementRepository implements ProcurementRepository {
 
   @override
   Future<Result<SupplierContract>> createSupplierContract(
-          Map<String, dynamic> payload) async =>
-      Result<SupplierContract>.ok(
+          Map<String, dynamic> payload,) async =>
+      const Result<SupplierContract>.ok(
         SupplierContract(
           id: 'sc1',
           contractNumber: 'CTR-0001',
@@ -366,8 +366,8 @@ class FakeProcurementRepository implements ProcurementRepository {
 
   @override
   Future<Result<SupplierContract>> updateSupplierContract(
-          String id, Map<String, dynamic> payload) async =>
-      Result<SupplierContract>.ok(
+          String id, Map<String, dynamic> payload,) async =>
+      const Result<SupplierContract>.ok(
         SupplierContract(
           id: 'sc1',
           contractNumber: 'CTR-0001',
@@ -380,11 +380,11 @@ class FakeProcurementRepository implements ProcurementRepository {
 
   @override
   Future<Result<void>> deleteSupplierContract(String id) async =>
-      Result<void>.ok(null);
+      const Result<void>.ok(null);
 
   @override
   Future<Result<ProcurementDashboardStats>> getProcurementDashboard() async =>
-      Result<ProcurementDashboardStats>.ok(ProcurementDashboardStats());
+      const Result<ProcurementDashboardStats>.ok(ProcurementDashboardStats());
 }
 
 // ── Pump helpers ─────────────────────────────────────────────────────────────

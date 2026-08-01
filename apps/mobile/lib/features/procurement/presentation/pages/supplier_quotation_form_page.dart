@@ -37,7 +37,7 @@ class _SupplierQuotationFormPageState extends ConsumerState<SupplierQuotationFor
       productCtrl: TextEditingController(),
       qtyCtrl: TextEditingController(text: '1'),
       rateCtrl: TextEditingController(),
-    )));
+    ),),);
   }
 
   void _removeItem(int index) {
@@ -53,7 +53,9 @@ class _SupplierQuotationFormPageState extends ConsumerState<SupplierQuotationFor
     _supplierCtrl.dispose();
     _validUntilCtrl.dispose();
     _notesCtrl.dispose();
-    for (final i in _items) i.dispose();
+    for (final i in _items) {
+      i.dispose();
+    }
     super.dispose();
   }
 
@@ -70,7 +72,7 @@ class _SupplierQuotationFormPageState extends ConsumerState<SupplierQuotationFor
         'productName': i.productCtrl.text.trim(),
         'quantity': double.tryParse(i.qtyCtrl.text) ?? 0,
         'rate': double.tryParse(i.rateCtrl.text) ?? 0,
-      }).toList(),
+      },).toList(),
     };
 
     final result = await ref.read(supplierQuotationListControllerProvider.notifier)
@@ -127,7 +129,7 @@ class _SupplierQuotationFormPageState extends ConsumerState<SupplierQuotationFor
                 icon: const Icon(Icons.add, size: 18),
                 label: const Text('Add'),
               ),
-            ]),
+            ],),
             ...List.generate(_items.length, (i) {
               final item = _items[i];
               return Padding(
@@ -136,24 +138,24 @@ class _SupplierQuotationFormPageState extends ConsumerState<SupplierQuotationFor
                   Expanded(flex: 2, child: TextFormField(
                     controller: item.productCtrl,
                     decoration: const InputDecoration(labelText: 'Product', isDense: true),
-                  )),
+                  ),),
                   const SizedBox(width: Spacing.x2),
                   Expanded(flex: 1, child: TextFormField(
                     controller: item.qtyCtrl,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(labelText: 'Qty', isDense: true),
-                  )),
+                  ),),
                   const SizedBox(width: Spacing.x2),
                   Expanded(flex: 1, child: TextFormField(
                     controller: item.rateCtrl,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(labelText: 'Rate', isDense: true),
-                  )),
+                  ),),
                   IconButton(
                     icon: const Icon(Icons.remove_circle_outline, size: 20),
                     onPressed: () => _removeItem(i),
                   ),
-                ]),
+                ],),
               );
             }),
             const SizedBox(height: Spacing.x4),

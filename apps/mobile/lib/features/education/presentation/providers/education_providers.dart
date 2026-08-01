@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -126,14 +125,14 @@ class StudentListController extends Notifier<StudentListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteStudentUseCase(
-      ref.read(educationRepositoryProvider))(id);
+      ref.read(educationRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<Student>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveStudentUseCase(
-      ref.read(educationRepositoryProvider))(
+      ref.read(educationRepositoryProvider),)(
       SaveStudentParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -144,7 +143,7 @@ class StudentListController extends Notifier<StudentListState> {
 final FutureProviderFamily<Student, String> studentDetailProvider =
     FutureProvider.family<Student, String>((Ref ref, String id) async {
   final result = await GetStudentUseCase(
-    ref.watch(educationRepositoryProvider))(id);
+    ref.watch(educationRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -241,7 +240,7 @@ class CourseListController extends Notifier<CourseListState> {
 
   Future<Result<Course>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveCourseUseCase(
-      ref.read(educationRepositoryProvider))(
+      ref.read(educationRepositoryProvider),)(
       SaveCourseParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -252,14 +251,14 @@ class CourseListController extends Notifier<CourseListState> {
 final FutureProviderFamily<Course, String> courseDetailProvider =
     FutureProvider.family<Course, String>((Ref ref, String id) async {
   final result = await GetCourseUseCase(
-    ref.watch(educationRepositoryProvider))(id);
+    ref.watch(educationRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
 final FutureProviderFamily<Enrollment, String> enrollmentDetailProvider =
     FutureProvider.family<Enrollment, String>((Ref ref, String id) async {
   final result = await GetEnrollmentUseCase(
-    ref.watch(educationRepositoryProvider))(id);
+    ref.watch(educationRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -348,7 +347,7 @@ class EnrollmentListController extends Notifier<EnrollmentListState> {
 
   Future<Result<Enrollment>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveEnrollmentUseCase(
-      ref.read(educationRepositoryProvider))(
+      ref.read(educationRepositoryProvider),)(
       SaveEnrollmentParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -359,7 +358,7 @@ class EnrollmentListController extends Notifier<EnrollmentListState> {
 final FutureProviderFamily<Exam, String> examDetailProvider =
     FutureProvider.family<Exam, String>((Ref ref, String id) async {
   final result = await GetExamUseCase(
-    ref.watch(educationRepositoryProvider))(id);
+    ref.watch(educationRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -448,7 +447,7 @@ class ExamListController extends Notifier<ExamListState> {
 
   Future<Result<Exam>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveExamUseCase(
-      ref.read(educationRepositoryProvider))(
+      ref.read(educationRepositoryProvider),)(
       SaveExamParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -541,7 +540,7 @@ class GradeEntryListController extends Notifier<GradeEntryListState> {
 
   Future<Result<GradeEntry>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveGradeEntryUseCase(
-      ref.read(educationRepositoryProvider))(
+      ref.read(educationRepositoryProvider),)(
       SaveGradeEntryParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();

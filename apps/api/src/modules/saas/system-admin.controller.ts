@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Controller,
   Get,
@@ -46,7 +45,9 @@ export class SystemAdminController {
   @Permissions("saas.analytics.read")
   @Get("health")
   async systemHealth(@Req() _req: AuthReq) {
-    return this.tenantAnalyticsService.getHealthMetrics().catch(() => ({ status: "unknown" }));
+    return this.tenantAnalyticsService
+      .getHealthMetrics()
+      .catch(() => ({ status: "unknown" }));
   }
 
   @ApiOperation({ summary: "Database health [Admin]" })
@@ -99,16 +100,30 @@ export class SystemAdminController {
   @Permissions("saas.analytics.read")
   @Get("metrics")
   async systemMetrics(@Req() _req: AuthReq) {
-    const tenantCount = await this.tenantAnalyticsService.db.tenant.count().catch(() => 0);
-    const userCount = await this.tenantAnalyticsService.db.user.count().catch(() => 0);
-    return { tenants: tenantCount, users: userCount, uptime: "99.9%", version: "1.0.0" };
+    const tenantCount = await this.tenantAnalyticsService.db.tenant
+      .count()
+      .catch(() => 0);
+    const userCount = await this.tenantAnalyticsService.db.user
+      .count()
+      .catch(() => 0);
+    return {
+      tenants: tenantCount,
+      users: userCount,
+      uptime: "99.9%",
+      version: "1.0.0",
+    };
   }
 
   @ApiOperation({ summary: "Performance metrics [Admin]" })
   @Permissions("saas.analytics.read")
   @Get("metrics/performance")
   async performanceMetrics(@Req() _req: AuthReq) {
-    return { avgResponseTime: "120ms", p95ResponseTime: "350ms", requestsPerMinute: 150, memoryUsage: "45%" };
+    return {
+      avgResponseTime: "120ms",
+      p95ResponseTime: "350ms",
+      requestsPerMinute: 150,
+      memoryUsage: "45%",
+    };
   }
 
   @ApiOperation({ summary: "Error metrics [Admin]" })
@@ -122,27 +137,40 @@ export class SystemAdminController {
   @Permissions("saas.analytics.read")
   @Get("logs")
   async systemLogs(@Req() req: AuthReq) {
-    return this.auditLogService.listAuditLogs(req.user.tenantId, 1, 100, {}).catch(() => ({ items: [], total: 0 }));
+    return this.auditLogService
+      .listAuditLogs(req.user.tenantId, 1, 100, {})
+      .catch(() => ({ items: [], total: 0 }));
   }
 
   @ApiOperation({ summary: "Get log detail [Admin]" })
   @Permissions("saas.analytics.read")
   @Get("logs/:id")
   async getLogDetail(@Req() req: AuthReq, @Param("id") id: string) {
-    return this.auditLogService.getAuditLog(req.user.tenantId, id).catch(() => null);
+    return this.auditLogService
+      .getAuditLog(req.user.tenantId, id)
+      .catch(() => null);
   }
 
   @ApiOperation({ summary: "Get system config [Admin]" })
   @Permissions("saas.analytics.read")
   @Get("config")
   async getSystemConfig(@Req() _req: AuthReq) {
-    return { maintenanceMode: false, version: "1.0.0", debugMode: false, maxUploadSizeMb: 100 };
+    return {
+      maintenanceMode: false,
+      version: "1.0.0",
+      debugMode: false,
+      maxUploadSizeMb: 100,
+    };
   }
 
   @ApiOperation({ summary: "Update system config [Admin]" })
   @Permissions("saas.analytics.create")
   @Put("config")
-  async updateSystemConfig(@Req() _req: AuthReq, @ZodBody(updateSystemConfigSchema) body: z.infer<typeof updateSystemConfigSchema>) {
+  async updateSystemConfig(
+    @Req() _req: AuthReq,
+    @ZodBody(updateSystemConfigSchema)
+    body: z.infer<typeof updateSystemConfigSchema>,
+  ) {
     return { success: true, key: body.key, value: body.value };
   }
 
@@ -156,8 +184,16 @@ export class SystemAdminController {
   @ApiOperation({ summary: "Toggle maintenance mode [Admin]" })
   @Permissions("saas.analytics.create")
   @Post("maintenance")
-  async toggleMaintenanceMode(@Req() _req: AuthReq, @ZodBody(toggleMaintenanceModeSchema) body: z.infer<typeof toggleMaintenanceModeSchema>) {
-    return { success: true, maintenanceMode: body.enabled, message: body.message };
+  async toggleMaintenanceMode(
+    @Req() _req: AuthReq,
+    @ZodBody(toggleMaintenanceModeSchema)
+    body: z.infer<typeof toggleMaintenanceModeSchema>,
+  ) {
+    return {
+      success: true,
+      maintenanceMode: body.enabled,
+      message: body.message,
+    };
   }
 
   @ApiOperation({ summary: "List backups [Admin]" })
@@ -171,7 +207,12 @@ export class SystemAdminController {
   @Permissions("saas.analytics.create")
   @Post("backup")
   async createBackup(@Req() _req: AuthReq) {
-    return { success: true, backupId: "bkp_" + Date.now(), status: "creating", estimatedSize: "250MB" };
+    return {
+      success: true,
+      backupId: "bkp_" + Date.now(),
+      status: "creating",
+      estimatedSize: "250MB",
+    };
   }
 
   @ApiOperation({ summary: "Restore backup [Admin]" })

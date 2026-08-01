@@ -1,20 +1,19 @@
-// @ts-nocheck
 import {
   CallHandler,
   ExecutionContext,
   Injectable,
   NestInterceptor,
-} from '@nestjs/common';
-import { Observable, tap } from 'rxjs';
-import { prisma } from '@unerp/database';
-import { pinoLogger } from '../services/logger.service';
+} from "@nestjs/common";
+import { Observable, tap } from "rxjs";
+import { prisma } from "@unerp/database";
+import { pinoLogger } from "../services/logger.service";
 
-const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
+const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 const ACTION_BY_METHOD: Record<string, string> = {
-  POST: 'CREATE',
-  PUT: 'UPDATE',
-  PATCH: 'UPDATE',
-  DELETE: 'DELETE',
+  POST: "CREATE",
+  PUT: "UPDATE",
+  PATCH: "UPDATE",
+  DELETE: "DELETE",
 };
 
 interface RequestPrincipal {
@@ -68,12 +67,10 @@ export class AuditInterceptor implements NestInterceptor {
     }
 
     try {
-      const path = (req.originalUrl ?? req.url).split('?')[0] ?? '';
+      const path = (req.originalUrl ?? req.url).split("?")[0] ?? "";
       const entityType = this.deriveEntityType(path);
       const entityId =
-        req.params?.id ??
-        (result as { id?: string })?.id ??
-        'n/a';
+        req.params?.id ?? (result as { id?: string })?.id ?? "n/a";
 
       await prisma.auditLog.create({
         data: {
@@ -84,31 +81,31 @@ export class AuditInterceptor implements NestInterceptor {
           entityId,
           changes: this.safeBody(req.body),
           ipAddress: req.ip ?? null,
-          userAgent: (req.headers['user-agent'] as string) ?? null,
+          userAgent: (req.headers["user-agent"] as string) ?? null,
         },
       });
     } catch (err) {
-      pinoLogger.warn({ err }, 'audit log write failed');
+      pinoLogger.warn({ err }, "audit log write failed");
     }
   }
 
   /** Turn `/api/v1/finance/invoices/123` into `finance.invoices`. */
   private deriveEntityType(path: string): string {
-    const parts = path.split('/').filter(Boolean);
-    const apiIdx = parts.indexOf('v1');
+    const parts = path.split("/").filter(Boolean);
+    const apiIdx = parts.indexOf("v1");
     const segments = apiIdx >= 0 ? parts.slice(apiIdx + 1) : parts;
     const named = segments.filter((s) => !/^[0-9a-f-]{8,}$/i.test(s));
-    return named.slice(0, 2).join('.') || 'unknown';
+    return named.slice(0, 2).join(".") || "unknown";
   }
 
   /** Store a bounded snapshot of the request body, never secrets. */
   private safeBody(body: unknown): object | undefined {
-    if (!body || typeof body !== 'object') return undefined;
-    const redactKeys = ['password', 'token', 'secret', 'apiKey', 'key'];
+    if (!body || typeof body !== "object") return undefined;
+    const redactKeys = ["password", "token", "secret", "apiKey", "key"];
     const clone: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(body as Record<string, unknown>)) {
       clone[k] = redactKeys.some((r) => k.toLowerCase().includes(r))
-        ? '[redacted]'
+        ? "[redacted]"
         : v;
     }
     return clone;

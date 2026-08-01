@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 
 export default function WorkflowSimulationRedirectPage() {
-  redirect('/settings/workflow-builder?tab=simulator');
+  redirect("/settings/workflow-builder?tab=simulator");
 }

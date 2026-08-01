@@ -23,22 +23,22 @@ class SavedViewsRemoteDataSourceImpl implements SavedViewsRemoteDataSource {
   @override
   Future<Paginated<SavedViewModel>> listSavedViews(ListQuery query) =>
       _client.getPaginated<SavedViewModel>(
-        ApiPaths.savedViews, query, SavedViewModel.fromJson);
+        ApiPaths.savedViews, query, SavedViewModel.fromJson,);
 
   @override
   Future<SavedViewModel> getSavedView(String id) async =>
       SavedViewModel.fromJson(
-        await _client.getObject(ApiPaths.savedView(id)));
+        await _client.getObject(ApiPaths.savedView(id)),);
 
   @override
   Future<SavedViewModel> createSavedView(Map<String, dynamic> payload) async =>
       SavedViewModel.fromJson(
-        await _client.post(ApiPaths.savedViews, body: payload));
+        await _client.post(ApiPaths.savedViews, body: payload),);
 
   @override
   Future<SavedViewModel> updateSavedView(String id, Map<String, dynamic> payload) async =>
       SavedViewModel.fromJson(
-        await _client.patch(ApiPaths.savedView(id), body: payload));
+        await _client.patch(ApiPaths.savedView(id), body: payload),);
 
   @override
   Future<void> deleteSavedView(String id) =>
@@ -47,12 +47,12 @@ class SavedViewsRemoteDataSourceImpl implements SavedViewsRemoteDataSource {
   @override
   Future<Paginated<SavedViewShareModel>> listShares(ListQuery query) =>
       _client.getPaginated<SavedViewShareModel>(
-        ApiPaths.savedViewShares, query, SavedViewShareModel.fromJson);
+        ApiPaths.savedViewShares, query, SavedViewShareModel.fromJson,);
 
   @override
   Future<SavedViewShareModel> createShare(Map<String, dynamic> payload) async =>
       SavedViewShareModel.fromJson(
-        await _client.post(ApiPaths.savedViewShares, body: payload));
+        await _client.post(ApiPaths.savedViewShares, body: payload),);
 
   @override
   Future<void> deleteShare(String id) =>

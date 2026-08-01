@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Injectable,
   NotFoundException,
@@ -101,7 +100,7 @@ export class LocalizationService {
   async createTranslationKey(
     tenantId: string,
     dto: {
-      key: string; module?: string;
+      key: string;
       module: string;
       description?: string;
       isDynamic?: boolean;
@@ -192,7 +191,10 @@ export class LocalizationService {
 
   async importTranslations(
     tenantId: string,
-    dto: { localeCode: string; entries: { key: string; module?: string; value: string }[] },
+    dto: {
+      localeCode: string;
+      entries: { key: string; module?: string; value: string }[];
+    },
   ) {
     const locale = await prisma.locale.findFirst({
       where: { tenantId, code: dto.localeCode },
@@ -393,7 +395,12 @@ export class LocalizationService {
 
   async bulkImportTranslations(
     tenantId: string,
-    entries: Array<{ key: string; module?: string; localeCode: string; value: string }>,
+    entries: Array<{
+      key: string;
+      module?: string;
+      localeCode: string;
+      value: string;
+    }>,
   ) {
     const results: any[] = [];
     for (const entry of entries || []) {
@@ -402,7 +409,11 @@ export class LocalizationService {
       });
       if (!key)
         key = await prisma.translationKey.create({
-          data: { tenantId, key: entry.key },
+          data: {
+            tenantId,
+            key: entry.key,
+            module: entry.module ?? "imported",
+          },
         });
       const locale = await prisma.locale.findFirst({
         where: { tenantId, code: entry.localeCode },
@@ -418,14 +429,15 @@ export class LocalizationService {
       }
       await prisma.translationEntry.upsert({
         where: {
-          translationKeyId_localeId: {
-            translationKeyId: key.id,
+          tenantId_localeId_keyId: {
+            tenantId,
             localeId: locale.id,
+            keyId: key.id,
           },
-        } as any,
+        },
         create: {
           tenantId,
-          translationKeyId: key.id,
+          keyId: key.id,
           localeId: locale.id,
           value: entry.value,
         },
@@ -444,7 +456,7 @@ export class LocalizationService {
   }
 
   async createGlossaryTerm(tenantId: string, body: any) {
-    return prisma.translationGlossary.create({
+    return prisma.localeGlossaryEntry.create({
       data: { ...body, tenantId } as any,
     });
   }

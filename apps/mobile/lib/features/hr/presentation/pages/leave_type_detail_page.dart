@@ -19,8 +19,6 @@ class LeaveTypeDetailPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AsyncValue<List<LeaveType>> asyncTypes = ref.watch(leaveTypesProvider);
-    final Palette t = context.tokens;
-
     return asyncTypes.when(
       loading: () => Scaffold(
         appBar: AppBar(title: const Text('Leave Type')),
@@ -67,7 +65,7 @@ class LeaveTypeDetailPage extends ConsumerWidget {
                   height: Spacing.x2,
                   decoration: BoxDecoration(
                     color: color,
-                    borderRadius: BorderRadius.all(Radius.circular(Radii.sm)),
+                    borderRadius: const BorderRadius.all(Radius.circular(Radii.sm)),
                   ),
                 ),
               const SizedBox(height: Spacing.x4),

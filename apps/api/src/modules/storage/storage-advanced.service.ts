@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Injectable,
   Logger,
@@ -409,12 +408,10 @@ export class StorageAdvancedService {
     });
     const isCompliant =
       policies.length === 0 ||
-      policies.some(
-        (p) =>
-          !p.fileTypes ||
-          p.fileTypes.length === 0 ||
-          p.fileTypes.includes(file.mimeType),
-      );
+      policies.some((p) => {
+        const fileTypes = Array.isArray(p.fileTypes) ? p.fileTypes : [];
+        return fileTypes.length === 0 || fileTypes.includes(file.mimeType);
+      });
     await prisma.storageComplianceLog.create({
       data: {
         tenantId,

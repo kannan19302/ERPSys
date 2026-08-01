@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -88,7 +87,6 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
   @override
   Widget build(BuildContext context) {
     final AdminRoleListState roleState = ref.watch(adminRoleListControllerProvider);
-    final Palette t = context.tokens;
 
     return Scaffold(
       appBar: AppBar(
@@ -139,16 +137,16 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _selectedRole,
+              initialValue: _selectedRole,
               decoration: const InputDecoration(labelText: 'Role'),
               items: roleState.items.map((AdminRole r) =>
-                DropdownMenuItem<String>(value: r.name, child: Text(r.name))
+                DropdownMenuItem<String>(value: r.name, child: Text(r.name)),
               ).toList(growable: false),
               onChanged: (String? v) => setState(() => _selectedRole = v),
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _status,
+              initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: const <DropdownMenuItem<String>>[
                 DropdownMenuItem<String>(value: 'ACTIVE', child: Text('Active')),

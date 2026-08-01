@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { BuilderMobileService } from "../services/builder-mobile.service";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 

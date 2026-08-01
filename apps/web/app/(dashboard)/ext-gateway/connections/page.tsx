@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import React, { useState, useEffect } from "react";
 import {
@@ -50,7 +49,11 @@ export default function ConnectionsPage() {
     { key: "provider", header: "Provider" },
     { key: "type", header: "Type" },
     { key: "authType", header: "Auth" },
-    { key: "rateLimitPerMin", header: "Rate Limit", render: (r) => `${r.rateLimitPerMin}/min` },
+    {
+      key: "rateLimitPerMin",
+      header: "Rate Limit",
+      render: (r) => `${r.rateLimitPerMin}/min`,
+    },
     {
       key: "status",
       header: "Status",

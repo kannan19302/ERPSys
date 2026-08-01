@@ -1,11 +1,10 @@
-// @ts-nocheck
-import { All, Controller, Req, Res, UseGuards } from '@nestjs/common';
-import { Request, Response } from 'express';
-import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { ServiceRegistryService } from './service-registry.service';
-import { TenantTokenService } from './tenant-token.service';
-import { ExtProxyService } from './ext-proxy.service';
+import { All, Controller, Req, Res, UseGuards } from "@nestjs/common";
+import { Request, Response } from "express";
+import { ApiTags, ApiBearerAuth, ApiOperation } from "@nestjs/swagger";
+import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
+import { ServiceRegistryService } from "./service-registry.service";
+import { TenantTokenService } from "./tenant-token.service";
+import { ExtProxyService } from "./ext-proxy.service";
 
 interface AuthenticatedRequest extends Request {
   user: { tenantId: string; userId: string; email: string; roles: string[] };
@@ -17,9 +16,9 @@ interface AuthenticatedRequest extends Request {
  * a signed tenant-context token. Gated on InstalledApp — uninstalling an app
  * makes its routes 404 on the next request, no restart needed.
  */
-@ApiTags('ext-gateway')
+@ApiTags("ext-gateway")
 @ApiBearerAuth()
-@Controller('ext')
+@Controller("ext")
 @UseGuards(JwtAuthGuard)
 export class ExtGatewayController {
   constructor(
@@ -28,26 +27,30 @@ export class ExtGatewayController {
     private readonly proxy: ExtProxyService,
   ) {}
 
-  @ApiOperation({ summary: 'Proxy a request to an installed extension app service' })
-  @All(':appSlug/*path')
+  @ApiOperation({
+    summary: "Proxy a request to an installed extension app service",
+  })
+  @All(":appSlug/*path")
   async proxyDeep(@Req() req: AuthenticatedRequest, @Res() res: Response) {
     return this.handle(req, res);
   }
 
-  @ApiOperation({ summary: 'Proxy a root request to an installed extension app service' })
-  @All(':appSlug')
+  @ApiOperation({
+    summary: "Proxy a root request to an installed extension app service",
+  })
+  @All(":appSlug")
   async proxyRoot(@Req() req: AuthenticatedRequest, @Res() res: Response) {
     return this.handle(req, res);
   }
 
   private async handle(req: AuthenticatedRequest, res: Response) {
-    const appSlug = String(req.params.appSlug || '');
+    const appSlug = String(req.params.appSlug || "");
     const service = await this.registry.resolve(req.user.tenantId, appSlug);
     // Path on the service = everything after /ext/<slug> (query string re-attached by the proxy).
     const marker = `/ext/${appSlug}`;
     const full = req.path;
     const idx = full.indexOf(marker);
-    const path = idx >= 0 ? full.slice(idx + marker.length) || '/' : '/';
+    const path = idx >= 0 ? full.slice(idx + marker.length) || "/" : "/";
     const tenantToken = this.tokens.sign({
       tenantId: req.user.tenantId,
       userId: req.user.userId,

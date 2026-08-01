@@ -1,16 +1,9 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/widgets/ui_card.dart';
-import '../../../../core/utils/formatters.dart';
-import '../../../../core/widgets/permission_gate.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/widgets/state_views.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/utils/formatters.dart';
-import '../../../../core/widgets/state_views.dart';
 import '../../domain/entities/education.dart';
 import '../providers/education_providers.dart';
 
@@ -28,7 +21,7 @@ class CourseDetailPage extends ConsumerWidget {
       body: async.when(
         loading: () => const LoadingView(),
         error: (e, _) => FailureView(failure: e is Failure ? e : const ServerFailure('Could not load course.'),
-          onRetry: () => ref.invalidate(courseDetailProvider(courseId))),
+          onRetry: () => ref.invalidate(courseDetailProvider(courseId)),),
         data: (Course c) => _CourseDetail(course: c),
       ),
     );
@@ -54,12 +47,12 @@ class _CourseDetail extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: Spacing.x2_5, vertical: Spacing.x1),
                 decoration: BoxDecoration(color: course.status == 'ACTIVE' ? t.successLight : t.bgSunken, borderRadius: Radii.pill),
                 child: Text(course.status, style: TextStyle(color: course.status == 'ACTIVE' ? t.success : t.textSecondary,
-                  fontSize: TypeScale.xs, fontWeight: TypeScale.medium)),
+                  fontSize: TypeScale.xs, fontWeight: TypeScale.medium,),),
               ),
-            ]),
+            ],),
             const SizedBox(height: Spacing.x1),
             Text(course.code, style: TextStyle(color: t.textSecondary)),
-          ]),
+          ],),
         ),
         const SizedBox(height: Spacing.x4),
         Container(width: double.infinity, padding: const EdgeInsets.all(Spacing.x4),
@@ -72,7 +65,7 @@ class _CourseDetail extends StatelessWidget {
             _FieldRow('Credits', '${course.credits}'),
             _FieldRow('Duration', '${course.durationHours} hours'),
             if (course.description != null) ...[_FieldRow('Description', course.description!)],
-          ]),
+          ],),
         ),
       ],
     );

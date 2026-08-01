@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -39,8 +38,6 @@ class _PortfolioDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = context.tokens;
-
     return ListView(
       padding: const EdgeInsets.all(Spacing.x4),
       children: [
@@ -53,7 +50,7 @@ class _PortfolioDetail extends StatelessWidget {
               Text(portfolio.description!),
             ],
           ],
-        )),
+        ),),
         const SizedBox(height: Spacing.x4),
         UiCard(child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,7 +59,7 @@ class _PortfolioDetail extends StatelessWidget {
             _Row('Projects', '${portfolio.projectCount}'),
             _Row('Total Budget', Formatters.currency(portfolio.totalBudget)),
           ],
-        )),
+        ),),
       ],
     );
   }
@@ -80,7 +77,7 @@ class _Row extends StatelessWidget {
       child: Row(children: [
         Expanded(child: Text(label, style: TextStyle(color: t.textSecondary))),
         Text(value, style: Theme.of(context).textTheme.labelLarge),
-      ]),
+      ],),
     );
   }
 }

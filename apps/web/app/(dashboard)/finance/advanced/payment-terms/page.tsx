@@ -1,10 +1,9 @@
-// @ts-nocheck
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Modal, PageHeader } from '@unerp/ui';
-import { ListView, FormView, RouteGuard } from '@unerp/framework';
-import { paymentTermResource } from '@/modules/finance';
+import { useState } from "react";
+import { Modal, PageHeader } from "@unerp/ui";
+import { ListView, FormView, RouteGuard } from "@unerp/framework";
+import { paymentTermResource } from "@/modules/finance";
 
 export default function PaymentTermsPage() {
   const [showCreate, setShowCreate] = useState(false);
@@ -15,7 +14,11 @@ export default function PaymentTermsPage() {
         <PageHeader
           title="Payment Terms"
           description="Configure payment schedules, due day intervals, and early payment discounts"
-          breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'Finance', href: '/finance' }, { label: 'Payment Terms' }]}
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "Finance", href: "/finance" },
+            { label: "Payment Terms" },
+          ]}
         />
 
         <ListView
@@ -23,7 +26,11 @@ export default function PaymentTermsPage() {
           onCreate={() => setShowCreate(true)}
         />
 
-        <Modal open={showCreate} onClose={() => setShowCreate(false)} title="New Payment Term">
+        <Modal
+          open={showCreate}
+          onClose={() => setShowCreate(false)}
+          title="New Payment Term"
+        >
           <FormView
             resource={paymentTermResource}
             onSuccess={() => setShowCreate(false)}

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Controller,
   Get,
@@ -26,14 +25,16 @@ const addPaymentMethodSchema = z.object({
   type: z.enum(["card", "bank", "paypal", "stripe"]),
   token: z.string().min(1),
   isDefault: z.boolean().default(false),
-  billingDetails: z.object({
-    name: z.string().optional(),
-    email: z.string().email().optional(),
-    address: z.string().optional(),
-    city: z.string().optional(),
-    country: z.string().optional(),
-    zip: z.string().optional(),
-  }).optional(),
+  billingDetails: z
+    .object({
+      name: z.string().optional(),
+      email: z.string().email().optional(),
+      address: z.string().optional(),
+      city: z.string().optional(),
+      country: z.string().optional(),
+      zip: z.string().optional(),
+    })
+    .optional(),
   cardLast4: z.string().length(4).optional(),
   cardBrand: z.string().optional(),
   expMonth: z.number().int().min(1).max(12).optional(),
@@ -62,7 +63,11 @@ export class PaymentMethodsController {
   @ApiOperation({ summary: "Add payment method" })
   @Permissions("saas.payment.create")
   @Post("payment-methods")
-  async addPaymentMethod(@Req() req: AuthReq, @ZodBody(addPaymentMethodSchema) body: z.infer<typeof addPaymentMethodSchema>) {
+  async addPaymentMethod(
+    @Req() req: AuthReq,
+    @ZodBody(addPaymentMethodSchema)
+    body: z.infer<typeof addPaymentMethodSchema>,
+  ) {
     return this.paymentMethodsService.addPaymentMethod(req.user.tenantId, body);
   }
 
@@ -77,7 +82,10 @@ export class PaymentMethodsController {
   @Permissions("saas.payment.delete")
   @Delete("payment-methods/:id")
   async removePaymentMethod(@Req() req: AuthReq, @Param("id") id: string) {
-    return this.paymentMethodsService.removePaymentMethod(req.user.tenantId, id);
+    return this.paymentMethodsService.removePaymentMethod(
+      req.user.tenantId,
+      id,
+    );
   }
 
   @ApiOperation({ summary: "List transactions" })
@@ -97,8 +105,16 @@ export class PaymentMethodsController {
   @ApiOperation({ summary: "Request refund" })
   @Permissions("saas.payment.create")
   @Post("transactions/:id/refund")
-  async requestRefund(@Req() req: AuthReq, @Param("id") id: string, @ZodBody(refundSchema) body: z.infer<typeof refundSchema>) {
-    return this.paymentMethodsService.requestRefund(req.user.tenantId, id, body);
+  async requestRefund(
+    @Req() req: AuthReq,
+    @Param("id") id: string,
+    @ZodBody(refundSchema) body: z.infer<typeof refundSchema>,
+  ) {
+    return this.paymentMethodsService.requestRefund(
+      req.user.tenantId,
+      id,
+      body,
+    );
   }
 
   @ApiOperation({ summary: "Get payment stats" })

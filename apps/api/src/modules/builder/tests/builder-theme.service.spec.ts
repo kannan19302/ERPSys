@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { BuilderThemeService } from "../services/builder-theme.service";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 

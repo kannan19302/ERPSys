@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Controller, Get, Param, Query, UseGuards, Req } from "@nestjs/common";
 import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
@@ -17,13 +16,19 @@ export class BuilderEnterpriseController {
 
   @Get("builder-analytics")
   @Permissions("builder.enterprise.read")
-  async getBuilderAnalytics(@Req() req: AuthenticatedRequest, @Query("dateRange") dateRange?: string) {
+  async getBuilderAnalytics(
+    @Req() req: AuthenticatedRequest,
+    @Query("dateRange") dateRange?: string,
+  ) {
     return this.service.getBuilderAnalytics(req.user.tenantId, dateRange);
   }
 
   @Get("usage-metrics")
   @Permissions("builder.enterprise.read")
-  async getUsageMetrics(@Req() req: AuthenticatedRequest, @Query("dateRange") dateRange?: string) {
+  async getUsageMetrics(
+    @Req() req: AuthenticatedRequest,
+    @Query("dateRange") dateRange?: string,
+  ) {
     return this.service.getUsageMetrics(req.user.tenantId, dateRange);
   }
 

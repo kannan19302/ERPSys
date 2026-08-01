@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -63,7 +62,7 @@ class _AppointmentListPageState extends ConsumerState<AppointmentListPage> {
                     : '${state.meta.total} appointment${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -96,20 +95,20 @@ class _AppointmentListPageState extends ConsumerState<AppointmentListPage> {
               Row(children: [
                 Expanded(
                   child: Text(a.patientName,
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
                 UiStatusBadge(
                   label: a.status,
                   tone: _statusTone(a.status),
                 ),
-              ]),
+              ],),
               const SizedBox(height: Spacing.x1),
               Text(a.doctorName ?? 'No doctor assigned',
-                  style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs)),
+                  style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs),),
               const SizedBox(height: Spacing.x1),
               Text(
                 '${a.appointmentDate.day}/${a.appointmentDate.month}/${a.appointmentDate.year}',
-                style: TextStyle(fontSize: TypeScale.xs),
+                style: const TextStyle(fontSize: TypeScale.xs),
               ),
             ],
           ),

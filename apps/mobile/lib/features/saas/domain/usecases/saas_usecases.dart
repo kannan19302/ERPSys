@@ -153,6 +153,6 @@ class DeleteSaasTenantUseCase extends UseCase<void, String> {
   DeleteSaasTenantUseCase(this.repository);
   final SaasRepository repository;
   @override
-  Future<Result<void>> call(String params) async => Result.ok(null);
+  Future<Result<void>> call(String params) async => const Result.ok(null);
 }
 

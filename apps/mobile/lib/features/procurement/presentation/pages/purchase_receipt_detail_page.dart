@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -49,13 +48,13 @@ class _PurchaseReceiptDetail extends StatelessWidget {
             Row(children: [
               Expanded(child: Text(receipt.receiptNumber, style: Theme.of(context).textTheme.titleLarge)),
               UiStatusBadge(label: receipt.status, tone: _statusTone(receipt.status)),
-            ]),
+            ],),
             if (receipt.supplierName != null) ...[
               const SizedBox(height: Spacing.x1),
               Text(receipt.supplierName!, style: TextStyle(color: t.textSecondary)),
             ],
           ],
-        )),
+        ),),
         const SizedBox(height: Spacing.x4),
         UiCard(child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,16 +68,16 @@ class _PurchaseReceiptDetail extends StatelessWidget {
                   Text(item.productName ?? 'Item', style: Theme.of(context).textTheme.labelLarge),
                   const SizedBox(height: Spacing.x0_5),
                   Text('Ordered: ${item.orderedQuantity.toStringAsFixed(0)}  |  Received: ${item.receivedQuantity.toStringAsFixed(0)}',
-                      style: TextStyle(fontSize: TypeScale.xs, color: t.textSecondary)),
+                      style: TextStyle(fontSize: TypeScale.xs, color: t.textSecondary),),
                   if (item.acceptedQuantity > 0 || item.rejectedQuantity > 0)
                     Text('Accepted: ${item.acceptedQuantity.toStringAsFixed(0)}  |  Rejected: ${item.rejectedQuantity.toStringAsFixed(0)}',
-                        style: TextStyle(fontSize: TypeScale.xs, color: t.textSecondary)),
+                        style: TextStyle(fontSize: TypeScale.xs, color: t.textSecondary),),
                 ],
               ),
-            )),
+            ),),
             if (receipt.items.isEmpty) Text('No items', style: TextStyle(color: t.textTertiary)),
           ],
-        )),
+        ),),
         const SizedBox(height: Spacing.x4),
         UiCard(child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,7 +89,7 @@ class _PurchaseReceiptDetail extends StatelessWidget {
             if (receipt.notes != null && receipt.notes!.isNotEmpty) _Row('Notes', receipt.notes!),
             if (receipt.createdAt != null) _Row('Created', Formatters.dateTime(receipt.createdAt!)),
           ],
-        )),
+        ),),
       ],
     );
   }
@@ -111,7 +110,7 @@ class _Row extends StatelessWidget {
       child: Row(children: [
         Expanded(child: Text(label, style: TextStyle(color: context.tokens.textSecondary))),
         Text(value, style: Theme.of(context).textTheme.labelLarge),
-      ]),
+      ],),
     );
   }
 }

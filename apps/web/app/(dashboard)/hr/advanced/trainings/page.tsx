@@ -1,11 +1,18 @@
-// @ts-nocheck
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, Button, Spinner } from '@unerp/ui';
-import { GraduationCap, Plus, Calendar, User, BookOpen, Users, Award } from 'lucide-react';
-import { useApiClient } from '@unerp/framework';
-import styles from './page.module.css';
+import React, { useState, useEffect } from "react";
+import { Card, PageHeader, Button, Spinner } from "@unerp/ui";
+import {
+  GraduationCap,
+  Plus,
+  Calendar,
+  User,
+  BookOpen,
+  Users,
+  Award,
+} from "lucide-react";
+import { useApiClient } from "@unerp/framework";
+import styles from "./page.module.css";
 
 interface Training {
   id: string;
@@ -21,9 +28,15 @@ export default function TrainingsPage() {
   const [trainings, setTrainings] = useState<Training[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [msg, setMsg] = useState('');
+  const [msg, setMsg] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: '', description: '', instructor: '', startDate: '', endDate: '' });
+  const [form, setForm] = useState({
+    name: "",
+    description: "",
+    instructor: "",
+    startDate: "",
+    endDate: "",
+  });
 
   useEffect(() => {
     fetchData();
@@ -32,9 +45,12 @@ export default function TrainingsPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const data = await client.get<Training[] | { data?: Training[] }>('/advanced-hr/trainings');
-      setTrainings(Array.isArray(data) ? data : (data.data || []));
-    } catch {} finally {
+      const data = await client.get<Training[] | { data?: Training[] }>(
+        "/advanced-hr/trainings",
+      );
+      setTrainings(Array.isArray(data) ? data : data.data || []);
+    } catch {
+    } finally {
       setLoading(false);
     }
   };
@@ -43,13 +59,19 @@ export default function TrainingsPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      await client.post('/advanced-hr/trainings', form);
-      setMsg('Training session scheduled successfully.');
+      await client.post("/advanced-hr/trainings", form);
+      setMsg("Training session scheduled successfully.");
       setShowForm(false);
-      setForm({ name: '', description: '', instructor: '', startDate: '', endDate: '' });
+      setForm({
+        name: "",
+        description: "",
+        instructor: "",
+        startDate: "",
+        endDate: "",
+      });
       fetchData();
     } catch {
-      setMsg('Error saving training session.');
+      setMsg("Error saving training session.");
     } finally {
       setSubmitting(false);
     }
@@ -59,13 +81,25 @@ export default function TrainingsPage() {
     const now = new Date();
     const start = new Date(startDate);
     const end = new Date(endDate);
-    
+
     if (now < start) {
-      return { label: 'Upcoming', color: 'var(--color-info)', bg: 'var(--color-info-light)' };
+      return {
+        label: "Upcoming",
+        color: "var(--color-info)",
+        bg: "var(--color-info-light)",
+      };
     } else if (now > end) {
-      return { label: 'Completed', color: 'var(--color-success)', bg: 'var(--color-success-light)' };
+      return {
+        label: "Completed",
+        color: "var(--color-success)",
+        bg: "var(--color-success-light)",
+      };
     } else {
-      return { label: 'In Progress', color: 'var(--color-warning)', bg: 'var(--color-warning-light)' };
+      return {
+        label: "In Progress",
+        color: "var(--color-warning)",
+        bg: "var(--color-warning-light)",
+      };
     }
   };
 
@@ -79,11 +113,11 @@ export default function TrainingsPage() {
 
   // Stats
   const totalCourses = trainings.length;
-  const activeTrainings = trainings.filter(t => {
+  const activeTrainings = trainings.filter((t) => {
     const now = new Date();
     return now >= new Date(t.startDate) && now <= new Date(t.endDate);
   }).length;
-  const completedTrainings = trainings.filter(t => {
+  const completedTrainings = trainings.filter((t) => {
     const now = new Date();
     return now > new Date(t.endDate);
   }).length;
@@ -93,7 +127,12 @@ export default function TrainingsPage() {
       <PageHeader
         title="Trainings & Certifications"
         description="Plan skill development classes, record certifications, and track employee course attendance."
-        breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'HR', href: '/hr' }, { label: 'Advanced', href: '/hr/advanced' }, { label: 'Trainings' }]}
+        breadcrumbs={[
+          { label: "Home", href: "/dashboard" },
+          { label: "HR", href: "/hr" },
+          { label: "Advanced", href: "/hr/advanced" },
+          { label: "Trainings" },
+        ]}
         actions={
           <Button variant="primary" onClick={() => setShowForm(!showForm)}>
             <Plus size={14} /> Schedule Course
@@ -140,11 +179,7 @@ export default function TrainingsPage() {
         </Card>
       </div>
 
-      {msg && (
-        <div className={styles.s3}>
-          {msg}
-        </div>
-      )}
+      {msg && <div className={styles.s3}>{msg}</div>}
 
       {showForm && (
         <Card padding="md">
@@ -154,14 +189,14 @@ export default function TrainingsPage() {
               className="ui-input"
               placeholder="Course Name (e.g. Advanced TypeScript Security)"
               value={form.name}
-              onChange={e => setForm({ ...form, name: e.target.value })}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
               required
             />
             <input
               className="ui-input"
               placeholder="Instructor Name"
               value={form.instructor}
-              onChange={e => setForm({ ...form, instructor: e.target.value })}
+              onChange={(e) => setForm({ ...form, instructor: e.target.value })}
             />
             <div className="ui-grid-2 ui-gap-3">
               <div>
@@ -170,7 +205,9 @@ export default function TrainingsPage() {
                   type="date"
                   className="ui-input"
                   value={form.startDate}
-                  onChange={e => setForm({ ...form, startDate: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, startDate: e.target.value })
+                  }
                   required
                 />
               </div>
@@ -180,7 +217,9 @@ export default function TrainingsPage() {
                   type="date"
                   className="ui-input"
                   value={form.endDate}
-                  onChange={e => setForm({ ...form, endDate: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, endDate: e.target.value })
+                  }
                   required
                 />
               </div>
@@ -189,12 +228,22 @@ export default function TrainingsPage() {
               className="ui-input"
               placeholder="Course Syllabus/Description"
               value={form.description}
-              onChange={e => setForm({ ...form, description: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, description: e.target.value })
+              }
               rows={3}
             />
             <div className="ui-flex-end ui-gap-2">
-              <Button variant="outline" type="button" onClick={() => setShowForm(false)}>Cancel</Button>
-              <Button variant="primary" type="submit" disabled={submitting}>Schedule Course</Button>
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => setShowForm(false)}
+              >
+                Cancel
+              </Button>
+              <Button variant="primary" type="submit" disabled={submitting}>
+                Schedule Course
+              </Button>
             </div>
           </form>
         </Card>
@@ -216,7 +265,7 @@ export default function TrainingsPage() {
               </Card>
             </div>
           ) : (
-            trainings.map(t => {
+            trainings.map((t) => {
               const status = getTrainingStatus(t.startDate, t.endDate);
               const partCount = getParticipantsCount(t.id);
               return (
@@ -229,47 +278,62 @@ export default function TrainingsPage() {
                       <div>
                         <h4 className={styles.s12}>{t.name}</h4>
                         <div className={styles.s13}>
-                          <User size={12} /> Instructor: {t.instructor || 'Unassigned'}
+                          <User size={12} /> Instructor:{" "}
+                          {t.instructor || "Unassigned"}
                         </div>
                       </div>
                     </div>
-                    <span className={styles.dyn0} style={{ color: status.color, background: status.bg }}>
+                    <span
+                      className={styles.dyn0}
+                      style={{ color: status.color, background: status.bg }}
+                    >
                       {status.label}
                     </span>
                   </div>
 
                   <p className={styles.s14}>
-                    {t.description || 'No course overview provided.'}
+                    {t.description || "No course overview provided."}
                   </p>
 
                   <div className={styles.s15}>
                     <div className={styles.s16}>
                       <Calendar size={12} />
                       <span>
-                        {new Date(t.startDate).toLocaleDateString()} to {new Date(t.endDate).toLocaleDateString()}
+                        {new Date(t.startDate).toLocaleDateString()} to{" "}
+                        {new Date(t.endDate).toLocaleDateString()}
                       </span>
                     </div>
 
                     <div className={styles.s17}>
                       {/* Avatar Initials stack */}
                       <div className={styles.s18}>
-                        {['JD', 'AM', 'TL'].map((init, i) => (
+                        {["JD", "AM", "TL"].map((init, i) => (
                           <div
                             key={i}
-                            className={styles.dyn1} style={{ background: i === 0 ? 'var(--color-warning-light)' : i === 1 ? 'var(--color-success-light)' : 'var(--color-primary-light)', color: i === 0 ? 'var(--color-warning-text)' : i === 1 ? 'var(--color-success-text)' : 'var(--color-primary)', marginLeft: i > 0 ? 'calc(var(--space-1) * -1.5)' : 0 }}
+                            className={styles.dyn1}
+                            style={{
+                              background:
+                                i === 0
+                                  ? "var(--color-warning-light)"
+                                  : i === 1
+                                    ? "var(--color-success-light)"
+                                    : "var(--color-primary-light)",
+                              color:
+                                i === 0
+                                  ? "var(--color-warning-text)"
+                                  : i === 1
+                                    ? "var(--color-success-text)"
+                                    : "var(--color-primary)",
+                              marginLeft:
+                                i > 0 ? "calc(var(--space-1) * -1.5)" : 0,
+                            }}
                           >
                             {init}
                           </div>
                         ))}
-                        <div
-                          className={styles.s19}
-                        >
-                          +{partCount - 3}
-                        </div>
+                        <div className={styles.s19}>+{partCount - 3}</div>
                       </div>
-                      <span className={styles.s20}>
-                        {partCount} enrolled
-                      </span>
+                      <span className={styles.s20}>{partCount} enrolled</span>
                     </div>
                   </div>
                 </Card>
@@ -281,5 +345,3 @@ export default function TrainingsPage() {
     </div>
   );
 }
-
-

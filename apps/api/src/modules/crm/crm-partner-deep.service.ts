@@ -1,5 +1,8 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
 import { prisma } from "@unerp/database";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
@@ -31,12 +34,20 @@ export type MdfFundInput = z.infer<typeof mdfFundSchema>;
 
 @Injectable()
 export class CrmPartnerDeepService {
-  async getDealRegistrations(tenantId: string, partnerId?: string, status?: string) {
-    const where: Prisma.SalesPartnerDealRegistrationWhereInput = { tenantId, deletedAt: null };
+  async getDealRegistrations(
+    tenantId: string,
+    partnerId?: string,
+    status?: string,
+  ) {
+    const where: Prisma.SalesPartnerDealRegistrationWhereInput = {
+      tenantId,
+      deletedAt: null,
+    };
     if (partnerId) where.partnerId = partnerId;
     if (status) where.status = status;
     return prisma.salesPartnerDealRegistration.findMany({
-      where, orderBy: { submittedAt: "desc" },
+      where,
+      orderBy: { submittedAt: "desc" },
       include: { partner: { select: { id: true, name: true, tierId: true } } },
     });
   }
@@ -50,8 +61,14 @@ export class CrmPartnerDeepService {
     return reg;
   }
 
-  async createDealRegistration(tenantId: string, orgId: string | undefined, dto: DealRegistrationInput) {
-    const partner = await prisma.salesPartner.findFirst({ where: { id: dto.partnerId, tenantId } });
+  async createDealRegistration(
+    tenantId: string,
+    orgId: string | undefined,
+    dto: DealRegistrationInput,
+  ) {
+    const partner = await prisma.salesPartner.findFirst({
+      where: { id: dto.partnerId, tenantId },
+    });
     if (!partner) throw new BadRequestException("Partner not found");
     return prisma.salesPartnerDealRegistration.create({
       data: { ...dto, tenantId, orgId: orgId || "" },
@@ -59,44 +76,86 @@ export class CrmPartnerDeepService {
     });
   }
 
-  async approveDealRegistration(tenantId: string, id: string, approvedBy: string) {
-    const reg = await prisma.salesPartnerDealRegistration.findFirst({ where: { id, tenantId, deletedAt: null } });
+  async approveDealRegistration(
+    tenantId: string,
+    id: string,
+    approvedBy: string,
+  ) {
+    const reg = await prisma.salesPartnerDealRegistration.findFirst({
+      where: { id, tenantId, deletedAt: null },
+    });
     if (!reg) throw new NotFoundException("Deal registration not found");
-    if (reg.status !== "SUBMITTED") throw new BadRequestException("Only SUBMITTED registrations can be approved");
+    if (reg.status !== "SUBMITTED")
+      throw new BadRequestException(
+        "Only SUBMITTED registrations can be approved",
+      );
     return prisma.salesPartnerDealRegistration.update({
-      where: { id }, data: { status: "APPROVED", approvedBy, approvedAt: new Date() },
+      where: { id },
+      data: { status: "APPROVED", approvedBy, approvedAt: new Date() },
     });
   }
 
-  async rejectDealRegistration(tenantId: string, id: string, rejectionReason: string) {
-    const reg = await prisma.salesPartnerDealRegistration.findFirst({ where: { id, tenantId, deletedAt: null } });
+  async rejectDealRegistration(
+    tenantId: string,
+    id: string,
+    rejectionReason: string,
+  ) {
+    const reg = await prisma.salesPartnerDealRegistration.findFirst({
+      where: { id, tenantId, deletedAt: null },
+    });
     if (!reg) throw new NotFoundException("Deal registration not found");
-    if (reg.status !== "SUBMITTED") throw new BadRequestException("Only SUBMITTED registrations can be rejected");
+    if (reg.status !== "SUBMITTED")
+      throw new BadRequestException(
+        "Only SUBMITTED registrations can be rejected",
+      );
     return prisma.salesPartnerDealRegistration.update({
-      where: { id }, data: { status: "REJECTED", rejectionReason },
+      where: { id },
+      data: { status: "REJECTED", rejectionReason },
     });
   }
 
   async getDealRegistrationStats(tenantId: string) {
     const [submitted, approved, rejected, won, lost] = await Promise.all([
-      prisma.salesPartnerDealRegistration.count({ where: { tenantId, deletedAt: null, status: "SUBMITTED" } }),
-      prisma.salesPartnerDealRegistration.count({ where: { tenantId, deletedAt: null, status: "APPROVED" } }),
-      prisma.salesPartnerDealRegistration.count({ where: { tenantId, deletedAt: null, status: "REJECTED" } }),
-      prisma.salesPartnerDealRegistration.count({ where: { tenantId, deletedAt: null, status: "WON" } }),
-      prisma.salesPartnerDealRegistration.count({ where: { tenantId, deletedAt: null, status: "LOST" } }),
+      prisma.salesPartnerDealRegistration.count({
+        where: { tenantId, deletedAt: null, status: "SUBMITTED" },
+      }),
+      prisma.salesPartnerDealRegistration.count({
+        where: { tenantId, deletedAt: null, status: "APPROVED" },
+      }),
+      prisma.salesPartnerDealRegistration.count({
+        where: { tenantId, deletedAt: null, status: "REJECTED" },
+      }),
+      prisma.salesPartnerDealRegistration.count({
+        where: { tenantId, deletedAt: null, status: "WON" },
+      }),
+      prisma.salesPartnerDealRegistration.count({
+        where: { tenantId, deletedAt: null, status: "LOST" },
+      }),
     ]);
     const totalValue = await prisma.salesPartnerDealRegistration.aggregate({
-      where: { tenantId, deletedAt: null }, _sum: { estimatedValue: true },
+      where: { tenantId, deletedAt: null },
+      _sum: { estimatedValue: true },
     });
-    return { submitted, approved, rejected, won, lost, totalEstimatedValue: totalValue._sum.estimatedValue || 0 };
+    return {
+      submitted,
+      approved,
+      rejected,
+      won,
+      lost,
+      totalEstimatedValue: totalValue._sum.estimatedValue || 0,
+    };
   }
 
   async getMdfFunds(tenantId: string, partnerId?: string, status?: string) {
-    const where: Prisma.SalesPartnerMdfFundWhereInput = { tenantId, deletedAt: null };
+    const where: Prisma.SalesPartnerMdfFundWhereInput = {
+      tenantId,
+      deletedAt: null,
+    };
     if (partnerId) where.partnerId = partnerId;
     if (status) where.status = status;
     return prisma.salesPartnerMdfFund.findMany({
-      where, orderBy: { startDate: "desc" },
+      where,
+      orderBy: { startDate: "desc" },
       include: { partner: { select: { id: true, name: true } } },
     });
   }
@@ -110,8 +169,14 @@ export class CrmPartnerDeepService {
     return fund;
   }
 
-  async createMdfFund(tenantId: string, orgId: string | undefined, dto: MdfFundInput) {
-    const partner = await prisma.salesPartner.findFirst({ where: { id: dto.partnerId, tenantId } });
+  async createMdfFund(
+    tenantId: string,
+    orgId: string | undefined,
+    dto: MdfFundInput,
+  ) {
+    const partner = await prisma.salesPartner.findFirst({
+      where: { id: dto.partnerId, tenantId },
+    });
     if (!partner) throw new BadRequestException("Partner not found");
     return prisma.salesPartnerMdfFund.create({
       data: { ...dto, tenantId, orgId: orgId || "" },
@@ -119,16 +184,27 @@ export class CrmPartnerDeepService {
     });
   }
 
-  async updateMdfFund(tenantId: string, id: string, dto: Partial<MdfFundInput>) {
-    const existing = await prisma.salesPartnerMdfFund.findFirst({ where: { id, tenantId, deletedAt: null } });
+  async updateMdfFund(
+    tenantId: string,
+    id: string,
+    dto: Partial<MdfFundInput>,
+  ) {
+    const existing = await prisma.salesPartnerMdfFund.findFirst({
+      where: { id, tenantId, deletedAt: null },
+    });
     if (!existing) throw new NotFoundException("MDF fund not found");
     return prisma.salesPartnerMdfFund.update({ where: { id }, data: dto });
   }
 
   async deleteMdfFund(tenantId: string, id: string) {
-    const existing = await prisma.salesPartnerMdfFund.findFirst({ where: { id, tenantId, deletedAt: null } });
+    const existing = await prisma.salesPartnerMdfFund.findFirst({
+      where: { id, tenantId, deletedAt: null },
+    });
     if (!existing) throw new NotFoundException("MDF fund not found");
-    return prisma.salesPartnerMdfFund.update({ where: { id }, data: { deletedAt: new Date() } });
+    return prisma.salesPartnerMdfFund.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
   }
 
   async getMdfFundStats(tenantId: string) {
@@ -139,7 +215,11 @@ export class CrmPartnerDeepService {
         _count: true,
       }),
       prisma.salesPartnerMdfFund.aggregate({
-        where: { tenantId, deletedAt: null, status: { in: ["EXPIRED", "CLOSED"] } },
+        where: {
+          tenantId,
+          deletedAt: null,
+          status: { in: ["EXPIRED", "CLOSED"] },
+        },
         _sum: { budgetAmount: true, spentAmount: true },
         _count: true,
       }),
@@ -149,31 +229,55 @@ export class CrmPartnerDeepService {
       activeBudget: active._sum.budgetAmount || 0,
       activeSpent: active._sum.spentAmount || 0,
       closedFunds: closed._count,
-      totalBudget: Number(active._sum.budgetAmount || 0) + Number(closed._sum.budgetAmount || 0),
+      totalBudget:
+        Number(active._sum.budgetAmount || 0) +
+        Number(closed._sum.budgetAmount || 0),
     };
   }
 
   async getPartnerPerformance(tenantId: string, partnerId: string) {
-    const partner = await prisma.salesPartner.findFirst({ where: { id: partnerId, tenantId } });
+    const partner = await prisma.salesPartner.findFirst({
+      where: { id: partnerId, tenantId },
+    });
     if (!partner) throw new NotFoundException("Partner not found");
     const [dealRegistrations, mdfFunds] = await Promise.all([
-      prisma.salesPartnerDealRegistration.findMany({ where: { tenantId, partnerId, deletedAt: null } }),
-      prisma.salesPartnerMdfFund.findMany({ where: { tenantId, partnerId, deletedAt: null } }),
+      prisma.salesPartnerDealRegistration.findMany({
+        where: { tenantId, partnerId, deletedAt: null },
+      }),
+      prisma.salesPartnerMdfFund.findMany({
+        where: { tenantId, partnerId, deletedAt: null },
+      }),
     ]);
     const wonDeals = dealRegistrations.filter((d) => d.status === "WON");
-    const totalDealValue = dealRegistrations.reduce((s, d) => s + Number(d.estimatedValue), 0);
-    const wonDealValue = wonDeals.reduce((s, d) => s + Number(d.estimatedValue), 0);
-    const totalMdfBudget = mdfFunds.reduce((s, f) => s + Number(f.budgetAmount), 0);
-    const totalMdfSpent = mdfFunds.reduce((s, f) => s + Number(f.spentAmount), 0);
+    const totalDealValue = dealRegistrations.reduce(
+      (s, d) => s + Number(d.estimatedValue),
+      0,
+    );
+    const wonDealValue = wonDeals.reduce(
+      (s, d) => s + Number(d.estimatedValue),
+      0,
+    );
+    const totalMdfBudget = mdfFunds.reduce(
+      (s, f) => s + Number(f.budgetAmount),
+      0,
+    );
+    const totalMdfSpent = mdfFunds.reduce(
+      (s, f) => s + Number(f.spentAmount),
+      0,
+    );
     return {
       totalDealRegistrations: dealRegistrations.length,
       wonDeals: wonDeals.length,
-      wonRate: dealRegistrations.length > 0 ? (wonDeals.length / dealRegistrations.length) * 100 : 0,
+      wonRate:
+        dealRegistrations.length > 0
+          ? (wonDeals.length / dealRegistrations.length) * 100
+          : 0,
       totalDealValue,
       wonDealValue,
       totalMdfBudget,
       totalMdfSpent,
-      mdfUtilizationRate: totalMdfBudget > 0 ? (totalMdfSpent / totalMdfBudget) * 100 : 0,
+      mdfUtilizationRate:
+        totalMdfBudget > 0 ? (totalMdfSpent / totalMdfBudget) * 100 : 0,
     };
   }
 }

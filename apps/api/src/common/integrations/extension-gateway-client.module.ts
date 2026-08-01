@@ -1,9 +1,11 @@
-// @ts-nocheck
-import { Injectable, Module } from '@nestjs/common';
-import { ExtGatewayModule } from '../../modules/ext-gateway/ext-gateway.module';
-import { ExtProxyService } from '../../modules/ext-gateway/ext-proxy.service';
-import { ServiceRegistryService } from '../../modules/ext-gateway/service-registry.service';
-import { ExtensionGatewayClient, ExtensionServiceEndpoint } from './extension-gateway-client';
+import { Injectable, Module } from "@nestjs/common";
+import { ExtGatewayModule } from "../../modules/ext-gateway/ext-gateway.module";
+import { ExtProxyService } from "../../modules/ext-gateway/ext-proxy.service";
+import { ServiceRegistryService } from "../../modules/ext-gateway/service-registry.service";
+import {
+  ExtensionGatewayClient,
+  ExtensionServiceEndpoint,
+} from "./extension-gateway-client";
 
 @Injectable()
 class ExtensionGatewayClientAdapter extends ExtensionGatewayClient {
@@ -26,7 +28,13 @@ class ExtensionGatewayClientAdapter extends ExtensionGatewayClient {
 /** Composition-layer adapter for extension service health and cache invalidation. */
 @Module({
   imports: [ExtGatewayModule],
-  providers: [ExtensionGatewayClientAdapter, { provide: ExtensionGatewayClient, useExisting: ExtensionGatewayClientAdapter }],
+  providers: [
+    ExtensionGatewayClientAdapter,
+    {
+      provide: ExtensionGatewayClient,
+      useExisting: ExtensionGatewayClientAdapter,
+    },
+  ],
   exports: [ExtensionGatewayClient],
 })
 export class ExtensionGatewayClientModule {}

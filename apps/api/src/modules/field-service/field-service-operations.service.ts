@@ -1,12 +1,13 @@
-// @ts-nocheck
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 
 @Injectable()
 export class FieldServiceOperationsService {
-
   // ── WARRANTIES ──
-  async getWarranties(tenantId: string, query: { assetId?: string; status?: string }) {
+  async getWarranties(
+    tenantId: string,
+    query: { assetId?: string; status?: string },
+  ) {
     const where: any = { tenantId };
     if (query.assetId) where.assetId = query.assetId;
     if (query.status) where.status = query.status;
@@ -34,7 +35,10 @@ export class FieldServiceOperationsService {
   }
 
   // ── WORK ORDER EXPENSES ──
-  async getWorkOrderExpenses(tenantId: string, query: { workOrderId?: string; techId?: string }) {
+  async getWorkOrderExpenses(
+    tenantId: string,
+    query: { workOrderId?: string; techId?: string },
+  ) {
     const where: any = { tenantId };
     if (query.workOrderId) where.workOrderId = query.workOrderId;
     if (query.techId) where.techId = query.techId;
@@ -60,7 +64,10 @@ export class FieldServiceOperationsService {
   }
 
   // ── INSPECTION CHECKLISTS ──
-  async getInspectionChecklists(tenantId: string, query: { workOrderId?: string }) {
+  async getInspectionChecklists(
+    tenantId: string,
+    query: { workOrderId?: string },
+  ) {
     const where: any = { tenantId };
     if (query.workOrderId) where.workOrderId = query.workOrderId;
 

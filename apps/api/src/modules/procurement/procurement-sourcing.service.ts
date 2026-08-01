@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 import { Prisma } from "@prisma/client";
@@ -429,15 +428,12 @@ export class ProcurementSourcingService {
     const sorted = Object.entries(spendByVendor).sort(
       ([, a], [, b]) => b.total - a.total,
     );
-    const topVendors = sorted
-      .slice(0, 5)
-      .map(([id, v]) => ({
-        vendorId: id,
-        vendorName: v.vendorName,
-        spend: v.total,
-        pctOfTotal:
-          totalSpend > 0 ? Math.round((v.total / totalSpend) * 100) : 0,
-      }));
+    const topVendors = sorted.slice(0, 5).map(([id, v]) => ({
+      vendorId: id,
+      vendorName: v.vendorName,
+      spend: v.total,
+      pctOfTotal: totalSpend > 0 ? Math.round((v.total / totalSpend) * 100) : 0,
+    }));
     const topVendorSpend =
       sorted.length > 0 && sorted[0] ? sorted[0][1].total : 0;
     const concentrationRisk =

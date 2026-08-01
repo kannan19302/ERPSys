@@ -1,11 +1,10 @@
-// @ts-nocheck
-'use client';
-import styles from './page.module.css';
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { PageHeader, Card, Spinner } from '@unerp/ui';
-import { api, CalendarEvent, Member } from '../../connect/connectData';
-import ConnectCalendar from '../../connect/Calendar';
+"use client";
+import styles from "./page.module.css";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { PageHeader, Card, Spinner } from "@unerp/ui";
+import { api, CalendarEvent, Member } from "../../connect/connectData";
+import ConnectCalendar from "../../connect/Calendar";
 
 export default function CalendarPage() {
   const router = useRouter();
@@ -30,9 +29,16 @@ export default function CalendarPage() {
   }, []);
 
   const handleCreate = async (ev: {
-    title: string; date: string; time: string; durationMins: number;
-    withMeet: boolean; attendeeIds: string[];
-    description?: string; location?: string; color?: string; allDay?: boolean;
+    title: string;
+    date: string;
+    time: string;
+    durationMins: number;
+    withMeet: boolean;
+    attendeeIds: string[];
+    description?: string;
+    location?: string;
+    color?: string;
+    allDay?: boolean;
     recurrence?: any;
   }) => {
     try {
@@ -64,10 +70,13 @@ export default function CalendarPage() {
 
   return (
     <div className={styles.s2}>
-      <PageHeader 
-        title="Shared Calendar" 
+      <PageHeader
+        title="Shared Calendar"
         description="Corporate schedule, team events, and availability calendars"
-        breadcrumbs={[{ label: 'Connect', href: '/communication' }, { label: 'Calendar' }]}
+        breadcrumbs={[
+          { label: "Connect", href: "/communication" },
+          { label: "Calendar" },
+        ]}
       />
       <div className={styles.s3}>
         <ConnectCalendar
@@ -81,7 +90,7 @@ export default function CalendarPage() {
             }
           }}
           onClose={() => {
-            router.push('/communication');
+            router.push("/communication");
           }}
         />
       </div>

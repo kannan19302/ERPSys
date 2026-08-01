@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 
 export default function ComplianceRedirect() {
-  redirect('/hr/advanced/operations-service?tab=compliance');
+  redirect("/hr/advanced/operations-service?tab=compliance");
 }

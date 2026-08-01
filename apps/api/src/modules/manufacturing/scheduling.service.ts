@@ -1,21 +1,21 @@
-// @ts-nocheck
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class SchedulingService {
-
   async scheduleWorkOrders(
     tenantId: string,
-    options: { algorithm?: 'FORWARD' | 'BACKWARD'; startDate?: string } = {},
+    options: { algorithm?: "FORWARD" | "BACKWARD"; startDate?: string } = {},
   ) {
-    const algorithm = options.algorithm || 'FORWARD';
-    const baseDate = options.startDate ? new Date(options.startDate) : new Date();
+    const algorithm = options.algorithm || "FORWARD";
+    const baseDate = options.startDate
+      ? new Date(options.startDate)
+      : new Date();
 
     const workOrders = await prisma.workOrder.findMany({
-      where: { tenantId, status: { in: ['DRAFT', 'PLANNED'] } },
+      where: { tenantId, status: { in: ["DRAFT", "PLANNED"] } },
       include: { operations: true, bom: true },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     const workstations = await prisma.workstation.findMany({
@@ -27,11 +27,19 @@ export class SchedulingService {
       workstationAvailability[ws.id] = new Date(baseDate);
     }
 
-    const schedule: Array<{ workOrderId: string; workstationId: string; startTime: Date; endTime: Date; operationName: string }> = [];
+    const schedule: Array<{
+      workOrderId: string;
+      workstationId: string;
+      startTime: Date;
+      endTime: Date;
+      operationName: string;
+    }> = [];
     const unscheduled: string[] = [];
 
     for (const wo of workOrders) {
-      const operations = (wo.operations || []).sort((a, b) => a.sequence - b.sequence);
+      const operations = (wo.operations || []).sort(
+        (a, b) => a.sequence - b.sequence,
+      );
 
       if (operations.length === 0) {
         unscheduled.push(wo.id);
@@ -42,13 +50,21 @@ export class SchedulingService {
 
       for (const op of operations) {
         const wsCode = op.workstationCode;
-        const ws = workstations.find((w) => w.code === wsCode) || workstations[0];
-        if (!ws) { unscheduled.push(wo.id); break; }
+        const ws =
+          workstations.find((w) => w.code === wsCode) || workstations[0];
+        if (!ws) {
+          unscheduled.push(wo.id);
+          break;
+        }
 
         const wsAvail = workstationAvailability[ws.id] || baseDate;
-        const startTime = new Date(Math.max(currentTime.getTime(), new Date(wsAvail).getTime()));
+        const startTime = new Date(
+          Math.max(currentTime.getTime(), new Date(wsAvail).getTime()),
+        );
         const durationMinutes = op.durationMinutes || 60;
-        const endTime = new Date(startTime.getTime() + durationMinutes * 60 * 1000);
+        const endTime = new Date(
+          startTime.getTime() + durationMinutes * 60 * 1000,
+        );
 
         schedule.push({
           workOrderId: wo.id,
@@ -64,7 +80,7 @@ export class SchedulingService {
 
       await prisma.workOrder.update({
         where: { id: wo.id },
-        data: { status: 'PLANNED' },
+        data: { status: "PLANNED" },
       });
     }
 
@@ -83,14 +99,21 @@ export class SchedulingService {
       where: { id: bomId, tenantId },
       include: { items: true },
     });
-    if (!bom) throw new NotFoundException('BOM not found');
+    if (!bom) throw new NotFoundException("BOM not found");
 
     let materialCost = 0;
-    const itemCosts: Array<{ productId: string; quantity: number; unitCost: number; totalCost: number }> = [];
+    const itemCosts: Array<{
+      productId: string;
+      quantity: number;
+      unitCost: number;
+      totalCost: number;
+    }> = [];
 
     for (const item of bom.items) {
       const qty = Number(item.quantity);
-      const product = await prisma.product.findFirst({ where: { id: item.productId, tenantId } });
+      const product = await prisma.product.findFirst({
+        where: { id: item.productId, tenantId },
+      });
       const unitCost = Number(product?.sellPrice || product?.costPrice || 0);
       const totalCost = qty * unitCost;
       materialCost += totalCost;

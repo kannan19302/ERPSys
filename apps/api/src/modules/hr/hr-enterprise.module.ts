@@ -1,7 +1,6 @@
-// @ts-nocheck
-import { Module } from '@nestjs/common';
-import { HrEnterpriseService } from './hr-enterprise.service';
-import { HrEnterpriseController } from './hr-enterprise.controller';
+import { Module } from "@nestjs/common";
+import { HrEnterpriseService } from "./hr-enterprise.service";
+import { HrEnterpriseController } from "./hr-enterprise.controller";
 
 @Module({
   controllers: [HrEnterpriseController],

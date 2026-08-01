@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -198,9 +197,9 @@ class _OpportunityFormPageState extends ConsumerState<OpportunityFormPage> {
             InkWell(
               onTap: _selectDate,
               child: InputDecorator(
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Expected Close Date',
-                  suffixIcon: const Icon(Icons.calendar_today_outlined),
+                  suffixIcon: Icon(Icons.calendar_today_outlined),
                 ),
                 child: Text(
                   _closeDate != null
@@ -211,7 +210,7 @@ class _OpportunityFormPageState extends ConsumerState<OpportunityFormPage> {
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _stage,
+              initialValue: _stage,
               decoration: const InputDecoration(labelText: 'Stage'),
               items: const <DropdownMenuItem<String>>[
                 DropdownMenuItem<String>(value: 'PROSPECTING', child: Text('Prospecting')),
@@ -231,7 +230,7 @@ class _OpportunityFormPageState extends ConsumerState<OpportunityFormPage> {
             ),
             const SizedBox(height: Spacing.x4),
             Text('Probability: ${_probability.round()}%',
-                style: Theme.of(context).textTheme.bodySmall),
+                style: Theme.of(context).textTheme.bodySmall,),
             Slider(
               value: _probability,
               min: 0,

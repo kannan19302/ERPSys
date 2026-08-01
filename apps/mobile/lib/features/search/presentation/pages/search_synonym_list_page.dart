@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -54,17 +53,17 @@ class _SearchSynonymListPageState extends ConsumerState<SearchSynonymListPage> {
               Row(children: [
                 Expanded(
                   child: Text(group.terms.join(', '),
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
                 UiStatusBadge(
                   label: group.isActive ? 'ACTIVE' : 'INACTIVE',
                   tone: group.isActive ? UiTone.success : UiTone.neutral,
                 ),
-              ]),
+              ],),
               if (group.locale != null) ...[
                 const SizedBox(height: Spacing.x1),
                 Text('Locale: ${group.locale}',
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
+                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
               ],
               const SizedBox(height: Spacing.x1),
               Wrap(
@@ -73,7 +72,7 @@ class _SearchSynonymListPageState extends ConsumerState<SearchSynonymListPage> {
                 children: group.terms.map((t) => Chip(
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   label: Text(t, style: const TextStyle(fontSize: TypeScale.xs)),
-                )).toList(),
+                ),).toList(),
               ),
             ],
           ),

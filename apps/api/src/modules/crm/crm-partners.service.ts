@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { Injectable } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import { Injectable } from "@nestjs/common";
+import { prisma } from "@unerp/database";
 
 /**
  * CRM Partner & Channel Management service.
@@ -29,16 +28,24 @@ import { prisma } from '@unerp/database';
  */
 @Injectable()
 export class CrmPartnersService {
-  async getPartners(tenantId: string): Promise<Array<{ id: string; name: string; tier: string; activeDeals: number; revenueAttributed: number }>> {
+  async getPartners(tenantId: string): Promise<
+    Array<{
+      id: string;
+      name: string;
+      tier: string;
+      activeDeals: number;
+      revenueAttributed: number;
+    }>
+  > {
     const partners = await prisma.customer.findMany({
-      where: { tenantId, type: 'VENDOR', deletedAt: null },
+      where: { tenantId, type: "VENDOR", deletedAt: null },
       take: 10,
     });
 
     return partners.map((p, i) => ({
       id: p.id,
       name: p.name,
-      tier: i % 3 === 0 ? 'GOLD' : i % 3 === 1 ? 'SILVER' : 'BRONZE',
+      tier: i % 3 === 0 ? "GOLD" : i % 3 === 1 ? "SILVER" : "BRONZE",
       activeDeals: 2 + i,
       revenueAttributed: Number(p.creditLimit || 5000) * 2,
     }));

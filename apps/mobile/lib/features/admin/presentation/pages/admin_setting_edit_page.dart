@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -121,7 +120,7 @@ class _AdminSettingEditPageState extends ConsumerState<AdminSettingEditPage> {
             ),
           const SizedBox(height: Spacing.x2),
           Text('Type: ${_settingType ?? 'string'}',
-              style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
+              style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
         ],
       ),
     );

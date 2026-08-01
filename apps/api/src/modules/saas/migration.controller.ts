@@ -1,12 +1,4 @@
-// @ts-nocheck
-import {
-  Controller,
-  Get,
-  Post,
-  UseGuards,
-  Req,
-  Param,
-} from "@nestjs/common";
+import { Controller, Get, Post, UseGuards, Req, Param } from "@nestjs/common";
 import { z } from "zod";
 import { ZodBody } from "../../common/decorators/zod-body.decorator";
 import { Request } from "express";
@@ -56,7 +48,10 @@ export class MigrationController {
   @ApiOperation({ summary: "Start data migration [Admin]" })
   @Permissions("saas.tenant.create")
   @Post("start")
-  async startDataMigration(@Req() _req: AuthReq, @ZodBody(startMigrationSchema) body: z.infer<typeof startMigrationSchema>) {
+  async startDataMigration(
+    @Req() _req: AuthReq,
+    @ZodBody(startMigrationSchema) body: z.infer<typeof startMigrationSchema>,
+  ) {
     return {
       success: true,
       migrationId: "mig_" + Date.now(),
@@ -92,8 +87,14 @@ export class MigrationController {
   @ApiOperation({ summary: "Validate migration [Admin]" })
   @Permissions("saas.tenant.create")
   @Post("validate")
-  async validateMigration(@Req() _req: AuthReq, @ZodBody(validateMigrationSchema) body: z.infer<typeof validateMigrationSchema>) {
-    const detail = await this.tenantAnalyticsService.getTenantDetail(body.sourceTenantId).catch(() => null);
+  async validateMigration(
+    @Req() _req: AuthReq,
+    @ZodBody(validateMigrationSchema)
+    body: z.infer<typeof validateMigrationSchema>,
+  ) {
+    const detail = await this.tenantAnalyticsService
+      .getTenantDetail(body.sourceTenantId)
+      .catch(() => null);
     return {
       valid: !!detail,
       warnings: detail ? [] : ["Source tenant not found"],
@@ -113,7 +114,11 @@ export class MigrationController {
   @ApiOperation({ summary: "Create migration template [Admin]" })
   @Permissions("saas.tenant.create")
   @Post("templates")
-  async createMigrationTemplate(@Req() _req: AuthReq, @ZodBody(createMigrationTemplateSchema) body: z.infer<typeof createMigrationTemplateSchema>) {
+  async createMigrationTemplate(
+    @Req() _req: AuthReq,
+    @ZodBody(createMigrationTemplateSchema)
+    body: z.infer<typeof createMigrationTemplateSchema>,
+  ) {
     return { success: true, template: body };
   }
 
@@ -135,6 +140,10 @@ export class MigrationController {
   @Permissions("saas.tenant.read")
   @Get("estimate")
   async estimateMigrationTime(@Req() _req: AuthReq) {
-    return { estimatedMinutes: 10, estimatedSizeMB: 50, variables: ["source_tenant", "target_plan"] };
+    return {
+      estimatedMinutes: 10,
+      estimatedSizeMB: 50,
+      variables: ["source_tenant", "target_plan"],
+    };
   }
 }

@@ -1,8 +1,12 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException, UnauthorizedException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { hashPassword, comparePassword, signToken } from '@unerp/auth';
-import { randomBytes } from 'crypto';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  UnauthorizedException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { hashPassword, comparePassword, signToken } from "@unerp/auth";
+import { randomBytes } from "crypto";
 
 /**
  * Supplier self-service portal: lets a vendor's own staff log in (separately
@@ -16,39 +20,62 @@ import { randomBytes } from 'crypto';
 @Injectable()
 export class VendorPortalService {
   async inviteUser(tenantId: string, vendorId: string, email: string) {
-    const vendor = await prisma.vendor.findFirst({ where: { id: vendorId, tenantId } });
-    if (!vendor) throw new NotFoundException('Vendor not found');
-    if (!email) throw new BadRequestException('email is required');
+    const vendor = await prisma.vendor.findFirst({
+      where: { id: vendorId, tenantId },
+    });
+    if (!vendor) throw new NotFoundException("Vendor not found");
+    if (!email) throw new BadRequestException("email is required");
 
-    const existing = await prisma.vendorPortalUser.findFirst({ where: { tenantId, email } });
-    if (existing) throw new BadRequestException('A portal user with this email already exists for this tenant');
+    const existing = await prisma.vendorPortalUser.findFirst({
+      where: { tenantId, email },
+    });
+    if (existing)
+      throw new BadRequestException(
+        "A portal user with this email already exists for this tenant",
+      );
 
     // Dev/demo-friendly invite flow: generate a temporary password and return
     // it directly instead of sending an email (no email-delivery integration
     // wired into this module). A production rollout would email an invite
     // link instead of surfacing the password in the API response.
-    const tempPassword = randomBytes(9).toString('base64url');
+    const tempPassword = randomBytes(9).toString("base64url");
     const passwordHash = await hashPassword(tempPassword);
 
     const user = await prisma.vendorPortalUser.create({
-      data: { tenantId, vendorId, email, passwordHash, status: 'INVITED' },
+      data: { tenantId, vendorId, email, passwordHash, status: "INVITED" },
     });
 
-    return { id: user.id, email: user.email, status: user.status, tempPassword };
+    return {
+      id: user.id,
+      email: user.email,
+      status: user.status,
+      tempPassword,
+    };
   }
 
   async listUsers(tenantId: string, vendorId: string) {
     return prisma.vendorPortalUser.findMany({
       where: { tenantId, vendorId },
-      select: { id: true, email: true, status: true, lastLoginAt: true, createdAt: true },
-      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        email: true,
+        status: true,
+        lastLoginAt: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
     });
   }
 
   async disableUser(tenantId: string, userId: string) {
-    const existing = await prisma.vendorPortalUser.findFirst({ where: { id: userId, tenantId } });
-    if (!existing) throw new NotFoundException('Portal user not found');
-    return prisma.vendorPortalUser.update({ where: { id: userId }, data: { status: 'DISABLED' } });
+    const existing = await prisma.vendorPortalUser.findFirst({
+      where: { id: userId, tenantId },
+    });
+    if (!existing) throw new NotFoundException("Portal user not found");
+    return prisma.vendorPortalUser.update({
+      where: { id: userId },
+      data: { status: "DISABLED" },
+    });
   }
 
   /**
@@ -58,23 +85,32 @@ export class VendorPortalService {
    * when there's no tenant-identifying subdomain/slug at login time.
    */
   async login(email: string, password: string) {
-    if (!email || !password) throw new BadRequestException('email and password are required');
+    if (!email || !password)
+      throw new BadRequestException("email and password are required");
 
-    const candidates = await prisma.vendorPortalUser.findMany({ where: { email, status: { not: 'DISABLED' } } });
+    const candidates = await prisma.vendorPortalUser.findMany({
+      where: { email, status: { not: "DISABLED" } },
+    });
     for (const candidate of candidates) {
       if (await comparePassword(password, candidate.passwordHash)) {
         await prisma.vendorPortalUser.update({
           where: { id: candidate.id },
-          data: { status: 'ACTIVE', lastLoginAt: new Date() },
+          data: { status: "ACTIVE", lastLoginAt: new Date() },
         });
         const token = signToken(
-          { tenantId: candidate.tenantId, userId: candidate.id, vendorId: candidate.vendorId, portal: true, email: candidate.email },
-          '8h',
+          {
+            tenantId: candidate.tenantId,
+            userId: candidate.id,
+            vendorId: candidate.vendorId,
+            portal: true,
+            email: candidate.email,
+          },
+          "8h",
         );
         return { token, vendorId: candidate.vendorId };
       }
     }
-    throw new UnauthorizedException('Invalid portal credentials');
+    throw new UnauthorizedException("Invalid portal credentials");
   }
 
   /** Purchase orders visible to a portal user — strictly their own vendor's. */
@@ -82,7 +118,7 @@ export class VendorPortalService {
     return prisma.purchaseOrder.findMany({
       where: { tenantId, vendorId, deletedAt: null },
       include: { lineItems: true, receipts: true },
-      orderBy: { orderDate: 'desc' },
+      orderBy: { orderDate: "desc" },
     });
   }
 
@@ -95,7 +131,7 @@ export class VendorPortalService {
         supplierQuotations: { some: { vendorId } },
       },
       include: { lineItems: true },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 }

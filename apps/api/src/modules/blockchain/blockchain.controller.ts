@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * BlockchainController — REST API for blockchain operations
  *

@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -51,7 +50,7 @@ class _WorkflowListPageState extends ConsumerState<WorkflowListPage> {
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
                 .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value)))
+                    value: e.key, child: Text(e.value),),)
                 .toList(),
           ),
         ],
@@ -86,7 +85,7 @@ class _WorkflowListPageState extends ConsumerState<WorkflowListPage> {
                     : '${state.meta.total} workflow${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -148,31 +147,31 @@ class _WorkflowDefinitionTile extends StatelessWidget {
             Row(children: [
               Expanded(
                 child: Text(definition.name,
-                    style: Theme.of(context).textTheme.titleSmall),
+                    style: Theme.of(context).textTheme.titleSmall,),
               ),
               UiStatusBadge(
                 label: definition.isActive ? 'ACTIVE' : 'INACTIVE',
                 tone: definition.isActive ? UiTone.success : UiTone.neutral,
               ),
-            ]),
+            ],),
             if (definition.description != null) ...[
               const SizedBox(height: Spacing.x1),
               Text(definition.description!,
-                  style: TextStyle(color: t.textSecondary, fontSize: TypeScale.sm)),
+                  style: TextStyle(color: t.textSecondary, fontSize: TypeScale.sm),),
             ],
             const SizedBox(height: Spacing.x2),
             Row(children: [
               if (definition.module != null) ...[
                 Text(definition.module!,
-                    style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
+                    style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
                 const SizedBox(width: Spacing.x3),
               ],
               Text('v${definition.version}',
-                  style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
+                  style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
               const Spacer(),
               Text(Formatters.date(definition.updatedAt),
-                  style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
-            ]),
+                  style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
+            ],),
             const SizedBox(height: Spacing.x2),
             Row(mainAxisAlignment: MainAxisAlignment.end, children: [
               IconButton(
@@ -183,7 +182,7 @@ class _WorkflowDefinitionTile extends StatelessWidget {
                 tooltip: definition.isActive ? 'Deactivate' : 'Activate',
                 onPressed: onToggleActive,
               ),
-            ]),
+            ],),
           ],
         ),
       ),

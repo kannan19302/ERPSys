@@ -1,4 +1,3 @@
-// @ts-nocheck
 /** Shared client-side image resize used by the logo upload widgets (registration + branding settings). */
 
 export interface ResizeOptions {

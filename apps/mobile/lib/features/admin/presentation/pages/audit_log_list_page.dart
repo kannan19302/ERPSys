@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -51,12 +50,12 @@ class _AuditLogListPageState extends ConsumerState<AuditLogListPage> {
               Row(children: [
                 Expanded(
                   child: Text('${log.action} · ${log.entityType}',
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
-              ]),
+              ],),
               const SizedBox(height: Spacing.x1),
               Text('${log.userId} · ${log.entityId}',
-                  style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs)),
+                  style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs),),
             ],
           ),
         ),

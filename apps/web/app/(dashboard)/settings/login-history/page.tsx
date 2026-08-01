@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 
 export default function LoginHistoryRedirectPage() {
-  redirect('/settings/security-policies?tab=login-history');
+  redirect("/settings/security-policies?tab=login-history");
 }

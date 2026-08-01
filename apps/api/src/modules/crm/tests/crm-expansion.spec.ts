@@ -1,7 +1,6 @@
-// @ts-nocheck
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
-vi.mock('@unerp/database', () => ({
+vi.mock("@unerp/database", () => ({
   prisma: {
     opportunity: {
       findFirst: vi.fn(),
@@ -133,126 +132,160 @@ vi.mock('@unerp/database', () => ({
   },
 }));
 
-import { prisma } from '@unerp/database';
-import { CrmForecastingService } from '../crm-forecasting.service';
-import { CrmAccountManagementService } from '../crm-account-management.service';
-import { CrmCampaignManagementService } from '../crm-campaign-management.service';
-import { SalesCpqService } from '../../sales/sales-cpq.service';
-import { SalesFulfillmentService } from '../../sales/sales-fulfillment.service';
-import { CrmSupportService } from '../crm-support.service';
-import { CrmEnablementService } from '../crm-enablement.service';
-import { CrmRevOpsService } from '../crm-revops.service';
-import { CrmPartnersService } from '../crm-partners.service';
-import { CrmAutomationService } from '../crm-automation.service';
+import { prisma } from "@unerp/database";
+import { CrmForecastingService } from "../crm-forecasting.service";
+import { CrmAccountManagementService } from "../crm-account-management.service";
+import { CrmCampaignManagementService } from "../crm-campaign-management.service";
+import { SalesCpqService } from "../../sales/sales-cpq.service";
+import { SalesFulfillmentService } from "../../sales/sales-fulfillment.service";
+import { CrmSupportService } from "../crm-support.service";
+import { CrmEnablementService } from "../crm-enablement.service";
+import { CrmRevOpsService } from "../crm-revops.service";
+import { CrmPartnersService } from "../crm-partners.service";
+import { CrmAutomationService } from "../crm-automation.service";
 
-const TENANT = 'tenant-1';
+const TENANT = "tenant-1";
 
-describe('CRM Expansion Services', () => {
+describe("CRM Expansion Services", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   // 1. Forecasting
-  describe('CrmForecastingService', () => {
-    it('calculates deal score', async () => {
+  describe("CrmForecastingService", () => {
+    it("calculates deal score", async () => {
       const srv = new CrmForecastingService();
-      (prisma.opportunity.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue({
-        id: 'opp-1',
+      (
+        prisma.opportunity.findFirst as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({
+        id: "opp-1",
         amount: 25000,
-        stage: 'PROPOSAL',
+        stage: "PROPOSAL",
         activities: [],
         lineItems: [],
         expectedCloseDate: new Date(),
       });
-      (prisma.opportunity.aggregate as ReturnType<typeof vi.fn>).mockResolvedValue({ _avg: { amount: 20000 } });
+      (
+        prisma.opportunity.aggregate as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({ _avg: { amount: 20000 } });
 
-      const res = await srv.calculateDealScore(TENANT, 'opp-1');
+      const res = await srv.calculateDealScore(TENANT, "opp-1");
       expect(res.score).toBeGreaterThan(0);
       expect(res.riskLevel).toBeDefined();
     });
 
-    it('creates, freezes, and adjusts forecast snapshots', async () => {
+    it("creates, freezes, and adjusts forecast snapshots", async () => {
       const srv = new CrmForecastingService();
-      (prisma.forecastSnapshot.create as any).mockResolvedValue({ id: 'fs-1', status: 'DRAFT' });
-      (prisma.forecastSnapshot.update as any).mockResolvedValue({ id: 'fs-1', status: 'FROZEN', forecastAmount: 50000 });
+      (prisma.forecastSnapshot.create as any).mockResolvedValue({
+        id: "fs-1",
+        status: "DRAFT",
+      });
+      (prisma.forecastSnapshot.update as any).mockResolvedValue({
+        id: "fs-1",
+        status: "FROZEN",
+        forecastAmount: 50000,
+      });
 
-      const snap = await srv.createForecastSnapshot(TENANT, 'org-1', { name: 'Q1' });
-      expect(snap.id).toBe('fs-1');
+      const snap = await srv.createForecastSnapshot(TENANT, "org-1", {
+        name: "Q1",
+      });
+      expect(snap.id).toBe("fs-1");
 
-      const frozen = await srv.freezeForecastSnapshot(TENANT, 'fs-1');
-      expect(frozen.status).toBe('FROZEN');
+      const frozen = await srv.freezeForecastSnapshot(TENANT, "fs-1");
+      expect(frozen.status).toBe("FROZEN");
 
-      const adjusted = await srv.adjustForecast(TENANT, 'fs-1', 50000);
+      const adjusted = await srv.adjustForecast(TENANT, "fs-1", 50000);
       expect(adjusted.forecastAmount).toBe(50000);
     });
 
-    it('manages deal tags and team members', async () => {
+    it("manages deal tags and team members", async () => {
       const srv = new CrmForecastingService();
-      (prisma.dealTag.create as any).mockResolvedValue({ opportunityId: 'opp-1', tag: 'Enterprise' });
-      (prisma.dealTeamMember.create as any).mockResolvedValue({ opportunityId: 'opp-1', userId: 'user-1' });
+      (prisma.dealTag.create as any).mockResolvedValue({
+        opportunityId: "opp-1",
+        tag: "Enterprise",
+      });
+      (prisma.dealTeamMember.create as any).mockResolvedValue({
+        opportunityId: "opp-1",
+        userId: "user-1",
+      });
 
-      const tag = await srv.addDealTag(TENANT, 'opp-1', 'Enterprise');
-      expect(tag.status).toBe('tagged');
+      const tag = await srv.addDealTag(TENANT, "opp-1", "Enterprise");
+      expect(tag.status).toBe("tagged");
 
-      const team = await srv.addDealTeamMember(TENANT, 'opp-1', 'user-1', 'AE');
-      expect(team.userId).toBe('user-1');
+      const team = await srv.addDealTeamMember(TENANT, "opp-1", "user-1", "AE");
+      expect(team.userId).toBe("user-1");
     });
   });
 
   // 2. Account Management
-  describe('CrmAccountManagementService', () => {
-    it('retrieves customer success health score', async () => {
+  describe("CrmAccountManagementService", () => {
+    it("retrieves customer success health score", async () => {
       const srv = new CrmAccountManagementService();
-      (prisma.customer.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue({
-        id: 'cust-1',
-        name: 'Acme Corp',
-        riskRating: 'LOW',
-        creditHold: false,
-      });
-      const res = await srv.getCustomerHealthScore(TENANT, 'cust-1');
+      (prisma.customer.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(
+        {
+          id: "cust-1",
+          name: "Acme Corp",
+          riskRating: "LOW",
+          creditHold: false,
+        },
+      );
+      const res = await srv.getCustomerHealthScore(TENANT, "cust-1");
       expect(res.healthScore).toBeGreaterThanOrEqual(50);
-      expect(res.status).toBe('HEALTHY');
+      expect(res.status).toBe("HEALTHY");
     });
 
-    it('creates account plans and logs customer health', async () => {
+    it("creates account plans and logs customer health", async () => {
       const srv = new CrmAccountManagementService();
-      (prisma.accountPlan.create as any).mockResolvedValue({ id: 'ap-1', name: 'Expansion Plan' });
-      (prisma.customerHealthLog.create as any).mockResolvedValue({ id: 'hl-1', score: 85 });
+      (prisma.accountPlan.create as any).mockResolvedValue({
+        id: "ap-1",
+        name: "Expansion Plan",
+      });
+      (prisma.customerHealthLog.create as any).mockResolvedValue({
+        id: "hl-1",
+        score: 85,
+      });
 
-      const plan = await srv.createAccountPlan(TENANT, 'org-1', { customerId: 'cust-1', name: 'Expansion Plan' });
-      expect(plan.id).toBe('ap-1');
+      const plan = await srv.createAccountPlan(TENANT, "org-1", {
+        customerId: "cust-1",
+        name: "Expansion Plan",
+      });
+      expect(plan.id).toBe("ap-1");
 
-      const health = await srv.logCustomerHealth(TENANT, 'cust-1', 85, 'GREEN');
+      const health = await srv.logCustomerHealth(TENANT, "cust-1", 85, "GREEN");
       expect(health.score).toBe(85);
     });
   });
 
   // 3. Campaigns
-  describe('CrmCampaignManagementService', () => {
-    it('gets campaign funnel data', async () => {
+  describe("CrmCampaignManagementService", () => {
+    it("gets campaign funnel data", async () => {
       const srv = new CrmCampaignManagementService();
       (prisma.lead.count as ReturnType<typeof vi.fn>).mockResolvedValue(100);
-      (prisma.opportunity.count as ReturnType<typeof vi.fn>).mockResolvedValue(20);
-      (prisma.opportunity.aggregate as ReturnType<typeof vi.fn>).mockResolvedValue({ _sum: { amount: 50000 } });
+      (prisma.opportunity.count as ReturnType<typeof vi.fn>).mockResolvedValue(
+        20,
+      );
+      (
+        prisma.opportunity.aggregate as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({ _sum: { amount: 50000 } });
 
       const res = await srv.getMarketingFunnel(TENANT);
       expect(res.length).toBe(6);
-      expect(res[0]?.stage).toBe('Visitors');
+      expect(res[0]?.stage).toBe("Visitors");
     });
   });
 
   // 4. CPQ
-  describe('SalesCpqService', () => {
-    it('calculates dynamic pricing with volume discount', async () => {
+  describe("SalesCpqService", () => {
+    it("calculates dynamic pricing with volume discount", async () => {
       const srv = new SalesCpqService();
       (prisma.product.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue({
-        id: 'prod-1',
-        name: 'Widget',
+        id: "prod-1",
+        name: "Widget",
         sellPrice: 100,
       });
 
       const res = await srv.calculateDynamicPrice(TENANT, {
-        productId: 'prod-1',
+        productId: "prod-1",
         quantity: 100,
       });
       expect(res.discountPct).toBe(15);
@@ -261,73 +294,92 @@ describe('CRM Expansion Services', () => {
   });
 
   // 5. Fulfillment
-  describe('SalesFulfillmentService', () => {
-    it('recalculates order SLA status', async () => {
+  describe("SalesFulfillmentService", () => {
+    it("recalculates order SLA status", async () => {
       const srv = new SalesFulfillmentService();
-      (prisma.salesOrder.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
-        { id: 'so-1', orderNumber: 'SO-101', status: 'CONFIRMED', orderDate: new Date() },
+      (
+        prisma.salesOrder.findMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([
+        {
+          id: "so-1",
+          orderNumber: "SO-101",
+          status: "CONFIRMED",
+          orderDate: new Date(),
+        },
       ]);
       const res = await srv.getOrderSlaStatus(TENANT);
       expect(res.length).toBe(1);
-      expect(res[0]?.slaStatus).toBe('ON_TRACK');
+      expect(res[0]?.slaStatus).toBe("ON_TRACK");
     });
   });
 
   // 6. Support
-  describe('CrmSupportService', () => {
-    it('generates SLA calendar details', async () => {
+  describe("CrmSupportService", () => {
+    it("generates SLA calendar details", async () => {
       const srv = new CrmSupportService();
       const res = await srv.getSlaCalendar(TENANT);
-      expect(res.workDays).toContain('Monday');
+      expect(res.workDays).toContain("Monday");
       expect(res.slaTiers.length).toBe(3);
     });
   });
 
   // 7. Enablement
-  describe('CrmEnablementService', () => {
-    it('lists objection list responses', async () => {
+  describe("CrmEnablementService", () => {
+    it("lists objection list responses", async () => {
       const srv = new CrmEnablementService();
       const res = await srv.getObjections(TENANT);
       expect(res.length).toBeGreaterThan(0);
-      expect(res[0]?.category).toBe('Pricing');
+      expect(res[0]?.category).toBe("Pricing");
     });
   });
 
   // 8. RevOps
-  describe('CrmRevOpsService', () => {
-    it('calculates commissions for closed-won opportunities', async () => {
+  describe("CrmRevOpsService", () => {
+    it("calculates commissions for closed-won opportunities", async () => {
       const srv = new CrmRevOpsService();
-      (prisma.opportunity.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
-        { id: 'opp-1', name: 'Big Deal', amount: 50000, assignedToId: 'user-1' },
+      (
+        prisma.opportunity.findMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue([
+        {
+          id: "opp-1",
+          name: "Big Deal",
+          amount: 50000,
+          assignedToId: "user-1",
+        },
       ]);
       (prisma.user.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
-        { id: 'user-1', firstName: 'John', lastName: 'Doe' },
+        { id: "user-1", firstName: "John", lastName: "Doe" },
       ]);
 
       const res = await srv.getCommissions(TENANT);
       expect(res.length).toBe(1);
       expect(res[0]?.commissionAmount).toBe(5000);
-      expect(res[0]?.repName).toBe('John Doe');
+      expect(res[0]?.repName).toBe("John Doe");
     });
   });
 
   // 9. Partners
-  describe('CrmPartnersService', () => {
-    it('lists partners', async () => {
+  describe("CrmPartnersService", () => {
+    it("lists partners", async () => {
       const srv = new CrmPartnersService();
       (prisma.customer.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
-        { id: 'part-1', name: 'Partner Inc', type: 'VENDOR', creditLimit: 25000 },
+        {
+          id: "part-1",
+          name: "Partner Inc",
+          type: "VENDOR",
+          creditLimit: 25000,
+        },
       ]);
 
       const res = await srv.getPartners(TENANT);
       expect(res.length).toBe(1);
-      expect(res[0]?.tier).toBe('GOLD');
+      expect(res[0]?.tier).toBe("GOLD");
     });
   });
 
   // 10. Automation
-  describe('CrmAutomationService', () => {
-    it('lists active triggers', async () => {
+  describe("CrmAutomationService", () => {
+    it("lists active triggers", async () => {
       const srv = new CrmAutomationService();
       const res = await srv.getWorkflows(TENANT);
       expect(res.length).toBe(5);

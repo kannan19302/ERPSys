@@ -1,8 +1,7 @@
-// @ts-nocheck
-import { Injectable, Logger } from '@nestjs/common';
-import { OnEvent, EventEmitter2 } from '@nestjs/event-emitter';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
+import { Injectable, Logger } from "@nestjs/common";
+import { OnEvent, EventEmitter2 } from "@nestjs/event-emitter";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
 
 @Injectable()
 export class InventoryEventHandler {
@@ -10,7 +9,7 @@ export class InventoryEventHandler {
 
   constructor(private readonly eventEmitter: EventEmitter2) {}
 
-  @OnEvent('procurement.receipt.created')
+  @OnEvent("procurement.receipt.created")
   async handlePurchaseReceiptCreated(event: {
     tenantId: string;
     warehouseId: string | null;
@@ -20,9 +19,13 @@ export class InventoryEventHandler {
     }>;
     receiptNumber: string;
   }) {
-    this.logger.log(`Handling procurement.receipt.created event for receipt: ${event.receiptNumber}`);
+    this.logger.log(
+      `Handling procurement.receipt.created event for receipt: ${event.receiptNumber}`,
+    );
     if (!event.warehouseId) {
-      this.logger.warn(`No warehouseId provided for receipt ${event.receiptNumber}. Skipping stock adjustment.`);
+      this.logger.warn(
+        `No warehouseId provided for receipt ${event.receiptNumber}. Skipping stock adjustment.`,
+      );
       return;
     }
 
@@ -50,14 +53,18 @@ export class InventoryEventHandler {
             quantity: new Prisma.Decimal(item.acceptedQty),
           },
         });
-        this.logger.log(`Increased stock for product ${item.productId} in warehouse ${event.warehouseId} by ${item.acceptedQty}`);
+        this.logger.log(
+          `Increased stock for product ${item.productId} in warehouse ${event.warehouseId} by ${item.acceptedQty}`,
+        );
       } catch (err) {
-        this.logger.error(`Failed to adjust stock for product ${item.productId}: ${err instanceof Error ? err.message : String(err)}`);
+        this.logger.error(
+          `Failed to adjust stock for product ${item.productId}: ${err instanceof Error ? err.message : String(err)}`,
+        );
       }
     }
   }
 
-  @OnEvent('sales.delivery.created')
+  @OnEvent("sales.delivery.created")
   async handleSalesDeliveryCreated(event: {
     tenantId: string;
     warehouseId: string | null;
@@ -67,9 +74,13 @@ export class InventoryEventHandler {
     }>;
     deliveryNumber: string;
   }) {
-    this.logger.log(`Handling sales.delivery.created event for delivery: ${event.deliveryNumber}`);
+    this.logger.log(
+      `Handling sales.delivery.created event for delivery: ${event.deliveryNumber}`,
+    );
     if (!event.warehouseId) {
-      this.logger.warn(`No warehouseId provided for delivery ${event.deliveryNumber}. Skipping stock adjustment.`);
+      this.logger.warn(
+        `No warehouseId provided for delivery ${event.deliveryNumber}. Skipping stock adjustment.`,
+      );
       return;
     }
 
@@ -97,17 +108,25 @@ export class InventoryEventHandler {
             quantity: new Prisma.Decimal(-item.deliveredQty),
           },
         });
-        this.logger.log(`Decreased stock for product ${item.productId} in warehouse ${event.warehouseId} by ${item.deliveredQty}`);
+        this.logger.log(
+          `Decreased stock for product ${item.productId} in warehouse ${event.warehouseId} by ${item.deliveredQty}`,
+        );
 
         // Check reorder threshold
-        await this.checkReorderThreshold(event.tenantId, item.productId, event.warehouseId);
+        await this.checkReorderThreshold(
+          event.tenantId,
+          item.productId,
+          event.warehouseId,
+        );
       } catch (err) {
-        this.logger.error(`Failed to adjust stock for product ${item.productId}: ${err instanceof Error ? err.message : String(err)}`);
+        this.logger.error(
+          `Failed to adjust stock for product ${item.productId}: ${err instanceof Error ? err.message : String(err)}`,
+        );
       }
     }
   }
 
-  @OnEvent('manufacturing.workorder.completed')
+  @OnEvent("manufacturing.workorder.completed")
   async handleWorkOrderCompleted(event: {
     tenantId: string;
     workOrderId: string;
@@ -119,9 +138,13 @@ export class InventoryEventHandler {
       quantity: number;
     }>;
   }) {
-    this.logger.log(`Handling manufacturing.workorder.completed event for workorder: ${event.workOrderId}`);
+    this.logger.log(
+      `Handling manufacturing.workorder.completed event for workorder: ${event.workOrderId}`,
+    );
     if (!event.warehouseId) {
-      this.logger.warn(`No warehouseId provided for workorder ${event.workOrderId}. Skipping inventory transactions.`);
+      this.logger.warn(
+        `No warehouseId provided for workorder ${event.workOrderId}. Skipping inventory transactions.`,
+      );
       return;
     }
 
@@ -148,10 +171,16 @@ export class InventoryEventHandler {
             quantity: new Prisma.Decimal(-item.quantity),
           },
         });
-        this.logger.log(`Consumed stock for product ${item.productId} in warehouse ${event.warehouseId} by ${item.quantity}`);
+        this.logger.log(
+          `Consumed stock for product ${item.productId} in warehouse ${event.warehouseId} by ${item.quantity}`,
+        );
 
         // Check reorder threshold
-        await this.checkReorderThreshold(event.tenantId, item.productId, event.warehouseId);
+        await this.checkReorderThreshold(
+          event.tenantId,
+          item.productId,
+          event.warehouseId,
+        );
       }
 
       // 2. Produce finished goods (increment stock)
@@ -175,13 +204,17 @@ export class InventoryEventHandler {
           quantity: new Prisma.Decimal(event.quantity),
         },
       });
-      this.logger.log(`Produced stock for finished product ${event.productId} in warehouse ${event.warehouseId} by ${event.quantity}`);
+      this.logger.log(
+        `Produced stock for finished product ${event.productId} in warehouse ${event.warehouseId} by ${event.quantity}`,
+      );
     } catch (err) {
-      this.logger.error(`Failed to execute inventory transactions for workorder ${event.workOrderId}: ${err instanceof Error ? err.message : String(err)}`);
+      this.logger.error(
+        `Failed to execute inventory transactions for workorder ${event.workOrderId}: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
   }
 
-  @OnEvent('sales.return.created')
+  @OnEvent("sales.return.created")
   async handleSalesReturnCreated(event: {
     tenantId: string;
     warehouseId: string;
@@ -215,14 +248,18 @@ export class InventoryEventHandler {
             quantity: new Prisma.Decimal(item.quantity),
           },
         });
-        this.logger.log(`Restocked returned product ${item.productId} in warehouse ${event.warehouseId} by ${item.quantity}`);
+        this.logger.log(
+          `Restocked returned product ${item.productId} in warehouse ${event.warehouseId} by ${item.quantity}`,
+        );
       } catch (err) {
-        this.logger.error(`Failed to restock product ${item.productId}: ${err instanceof Error ? err.message : String(err)}`);
+        this.logger.error(
+          `Failed to restock product ${item.productId}: ${err instanceof Error ? err.message : String(err)}`,
+        );
       }
     }
   }
 
-  @OnEvent('procurement.return.created')
+  @OnEvent("procurement.return.created")
   async handlePurchaseReturnCreated(event: {
     tenantId: string;
     warehouseId: string;
@@ -231,7 +268,9 @@ export class InventoryEventHandler {
       quantity: number;
     }>;
   }) {
-    this.logger.log(`Handling procurement.return.created event for stock deduction`);
+    this.logger.log(
+      `Handling procurement.return.created event for stock deduction`,
+    );
     for (const item of event.lineItems) {
       if (!item.productId) continue;
 
@@ -256,17 +295,29 @@ export class InventoryEventHandler {
             quantity: new Prisma.Decimal(-item.quantity),
           },
         });
-        this.logger.log(`Deducted returned product ${item.productId} in warehouse ${event.warehouseId} by ${item.quantity}`);
+        this.logger.log(
+          `Deducted returned product ${item.productId} in warehouse ${event.warehouseId} by ${item.quantity}`,
+        );
 
         // Check reorder threshold
-        await this.checkReorderThreshold(event.tenantId, item.productId, event.warehouseId);
+        await this.checkReorderThreshold(
+          event.tenantId,
+          item.productId,
+          event.warehouseId,
+        );
       } catch (err) {
-        this.logger.error(`Failed to deduct returned product ${item.productId}: ${err instanceof Error ? err.message : String(err)}`);
+        this.logger.error(
+          `Failed to deduct returned product ${item.productId}: ${err instanceof Error ? err.message : String(err)}`,
+        );
       }
     }
   }
 
-  private async checkReorderThreshold(tenantId: string, productId: string, warehouseId: string) {
+  private async checkReorderThreshold(
+    tenantId: string,
+    productId: string,
+    warehouseId: string,
+  ) {
     const item = await prisma.inventoryItem.findFirst({
       where: { tenantId, productId, warehouseId },
     });
@@ -276,13 +327,17 @@ export class InventoryEventHandler {
     const reorderPoint = Number(item.reorderPoint);
 
     if (currentQty <= reorderPoint) {
-      this.logger.log(`Stock level (${currentQty}) is at or below reorder point (${reorderPoint}) for product ${productId} in warehouse ${warehouseId}.`);
+      this.logger.log(
+        `Stock level (${currentQty}) is at or below reorder point (${reorderPoint}) for product ${productId} in warehouse ${warehouseId}.`,
+      );
 
       // Check if an active PO exists with this product
       const activePO = await prisma.purchaseOrder.findFirst({
         where: {
           tenantId,
-          status: { in: ['DRAFT', 'SUBMITTED', 'APPROVED', 'PARTIALLY_RECEIVED'] },
+          status: {
+            in: ["DRAFT", "SUBMITTED", "APPROVED", "PARTIALLY_RECEIVED"],
+          },
           lineItems: {
             some: {
               productId,
@@ -292,15 +347,19 @@ export class InventoryEventHandler {
       });
 
       if (!activePO) {
-        this.logger.log(`No active Purchase Order found for product ${productId}. Emitting procurement.order.reorder event.`);
-        this.eventEmitter.emit('procurement.order.reorder', {
+        this.logger.log(
+          `No active Purchase Order found for product ${productId}. Emitting procurement.order.reorder event.`,
+        );
+        this.eventEmitter.emit("procurement.order.reorder", {
           tenantId,
           productId,
           warehouseId,
           reorderQty: Number(item.reorderQty),
         });
       } else {
-        this.logger.log(`Active Purchase Order ${activePO.poNumber} already exists for product ${productId}. Skipping auto-reorder.`);
+        this.logger.log(
+          `Active Purchase Order ${activePO.poNumber} already exists for product ${productId}. Skipping auto-reorder.`,
+        );
       }
     }
   }

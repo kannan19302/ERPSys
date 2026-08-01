@@ -19,10 +19,6 @@ class FinanceRepositoryImpl implements FinanceRepository {
 
   static const String _invoicesNamespace = 'finance.invoices';
   static const String _paymentsNamespace = 'finance.payments';
-  static const String _taxFilingsNamespace = 'finance.tax-filings';
-  static const String _chartOfAccountsNamespace = 'finance.chart-of-accounts';
-  static const String _journalEntriesNamespace = 'finance.journal-entries';
-  static const String _bankAccountsNamespace = 'finance.bank-accounts';
 
   final FinanceRemoteDataSource _remote;
   final ResponseCache _cache;

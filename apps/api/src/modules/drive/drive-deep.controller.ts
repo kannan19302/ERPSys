@@ -1,5 +1,16 @@
-// @ts-nocheck
-import { Controller, Get, Post, Patch, Delete, Param, Query, UseGuards, UseInterceptors, Req, Body } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Query,
+  UseGuards,
+  UseInterceptors,
+  Req,
+  Body,
+} from "@nestjs/common";
 import { Request } from "express";
 import { z } from "zod";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
@@ -9,10 +20,16 @@ import { TenantInterceptor } from "../../common/guards/tenant.interceptor";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import { DriveDeepService } from "./drive-deep.service";
 import {
-  shareFolderSchema, createTagSchema, updateTagSchema, assignTagsSchema, generateDownloadLinkSchema,
+  shareFolderSchema,
+  createTagSchema,
+  updateTagSchema,
+  assignTagsSchema,
+  generateDownloadLinkSchema,
 } from "./drive-deep.dtos";
 
-interface AuthReq extends Request { user: { tenantId: string; userId: string } }
+interface AuthReq extends Request {
+  user: { tenantId: string; userId: string };
+}
 
 @ApiTags("drive-deep")
 @ApiBearerAuth()
@@ -27,22 +44,38 @@ export class DriveDeepController {
   @ApiOperation({ summary: "Share folder with user" })
   @Permissions("drive.folder.share")
   @Post("folders/:folderId/share")
-  async shareFolder(@Req() req: AuthReq, @Param("folderId") folderId: string, @Body() body: z.infer<typeof shareFolderSchema>) {
+  async shareFolder(
+    @Req() req: AuthReq,
+    @Param("folderId") folderId: string,
+    @Body() body: z.infer<typeof shareFolderSchema>,
+  ) {
     const parsed = shareFolderSchema.parse(body);
-    return this.svc.shareFolder(req.user.tenantId, folderId, parsed.sharedWithUserId, parsed.permission);
+    return this.svc.shareFolder(
+      req.user.tenantId,
+      folderId,
+      parsed.sharedWithUserId,
+      parsed.permission,
+    );
   }
 
   @ApiOperation({ summary: "Remove folder share" })
   @Permissions("drive.folder.share")
   @Delete("folders/:folderId/shares/:shareId")
-  async removeFolderShare(@Req() req: AuthReq, @Param("folderId") folderId: string, @Param("shareId") shareId: string) {
+  async removeFolderShare(
+    @Req() req: AuthReq,
+    @Param("folderId") folderId: string,
+    @Param("shareId") shareId: string,
+  ) {
     return this.svc.removeFolderShare(req.user.tenantId, folderId, shareId);
   }
 
   @ApiOperation({ summary: "List folder shares" })
   @Permissions("drive.folder.read")
   @Get("folders/:folderId/shares")
-  async getFolderShares(@Req() req: AuthReq, @Param("folderId") folderId: string) {
+  async getFolderShares(
+    @Req() req: AuthReq,
+    @Param("folderId") folderId: string,
+  ) {
     return this.svc.getFolderShares(req.user.tenantId, folderId);
   }
 
@@ -104,8 +137,14 @@ export class DriveDeepController {
   @ApiOperation({ summary: "Get storage usage by folder" })
   @Permissions("drive.storage-quota.read")
   @Get("usage/by-folder")
-  async getStorageUsageByFolder(@Req() req: AuthReq, @Query("folderId") folderId?: string) {
-    return this.svc.getStorageUsageByFolder(req.user.tenantId, folderId || undefined);
+  async getStorageUsageByFolder(
+    @Req() req: AuthReq,
+    @Query("folderId") folderId?: string,
+  ) {
+    return this.svc.getStorageUsageByFolder(
+      req.user.tenantId,
+      folderId || undefined,
+    );
   }
 
   // ── File Tagging ──
@@ -120,7 +159,10 @@ export class DriveDeepController {
   @ApiOperation({ summary: "Create tag" })
   @Permissions("drive.tag.create")
   @Post("tags")
-  async createTag(@Req() req: AuthReq, @Body() body: z.infer<typeof createTagSchema>) {
+  async createTag(
+    @Req() req: AuthReq,
+    @Body() body: z.infer<typeof createTagSchema>,
+  ) {
     const parsed = createTagSchema.parse(body);
     return this.svc.createTag(req.user.tenantId, parsed);
   }
@@ -128,7 +170,11 @@ export class DriveDeepController {
   @ApiOperation({ summary: "Update tag" })
   @Permissions("drive.tag.update")
   @Patch("tags/:id")
-  async updateTag(@Req() req: AuthReq, @Param("id") id: string, @Body() body: z.infer<typeof updateTagSchema>) {
+  async updateTag(
+    @Req() req: AuthReq,
+    @Param("id") id: string,
+    @Body() body: z.infer<typeof updateTagSchema>,
+  ) {
     const parsed = updateTagSchema.parse(body);
     return this.svc.updateTag(req.user.tenantId, id, parsed);
   }
@@ -143,7 +189,11 @@ export class DriveDeepController {
   @ApiOperation({ summary: "Assign tags to file" })
   @Permissions("drive.tag.assign")
   @Post("files/:fileId/tags")
-  async assignTags(@Req() req: AuthReq, @Param("fileId") fileId: string, @Body() body: z.infer<typeof assignTagsSchema>) {
+  async assignTags(
+    @Req() req: AuthReq,
+    @Param("fileId") fileId: string,
+    @Body() body: z.infer<typeof assignTagsSchema>,
+  ) {
     const parsed = assignTagsSchema.parse(body);
     return this.svc.assignTags(req.user.tenantId, fileId, parsed.tagIds);
   }
@@ -167,9 +217,17 @@ export class DriveDeepController {
   @ApiOperation({ summary: "Generate expiring download link" })
   @Permissions("drive.share-link.create")
   @Post("files/:id/download-link")
-  async generateDownloadLink(@Req() req: AuthReq, @Param("id") id: string, @Body() body: z.infer<typeof generateDownloadLinkSchema>) {
+  async generateDownloadLink(
+    @Req() req: AuthReq,
+    @Param("id") id: string,
+    @Body() body: z.infer<typeof generateDownloadLinkSchema>,
+  ) {
     const parsed = generateDownloadLinkSchema.parse(body);
-    return this.svc.generateDownloadLink(req.user.tenantId, id, parsed.expiresInHours);
+    return this.svc.generateDownloadLink(
+      req.user.tenantId,
+      id,
+      parsed.expiresInHours,
+    );
   }
 
   @ApiOperation({ summary: "Resolve download token" })

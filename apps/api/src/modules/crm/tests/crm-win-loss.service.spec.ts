@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { CrmWinLossService } from "../crm-win-loss.service";
 import { NotFoundException } from "@nestjs/common";

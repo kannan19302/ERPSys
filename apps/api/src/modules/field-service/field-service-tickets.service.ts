@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Injectable,
   NotFoundException,
@@ -66,7 +65,7 @@ export class FieldServiceTicketsService {
     return ticket;
   }
   async createTicket(tenantId: string, data: any) {
-    let slaDeadline = null;
+    let slaDeadline: Date | null = null;
     let slaId = data.slaId;
     if (data.slaId) {
       const sla = await prisma.fieldServiceSla.findFirst({

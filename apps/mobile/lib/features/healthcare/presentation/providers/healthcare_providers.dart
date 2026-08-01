@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -126,14 +125,14 @@ class PatientListController extends Notifier<PatientListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeletePatientUseCase(
-      ref.read(healthcareRepositoryProvider))(id);
+      ref.read(healthcareRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<Patient>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SavePatientUseCase(
-      ref.read(healthcareRepositoryProvider))(
+      ref.read(healthcareRepositoryProvider),)(
       SavePatientParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -144,7 +143,7 @@ class PatientListController extends Notifier<PatientListState> {
 final FutureProviderFamily<Patient, String> patientDetailProvider =
     FutureProvider.family<Patient, String>((Ref ref, String id) async {
   final result = await GetPatientUseCase(
-    ref.watch(healthcareRepositoryProvider))(id);
+    ref.watch(healthcareRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -241,14 +240,14 @@ class AppointmentListController extends Notifier<AppointmentListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteAppointmentUseCase(
-      ref.read(healthcareRepositoryProvider))(id);
+      ref.read(healthcareRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<Appointment>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveAppointmentUseCase(
-      ref.read(healthcareRepositoryProvider))(
+      ref.read(healthcareRepositoryProvider),)(
       SaveAppointmentParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -259,23 +258,14 @@ class AppointmentListController extends Notifier<AppointmentListState> {
 final FutureProviderFamily<Appointment, String> appointmentDetailProvider =
     FutureProvider.family<Appointment, String>((Ref ref, String id) async {
   final result = await GetAppointmentUseCase(
-    ref.watch(healthcareRepositoryProvider))(id);
+    ref.watch(healthcareRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
-
-Future<Result<void>> _saveAppointmentLogic(
-    Ref ref, Map<String, dynamic> payload, String? id) async {
-  final result = await SaveAppointmentUseCase(
-    ref.read(healthcareRepositoryProvider))(
-    SaveAppointmentParams(id: id, payload: payload),
-  );
-  return result;
-}
 
 final FutureProviderFamily<Prescription, String> prescriptionDetailProvider =
     FutureProvider.family<Prescription, String>((Ref ref, String id) async {
   final result = await GetPrescriptionUseCase(
-    ref.watch(healthcareRepositoryProvider))(id);
+    ref.watch(healthcareRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -364,7 +354,7 @@ class PrescriptionListController extends Notifier<PrescriptionListState> {
 
   Future<Result<Prescription>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SavePrescriptionUseCase(
-      ref.read(healthcareRepositoryProvider))(
+      ref.read(healthcareRepositoryProvider),)(
       SavePrescriptionParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -375,7 +365,7 @@ class PrescriptionListController extends Notifier<PrescriptionListState> {
 final FutureProviderFamily<LabOrder, String> labOrderDetailProvider =
     FutureProvider.family<LabOrder, String>((Ref ref, String id) async {
   final result = await GetLabOrderUseCase(
-    ref.watch(healthcareRepositoryProvider))(id);
+    ref.watch(healthcareRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -464,7 +454,7 @@ class LabOrderListController extends Notifier<LabOrderListState> {
 
   Future<Result<LabOrder>> save(Map<String, dynamic> payload) async {
     final result = await SaveLabOrderUseCase(
-      ref.read(healthcareRepositoryProvider))(
+      ref.read(healthcareRepositoryProvider),)(
       SaveLabOrderParams(id: null, payload: payload),
     );
     if (result.isOk) await refresh();

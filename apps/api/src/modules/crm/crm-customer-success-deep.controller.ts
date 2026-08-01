@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Controller,
   Get,
@@ -36,7 +35,9 @@ export class CrmCustomerSuccessDeepController {
 
   @Get("health-scores")
   @Permissions("crm.customer-success.view")
-  @ApiOperation({ summary: "List health scores, optionally filtered by customer" })
+  @ApiOperation({
+    summary: "List health scores, optionally filtered by customer",
+  })
   async listHealthScores(
     @Req() req: AuthenticatedRequest,
     @Query("customerId") customerId?: string,
@@ -49,7 +50,10 @@ export class CrmCustomerSuccessDeepController {
   @Get("health-scores/:id")
   @Permissions("crm.customer-success.view")
   @ApiOperation({ summary: "Get a single health score record" })
-  async getHealthScore(@Req() req: AuthenticatedRequest, @Param("id") id: string) {
+  async getHealthScore(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
     return { data: await this.svc.getHealthScore(req.user.tenantId, id) };
   }
 
@@ -67,14 +71,20 @@ export class CrmCustomerSuccessDeepController {
 
   @Get("success-plans")
   @Permissions("crm.customer-success.view")
-  @ApiOperation({ summary: "List success plans, optionally filtered by customer or status" })
+  @ApiOperation({
+    summary: "List success plans, optionally filtered by customer or status",
+  })
   async listSuccessPlans(
     @Req() req: AuthenticatedRequest,
     @Query("customerId") customerId?: string,
     @Query("status") status?: string,
   ) {
     return {
-      data: await this.svc.listSuccessPlans(req.user.tenantId, customerId, status),
+      data: await this.svc.listSuccessPlans(
+        req.user.tenantId,
+        customerId,
+        status,
+      ),
     };
   }
 
@@ -83,7 +93,11 @@ export class CrmCustomerSuccessDeepController {
   @ApiOperation({ summary: "Create a new customer success plan" })
   async createSuccessPlan(@Req() req: AuthenticatedRequest, @Body() body: any) {
     return {
-      data: await this.svc.createSuccessPlan(req.user.tenantId, body, req.user.userId),
+      data: await this.svc.createSuccessPlan(
+        req.user.tenantId,
+        body,
+        req.user.userId,
+      ),
     };
   }
 
@@ -96,7 +110,12 @@ export class CrmCustomerSuccessDeepController {
     @Body() body: any,
   ) {
     return {
-      data: await this.svc.updateSuccessPlan(req.user.tenantId, id, body, req.user.userId),
+      data: await this.svc.updateSuccessPlan(
+        req.user.tenantId,
+        id,
+        body,
+        req.user.userId,
+      ),
     };
   }
 
@@ -118,13 +137,19 @@ export class CrmCustomerSuccessDeepController {
     @Param("id") id: string,
   ) {
     return {
-      data: await this.svc.completeMilestone(req.user.tenantId, id, req.user.userId),
+      data: await this.svc.completeMilestone(
+        req.user.tenantId,
+        id,
+        req.user.userId,
+      ),
     };
   }
 
   @Get("nps")
   @Permissions("crm.customer-success.view")
-  @ApiOperation({ summary: "List NPS responses, optionally filtered by survey or date range" })
+  @ApiOperation({
+    summary: "List NPS responses, optionally filtered by survey or date range",
+  })
   async listNpsResponses(
     @Req() req: AuthenticatedRequest,
     @Query("surveyId") surveyId?: string,
@@ -132,7 +157,12 @@ export class CrmCustomerSuccessDeepController {
     @Query("dateTo") dateTo?: string,
   ) {
     return {
-      data: await this.svc.listNpsResponses(req.user.tenantId, surveyId, dateFrom, dateTo),
+      data: await this.svc.listNpsResponses(
+        req.user.tenantId,
+        surveyId,
+        dateFrom,
+        dateTo,
+      ),
     };
   }
 
@@ -150,7 +180,9 @@ export class CrmCustomerSuccessDeepController {
 
   @Get("renewal-pipeline")
   @Permissions("crm.customer-success.view")
-  @ApiOperation({ summary: "List renewal pipeline with optional risk level filter" })
+  @ApiOperation({
+    summary: "List renewal pipeline with optional risk level filter",
+  })
   async listRenewalPipeline(
     @Req() req: AuthenticatedRequest,
     @Query("riskLevel") riskLevel?: string,

@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -88,7 +87,7 @@ class _WarehouseTransferListPageState extends ConsumerState<WarehouseTransferLis
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
             child: Row(children: [
               Text(state.isLoading ? 'Loading...' : '${state.meta.total} transfer${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
+                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
               const Spacer(),
               DropdownButton<String?>(
                 value: _statusFilter,
@@ -104,7 +103,7 @@ class _WarehouseTransferListPageState extends ConsumerState<WarehouseTransferLis
                   else { controller.applyFilters({'status': v}); }
                 },
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -132,7 +131,7 @@ class _WarehouseTransferListPageState extends ConsumerState<WarehouseTransferLis
       itemBuilder: (_, WarehouseTransfer transfer, __) => _TransferTile(
         transfer: transfer,
         onTap: () => context.pushNamed('warehouse-transfer-detail',
-          pathParameters: <String, String>{'id': transfer.id}),
+          pathParameters: <String, String>{'id': transfer.id},),
       ),
     );
   }
@@ -166,25 +165,25 @@ class _TransferTile extends StatelessWidget {
             children: [
               Row(children: [
                 Expanded(child: Text(transfer.reference ?? 'Transfer',
-                    style: Theme.of(context).textTheme.titleSmall)),
+                    style: Theme.of(context).textTheme.titleSmall,),),
                 UiStatusBadge(label: transfer.status, tone: _statusTone(transfer.status)),
-              ]),
+              ],),
               const SizedBox(height: Spacing.x1),
               Row(children: [
                 Icon(Icons.arrow_back, size: TypeScale.sm, color: t.textTertiary),
                 const SizedBox(width: Spacing.x1),
                 Expanded(child: Text(transfer.fromWarehouseName ?? '—',
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs))),
-              ]),
+                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),),
+              ],),
               Row(children: [
                 Icon(Icons.arrow_forward, size: TypeScale.sm, color: t.textTertiary),
                 const SizedBox(width: Spacing.x1),
                 Expanded(child: Text(transfer.toWarehouseName ?? '—',
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs))),
-              ]),
+                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),),
+              ],),
               const SizedBox(height: Spacing.x0_5),
               Text('${transfer.productName ?? 'Product'} × ${transfer.quantity}',
-                  style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
+                  style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
             ],
           ),
         ),

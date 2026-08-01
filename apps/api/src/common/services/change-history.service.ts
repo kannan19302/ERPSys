@@ -1,16 +1,24 @@
-// @ts-nocheck
-import { Injectable } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import type { FieldChange, ChangeAction } from '@unerp/shared';
+import { Injectable } from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import type { FieldChange, ChangeAction } from "@unerp/shared";
 
 const SKIP_FIELDS = new Set([
-  'updatedAt', 'updated_at', 'passwordHash', 'password_hash',
-  'deletedAt', 'deleted_at', 'tenantId', 'tenant_id',
+  "updatedAt",
+  "updated_at",
+  "passwordHash",
+  "password_hash",
+  "deletedAt",
+  "deleted_at",
+  "tenantId",
+  "tenant_id",
 ]);
 
 @Injectable()
 export class ChangeHistoryService {
-  diffFields(oldData: Record<string, unknown>, newData: Record<string, unknown>): FieldChange[] {
+  diffFields(
+    oldData: Record<string, unknown>,
+    newData: Record<string, unknown>,
+  ): FieldChange[] {
     const changes: FieldChange[] = [];
     const allKeys = new Set([...Object.keys(oldData), ...Object.keys(newData)]);
 
@@ -21,7 +29,10 @@ export class ChangeHistoryService {
       if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
         changes.push({
           field: key,
-          label: key.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase()).trim(),
+          label: key
+            .replace(/([A-Z])/g, " $1")
+            .replace(/^./, (s) => s.toUpperCase())
+            .trim(),
           oldValue: oldVal ?? null,
           newValue: newVal ?? null,
         });
@@ -54,12 +65,18 @@ export class ChangeHistoryService {
     });
   }
 
-  async getHistory(tenantId: string, entityType: string, entityId: string, page = 1, limit = 20) {
+  async getHistory(
+    tenantId: string,
+    entityType: string,
+    entityId: string,
+    page = 1,
+    limit = 20,
+  ) {
     const where = { tenantId, entityType, entityId };
     const [data, total] = await Promise.all([
       prisma.changeHistory.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         skip: (page - 1) * limit,
         take: limit,
       }),
@@ -69,12 +86,14 @@ export class ChangeHistoryService {
     return {
       data: data.map((entry) => ({
         ...entry,
-        fieldChanges: typeof entry.fieldChanges === 'string'
-          ? JSON.parse(entry.fieldChanges as string)
-          : entry.fieldChanges,
-        metadata: entry.metadata && typeof entry.metadata === 'string'
-          ? JSON.parse(entry.metadata as string)
-          : entry.metadata,
+        fieldChanges:
+          typeof entry.fieldChanges === "string"
+            ? JSON.parse(entry.fieldChanges as string)
+            : entry.fieldChanges,
+        metadata:
+          entry.metadata && typeof entry.metadata === "string"
+            ? JSON.parse(entry.metadata as string)
+            : entry.metadata,
       })),
       meta: {
         page,

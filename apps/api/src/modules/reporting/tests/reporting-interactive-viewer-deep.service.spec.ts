@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { describe, it, expect, beforeEach } from "vitest";
 import { Test, TestingModule } from "@nestjs/testing";
 import { ReportingInteractiveViewerDeepService } from "../reporting-interactive-viewer-deep.service";

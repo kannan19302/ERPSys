@@ -1,5 +1,8 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
 import { prisma } from "@unerp/database";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
@@ -41,7 +44,9 @@ export class CrmKnowledgeBaseService {
     return prisma.knowledgeBaseCategory.findMany({
       where: { tenantId, deletedAt: null },
       orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-      include: { _count: { select: { articles: { where: { deletedAt: null } } } } },
+      include: {
+        _count: { select: { articles: { where: { deletedAt: null } } } },
+      },
     });
   }
 
@@ -50,41 +55,74 @@ export class CrmKnowledgeBaseService {
       where: { id, tenantId, deletedAt: null },
       include: {
         children: { where: { deletedAt: null }, orderBy: { sortOrder: "asc" } },
-        articles: { where: { deletedAt: null, status: "PUBLISHED" }, orderBy: { sortOrder: "asc" }, take: 50 },
+        articles: {
+          where: { deletedAt: null, status: "PUBLISHED" },
+          orderBy: { sortOrder: "asc" },
+          take: 50,
+        },
       },
     });
     if (!cat) throw new NotFoundException("Category not found");
     return cat;
   }
 
-  async createCategory(tenantId: string, orgId: string | undefined, dto: CreateKbCategoryInput) {
+  async createCategory(
+    tenantId: string,
+    orgId: string | undefined,
+    dto: CreateKbCategoryInput,
+  ) {
     return prisma.knowledgeBaseCategory.create({
       data: { ...dto, tenantId, orgId: orgId || "" },
     });
   }
 
-  async updateCategory(tenantId: string, id: string, dto: UpdateKbCategoryInput) {
-    const existing = await prisma.knowledgeBaseCategory.findFirst({ where: { id, tenantId, deletedAt: null } });
+  async updateCategory(
+    tenantId: string,
+    id: string,
+    dto: UpdateKbCategoryInput,
+  ) {
+    const existing = await prisma.knowledgeBaseCategory.findFirst({
+      where: { id, tenantId, deletedAt: null },
+    });
     if (!existing) throw new NotFoundException("Category not found");
     return prisma.knowledgeBaseCategory.update({ where: { id }, data: dto });
   }
 
   async deleteCategory(tenantId: string, id: string) {
-    const existing = await prisma.knowledgeBaseCategory.findFirst({ where: { id, tenantId, deletedAt: null } });
+    const existing = await prisma.knowledgeBaseCategory.findFirst({
+      where: { id, tenantId, deletedAt: null },
+    });
     if (!existing) throw new NotFoundException("Category not found");
-    const count = await prisma.knowledgeBaseArticle.count({ where: { categoryId: id, deletedAt: null } });
-    if (count > 0) throw new BadRequestException("Cannot delete category with assigned articles");
-    return prisma.knowledgeBaseCategory.update({ where: { id }, data: { deletedAt: new Date() } });
+    const count = await prisma.knowledgeBaseArticle.count({
+      where: { categoryId: id, deletedAt: null },
+    });
+    if (count > 0)
+      throw new BadRequestException(
+        "Cannot delete category with assigned articles",
+      );
+    return prisma.knowledgeBaseCategory.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
   }
 
   async getArticles(
     tenantId: string,
     filters: {
-      categoryId?: string; status?: string; search?: string; isInternal?: boolean;
-      page?: number; limit?: number; sortBy?: string; sortOrder?: "asc" | "desc";
+      categoryId?: string;
+      status?: string;
+      search?: string;
+      isInternal?: boolean;
+      page?: number;
+      limit?: number;
+      sortBy?: string;
+      sortOrder?: "asc" | "desc";
     } = {},
   ) {
-    const where: Prisma.KnowledgeBaseArticleWhereInput = { tenantId, deletedAt: null };
+    const where: Prisma.KnowledgeBaseArticleWhereInput = {
+      tenantId,
+      deletedAt: null,
+    };
     if (filters.categoryId) where.categoryId = filters.categoryId;
     if (filters.status) where.status = filters.status;
     if (filters.isInternal !== undefined) where.isInternal = filters.isInternal;
@@ -104,12 +142,21 @@ export class CrmKnowledgeBaseService {
     }
     const [data, totalCount] = await Promise.all([
       prisma.knowledgeBaseArticle.findMany({
-        where, skip: (page - 1) * limit, take: limit,
-        orderBy, include: { category: { select: { id: true, name: true, slug: true } } },
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy,
+        include: { category: { select: { id: true, name: true, slug: true } } },
       }),
       prisma.knowledgeBaseArticle.count({ where }),
     ]);
-    return { data, totalCount, page, limit, totalPages: Math.ceil(totalCount / limit) };
+    return {
+      data,
+      totalCount,
+      page,
+      limit,
+      totalPages: Math.ceil(totalCount / limit),
+    };
   }
 
   async getArticle(tenantId: string, id: string) {
@@ -121,11 +168,19 @@ export class CrmKnowledgeBaseService {
       },
     });
     if (!article) throw new NotFoundException("Article not found");
-    await prisma.knowledgeBaseArticle.update({ where: { id }, data: { viewCount: { increment: 1 } } });
+    await prisma.knowledgeBaseArticle.update({
+      where: { id },
+      data: { viewCount: { increment: 1 } },
+    });
     return article;
   }
 
-  async createArticle(tenantId: string, orgId: string | undefined, userId: string, dto: CreateKbArticleInput) {
+  async createArticle(
+    tenantId: string,
+    orgId: string | undefined,
+    userId: string,
+    dto: CreateKbArticleInput,
+  ) {
     const article = await prisma.knowledgeBaseArticle.create({
       data: { ...dto, tenantId, orgId: orgId || "", authorId: userId },
     });
@@ -136,26 +191,50 @@ export class CrmKnowledgeBaseService {
       });
     }
     await prisma.knowledgeBaseArticleVersion.create({
-      data: { tenantId, articleId: article.id, version: 1, title: dto.title, content: dto.content, authorId: userId },
+      data: {
+        tenantId,
+        articleId: article.id,
+        version: 1,
+        title: dto.title,
+        content: dto.content,
+        authorId: userId,
+      },
     });
-    return prisma.knowledgeBaseArticle.findUnique({ where: { id: article.id }, include: { category: true } });
+    return prisma.knowledgeBaseArticle.findUnique({
+      where: { id: article.id },
+      include: { category: true },
+    });
   }
 
-  async updateArticle(tenantId: string, id: string, userId: string, dto: UpdateKbArticleInput) {
-    const existing = await prisma.knowledgeBaseArticle.findFirst({ where: { id, tenantId, deletedAt: null } });
+  async updateArticle(
+    tenantId: string,
+    id: string,
+    userId: string,
+    dto: UpdateKbArticleInput,
+  ) {
+    const existing = await prisma.knowledgeBaseArticle.findFirst({
+      where: { id, tenantId, deletedAt: null },
+    });
     if (!existing) throw new NotFoundException("Article not found");
     if (dto.status === "PUBLISHED" && existing.status !== "PUBLISHED") {
       (dto as any).publishedAt = new Date();
     }
-    const updated = await prisma.knowledgeBaseArticle.update({ where: { id }, data: dto });
+    const updated = await prisma.knowledgeBaseArticle.update({
+      where: { id },
+      data: dto,
+    });
     if (dto.title || dto.content) {
       const lastVersion = await prisma.knowledgeBaseArticleVersion.findFirst({
-        where: { articleId: id }, orderBy: { version: "desc" },
+        where: { articleId: id },
+        orderBy: { version: "desc" },
       });
       await prisma.knowledgeBaseArticleVersion.create({
         data: {
-          tenantId, articleId: id, version: (lastVersion?.version || 0) + 1,
-          title: dto.title || existing.title, content: dto.content || existing.content,
+          tenantId,
+          articleId: id,
+          version: (lastVersion?.version || 0) + 1,
+          title: dto.title || existing.title,
+          content: dto.content || existing.content,
           changeLog: dto.status === "PUBLISHED" ? "Published" : "Updated",
           authorId: userId,
         },
@@ -173,23 +252,38 @@ export class CrmKnowledgeBaseService {
   }
 
   async deleteArticle(tenantId: string, id: string) {
-    const existing = await prisma.knowledgeBaseArticle.findFirst({ where: { id, tenantId, deletedAt: null } });
+    const existing = await prisma.knowledgeBaseArticle.findFirst({
+      where: { id, tenantId, deletedAt: null },
+    });
     if (!existing) throw new NotFoundException("Article not found");
-    return prisma.knowledgeBaseArticle.update({ where: { id }, data: { deletedAt: new Date() } });
+    return prisma.knowledgeBaseArticle.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
   }
 
   async recordFeedback(tenantId: string, id: string, helpful: boolean) {
-    const existing = await prisma.knowledgeBaseArticle.findFirst({ where: { id, tenantId, deletedAt: null } });
+    const existing = await prisma.knowledgeBaseArticle.findFirst({
+      where: { id, tenantId, deletedAt: null },
+    });
     if (!existing) throw new NotFoundException("Article not found");
     if (helpful) {
-      return prisma.knowledgeBaseArticle.update({ where: { id }, data: { helpfulCount: { increment: 1 } } });
+      return prisma.knowledgeBaseArticle.update({
+        where: { id },
+        data: { helpfulCount: { increment: 1 } },
+      });
     }
-    return prisma.knowledgeBaseArticle.update({ where: { id }, data: { notHelpfulCount: { increment: 1 } } });
+    return prisma.knowledgeBaseArticle.update({
+      where: { id },
+      data: { notHelpfulCount: { increment: 1 } },
+    });
   }
 
   async searchArticles(tenantId: string, query: string, isInternal?: boolean) {
     const where: Prisma.KnowledgeBaseArticleWhereInput = {
-      tenantId, deletedAt: null, status: "PUBLISHED",
+      tenantId,
+      deletedAt: null,
+      status: "PUBLISHED",
       OR: [
         { title: { contains: query, mode: "insensitive" } },
         { content: { contains: query, mode: "insensitive" } },
@@ -198,30 +292,71 @@ export class CrmKnowledgeBaseService {
     };
     if (isInternal !== undefined) where.isInternal = isInternal;
     return prisma.knowledgeBaseArticle.findMany({
-      where, take: 20, orderBy: { viewCount: "desc" },
-      select: { id: true, title: true, slug: true, excerpt: true, categoryId: true, publishedAt: true, viewCount: true },
+      where,
+      take: 20,
+      orderBy: { viewCount: "desc" },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        excerpt: true,
+        categoryId: true,
+        publishedAt: true,
+        viewCount: true,
+      },
     });
   }
 
   async getStats(tenantId: string) {
-    const [totalArticles, publishedCount, draftCount, archivedCount, totalViews, totalHelpful, totalNotHelpful] =
-      await Promise.all([
-        prisma.knowledgeBaseArticle.count({ where: { tenantId, deletedAt: null } }),
-        prisma.knowledgeBaseArticle.count({ where: { tenantId, deletedAt: null, status: "PUBLISHED" } }),
-        prisma.knowledgeBaseArticle.count({ where: { tenantId, deletedAt: null, status: "DRAFT" } }),
-        prisma.knowledgeBaseArticle.count({ where: { tenantId, deletedAt: null, status: "ARCHIVED" } }),
-        prisma.knowledgeBaseArticle.aggregate({ where: { tenantId, deletedAt: null }, _sum: { viewCount: true } }),
-        prisma.knowledgeBaseArticle.aggregate({ where: { tenantId, deletedAt: null }, _sum: { helpfulCount: true } }),
-        prisma.knowledgeBaseArticle.aggregate({ where: { tenantId, deletedAt: null }, _sum: { notHelpfulCount: true } }),
-      ]);
+    const [
+      totalArticles,
+      publishedCount,
+      draftCount,
+      archivedCount,
+      totalViews,
+      totalHelpful,
+      totalNotHelpful,
+    ] = await Promise.all([
+      prisma.knowledgeBaseArticle.count({
+        where: { tenantId, deletedAt: null },
+      }),
+      prisma.knowledgeBaseArticle.count({
+        where: { tenantId, deletedAt: null, status: "PUBLISHED" },
+      }),
+      prisma.knowledgeBaseArticle.count({
+        where: { tenantId, deletedAt: null, status: "DRAFT" },
+      }),
+      prisma.knowledgeBaseArticle.count({
+        where: { tenantId, deletedAt: null, status: "ARCHIVED" },
+      }),
+      prisma.knowledgeBaseArticle.aggregate({
+        where: { tenantId, deletedAt: null },
+        _sum: { viewCount: true },
+      }),
+      prisma.knowledgeBaseArticle.aggregate({
+        where: { tenantId, deletedAt: null },
+        _sum: { helpfulCount: true },
+      }),
+      prisma.knowledgeBaseArticle.aggregate({
+        where: { tenantId, deletedAt: null },
+        _sum: { notHelpfulCount: true },
+      }),
+    ]);
     return {
-      totalArticles, publishedCount, draftCount, archivedCount,
+      totalArticles,
+      publishedCount,
+      draftCount,
+      archivedCount,
       totalViews: totalViews._sum.viewCount || 0,
       totalHelpful: totalHelpful._sum.helpfulCount || 0,
       totalNotHelpful: totalNotHelpful._sum.notHelpfulCount || 0,
-      helpfulRate: totalHelpful._sum.helpfulCount && totalNotHelpful._sum.notHelpfulCount
-        ? (totalHelpful._sum.helpfulCount / (totalHelpful._sum.helpfulCount + totalNotHelpful._sum.notHelpfulCount)) * 100
-        : null,
+      helpfulRate:
+        totalHelpful._sum.helpfulCount && totalNotHelpful._sum.notHelpfulCount
+          ? (totalHelpful._sum.helpfulCount /
+              (totalHelpful._sum.helpfulCount +
+                totalNotHelpful._sum.notHelpfulCount)) *
+            100
+          : null,
     };
   }
 }

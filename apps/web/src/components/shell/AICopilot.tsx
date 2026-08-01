@@ -1,32 +1,34 @@
-// @ts-nocheck
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import { usePathname } from 'next/navigation';
-import { X, Sparkles, Send } from 'lucide-react';
-import { apiGet, apiPost } from '@/lib/api';
-import styles from './AICopilot.module.css';
+import React, { useState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
+import { X, Sparkles, Send } from "lucide-react";
+import { apiGet, apiPost } from "@/lib/api";
+import styles from "./AICopilot.module.css";
 
 interface ChatMessage {
-  sender: 'user' | 'ai';
+  sender: "user" | "ai";
   text: string;
   time: string;
 }
 
 interface AICopilotProps {
-  theme: 'light' | 'dark';
+  theme: "light" | "dark";
 }
 
 export function AICopilot({ theme }: AICopilotProps) {
-  const pathname = usePathname() || '';
+  const pathname = usePathname() || "";
   const [chatOpen, setChatOpen] = useState(false);
-  const [chatInput, setChatInput] = useState('');
+  const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
-    { 
-      sender: 'ai', 
-      text: 'Hello! I am your UniERP AI Copilot. How can I assist you with your modules, workflows, or ledger auditing today?', 
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
-    }
+    {
+      sender: "ai",
+      text: "Hello! I am your UniERP AI Copilot. How can I assist you with your modules, workflows, or ledger auditing today?",
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    },
   ]);
   const [chatTyping, setChatTyping] = useState(false);
   const [aiWidgetEnabled, setAiWidgetEnabled] = useState(true);
@@ -36,18 +38,22 @@ export function AICopilot({ theme }: AICopilotProps) {
     let mounted = true;
     (async () => {
       try {
-        const status = await apiGet<{ configured: boolean; enabled: boolean }>('/ai/status');
+        const status = await apiGet<{ configured: boolean; enabled: boolean }>(
+          "/ai/status",
+        );
         if (mounted) setAiWidgetEnabled(status.enabled !== false);
       } catch {
         // Best-effort: leave widget visible if status check fails
       }
     })();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   useEffect(() => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [chatMessages, chatTyping]);
 
@@ -56,33 +62,55 @@ export function AICopilot({ theme }: AICopilotProps) {
     if (!chatInput.trim()) return;
 
     const userMsg = chatInput.trim();
-    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const timeStr = new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
-    const updatedMessages = [...chatMessages, { sender: 'user' as const, text: userMsg, time: timeStr }];
+    const updatedMessages = [
+      ...chatMessages,
+      { sender: "user" as const, text: userMsg, time: timeStr },
+    ];
     setChatMessages(updatedMessages);
-    setChatInput('');
+    setChatInput("");
     setChatTyping(true);
 
     try {
-      const messages = updatedMessages.map(m => ({
-        role: m.sender === 'user' ? 'user' as const : 'assistant' as const,
+      const messages = updatedMessages.map((m) => ({
+        role: m.sender === "user" ? ("user" as const) : ("assistant" as const),
         content: m.text,
       }));
 
-      const data = await apiPost<{ reply: string; actions?: Array<{ tool: string }> }>(
-        '/ai/converse',
-        { messages, context: { path: pathname } },
-      );
+      const data = await apiPost<{
+        reply: string;
+        actions?: Array<{ tool: string }>;
+      }>("/ai/converse", { messages, context: { path: pathname } });
 
-      const replyTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const replyTime = new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
       const actionSuffix = data.actions?.length
-        ? `\n\n_Action taken: ${data.actions.map((a) => a.tool).join(', ')}_`
-        : '';
+        ? `\n\n_Action taken: ${data.actions.map((a) => a.tool).join(", ")}_`
+        : "";
 
-      setChatMessages(prev => [...prev, { sender: 'ai', text: `${data.reply}${actionSuffix}`, time: replyTime }]);
+      setChatMessages((prev) => [
+        ...prev,
+        { sender: "ai", text: `${data.reply}${actionSuffix}`, time: replyTime },
+      ]);
     } catch (err) {
-      const errorTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      setChatMessages(prev => [...prev, { sender: 'ai', text: 'Sorry, I could not reach the AI assistant right now. Please try again in a moment.', time: errorTime }]);
+      const errorTime = new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          sender: "ai",
+          text: "Sorry, I could not reach the AI assistant right now. Please try again in a moment.",
+          time: errorTime,
+        },
+      ]);
     } finally {
       setChatTyping(false);
     }
@@ -90,12 +118,12 @@ export function AICopilot({ theme }: AICopilotProps) {
 
   if (!aiWidgetEnabled) return null;
 
-  const chatToggleClass = `${styles.toggleBtn} ${chatOpen ? styles.toggleBtnRotated : ''}`;
-  const chatWindowClass = `${styles.chatWindow} ${theme === 'light' ? styles.chatWindowLight : styles.chatWindowDark}`;
-  const chatHeaderClass = `${styles.header} ${theme === 'light' ? styles.headerLight : styles.headerDark}`;
-  const chatInputFormClass = `${styles.inputForm} ${theme === 'light' ? styles.inputFormLight : styles.inputFormDark}`;
-  const chatInputClass = `${styles.chatInput} ${theme === 'light' ? styles.chatInputLight : styles.chatInputDark}`;
-  const typingIndicatorClass = `${styles.typingIndicator} ${theme === 'light' ? styles.typingIndicatorLight : styles.typingIndicatorDark}`;
+  const chatToggleClass = `${styles.toggleBtn} ${chatOpen ? styles.toggleBtnRotated : ""}`;
+  const chatWindowClass = `${styles.chatWindow} ${theme === "light" ? styles.chatWindowLight : styles.chatWindowDark}`;
+  const chatHeaderClass = `${styles.header} ${theme === "light" ? styles.headerLight : styles.headerDark}`;
+  const chatInputFormClass = `${styles.inputForm} ${theme === "light" ? styles.inputFormLight : styles.inputFormDark}`;
+  const chatInputClass = `${styles.chatInput} ${theme === "light" ? styles.chatInputLight : styles.chatInputDark}`;
+  const typingIndicatorClass = `${styles.typingIndicator} ${theme === "light" ? styles.typingIndicatorLight : styles.typingIndicatorDark}`;
 
   return (
     <div className={styles.floatingContainer}>
@@ -137,25 +165,25 @@ export function AICopilot({ theme }: AICopilotProps) {
           {/* Messages Area */}
           <div className={styles.messagesArea}>
             {chatMessages.map((msg, idx) => {
-              const isAi = msg.sender === 'ai';
+              const isAi = msg.sender === "ai";
               const bubbleWrapperClass = `${styles.messageBubbleWrapper} ${isAi ? styles.bubbleAi : styles.bubbleUser}`;
-              
-              const bubbleTextThemeClass = isAi 
-                ? (theme === 'light' ? styles.bubbleTextAiLight : styles.bubbleTextAiDark)
-                : '';
+
+              const bubbleTextThemeClass = isAi
+                ? theme === "light"
+                  ? styles.bubbleTextAiLight
+                  : styles.bubbleTextAiDark
+                : "";
 
               const bubbleClass = `${styles.messageBubble} ${
-                isAi ? `${styles.bubbleTextAi} ${bubbleTextThemeClass}` : styles.bubbleTextUser
+                isAi
+                  ? `${styles.bubbleTextAi} ${bubbleTextThemeClass}`
+                  : styles.bubbleTextUser
               }`;
 
               return (
                 <div key={idx} className={bubbleWrapperClass}>
-                  <div className={bubbleClass}>
-                    {msg.text}
-                  </div>
-                  <span className={styles.messageTime}>
-                    {msg.time}
-                  </span>
+                  <div className={bubbleClass}>{msg.text}</div>
+                  <span className={styles.messageTime}>{msg.time}</span>
                 </div>
               );
             })}

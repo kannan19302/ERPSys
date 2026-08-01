@@ -1,12 +1,11 @@
-// @ts-nocheck
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { z } from 'zod';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { z } from "zod";
 
 export const createSlaPolicySchema = z.object({
   name: z.string().min(1),
-  entity: z.enum(['CASE']).default('CASE'),
-  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
+  entity: z.enum(["CASE"]).default("CASE"),
+  priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]),
   firstResponseMins: z.number().int().min(1),
   resolutionMins: z.number().int().min(1),
   businessHoursId: z.string().optional().nullable(),
@@ -24,12 +23,15 @@ export type UpdateSlaPolicyInput = z.infer<typeof updateSlaPolicySchema>;
 @Injectable()
 export class CrmSlaService {
   async listPolicies(tenantId: string) {
-    return prisma.slaPolicy.findMany({ where: { tenantId }, orderBy: { createdAt: 'desc' } });
+    return prisma.slaPolicy.findMany({
+      where: { tenantId },
+      orderBy: { createdAt: "desc" },
+    });
   }
 
   async getPolicy(tenantId: string, id: string) {
     const p = await prisma.slaPolicy.findFirst({ where: { id, tenantId } });
-    if (!p) throw new NotFoundException('SLA policy not found');
+    if (!p) throw new NotFoundException("SLA policy not found");
     return p;
   }
 
@@ -38,7 +40,7 @@ export class CrmSlaService {
       data: {
         tenantId,
         name: dto.name,
-        entity: dto.entity ?? 'CASE',
+        entity: dto.entity ?? "CASE",
         priority: dto.priority,
         firstResponseMins: dto.firstResponseMins,
         resolutionMins: dto.resolutionMins,
@@ -59,11 +61,18 @@ export class CrmSlaService {
   }
 
   async applyToCase(tenantId: string, caseId: string) {
-    const kase = await prisma.case.findFirst({ where: { id: caseId, tenantId } });
+    const kase = await prisma.case.findFirst({
+      where: { id: caseId, tenantId },
+    });
     if (!kase) return null;
     const policy = await prisma.slaPolicy.findFirst({
-      where: { tenantId, entity: 'CASE', priority: kase.priority, active: true },
-      orderBy: { createdAt: 'desc' },
+      where: {
+        tenantId,
+        entity: "CASE",
+        priority: kase.priority,
+        active: true,
+      },
+      orderBy: { createdAt: "desc" },
     });
     if (!policy) return null;
 
@@ -79,17 +88,25 @@ export class CrmSlaService {
         slaBreached: false,
       },
     });
-    return { caseId, policyId: policy.id, slaFirstResponseAt: firstResp, slaResolveBy: resolveBy };
+    return {
+      caseId,
+      policyId: policy.id,
+      slaFirstResponseAt: firstResp,
+      slaResolveBy: resolveBy,
+    };
   }
 
   async listBreaches(tenantId: string) {
-    return prisma.slaBreach.findMany({ where: { tenantId }, orderBy: { breachedAt: 'desc' } });
+    return prisma.slaBreach.findMany({
+      where: { tenantId },
+      orderBy: { breachedAt: "desc" },
+    });
   }
 
   async detectBreaches(tenantId: string) {
     const now = new Date();
     const openCases = await prisma.case.findMany({
-      where: { tenantId, status: { notIn: ['RESOLVED', 'CLOSED'] } },
+      where: { tenantId, status: { notIn: ["RESOLVED", "CLOSED"] } },
       select: {
         id: true,
         priority: true,
@@ -105,24 +122,41 @@ export class CrmSlaService {
 
     for (const kase of openCases) {
       const policy = await prisma.slaPolicy.findFirst({
-        where: { tenantId, entity: 'CASE', priority: kase.priority, active: true },
-        orderBy: { createdAt: 'desc' },
+        where: {
+          tenantId,
+          entity: "CASE",
+          priority: kase.priority,
+          active: true,
+        },
+        orderBy: { createdAt: "desc" },
       });
       if (!policy) continue;
 
-      const events: Array<'FIRST_RESPONSE' | 'RESOLUTION'> = [];
-      if (kase.slaFirstResponseAt && !kase.firstResponseAt && kase.slaFirstResponseAt < now) events.push('FIRST_RESPONSE');
-      if (kase.slaResolveBy && kase.slaResolveBy < now) events.push('RESOLUTION');
+      const events: Array<"FIRST_RESPONSE" | "RESOLUTION"> = [];
+      if (
+        kase.slaFirstResponseAt &&
+        !kase.firstResponseAt &&
+        kase.slaFirstResponseAt < now
+      )
+        events.push("FIRST_RESPONSE");
+      if (kase.slaResolveBy && kase.slaResolveBy < now)
+        events.push("RESOLUTION");
 
       for (const breachType of events) {
         const existing = await prisma.slaBreach.findFirst({
-          where: { tenantId, entity: 'CASE', entityId: kase.id, policyId: policy.id, breachType },
+          where: {
+            tenantId,
+            entity: "CASE",
+            entityId: kase.id,
+            policyId: policy.id,
+            breachType,
+          },
         });
         if (!existing) {
           await prisma.slaBreach.create({
             data: {
               tenantId,
-              entity: 'CASE',
+              entity: "CASE",
               entityId: kase.id,
               policyId: policy.id,
               breachType,
@@ -134,11 +168,18 @@ export class CrmSlaService {
       }
 
       if (events.length > 0 && !kase.slaBreached) {
-        await prisma.case.update({ where: { id: kase.id }, data: { slaBreached: true } });
+        await prisma.case.update({
+          where: { id: kase.id },
+          data: { slaBreached: true },
+        });
         markedBreached++;
       }
     }
 
-    return { scanned: openCases.length, breachesCreated: created, casesMarked: markedBreached };
+    return {
+      scanned: openCases.length,
+      breachesCreated: created,
+      casesMarked: markedBreached,
+    };
   }
 }

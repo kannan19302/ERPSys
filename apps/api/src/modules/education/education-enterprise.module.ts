@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Module } from "@nestjs/common";
 import { EducationEnterpriseService } from "./education-enterprise.service";
 import { EducationEnterpriseController } from "./education-enterprise.controller";

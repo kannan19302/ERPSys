@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { FolderOpen, Share2, HardDrive, FileText } from "lucide-react";
 import type { ModuleTab } from "@unerp/ui-layout";

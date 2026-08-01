@@ -1,9 +1,11 @@
-// @ts-nocheck
-import { Injectable } from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
 
 @Injectable()
 export class CacheService {
-  private memoryCache = new Map<string, { value: unknown; expiresAt: number }>();
+  private memoryCache = new Map<
+    string,
+    { value: unknown; expiresAt: number }
+  >();
 
   async get<T = unknown>(key: string): Promise<T | null> {
     // In production, use Redis: await redis.get(key)
@@ -18,7 +20,10 @@ export class CacheService {
 
   async set(key: string, value: unknown, ttlSeconds = 300): Promise<void> {
     // In production: await redis.setex(key, ttlSeconds, JSON.stringify(value))
-    this.memoryCache.set(key, { value, expiresAt: Date.now() + ttlSeconds * 1000 });
+    this.memoryCache.set(key, {
+      value,
+      expiresAt: Date.now() + ttlSeconds * 1000,
+    });
   }
 
   async del(key: string): Promise<void> {
@@ -28,7 +33,7 @@ export class CacheService {
   async invalidatePattern(pattern: string): Promise<number> {
     // In production: scan + del matching keys
     let count = 0;
-    const regex = new RegExp(pattern.replace(/\*/g, '.*'));
+    const regex = new RegExp(pattern.replace(/\*/g, ".*"));
     for (const key of this.memoryCache.keys()) {
       if (regex.test(key)) {
         this.memoryCache.delete(key);
@@ -38,7 +43,11 @@ export class CacheService {
     return count;
   }
 
-  async getOrSet<T>(key: string, factory: () => Promise<T>, ttlSeconds = 300): Promise<T> {
+  async getOrSet<T>(
+    key: string,
+    factory: () => Promise<T>,
+    ttlSeconds = 300,
+  ): Promise<T> {
     const cached = await this.get<T>(key);
     if (cached !== null) return cached;
 

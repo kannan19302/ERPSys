@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -140,14 +139,14 @@ class ChannelListController extends Notifier<ChannelListState> {
 
   Future<Result<void>> deleteChannel(String id) async {
     final result = await DeleteChannelUseCase(
-      ref.read(communicationRepositoryProvider))(id);
+      ref.read(communicationRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<Channel>> saveChannel(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveChannelUseCase(
-      ref.read(communicationRepositoryProvider))(
+      ref.read(communicationRepositoryProvider),)(
       SaveChannelParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -234,8 +233,8 @@ class MessageListController extends FamilyNotifier<MessageListState, String> {
     final query = state.query.copyWith(page: 1);
     state = state.copyWith(channelId: channelId, isLoading: true, clearFailures: true);
     final result = await ListChannelMessagesUseCase(
-      ref.read(communicationRepositoryProvider))(
-      ListChannelMessagesParams(channelId: channelId, query: query));
+      ref.read(communicationRepositoryProvider),)(
+      ListChannelMessagesParams(channelId: channelId, query: query),);
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f),
       (page) => state.copyWith(
@@ -252,8 +251,8 @@ class MessageListController extends FamilyNotifier<MessageListState, String> {
     state = state.copyWith(isLoadingMore: true, clearFailures: true);
     final next = state.query.copyWith(page: state.meta.page + 1);
     final result = await ListChannelMessagesUseCase(
-      ref.read(communicationRepositoryProvider))(
-      ListChannelMessagesParams(channelId: state.channelId, query: next));
+      ref.read(communicationRepositoryProvider),)(
+      ListChannelMessagesParams(channelId: state.channelId, query: next),);
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
@@ -265,7 +264,7 @@ class MessageListController extends FamilyNotifier<MessageListState, String> {
 
   Future<void> sendMessage(Map<String, dynamic> payload) async {
     final result = await SendMessageUseCase(
-      ref.read(communicationRepositoryProvider))(payload);
+      ref.read(communicationRepositoryProvider),)(payload);
     if (result.isOk) await refresh();
   }
 }
@@ -361,7 +360,7 @@ class MeetingListController extends Notifier<MeetingListState> {
 
   Future<Result<Meeting>> saveMeeting(Map<String, dynamic> payload) async {
     final result = await CreateMeetingUseCase(
-      ref.read(communicationRepositoryProvider))(payload);
+      ref.read(communicationRepositoryProvider),)(payload);
     if (result.isOk) await refresh();
     return result;
   }
@@ -370,21 +369,21 @@ class MeetingListController extends Notifier<MeetingListState> {
 final FutureProviderFamily<Channel, String> channelDetailProvider =
     FutureProvider.family<Channel, String>((Ref ref, String id) async {
   final result = await GetChannelUseCase(
-    ref.watch(communicationRepositoryProvider))(id);
+    ref.watch(communicationRepositoryProvider),)(id);
   return result.fold((f) => throw f, (c) => c);
 });
 
 final FutureProviderFamily<Message, String> messageDetailProvider =
     FutureProvider.family<Message, String>((Ref ref, String id) async {
   final result = await GetMessageUseCase(
-    ref.watch(communicationRepositoryProvider))(id);
+    ref.watch(communicationRepositoryProvider),)(id);
   return result.fold((f) => throw f, (m) => m);
 });
 
 final FutureProviderFamily<Meeting, String> meetingDetailProvider =
     FutureProvider.family<Meeting, String>((Ref ref, String id) async {
   final result = await GetMeetingUseCase(
-    ref.watch(communicationRepositoryProvider))(id);
+    ref.watch(communicationRepositoryProvider),)(id);
   return result.fold((f) => throw f, (m) => m);
 });
 

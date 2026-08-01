@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -49,7 +48,7 @@ class _PersonListPageState extends ConsumerState<PersonListPage> {
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
                 .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value)))
+                    value: e.key, child: Text(e.value),),)
                 .toList(),
           ),
         ],
@@ -84,7 +83,7 @@ class _PersonListPageState extends ConsumerState<PersonListPage> {
                     : '${state.meta.total} person${state.meta.total == 1 ? '' : 'nel'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -130,27 +129,27 @@ class _PersonTile extends StatelessWidget {
           Row(children: [
             Expanded(
               child: Text(person.fullName,
-                  style: Theme.of(context).textTheme.titleSmall),
+                  style: Theme.of(context).textTheme.titleSmall,),
             ),
             UiStatusBadge(
               label: person.status,
               tone: person.status == 'ACTIVE' ? UiTone.success : UiTone.neutral,
             ),
-          ]),
+          ],),
           const SizedBox(height: Spacing.x1),
           if (person.jobTitle != null)
             Text(person.jobTitle!,
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
+                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
           const SizedBox(height: Spacing.x1),
           Row(children: [
             if (person.email != null)
               Text(person.email!,
-                  style: TextStyle(fontSize: TypeScale.xs, color: t.textSecondary)),
+                  style: TextStyle(fontSize: TypeScale.xs, color: t.textSecondary),),
             const Spacer(),
             if (person.department != null)
               Text(person.department!,
-                  style: TextStyle(fontSize: TypeScale.xs, color: t.textSecondary)),
-          ]),
+                  style: TextStyle(fontSize: TypeScale.xs, color: t.textSecondary),),
+          ],),
         ],
       ),
     );

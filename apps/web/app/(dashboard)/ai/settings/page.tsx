@@ -1,10 +1,16 @@
-// @ts-nocheck
-'use client';
-import styles from './page.module.css';
-import React, { useState, useEffect, useCallback } from 'react';
-import { PageHeader, Card, Badge, Button, Spinner } from '@unerp/ui';
-import { ToggleLeft, ToggleRight, AlertTriangle, Bot, Cpu, Globe } from 'lucide-react';
-import { useApiClient } from '@unerp/framework';
+"use client";
+import styles from "./page.module.css";
+import React, { useState, useEffect, useCallback } from "react";
+import { PageHeader, Card, Badge, Button, Spinner } from "@unerp/ui";
+import {
+  ToggleLeft,
+  ToggleRight,
+  AlertTriangle,
+  Bot,
+  Cpu,
+  Globe,
+} from "lucide-react";
+import { useApiClient } from "@unerp/framework";
 
 interface AiConfig {
   enabled: boolean;
@@ -28,18 +34,24 @@ export default function AiSettingsPage() {
 
   const [engineStatus, setEngineStatus] = useState<OllamaStatus | null>(null);
   const [engineStatusLoading, setEngineStatusLoading] = useState(true);
-  const [engineStatusError, setEngineStatusError] = useState<string | null>(null);
-  const [engineActionLoading, setEngineActionLoading] = useState<'start' | 'stop' | null>(null);
-  const [engineActionError, setEngineActionError] = useState<string | null>(null);
+  const [engineStatusError, setEngineStatusError] = useState<string | null>(
+    null,
+  );
+  const [engineActionLoading, setEngineActionLoading] = useState<
+    "start" | "stop" | null
+  >(null);
+  const [engineActionError, setEngineActionError] = useState<string | null>(
+    null,
+  );
 
   const fetchConfig = useCallback(async () => {
     setConfigLoading(true);
     setConfigError(null);
     try {
-      const data = await client.get<AiConfig>('/ai/settings/config');
+      const data = await client.get<AiConfig>("/ai/settings/config");
       setConfig(data);
     } catch {
-      setConfigError('Could not load AI assistant configuration.');
+      setConfigError("Could not load AI assistant configuration.");
     } finally {
       setConfigLoading(false);
     }
@@ -47,11 +59,11 @@ export default function AiSettingsPage() {
 
   const fetchEngineStatus = useCallback(async () => {
     try {
-      const data = await client.get<OllamaStatus>('/ai/settings/engine/status');
+      const data = await client.get<OllamaStatus>("/ai/settings/engine/status");
       setEngineStatus(data);
       setEngineStatusError(null);
     } catch {
-      setEngineStatusError('Could not check AI engine status.');
+      setEngineStatusError("Could not check AI engine status.");
     } finally {
       setEngineStatusLoading(false);
     }
@@ -67,9 +79,9 @@ export default function AiSettingsPage() {
     setToggling(true);
     setConfigError(null);
     try {
-      await client.post('/ai/settings/config', { enabled: !config.enabled });
+      await client.post("/ai/settings/config", { enabled: !config.enabled });
     } catch {
-      setConfigError('Failed to update AI assistant setting.');
+      setConfigError("Failed to update AI assistant setting.");
     } finally {
       setToggling(false);
       await fetchConfig();
@@ -77,12 +89,12 @@ export default function AiSettingsPage() {
   };
 
   const handleStartEngine = async () => {
-    setEngineActionLoading('start');
+    setEngineActionLoading("start");
     setEngineActionError(null);
     try {
-      await client.post('/ai/settings/engine/start');
+      await client.post("/ai/settings/engine/start");
     } catch {
-      setEngineActionError('Failed to start the AI engine.');
+      setEngineActionError("Failed to start the AI engine.");
     } finally {
       setEngineActionLoading(null);
       await fetchEngineStatus();
@@ -90,12 +102,12 @@ export default function AiSettingsPage() {
   };
 
   const handleStopEngine = async () => {
-    setEngineActionLoading('stop');
+    setEngineActionLoading("stop");
     setEngineActionError(null);
     try {
-      await client.post('/ai/settings/engine/stop');
+      await client.post("/ai/settings/engine/stop");
     } catch {
-      setEngineActionError('Failed to stop the AI engine.');
+      setEngineActionError("Failed to stop the AI engine.");
     } finally {
       setEngineActionLoading(null);
       await fetchEngineStatus();
@@ -107,7 +119,11 @@ export default function AiSettingsPage() {
       <PageHeader
         title="AI Copilot"
         description="Manage UniERP's AI copilot — the self-hosted assistant available across the app."
-        breadcrumbs={[{ label: 'Apps', href: '/apps' }, { label: 'AI Copilot', href: '/ai' }, { label: 'Settings' }]}
+        breadcrumbs={[
+          { label: "Apps", href: "/apps" },
+          { label: "AI Copilot", href: "/ai" },
+          { label: "Settings" },
+        ]}
       />
 
       <div className={styles.grid}>
@@ -128,8 +144,9 @@ export default function AiSettingsPage() {
             </div>
 
             <p className="ui-text-xs-muted m-0">
-              Turns the AI copilot on or off for every user in this organization, including the floating chat widget
-              and all AI-powered actions across the app.
+              Turns the AI copilot on or off for every user in this
+              organization, including the floating chat widget and all
+              AI-powered actions across the app.
             </p>
 
             {configLoading ? (
@@ -140,7 +157,13 @@ export default function AiSettingsPage() {
               <button
                 onClick={handleToggleEnabled}
                 disabled={toggling || !config}
-                style={{ cursor: toggling ? 'wait' : 'pointer', color: config?.enabled ? 'var(--color-primary)' : 'var(--color-text-secondary)' }} className={styles.toggleBtn}
+                style={{
+                  cursor: toggling ? "wait" : "pointer",
+                  color: config?.enabled
+                    ? "var(--color-primary)"
+                    : "var(--color-text-secondary)",
+                }}
+                className={styles.toggleBtn}
               >
                 {toggling ? (
                   <Spinner size="sm" />
@@ -149,19 +172,18 @@ export default function AiSettingsPage() {
                 ) : (
                   <ToggleLeft size={28} />
                 )}
-                <span>{config?.enabled ? 'Enabled' : 'Disabled'}</span>
+                <span>{config?.enabled ? "Enabled" : "Disabled"}</span>
               </button>
             )}
 
-            {configError && (
-              <div className={styles.error}>{configError}</div>
-            )}
+            {configError && <div className={styles.error}>{configError}</div>}
 
             {!configLoading && config && !config.enabled && (
               <div className={styles.warningBox}>
                 <AlertTriangle size={16} className={styles.warningIcon} />
                 <span className={styles.infoText}>
-                  The AI assistant and floating widget are disabled for this organization.
+                  The AI assistant and floating widget are disabled for this
+                  organization.
                 </span>
               </div>
             )}
@@ -175,8 +197,9 @@ export default function AiSettingsPage() {
               Model Configuration
             </h3>
             <p className="ui-text-xs-muted m-0">
-              UniERP runs a self-hosted Ollama model. These values are set via environment configuration and are not
-              editable per tenant in this release.
+              UniERP runs a self-hosted Ollama model. These values are set via
+              environment configuration and are not editable per tenant in this
+              release.
             </p>
             {configLoading ? (
               <Spinner size="sm" />
@@ -184,11 +207,15 @@ export default function AiSettingsPage() {
               <div className="ui-stack-2">
                 <div className={styles.labeledRow}>
                   <span className="ui-text-muted">Model</span>
-                  <code className={styles.infoText}>{config?.model || '—'}</code>
+                  <code className={styles.infoText}>
+                    {config?.model || "—"}
+                  </code>
                 </div>
                 <div className={styles.labeledRow}>
                   <span className="ui-text-muted">Ollama Base URL</span>
-                  <code className={styles.infoText}>{config?.baseUrl || '—'}</code>
+                  <code className={styles.infoText}>
+                    {config?.baseUrl || "—"}
+                  </code>
                 </div>
               </div>
             )}
@@ -212,8 +239,8 @@ export default function AiSettingsPage() {
             </div>
 
             <div className={styles.engineMeta}>
-              <span>Model: {engineStatus?.model || '—'}</span>
-              <span>Ollama: {engineStatus?.baseUrl || '—'}</span>
+              <span>Model: {engineStatus?.model || "—"}</span>
+              <span>Ollama: {engineStatus?.baseUrl || "—"}</span>
             </div>
 
             {engineStatusError && (
@@ -228,26 +255,35 @@ export default function AiSettingsPage() {
                 variant="secondary"
                 size="sm"
                 onClick={handleStartEngine}
-                disabled={engineStatusLoading || !!engineStatus?.running || engineActionLoading !== null}
-                isLoading={engineActionLoading === 'start'}
+                disabled={
+                  engineStatusLoading ||
+                  !!engineStatus?.running ||
+                  engineActionLoading !== null
+                }
+                isLoading={engineActionLoading === "start"}
                 className="flex-1"
               >
-                {engineActionLoading === 'start' ? 'Starting…' : 'Start'}
+                {engineActionLoading === "start" ? "Starting…" : "Start"}
               </Button>
               <Button
                 variant="danger"
                 size="sm"
                 onClick={handleStopEngine}
-                disabled={engineStatusLoading || !engineStatus?.running || engineActionLoading !== null}
-                isLoading={engineActionLoading === 'stop'}
+                disabled={
+                  engineStatusLoading ||
+                  !engineStatus?.running ||
+                  engineActionLoading !== null
+                }
+                isLoading={engineActionLoading === "stop"}
                 className="flex-1"
               >
-                {engineActionLoading === 'stop' ? 'Stopping…' : 'Stop'}
+                {engineActionLoading === "stop" ? "Stopping…" : "Stop"}
               </Button>
             </div>
 
             <p className={styles.engineNote}>
-              Controls the local Ollama process. Only works when the API server and Ollama run on the same host.
+              Controls the local Ollama process. Only works when the API server
+              and Ollama run on the same host.
             </p>
           </div>
         </Card>

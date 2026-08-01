@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -49,13 +48,13 @@ class _VendorDetail extends StatelessWidget {
             Row(children: [
               Expanded(child: Text(vendor.name, style: Theme.of(context).textTheme.titleLarge)),
               UiStatusBadge(label: vendor.status, tone: _statusTone(vendor.status)),
-            ]),
+            ],),
             if (vendor.email != null) ...[
               const SizedBox(height: Spacing.x1),
               Text(vendor.email!, style: TextStyle(color: t.textSecondary)),
             ],
           ],
-        )),
+        ),),
         const SizedBox(height: Spacing.x4),
         UiCard(child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,7 +65,7 @@ class _VendorDetail extends StatelessWidget {
             if (vendor.taxId != null) _Row('Tax ID', vendor.taxId!),
             if (vendor.address != null) _Row('Address', vendor.address!),
           ],
-        )),
+        ),),
         const SizedBox(height: Spacing.x4),
         UiCard(child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -78,7 +77,7 @@ class _VendorDetail extends StatelessWidget {
             if (vendor.rating != null) _Row('Rating', '${vendor.rating!.toStringAsFixed(1)} / 5'),
             if (vendor.bankDetails != null) _Row('Bank Details', vendor.bankDetails!),
           ],
-        )),
+        ),),
         if (vendor.notes != null && vendor.notes!.isNotEmpty) ...[
           const SizedBox(height: Spacing.x4),
           UiCard(child: Column(
@@ -87,7 +86,7 @@ class _VendorDetail extends StatelessWidget {
               const UiSectionHeader(title: 'Notes'),
               Text(vendor.notes!, style: TextStyle(color: t.textSecondary)),
             ],
-          )),
+          ),),
         ],
         if (vendor.createdAt != null) ...[
           const SizedBox(height: Spacing.x4),
@@ -115,7 +114,7 @@ class _Row extends StatelessWidget {
       child: Row(children: [
         Expanded(child: Text(label, style: TextStyle(color: t.textSecondary))),
         Text(value, style: Theme.of(context).textTheme.labelLarge),
-      ]),
+      ],),
     );
   }
 }

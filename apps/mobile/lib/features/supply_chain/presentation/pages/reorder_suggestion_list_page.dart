@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -38,7 +37,7 @@ class _ReorderSuggestionListPageState extends ConsumerState<ReorderSuggestionLis
                     : '${state.meta.total} suggestion${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -91,7 +90,7 @@ class _SuggestionTile extends StatelessWidget {
             Row(children: [
               Expanded(
                 child: Text(suggestion.productName,
-                    style: Theme.of(context).textTheme.titleSmall),
+                    style: Theme.of(context).textTheme.titleSmall,),
               ),
               if (suggestion.status != null)
                 UiStatusBadge(
@@ -100,10 +99,10 @@ class _SuggestionTile extends StatelessWidget {
                       ? UiTone.success
                       : UiTone.warning,
                 ),
-            ]),
+            ],),
             const SizedBox(height: Spacing.x1),
             Text('Reorder qty: ${suggestion.reorderQuantity}',
-                style: TextStyle(color: t.textSecondary)),
+                style: TextStyle(color: t.textSecondary),),
             if (onApprove != null) ...[
               const SizedBox(height: Spacing.x2),
               Align(

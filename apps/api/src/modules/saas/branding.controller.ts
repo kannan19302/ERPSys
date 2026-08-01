@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Controller,
   Get,
@@ -17,16 +16,30 @@ import { RbacGuard } from "../../common/guards/rbac.guard";
 import { Permissions } from "../../common/decorators/permissions.decorator";
 import { BrandingService } from "./branding.service";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes } from "@nestjs/swagger";
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiConsumes,
+} from "@nestjs/swagger";
 
 interface AuthReq extends Request {
   user: { tenantId: string; userId: string; email: string; roles: string[] };
 }
 
 const updateBrandingSchema = z.object({
-  primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
-  secondaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
-  accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  primaryColor: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .optional(),
+  secondaryColor: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .optional(),
+  accentColor: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .optional(),
   companyName: z.string().max(255).optional(),
   tagline: z.string().max(500).optional(),
   faviconUrl: z.string().url().optional(),
@@ -34,7 +47,10 @@ const updateBrandingSchema = z.object({
   customCss: z.string().optional(),
   customDomain: z.string().optional(),
   hideBranding: z.boolean().optional(),
-  emailHeaderColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  emailHeaderColor: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .optional(),
   emailFooterHtml: z.string().optional(),
 });
 
@@ -55,7 +71,10 @@ export class BrandingController {
   @ApiOperation({ summary: "Update branding" })
   @Permissions("saas.branding.update")
   @Put()
-  async updateBranding(@Req() req: AuthReq, @ZodBody(updateBrandingSchema) body: z.infer<typeof updateBrandingSchema>) {
+  async updateBranding(
+    @Req() req: AuthReq,
+    @ZodBody(updateBrandingSchema) body: z.infer<typeof updateBrandingSchema>,
+  ) {
     return this.brandingService.updateBranding(req.user.tenantId, body);
   }
 
@@ -64,7 +83,10 @@ export class BrandingController {
   @ApiConsumes("multipart/form-data")
   @Post("logo")
   @UseInterceptors(FileInterceptor("file"))
-  async uploadLogo(@Req() req: AuthReq, @UploadedFile() file: Express.Multer.File) {
+  async uploadLogo(
+    @Req() req: AuthReq,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
     return this.brandingService.uploadLogo(req.user.tenantId, file);
   }
 
@@ -73,7 +95,10 @@ export class BrandingController {
   @ApiConsumes("multipart/form-data")
   @Post("favicon")
   @UseInterceptors(FileInterceptor("file"))
-  async uploadFavicon(@Req() req: AuthReq, @UploadedFile() file: Express.Multer.File) {
+  async uploadFavicon(
+    @Req() req: AuthReq,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
     return this.brandingService.uploadFavicon(req.user.tenantId, file);
   }
 

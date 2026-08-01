@@ -89,7 +89,7 @@ class PwaRepositoryImpl implements PwaRepository {
   @override
   Future<Result<Cacheable<Paginated<PwaPushSubscription>>>> listPushSubscriptions(ListQuery q) =>
       _paginated(_pushNamespace, q, () => _remote.listPushSubscriptions(q),
-        PwaPushSubscriptionModel.fromJson);
+        PwaPushSubscriptionModel.fromJson,);
 
   @override
   Future<Result<void>> deletePushSubscription(String id) =>
@@ -106,7 +106,7 @@ class PwaRepositoryImpl implements PwaRepository {
   @override
   Future<Result<Cacheable<Paginated<PwaOfflineQueueItem>>>> listOfflineQueue(ListQuery q) =>
       _paginated(_offlineNamespace, q, () => _remote.listOfflineQueue(q),
-        PwaOfflineQueueItemModel.fromJson);
+        PwaOfflineQueueItemModel.fromJson,);
 
   @override
   Future<Result<PwaOfflineQueueItem>> getOfflineQueueItem(String id) =>

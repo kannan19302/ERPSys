@@ -1,14 +1,17 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
 
 @Injectable()
 export class FxRevaluationService {
   async getRevaluationRuns(tenantId: string) {
     return prisma.fxRevaluationRun.findMany({
       where: { tenantId },
-      orderBy: { runDate: 'desc' },
+      orderBy: { runDate: "desc" },
     });
   }
 
@@ -21,7 +24,7 @@ export class FxRevaluationService {
         },
       },
     });
-    if (!run) throw new NotFoundException('Revaluation run not found');
+    if (!run) throw new NotFoundException("Revaluation run not found");
     return run;
   }
 
@@ -38,24 +41,26 @@ export class FxRevaluationService {
       where: {
         tenantId,
         fromCurrency: dto.targetCurrency,
-        toCurrency: 'USD',
+        toCurrency: "USD",
       },
-      orderBy: { date: 'desc' },
+      orderBy: { date: "desc" },
     });
-    const newRate = fxRateRecord ? Number(fxRateRecord.rate) : this.getFallbackRate(dto.targetCurrency);
+    const newRate = fxRateRecord
+      ? Number(fxRateRecord.rate)
+      : this.getFallbackRate(dto.targetCurrency);
 
     // 2. Fetch Unrealized Gain/Loss account to map detail rows
     let unrealizedAcc = await prisma.account.findFirst({
-      where: { tenantId, orgId, name: 'Unrealized Gain/Loss', isActive: true },
+      where: { tenantId, orgId, name: "Unrealized Gain/Loss", isActive: true },
     });
     if (!unrealizedAcc) {
       unrealizedAcc = await prisma.account.create({
         data: {
           tenantId,
           orgId,
-          code: '8100-UNR-FX',
-          name: 'Unrealized Gain/Loss',
-          type: 'REVENUE',
+          code: "8100-UNR-FX",
+          name: "Unrealized Gain/Loss",
+          type: "REVENUE",
           isActive: true,
           balance: new Prisma.Decimal(0),
         },
@@ -68,7 +73,7 @@ export class FxRevaluationService {
         tenantId,
         orgId,
         currency: dto.targetCurrency,
-        status: { not: 'PAID' },
+        status: { not: "PAID" },
         dueDate: { lte: runDate },
       },
     });
@@ -84,7 +89,7 @@ export class FxRevaluationService {
 
       // Look up AR account in the invoice's org
       let invoiceAcc = await prisma.account.findFirst({
-        where: { tenantId, orgId, type: 'ASSET', isActive: true },
+        where: { tenantId, orgId, type: "ASSET", isActive: true },
       });
       if (!invoiceAcc) {
         invoiceAcc = unrealizedAcc; // Fallback
@@ -92,7 +97,7 @@ export class FxRevaluationService {
 
       calculatedDetails.push({
         accountId: invoiceAcc.id,
-        entityType: 'INVOICE',
+        entityType: "INVOICE",
         entityId: inv.id,
         balanceInForeign: new Prisma.Decimal(balanceForeign),
         originalAmountBase: new Prisma.Decimal(originalBase),
@@ -106,7 +111,7 @@ export class FxRevaluationService {
       where: {
         tenantId,
         orgId,
-        status: { not: 'PAID' },
+        status: { not: "PAID" },
         dueDate: { lte: runDate },
         purchaseOrder: { currency: dto.targetCurrency },
       },
@@ -121,13 +126,13 @@ export class FxRevaluationService {
       const gainLoss = originalBase - revaluedBase; // Payable appreciates -> loss (originalBase - revaluedBase)
 
       let payableAcc = await prisma.account.findFirst({
-        where: { tenantId, orgId, type: 'LIABILITY', isActive: true },
+        where: { tenantId, orgId, type: "LIABILITY", isActive: true },
       });
       if (!payableAcc) payableAcc = unrealizedAcc;
 
       calculatedDetails.push({
         accountId: payableAcc.id,
-        entityType: 'PAYMENT_SCHEDULE',
+        entityType: "PAYMENT_SCHEDULE",
         entityId: sched.id,
         balanceInForeign: new Prisma.Decimal(balanceForeign),
         originalAmountBase: new Prisma.Decimal(originalBase),
@@ -143,7 +148,7 @@ export class FxRevaluationService {
         orgId,
         runDate,
         targetCurrency: dto.targetCurrency,
-        status: 'DRAFT',
+        status: "DRAFT",
         notes: dto.notes,
         details: {
           create: calculatedDetails,
@@ -161,23 +166,28 @@ export class FxRevaluationService {
       include: { details: true },
     });
 
-    if (!run) throw new NotFoundException('Revaluation run not found');
-    if (run.status === 'POSTED') {
-      throw new BadRequestException('Revaluation run has already been posted');
+    if (!run) throw new NotFoundException("Revaluation run not found");
+    if (run.status === "POSTED") {
+      throw new BadRequestException("Revaluation run has already been posted");
     }
 
     // 1. Fetch Unrealized account to balance journal entries
     let unrealizedAcc = await prisma.account.findFirst({
-      where: { tenantId, orgId: run.orgId, name: 'Unrealized Gain/Loss', isActive: true },
+      where: {
+        tenantId,
+        orgId: run.orgId,
+        name: "Unrealized Gain/Loss",
+        isActive: true,
+      },
     });
     if (!unrealizedAcc) {
       unrealizedAcc = await prisma.account.create({
         data: {
           tenantId,
           orgId: run.orgId,
-          code: '8100-UNR-FX',
-          name: 'Unrealized Gain/Loss',
-          type: 'REVENUE',
+          code: "8100-UNR-FX",
+          name: "Unrealized Gain/Loss",
+          type: "REVENUE",
           isActive: true,
           balance: new Prisma.Decimal(0),
         },
@@ -235,8 +245,8 @@ export class FxRevaluationService {
           orgId: run.orgId,
           entryNumber: `FXREV-${run.id.substring(0, 8).toUpperCase()}`,
           date: run.runDate,
-          status: 'POSTED',
-          notes: `Posted FX Revaluation Entry for target currency ${run.targetCurrency}. Notes: ${run.notes || ''}`,
+          status: "POSTED",
+          notes: `Posted FX Revaluation Entry for target currency ${run.targetCurrency}. Notes: ${run.notes || ""}`,
           entries: {
             create: journalLines,
           },
@@ -249,7 +259,7 @@ export class FxRevaluationService {
     return prisma.fxRevaluationRun.update({
       where: { id },
       data: {
-        status: 'POSTED',
+        status: "POSTED",
         journalId,
       },
     });
@@ -257,12 +267,18 @@ export class FxRevaluationService {
 
   private getFallbackRate(currency: string): number {
     switch (currency.toUpperCase()) {
-      case 'EUR': return 1.09;
-      case 'GBP': return 1.27;
-      case 'CAD': return 0.73;
-      case 'AUD': return 0.66;
-      case 'JPY': return 0.0064;
-      default: return 1.0;
+      case "EUR":
+        return 1.09;
+      case "GBP":
+        return 1.27;
+      case "CAD":
+        return 0.73;
+      case "AUD":
+        return 0.66;
+      case "JPY":
+        return 0.0064;
+      default:
+        return 1.0;
     }
   }
 }

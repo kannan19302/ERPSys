@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -292,7 +291,7 @@ class _LeadTile extends StatelessWidget {
               children: <Widget>[
                 if (lead.email != null)
                   Text(lead.email!,
-                      style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
+                      style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
                 const Spacer(),
                 if (lead.estimatedRevenue != null)
                   Text(

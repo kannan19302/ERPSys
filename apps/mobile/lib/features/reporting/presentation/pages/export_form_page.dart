@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/usecase/result.dart';
 import '../providers/reporting_providers.dart';
 
 class ExportFormPage extends ConsumerStatefulWidget {
@@ -74,7 +72,7 @@ class _ExportFormPageState extends ConsumerState<ExportFormPage> {
           padding: const EdgeInsets.all(Spacing.x4),
           children: [
             DropdownButtonFormField<String>(
-              value: _type,
+              initialValue: _type,
               decoration: const InputDecoration(labelText: 'Export Type'),
               items: const [
                 DropdownMenuItem(value: 'STANDARD', child: Text('Standard')),
@@ -85,7 +83,7 @@ class _ExportFormPageState extends ConsumerState<ExportFormPage> {
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _format,
+              initialValue: _format,
               decoration: const InputDecoration(labelText: 'Format'),
               items: const [
                 DropdownMenuItem(value: 'PDF', child: Text('PDF')),

@@ -1,7 +1,6 @@
-// @ts-nocheck
-import { Module } from '@nestjs/common';
-import { VelocityAbcXyzController } from './velocity-abc-xyz.controller';
-import { VelocityAbcXyzService } from './velocity-abc-xyz.service';
+import { Module } from "@nestjs/common";
+import { VelocityAbcXyzController } from "./velocity-abc-xyz.controller";
+import { VelocityAbcXyzService } from "./velocity-abc-xyz.service";
 
 @Module({
   controllers: [VelocityAbcXyzController],

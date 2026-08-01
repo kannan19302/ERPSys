@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Controller,
   Get,
@@ -55,8 +54,12 @@ export class BillingPortalController {
   @Permissions("saas.payment.read")
   @Get("overview")
   async getBillingOverview(@Req() req: AuthReq) {
-    const usage = await this.billingService.getUsageSummary(req.user.tenantId).catch(() => null);
-    const upcoming = await this.invoiceEngineService.getUpcomingInvoices(req.user.tenantId).catch(() => null);
+    const usage = await this.billingService
+      .getUsageSummary(req.user.tenantId)
+      .catch(() => null);
+    const upcoming = await this.invoiceEngineService
+      .getUpcomingInvoices(req.user.tenantId)
+      .catch(() => null);
     return { usage, upcomingInvoice: upcoming };
   }
 
@@ -64,7 +67,9 @@ export class BillingPortalController {
   @Permissions("saas.payment.read")
   @Get("upcoming")
   async getUpcomingCharges(@Req() req: AuthReq) {
-    return this.invoiceEngineService.getUpcomingInvoices(req.user.tenantId).catch(() => []);
+    return this.invoiceEngineService
+      .getUpcomingInvoices(req.user.tenantId)
+      .catch(() => []);
   }
 
   @ApiOperation({ summary: "Get tax details" })
@@ -77,7 +82,11 @@ export class BillingPortalController {
   @ApiOperation({ summary: "Update tax details" })
   @Permissions("saas.payment.create")
   @Put("tax-details")
-  async updateTaxDetails(@Req() _req: AuthReq, @ZodBody(updateTaxDetailsSchema) body: z.infer<typeof updateTaxDetailsSchema>) {
+  async updateTaxDetails(
+    @Req() _req: AuthReq,
+    @ZodBody(updateTaxDetailsSchema)
+    body: z.infer<typeof updateTaxDetailsSchema>,
+  ) {
     return { success: true, ...body };
   }
 
@@ -85,13 +94,24 @@ export class BillingPortalController {
   @Permissions("saas.payment.read")
   @Get("address")
   async getBillingAddress(@Req() _req: AuthReq) {
-    return { line1: null, line2: null, city: null, state: null, zip: null, country: null };
+    return {
+      line1: null,
+      line2: null,
+      city: null,
+      state: null,
+      zip: null,
+      country: null,
+    };
   }
 
   @ApiOperation({ summary: "Update billing address" })
   @Permissions("saas.payment.create")
   @Put("address")
-  async updateBillingAddress(@Req() _req: AuthReq, @ZodBody(updateBillingAddressSchema) body: z.infer<typeof updateBillingAddressSchema>) {
+  async updateBillingAddress(
+    @Req() _req: AuthReq,
+    @ZodBody(updateBillingAddressSchema)
+    body: z.infer<typeof updateBillingAddressSchema>,
+  ) {
     return { success: true, ...body };
   }
 
@@ -104,70 +124,94 @@ export class BillingPortalController {
     @Query("limit") limit?: string,
     @Query("status") status?: string,
   ) {
-    return this.invoiceEngineService.listInvoices(
-      req.user.tenantId,
-      page ? parseInt(page, 10) : 1,
-      limit ? parseInt(limit, 10) : 20,
-      status,
-    ).catch(() => ({ items: [], total: 0 }));
+    return this.invoiceEngineService
+      .listInvoices(
+        req.user.tenantId,
+        page ? parseInt(page, 10) : 1,
+        limit ? parseInt(limit, 10) : 20,
+        status,
+      )
+      .catch(() => ({ items: [], total: 0 }));
   }
 
   @ApiOperation({ summary: "Get invoice detail" })
   @Permissions("saas.invoice.read")
   @Get("invoices/:id")
   async getInvoiceDetail(@Req() req: AuthReq, @Param("id") id: string) {
-    return this.invoiceEngineService.getInvoice(req.user.tenantId, id).catch(() => null);
+    return this.invoiceEngineService
+      .getInvoice(req.user.tenantId, id)
+      .catch(() => null);
   }
 
   @ApiOperation({ summary: "Pay invoice" })
   @Permissions("saas.invoice.pay")
   @Post("invoices/:id/pay")
   async payInvoice(@Req() req: AuthReq, @Param("id") id: string) {
-    return this.invoiceEngineService.payInvoice(req.user.tenantId, id).catch(() => ({ success: false }));
+    return this.invoiceEngineService
+      .payInvoice(req.user.tenantId, id)
+      .catch(() => ({ success: false }));
   }
 
   @ApiOperation({ summary: "List transactions" })
   @Permissions("saas.payment.read")
   @Get("transactions")
   async listTransactions(@Req() req: AuthReq) {
-    return this.paymentMethodsService.listTransactions(req.user.tenantId).catch(() => []);
+    return this.paymentMethodsService
+      .listTransactions(req.user.tenantId)
+      .catch(() => []);
   }
 
   @ApiOperation({ summary: "Get transaction detail" })
   @Permissions("saas.payment.read")
   @Get("transactions/:id")
   async getTransactionDetail(@Req() req: AuthReq, @Param("id") id: string) {
-    return this.paymentMethodsService.getTransaction(req.user.tenantId, id).catch(() => null);
+    return this.paymentMethodsService
+      .getTransaction(req.user.tenantId, id)
+      .catch(() => null);
   }
 
   @ApiOperation({ summary: "List receipts" })
   @Permissions("saas.invoice.read")
   @Get("receipts")
   async listReceipts(@Req() req: AuthReq) {
-    return this.invoiceEngineService.listInvoices(req.user.tenantId, 1, 50, "PAID").catch(() => ({ items: [], total: 0 }));
+    return this.invoiceEngineService
+      .listInvoices(req.user.tenantId, 1, 50, "PAID")
+      .catch(() => ({ items: [], total: 0 }));
   }
 
   @ApiOperation({ summary: "Get receipt detail" })
   @Permissions("saas.invoice.read")
   @Get("receipts/:id")
   async getReceiptDetail(@Req() req: AuthReq, @Param("id") id: string) {
-    return this.invoiceEngineService.getInvoice(req.user.tenantId, id).catch(() => null);
+    return this.invoiceEngineService
+      .getInvoice(req.user.tenantId, id)
+      .catch(() => null);
   }
 
   @ApiOperation({ summary: "Export billing data" })
   @Permissions("saas.invoice.read")
   @Get("export")
   async exportBillingData(@Req() req: AuthReq) {
-    const invoices = await this.invoiceEngineService.getBillingHistory(req.user.tenantId).catch(() => []);
-    return { format: "json", data: JSON.stringify(invoices), filename: `billing-export-${req.user.tenantId}.json` };
+    const invoices = await this.invoiceEngineService
+      .getBillingHistory(req.user.tenantId)
+      .catch(() => []);
+    return {
+      format: "json",
+      data: JSON.stringify(invoices),
+      filename: `billing-export-${req.user.tenantId}.json`,
+    };
   }
 
   @ApiOperation({ summary: "Get billing summary" })
   @Permissions("saas.payment.read")
   @Get("summary")
   async getBillingSummary(@Req() req: AuthReq) {
-    const stats = await this.invoiceEngineService.getInvoiceStats(req.user.tenantId).catch(() => null);
-    const upcoming = await this.invoiceEngineService.getUpcomingInvoices(req.user.tenantId).catch(() => null);
+    const stats = await this.invoiceEngineService
+      .getInvoiceStats(req.user.tenantId)
+      .catch(() => null);
+    const upcoming = await this.invoiceEngineService
+      .getUpcomingInvoices(req.user.tenantId)
+      .catch(() => null);
     return { stats, upcomingInvoice: upcoming };
   }
 }

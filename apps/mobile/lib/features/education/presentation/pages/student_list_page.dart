@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -50,7 +49,7 @@ class _StudentListPageState extends ConsumerState<StudentListPage> {
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
                 .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value)))
+                    value: e.key, child: Text(e.value),),)
                 .toList(),
           ),
         ],
@@ -84,7 +83,7 @@ class _StudentListPageState extends ConsumerState<StudentListPage> {
                     : '${state.meta.total} student${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -117,20 +116,20 @@ class _StudentListPageState extends ConsumerState<StudentListPage> {
               Row(children: [
                 Expanded(
                   child: Text(s.fullName,
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
                 UiStatusBadge(
                   label: s.status,
                   tone: s.status == 'ACTIVE' ? UiTone.success : UiTone.neutral,
                 ),
-              ]),
+              ],),
               if (s.email != null) ...[
                 const SizedBox(height: Spacing.x1),
                 Text(s.email!, style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs)),
               ],
               if (s.enrollmentNumber != null) ...[
                 const SizedBox(height: Spacing.x1),
-                Text(s.enrollmentNumber!, style: TextStyle(fontSize: TypeScale.xs)),
+                Text(s.enrollmentNumber!, style: const TextStyle(fontSize: TypeScale.xs)),
               ],
             ],
           ),

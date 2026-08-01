@@ -1,9 +1,16 @@
-// @ts-nocheck
-'use client';
+"use client";
 
-import React, { useEffect, useState, useCallback } from 'react';
-import { Globe, ExternalLink, Copy, Check, X, Loader2, Rocket } from 'lucide-react';
-import { useToast } from './ToastProvider';
+import React, { useEffect, useState, useCallback } from "react";
+import {
+  Globe,
+  ExternalLink,
+  Copy,
+  Check,
+  X,
+  Loader2,
+  Rocket,
+} from "lucide-react";
+import { useToast } from "./ToastProvider";
 
 interface DeployFormModalProps {
   isOpen: boolean;
@@ -22,20 +29,22 @@ export function DeployFormModal({
   isOpen,
   onClose,
   pageId,
-  existingModule = '',
-  existingSlug = '',
-  existingTitle = '',
+  existingModule = "",
+  existingSlug = "",
+  existingTitle = "",
   onPublished,
 }: DeployFormModalProps) {
   const { showToast } = useToast();
 
   const [title, setTitle] = useState(existingTitle);
-  const [moduleValue, setModuleValue] = useState(existingModule || 'custom');
-  const [slugValue, setSlugValue] = useState(existingSlug || '');
-  const [description, setDescription] = useState('');
+  const [moduleValue, setModuleValue] = useState(existingModule || "custom");
+  const [slugValue, setSlugValue] = useState(existingSlug || "");
+  const [description, setDescription] = useState("");
   const [existingModules, setExistingModules] = useState<string[]>([]);
   const [isDeploying, setIsDeploying] = useState(false);
-  const [deployResult, setDeployResult] = useState<{ route: string } | null>(null);
+  const [deployResult, setDeployResult] = useState<{ route: string } | null>(
+    null,
+  );
   const [copied, setCopied] = useState(false);
 
   // Auto-suggest slug from title
@@ -44,8 +53,8 @@ export function DeployFormModal({
       setSlugValue(
         title
           .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/(^-|-$)/g, ''),
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, ""),
       );
     }
   }, [title, existingSlug]);
@@ -56,13 +65,15 @@ export function DeployFormModal({
     let isMounted = true;
     async function loadModules() {
       try {
-        const token = localStorage.getItem('token') || '';
-        const res = await fetch('/api/v1/builder/page-registries', {
+        const token = localStorage.getItem("token") || "";
+        const res = await fetch("/api/v1/builder/page-registries", {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!isMounted || !res.ok) return;
         const pages = await res.json();
-        const mods = [...new Set((pages as any[]).map((p) => p.module).filter(Boolean))];
+        const mods = [
+          ...new Set((pages as any[]).map((p) => p.module).filter(Boolean)),
+        ];
         setExistingModules(mods);
       } catch {
         // ignore — use default list
@@ -78,16 +89,16 @@ export function DeployFormModal({
   useEffect(() => {
     if (isOpen) {
       setTitle(existingTitle);
-      setModuleValue(existingModule || 'custom');
-      setSlugValue(existingSlug || '');
-      setDescription('');
+      setModuleValue(existingModule || "custom");
+      setSlugValue(existingSlug || "");
+      setDescription("");
       setDeployResult(null);
       setCopied(false);
       setIsDeploying(false);
     }
   }, [isOpen, existingTitle, existingModule, existingSlug]);
 
-  const fullRoute = `/app/${moduleValue || 'custom'}/${slugValue || 'untitled'}`;
+  const fullRoute = `/app/${moduleValue || "custom"}/${slugValue || "untitled"}`;
 
   const isValid =
     title.trim().length > 0 &&
@@ -99,20 +110,20 @@ export function DeployFormModal({
     if (!isValid || !pageId) return;
     setIsDeploying(true);
     try {
-      const token = localStorage.getItem('token') || '';
+      const token = localStorage.getItem("token") || "";
 
       // Step 1: save the BuilderForm with real module/slug/name
       const savePayload = {
         module: moduleValue,
         slug: slugValue,
         name: title.trim(),
-        status: 'PUBLISHED',
+        status: "PUBLISHED",
       };
 
       const saveRes = await fetch(`/api/v1/builder/forms/${pageId}`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(savePayload),
@@ -120,14 +131,14 @@ export function DeployFormModal({
 
       if (!saveRes.ok) {
         const err = await saveRes.json();
-        showToast(`Save failed: ${err.message || 'Server error'}`, 'error');
+        showToast(`Save failed: ${err.message || "Server error"}`, "error");
         setIsDeploying(false);
         return;
       }
 
       // Step 2: publish — creates/links the backing SchemaRegistry & PageRegistry
       const pubRes = await fetch(`/api/v1/builder/forms/${pageId}/publish`, {
-        method: 'POST',
+        method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -135,19 +146,19 @@ export function DeployFormModal({
 
       if (!pubRes.ok) {
         const err = await pubRes.json();
-        showToast(`Publish failed: ${err.message || 'Server error'}`, 'error');
+        showToast(`Publish failed: ${err.message || "Server error"}`, "error");
         setIsDeploying(false);
         return;
       }
 
       // Notify sidebar to refresh
-      window.dispatchEvent(new Event('unerp_page_registry_updated'));
+      window.dispatchEvent(new Event("unerp_page_registry_updated"));
 
       setDeployResult({ route: `/app/${moduleValue}/${slugValue}` });
-      showToast('Form published successfully!', 'success');
+      showToast("Form published successfully!", "success");
       onPublished?.({ route: `/app/${moduleValue}/${slugValue}`, pageId });
     } catch {
-      showToast('An error occurred during deployment.', 'error');
+      showToast("An error occurred during deployment.", "error");
     } finally {
       setIsDeploying(false);
     }
@@ -158,10 +169,10 @@ export function DeployFormModal({
     navigator.clipboard.writeText(url).then(
       () => {
         setCopied(true);
-        showToast('Link copied to clipboard', 'success');
+        showToast("Link copied to clipboard", "success");
         setTimeout(() => setCopied(false), 2000);
       },
-      () => showToast('Failed to copy', 'error'),
+      () => showToast("Failed to copy", "error"),
     );
   }, [deployResult, fullRoute, showToast]);
 
@@ -172,22 +183,22 @@ export function DeployFormModal({
       className="modal-overlay"
       onClick={onClose}
       style={{
-        position: 'fixed',
+        position: "fixed",
         inset: 0,
         zIndex: 9999,
-        background: 'var(--color-bg-overlay)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 'var(--space-4)',
+        background: "var(--color-bg-overlay)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "var(--space-4)",
       }}
     >
       <div
         className="modal-card ui-card"
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: '100%',
-          maxWidth: '520px',
+          width: "100%",
+          maxWidth: "520px",
           marginBottom: 0,
         }}
       >
@@ -195,21 +206,32 @@ export function DeployFormModal({
         <div
           className="ui-card-header"
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-            <Rocket size={18} style={{ color: 'var(--color-primary)' }} />
-            <span style={{ fontWeight: 'var(--weight-semibold)', fontSize: 'var(--text-base)' }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "var(--space-3)",
+            }}
+          >
+            <Rocket size={18} style={{ color: "var(--color-primary)" }} />
+            <span
+              style={{
+                fontWeight: "var(--weight-semibold)",
+                fontSize: "var(--text-base)",
+              }}
+            >
               Deploy to App
             </span>
           </div>
           <button
             onClick={onClose}
             className="ui-btn ui-btn-icon"
-            style={{ border: 'none' }}
+            style={{ border: "none" }}
           >
             <X size={16} />
           </button>
@@ -221,15 +243,15 @@ export function DeployFormModal({
             <>
               <p
                 style={{
-                  fontSize: 'var(--text-sm)',
-                  color: 'var(--color-text-secondary)',
-                  marginBottom: 'var(--space-5)',
-                  lineHeight: 'var(--leading-relaxed)',
+                  fontSize: "var(--text-sm)",
+                  color: "var(--color-text-secondary)",
+                  marginBottom: "var(--space-5)",
+                  lineHeight: "var(--leading-relaxed)",
                 }}
               >
-                Deploy this form as a live page in your ERP. Once published, the form
-                will appear in the sidebar under the chosen module and any records
-                submitted will be persisted automatically.
+                Deploy this form as a live page in your ERP. Once published, the
+                form will appear in the sidebar under the chosen module and any
+                records submitted will be persisted automatically.
               </p>
 
               {/* Title */}
@@ -251,7 +273,11 @@ export function DeployFormModal({
                   className="ui-input"
                   placeholder="e.g. hr, crm, custom"
                   value={moduleValue}
-                  onChange={(e) => setModuleValue(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
+                  onChange={(e) =>
+                    setModuleValue(
+                      e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""),
+                    )
+                  }
                   list="module-suggestions"
                 />
                 <datalist id="module-suggestions">
@@ -269,17 +295,27 @@ export function DeployFormModal({
                   placeholder="e.g. vehicle-maintenance"
                   value={slugValue}
                   onChange={(e) =>
-                    setSlugValue(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))
+                    setSlugValue(
+                      e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""),
+                    )
                   }
                   style={{
-                    borderColor: slugValue && !/^[a-z0-9][a-z0-9-]*$/.test(slugValue)
-                      ? 'var(--color-danger)'
-                      : undefined,
+                    borderColor:
+                      slugValue && !/^[a-z0-9][a-z0-9-]*$/.test(slugValue)
+                        ? "var(--color-danger)"
+                        : undefined,
                   }}
                 />
                 {slugValue && !/^[a-z0-9][a-z0-9-]*$/.test(slugValue) && (
-                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-danger)', marginTop: 'var(--space-1)' }}>
-                    Only lowercase letters, numbers, and hyphens are allowed. Must start with a letter or number.
+                  <p
+                    style={{
+                      fontSize: "var(--text-xs)",
+                      color: "var(--color-danger)",
+                      marginTop: "var(--space-1)",
+                    }}
+                  >
+                    Only lowercase letters, numbers, and hyphens are allowed.
+                    Must start with a letter or number.
                   </p>
                 )}
               </div>
@@ -298,24 +334,27 @@ export function DeployFormModal({
               {/* Route Preview */}
               <div
                 style={{
-                  padding: 'var(--space-3)',
-                  background: 'var(--color-bg-sunken)',
-                  borderRadius: 'var(--radius-md)',
-                  marginBottom: 'var(--space-5)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 'var(--space-2)',
+                  padding: "var(--space-3)",
+                  background: "var(--color-bg-sunken)",
+                  borderRadius: "var(--radius-md)",
+                  marginBottom: "var(--space-5)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "var(--space-2)",
                 }}
               >
-                <Globe size={14} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />
+                <Globe
+                  size={14}
+                  style={{ color: "var(--color-text-tertiary)", flexShrink: 0 }}
+                />
                 <span
                   style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: 'var(--text-xs)',
-                    color: 'var(--color-text-secondary)',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "var(--text-xs)",
+                    color: "var(--color-text-secondary)",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   {fullRoute}
@@ -323,7 +362,13 @@ export function DeployFormModal({
               </div>
 
               {/* Actions */}
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: "var(--space-3)",
+                }}
+              >
                 <button className="ui-btn ui-btn-secondary" onClick={onClose}>
                   Cancel
                 </button>
@@ -331,7 +376,7 @@ export function DeployFormModal({
                   className="ui-btn ui-btn-primary"
                   onClick={handleDeploy}
                   disabled={!isValid || isDeploying}
-                  style={{ gap: 'var(--space-2)' }}
+                  style={{ gap: "var(--space-2)" }}
                 >
                   {isDeploying ? (
                     <>
@@ -349,66 +394,87 @@ export function DeployFormModal({
             </>
           ) : (
             /* ── Success State ── */
-            <div style={{ textAlign: 'center', padding: 'var(--space-4) 0' }}>
+            <div style={{ textAlign: "center", padding: "var(--space-4) 0" }}>
               <div
                 style={{
-                  width: '56px',
-                  height: '56px',
-                  borderRadius: 'var(--radius-full)',
-                  background: 'var(--color-success-light)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  margin: '0 auto var(--space-4)',
+                  width: "56px",
+                  height: "56px",
+                  borderRadius: "var(--radius-full)",
+                  background: "var(--color-success-light)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  margin: "0 auto var(--space-4)",
                 }}
               >
-                <Check size={28} style={{ color: 'var(--color-success)' }} />
+                <Check size={28} style={{ color: "var(--color-success)" }} />
               </div>
-              <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-semibold)', marginBottom: 'var(--space-2)' }}>
+              <h3
+                style={{
+                  fontSize: "var(--text-lg)",
+                  fontWeight: "var(--weight-semibold)",
+                  marginBottom: "var(--space-2)",
+                }}
+              >
                 Form Published!
               </h3>
-              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-5)' }}>
+              <p
+                style={{
+                  fontSize: "var(--text-sm)",
+                  color: "var(--color-text-secondary)",
+                  marginBottom: "var(--space-5)",
+                }}
+              >
                 Your form is now live at the following route:
               </p>
 
               <div
                 style={{
-                  padding: 'var(--space-3)',
-                  background: 'var(--color-bg-sunken)',
-                  borderRadius: 'var(--radius-md)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 'var(--space-2)',
-                  marginBottom: 'var(--space-5)',
+                  padding: "var(--space-3)",
+                  background: "var(--color-bg-sunken)",
+                  borderRadius: "var(--radius-md)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "var(--space-2)",
+                  marginBottom: "var(--space-5)",
                 }}
               >
-                <Globe size={14} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />
+                <Globe
+                  size={14}
+                  style={{ color: "var(--color-text-tertiary)", flexShrink: 0 }}
+                />
                 <span
                   style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: 'var(--text-sm)',
-                    color: 'var(--color-primary)',
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "var(--text-sm)",
+                    color: "var(--color-primary)",
                   }}
                 >
                   {deployResult.route}
                 </span>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 'var(--space-3)' }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: "var(--space-3)",
+                }}
+              >
                 <button
                   className="ui-btn ui-btn-secondary"
                   onClick={handleCopyLink}
-                  style={{ gap: 'var(--space-2)' }}
+                  style={{ gap: "var(--space-2)" }}
                 >
                   {copied ? <Check size={14} /> : <Copy size={14} />}
-                  <span>{copied ? 'Copied' : 'Copy Link'}</span>
+                  <span>{copied ? "Copied" : "Copy Link"}</span>
                 </button>
                 <a
                   href={deployResult.route}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="ui-btn ui-btn-primary"
-                  style={{ gap: 'var(--space-2)', textDecoration: 'none' }}
+                  style={{ gap: "var(--space-2)", textDecoration: "none" }}
                 >
                   <ExternalLink size={14} />
                   <span>Open Page</span>

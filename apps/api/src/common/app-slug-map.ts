@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Single source of truth for "which app slug does this route belong to" and
  * "which slugs are kernel (always installed, never uninstallable)".
@@ -18,7 +17,7 @@ import {
   isUninstallable,
   KERNEL_SLUGS,
   type GatedModule,
-} from './module-tiers';
+} from "./module-tiers";
 
 // KERNEL_SLUGS is defined in module-tiers.ts (isUninstallable() needs it and app-slug-map.ts
 // already depends on module-tiers.ts, so defining it there avoids a circular import) and
@@ -26,7 +25,9 @@ import {
 export { KERNEL_SLUGS };
 
 /** The core in-house business modules (Finance, HR, …, Studio/Builder) that ship code-resident and can be toggled off. */
-export const CORE_INSTALLABLE_SLUGS: readonly string[] = GATED_MODULES.map((m) => m.slug);
+export const CORE_INSTALLABLE_SLUGS: readonly string[] = GATED_MODULES.map(
+  (m) => m.slug,
+);
 
 /**
  * Industry/vertical bundle slugs known to the web app's route guard
@@ -35,10 +36,17 @@ export const CORE_INSTALLABLE_SLUGS: readonly string[] = GATED_MODULES.map((m) =
  * default MarketplaceApp rows — kept here only so the slug-map endpoint can
  * report a complete picture to the frontend.
  */
-export const KNOWN_INDUSTRY_APP_SLUGS: readonly string[] = ['education', 'real-estate', 'field-service'];
+export const KNOWN_INDUSTRY_APP_SLUGS: readonly string[] = [
+  "education",
+  "real-estate",
+  "field-service",
+];
 
 /** Every slug a tenant may install/uninstall (core business modules + known industry bundles). */
-export const INSTALLABLE_SLUGS: readonly string[] = [...CORE_INSTALLABLE_SLUGS, ...KNOWN_INDUSTRY_APP_SLUGS];
+export const INSTALLABLE_SLUGS: readonly string[] = [
+  ...CORE_INSTALLABLE_SLUGS,
+  ...KNOWN_INDUSTRY_APP_SLUGS,
+];
 
 /** True if `slug` is a kernel app (never gated, never uninstallable). */
 export function isKernelSlug(slug: string): boolean {
@@ -78,8 +86,12 @@ export const DEFAULT_APP_PRIORITY: string[] = [
  * auto-installs — Phase 5). Returns industry-recommended core slugs only,
  * excluding kernel slugs (which are always-visible, not installable).
  */
-export function getRecommendedInstallSlugs(industry: string | null | undefined): string[] {
-  const priority = INDUSTRY_APP_PRIORITY[(industry || "").toLowerCase()] || DEFAULT_APP_PRIORITY;
+export function getRecommendedInstallSlugs(
+  industry: string | null | undefined,
+): string[] {
+  const priority =
+    INDUSTRY_APP_PRIORITY[(industry || "").toLowerCase()] ||
+    DEFAULT_APP_PRIORITY;
   const coreSet = new Set(CORE_INSTALLABLE_SLUGS);
   return priority.filter((s) => coreSet.has(s));
 }

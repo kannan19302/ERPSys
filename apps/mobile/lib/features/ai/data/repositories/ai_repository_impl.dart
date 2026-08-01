@@ -91,7 +91,7 @@ class AiRepositoryImpl implements AiRepository {
   @override
   Future<Result<Cacheable<Paginated<AiModel>>>> listModels(ListQuery query) =>
       _paginated(_modelNamespace, query, () => _remote.listModels(query),
-        AiModelModel.fromJson);
+        AiModelModel.fromJson,);
 
   @override
   Future<Result<AiModel>> getModel(String id) =>
@@ -112,7 +112,7 @@ class AiRepositoryImpl implements AiRepository {
   @override
   Future<Result<Cacheable<Paginated<AiPrompt>>>> listPrompts(ListQuery query) =>
       _paginated(_promptNamespace, query, () => _remote.listPrompts(query),
-        AiPromptModel.fromJson);
+        AiPromptModel.fromJson,);
 
   @override
   Future<Result<AiPrompt>> getPrompt(String id) =>
@@ -132,9 +132,9 @@ class AiRepositoryImpl implements AiRepository {
 
   @override
   Future<Result<Cacheable<Paginated<AiTrainingData>>>> listTrainingData(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_trainingNamespace, query, () => _remote.listTrainingData(query),
-        AiTrainingDataModel.fromJson);
+        AiTrainingDataModel.fromJson,);
 
   @override
   Future<Result<AiTrainingData>> getTrainingData(String id) =>
@@ -150,9 +150,9 @@ class AiRepositoryImpl implements AiRepository {
 
   @override
   Future<Result<Cacheable<Paginated<AiPrediction>>>> listPredictions(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_predictionNamespace, query, () => _remote.listPredictions(query),
-        AiPredictionModel.fromJson);
+        AiPredictionModel.fromJson,);
 
   @override
   Future<Result<AiPrediction>> createPrediction(Map<String, dynamic> p) =>

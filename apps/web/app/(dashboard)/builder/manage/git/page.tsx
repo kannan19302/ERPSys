@@ -1,33 +1,39 @@
-// @ts-nocheck
-'use client';
-import styles from './page.module.css';
-import React, { useState, useEffect } from 'react';
-import { PageHeader, DataTable } from '@unerp/ui';
-import { GitPullRequest, GitCommit, Settings, Save, AlertCircle } from 'lucide-react';
-import { useApiClient } from '@unerp/framework';
+"use client";
+import styles from "./page.module.css";
+import React, { useState, useEffect } from "react";
+import { PageHeader, DataTable } from "@unerp/ui";
+import {
+  GitPullRequest,
+  GitCommit,
+  Settings,
+  Save,
+  AlertCircle,
+} from "lucide-react";
+import { useApiClient } from "@unerp/framework";
 
 export default function GitIntegrationPage() {
   const client = useApiClient();
-  const [repoUrl, setRepoUrl] = useState('');
-  const [branch, setBranch] = useState('main');
-  const [status, setStatus] = useState('DISCONNECTED');
+  const [repoUrl, setRepoUrl] = useState("");
+  const [branch, setBranch] = useState("main");
+  const [status, setStatus] = useState("DISCONNECTED");
   const [diffFiles, setDiffFiles] = useState<any[]>([]);
-  const [commitMessage, setCommitMessage] = useState('');
+  const [commitMessage, setCommitMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
 
   const fetchConfigAndDiff = async () => {
     try {
       const [config, diff] = await Promise.all([
-        client.get<any>('/builder/git/config'), client.get<any[]>('/builder/git/diff')
+        client.get<any>("/builder/git/config"),
+        client.get<any[]>("/builder/git/diff"),
       ]);
-      setRepoUrl(config.repoUrl || '');
-      setBranch(config.branch || 'main');
-      setStatus(config.status || 'DISCONNECTED');
+      setRepoUrl(config.repoUrl || "");
+      setBranch(config.branch || "main");
+      setStatus(config.status || "DISCONNECTED");
       setDiffFiles(diff || []);
     } catch (err) {
-      console.error('Failed to load git details:', err);
+      console.error("Failed to load git details:", err);
     }
   };
 
@@ -38,13 +44,13 @@ export default function GitIntegrationPage() {
   const handleSaveConfig = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    setMessage('');
+    setMessage("");
     try {
-      await client.post('/builder/git/config', { repoUrl, branch });
-      setMessage('Git configuration updated successfully!');
+      await client.post("/builder/git/config", { repoUrl, branch });
+      setMessage("Git configuration updated successfully!");
       fetchConfigAndDiff();
     } catch {
-      setMessage('Failed to save Git configuration.');
+      setMessage("Failed to save Git configuration.");
     } finally {
       setSaving(false);
     }
@@ -52,34 +58,34 @@ export default function GitIntegrationPage() {
 
   const handleCommit = async () => {
     if (!commitMessage.trim()) {
-      alert('Please enter a commit message.');
+      alert("Please enter a commit message.");
       return;
     }
     setLoading(true);
-    setMessage('');
+    setMessage("");
     try {
-      await client.post('/builder/git/commit', { message: commitMessage });
-      setMessage('Changes pushed to remote repository!');
-      setCommitMessage('');
+      await client.post("/builder/git/commit", { message: commitMessage });
+      setMessage("Changes pushed to remote repository!");
+      setCommitMessage("");
       fetchConfigAndDiff();
     } catch {
-      setMessage('Failed to push changes.');
+      setMessage("Failed to push changes.");
     } finally {
       setLoading(false);
     }
   };
 
   const diffColumns = [
-    { key: 'file', header: 'File Path' },
-    { 
-      key: 'status', 
-      header: 'Change Status',
+    { key: "file", header: "File Path" },
+    {
+      key: "status",
+      header: "Change Status",
       render: (row: any) => (
         <span className="ui-badge ui-badge-warning">{row.status}</span>
-      )
+      ),
     },
-    { key: 'additions', header: 'Lines Added' },
-    { key: 'deletions', header: 'Lines Deleted' }
+    { key: "additions", header: "Lines Added" },
+    { key: "deletions", header: "Lines Deleted" },
   ];
 
   return (
@@ -90,7 +96,7 @@ export default function GitIntegrationPage() {
       />
 
       {message && (
-        <div className={`ui-card ${styles.s2}`} >
+        <div className={`ui-card ${styles.s2}`}>
           <AlertCircle size={16} />
           <span className="text-sm">{message}</span>
         </div>
@@ -105,20 +111,20 @@ export default function GitIntegrationPage() {
           <form onSubmit={handleSaveConfig} className="ui-stack-4">
             <div className="ui-form-group">
               <label className="ui-label">Repository URL</label>
-              <input 
-                className="ui-input" 
-                value={repoUrl} 
-                onChange={e => setRepoUrl(e.target.value)} 
+              <input
+                className="ui-input"
+                value={repoUrl}
+                onChange={(e) => setRepoUrl(e.target.value)}
                 placeholder="e.g. https://github.com/unerp/workspace.git"
                 required
               />
             </div>
             <div className="ui-form-group">
               <label className="ui-label">Deployment Branch</label>
-              <input 
-                className="ui-input" 
-                value={branch} 
-                onChange={e => setBranch(e.target.value)} 
+              <input
+                className="ui-input"
+                value={branch}
+                onChange={(e) => setBranch(e.target.value)}
                 placeholder="main"
                 required
               />
@@ -126,13 +132,19 @@ export default function GitIntegrationPage() {
             <div className="ui-form-group">
               <label className="ui-label">Connection Status</label>
               <div>
-                <span className={`ui-badge ${status === 'CONNECTED' ? 'ui-badge-success' : 'ui-badge-danger'}`}>
+                <span
+                  className={`ui-badge ${status === "CONNECTED" ? "ui-badge-success" : "ui-badge-danger"}`}
+                >
                   {status}
                 </span>
               </div>
             </div>
-            <button className="ui-btn ui-btn-primary" type="submit" disabled={saving}>
-              <Save size={14} /> {saving ? 'Saving...' : 'Save Configuration'}
+            <button
+              className="ui-btn ui-btn-primary"
+              type="submit"
+              disabled={saving}
+            >
+              <Save size={14} /> {saving ? "Saving..." : "Save Configuration"}
             </button>
           </form>
         </div>
@@ -146,7 +158,9 @@ export default function GitIntegrationPage() {
             {diffFiles.length > 0 ? (
               <DataTable columns={diffColumns} data={diffFiles} />
             ) : (
-              <p className={styles.s5}>No differences detected in the workspace.</p>
+              <p className={styles.s5}>
+                No differences detected in the workspace.
+              </p>
             )}
           </div>
 
@@ -157,19 +171,19 @@ export default function GitIntegrationPage() {
             <div className="ui-stack-4">
               <div className="ui-form-group">
                 <label className="ui-label">Commit Message</label>
-                <input 
-                  className="ui-input" 
-                  value={commitMessage} 
-                  onChange={e => setCommitMessage(e.target.value)} 
+                <input
+                  className="ui-input"
+                  value={commitMessage}
+                  onChange={(e) => setCommitMessage(e.target.value)}
                   placeholder="e.g. feat: add custom fields to finance invoice form"
                 />
               </div>
-              <button 
-                className="ui-btn ui-btn-primary" 
-                onClick={handleCommit} 
+              <button
+                className="ui-btn ui-btn-primary"
+                onClick={handleCommit}
                 disabled={loading || diffFiles.length === 0}
               >
-                {loading ? 'Pushing Commit...' : 'Commit & Push'}
+                {loading ? "Pushing Commit..." : "Commit & Push"}
               </button>
             </div>
           </div>
@@ -178,4 +192,3 @@ export default function GitIntegrationPage() {
     </div>
   );
 }
-

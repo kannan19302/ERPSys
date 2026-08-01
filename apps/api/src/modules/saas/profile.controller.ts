@@ -1,11 +1,4 @@
-// @ts-nocheck
-import {
-  Controller,
-  Get,
-  Put,
-  UseGuards,
-  Req,
-} from "@nestjs/common";
+import { Controller, Get, Put, UseGuards, Req } from "@nestjs/common";
 import { z } from "zod";
 import { ZodBody } from "../../common/decorators/zod-body.decorator";
 import { Request } from "express";
@@ -42,7 +35,9 @@ const updateCompanySchema = z.object({
 const updateIndustrySchema = z.object({
   industry: z.string().min(1).max(255).optional(),
   subIndustry: z.string().optional(),
-  companySize: z.enum(["1-10", "11-50", "51-200", "201-1000", "1000+"]).optional(),
+  companySize: z
+    .enum(["1-10", "11-50", "51-200", "201-1000", "1000+"])
+    .optional(),
   description: z.string().optional(),
 });
 
@@ -83,15 +78,27 @@ export class ProfileController {
   @ApiOperation({ summary: "Update tenant profile" })
   @Permissions("saas.portal.create")
   @Put()
-  async updateTenantProfile(@Req() req: AuthReq, @ZodBody(updateProfileSchema) body: z.infer<typeof updateProfileSchema>) {
+  async updateTenantProfile(
+    @Req() req: AuthReq,
+    @ZodBody(updateProfileSchema) body: z.infer<typeof updateProfileSchema>,
+  ) {
     const data: Record<string, unknown> = {};
     if (body.name) data.name = body.name;
     if (body.slug) data.slug = body.slug;
     if (body.settings) {
-      const existing = await this.saasService.db.tenant.findUnique({ where: { id: req.user.tenantId }, select: { settings: true } });
-      data.settings = { ...(existing?.settings as Record<string, unknown> ?? {}), ...body.settings };
+      const existing = await this.saasService.db.tenant.findUnique({
+        where: { id: req.user.tenantId },
+        select: { settings: true },
+      });
+      data.settings = {
+        ...((existing?.settings as Record<string, unknown>) ?? {}),
+        ...body.settings,
+      };
     }
-    return this.saasService.db.tenant.update({ where: { id: req.user.tenantId }, data: data as any });
+    return this.saasService.db.tenant.update({
+      where: { id: req.user.tenantId },
+      data: data as any,
+    });
   }
 
   @ApiOperation({ summary: "Get company details" })
@@ -121,11 +128,20 @@ export class ProfileController {
   @ApiOperation({ summary: "Update company details" })
   @Permissions("saas.portal.create")
   @Put("company")
-  async updateCompanyDetails(@Req() req: AuthReq, @ZodBody(updateCompanySchema) body: z.infer<typeof updateCompanySchema>) {
-    const tenant = await this.saasService.db.tenant.findUnique({ where: { id: req.user.tenantId }, select: { settings: true } });
+  async updateCompanyDetails(
+    @Req() req: AuthReq,
+    @ZodBody(updateCompanySchema) body: z.infer<typeof updateCompanySchema>,
+  ) {
+    const tenant = await this.saasService.db.tenant.findUnique({
+      where: { id: req.user.tenantId },
+      select: { settings: true },
+    });
     const settings = (tenant?.settings as Record<string, unknown>) ?? {};
     const updated = { ...settings, ...body };
-    return this.saasService.db.tenant.update({ where: { id: req.user.tenantId }, data: { settings: updated as any } });
+    return this.saasService.db.tenant.update({
+      where: { id: req.user.tenantId },
+      data: { settings: updated as any },
+    });
   }
 
   @ApiOperation({ summary: "Get industry information" })
@@ -148,10 +164,19 @@ export class ProfileController {
   @ApiOperation({ summary: "Update industry information" })
   @Permissions("saas.portal.create")
   @Put("industry")
-  async updateIndustryInfo(@Req() req: AuthReq, @ZodBody(updateIndustrySchema) body: z.infer<typeof updateIndustrySchema>) {
-    const tenant = await this.saasService.db.tenant.findUnique({ where: { id: req.user.tenantId }, select: { settings: true } });
+  async updateIndustryInfo(
+    @Req() req: AuthReq,
+    @ZodBody(updateIndustrySchema) body: z.infer<typeof updateIndustrySchema>,
+  ) {
+    const tenant = await this.saasService.db.tenant.findUnique({
+      where: { id: req.user.tenantId },
+      select: { settings: true },
+    });
     const settings = (tenant?.settings as Record<string, unknown>) ?? {};
-    return this.saasService.db.tenant.update({ where: { id: req.user.tenantId }, data: { settings: { ...settings, ...body } as any } });
+    return this.saasService.db.tenant.update({
+      where: { id: req.user.tenantId },
+      data: { settings: { ...settings, ...body } as any },
+    });
   }
 
   @ApiOperation({ summary: "Get timezone settings" })
@@ -169,10 +194,19 @@ export class ProfileController {
   @ApiOperation({ summary: "Update timezone settings" })
   @Permissions("saas.portal.create")
   @Put("timezone")
-  async updateTimezoneSettings(@Req() req: AuthReq, @ZodBody(updateTimezoneSchema) body: z.infer<typeof updateTimezoneSchema>) {
-    const tenant = await this.saasService.db.tenant.findUnique({ where: { id: req.user.tenantId }, select: { settings: true } });
+  async updateTimezoneSettings(
+    @Req() req: AuthReq,
+    @ZodBody(updateTimezoneSchema) body: z.infer<typeof updateTimezoneSchema>,
+  ) {
+    const tenant = await this.saasService.db.tenant.findUnique({
+      where: { id: req.user.tenantId },
+      select: { settings: true },
+    });
     const settings = (tenant?.settings as Record<string, unknown>) ?? {};
-    return this.saasService.db.tenant.update({ where: { id: req.user.tenantId }, data: { settings: { ...settings, timezone: body.timezone } as any } });
+    return this.saasService.db.tenant.update({
+      where: { id: req.user.tenantId },
+      data: { settings: { ...settings, timezone: body.timezone } as any },
+    });
   }
 
   @ApiOperation({ summary: "Get locale settings" })
@@ -195,10 +229,19 @@ export class ProfileController {
   @ApiOperation({ summary: "Update locale settings" })
   @Permissions("saas.portal.create")
   @Put("locale")
-  async updateLocaleSettings(@Req() req: AuthReq, @ZodBody(updateLocaleSchema) body: z.infer<typeof updateLocaleSchema>) {
-    const tenant = await this.saasService.db.tenant.findUnique({ where: { id: req.user.tenantId }, select: { settings: true } });
+  async updateLocaleSettings(
+    @Req() req: AuthReq,
+    @ZodBody(updateLocaleSchema) body: z.infer<typeof updateLocaleSchema>,
+  ) {
+    const tenant = await this.saasService.db.tenant.findUnique({
+      where: { id: req.user.tenantId },
+      select: { settings: true },
+    });
     const settings = (tenant?.settings as Record<string, unknown>) ?? {};
-    return this.saasService.db.tenant.update({ where: { id: req.user.tenantId }, data: { settings: { ...settings, ...body } as any } });
+    return this.saasService.db.tenant.update({
+      where: { id: req.user.tenantId },
+      data: { settings: { ...settings, ...body } as any },
+    });
   }
 
   @ApiOperation({ summary: "Get data retention policy" })
@@ -220,9 +263,18 @@ export class ProfileController {
   @ApiOperation({ summary: "Update data retention policy" })
   @Permissions("saas.portal.create")
   @Put("data-retention")
-  async updateDataRetentionPolicy(@Req() req: AuthReq, @ZodBody(updateRetentionSchema) body: z.infer<typeof updateRetentionSchema>) {
-    const tenant = await this.saasService.db.tenant.findUnique({ where: { id: req.user.tenantId }, select: { settings: true } });
+  async updateDataRetentionPolicy(
+    @Req() req: AuthReq,
+    @ZodBody(updateRetentionSchema) body: z.infer<typeof updateRetentionSchema>,
+  ) {
+    const tenant = await this.saasService.db.tenant.findUnique({
+      where: { id: req.user.tenantId },
+      select: { settings: true },
+    });
     const settings = (tenant?.settings as Record<string, unknown>) ?? {};
-    return this.saasService.db.tenant.update({ where: { id: req.user.tenantId }, data: { settings: { ...settings, ...body } as any } });
+    return this.saasService.db.tenant.update({
+      where: { id: req.user.tenantId },
+      data: { settings: { ...settings, ...body } as any },
+    });
   }
 }

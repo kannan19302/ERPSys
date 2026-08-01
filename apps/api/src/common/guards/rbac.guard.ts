@@ -1,19 +1,23 @@
-// @ts-nocheck
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { prisma, runWithTenantSession } from '@unerp/database';
-import { hasPermission } from '@unerp/auth';
-import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+} from "@nestjs/common";
+import { Reflector } from "@nestjs/core";
+import { prisma, runWithTenantSession } from "@unerp/database";
+import { hasPermission } from "@unerp/auth";
+import { PERMISSIONS_KEY } from "../decorators/permissions.decorator";
 
 @Injectable()
 export class RbacGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredPermissions = this.reflector.getAllAndOverride<string[]>(PERMISSIONS_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const requiredPermissions = this.reflector.getAllAndOverride<string[]>(
+      PERMISSIONS_KEY,
+      [context.getHandler(), context.getClass()],
+    );
 
     // If no permissions are required, allow access
     if (!requiredPermissions || requiredPermissions.length === 0) {
@@ -24,7 +28,7 @@ export class RbacGuard implements CanActivate {
     const user = request.user; // Appended by JwtAuthGuard
 
     if (!user) {
-      throw new ForbiddenException('User session not found');
+      throw new ForbiddenException("User session not found");
     }
 
     // Retrieve the user's role assignments and associated roles. This guard
@@ -33,7 +37,7 @@ export class RbacGuard implements CanActivate {
     // invisible under the unerp_api runtime role. The JWT's tenantId was
     // already signature-verified by JwtAuthGuard, so it's safe to scope here.
     const userRoles = await runWithTenantSession(
-      { tenantId: user.tenantId, userId: user.userId ?? user.sub ?? '' },
+      { tenantId: user.tenantId, userId: user.userId ?? user.sub ?? "" },
       () =>
         prisma.userRole.findMany({
           where: { userId: user.userId },
@@ -60,7 +64,9 @@ export class RbacGuard implements CanActivate {
     );
 
     if (!isAuthorized) {
-      throw new ForbiddenException('You do not have the required permissions to access this resource');
+      throw new ForbiddenException(
+        "You do not have the required permissions to access this resource",
+      );
     }
 
     return true;

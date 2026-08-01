@@ -1,28 +1,29 @@
-// @ts-nocheck
-import { Injectable, Optional } from '@nestjs/common';
-import { InjectQueue } from '@nestjs/bullmq';
-import { Queue } from 'bullmq';
-import { prisma } from '@unerp/database';
-import * as os from 'os';
+import { Injectable, Optional } from "@nestjs/common";
+import { InjectQueue } from "@nestjs/bullmq";
+import { Queue } from "bullmq";
+import { prisma } from "@unerp/database";
+import * as os from "os";
 
 @Injectable()
 export class OperationsService {
   constructor(
-    @Optional() @InjectQueue('email') private readonly emailQueue?: Queue,
-    @Optional() @InjectQueue('export') private readonly exportQueue?: Queue,
-    @Optional() @InjectQueue('payroll') private readonly payrollQueue?: Queue,
-    @Optional() @InjectQueue('data-import') private readonly dataImportQueue?: Queue,
+    @Optional() @InjectQueue("email") private readonly emailQueue?: Queue,
+    @Optional() @InjectQueue("export") private readonly exportQueue?: Queue,
+    @Optional() @InjectQueue("payroll") private readonly payrollQueue?: Queue,
+    @Optional()
+    @InjectQueue("data-import")
+    private readonly dataImportQueue?: Queue,
   ) {}
 
   private resolveQueue(queueName: string): Queue | undefined {
     switch (queueName) {
-      case 'email':
+      case "email":
         return this.emailQueue;
-      case 'export':
+      case "export":
         return this.exportQueue;
-      case 'payroll':
+      case "payroll":
         return this.payrollQueue;
-      case 'data-import':
+      case "data-import":
         return this.dataImportQueue;
       default:
         return undefined;
@@ -51,7 +52,7 @@ export class OperationsService {
     }
 
     return {
-      status: dbStatus === 'HEALTHY' ? 'OK' : 'DEGRADED',
+      status: dbStatus === "HEALTHY" ? "OK" : "DEGRADED",
       timestamp: new Date().toISOString(),
       metrics: {
         cpuUsage: Math.min(100, Math.max(2, cpuUsage)),
@@ -67,10 +68,10 @@ export class OperationsService {
 
   private async checkDatabase(): Promise<string> {
     try {
-      await prisma.$executeRawUnsafe('SELECT 1');
-      return 'HEALTHY';
+      await prisma.$executeRawUnsafe("SELECT 1");
+      return "HEALTHY";
     } catch {
-      return 'UNHEALTHY';
+      return "UNHEALTHY";
     }
   }
 
@@ -79,32 +80,47 @@ export class OperationsService {
    */
   async getBackgroundJobs(tenantId: string) {
     const jobs = await prisma.backgroundJob.groupBy({
-      by: ['queueName', 'status'],
+      by: ["queueName", "status"],
       where: { tenantId },
       _count: { id: true },
     });
 
     // Pivot into per-queue summaries
-    const queueMap = new Map<string, { name: string; active: number; waiting: number; completed: number; failed: number }>();
+    const queueMap = new Map<
+      string,
+      {
+        name: string;
+        active: number;
+        waiting: number;
+        completed: number;
+        failed: number;
+      }
+    >();
     for (const row of jobs) {
       if (!queueMap.has(row.queueName)) {
-        queueMap.set(row.queueName, { name: row.queueName, active: 0, waiting: 0, completed: 0, failed: 0 });
+        queueMap.set(row.queueName, {
+          name: row.queueName,
+          active: 0,
+          waiting: 0,
+          completed: 0,
+          failed: 0,
+        });
       }
       const entry = queueMap.get(row.queueName)!;
       const count = row._count.id;
       switch (row.status) {
-        case 'ACTIVE':
-        case 'RUNNING':
+        case "ACTIVE":
+        case "RUNNING":
           entry.active += count;
           break;
-        case 'PENDING':
-        case 'WAITING':
+        case "PENDING":
+        case "WAITING":
           entry.waiting += count;
           break;
-        case 'COMPLETED':
+        case "COMPLETED":
           entry.completed += count;
           break;
-        case 'FAILED':
+        case "FAILED":
           entry.failed += count;
           break;
       }
@@ -126,7 +142,7 @@ export class OperationsService {
    */
   async retryJobs(tenantId: string) {
     const failedJobs = await prisma.backgroundJob.findMany({
-      where: { tenantId, status: 'FAILED' },
+      where: { tenantId, status: "FAILED" },
     });
 
     let retriedCount = 0;
@@ -146,7 +162,7 @@ export class OperationsService {
       await prisma.backgroundJob.update({
         where: { id: job.id },
         data: {
-          status: 'PENDING',
+          status: "PENDING",
           bullJobId: String(bullJob.id),
           attempts: 0,
           error: null,
@@ -159,7 +175,7 @@ export class OperationsService {
 
     return {
       success: true,
-      message: `${retriedCount} failed job(s) re-enqueued into BullMQ.${skippedCount > 0 ? ` ${skippedCount} job(s) skipped (no live queue for their queueName).` : ''}`,
+      message: `${retriedCount} failed job(s) re-enqueued into BullMQ.${skippedCount > 0 ? ` ${skippedCount} job(s) skipped (no live queue for their queueName).` : ""}`,
       retriedCount,
       skippedCount,
     };
@@ -171,7 +187,7 @@ export class OperationsService {
   async getScheduledTasks(tenantId: string) {
     const tasks = await prisma.scheduledTask.findMany({
       where: { tenantId },
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: "asc" },
     });
 
     return tasks.map((t) => ({
@@ -204,7 +220,7 @@ export class OperationsService {
         queueName: `scheduled-${task.handler}`,
         jobType: task.handler,
         payload: task.config ?? {},
-        status: 'PENDING',
+        status: "PENDING",
         priority: 10,
       },
     });
@@ -230,7 +246,7 @@ export class OperationsService {
     const [logs, total] = await Promise.all([
       prisma.errorLog.findMany({
         where: { tenantId },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         skip,
         take: pageSize,
       }),
@@ -276,18 +292,32 @@ export class OperationsService {
    */
   async getBackups(tenantId: string) {
     const setting = await prisma.setting.findUnique({
-      where: { tenantId_key: { tenantId, key: 'operations.backups' } },
+      where: { tenantId_key: { tenantId, key: "operations.backups" } },
     });
     if (!setting) {
       return [
-        { id: 'bak-1', filename: 'unerp_backup_2026-06-20.sql', sizeBytes: 15421800, createdBy: 'System Cron', createdAt: new Date(Date.now() - 86400000).toISOString(), source: 'SIMULATED' },
-        { id: 'bak-2', filename: 'unerp_backup_2026-06-19.sql', sizeBytes: 15410900, createdBy: 'admin@unerp.dev', createdAt: new Date(Date.now() - 172800000).toISOString(), source: 'SIMULATED' },
+        {
+          id: "bak-1",
+          filename: "unerp_backup_2026-06-20.sql",
+          sizeBytes: 15421800,
+          createdBy: "System Cron",
+          createdAt: new Date(Date.now() - 86400000).toISOString(),
+          source: "SIMULATED",
+        },
+        {
+          id: "bak-2",
+          filename: "unerp_backup_2026-06-19.sql",
+          sizeBytes: 15410900,
+          createdBy: "admin@unerp.dev",
+          createdAt: new Date(Date.now() - 172800000).toISOString(),
+          source: "SIMULATED",
+        },
       ];
     }
     const backups = setting.value as any[];
     // Backfill `source` for rows persisted before this field existed, so old and new records
     // are equally honest about not being real DR artifacts.
-    return backups.map((b) => ({ source: 'SIMULATED', ...b }));
+    return backups.map((b) => ({ source: "SIMULATED", ...b }));
   }
 
   /**
@@ -298,25 +328,25 @@ export class OperationsService {
    * `source: 'SIMULATED'` rather than presented as a trustworthy DR artifact.
    */
   async createBackup(tenantId: string, userId: string) {
-    const backups = await this.getBackups(tenantId) as any[];
+    const backups = (await this.getBackups(tenantId)) as any[];
     const newBackup = {
       id: `bak-${Date.now()}`,
-      filename: `unerp_backup_${new Date().toISOString().split('T')[0]}_${Date.now().toString().slice(-4)}.sql`,
+      filename: `unerp_backup_${new Date().toISOString().split("T")[0]}_${Date.now().toString().slice(-4)}.sql`,
       sizeBytes: Math.round(15000000 + Math.random() * 500000),
       createdBy: userId,
       createdAt: new Date().toISOString(),
-      source: 'SIMULATED',
+      source: "SIMULATED",
     };
 
     const updated = [newBackup, ...backups];
     await prisma.setting.upsert({
-      where: { tenantId_key: { tenantId, key: 'operations.backups' } },
-      update: { value: updated as any, category: 'operations' },
+      where: { tenantId_key: { tenantId, key: "operations.backups" } },
+      update: { value: updated as any, category: "operations" },
       create: {
         tenantId,
-        key: 'operations.backups',
+        key: "operations.backups",
         value: updated as any,
-        category: 'operations',
+        category: "operations",
       },
     });
 
@@ -336,7 +366,9 @@ export class OperationsService {
       `;
 
       // Get actual row counts via pg statistics (fast, approximate)
-      const counts = await prisma.$queryRaw<Array<{ relname: string; n_live_tup: bigint }>>`
+      const counts = await prisma.$queryRaw<
+        Array<{ relname: string; n_live_tup: bigint }>
+      >`
         SELECT relname, n_live_tup
         FROM pg_stat_user_tables
         WHERE schemaname = 'public'
@@ -347,18 +379,18 @@ export class OperationsService {
         countMap.set(row.relname, Number(row.n_live_tup));
       }
 
-      return tables.map(t => ({
+      return tables.map((t) => ({
         tableName: t.table_name,
         rowCount: countMap.get(t.table_name) ?? 0,
-        status: 'ACTIVE',
+        status: "ACTIVE",
       }));
     } catch {
       // Fallback
       return [
-        { tableName: 'tenants', rowCount: 0, status: 'ACTIVE' },
-        { tableName: 'users', rowCount: 0, status: 'ACTIVE' },
-        { tableName: 'roles', rowCount: 0, status: 'ACTIVE' },
-        { tableName: 'organizations', rowCount: 0, status: 'ACTIVE' },
+        { tableName: "tenants", rowCount: 0, status: "ACTIVE" },
+        { tableName: "users", rowCount: 0, status: "ACTIVE" },
+        { tableName: "roles", rowCount: 0, status: "ACTIVE" },
+        { tableName: "organizations", rowCount: 0, status: "ACTIVE" },
       ];
     }
   }

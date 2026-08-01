@@ -1,7 +1,6 @@
-// @ts-nocheck
-import { Injectable } from '@nestjs/common';
-import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-import { prisma } from '@unerp/database';
+import { Injectable } from "@nestjs/common";
+import { EventEmitter2, OnEvent } from "@nestjs/event-emitter";
+import { prisma } from "@unerp/database";
 
 interface InvoiceOverdueEvent {
   tenantId: string;
@@ -26,16 +25,21 @@ interface InvoiceOverdueEvent {
 export class InvoiceOverdueNotificationService {
   constructor(private readonly eventEmitter: EventEmitter2) {}
 
-  @OnEvent('finance.invoice.overdue')
+  @OnEvent("finance.invoice.overdue")
   async handleInvoiceOverdue(payload: InvoiceOverdueEvent) {
-    const { tenantId, invoiceId, customerId, daysOverdue, feeApplied } = payload;
+    const { tenantId, invoiceId, customerId, daysOverdue, feeApplied } =
+      payload;
     if (!tenantId || !invoiceId) return;
 
     try {
       const [invoice, dunningLevel] = await Promise.all([
         prisma.invoice.findFirst({
           where: { id: invoiceId, tenantId },
-          select: { invoiceNumber: true, totalAmount: true, customer: { select: { name: true } } },
+          select: {
+            invoiceNumber: true,
+            totalAmount: true,
+            customer: { select: { name: true } },
+          },
         }),
         prisma.dunningLevel.findFirst({
           where: { id: payload.dunningLevelId, tenantId },
@@ -48,21 +52,25 @@ export class InvoiceOverdueNotificationService {
       if (recipients.length === 0) return;
 
       const title = `Invoice #${invoice.invoiceNumber} is ${daysOverdue} days overdue`;
-      const body = `${invoice.customer?.name ?? 'Customer'} (customer ${customerId}) has an unpaid invoice #${invoice.invoiceNumber} for ${invoice.totalAmount.toString()}, now ${daysOverdue} days overdue at dunning level "${dunningLevel?.levelName ?? 'N/A'}".${feeApplied > 0 ? ` A late fee of ${feeApplied.toFixed(2)} was applied.` : ''}`;
+      const body = `${invoice.customer?.name ?? "Customer"} (customer ${customerId}) has an unpaid invoice #${invoice.invoiceNumber} for ${invoice.totalAmount.toString()}, now ${daysOverdue} days overdue at dunning level "${dunningLevel?.levelName ?? "N/A"}".${feeApplied > 0 ? ` A late fee of ${feeApplied.toFixed(2)} was applied.` : ""}`;
 
       for (const userId of recipients) {
-        this.eventEmitter.emit('notification.send', {
+        this.eventEmitter.emit("notification.send", {
           tenantId,
           userId,
-          type: 'FINANCE_INVOICE_OVERDUE',
+          type: "FINANCE_INVOICE_OVERDUE",
           title,
           body,
-          channel: 'IN_APP',
+          channel: "IN_APP",
         });
       }
     } catch (err) {
-      const { pinoLogger } = await import('../../common/services/logger.service');
-      pinoLogger.error({ invoiceId, tenantId, err }, 'Failed to notify finance team of overdue invoice');
+      const { pinoLogger } =
+        await import("../../common/services/logger.service");
+      pinoLogger.error(
+        { invoiceId, tenantId, err },
+        "Failed to notify finance team of overdue invoice",
+      );
     }
   }
 
@@ -74,18 +82,26 @@ export class InvoiceOverdueNotificationService {
     });
     const financeRoleIds = roles
       .filter((role) => {
-        const perms = Array.isArray(role.permissions) ? (role.permissions as string[]) : [];
+        const perms = Array.isArray(role.permissions)
+          ? (role.permissions as string[])
+          : [];
         return perms.some(
-          (p) => p === '*' || p === 'finance.invoice.update' || p === 'finance.invoice.read',
+          (p) =>
+            p === "*" ||
+            p === "finance.invoice.update" ||
+            p === "finance.invoice.read",
         );
       })
       .map((role) => role.id);
     if (financeRoleIds.length === 0) return [];
 
     const userRoles = await prisma.userRole.findMany({
-      where: { roleId: { in: financeRoleIds }, user: { tenantId, deletedAt: null, status: 'ACTIVE' } },
+      where: {
+        roleId: { in: financeRoleIds },
+        user: { tenantId, deletedAt: null, status: "ACTIVE" },
+      },
       select: { userId: true },
-      distinct: ['userId'],
+      distinct: ["userId"],
     });
     return userRoles.map((ur) => ur.userId);
   }

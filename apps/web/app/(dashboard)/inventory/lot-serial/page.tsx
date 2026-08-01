@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { ListPageTemplate, type ListColumn } from "@unerp/ui";

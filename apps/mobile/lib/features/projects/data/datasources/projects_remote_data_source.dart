@@ -58,23 +58,23 @@ class ProjectsRemoteDataSourceImpl implements ProjectsRemoteDataSource {
   @override
   Future<Paginated<ProjectModel>> listProjects(ListQuery query) =>
       _client.getPaginated<ProjectModel>(
-        ApiPaths.projects, query, ProjectModel.fromJson);
+        ApiPaths.projects, query, ProjectModel.fromJson,);
 
   @override
   Future<ProjectModel> getProject(String id) async =>
       ProjectModel.fromJson(
-        await _client.getObject(ApiPaths.project(id)));
+        await _client.getObject(ApiPaths.project(id)),);
 
   @override
   Future<ProjectModel> createProject(Map<String, dynamic> payload) async =>
       ProjectModel.fromJson(
-        await _client.post(ApiPaths.projects, body: payload));
+        await _client.post(ApiPaths.projects, body: payload),);
 
   @override
   Future<ProjectModel> updateProject(
-    String id, Map<String, dynamic> payload) async =>
+    String id, Map<String, dynamic> payload,) async =>
       ProjectModel.fromJson(
-        await _client.patch(ApiPaths.project(id), body: payload));
+        await _client.patch(ApiPaths.project(id), body: payload),);
 
   @override
   Future<void> deleteProject(String id) =>
@@ -83,29 +83,29 @@ class ProjectsRemoteDataSourceImpl implements ProjectsRemoteDataSource {
   @override
   Future<Paginated<TaskModel>> listTasks(ListQuery query) =>
       _client.getPaginated<TaskModel>(
-        ApiPaths.tasks, query, TaskModel.fromJson);
+        ApiPaths.tasks, query, TaskModel.fromJson,);
 
   @override
   Future<Paginated<TaskModel>> listProjectTasks(
-    String projectId, ListQuery query) =>
+    String projectId, ListQuery query,) =>
       _client.getPaginated<TaskModel>(
-        ApiPaths.projectTasks(projectId), query, TaskModel.fromJson);
+        ApiPaths.projectTasks(projectId), query, TaskModel.fromJson,);
 
   @override
   Future<TaskModel> getTask(String id) async =>
       TaskModel.fromJson(
-        await _client.getObject(ApiPaths.taskDetail(id)));
+        await _client.getObject(ApiPaths.taskDetail(id)),);
 
   @override
   Future<TaskModel> createTask(Map<String, dynamic> payload) async =>
       TaskModel.fromJson(
-        await _client.post(ApiPaths.tasks, body: payload));
+        await _client.post(ApiPaths.tasks, body: payload),);
 
   @override
   Future<TaskModel> updateTask(
-    String id, Map<String, dynamic> payload) async =>
+    String id, Map<String, dynamic> payload,) async =>
       TaskModel.fromJson(
-        await _client.patch(ApiPaths.taskDetail(id), body: payload));
+        await _client.patch(ApiPaths.taskDetail(id), body: payload),);
 
   @override
   Future<void> deleteTask(String id) =>
@@ -114,29 +114,29 @@ class ProjectsRemoteDataSourceImpl implements ProjectsRemoteDataSource {
   @override
   Future<Paginated<MilestoneModel>> listMilestones(ListQuery query) =>
       _client.getPaginated<MilestoneModel>(
-        ApiPaths.milestones, query, MilestoneModel.fromJson);
+        ApiPaths.milestones, query, MilestoneModel.fromJson,);
 
   @override
   Future<Paginated<MilestoneModel>> listProjectMilestones(
-    String projectId, ListQuery query) =>
+    String projectId, ListQuery query,) =>
       _client.getPaginated<MilestoneModel>(
-        ApiPaths.projectMilestones(projectId), query, MilestoneModel.fromJson);
+        ApiPaths.projectMilestones(projectId), query, MilestoneModel.fromJson,);
 
   @override
   Future<MilestoneModel> getMilestone(String id) async =>
       MilestoneModel.fromJson(
-        await _client.getObject(ApiPaths.milestoneDetail(id)));
+        await _client.getObject(ApiPaths.milestoneDetail(id)),);
 
   @override
   Future<MilestoneModel> createMilestone(Map<String, dynamic> payload) async =>
       MilestoneModel.fromJson(
-        await _client.post(ApiPaths.milestones, body: payload));
+        await _client.post(ApiPaths.milestones, body: payload),);
 
   @override
   Future<MilestoneModel> updateMilestone(
-    String id, Map<String, dynamic> payload) async =>
+    String id, Map<String, dynamic> payload,) async =>
       MilestoneModel.fromJson(
-        await _client.patch(ApiPaths.milestoneDetail(id), body: payload));
+        await _client.patch(ApiPaths.milestoneDetail(id), body: payload),);
 
   @override
   Future<void> deleteMilestone(String id) =>
@@ -145,23 +145,23 @@ class ProjectsRemoteDataSourceImpl implements ProjectsRemoteDataSource {
   @override
   Future<Paginated<TimesheetModel>> listTimesheets(ListQuery query) =>
       _client.getPaginated<TimesheetModel>(
-        ApiPaths.projectTimesheets, query, TimesheetModel.fromJson);
+        ApiPaths.projectTimesheets, query, TimesheetModel.fromJson,);
 
   @override
   Future<TimesheetModel> getTimesheet(String id) async =>
       TimesheetModel.fromJson(
-        await _client.getObject('/projects/timesheets/$id'));
+        await _client.getObject('/projects/timesheets/$id'),);
 
   @override
   Future<TimesheetModel> createTimesheet(Map<String, dynamic> payload) async =>
       TimesheetModel.fromJson(
-        await _client.post(ApiPaths.projectTimesheets, body: payload));
+        await _client.post(ApiPaths.projectTimesheets, body: payload),);
 
   @override
   Future<TimesheetModel> updateTimesheet(
-    String id, Map<String, dynamic> payload) async =>
+    String id, Map<String, dynamic> payload,) async =>
       TimesheetModel.fromJson(
-        await _client.patch('/projects/timesheets/$id', body: payload));
+        await _client.patch('/projects/timesheets/$id', body: payload),);
 
   @override
   Future<void> deleteTimesheet(String id) =>
@@ -170,31 +170,31 @@ class ProjectsRemoteDataSourceImpl implements ProjectsRemoteDataSource {
   @override
   Future<TimesheetModel> approveTimesheet(String id) async =>
       TimesheetModel.fromJson(
-        await _client.post(ApiPaths.projectTimesheetApprove(id)));
+        await _client.post(ApiPaths.projectTimesheetApprove(id)),);
 
   @override
   Future<Paginated<ProjectBudgetModel>> listProjectBudgets(
-    String projectId) =>
+    String projectId,) =>
       _client.getPaginated<ProjectBudgetModel>(
         ApiPaths.projectBudgets(projectId), const ListQuery(limit: 100),
-        ProjectBudgetModel.fromJson);
+        ProjectBudgetModel.fromJson,);
 
   @override
   Future<ProjectBudgetModel> getProjectBudget(String id) async =>
       ProjectBudgetModel.fromJson(
-        await _client.getObject('/projects/budgets/$id'));
+        await _client.getObject('/projects/budgets/$id'),);
 
   @override
   Future<ProjectBudgetModel> createProjectBudget(
-    Map<String, dynamic> payload) async =>
+    Map<String, dynamic> payload,) async =>
       ProjectBudgetModel.fromJson(
-        await _client.post(ApiPaths.projectBudgetsCreate, body: payload));
+        await _client.post(ApiPaths.projectBudgetsCreate, body: payload),);
 
   @override
   Future<ProjectBudgetModel> updateProjectBudget(
-    String id, Map<String, dynamic> payload) async =>
+    String id, Map<String, dynamic> payload,) async =>
       ProjectBudgetModel.fromJson(
-        await _client.patch('/projects/budgets/$id', body: payload));
+        await _client.patch('/projects/budgets/$id', body: payload),);
 
   @override
   Future<void> deleteProjectBudget(String id) =>
@@ -204,24 +204,24 @@ class ProjectsRemoteDataSourceImpl implements ProjectsRemoteDataSource {
   Future<Paginated<ProjectRiskModel>> listProjectRisks(String projectId) =>
       _client.getPaginated<ProjectRiskModel>(
         ApiPaths.projectRisks(projectId), const ListQuery(limit: 100),
-        ProjectRiskModel.fromJson);
+        ProjectRiskModel.fromJson,);
 
   @override
   Future<ProjectRiskModel> getProjectRisk(String id) async =>
       ProjectRiskModel.fromJson(
-        await _client.getObject('/projects/risks/$id'));
+        await _client.getObject('/projects/risks/$id'),);
 
   @override
   Future<ProjectRiskModel> createProjectRisk(
-    Map<String, dynamic> payload) async =>
+    Map<String, dynamic> payload,) async =>
       ProjectRiskModel.fromJson(
-        await _client.post('/projects/risks', body: payload));
+        await _client.post('/projects/risks', body: payload),);
 
   @override
   Future<ProjectRiskModel> updateProjectRisk(
-    String id, Map<String, dynamic> payload) async =>
+    String id, Map<String, dynamic> payload,) async =>
       ProjectRiskModel.fromJson(
-        await _client.patch('/projects/risks/$id', body: payload));
+        await _client.patch('/projects/risks/$id', body: payload),);
 
   @override
   Future<void> deleteProjectRisk(String id) =>
@@ -229,26 +229,26 @@ class ProjectsRemoteDataSourceImpl implements ProjectsRemoteDataSource {
 
   @override
   Future<Paginated<ProjectPortfolioModel>> listProjectPortfolios(
-    ListQuery query) =>
+    ListQuery query,) =>
       _client.getPaginated<ProjectPortfolioModel>(
-        ApiPaths.projectPortfolios, query, ProjectPortfolioModel.fromJson);
+        ApiPaths.projectPortfolios, query, ProjectPortfolioModel.fromJson,);
 
   @override
   Future<ProjectPortfolioModel> getProjectPortfolio(String id) async =>
       ProjectPortfolioModel.fromJson(
-        await _client.getObject(ApiPaths.projectPortfolio(id)));
+        await _client.getObject(ApiPaths.projectPortfolio(id)),);
 
   @override
   Future<ProjectPortfolioModel> createProjectPortfolio(
-    Map<String, dynamic> payload) async =>
+    Map<String, dynamic> payload,) async =>
       ProjectPortfolioModel.fromJson(
-        await _client.post(ApiPaths.projectPortfolios, body: payload));
+        await _client.post(ApiPaths.projectPortfolios, body: payload),);
 
   @override
   Future<ProjectPortfolioModel> updateProjectPortfolio(
-    String id, Map<String, dynamic> payload) async =>
+    String id, Map<String, dynamic> payload,) async =>
       ProjectPortfolioModel.fromJson(
-        await _client.patch(ApiPaths.projectPortfolio(id), body: payload));
+        await _client.patch(ApiPaths.projectPortfolio(id), body: payload),);
 
   @override
   Future<void> deleteProjectPortfolio(String id) =>

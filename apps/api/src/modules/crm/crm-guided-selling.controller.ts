@@ -1,16 +1,37 @@
-// @ts-nocheck
 import { z } from "zod";
-import { Controller, Get, Post, Put, Delete, Param, Query, Req, UseGuards, HttpCode, HttpStatus } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Query,
+  Req,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+} from "@nestjs/common";
 import { ApiTags, ApiBearerAuth, ApiOperation } from "@nestjs/swagger";
 import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { RbacGuard } from "../../common/guards/rbac.guard";
 import { Permissions } from "../../common/decorators/permissions.decorator";
 import { ZodBody } from "../../common/decorators/zod-body.decorator";
-import { CrmGuidedSellingService, nextBestActionConfigSchema, guidedSellingPlaybookSchema } from "./crm-guided-selling.service";
+import {
+  CrmGuidedSellingService,
+  nextBestActionConfigSchema,
+  guidedSellingPlaybookSchema,
+} from "./crm-guided-selling.service";
 
 interface AuthRequest extends Request {
-  user: { tenantId: string; userId: string; email: string; roles: string[]; orgId?: string };
+  user: {
+    tenantId: string;
+    userId: string;
+    email: string;
+    roles: string[];
+    orgId?: string;
+  };
 }
 
 @ApiTags("crm-guided-selling")
@@ -23,15 +44,28 @@ export class CrmNextBestActionConfigController {
   @Post("actions")
   @Permissions("crm.guided-selling.manage")
   @ApiOperation({ summary: "Create next-best-action config" })
-  async createAction(@Req() req: AuthRequest, @ZodBody(nextBestActionConfigSchema) body: unknown) {
+  async createAction(
+    @Req() req: AuthRequest,
+    @ZodBody(nextBestActionConfigSchema) body: unknown,
+  ) {
     return this.svc.createActionConfig(req.user.tenantId, body as any);
   }
 
   @Get("actions")
   @Permissions("crm.guided-selling.read")
   @ApiOperation({ summary: "List next-best-action configs" })
-  async listActions(@Req() req: AuthRequest, @Query("objectType") objectType?: string, @Query("stageId") stageId?: string) {
-    return { data: await this.svc.listActionConfigs(req.user.tenantId, objectType, stageId) };
+  async listActions(
+    @Req() req: AuthRequest,
+    @Query("objectType") objectType?: string,
+    @Query("stageId") stageId?: string,
+  ) {
+    return {
+      data: await this.svc.listActionConfigs(
+        req.user.tenantId,
+        objectType,
+        stageId,
+      ),
+    };
   }
 
   @Get("actions/:id")
@@ -44,7 +78,11 @@ export class CrmNextBestActionConfigController {
   @Put("actions/:id")
   @Permissions("crm.guided-selling.manage")
   @ApiOperation({ summary: "Update next-best-action config" })
-  async updateAction(@Req() req: AuthRequest, @Param("id") id: string, @ZodBody(nextBestActionConfigSchema.partial()) body: unknown) {
+  async updateAction(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @ZodBody(nextBestActionConfigSchema.partial()) body: unknown,
+  ) {
     return this.svc.updateActionConfig(req.user.tenantId, id, body as any);
   }
 
@@ -75,21 +113,38 @@ export class CrmGuidedSellingSuggestionController {
   @Permissions("crm.opportunity.update")
   @ApiOperation({ summary: "Generate suggestions for an opportunity" })
   async generateSuggestions(@Req() req: AuthRequest, @Param("id") id: string) {
-    return { data: await this.svc.generateSuggestions(req.user.tenantId, id, "OPPORTUNITY") };
+    return {
+      data: await this.svc.generateSuggestions(
+        req.user.tenantId,
+        id,
+        "OPPORTUNITY",
+      ),
+    };
   }
 
   @Post("leads/:id/suggestions")
   @Permissions("crm.lead.update")
   @ApiOperation({ summary: "Generate suggestions for a lead" })
-  async generateLeadSuggestions(@Req() req: AuthRequest, @Param("id") id: string) {
-    return { data: await this.svc.generateSuggestions(req.user.tenantId, id, "LEAD") };
+  async generateLeadSuggestions(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+  ) {
+    return {
+      data: await this.svc.generateSuggestions(req.user.tenantId, id, "LEAD"),
+    };
   }
 
   @Get("suggestions")
   @Permissions("crm.guided-selling.read")
   @ApiOperation({ summary: "List suggestions" })
-  async listSuggestions(@Req() req: AuthRequest, @Query("objectId") objectId?: string, @Query("status") status?: string) {
-    return { data: await this.svc.listSuggestions(req.user.tenantId, objectId, status) };
+  async listSuggestions(
+    @Req() req: AuthRequest,
+    @Query("objectId") objectId?: string,
+    @Query("status") status?: string,
+  ) {
+    return {
+      data: await this.svc.listSuggestions(req.user.tenantId, objectId, status),
+    };
   }
 
   @Get("suggestions/:id")
@@ -109,7 +164,12 @@ export class CrmGuidedSellingSuggestionController {
   @Post("suggestions/:id/dismiss")
   @Permissions("crm.opportunity.update")
   @ApiOperation({ summary: "Dismiss suggestion" })
-  async dismissSuggestion(@Req() req: AuthRequest, @Param("id") id: string, @ZodBody(z.object({ reason: z.string().optional() })) body: { reason?: string }) {
+  async dismissSuggestion(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @ZodBody(z.object({ reason: z.string().optional() }))
+    body: { reason?: string },
+  ) {
     return this.svc.dismissSuggestion(req.user.tenantId, id, body.reason);
   }
 
@@ -131,15 +191,23 @@ export class CrmGuidedSellingPlaybookController {
   @Post("playbooks")
   @Permissions("crm.guided-selling.manage")
   @ApiOperation({ summary: "Create playbook" })
-  async createPlaybook(@Req() req: AuthRequest, @ZodBody(guidedSellingPlaybookSchema) body: unknown) {
+  async createPlaybook(
+    @Req() req: AuthRequest,
+    @ZodBody(guidedSellingPlaybookSchema) body: unknown,
+  ) {
     return this.svc.createPlaybook(req.user.tenantId, body as any);
   }
 
   @Get("playbooks")
   @Permissions("crm.guided-selling.read")
   @ApiOperation({ summary: "List playbooks" })
-  async listPlaybooks(@Req() req: AuthRequest, @Query("objectType") objectType?: string) {
-    return { data: await this.svc.listPlaybooks(req.user.tenantId, objectType) };
+  async listPlaybooks(
+    @Req() req: AuthRequest,
+    @Query("objectType") objectType?: string,
+  ) {
+    return {
+      data: await this.svc.listPlaybooks(req.user.tenantId, objectType),
+    };
   }
 
   @Get("playbooks/:id")
@@ -152,7 +220,11 @@ export class CrmGuidedSellingPlaybookController {
   @Put("playbooks/:id")
   @Permissions("crm.guided-selling.manage")
   @ApiOperation({ summary: "Update playbook" })
-  async updatePlaybook(@Req() req: AuthRequest, @Param("id") id: string, @ZodBody(guidedSellingPlaybookSchema.partial()) body: unknown) {
+  async updatePlaybook(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @ZodBody(guidedSellingPlaybookSchema.partial()) body: unknown,
+  ) {
     return this.svc.updatePlaybook(req.user.tenantId, id, body as any);
   }
 
@@ -167,8 +239,18 @@ export class CrmGuidedSellingPlaybookController {
   @Post("playbooks/:id/recommend/:objectType/:objectId")
   @Permissions("crm.opportunity.update")
   @ApiOperation({ summary: "Recommend playbook for an object" })
-  async recommendPlaybook(@Req() req: AuthRequest, @Param("id") id: string, @Param("objectType") objectType: string, @Param("objectId") objectId: string) {
-    return this.svc.recommendPlaybook(req.user.tenantId, id, objectId, objectType);
+  async recommendPlaybook(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+    @Param("objectType") objectType: string,
+    @Param("objectId") objectId: string,
+  ) {
+    return this.svc.recommendPlaybook(
+      req.user.tenantId,
+      id,
+      objectId,
+      objectType,
+    );
   }
 }
 
@@ -196,8 +278,13 @@ export class CrmGuidedSellingDealReadinessController {
   @Get("opportunities/:id/readiness-history")
   @Permissions("crm.opportunity.read")
   @ApiOperation({ summary: "Get deal readiness score history" })
-  async getDealReadinessHistory(@Req() req: AuthRequest, @Param("id") id: string) {
-    return { data: await this.svc.getDealReadinessHistory(req.user.tenantId, id) };
+  async getDealReadinessHistory(
+    @Req() req: AuthRequest,
+    @Param("id") id: string,
+  ) {
+    return {
+      data: await this.svc.getDealReadinessHistory(req.user.tenantId, id),
+    };
   }
 }
 

@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/usecase/result.dart';
-import '../../domain/entities/procurement.dart';
 import '../providers/procurement_providers.dart';
 
 class VendorFormPage extends ConsumerStatefulWidget {
@@ -150,7 +147,7 @@ class _VendorFormPageState extends ConsumerState<VendorFormPage> {
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _status,
+              initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: const [
                 DropdownMenuItem(value: 'ACTIVE', child: Text('Active')),

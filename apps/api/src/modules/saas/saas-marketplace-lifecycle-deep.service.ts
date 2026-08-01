@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Injectable, Logger } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 
@@ -8,7 +7,9 @@ export class SaasMarketplaceLifecycleDeepService {
     SaasMarketplaceLifecycleDeepService.name,
   );
 
-  private get db() { return prisma; }
+  private get db() {
+    return prisma;
+  }
 
   // 1. Marketplace App Store & Partner Ecosystem (25 methods)
   async publishMarketplaceApp(tenantId: string, appData: any) {

@@ -33,22 +33,22 @@ class ApiPlatformRemoteDataSourceImpl implements ApiPlatformRemoteDataSource {
   @override
   Future<Paginated<ApiKeyModel>> listApiKeys(ListQuery query) =>
       _client.getPaginated<ApiKeyModel>(
-        ApiPaths.apiKeys, query, ApiKeyModel.fromJson);
+        ApiPaths.apiKeys, query, ApiKeyModel.fromJson,);
 
   @override
   Future<ApiKeyModel> getApiKey(String id) async =>
       ApiKeyModel.fromJson(
-        await _client.getObject(ApiPaths.apiKey(id)));
+        await _client.getObject(ApiPaths.apiKey(id)),);
 
   @override
   Future<ApiKeyModel> createApiKey(Map<String, dynamic> payload) async =>
       ApiKeyModel.fromJson(
-        await _client.post(ApiPaths.apiKeys, body: payload));
+        await _client.post(ApiPaths.apiKeys, body: payload),);
 
   @override
   Future<ApiKeyModel> updateApiKey(String id, Map<String, dynamic> payload) async =>
       ApiKeyModel.fromJson(
-        await _client.patch(ApiPaths.apiKey(id), body: payload));
+        await _client.patch(ApiPaths.apiKey(id), body: payload),);
 
   @override
   Future<void> deleteApiKey(String id) =>
@@ -57,27 +57,27 @@ class ApiPlatformRemoteDataSourceImpl implements ApiPlatformRemoteDataSource {
   @override
   Future<ApiKeyModel> revokeApiKey(String id) async =>
       ApiKeyModel.fromJson(
-        await _client.post('${ApiPaths.apiKey(id)}/revoke'));
+        await _client.post('${ApiPaths.apiKey(id)}/revoke'),);
 
   @override
   Future<Paginated<WebhookEndpointModel>> listWebhooks(ListQuery query) =>
       _client.getPaginated<WebhookEndpointModel>(
-        ApiPaths.webhooks, query, WebhookEndpointModel.fromJson);
+        ApiPaths.webhooks, query, WebhookEndpointModel.fromJson,);
 
   @override
   Future<WebhookEndpointModel> getWebhook(String id) async =>
       WebhookEndpointModel.fromJson(
-        await _client.getObject(ApiPaths.webhook(id)));
+        await _client.getObject(ApiPaths.webhook(id)),);
 
   @override
   Future<WebhookEndpointModel> createWebhook(Map<String, dynamic> payload) async =>
       WebhookEndpointModel.fromJson(
-        await _client.post(ApiPaths.webhooks, body: payload));
+        await _client.post(ApiPaths.webhooks, body: payload),);
 
   @override
   Future<WebhookEndpointModel> updateWebhook(String id, Map<String, dynamic> payload) async =>
       WebhookEndpointModel.fromJson(
-        await _client.patch(ApiPaths.webhook(id), body: payload));
+        await _client.patch(ApiPaths.webhook(id), body: payload),);
 
   @override
   Future<void> deleteWebhook(String id) =>
@@ -86,22 +86,22 @@ class ApiPlatformRemoteDataSourceImpl implements ApiPlatformRemoteDataSource {
   @override
   Future<Paginated<ApiUsageLogModel>> listUsageLogs(ListQuery query) =>
       _client.getPaginated<ApiUsageLogModel>(
-        ApiPaths.apiUsageLogs, query, ApiUsageLogModel.fromJson);
+        ApiPaths.apiUsageLogs, query, ApiUsageLogModel.fromJson,);
 
   @override
   Future<Paginated<ApiRateLimitRuleModel>> listRateLimits(ListQuery query) =>
       _client.getPaginated<ApiRateLimitRuleModel>(
-        ApiPaths.apiRateLimits, query, ApiRateLimitRuleModel.fromJson);
+        ApiPaths.apiRateLimits, query, ApiRateLimitRuleModel.fromJson,);
 
   @override
   Future<ApiRateLimitRuleModel> createRateLimit(Map<String, dynamic> payload) async =>
       ApiRateLimitRuleModel.fromJson(
-        await _client.post(ApiPaths.apiRateLimits, body: payload));
+        await _client.post(ApiPaths.apiRateLimits, body: payload),);
 
   @override
   Future<ApiRateLimitRuleModel> updateRateLimit(String id, Map<String, dynamic> payload) async =>
       ApiRateLimitRuleModel.fromJson(
-        await _client.patch('${ApiPaths.apiRateLimits}/$id', body: payload));
+        await _client.patch('${ApiPaths.apiRateLimits}/$id', body: payload),);
 
   @override
   Future<void> deleteRateLimit(String id) =>

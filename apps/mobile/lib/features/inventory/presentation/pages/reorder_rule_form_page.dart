@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -178,7 +177,7 @@ class _ReorderRuleFormPageState extends ConsumerState<ReorderRuleFormPage> {
           SnackBar(
             content: Text(_isEditing
                 ? 'Reorder rule updated'
-                : 'Reorder rule created'),
+                : 'Reorder rule created',),
           ),
         );
         Navigator.of(context).pop();

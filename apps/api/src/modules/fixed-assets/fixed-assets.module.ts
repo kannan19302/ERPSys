@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { FixedAssetsGeneratedController } from "./fixed-assets-generated.controller";
 import { FixedAssetsGeneratedService } from "./fixed-assets-generated.service";
 import { Module } from "@nestjs/common";

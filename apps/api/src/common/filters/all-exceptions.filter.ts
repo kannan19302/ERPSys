@@ -1,19 +1,18 @@
-// @ts-nocheck
 import {
   ArgumentsHost,
   Catch,
   ExceptionFilter,
   HttpException,
   HttpStatus,
-} from '@nestjs/common';
-import type { Request, Response } from 'express';
-import { Prisma } from '@prisma/client';
-import { ZodError } from 'zod';
-import { RecordNotFoundForUpdateError, StaleWriteError } from '@unerp/database';
-import { codeForStatus, type ErrorEnvelope } from '@unerp/shared';
-import { pinoLogger } from '../services/logger.service';
+} from "@nestjs/common";
+import type { Request, Response } from "express";
+import { Prisma } from "@prisma/client";
+import { ZodError } from "zod";
+import { RecordNotFoundForUpdateError, StaleWriteError } from "@unerp/database";
+import { codeForStatus, type ErrorEnvelope } from "@unerp/shared";
+import { pinoLogger } from "../services/logger.service";
 
-const REQUEST_ID_HEADER = 'x-request-id';
+const REQUEST_ID_HEADER = "x-request-id";
 
 /**
  * Global exception filter that converts every thrown error into a consistent
@@ -32,7 +31,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
     const requestId =
-      (request.headers?.[REQUEST_ID_HEADER] as string) ?? 'unknown';
+      (request.headers?.[REQUEST_ID_HEADER] as string) ?? "unknown";
 
     const envelope = this.toEnvelope(exception, request, requestId);
 
@@ -67,7 +66,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       return {
         ...base,
         statusCode: HttpStatus.CONFLICT,
-        code: 'STALE_WRITE',
+        code: "STALE_WRITE",
         message: exception.message,
         errors: { currentVersion: exception.currentVersion },
       };
@@ -76,7 +75,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       return {
         ...base,
         statusCode: HttpStatus.NOT_FOUND,
-        code: 'NOT_FOUND',
+        code: "NOT_FOUND",
         message: exception.message,
       };
     }
@@ -86,8 +85,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
       return {
         ...base,
         statusCode: HttpStatus.BAD_REQUEST,
-        code: 'VALIDATION_FAILED',
-        message: 'Validation failed',
+        code: "VALIDATION_FAILED",
+        message: "Validation failed",
         errors: exception.errors,
       };
     }
@@ -115,8 +114,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
       return {
         ...base,
         statusCode: HttpStatus.BAD_REQUEST,
-        code: 'DB_VALIDATION_ERROR',
-        message: 'Invalid database query',
+        code: "DB_VALIDATION_ERROR",
+        message: "Invalid database query",
       };
     }
 
@@ -124,38 +123,38 @@ export class AllExceptionsFilter implements ExceptionFilter {
     return {
       ...base,
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-      code: 'INTERNAL_ERROR',
-      message: 'An unexpected error occurred',
+      code: "INTERNAL_ERROR",
+      message: "An unexpected error occurred",
     };
   }
 
   private mapPrismaError(
     error: Prisma.PrismaClientKnownRequestError,
-  ): Pick<ErrorEnvelope, 'statusCode' | 'code' | 'message'> {
+  ): Pick<ErrorEnvelope, "statusCode" | "code" | "message"> {
     switch (error.code) {
-      case 'P2002':
+      case "P2002":
         return {
           statusCode: HttpStatus.CONFLICT,
-          code: 'UNIQUE_CONSTRAINT',
-          message: 'A record with these values already exists',
+          code: "UNIQUE_CONSTRAINT",
+          message: "A record with these values already exists",
         };
-      case 'P2025':
+      case "P2025":
         return {
           statusCode: HttpStatus.NOT_FOUND,
-          code: 'NOT_FOUND',
-          message: 'The requested record was not found',
+          code: "NOT_FOUND",
+          message: "The requested record was not found",
         };
-      case 'P2003':
+      case "P2003":
         return {
           statusCode: HttpStatus.BAD_REQUEST,
-          code: 'FK_CONSTRAINT',
-          message: 'Related record constraint failed',
+          code: "FK_CONSTRAINT",
+          message: "Related record constraint failed",
         };
       default:
         return {
           statusCode: HttpStatus.BAD_REQUEST,
           code: `DB_${error.code}`,
-          message: 'Database request failed',
+          message: "Database request failed",
         };
     }
   }
@@ -164,16 +163,20 @@ export class AllExceptionsFilter implements ExceptionFilter {
     message: string;
     errors?: unknown;
   } {
-    if (typeof res === 'string') {
+    if (typeof res === "string") {
       return { message: res };
     }
     const obj = res as Record<string, unknown>;
     const message =
-      typeof obj.message === 'string'
+      typeof obj.message === "string"
         ? obj.message
         : Array.isArray(obj.message)
-          ? (obj.message as string[]).join(', ')
-          : 'Request failed';
-    return { message, errors: obj.errors ?? (Array.isArray(obj.message) ? obj.message : undefined) };
+          ? (obj.message as string[]).join(", ")
+          : "Request failed";
+    return {
+      message,
+      errors:
+        obj.errors ?? (Array.isArray(obj.message) ? obj.message : undefined),
+    };
   }
 }

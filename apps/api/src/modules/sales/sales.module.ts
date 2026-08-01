@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Module, OnModuleInit } from "@nestjs/common";
 import { SalesController } from "./sales.controller";
 import { SalesService } from "./sales.service";

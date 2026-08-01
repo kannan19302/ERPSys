@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import styles from "./page.module.css";
 import "../../landing.css";
@@ -79,7 +78,9 @@ export default function LoginPage() {
 
   // Tenant selection modal state
   const [showTenantPicker, setShowTenantPicker] = useState(false);
-  const [availableTenants, setAvailableTenants] = useState<Array<{ id: string; name: string; slug: string; logoUrl?: string | null }>>([]);
+  const [availableTenants, setAvailableTenants] = useState<
+    Array<{ id: string; name: string; slug: string; logoUrl?: string | null }>
+  >([]);
 
   // Auto-resolve organization slug from email domain locally as a fallback,
   // but primary resolution happens on the backend now.
@@ -310,11 +311,19 @@ export default function LoginPage() {
           setCaptchaToken(""); // reset token on request
         }
         // Handle multiple organizations
-        if (err.message.includes("Multiple organizations") || err.message.includes("Multiple accounts")) {
+        if (
+          err.message.includes("Multiple organizations") ||
+          err.message.includes("Multiple accounts")
+        ) {
           setLoading(true);
-          apiGet<{ tenants: Array<{ id: string; name: string; slug: string; logoUrl?: string | null }> }>(
-            `/auth/resolve-org?email=${encodeURIComponent(email)}`
-          )
+          apiGet<{
+            tenants: Array<{
+              id: string;
+              name: string;
+              slug: string;
+              logoUrl?: string | null;
+            }>;
+          }>(`/auth/resolve-org?email=${encodeURIComponent(email)}`)
             .then((res) => {
               if (res.tenants && res.tenants.length > 1) {
                 setAvailableTenants(res.tenants);
@@ -728,7 +737,10 @@ export default function LoginPage() {
                   <div className={styles.tenantPickerOverlay}>
                     <div className={styles.tenantPickerModal}>
                       <h3>Select Organization</h3>
-                      <p>Your email is associated with multiple organizations. Please select one to continue.</p>
+                      <p>
+                        Your email is associated with multiple organizations.
+                        Please select one to continue.
+                      </p>
                       <div className={styles.tenantList}>
                         {availableTenants.map((tenant) => (
                           <button

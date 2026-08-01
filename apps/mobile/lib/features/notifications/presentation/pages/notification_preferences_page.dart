@@ -19,28 +19,28 @@ class NotificationPreferencesPage extends ConsumerWidget {
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text('Channels', style: Theme.of(context).textTheme.titleLarge),
               Text('Configure how you receive notifications', style: TextStyle(color: t.textSecondary)),
-            ])),
-          ]),
-        ])),
+            ],),),
+          ],),
+        ],),),
         const SizedBox(height: Spacing.x4),
         _SectionCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const _SectionTitle(title: 'Email Notifications'), const Divider(),
           SwitchListTile(title: const Text('Email'), subtitle: const Text('Receive notifications via email'), value: true, onChanged: (_) {}, contentPadding: EdgeInsets.zero),
           SwitchListTile(title: const Text('Daily Digest'), subtitle: const Text('Receive a daily summary instead of individual emails'), value: false, onChanged: (_) {}, contentPadding: EdgeInsets.zero),
-        ])),
+        ],),),
         const SizedBox(height: Spacing.x4),
         _SectionCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const _SectionTitle(title: 'Push Notifications'), const Divider(),
           SwitchListTile(title: const Text('Push'), subtitle: const Text('Receive push notifications on this device'), value: true, onChanged: (_) {}, contentPadding: EdgeInsets.zero),
           SwitchListTile(title: const Text('Sound'), value: true, onChanged: (_) {}, contentPadding: EdgeInsets.zero),
           SwitchListTile(title: const Text('Vibrate'), value: true, onChanged: (_) {}, contentPadding: EdgeInsets.zero),
-        ])),
+        ],),),
         const SizedBox(height: Spacing.x4),
         _SectionCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const _SectionTitle(title: 'Modules'), const Divider(),
           ...['CRM', 'Finance', 'Inventory', 'HR', 'Projects', 'Sales', 'Support'].map((m) => SwitchListTile(title: Text(m), value: true, onChanged: (_) {}, contentPadding: EdgeInsets.zero)),
-        ])),
-      ]),
+        ],),),
+      ],),
     );
   }
 }

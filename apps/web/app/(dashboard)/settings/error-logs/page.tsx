@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 
 export default function ErrorLogsRedirectPage() {
-  redirect('/settings/system-operations?tab=error-logs');
+  redirect("/settings/system-operations?tab=error-logs");
 }

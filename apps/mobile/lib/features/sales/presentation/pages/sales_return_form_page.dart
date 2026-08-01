@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -48,7 +47,7 @@ class _SalesReturnFormPageState extends ConsumerState<SalesReturnFormPage> {
         productCtrl: TextEditingController(),
         qtyCtrl: TextEditingController(text: '1'),
         rateCtrl: TextEditingController(),
-      ));
+      ),);
     });
   }
 
@@ -75,7 +74,7 @@ class _SalesReturnFormPageState extends ConsumerState<SalesReturnFormPage> {
         'quantity': double.tryParse(item.qtyCtrl.text) ?? 1,
         'rate': double.tryParse(item.rateCtrl.text) ?? 0,
         'amount': (double.tryParse(item.qtyCtrl.text) ?? 0) * (double.tryParse(item.rateCtrl.text) ?? 0),
-      }).toList(),
+      },).toList(),
     };
 
     final Result<SalesReturn> result = await ref
@@ -125,7 +124,7 @@ class _SalesReturnFormPageState extends ConsumerState<SalesReturnFormPage> {
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _reasonType,
+              initialValue: _reasonType,
               decoration: const InputDecoration(labelText: 'Return Type'),
               items: const <DropdownMenuItem<String>>[
                 DropdownMenuItem<String>(value: 'RETURN', child: Text('Return')),

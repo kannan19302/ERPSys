@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 
 export default function RecycleBinRedirectPage() {
-  redirect('/settings/system-operations?tab=recycle-bin');
+  redirect("/settings/system-operations?tab=recycle-bin");
 }

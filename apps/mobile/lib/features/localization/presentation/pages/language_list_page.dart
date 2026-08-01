@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -53,13 +52,13 @@ class _LanguageListPageState extends ConsumerState<LanguageListPage> {
                   Text(l.name, style: Theme.of(context).textTheme.titleSmall),
                   const SizedBox(height: Spacing.x1),
                   Text('${l.code} · ${l.direction}',
-                      style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs)),
+                      style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs),),
                 ],
               ),
             ),
             if (l.isDefault)
               Icon(Icons.star, color: context.tokens.warning, size: TypeScale.base),
-          ]),
+          ],),
         ),
       ),
     );

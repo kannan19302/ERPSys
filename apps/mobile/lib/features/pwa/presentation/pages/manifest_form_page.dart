@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/usecase/result.dart';
-import '../../domain/entities/pwa.dart';
 import '../providers/pwa_providers.dart';
 
 class ManifestFormPage extends ConsumerStatefulWidget {
@@ -71,15 +68,15 @@ class _ManifestFormPageState extends ConsumerState<ManifestFormPage> {
           Expanded(child: TextFormField(controller: _themeColorCtrl, decoration: const InputDecoration(labelText: 'Theme Color', hintText: '#000000'))),
           const SizedBox(width: Spacing.x3),
           Expanded(child: TextFormField(controller: _bgColorCtrl, decoration: const InputDecoration(labelText: 'Background Color', hintText: '#ffffff'))),
-        ]),
+        ],),
         const SizedBox(height: Spacing.x4),
-        DropdownButtonFormField<String>(value: _displayMode, decoration: const InputDecoration(labelText: 'Display Mode'), items: const [
+        DropdownButtonFormField<String>(initialValue: _displayMode, decoration: const InputDecoration(labelText: 'Display Mode'), items: const [
           DropdownMenuItem(value: 'standalone', child: Text('Standalone')),
           DropdownMenuItem(value: 'fullscreen', child: Text('Fullscreen')),
           DropdownMenuItem(value: 'minimal-ui', child: Text('Minimal UI')),
           DropdownMenuItem(value: 'browser', child: Text('Browser')),
-        ], onChanged: (v) { if (v != null) setState(() => _displayMode = v); }),
-      ])),
+        ], onChanged: (v) { if (v != null) setState(() => _displayMode = v); },),
+      ],),),
     );
   }
 }

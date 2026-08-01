@@ -1,7 +1,6 @@
-// @ts-nocheck
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { InvoiceOverdueNotificationService } from '../invoice-overdue-notification.service';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { EventEmitter2 } from "@nestjs/event-emitter";
+import { InvoiceOverdueNotificationService } from "../invoice-overdue-notification.service";
 
 /**
  * Closes MODULE_REGISTRY.md Up Next 25d: `finance.invoice.overdue` was emitted
@@ -10,7 +9,7 @@ import { InvoiceOverdueNotificationService } from '../invoice-overdue-notificati
  * them, tenant-scoped, without leaking across tenants or notifying unrelated roles.
  */
 
-vi.mock('@unerp/database', () => ({
+vi.mock("@unerp/database", () => ({
   prisma: {
     invoice: { findFirst: vi.fn() },
     dunningLevel: { findFirst: vi.fn() },
@@ -19,7 +18,7 @@ vi.mock('@unerp/database', () => ({
   },
 }));
 
-describe('InvoiceOverdueNotificationService — finance.invoice.overdue consumer', () => {
+describe("InvoiceOverdueNotificationService — finance.invoice.overdue consumer", () => {
   let service: InvoiceOverdueNotificationService;
   let emitter: EventEmitter2;
 
@@ -29,28 +28,30 @@ describe('InvoiceOverdueNotificationService — finance.invoice.overdue consumer
     service = new InvoiceOverdueNotificationService(emitter);
   });
 
-  it('emits notification.send for every finance-team user in the tenant', async () => {
-    const { prisma } = await import('@unerp/database');
+  it("emits notification.send for every finance-team user in the tenant", async () => {
+    const { prisma } = await import("@unerp/database");
     vi.mocked(prisma.invoice.findFirst).mockResolvedValue({
-      invoiceNumber: 'INV-1001',
-      totalAmount: { toString: () => '500.00' },
-      customer: { name: 'Acme Co' },
+      invoiceNumber: "INV-1001",
+      totalAmount: { toString: () => "500.00" },
+      customer: { name: "Acme Co" },
     } as never);
-    vi.mocked(prisma.dunningLevel.findFirst).mockResolvedValue({ levelName: 'Level 2' } as never);
+    vi.mocked(prisma.dunningLevel.findFirst).mockResolvedValue({
+      levelName: "Level 2",
+    } as never);
     vi.mocked(prisma.role.findMany).mockResolvedValue([
-      { id: 'role-finance', permissions: ['finance.invoice.update'] },
-      { id: 'role-sales', permissions: ['sales.order.read'] },
+      { id: "role-finance", permissions: ["finance.invoice.update"] },
+      { id: "role-sales", permissions: ["sales.order.read"] },
     ] as never);
     vi.mocked(prisma.userRole.findMany).mockResolvedValue([
-      { userId: 'user-ar-1' },
-      { userId: 'user-ar-2' },
+      { userId: "user-ar-1" },
+      { userId: "user-ar-2" },
     ] as never);
 
     await service.handleInvoiceOverdue({
-      tenantId: 't1',
-      invoiceId: 'inv-1',
-      customerId: 'cust-1',
-      dunningLevelId: 'level-2',
+      tenantId: "t1",
+      invoiceId: "inv-1",
+      customerId: "cust-1",
+      dunningLevelId: "level-2",
       daysOverdue: 15,
       feeApplied: 25,
     });
@@ -58,41 +59,41 @@ describe('InvoiceOverdueNotificationService — finance.invoice.overdue consumer
     expect(prisma.userRole.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          roleId: { in: ['role-finance'] },
-          user: expect.objectContaining({ tenantId: 't1' }),
+          roleId: { in: ["role-finance"] },
+          user: expect.objectContaining({ tenantId: "t1" }),
         }),
       }),
     );
     expect(emitter.emit).toHaveBeenCalledTimes(2);
     expect(emitter.emit).toHaveBeenCalledWith(
-      'notification.send',
+      "notification.send",
       expect.objectContaining({
-        tenantId: 't1',
-        userId: 'user-ar-1',
-        type: 'FINANCE_INVOICE_OVERDUE',
-        title: expect.stringContaining('INV-1001'),
-        channel: 'IN_APP',
+        tenantId: "t1",
+        userId: "user-ar-1",
+        type: "FINANCE_INVOICE_OVERDUE",
+        title: expect.stringContaining("INV-1001"),
+        channel: "IN_APP",
       }),
     );
   });
 
-  it('does nothing when the tenant has no finance-permissioned roles', async () => {
-    const { prisma } = await import('@unerp/database');
+  it("does nothing when the tenant has no finance-permissioned roles", async () => {
+    const { prisma } = await import("@unerp/database");
     vi.mocked(prisma.invoice.findFirst).mockResolvedValue({
-      invoiceNumber: 'INV-2',
-      totalAmount: { toString: () => '100.00' },
-      customer: { name: 'Beta Inc' },
+      invoiceNumber: "INV-2",
+      totalAmount: { toString: () => "100.00" },
+      customer: { name: "Beta Inc" },
     } as never);
     vi.mocked(prisma.dunningLevel.findFirst).mockResolvedValue(null as never);
     vi.mocked(prisma.role.findMany).mockResolvedValue([
-      { id: 'role-sales', permissions: ['sales.order.read'] },
+      { id: "role-sales", permissions: ["sales.order.read"] },
     ] as never);
 
     await service.handleInvoiceOverdue({
-      tenantId: 't2',
-      invoiceId: 'inv-2',
-      customerId: 'cust-2',
-      dunningLevelId: 'level-1',
+      tenantId: "t2",
+      invoiceId: "inv-2",
+      customerId: "cust-2",
+      dunningLevelId: "level-1",
       daysOverdue: 5,
       feeApplied: 0,
     });
@@ -101,15 +102,15 @@ describe('InvoiceOverdueNotificationService — finance.invoice.overdue consumer
     expect(emitter.emit).not.toHaveBeenCalled();
   });
 
-  it('is a no-op when the invoice cannot be found in the tenant (tenant isolation)', async () => {
-    const { prisma } = await import('@unerp/database');
+  it("is a no-op when the invoice cannot be found in the tenant (tenant isolation)", async () => {
+    const { prisma } = await import("@unerp/database");
     vi.mocked(prisma.invoice.findFirst).mockResolvedValue(null as never);
 
     await service.handleInvoiceOverdue({
-      tenantId: 't3',
-      invoiceId: 'inv-does-not-exist',
-      customerId: 'cust-3',
-      dunningLevelId: 'level-1',
+      tenantId: "t3",
+      invoiceId: "inv-does-not-exist",
+      customerId: "cust-3",
+      dunningLevelId: "level-1",
       daysOverdue: 3,
       feeApplied: 0,
     });
@@ -118,13 +119,13 @@ describe('InvoiceOverdueNotificationService — finance.invoice.overdue consumer
     expect(emitter.emit).not.toHaveBeenCalled();
   });
 
-  it('ignores events missing tenantId or invoiceId', async () => {
-    const { prisma } = await import('@unerp/database');
+  it("ignores events missing tenantId or invoiceId", async () => {
+    const { prisma } = await import("@unerp/database");
     await service.handleInvoiceOverdue({
-      tenantId: '',
-      invoiceId: '',
-      customerId: 'cust-4',
-      dunningLevelId: 'level-1',
+      tenantId: "",
+      invoiceId: "",
+      customerId: "cust-4",
+      dunningLevelId: "level-1",
       daysOverdue: 1,
       feeApplied: 0,
     });

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Injectable, Logger } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 
@@ -6,7 +5,9 @@ import { prisma } from "@unerp/database";
 export class SaasRevenueChurnHealthDeepService {
   private readonly logger = new Logger(SaasRevenueChurnHealthDeepService.name);
 
-  private get db() { return prisma; }
+  private get db() {
+    return prisma;
+  }
 
   // 1. SaaS Revenue & MRR/ARR Analytics (25 methods)
   async getMrrAnalytics(tenantId: string, timeframe: string) {

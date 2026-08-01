@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import React, { useState } from "react";
 import { Card, PageHeader, Button, useToast } from "@unerp/ui";

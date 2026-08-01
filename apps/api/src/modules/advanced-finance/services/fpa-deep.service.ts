@@ -1,12 +1,11 @@
-// @ts-nocheck
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class FpaDeepService {
   private async resolveOrgId(tenantId: string): Promise<string> {
     const org = await prisma.organization.findFirst({ where: { tenantId } });
-    return org?.id ?? 'org-system-default';
+    return org?.id ?? "org-system-default";
   }
 
   // ── ROLLING FORECAST ──────────────────────────────────
@@ -14,32 +13,42 @@ export class FpaDeepService {
   async listRollingForecast(tenantId: string, period?: string) {
     return prisma.rollingForecast.findMany({
       where: { tenantId, ...(period && { period }) },
-      orderBy: [{ period: 'asc' }, { accountId: 'asc' }],
+      orderBy: [{ period: "asc" }, { accountId: "asc" }],
     });
   }
 
-  async upsertRollingForecastLine(tenantId: string, dto: {
-    period: string; accountId: string; costCenterId?: string;
-    amount: number; source?: string; notes?: string;
-  }) {
+  async upsertRollingForecastLine(
+    tenantId: string,
+    dto: {
+      period: string;
+      accountId: string;
+      costCenterId?: string;
+      amount: number;
+      source?: string;
+      notes?: string;
+    },
+  ) {
     const orgId = await this.resolveOrgId(tenantId);
-    const costCenterId = dto.costCenterId || 'all';
+    const costCenterId = dto.costCenterId || "all";
     return prisma.rollingForecast.upsert({
       where: {
         tenantId_orgId_period_accountId_costCenterId_source: {
-          tenantId, orgId,
+          tenantId,
+          orgId,
           period: dto.period,
           accountId: dto.accountId,
           costCenterId,
-          source: dto.source ?? 'FORECAST',
+          source: dto.source ?? "FORECAST",
         },
       },
       create: {
-        tenantId, orgId,
-        period: dto.period, accountId: dto.accountId,
+        tenantId,
+        orgId,
+        period: dto.period,
+        accountId: dto.accountId,
         costCenterId,
         amount: dto.amount,
-        source: dto.source ?? 'FORECAST',
+        source: dto.source ?? "FORECAST",
         notes: dto.notes,
       },
       update: { amount: dto.amount, notes: dto.notes },
@@ -48,30 +57,44 @@ export class FpaDeepService {
 
   async syncActualsToRollingForecast(tenantId: string, period: string) {
     const orgId = await this.resolveOrgId(tenantId);
-    const parts = (period || '').split('-');
+    const parts = (period || "").split("-");
     const year = parts[0] ? parseInt(parts[0], 10) : new Date().getFullYear();
     const month = parts[1] ? parseInt(parts[1], 10) : new Date().getMonth() + 1;
     const start = new Date(year, month - 1, 1);
     const end = new Date(year, month, 0, 23, 59, 59);
     // Pull journal entry lines grouped by account
     const journalLines = await prisma.journalEntry.groupBy({
-      by: ['accountId'],
-      where: { tenantId, journal: { date: { gte: start, lte: end }, status: 'POSTED' } },
+      by: ["accountId"],
+      where: {
+        tenantId,
+        journal: { date: { gte: start, lte: end }, status: "POSTED" },
+      },
       _sum: { debit: true, credit: true },
     });
     const synced: any[] = [];
     for (const line of journalLines) {
-      const amount = Number(line._sum.debit ?? 0) - Number(line._sum.credit ?? 0);
+      const amount =
+        Number(line._sum.debit ?? 0) - Number(line._sum.credit ?? 0);
       const rec = await prisma.rollingForecast.upsert({
         where: {
           tenantId_orgId_period_accountId_costCenterId_source: {
-            tenantId, orgId, period,
+            tenantId,
+            orgId,
+            period,
             accountId: line.accountId,
-            costCenterId: 'all',
-            source: 'ACTUAL',
+            costCenterId: "all",
+            source: "ACTUAL",
           },
         },
-        create: { tenantId, orgId, period, accountId: line.accountId, amount, source: 'ACTUAL', costCenterId: 'all' },
+        create: {
+          tenantId,
+          orgId,
+          period,
+          accountId: line.accountId,
+          amount,
+          source: "ACTUAL",
+          costCenterId: "all",
+        },
         update: { amount },
       });
       synced.push(rec);
@@ -84,14 +107,20 @@ export class FpaDeepService {
   async listHeadcountPlans(tenantId: string, period?: string) {
     return prisma.headcountPlan.findMany({
       where: { tenantId, ...(period && { period }) },
-      orderBy: [{ period: 'asc' }, { roleName: 'asc' }],
+      orderBy: [{ period: "asc" }, { roleName: "asc" }],
     });
   }
 
-  async createHeadcountPlan(tenantId: string, dto: {
-    departmentId?: string; roleName: string; period: string;
-    plannedHc: number; loadedCostRate: number;
-  }) {
+  async createHeadcountPlan(
+    tenantId: string,
+    dto: {
+      departmentId?: string;
+      roleName: string;
+      period: string;
+      plannedHc: number;
+      loadedCostRate: number;
+    },
+  ) {
     const orgId = await this.resolveOrgId(tenantId);
     const projectedCost = dto.plannedHc * dto.loadedCostRate;
     return prisma.headcountPlan.create({
@@ -99,20 +128,36 @@ export class FpaDeepService {
     });
   }
 
-  async updateHeadcountPlan(tenantId: string, id: string, dto: Partial<{
-    plannedHc: number; loadedCostRate: number; notes: string;
-  }>) {
-    const plan = await prisma.headcountPlan.findFirst({ where: { id, tenantId } });
-    if (!plan) throw new NotFoundException('Headcount plan not found');
+  async updateHeadcountPlan(
+    tenantId: string,
+    id: string,
+    dto: Partial<{
+      plannedHc: number;
+      loadedCostRate: number;
+      notes: string;
+    }>,
+  ) {
+    const plan = await prisma.headcountPlan.findFirst({
+      where: { id, tenantId },
+    });
+    if (!plan) throw new NotFoundException("Headcount plan not found");
     const plannedHc = dto.plannedHc ?? plan.plannedHc;
     const loadedCostRate = dto.loadedCostRate ?? Number(plan.loadedCostRate);
     const projectedCost = plannedHc * loadedCostRate;
-    return prisma.headcountPlan.update({ where: { id }, data: { ...dto, projectedCost } });
+    return prisma.headcountPlan.update({
+      where: { id },
+      data: { ...dto, projectedCost },
+    });
   }
 
   async getHeadcountCostProjection(tenantId: string, periods: string[]) {
-    const plans = await prisma.headcountPlan.findMany({ where: { tenantId, period: { in: periods } } });
-    const byPeriod: Record<string, { period: string; totalHc: number; totalCost: number }> = {};
+    const plans = await prisma.headcountPlan.findMany({
+      where: { tenantId, period: { in: periods } },
+    });
+    const byPeriod: Record<
+      string,
+      { period: string; totalHc: number; totalCost: number }
+    > = {};
     for (const p of plans) {
       if (!byPeriod[p.period]) {
         byPeriod[p.period] = { period: p.period, totalHc: 0, totalCost: 0 };
@@ -121,72 +166,111 @@ export class FpaDeepService {
       entry.totalHc += p.plannedHc;
       entry.totalCost += Number(p.projectedCost);
     }
-    return Object.values(byPeriod).sort((a, b) => a.period.localeCompare(b.period));
+    return Object.values(byPeriod).sort((a, b) =>
+      a.period.localeCompare(b.period),
+    );
   }
 
   // ── BUDGET COMMENTS ──────────────────────────────────
 
-  async listBudgetComments(tenantId: string, budgetId: string, period?: string) {
+  async listBudgetComments(
+    tenantId: string,
+    budgetId: string,
+    period?: string,
+  ) {
     return prisma.budgetComment.findMany({
       where: { tenantId, budgetId, ...(period && { period }), parentId: null },
       include: { replies: true },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
-  async addBudgetComment(tenantId: string, dto: {
-    budgetId: string; accountId?: string; period?: string;
-    authorId: string; text: string; parentId?: string;
-  }) {
+  async addBudgetComment(
+    tenantId: string,
+    dto: {
+      budgetId: string;
+      accountId?: string;
+      period?: string;
+      authorId: string;
+      text: string;
+      parentId?: string;
+    },
+  ) {
     return prisma.budgetComment.create({ data: { tenantId, ...dto } });
   }
 
   async updateBudgetComment(tenantId: string, id: string, text: string) {
-    const comment = await prisma.budgetComment.findFirst({ where: { id, tenantId } });
-    if (!comment) throw new NotFoundException('Comment not found');
+    const comment = await prisma.budgetComment.findFirst({
+      where: { id, tenantId },
+    });
+    if (!comment) throw new NotFoundException("Comment not found");
     return prisma.budgetComment.update({ where: { id }, data: { text } });
   }
 
   async deleteBudgetComment(tenantId: string, id: string) {
-    const comment = await prisma.budgetComment.findFirst({ where: { id, tenantId } });
-    if (!comment) throw new NotFoundException('Comment not found');
+    const comment = await prisma.budgetComment.findFirst({
+      where: { id, tenantId },
+    });
+    if (!comment) throw new NotFoundException("Comment not found");
     return prisma.budgetComment.delete({ where: { id } });
   }
 
   // ── MANAGEMENT REPORTS ──────────────────────────────────
 
   async listManagementReports(tenantId: string) {
-    return prisma.managementReport.findMany({ where: { tenantId }, orderBy: { period: 'desc' } });
+    return prisma.managementReport.findMany({
+      where: { tenantId },
+      orderBy: { period: "desc" },
+    });
   }
 
   async getManagementReport(tenantId: string, id: string) {
-    const r = await prisma.managementReport.findFirst({ where: { id, tenantId } });
-    if (!r) throw new NotFoundException('Management report not found');
+    const r = await prisma.managementReport.findFirst({
+      where: { id, tenantId },
+    });
+    if (!r) throw new NotFoundException("Management report not found");
     return r;
   }
 
-  async createManagementReport(tenantId: string, dto: {
-    name: string; period: string; sections?: object[]; createdBy?: string;
-  }) {
+  async createManagementReport(
+    tenantId: string,
+    dto: {
+      name: string;
+      period: string;
+      sections?: object[];
+      createdBy?: string;
+    },
+  ) {
     const orgId = await this.resolveOrgId(tenantId);
     return prisma.managementReport.create({
       data: {
-        tenantId, orgId,
-        name: dto.name, period: dto.period,
+        tenantId,
+        orgId,
+        name: dto.name,
+        period: dto.period,
         sections: (dto.sections ?? []) as never,
         createdBy: dto.createdBy,
-        status: 'DRAFT',
+        status: "DRAFT",
       },
     });
   }
 
-  async updateManagementReport(tenantId: string, id: string, dto: Partial<{
-    name: string; sections: object[]; status: string;
-  }>) {
+  async updateManagementReport(
+    tenantId: string,
+    id: string,
+    dto: Partial<{
+      name: string;
+      sections: object[];
+      status: string;
+    }>,
+  ) {
     await this.getManagementReport(tenantId, id);
     const data: Record<string, unknown> = { ...dto };
-    if (dto.status === 'PUBLISHED') data.publishedAt = new Date();
-    return prisma.managementReport.update({ where: { id }, data: data as never });
+    if (dto.status === "PUBLISHED") data.publishedAt = new Date();
+    return prisma.managementReport.update({
+      where: { id },
+      data: data as never,
+    });
   }
 
   async deleteManagementReport(tenantId: string, id: string) {
@@ -196,16 +280,25 @@ export class FpaDeepService {
 
   // ── WATERFALL CHART DATA ──────────────────────────────────
 
-  async getWaterfallChartData(tenantId: string, budgetId: string, period: string) {
-    const budget = await prisma.budget.findFirst({ where: { id: budgetId, tenantId } });
-    if (!budget) throw new NotFoundException('Budget not found');
-    const parts = (period || '').split('-');
+  async getWaterfallChartData(
+    tenantId: string,
+    budgetId: string,
+    period: string,
+  ) {
+    const budget = await prisma.budget.findFirst({
+      where: { id: budgetId, tenantId },
+    });
+    if (!budget) throw new NotFoundException("Budget not found");
+    const parts = (period || "").split("-");
     const year = parts[0] ? parseInt(parts[0], 10) : new Date().getFullYear();
     const month = parts[1] ? parseInt(parts[1], 10) : new Date().getMonth() + 1;
     const start = new Date(year, month - 1, 1);
     const end = new Date(year, month, 0, 23, 59, 59);
     const actualAgg = await prisma.journalEntry.aggregate({
-      where: { tenantId, journal: { date: { gte: start, lte: end }, status: 'POSTED' } },
+      where: {
+        tenantId,
+        journal: { date: { gte: start, lte: end }, status: "POSTED" },
+      },
       _sum: { debit: true },
     });
     const budgetAmount = Number(budget.amount);
@@ -224,22 +317,37 @@ export class FpaDeepService {
 
   // ── SENSITIVITY ANALYSIS ──────────────────────────────────
 
-  async runWhatIfSensitivity(tenantId: string, dto: {
-    revenueChangePct: number; costChangePct: number; period?: string;
-  }) {
-    const pString = dto.period ?? `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
-    const parts = pString.split('-');
+  async runWhatIfSensitivity(
+    tenantId: string,
+    dto: {
+      revenueChangePct: number;
+      costChangePct: number;
+      period?: string;
+    },
+  ) {
+    const pString =
+      dto.period ??
+      `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
+    const parts = pString.split("-");
     const year = parts[0] ? parseInt(parts[0], 10) : new Date().getFullYear();
     const month = parts[1] ? parseInt(parts[1], 10) : new Date().getMonth() + 1;
     const start = new Date(year, month - 1, 1);
     const end = new Date(year, month, 0, 23, 59, 59);
 
     const revAgg = await prisma.invoice.aggregate({
-      where: { tenantId, issueDate: { gte: start, lte: end }, status: { notIn: ['DRAFT', 'CANCELLED'] } },
+      where: {
+        tenantId,
+        issueDate: { gte: start, lte: end },
+        status: { notIn: ["DRAFT", "CANCELLED"] },
+      },
       _sum: { totalAmount: true },
     });
     const costAgg = await prisma.purchaseOrder.aggregate({
-      where: { tenantId, orderDate: { gte: start, lte: end }, status: { notIn: ['DRAFT', 'CANCELLED'] } },
+      where: {
+        tenantId,
+        orderDate: { gte: start, lte: end },
+        status: { notIn: ["DRAFT", "CANCELLED"] },
+      },
       _sum: { totalAmount: true },
     });
 
@@ -254,7 +362,11 @@ export class FpaDeepService {
     return {
       base: { revenue: baseRevenue, cost: baseCost, profit: baseProfit },
       scenario: { revenue: newRevenue, cost: newCost, profit: newProfit },
-      impact: { revenueDelta: newRevenue - baseRevenue, costDelta: newCost - baseCost, profitDelta: newProfit - baseProfit },
+      impact: {
+        revenueDelta: newRevenue - baseRevenue,
+        costDelta: newCost - baseCost,
+        profitDelta: newProfit - baseProfit,
+      },
     };
   }
 }

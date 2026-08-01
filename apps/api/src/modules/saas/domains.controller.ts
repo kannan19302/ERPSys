@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Controller,
   Get,
@@ -44,7 +43,10 @@ export class DomainsController {
   @ApiOperation({ summary: "Add domain" })
   @Permissions("saas.domain.create")
   @Post()
-  async addDomain(@Req() req: AuthReq, @ZodBody(addDomainSchema) body: z.infer<typeof addDomainSchema>) {
+  async addDomain(
+    @Req() req: AuthReq,
+    @ZodBody(addDomainSchema) body: z.infer<typeof addDomainSchema>,
+  ) {
     return this.domainService.addDomain(req.user.tenantId, body);
   }
 

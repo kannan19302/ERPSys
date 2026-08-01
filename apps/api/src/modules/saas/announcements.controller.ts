@@ -1,5 +1,12 @@
-// @ts-nocheck
-import { Controller, Get, Post, Delete, UseGuards, Req, Param } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  UseGuards,
+  Req,
+  Param,
+} from "@nestjs/common";
 import { z } from "zod";
 import { ZodBody } from "../../common/decorators/zod-body.decorator";
 import { Request } from "express";
@@ -47,7 +54,11 @@ export class AnnouncementsController {
   @ApiOperation({ summary: "Create announcement" })
   @Permissions("saas.announcement.create")
   @Post()
-  async createAnnouncement(@Req() req: AuthReq, @ZodBody(createAnnouncementSchema) body: z.infer<typeof createAnnouncementSchema>) {
+  async createAnnouncement(
+    @Req() req: AuthReq,
+    @ZodBody(createAnnouncementSchema)
+    body: z.infer<typeof createAnnouncementSchema>,
+  ) {
     return this.saasService.db.tenantAnnouncement.create({
       data: {
         tenantId: req.user.tenantId,

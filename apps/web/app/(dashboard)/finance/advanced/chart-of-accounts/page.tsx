@@ -1,10 +1,9 @@
-// @ts-nocheck
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Modal, PageHeader } from '@unerp/ui';
-import { ListView, FormView, RouteGuard } from '@unerp/framework';
-import { accountResource } from '@/modules/finance';
+import { useState } from "react";
+import { Modal, PageHeader } from "@unerp/ui";
+import { ListView, FormView, RouteGuard } from "@unerp/framework";
+import { accountResource } from "@/modules/finance";
 
 export default function ChartOfAccountsPage() {
   const [showCreate, setShowCreate] = useState(false);
@@ -15,7 +14,11 @@ export default function ChartOfAccountsPage() {
         <PageHeader
           title="Chart of Accounts"
           description="Manage general ledger accounts, hierarchy, and financial categories"
-          breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'Finance', href: '/finance' }, { label: 'Chart of Accounts' }]}
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "Finance", href: "/finance" },
+            { label: "Chart of Accounts" },
+          ]}
         />
 
         <ListView
@@ -23,7 +26,11 @@ export default function ChartOfAccountsPage() {
           onCreate={() => setShowCreate(true)}
         />
 
-        <Modal open={showCreate} onClose={() => setShowCreate(false)} title="New Account">
+        <Modal
+          open={showCreate}
+          onClose={() => setShowCreate(false)}
+          title="New Account"
+        >
           <FormView
             resource={accountResource}
             onSuccess={() => setShowCreate(false)}

@@ -1,4 +1,3 @@
-// @ts-nocheck
 export interface CreatedDocument {
   id: string;
   versions: Array<{ id: string }>;

@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -59,7 +58,7 @@ class _SalesOrderFormPageState extends ConsumerState<SalesOrderFormPage> {
           productCtrl: TextEditingController(text: item.productName),
           qtyCtrl: TextEditingController(text: item.quantity.toString()),
           rateCtrl: TextEditingController(text: item.rate.toString()),
-        ));
+        ),);
       }
     }
   }
@@ -84,7 +83,7 @@ class _SalesOrderFormPageState extends ConsumerState<SalesOrderFormPage> {
         productCtrl: TextEditingController(),
         qtyCtrl: TextEditingController(text: '1'),
         rateCtrl: TextEditingController(),
-      ));
+      ),);
     });
   }
 
@@ -122,7 +121,7 @@ class _SalesOrderFormPageState extends ConsumerState<SalesOrderFormPage> {
         'quantity': double.tryParse(item.qtyCtrl.text) ?? 1,
         'rate': double.tryParse(item.rateCtrl.text) ?? 0,
         'amount': (double.tryParse(item.qtyCtrl.text) ?? 0) * (double.tryParse(item.rateCtrl.text) ?? 0),
-      }).toList(),
+      },).toList(),
       'totalAmount': _totalAmount,
     };
 
@@ -257,7 +256,7 @@ class _SalesOrderFormPageState extends ConsumerState<SalesOrderFormPage> {
                 child: Row(
                   children: <Widget>[
                     const Text('Total',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                        style: TextStyle(fontWeight: FontWeight.bold),),
                     const Spacer(),
                     Text(
                       Formatters.currency(_totalAmount),

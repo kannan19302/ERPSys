@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ReportingGeneratedController } from "./reporting-generated.controller";
 import { ReportingGeneratedService } from "./reporting-generated.service";
 import { Module } from "@nestjs/common";

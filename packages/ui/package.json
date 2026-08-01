@@ -16,7 +16,7 @@
     "./tokens": "./src/tokens/design-tokens.css"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "lint": "eslint src/",
     "clean": "rimraf dist",
     "typecheck": "tsc --noEmit"

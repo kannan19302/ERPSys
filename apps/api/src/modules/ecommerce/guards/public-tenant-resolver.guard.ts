@@ -1,6 +1,10 @@
-// @ts-nocheck
-import { Injectable, CanActivate, ExecutionContext, NotFoundException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  NotFoundException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
 
 /**
  * PublicTenantResolverGuard — the ONE sanctioned way to resolve tenant context
@@ -39,7 +43,7 @@ import { prisma } from '@unerp/database';
  * so downstream controllers/services can read branding fields without a
  * second lookup.
  */
-export const STOREFRONT_GUEST_USER_ID = 'storefront-guest';
+export const STOREFRONT_GUEST_USER_ID = "storefront-guest";
 
 export interface StorefrontRequest {
   user?: { tenantId: string; userId: string };
@@ -64,7 +68,7 @@ export class PublicTenantResolverGuard implements CanActivate {
     const tenantSlug = request.params?.tenantSlug;
 
     if (!tenantSlug) {
-      throw new NotFoundException('Storefront not found');
+      throw new NotFoundException("Storefront not found");
     }
 
     const config = await prisma.storefrontConfig.findUnique({
@@ -72,7 +76,7 @@ export class PublicTenantResolverGuard implements CanActivate {
     });
 
     if (!config || !config.isEnabled) {
-      throw new NotFoundException('Storefront not found');
+      throw new NotFoundException("Storefront not found");
     }
 
     request.storefrontConfig = {
@@ -89,7 +93,10 @@ export class PublicTenantResolverGuard implements CanActivate {
 
     // Synthetic identity so the global TenantInterceptor establishes the same
     // AsyncLocalStorage tenant session it would for an authenticated request.
-    request.user = { tenantId: config.tenantId, userId: STOREFRONT_GUEST_USER_ID };
+    request.user = {
+      tenantId: config.tenantId,
+      userId: STOREFRONT_GUEST_USER_ID,
+    };
 
     return true;
   }

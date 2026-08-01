@@ -1,8 +1,11 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
-import { GlAccountingService } from './gl-accounting.service';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
+import { GlAccountingService } from "./gl-accounting.service";
 
 interface AllocationTargetInput {
   accountId: string;
@@ -20,7 +23,7 @@ export class AllocationService {
     return prisma.allocationRule.findMany({
       where: { tenantId },
       include: { sourceAccount: true },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -29,7 +32,7 @@ export class AllocationService {
       where: { id: ruleId, tenantId },
       include: { sourceAccount: true },
     });
-    if (!rule) throw new NotFoundException('Allocation rule not found');
+    if (!rule) throw new NotFoundException("Allocation rule not found");
     return rule;
   }
 
@@ -49,17 +52,24 @@ export class AllocationService {
     const account = await prisma.account.findFirst({
       where: { id: dto.sourceAccountId, tenantId },
     });
-    if (!account) throw new NotFoundException('Source account not found');
+    if (!account) throw new NotFoundException("Source account not found");
 
     // Validate target allocations
     if (!dto.targetAllocations || dto.targetAllocations.length === 0) {
-      throw new BadRequestException('At least one target allocation is required');
+      throw new BadRequestException(
+        "At least one target allocation is required",
+      );
     }
 
-    if (dto.allocationType === 'STATIC_PCT') {
-      const totalPct = dto.targetAllocations.reduce((sum, t) => sum + (t.percentage ?? 0), 0);
+    if (dto.allocationType === "STATIC_PCT") {
+      const totalPct = dto.targetAllocations.reduce(
+        (sum, t) => sum + (t.percentage ?? 0),
+        0,
+      );
       if (Math.abs(totalPct - 100) > 0.01) {
-        throw new BadRequestException('Total target percentages must sum to 100%');
+        throw new BadRequestException(
+          "Total target percentages must sum to 100%",
+        );
       }
     }
 
@@ -72,12 +82,20 @@ export class AllocationService {
         basisType: dto.basisType || null,
         sourceAccountId: dto.sourceAccountId,
         targetAllocations: dto.targetAllocations as any,
-        createdBy: userId || 'system',
-        updatedBy: userId || 'system',
+        createdBy: userId || "system",
+        updatedBy: userId || "system",
       },
     });
 
-    await this.glService.logAudit(prisma, tenantId, 'AllocationRule', rule.id, 'CREATE', { name: dto.name }, userId || 'system');
+    await this.glService.logAudit(
+      prisma,
+      tenantId,
+      "AllocationRule",
+      rule.id,
+      "CREATE",
+      { name: dto.name },
+      userId || "system",
+    );
     return rule;
   }
 
@@ -101,42 +119,68 @@ export class AllocationService {
     if (dto.name !== undefined) data.name = dto.name;
     if (dto.description !== undefined) data.description = dto.description;
     if (dto.isActive !== undefined) data.isActive = dto.isActive;
-    if (dto.allocationType !== undefined) data.allocationType = dto.allocationType;
+    if (dto.allocationType !== undefined)
+      data.allocationType = dto.allocationType;
     if (dto.basisType !== undefined) data.basisType = dto.basisType;
     if (dto.sourceAccountId !== undefined) {
-      const account = await prisma.account.findFirst({ where: { id: dto.sourceAccountId, tenantId } });
-      if (!account) throw new NotFoundException('Source account not found');
+      const account = await prisma.account.findFirst({
+        where: { id: dto.sourceAccountId, tenantId },
+      });
+      if (!account) throw new NotFoundException("Source account not found");
       data.sourceAccountId = dto.sourceAccountId;
     }
     if (dto.targetAllocations !== undefined) {
       if (dto.targetAllocations.length === 0) {
-        throw new BadRequestException('At least one target allocation is required');
+        throw new BadRequestException(
+          "At least one target allocation is required",
+        );
       }
       const type = dto.allocationType || rule.allocationType;
-      if (type === 'STATIC_PCT') {
-        const totalPct = dto.targetAllocations.reduce((sum, t) => sum + (t.percentage ?? 0), 0);
+      if (type === "STATIC_PCT") {
+        const totalPct = dto.targetAllocations.reduce(
+          (sum, t) => sum + (t.percentage ?? 0),
+          0,
+        );
         if (Math.abs(totalPct - 100) > 0.01) {
-          throw new BadRequestException('Total target percentages must sum to 100%');
+          throw new BadRequestException(
+            "Total target percentages must sum to 100%",
+          );
         }
       }
       data.targetAllocations = dto.targetAllocations as any;
     }
 
-    data.updatedBy = userId || 'system';
+    data.updatedBy = userId || "system";
 
     const updated = await prisma.allocationRule.update({
       where: { id: ruleId },
       data,
     });
 
-    await this.glService.logAudit(prisma, tenantId, 'AllocationRule', ruleId, 'UPDATE', data, userId || 'system');
+    await this.glService.logAudit(
+      prisma,
+      tenantId,
+      "AllocationRule",
+      ruleId,
+      "UPDATE",
+      data,
+      userId || "system",
+    );
     return updated;
   }
 
   async deleteRule(tenantId: string, ruleId: string, userId?: string) {
     const rule = await this.getRuleById(tenantId, ruleId);
     await prisma.allocationRule.delete({ where: { id: ruleId } });
-    await this.glService.logAudit(prisma, tenantId, 'AllocationRule', ruleId, 'DELETE', { name: rule.name }, userId || 'system');
+    await this.glService.logAudit(
+      prisma,
+      tenantId,
+      "AllocationRule",
+      ruleId,
+      "DELETE",
+      { name: rule.name },
+      userId || "system",
+    );
     return { success: true };
   }
 
@@ -144,7 +188,7 @@ export class AllocationService {
     return prisma.allocationRun.findMany({
       where: { tenantId },
       include: { rule: true, journal: true },
-      orderBy: { runDate: 'desc' },
+      orderBy: { runDate: "desc" },
     });
   }
 
@@ -157,7 +201,8 @@ export class AllocationService {
   ) {
     const resolvedOrgId = await this.glService.resolveOrgId(tenantId, orgId);
     const rule = await this.getRuleById(tenantId, ruleId);
-    if (!rule.isActive) throw new BadRequestException('Allocation rule is inactive');
+    if (!rule.isActive)
+      throw new BadRequestException("Allocation rule is inactive");
 
     const start = new Date(dto.periodStart);
     const end = new Date(dto.periodEnd);
@@ -169,7 +214,7 @@ export class AllocationService {
         accountId: rule.sourceAccountId,
         journal: {
           orgId: resolvedOrgId,
-          status: 'POSTED',
+          status: "POSTED",
           date: { gte: start, lte: end },
         },
       },
@@ -179,18 +224,24 @@ export class AllocationService {
     for (const entry of journalEntries) {
       const debit = Number(entry.debit);
       const credit = Number(entry.credit);
-      if (rule.sourceAccount.type === 'ASSET' || rule.sourceAccount.type === 'EXPENSE') {
-        poolBalance += (debit - credit);
+      if (
+        rule.sourceAccount.type === "ASSET" ||
+        rule.sourceAccount.type === "EXPENSE"
+      ) {
+        poolBalance += debit - credit;
       } else {
-        poolBalance += (credit - debit);
+        poolBalance += credit - debit;
       }
     }
 
     if (Math.abs(poolBalance) < 0.01) {
-      throw new BadRequestException('Source account has no net balance to allocate for this period.');
+      throw new BadRequestException(
+        "Source account has no net balance to allocate for this period.",
+      );
     }
 
-    const targets = rule.targetAllocations as unknown as AllocationTargetInput[];
+    const targets =
+      rule.targetAllocations as unknown as AllocationTargetInput[];
     const entriesToCreate: Array<{
       accountId: string;
       debit: number;
@@ -201,7 +252,7 @@ export class AllocationService {
     }> = [];
 
     // 2. Compute allocation amounts
-    if (rule.allocationType === 'STATIC_PCT') {
+    if (rule.allocationType === "STATIC_PCT") {
       for (const target of targets) {
         const pct = target.percentage ?? 0;
         const amount = Number((poolBalance * (pct / 100)).toFixed(2));
@@ -217,30 +268,33 @@ export class AllocationService {
           departmentId: target.departmentId,
         });
       }
-    } else if (rule.allocationType === 'DYNAMIC_STAT') {
-      if (rule.basisType === 'HEADCOUNT') {
+    } else if (rule.allocationType === "DYNAMIC_STAT") {
+      if (rule.basisType === "HEADCOUNT") {
         // Query active employee headcount by department
         const employees = await prisma.employee.findMany({
-          where: { tenantId, orgId: resolvedOrgId, status: 'ACTIVE' },
+          where: { tenantId, orgId: resolvedOrgId, status: "ACTIVE" },
         });
 
         const deptCount: Record<string, number> = {};
         let totalHeadcount = 0;
         for (const emp of employees) {
           if (emp.departmentId) {
-            deptCount[emp.departmentId] = (deptCount[emp.departmentId] || 0) + 1;
+            deptCount[emp.departmentId] =
+              (deptCount[emp.departmentId] || 0) + 1;
             totalHeadcount++;
           }
         }
 
         if (totalHeadcount === 0) {
-          throw new BadRequestException('No active employees with departments found for dynamic headcount allocation.');
+          throw new BadRequestException(
+            "No active employees with departments found for dynamic headcount allocation.",
+          );
         }
 
         // Distribute based on headcount ratio
         for (const target of targets) {
           const deptId = target.departmentId;
-          const count = deptId ? (deptCount[deptId] || 0) : 0;
+          const count = deptId ? deptCount[deptId] || 0 : 0;
           const ratio = count / totalHeadcount;
           const amount = Number((poolBalance * ratio).toFixed(2));
           if (amount === 0) continue;
@@ -254,16 +308,18 @@ export class AllocationService {
             departmentId: target.departmentId,
           });
         }
-      } else if (rule.basisType === 'REVENUE') {
+      } else if (rule.basisType === "REVENUE") {
         // Query target departments' revenue balances
-        const targetAccountIds = Array.from(new Set(targets.map((t) => t.accountId)));
+        const targetAccountIds = Array.from(
+          new Set(targets.map((t) => t.accountId)),
+        );
         const revEntries = await prisma.journalEntry.findMany({
           where: {
             tenantId,
             accountId: { in: targetAccountIds },
             journal: {
               orgId: resolvedOrgId,
-              status: 'POSTED',
+              status: "POSTED",
               date: { gte: start, lte: end },
             },
           },
@@ -273,7 +329,7 @@ export class AllocationService {
         const revMap: Record<string, number> = {};
         let totalRevenue = 0;
         for (const entry of revEntries) {
-          if (entry.account.type === 'REVENUE') {
+          if (entry.account.type === "REVENUE") {
             const val = Number(entry.credit) - Number(entry.debit);
             revMap[entry.accountId] = (revMap[entry.accountId] || 0) + val;
             totalRevenue += val;
@@ -283,7 +339,9 @@ export class AllocationService {
         if (totalRevenue <= 0) {
           // If no revenue recorded, fallback to equal distribution
           totalRevenue = targets.length;
-          targets.forEach((t) => { revMap[t.accountId] = 1; });
+          targets.forEach((t) => {
+            revMap[t.accountId] = 1;
+          });
         }
 
         for (const target of targets) {
@@ -321,16 +379,22 @@ export class AllocationService {
     }
 
     if (entriesToCreate.length === 0) {
-      throw new BadRequestException('Allocation resulted in zero distributed amounts.');
+      throw new BadRequestException(
+        "Allocation resulted in zero distributed amounts.",
+      );
     }
 
     // Adjust for rounding differences: total debits must equal poolBalance
-    const totalAllocated = entriesToCreate.reduce((sum, e) => sum + (e.debit > 0 ? e.debit : -e.credit), 0);
+    const totalAllocated = entriesToCreate.reduce(
+      (sum, e) => sum + (e.debit > 0 ? e.debit : -e.credit),
+      0,
+    );
     const roundingDiff = Number((poolBalance - totalAllocated).toFixed(2));
     if (Math.abs(roundingDiff) >= 0.01 && entriesToCreate.length > 0) {
       const last = entriesToCreate[entriesToCreate.length - 1];
       if (last) {
-        if (last.debit > 0) last.debit = Number((last.debit + roundingDiff).toFixed(2));
+        if (last.debit > 0)
+          last.debit = Number((last.debit + roundingDiff).toFixed(2));
         else last.credit = Number((last.credit - roundingDiff).toFixed(2));
       }
     }
@@ -345,11 +409,15 @@ export class AllocationService {
 
     // Create journal entry (Draft by default)
     const runNumber = `ALLOC-${Date.now().toString().slice(-6)}`;
-    const journal = await this.glService.createJournal(tenantId, resolvedOrgId, {
-      entryNumber: runNumber,
-      notes: `Allocation Run for rule "${rule.name}" for period ${dto.periodStart} to ${dto.periodEnd}`,
-      entries: entriesToCreate,
-    });
+    const journal = await this.glService.createJournal(
+      tenantId,
+      resolvedOrgId,
+      {
+        entryNumber: runNumber,
+        notes: `Allocation Run for rule "${rule.name}" for period ${dto.periodStart} to ${dto.periodEnd}`,
+        entries: entriesToCreate,
+      },
+    );
 
     const run = await prisma.allocationRun.create({
       data: {
@@ -359,18 +427,26 @@ export class AllocationService {
         periodEnd: end,
         allocatedAmount: new Prisma.Decimal(Math.abs(poolBalance)),
         journalId: journal?.id ?? null,
-        status: 'DRAFT',
+        status: "DRAFT",
       },
     });
 
-    await this.glService.logAudit(prisma, tenantId, 'AllocationRun', run.id, 'EXECUTE', { allocatedAmount: poolBalance, journalId: journal?.id }, userId || 'system');
+    await this.glService.logAudit(
+      prisma,
+      tenantId,
+      "AllocationRun",
+      run.id,
+      "EXECUTE",
+      { allocatedAmount: poolBalance, journalId: journal?.id },
+      userId || "system",
+    );
 
     return {
       runId: run.id,
       ruleName: rule.name,
       allocatedAmount: poolBalance,
       journalId: journal?.id,
-      status: 'DRAFT',
+      status: "DRAFT",
       entriesCount: entriesToCreate.length,
     };
   }
@@ -380,23 +456,35 @@ export class AllocationService {
       where: { id: runId, tenantId },
       include: { journal: true },
     });
-    if (!run) throw new NotFoundException('Allocation run not found');
-    if (run.status === 'POSTED') throw new BadRequestException('Allocation run is already posted');
-    if (!run.journalId) throw new BadRequestException('No journal entry associated with this run');
+    if (!run) throw new NotFoundException("Allocation run not found");
+    if (run.status === "POSTED")
+      throw new BadRequestException("Allocation run is already posted");
+    if (!run.journalId)
+      throw new BadRequestException(
+        "No journal entry associated with this run",
+      );
 
     // Post the journal
     await prisma.journal.update({
       where: { id: run.journalId },
-      data: { status: 'POSTED' },
+      data: { status: "POSTED" },
     });
 
     // Update run status
     const updated = await prisma.allocationRun.update({
       where: { id: runId },
-      data: { status: 'POSTED' },
+      data: { status: "POSTED" },
     });
 
-    await this.glService.logAudit(prisma, tenantId, 'AllocationRun', runId, 'POST', { status: 'POSTED' }, userId || 'system');
+    await this.glService.logAudit(
+      prisma,
+      tenantId,
+      "AllocationRun",
+      runId,
+      "POST",
+      { status: "POSTED" },
+      userId || "system",
+    );
     return updated;
   }
 }

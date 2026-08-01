@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Injectable,
   NotFoundException,
@@ -15,22 +14,28 @@ export class UsageAlertsService {
     });
   }
 
-  async createAlertRule(tenantId: string, dto: {
-    name: string;
-    metric: string;
-    condition: string;
-    threshold: number;
-    unit?: string;
-    channel?: string;
-    recipients?: string[];
-    enabled?: boolean;
-    notifyEvery?: number;
-    webhookUrl?: string;
-  }) {
+  async createAlertRule(
+    tenantId: string,
+    dto: {
+      name: string;
+      metric: string;
+      condition: string;
+      threshold: number;
+      unit?: string;
+      channel?: string;
+      recipients?: string[];
+      enabled?: boolean;
+      notifyEvery?: number;
+      webhookUrl?: string;
+    },
+  ) {
     const existing = await prisma.usageAlertRule.findUnique({
       where: { tenantId_metric: { tenantId, metric: dto.metric } },
     });
-    if (existing) throw new BadRequestException("Alert rule already exists for this metric");
+    if (existing)
+      throw new BadRequestException(
+        "Alert rule already exists for this metric",
+      );
 
     return prisma.usageAlertRule.create({
       data: {
@@ -46,19 +51,25 @@ export class UsageAlertsService {
     });
   }
 
-  async updateAlertRule(tenantId: string, id: string, dto: {
-    name?: string;
-    metric?: string;
-    condition?: string;
-    threshold?: number;
-    unit?: string;
-    channel?: string;
-    recipients?: string[];
-    enabled?: boolean;
-    notifyEvery?: number;
-    webhookUrl?: string;
-  }) {
-    const rule = await prisma.usageAlertRule.findFirst({ where: { id, tenantId } });
+  async updateAlertRule(
+    tenantId: string,
+    id: string,
+    dto: {
+      name?: string;
+      metric?: string;
+      condition?: string;
+      threshold?: number;
+      unit?: string;
+      channel?: string;
+      recipients?: string[];
+      enabled?: boolean;
+      notifyEvery?: number;
+      webhookUrl?: string;
+    },
+  ) {
+    const rule = await prisma.usageAlertRule.findFirst({
+      where: { id, tenantId },
+    });
     if (!rule) throw new NotFoundException("Alert rule not found");
 
     const updateData: Record<string, unknown> = {};
@@ -74,7 +85,9 @@ export class UsageAlertsService {
   }
 
   async deleteAlertRule(tenantId: string, id: string) {
-    const rule = await prisma.usageAlertRule.findFirst({ where: { id, tenantId } });
+    const rule = await prisma.usageAlertRule.findFirst({
+      where: { id, tenantId },
+    });
     if (!rule) throw new NotFoundException("Alert rule not found");
     await prisma.usageAlertLog.updateMany({
       where: { ruleId: id },
@@ -91,8 +104,8 @@ export class UsageAlertsService {
 
     const usageMap = new Map(usageRecords.map((r) => [r.metric, r]));
     const triggered: Array<{
-      rule: typeof rules[0];
-      usage: typeof usageRecords[0];
+      rule: (typeof rules)[0];
+      usage: (typeof usageRecords)[0];
       level: string;
     }> = [];
 
@@ -145,7 +158,9 @@ export class UsageAlertsService {
   }
 
   async dismissAlert(tenantId: string, logId: string) {
-    const log = await prisma.usageAlertLog.findFirst({ where: { id: logId, tenantId } });
+    const log = await prisma.usageAlertLog.findFirst({
+      where: { id: logId, tenantId },
+    });
     if (!log) throw new NotFoundException("Alert log not found");
     return prisma.usageAlertLog.delete({ where: { id: logId } });
   }
@@ -167,22 +182,28 @@ export class UsageAlertsService {
     };
   }
 
-  async bulkUpdateRules(tenantId: string, body: {
-    ruleIds: string[];
-    data: {
-      enabled?: boolean;
-      channel?: string;
-      threshold?: number;
-      notifyEvery?: number;
-    };
-  }) {
+  async bulkUpdateRules(
+    tenantId: string,
+    body: {
+      ruleIds: string[];
+      data: {
+        enabled?: boolean;
+        channel?: string;
+        threshold?: number;
+        notifyEvery?: number;
+      };
+    },
+  ) {
     const results: any[] = [];
     for (const ruleId of body.ruleIds) {
-      const existing = await prisma.usageAlertRule.findFirst({ where: { id: ruleId, tenantId } });
+      const existing = await prisma.usageAlertRule.findFirst({
+        where: { id: ruleId, tenantId },
+      });
       if (!existing) continue;
 
       const updateData: Record<string, unknown> = {};
-      if (body.data.enabled !== undefined) updateData.isActive = body.data.enabled;
+      if (body.data.enabled !== undefined)
+        updateData.isActive = body.data.enabled;
       if (body.data.channel !== undefined) {
         updateData.notifyEmail = body.data.channel === "email";
         updateData.notifyWebhook = body.data.channel === "webhook";

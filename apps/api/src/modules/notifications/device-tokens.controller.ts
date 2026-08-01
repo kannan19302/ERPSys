@@ -1,5 +1,14 @@
-// @ts-nocheck
-import { Controller, Post, Delete, Param, UseGuards, Req, HttpCode, HttpStatus, BadRequestException } from "@nestjs/common";
+import {
+  Controller,
+  Post,
+  Delete,
+  Param,
+  UseGuards,
+  Req,
+  HttpCode,
+  HttpStatus,
+  BadRequestException,
+} from "@nestjs/common";
 import { z } from "zod";
 import { ZodBody } from "../../common/decorators/zod-body.decorator";
 import { Request } from "express";
@@ -47,9 +56,15 @@ export class DeviceTokensController {
   ) {
     const parsed = registerDeviceSchema.safeParse(body);
     if (!parsed.success) {
-      throw new BadRequestException(parsed.error.issues[0]?.message ?? "Invalid device registration");
+      throw new BadRequestException(
+        parsed.error.issues[0]?.message ?? "Invalid device registration",
+      );
     }
-    return this.service.register(req.user.tenantId, req.user.userId, parsed.data);
+    return this.service.register(
+      req.user.tenantId,
+      req.user.userId,
+      parsed.data,
+    );
   }
 
   @ApiOperation({ summary: "Unregister a push device token" })
@@ -60,6 +75,10 @@ export class DeviceTokensController {
     @Req() req: AuthenticatedRequest,
     @Param("deviceId") deviceId: string,
   ) {
-    return this.service.unregister(req.user.tenantId, req.user.userId, deviceId);
+    return this.service.unregister(
+      req.user.tenantId,
+      req.user.userId,
+      deviceId,
+    );
   }
 }

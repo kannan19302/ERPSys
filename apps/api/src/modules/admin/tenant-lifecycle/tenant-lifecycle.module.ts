@@ -1,7 +1,6 @@
-// @ts-nocheck
-import { Module } from '@nestjs/common';
-import { TenantLifecycleController } from './tenant-lifecycle.controller';
-import { TenantLifecycleService } from './tenant-lifecycle.service';
+import { Module } from "@nestjs/common";
+import { TenantLifecycleController } from "./tenant-lifecycle.controller";
+import { TenantLifecycleService } from "./tenant-lifecycle.service";
 
 @Module({
   controllers: [TenantLifecycleController],

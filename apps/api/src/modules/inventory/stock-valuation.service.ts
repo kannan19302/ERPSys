@@ -1,7 +1,10 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
 
 @Injectable()
 export class StockValuationService {
@@ -10,30 +13,36 @@ export class StockValuationService {
   async listPolicies(tenantId: string) {
     return prisma.stockValuationPolicy.findMany({
       where: { tenantId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
   async getPolicy(tenantId: string, id: string) {
-    const p = await prisma.stockValuationPolicy.findFirst({ where: { tenantId, id } });
-    if (!p) throw new NotFoundException('Valuation policy not found');
+    const p = await prisma.stockValuationPolicy.findFirst({
+      where: { tenantId, id },
+    });
+    if (!p) throw new NotFoundException("Valuation policy not found");
     return p;
   }
 
-  async upsertPolicy(tenantId: string, createdBy: string, dto: {
-    productId?: string;
-    warehouseId?: string;
-    method: string;
-    standardCost?: number;
-    currency?: string;
-    notes?: string;
-  }) {
+  async upsertPolicy(
+    tenantId: string,
+    createdBy: string,
+    dto: {
+      productId?: string;
+      warehouseId?: string;
+      method: string;
+      standardCost?: number;
+      currency?: string;
+      notes?: string;
+    },
+  ) {
     return prisma.stockValuationPolicy.upsert({
       where: {
         tenantId_productId_warehouseId: {
           tenantId,
-          productId: dto.productId ?? null as unknown as string,
-          warehouseId: dto.warehouseId ?? null as unknown as string,
+          productId: dto.productId ?? (null as unknown as string),
+          warehouseId: dto.warehouseId ?? (null as unknown as string),
         },
       },
       create: {
@@ -41,14 +50,19 @@ export class StockValuationService {
         productId: dto.productId,
         warehouseId: dto.warehouseId,
         method: dto.method as never,
-        standardCost: dto.standardCost != null ? new Prisma.Decimal(dto.standardCost) : null,
-        currency: dto.currency ?? 'USD',
+        standardCost:
+          dto.standardCost != null
+            ? new Prisma.Decimal(dto.standardCost)
+            : null,
+        currency: dto.currency ?? "USD",
         notes: dto.notes,
         createdBy,
       },
       update: {
         method: dto.method as never,
-        ...(dto.standardCost != null && { standardCost: new Prisma.Decimal(dto.standardCost) }),
+        ...(dto.standardCost != null && {
+          standardCost: new Prisma.Decimal(dto.standardCost),
+        }),
         ...(dto.currency && { currency: dto.currency }),
         ...(dto.notes !== undefined && { notes: dto.notes }),
       },
@@ -65,19 +79,26 @@ export class StockValuationService {
 
   // ── Valuation Ledger ─────────────────────────────────────────────────────────
 
-  async postLedgerEntry(tenantId: string, dto: {
-    productId: string;
-    warehouseId?: string;
-    method: string;
-    transactionType: string;
-    transactionRef: string;
-    qty: number;
-    unitCost: number;
-  }) {
+  async postLedgerEntry(
+    tenantId: string,
+    dto: {
+      productId: string;
+      warehouseId?: string;
+      method: string;
+      transactionType: string;
+      transactionRef: string;
+      qty: number;
+      unitCost: number;
+    },
+  ) {
     // Compute running totals from last entry
     const last = await prisma.stockValuationLedger.findFirst({
-      where: { tenantId, productId: dto.productId, warehouseId: dto.warehouseId ?? null },
-      orderBy: { postedAt: 'desc' },
+      where: {
+        tenantId,
+        productId: dto.productId,
+        warehouseId: dto.warehouseId ?? null,
+      },
+      orderBy: { postedAt: "desc" },
     });
 
     const prevQty = Number(last?.runningQty ?? 0);
@@ -105,22 +126,31 @@ export class StockValuationService {
     });
   }
 
-  async getLedger(tenantId: string, productId?: string, warehouseId?: string, limit = 100) {
+  async getLedger(
+    tenantId: string,
+    productId?: string,
+    warehouseId?: string,
+    limit = 100,
+  ) {
     return prisma.stockValuationLedger.findMany({
       where: {
         tenantId,
         ...(productId ? { productId } : {}),
         ...(warehouseId ? { warehouseId } : {}),
       },
-      orderBy: { postedAt: 'desc' },
+      orderBy: { postedAt: "desc" },
       take: limit,
     });
   }
 
-  async getProductValuation(tenantId: string, productId: string, warehouseId?: string) {
+  async getProductValuation(
+    tenantId: string,
+    productId: string,
+    warehouseId?: string,
+  ) {
     const last = await prisma.stockValuationLedger.findFirst({
       where: { tenantId, productId, ...(warehouseId ? { warehouseId } : {}) },
-      orderBy: { postedAt: 'desc' },
+      orderBy: { postedAt: "desc" },
     });
     if (!last) return { productId, warehouseId, qty: 0, value: 0, avgCost: 0 };
     return {
@@ -136,21 +166,28 @@ export class StockValuationService {
 
   // ── FIFO / LIFO / WAC cost layer calculations ────────────────────────────────
 
-  async computeIssueCost(tenantId: string, productId: string, warehouseId: string | undefined, issueQty: number, method: string) {
+  async computeIssueCost(
+    tenantId: string,
+    productId: string,
+    warehouseId: string | undefined,
+    issueQty: number,
+    method: string,
+  ) {
     const entries = await prisma.stockValuationLedger.findMany({
       where: {
-        tenantId, productId,
+        tenantId,
+        productId,
         ...(warehouseId ? { warehouseId } : {}),
-        transactionType: 'RECEIPT',
-        status: 'ACTIVE',
+        transactionType: "RECEIPT",
+        status: "ACTIVE",
       },
-      orderBy: method === 'LIFO' ? { postedAt: 'desc' } : { postedAt: 'asc' },
+      orderBy: method === "LIFO" ? { postedAt: "desc" } : { postedAt: "asc" },
     });
 
-    if (method === 'WEIGHTED_AVG') {
+    if (method === "WEIGHTED_AVG") {
       const last = await prisma.stockValuationLedger.findFirst({
         where: { tenantId, productId, ...(warehouseId ? { warehouseId } : {}) },
-        orderBy: { postedAt: 'desc' },
+        orderBy: { postedAt: "desc" },
       });
       const avgCost = Number(last?.runningAvgCost ?? 0);
       return { method, issueCost: avgCost * issueQty, unitCost: avgCost };
@@ -174,26 +211,32 @@ export class StockValuationService {
   async listAdjustments(tenantId: string, status?: string) {
     return prisma.costAdjustment.findMany({
       where: { tenantId, ...(status ? { status } : {}) },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
   async getAdjustment(tenantId: string, id: string) {
-    const a = await prisma.costAdjustment.findFirst({ where: { tenantId, id } });
-    if (!a) throw new NotFoundException('Cost adjustment not found');
+    const a = await prisma.costAdjustment.findFirst({
+      where: { tenantId, id },
+    });
+    if (!a) throw new NotFoundException("Cost adjustment not found");
     return a;
   }
 
-  async createAdjustment(tenantId: string, createdBy: string, dto: {
-    productId: string;
-    warehouseId?: string;
-    oldUnitCost: number;
-    newUnitCost: number;
-    qty: number;
-    reason: string;
-  }) {
+  async createAdjustment(
+    tenantId: string,
+    createdBy: string,
+    dto: {
+      productId: string;
+      warehouseId?: string;
+      oldUnitCost: number;
+      newUnitCost: number;
+      qty: number;
+      reason: string;
+    },
+  ) {
     const seq = await prisma.costAdjustment.count({ where: { tenantId } });
-    const adjustmentNumber = `CAD-${String(seq + 1).padStart(5, '0')}`;
+    const adjustmentNumber = `CAD-${String(seq + 1).padStart(5, "0")}`;
     const impactAmount = (dto.newUnitCost - dto.oldUnitCost) * dto.qty;
     return prisma.costAdjustment.create({
       data: {
@@ -213,23 +256,25 @@ export class StockValuationService {
 
   async approveAdjustment(tenantId: string, id: string, approvedBy: string) {
     const a = await this.getAdjustment(tenantId, id);
-    if (a.status !== 'PENDING') throw new BadRequestException('Only PENDING adjustments can be approved');
+    if (a.status !== "PENDING")
+      throw new BadRequestException("Only PENDING adjustments can be approved");
     return prisma.costAdjustment.update({
       where: { id },
-      data: { status: 'APPROVED', approvedBy, approvedAt: new Date() },
+      data: { status: "APPROVED", approvedBy, approvedAt: new Date() },
     });
   }
 
   async postAdjustment(tenantId: string, id: string) {
     const a = await this.getAdjustment(tenantId, id);
-    if (a.status !== 'APPROVED') throw new BadRequestException('Only APPROVED adjustments can be posted');
+    if (a.status !== "APPROVED")
+      throw new BadRequestException("Only APPROVED adjustments can be posted");
     await prisma.stockValuationLedger.create({
       data: {
         tenantId,
         productId: a.productId,
         warehouseId: a.warehouseId ?? undefined,
-        method: 'ACTUAL_COST' as never,
-        transactionType: 'ADJUSTMENT',
+        method: "ACTUAL_COST" as never,
+        transactionType: "ADJUSTMENT",
         transactionRef: a.adjustmentNumber,
         qty: new Prisma.Decimal(0),
         unitCost: a.newUnitCost,
@@ -241,14 +286,18 @@ export class StockValuationService {
     });
     return prisma.costAdjustment.update({
       where: { id },
-      data: { status: 'POSTED', postedAt: new Date() },
+      data: { status: "POSTED", postedAt: new Date() },
     });
   }
 
   async rejectAdjustment(tenantId: string, id: string) {
     const a = await this.getAdjustment(tenantId, id);
-    if (a.status !== 'PENDING') throw new BadRequestException('Only PENDING adjustments can be rejected');
-    return prisma.costAdjustment.update({ where: { id }, data: { status: 'REJECTED' } });
+    if (a.status !== "PENDING")
+      throw new BadRequestException("Only PENDING adjustments can be rejected");
+    return prisma.costAdjustment.update({
+      where: { id },
+      data: { status: "REJECTED" },
+    });
   }
 
   // ── Stock Revaluations ───────────────────────────────────────────────────────
@@ -257,7 +306,7 @@ export class StockValuationService {
     return prisma.stockRevaluation.findMany({
       where: { tenantId },
       include: { lines: true },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -266,19 +315,32 @@ export class StockValuationService {
       where: { tenantId, id },
       include: { lines: true },
     });
-    if (!r) throw new NotFoundException('Revaluation not found');
+    if (!r) throw new NotFoundException("Revaluation not found");
     return r;
   }
 
-  async createRevaluation(tenantId: string, createdBy: string, dto: {
-    description?: string;
-    revaluationDate: string;
-    currency?: string;
-    lines: { productId: string; warehouseId?: string; currentQty: number; currentUnitCost: number; newUnitCost: number }[];
-  }) {
+  async createRevaluation(
+    tenantId: string,
+    createdBy: string,
+    dto: {
+      description?: string;
+      revaluationDate: string;
+      currency?: string;
+      lines: {
+        productId: string;
+        warehouseId?: string;
+        currentQty: number;
+        currentUnitCost: number;
+        newUnitCost: number;
+      }[];
+    },
+  ) {
     const seq = await prisma.stockRevaluation.count({ where: { tenantId } });
-    const revaluationNumber = `RVL-${String(seq + 1).padStart(5, '0')}`;
-    const totalImpact = dto.lines.reduce((s, l) => s + (l.newUnitCost - l.currentUnitCost) * l.currentQty, 0);
+    const revaluationNumber = `RVL-${String(seq + 1).padStart(5, "0")}`;
+    const totalImpact = dto.lines.reduce(
+      (s, l) => s + (l.newUnitCost - l.currentUnitCost) * l.currentQty,
+      0,
+    );
 
     return prisma.stockRevaluation.create({
       data: {
@@ -286,18 +348,20 @@ export class StockValuationService {
         revaluationNumber,
         description: dto.description,
         revaluationDate: new Date(dto.revaluationDate),
-        currency: dto.currency ?? 'USD',
+        currency: dto.currency ?? "USD",
         totalImpact: new Prisma.Decimal(totalImpact),
         createdBy,
         lines: {
-          create: dto.lines.map(l => ({
+          create: dto.lines.map((l) => ({
             tenantId,
             productId: l.productId,
             warehouseId: l.warehouseId,
             currentQty: new Prisma.Decimal(l.currentQty),
             currentUnitCost: new Prisma.Decimal(l.currentUnitCost),
             newUnitCost: new Prisma.Decimal(l.newUnitCost),
-            impactAmount: new Prisma.Decimal((l.newUnitCost - l.currentUnitCost) * l.currentQty),
+            impactAmount: new Prisma.Decimal(
+              (l.newUnitCost - l.currentUnitCost) * l.currentQty,
+            ),
           })),
         },
       },
@@ -307,7 +371,8 @@ export class StockValuationService {
 
   async postRevaluation(tenantId: string, id: string) {
     const r = await this.getRevaluation(tenantId, id);
-    if (r.status !== 'DRAFT') throw new BadRequestException('Only DRAFT revaluations can be posted');
+    if (r.status !== "DRAFT")
+      throw new BadRequestException("Only DRAFT revaluations can be posted");
 
     // Post a valuation ledger entry for each line
     for (const line of r.lines) {
@@ -316,52 +381,66 @@ export class StockValuationService {
           tenantId,
           productId: line.productId,
           warehouseId: line.warehouseId ?? undefined,
-          method: 'ACTUAL_COST' as never,
-          transactionType: 'REVALUATION',
+          method: "ACTUAL_COST" as never,
+          transactionType: "REVALUATION",
           transactionRef: r.revaluationNumber,
           qty: new Prisma.Decimal(0),
           unitCost: line.newUnitCost,
           totalCost: line.impactAmount,
           runningQty: line.currentQty,
-          runningValue: new Prisma.Decimal(Number(line.currentQty) * Number(line.newUnitCost)),
+          runningValue: new Prisma.Decimal(
+            Number(line.currentQty) * Number(line.newUnitCost),
+          ),
           runningAvgCost: line.newUnitCost,
-          status: 'REVALUED',
+          status: "REVALUED",
         },
       });
     }
 
     return prisma.stockRevaluation.update({
       where: { id },
-      data: { status: 'POSTED', postedAt: new Date() },
+      data: { status: "POSTED", postedAt: new Date() },
     });
   }
 
   async cancelRevaluation(tenantId: string, id: string) {
     const r = await this.getRevaluation(tenantId, id);
-    if (r.status === 'POSTED') throw new BadRequestException('Posted revaluations cannot be cancelled');
-    return prisma.stockRevaluation.update({ where: { id }, data: { status: 'CANCELLED' } });
+    if (r.status === "POSTED")
+      throw new BadRequestException("Posted revaluations cannot be cancelled");
+    return prisma.stockRevaluation.update({
+      where: { id },
+      data: { status: "CANCELLED" },
+    });
   }
 
   // ── Reports & Dashboard ──────────────────────────────────────────────────────
 
   async getDashboard(tenantId: string) {
-    const [totalPolicies, activePolicies, totalAdjustments, pendingAdjustments, totalRevaluations, postedRevaluations] =
-      await Promise.all([
-        prisma.stockValuationPolicy.count({ where: { tenantId } }),
-        prisma.stockValuationPolicy.count({ where: { tenantId, isActive: true } }),
-        prisma.costAdjustment.count({ where: { tenantId } }),
-        prisma.costAdjustment.count({ where: { tenantId, status: 'PENDING' } }),
-        prisma.stockRevaluation.count({ where: { tenantId } }),
-        prisma.stockRevaluation.count({ where: { tenantId, status: 'POSTED' } }),
-      ]);
+    const [
+      totalPolicies,
+      activePolicies,
+      totalAdjustments,
+      pendingAdjustments,
+      totalRevaluations,
+      postedRevaluations,
+    ] = await Promise.all([
+      prisma.stockValuationPolicy.count({ where: { tenantId } }),
+      prisma.stockValuationPolicy.count({
+        where: { tenantId, isActive: true },
+      }),
+      prisma.costAdjustment.count({ where: { tenantId } }),
+      prisma.costAdjustment.count({ where: { tenantId, status: "PENDING" } }),
+      prisma.stockRevaluation.count({ where: { tenantId } }),
+      prisma.stockRevaluation.count({ where: { tenantId, status: "POSTED" } }),
+    ]);
 
     const revalImpact = await prisma.stockRevaluation.aggregate({
-      where: { tenantId, status: 'POSTED' },
+      where: { tenantId, status: "POSTED" },
       _sum: { totalImpact: true },
     });
 
     const adjustImpact = await prisma.costAdjustment.aggregate({
-      where: { tenantId, status: 'POSTED' },
+      where: { tenantId, status: "POSTED" },
       _sum: { impactAmount: true },
     });
 
@@ -379,11 +458,16 @@ export class StockValuationService {
 
   async getVarianceReport(tenantId: string, productId?: string) {
     const adjustments = await prisma.costAdjustment.findMany({
-      where: { tenantId, status: 'POSTED', ...(productId ? { productId } : {}) },
-      orderBy: { postedAt: 'desc' },
+      where: {
+        tenantId,
+        status: "POSTED",
+        ...(productId ? { productId } : {}),
+      },
+      orderBy: { postedAt: "desc" },
     });
 
-    const byProduct: Record<string, { count: number; totalImpact: number }> = {};
+    const byProduct: Record<string, { count: number; totalImpact: number }> =
+      {};
     for (const a of adjustments) {
       const key = a.productId;
       const entry = byProduct[key] ?? { count: 0, totalImpact: 0 };
@@ -397,11 +481,20 @@ export class StockValuationService {
 
   async getValuationSummary(tenantId: string) {
     const entries = await prisma.stockValuationLedger.findMany({
-      where: { tenantId, status: 'ACTIVE' },
-      orderBy: [{ productId: 'asc' }, { postedAt: 'desc' }],
+      where: { tenantId, status: "ACTIVE" },
+      orderBy: [{ productId: "asc" }, { postedAt: "desc" }],
     });
 
-    const byProduct = new Map<string, { productId: string; qty: number; value: number; avgCost: number; method: string }>();
+    const byProduct = new Map<
+      string,
+      {
+        productId: string;
+        qty: number;
+        value: number;
+        avgCost: number;
+        method: string;
+      }
+    >();
     for (const e of entries) {
       if (!byProduct.has(e.productId)) {
         byProduct.set(e.productId, {

@@ -1,5 +1,16 @@
-// @ts-nocheck
-import { Controller, Get, Post, Put, Delete, Param, Query, Req, Body, UseGuards, UseInterceptors } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Query,
+  Req,
+  Body,
+  UseGuards,
+  UseInterceptors,
+} from "@nestjs/common";
 import { ApiTags, ApiBearerAuth, ApiOperation } from "@nestjs/swagger";
 import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
@@ -15,7 +26,13 @@ import {
 } from "./crm-win-loss.service";
 
 interface AuthenticatedRequest extends Request {
-  user: { tenantId: string; userId: string; email: string; roles: string[]; orgId?: string };
+  user: {
+    tenantId: string;
+    userId: string;
+    email: string;
+    roles: string[];
+    orgId?: string;
+  };
 }
 
 @ApiTags("crm-win-loss")
@@ -28,7 +45,10 @@ export class CrmWinLossController {
   @ApiOperation({ summary: "List win/loss reasons" })
   @Get("reasons")
   @Permissions("crm.winloss.read")
-  async listReasons(@Req() req: AuthenticatedRequest, @Query("category") category?: string) {
+  async listReasons(
+    @Req() req: AuthenticatedRequest,
+    @Query("category") category?: string,
+  ) {
     return this.svc.getReasons(req.user.tenantId, category);
   }
 
@@ -43,7 +63,11 @@ export class CrmWinLossController {
   @ApiOperation({ summary: "Update win/loss reason" })
   @Put("reasons/:id")
   @Permissions("crm.winloss.manage")
-  async updateReason(@Req() req: AuthenticatedRequest, @Param("id") id: string, @Body() body: any) {
+  async updateReason(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+    @Body() body: any,
+  ) {
     const dto = winLossReasonSchema.partial().parse(body);
     return this.svc.updateReason(req.user.tenantId, id, dto);
   }
@@ -51,7 +75,10 @@ export class CrmWinLossController {
   @ApiOperation({ summary: "Delete win/loss reason" })
   @Delete("reasons/:id")
   @Permissions("crm.winloss.manage")
-  async deleteReason(@Req() req: AuthenticatedRequest, @Param("id") id: string) {
+  async deleteReason(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
     return this.svc.deleteReason(req.user.tenantId, id);
   }
 
@@ -65,7 +92,10 @@ export class CrmWinLossController {
   @ApiOperation({ summary: "Get competitor" })
   @Get("competitors/:id")
   @Permissions("crm.winloss.read")
-  async getCompetitor(@Req() req: AuthenticatedRequest, @Param("id") id: string) {
+  async getCompetitor(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
     return this.svc.getCompetitor(req.user.tenantId, id);
   }
 
@@ -80,7 +110,11 @@ export class CrmWinLossController {
   @ApiOperation({ summary: "Update competitor" })
   @Put("competitors/:id")
   @Permissions("crm.winloss.manage")
-  async updateCompetitor(@Req() req: AuthenticatedRequest, @Param("id") id: string, @Body() body: any) {
+  async updateCompetitor(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+    @Body() body: any,
+  ) {
     const dto = competitorSchema.partial().parse(body);
     return this.svc.updateCompetitor(req.user.tenantId, id, dto);
   }
@@ -88,7 +122,10 @@ export class CrmWinLossController {
   @ApiOperation({ summary: "Delete competitor" })
   @Delete("competitors/:id")
   @Permissions("crm.winloss.manage")
-  async deleteCompetitor(@Req() req: AuthenticatedRequest, @Param("id") id: string) {
+  async deleteCompetitor(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
     return this.svc.deleteCompetitor(req.user.tenantId, id);
   }
 

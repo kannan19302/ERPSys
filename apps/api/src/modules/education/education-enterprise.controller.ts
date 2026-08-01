@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Controller, Get, Param, Query, UseGuards, Req } from "@nestjs/common";
 import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
@@ -17,44 +16,77 @@ export class EducationEnterpriseController {
 
   @Get("student-performance")
   @Permissions("education.enterprise.read")
-  async getStudentPerformance(@Req() req: AuthenticatedRequest, @Query("academicYear") academicYear?: string) {
-    return this.service.getStudentPerformanceAnalytics(req.user.tenantId, academicYear);
+  async getStudentPerformance(
+    @Req() req: AuthenticatedRequest,
+    @Query("academicYear") academicYear?: string,
+  ) {
+    return this.service.getStudentPerformanceAnalytics(
+      req.user.tenantId,
+      academicYear,
+    );
   }
 
   @Get("enrollment-forecasting")
   @Permissions("education.enterprise.read")
-  async getEnrollmentForecasting(@Req() req: AuthenticatedRequest, @Query("horizon") horizon?: string) {
+  async getEnrollmentForecasting(
+    @Req() req: AuthenticatedRequest,
+    @Query("horizon") horizon?: string,
+  ) {
     return this.service.getEnrollmentForecasting(req.user.tenantId, horizon);
   }
 
   @Get("faculty-workload")
   @Permissions("education.enterprise.read")
-  async getFacultyWorkload(@Req() req: AuthenticatedRequest, @Query("period") period?: string) {
+  async getFacultyWorkload(
+    @Req() req: AuthenticatedRequest,
+    @Query("period") period?: string,
+  ) {
     return this.service.getFacultyWorkload(req.user.tenantId, period);
   }
 
   @Get("financial-aid")
   @Permissions("education.enterprise.read")
-  async getFinancialAid(@Req() req: AuthenticatedRequest, @Query("academicYear") academicYear?: string) {
-    return this.service.getFinancialAidAnalytics(req.user.tenantId, academicYear);
+  async getFinancialAid(
+    @Req() req: AuthenticatedRequest,
+    @Query("academicYear") academicYear?: string,
+  ) {
+    return this.service.getFinancialAidAnalytics(
+      req.user.tenantId,
+      academicYear,
+    );
   }
 
   @Get("institutional-effectiveness")
   @Permissions("education.enterprise.read")
-  async getInstitutionalEffectiveness(@Req() req: AuthenticatedRequest, @Query("academicYear") academicYear?: string) {
-    return this.service.getInstitutionalEffectiveness(req.user.tenantId, academicYear);
+  async getInstitutionalEffectiveness(
+    @Req() req: AuthenticatedRequest,
+    @Query("academicYear") academicYear?: string,
+  ) {
+    return this.service.getInstitutionalEffectiveness(
+      req.user.tenantId,
+      academicYear,
+    );
   }
 
   @Get("campus-operations")
   @Permissions("education.enterprise.read")
-  async getCampusOperations(@Req() req: AuthenticatedRequest, @Query("period") period?: string) {
+  async getCampusOperations(
+    @Req() req: AuthenticatedRequest,
+    @Query("period") period?: string,
+  ) {
     return this.service.getCampusOperations(req.user.tenantId, period);
   }
 
   @Get("program-profitability")
   @Permissions("education.enterprise.read")
-  async getProgramProfitability(@Req() req: AuthenticatedRequest, @Query("academicYear") academicYear?: string) {
-    return this.service.getProgramProfitability(req.user.tenantId, academicYear);
+  async getProgramProfitability(
+    @Req() req: AuthenticatedRequest,
+    @Query("academicYear") academicYear?: string,
+  ) {
+    return this.service.getProgramProfitability(
+      req.user.tenantId,
+      academicYear,
+    );
   }
 
   @Get("accreditation-compliance")

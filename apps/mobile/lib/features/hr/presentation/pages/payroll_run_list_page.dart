@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -111,7 +110,7 @@ class _PayrollRunTile extends StatelessWidget {
             radius: Spacing.x4,
             backgroundColor: t.bgSunken,
             child: Icon(Icons.receipt_long_outlined,
-                color: t.textSecondary, size: TypeScale.lg),
+                color: t.textSecondary, size: TypeScale.lg,),
           ),
           const SizedBox(width: Spacing.x3),
           Expanded(

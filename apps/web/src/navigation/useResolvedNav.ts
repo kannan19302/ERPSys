@@ -1,9 +1,8 @@
-// @ts-nocheck
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { FileText } from 'lucide-react';
-import type { ModuleNav, SidebarItem } from './types';
+import React, { useState, useEffect } from "react";
+import { FileText } from "lucide-react";
+import type { ModuleNav, SidebarItem } from "./types";
 
 interface NavOverlay {
   config?: {
@@ -11,14 +10,19 @@ interface NavOverlay {
     hidden?: string[];
     renames?: Record<string, string>;
   };
-  submodules?: { slug: string; name: string; icon?: string | null; pages: { slug: string; title: string }[] }[];
+  submodules?: {
+    slug: string;
+    name: string;
+    icon?: string | null;
+    pages: { slug: string; title: string }[];
+  }[];
 }
 
 /** Resolve the active module slug, accounting for /app/<module>/<page> routes. */
 function activeModuleOf(pathname: string): string {
-  const seg = pathname.split('/');
-  if (seg[1] === 'app' && seg[2]) return seg[2];
-  return seg[1] || '';
+  const seg = pathname.split("/");
+  if (seg[1] === "app" && seg[2]) return seg[2];
+  return seg[1] || "";
 }
 
 /**
@@ -34,7 +38,10 @@ function activeModuleOf(pathname: string): string {
  * components consume only its returned item list. Falls back gracefully when
  * the API is unavailable.
  */
-export function useResolvedNav(appNav: ModuleNav, pathname: string): SidebarItem[] {
+export function useResolvedNav(
+  appNav: ModuleNav,
+  pathname: string,
+): SidebarItem[] {
   const [customPages, setCustomPages] = useState<any[]>([]);
   const [overlay, setOverlay] = useState<NavOverlay | null>(null);
   const activeModule = activeModuleOf(pathname);
@@ -44,27 +51,28 @@ export function useResolvedNav(appNav: ModuleNav, pathname: string): SidebarItem
     let isMounted = true;
     const load = async () => {
       try {
-        const token = localStorage.getItem('token') || '';
-        const res = await fetch('/api/v1/builder/page-registries', {
+        const token = localStorage.getItem("token") || "";
+        const res = await fetch("/api/v1/builder/page-registries", {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
           const pages = await res.json();
-          if (isMounted) setCustomPages(Array.isArray(pages) ? pages : pages?.data || []);
+          if (isMounted)
+            setCustomPages(Array.isArray(pages) ? pages : pages?.data || []);
         } else {
-          const reg = localStorage.getItem('unerp_page_registry');
+          const reg = localStorage.getItem("unerp_page_registry");
           if (reg && isMounted) setCustomPages(JSON.parse(reg));
         }
       } catch {
-        const reg = localStorage.getItem('unerp_page_registry');
+        const reg = localStorage.getItem("unerp_page_registry");
         if (reg && isMounted) setCustomPages(JSON.parse(reg));
       }
     };
     load();
-    window.addEventListener('unerp_page_registry_updated', load);
+    window.addEventListener("unerp_page_registry_updated", load);
     return () => {
       isMounted = false;
-      window.removeEventListener('unerp_page_registry_updated', load);
+      window.removeEventListener("unerp_page_registry_updated", load);
     };
   }, []);
 
@@ -77,7 +85,7 @@ export function useResolvedNav(appNav: ModuleNav, pathname: string): SidebarItem
     }
     const load = async () => {
       try {
-        const token = localStorage.getItem('token') || '';
+        const token = localStorage.getItem("token") || "";
         const res = await fetch(`/api/v1/builder/nav-overlay/${activeModule}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -87,10 +95,10 @@ export function useResolvedNav(appNav: ModuleNav, pathname: string): SidebarItem
       }
     };
     load();
-    window.addEventListener('unerp_nav_overlay_updated', load);
+    window.addEventListener("unerp_nav_overlay_updated", load);
     return () => {
       isMounted = false;
-      window.removeEventListener('unerp_nav_overlay_updated', load);
+      window.removeEventListener("unerp_nav_overlay_updated", load);
     };
   }, [activeModule]);
 
@@ -102,7 +110,9 @@ export function useResolvedNav(appNav: ModuleNav, pathname: string): SidebarItem
     // Apply hide + rename recursively, matching by href (leaves) or name (headers).
     const transform = (list: SidebarItem[]): SidebarItem[] =>
       list
-        .filter((it) => !(it.href && hidden.has(it.href)) && !hidden.has(it.name))
+        .filter(
+          (it) => !(it.href && hidden.has(it.href)) && !hidden.has(it.name),
+        )
         .map((it) => {
           const newName = (it.href && renames[it.href]) || renames[it.name];
           const node: SidebarItem = { ...it, name: newName || it.name };
@@ -111,7 +121,8 @@ export function useResolvedNav(appNav: ModuleNav, pathname: string): SidebarItem
         });
 
     let items =
-      (config.renames && Object.keys(config.renames).length) || (config.hidden && config.hidden.length)
+      (config.renames && Object.keys(config.renames).length) ||
+      (config.hidden && config.hidden.length)
         ? transform(appNav.items)
         : appNav.items;
 
@@ -126,15 +137,17 @@ export function useResolvedNav(appNav: ModuleNav, pathname: string): SidebarItem
     }
 
     // Additive submodule sections (App Studio).
-    const submoduleSections: SidebarItem[] = (overlay?.submodules || []).map((sm) => ({
-      name: sm.name,
-      isHeader: true,
-      items: sm.pages.map((p) => ({
-        name: p.title,
-        href: `/app/${activeModule}/${p.slug}`,
-        icon: FileText,
-      })),
-    }));
+    const submoduleSections: SidebarItem[] = (overlay?.submodules || []).map(
+      (sm) => ({
+        name: sm.name,
+        isHeader: true,
+        items: sm.pages.map((p) => ({
+          name: p.title,
+          href: `/app/${activeModule}/${p.slug}`,
+          icon: FileText,
+        })),
+      }),
+    );
 
     // Legacy non-submodule custom pages, kept under a generic section.
     const moduleCustomPages = customPages.filter(
@@ -142,16 +155,16 @@ export function useResolvedNav(appNav: ModuleNav, pathname: string): SidebarItem
         p.module?.toLowerCase() === activeModule.toLowerCase() &&
         !p.isOverride &&
         !p.submodule &&
-        p.status === 'PUBLISHED',
+        p.status === "PUBLISHED",
     );
     const customSection: SidebarItem[] =
       moduleCustomPages.length > 0
         ? [
             {
-              name: 'Custom Extensions',
+              name: "Custom Extensions",
               isHeader: true,
               items: moduleCustomPages.map((p) => ({
-                name: p.title || p.pageName || 'Custom Page',
+                name: p.title || p.pageName || "Custom Page",
                 href: `/app/${p.module}/${p.slug}`,
                 icon: FileText,
               })),

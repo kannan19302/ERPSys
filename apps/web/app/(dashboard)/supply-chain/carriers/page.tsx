@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 
 export default function CarriersRedirect() {
-  redirect('/supply-chain/operations?tab=carriers');
+  redirect("/supply-chain/operations?tab=carriers");
 }

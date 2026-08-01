@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Injectable,
   NotFoundException,
@@ -8,7 +7,9 @@ import { prisma } from "@unerp/database";
 
 @Injectable()
 export class PaymentMethodsService {
-  public get db(): typeof prisma { return prisma; }
+  public get db(): typeof prisma {
+    return prisma;
+  }
   async listPaymentMethods(tenantId: string) {
     return prisma.paymentMethod.findMany({
       where: { tenantId },
@@ -16,16 +17,19 @@ export class PaymentMethodsService {
     });
   }
 
-  async addPaymentMethod(tenantId: string, dto: {
-    type: string;
-    token: string;
-    isDefault: boolean;
-    billingDetails?: Record<string, unknown>;
-    cardLast4?: string;
-    cardBrand?: string;
-    expMonth?: number;
-    expYear?: number;
-  }) {
+  async addPaymentMethod(
+    tenantId: string,
+    dto: {
+      type: string;
+      token: string;
+      isDefault: boolean;
+      billingDetails?: Record<string, unknown>;
+      cardLast4?: string;
+      cardBrand?: string;
+      expMonth?: number;
+      expYear?: number;
+    },
+  ) {
     if (dto.isDefault) {
       await prisma.paymentMethod.updateMany({
         where: { tenantId, isDefault: true },
@@ -87,12 +91,19 @@ export class PaymentMethodsService {
     return tx;
   }
 
-  async requestRefund(tenantId: string, transactionId: string, body: { amount?: number; reason?: string }) {
+  async requestRefund(
+    tenantId: string,
+    transactionId: string,
+    body: { amount?: number; reason?: string },
+  ) {
     const tx = await prisma.paymentTransaction.findFirst({
       where: { id: transactionId, tenantId },
     });
     if (!tx) throw new NotFoundException("Transaction not found");
-    if (tx.status !== "SUCCEEDED") throw new BadRequestException("Only successful transactions can be refunded");
+    if (tx.status !== "SUCCEEDED")
+      throw new BadRequestException(
+        "Only successful transactions can be refunded",
+      );
 
     return prisma.$transaction([
       prisma.paymentTransaction.update({
@@ -120,8 +131,12 @@ export class PaymentMethodsService {
       select: { status: true, amount: true, type: true, createdAt: true },
     });
 
-    const succeededCount = transactions.filter((t) => t.status === "SUCCEEDED").length;
-    const totalSucceeded = transactions.filter((t) => t.status === "SUCCEEDED").reduce((s, t) => s + Number(t.amount), 0);
+    const succeededCount = transactions.filter(
+      (t) => t.status === "SUCCEEDED",
+    ).length;
+    const totalSucceeded = transactions
+      .filter((t) => t.status === "SUCCEEDED")
+      .reduce((s, t) => s + Number(t.amount), 0);
 
     return {
       totalTransactions: transactions.length,
@@ -130,8 +145,13 @@ export class PaymentMethodsService {
       pendingCount: transactions.filter((t) => t.status === "PENDING").length,
       refundedCount: transactions.filter((t) => t.status === "REFUNDED").length,
       totalSucceeded,
-      totalFailed: transactions.filter((t) => t.status === "FAILED").reduce((s, t) => s + Number(t.amount), 0),
-      successRate: transactions.length > 0 ? Math.round((succeededCount / transactions.length) * 100) : 0,
+      totalFailed: transactions
+        .filter((t) => t.status === "FAILED")
+        .reduce((s, t) => s + Number(t.amount), 0),
+      successRate:
+        transactions.length > 0
+          ? Math.round((succeededCount / transactions.length) * 100)
+          : 0,
     };
   }
 }

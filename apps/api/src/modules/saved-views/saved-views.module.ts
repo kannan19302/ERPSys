@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { SavedViewsGeneratedController } from "./saved-views-generated.controller";
 import { SavedViewsGeneratedService } from "./saved-views-generated.service";
 import { Module } from "@nestjs/common";

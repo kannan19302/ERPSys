@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -50,7 +49,7 @@ class _MarketplaceAppListPageState extends ConsumerState<MarketplaceAppListPage>
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
                 .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value)))
+                    value: e.key, child: Text(e.value),),)
                 .toList(),
           ),
         ],
@@ -84,7 +83,7 @@ class _MarketplaceAppListPageState extends ConsumerState<MarketplaceAppListPage>
                     : '${state.meta.total} app${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -118,28 +117,28 @@ class _MarketplaceAppListPageState extends ConsumerState<MarketplaceAppListPage>
               Row(children: [
                 Expanded(
                   child: Text(a.name,
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
                 UiStatusBadge(label: a.status, tone: _statusTone(a.status)),
-              ]),
+              ],),
               const SizedBox(height: Spacing.x1),
               if (a.description != null)
                 Text(a.description!,
                     maxLines: 2, overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs)),
+                    style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs),),
               const SizedBox(height: Spacing.x1),
               Row(children: [
                 if (a.developer != null)
                   Text(a.developer!,
-                      style: TextStyle(fontSize: TypeScale.xs)),
+                      style: const TextStyle(fontSize: TypeScale.xs),),
                 const Spacer(),
                 if (a.rating != null && a.rating! > 0)
                   Text('\u2605 ${a.rating!.toStringAsFixed(1)}',
-                      style: TextStyle(fontSize: TypeScale.xs)),
+                      style: const TextStyle(fontSize: TypeScale.xs),),
                 const SizedBox(width: Spacing.x1),
                 Text('${a.downloadCount} downloads',
-                    style: TextStyle(fontSize: TypeScale.xs, color: palette.textSecondary)),
-              ]),
+                    style: TextStyle(fontSize: TypeScale.xs, color: palette.textSecondary),),
+              ],),
             ],
           ),
         ),
@@ -177,7 +176,6 @@ class _MarketplaceSubmissionListPageState extends ConsumerState<MarketplaceSubmi
   Widget build(BuildContext context) {
     final state = ref.watch(marketplaceSubmissionListControllerProvider);
     final controller = ref.read(marketplaceSubmissionListControllerProvider.notifier);
-    final t = context.tokens;
     return Scaffold(
       appBar: AppBar(title: const Text('Submissions')),
       body: Column(
@@ -232,19 +230,19 @@ class _MarketplaceSubmissionListPageState extends ConsumerState<MarketplaceSubmi
               Row(children: [
                 Expanded(
                   child: Text(s.appName ?? 'Submission',
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
                 UiStatusBadge(label: s.status, tone: _submissionTone(s.status)),
-              ]),
+              ],),
               const SizedBox(height: Spacing.x1),
               Row(children: [
                 Text('Type: ${s.type}',
-                    style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs)),
+                    style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs),),
                 const Spacer(),
                 if (s.submitterName != null)
                   Text(s.submitterName!,
-                      style: TextStyle(fontSize: TypeScale.xs)),
-              ]),
+                      style: const TextStyle(fontSize: TypeScale.xs),),
+              ],),
             ],
           ),
         ),

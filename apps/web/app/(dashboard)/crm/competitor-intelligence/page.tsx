@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import React from "react";
 import { Card, PageHeader, Button } from "@unerp/ui";

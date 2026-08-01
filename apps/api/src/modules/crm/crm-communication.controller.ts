@@ -1,5 +1,16 @@
-// @ts-nocheck
-import { Controller, Get, Post, Put, Delete, Param, Query, Req, Body, UseGuards, UseInterceptors } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Query,
+  Req,
+  Body,
+  UseGuards,
+  UseInterceptors,
+} from "@nestjs/common";
 import { ApiTags, ApiBearerAuth, ApiOperation } from "@nestjs/swagger";
 import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
@@ -14,7 +25,13 @@ import {
 } from "./crm-communication.service";
 
 interface AuthenticatedRequest extends Request {
-  user: { tenantId: string; userId: string; email: string; roles: string[]; orgId?: string };
+  user: {
+    tenantId: string;
+    userId: string;
+    email: string;
+    roles: string[];
+    orgId?: string;
+  };
 }
 
 @ApiTags("crm-communication")
@@ -31,7 +48,9 @@ export class CrmCommunicationChannelController {
     return this.svc.getChannels(req.user.tenantId);
   }
 
-  @ApiOperation({ summary: "Get communication channel with templates and logs" })
+  @ApiOperation({
+    summary: "Get communication channel with templates and logs",
+  })
   @Get("channels/:id")
   @Permissions("crm.communication.read")
   async getChannel(@Req() req: AuthenticatedRequest, @Param("id") id: string) {
@@ -51,7 +70,11 @@ export class CrmCommunicationChannelController {
   @ApiOperation({ summary: "Update communication channel" })
   @Put("channels/:id")
   @Permissions("crm.communication.manage")
-  async updateChannel(@Req() req: AuthenticatedRequest, @Param("id") id: string, @Body() body: any) {
+  async updateChannel(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+    @Body() body: any,
+  ) {
     const dto = channelSchema.partial().parse(body);
     return this.svc.updateChannel(req.user.tenantId, id, dto);
   }
@@ -59,7 +82,10 @@ export class CrmCommunicationChannelController {
   @ApiOperation({ summary: "Delete communication channel" })
   @Delete("channels/:id")
   @Permissions("crm.communication.manage")
-  async deleteChannel(@Req() req: AuthenticatedRequest, @Param("id") id: string) {
+  async deleteChannel(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
     return this.svc.deleteChannel(req.user.tenantId, id);
   }
 }
@@ -102,7 +128,11 @@ export class CrmCommunicationTemplateController {
   @ApiOperation({ summary: "Update communication template" })
   @Put("templates/:id")
   @Permissions("crm.communication.manage")
-  async updateTemplate(@Req() req: AuthenticatedRequest, @Param("id") id: string, @Body() body: any) {
+  async updateTemplate(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+    @Body() body: any,
+  ) {
     const dto = templateSchema.partial().parse(body);
     return this.svc.updateTemplate(req.user.tenantId, id, dto);
   }
@@ -110,7 +140,10 @@ export class CrmCommunicationTemplateController {
   @ApiOperation({ summary: "Delete communication template" })
   @Delete("templates/:id")
   @Permissions("crm.communication.manage")
-  async deleteTemplate(@Req() req: AuthenticatedRequest, @Param("id") id: string) {
+  async deleteTemplate(
+    @Req() req: AuthenticatedRequest,
+    @Param("id") id: string,
+  ) {
     return this.svc.deleteTemplate(req.user.tenantId, id);
   }
 
@@ -119,9 +152,13 @@ export class CrmCommunicationTemplateController {
   @Permissions("crm.communication.send")
   async sendCommunication(@Req() req: AuthenticatedRequest, @Body() body: any) {
     return this.svc.sendCommunication(
-      req.user.tenantId, req.user.orgId,
-      body.channelId, body.templateId,
-      body.recipient, body.entityType, body.entityId,
+      req.user.tenantId,
+      req.user.orgId,
+      body.channelId,
+      body.templateId,
+      body.recipient,
+      body.entityType,
+      body.entityId,
     );
   }
 }
@@ -143,7 +180,13 @@ export class CrmCommunicationLogController {
     @Query("entityId") entityId?: string,
     @Query("limit") limit?: string,
   ) {
-    return this.svc.getLogs(req.user.tenantId, channelId, entityType, entityId, limit ? Number(limit) : undefined);
+    return this.svc.getLogs(
+      req.user.tenantId,
+      channelId,
+      entityType,
+      entityId,
+      limit ? Number(limit) : undefined,
+    );
   }
 
   @ApiOperation({ summary: "Communication stats" })

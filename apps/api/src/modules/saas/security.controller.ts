@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Controller,
   Get,
@@ -59,7 +58,9 @@ export class SecurityController {
   @Permissions("saas.apikey.read")
   @Get("overview")
   async getSecurityOverview(@Req() req: AuthReq) {
-    const keys = await this.apiKeysService.listApiKeys(req.user.tenantId).catch(() => []);
+    const keys = await this.apiKeysService
+      .listApiKeys(req.user.tenantId)
+      .catch(() => []);
     return {
       apiKeyCount: keys.length,
       activeSessions: 1,
@@ -75,7 +76,13 @@ export class SecurityController {
   @Get("sessions")
   async listActiveSessions(@Req() _req: AuthReq) {
     return [
-      { id: "current", ip: "192.168.1.1", userAgent: "Mozilla/5.0", lastActive: new Date(), isCurrent: true },
+      {
+        id: "current",
+        ip: "192.168.1.1",
+        userAgent: "Mozilla/5.0",
+        lastActive: new Date(),
+        isCurrent: true,
+      },
     ];
   }
 
@@ -90,13 +97,19 @@ export class SecurityController {
   @Permissions("saas.apikey.read")
   @Get("login-history")
   async getLoginHistory(@Req() req: AuthReq) {
-    return this.auditLogService.listAuditLogs(req.user.tenantId, 1, 50, { action: "LOGIN" }).catch(() => ({ items: [], total: 0 }));
+    return this.auditLogService
+      .listAuditLogs(req.user.tenantId, 1, 50, { action: "LOGIN" })
+      .catch(() => ({ items: [], total: 0 }));
   }
 
   @ApiOperation({ summary: "Update password policy" })
   @Permissions("saas.apikey.create")
   @Put("password-policy")
-  async updatePasswordPolicy(@Req() _req: AuthReq, @ZodBody(updatePasswordPolicySchema) body: z.infer<typeof updatePasswordPolicySchema>) {
+  async updatePasswordPolicy(
+    @Req() _req: AuthReq,
+    @ZodBody(updatePasswordPolicySchema)
+    body: z.infer<typeof updatePasswordPolicySchema>,
+  ) {
     return { success: true, ...body };
   }
 
@@ -110,7 +123,11 @@ export class SecurityController {
   @ApiOperation({ summary: "Update IP restrictions" })
   @Permissions("saas.apikey.create")
   @Put("ip-restrictions")
-  async updateIpRestrictions(@Req() _req: AuthReq, @ZodBody(updateIpRestrictionsSchema) body: z.infer<typeof updateIpRestrictionsSchema>) {
+  async updateIpRestrictions(
+    @Req() _req: AuthReq,
+    @ZodBody(updateIpRestrictionsSchema)
+    body: z.infer<typeof updateIpRestrictionsSchema>,
+  ) {
     return { success: true, ...body };
   }
 
@@ -125,7 +142,12 @@ export class SecurityController {
   @Permissions("saas.apikey.create")
   @Post("mfa/enable")
   async enableMfa(@Req() _req: AuthReq) {
-    return { success: true, secret: "TOTP_SECRET_PLACEHOLDER", qrCode: null, backupCodes: ["xxxx-xxxx", "yyyy-yyyy"] };
+    return {
+      success: true,
+      secret: "TOTP_SECRET_PLACEHOLDER",
+      qrCode: null,
+      backupCodes: ["xxxx-xxxx", "yyyy-yyyy"],
+    };
   }
 
   @ApiOperation({ summary: "Disable MFA" })
@@ -145,39 +167,63 @@ export class SecurityController {
   @ApiOperation({ summary: "Create API key" })
   @Permissions("saas.apikey.create")
   @Post("api-keys")
-  async createApiKey(@Req() req: AuthReq, @ZodBody(createApiKeySchema) body: z.infer<typeof createApiKeySchema>) {
-    return this.apiKeysService.createApiKey(req.user.tenantId, body).catch(() => ({ success: false }));
+  async createApiKey(
+    @Req() req: AuthReq,
+    @ZodBody(createApiKeySchema) body: z.infer<typeof createApiKeySchema>,
+  ) {
+    return this.apiKeysService
+      .createApiKey(req.user.tenantId, body)
+      .catch(() => ({ success: false }));
   }
 
   @ApiOperation({ summary: "Revoke API key" })
   @Permissions("saas.apikey.delete")
   @Delete("api-keys/:id")
   async revokeApiKey(@Req() req: AuthReq, @Param("id") id: string) {
-    return this.apiKeysService.revokeApiKey(req.user.tenantId, id).catch(() => ({ success: false }));
+    return this.apiKeysService
+      .revokeApiKey(req.user.tenantId, id)
+      .catch(() => ({ success: false }));
   }
 
   @ApiOperation({ summary: "Get security audit log" })
   @Permissions("saas.audit.read")
   @Get("audit-log")
   async getSecurityAuditLog(@Req() req: AuthReq) {
-    return this.auditLogService.listAuditLogs(req.user.tenantId, 1, 100, {}).catch(() => ({ items: [], total: 0 }));
+    return this.auditLogService
+      .listAuditLogs(req.user.tenantId, 1, 100, {})
+      .catch(() => ({ items: [], total: 0 }));
   }
 
   @ApiOperation({ summary: "List security events" })
   @Permissions("saas.audit.read")
   @Get("events")
   async listSecurityEvents(@Req() req: AuthReq) {
-    const logs = await this.auditLogService.listAuditLogs(req.user.tenantId, 1, 100, {}).catch(() => ({ items: [] }));
-    return (logs as any).items?.filter((l: any) => ["LOGIN", "LOGOUT", "API_KEY_CREATED", "PERMISSION_CHANGE"].includes(l.action)) || [];
+    const logs = await this.auditLogService
+      .listAuditLogs(req.user.tenantId, 1, 100, {})
+      .catch(() => ({ items: [] }));
+    return (
+      (logs as any).items?.filter((l: any) =>
+        ["LOGIN", "LOGOUT", "API_KEY_CREATED", "PERMISSION_CHANGE"].includes(
+          l.action,
+        ),
+      ) || []
+    );
   }
 
   @ApiOperation({ summary: "Get security score" })
   @Permissions("saas.apikey.read")
   @Get("score")
   async getSecurityScore(@Req() req: AuthReq) {
-    const keys = await this.apiKeysService.listApiKeys(req.user.tenantId).catch(() => []);
-    const expiredKeys = (keys as any[]).filter((k) => k.expiresAt && new Date(k.expiresAt) < new Date()).length;
-    const score = Math.max(0, 100 - expiredKeys * 10 - (keys.length > 5 ? 10 : 0));
+    const keys = await this.apiKeysService
+      .listApiKeys(req.user.tenantId)
+      .catch(() => []);
+    const expiredKeys = (keys as any[]).filter(
+      (k) => k.expiresAt && new Date(k.expiresAt) < new Date(),
+    ).length;
+    const score = Math.max(
+      0,
+      100 - expiredKeys * 10 - (keys.length > 5 ? 10 : 0),
+    );
     return {
       score,
       checks: {

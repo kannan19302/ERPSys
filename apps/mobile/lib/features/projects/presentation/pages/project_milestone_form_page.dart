@@ -65,7 +65,7 @@ class _ProjectMilestoneFormPageState extends ConsumerState<ProjectMilestoneFormP
     };
 
     final result = await ref.read(milestoneListControllerProvider.notifier).save(
-      payload, id: widget.milestoneId);
+      payload, id: widget.milestoneId,);
 
     if (!context.mounted) return;
     setState(() => _saving = false);
@@ -129,7 +129,7 @@ class _ProjectMilestoneFormPageState extends ConsumerState<ProjectMilestoneFormP
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _status,
+              initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: ['PENDING', 'IN_PROGRESS', 'ACHIEVED', 'MISSED']
                   .map((v) => DropdownMenuItem<String>(value: v, child: Text(v)))

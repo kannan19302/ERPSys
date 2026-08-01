@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 
 import { PageHeader, Card } from "@unerp/ui";

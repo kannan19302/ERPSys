@@ -1,7 +1,6 @@
-// @ts-nocheck
-import { Injectable } from '@nestjs/common';
-import { signTenantToken, TenantContextClaims } from '@unerp/service-kit';
-import { secretForApp } from './ext-secret.util';
+import { Injectable } from "@nestjs/common";
+import { signTenantToken, TenantContextClaims } from "@unerp/service-kit";
+import { secretForApp } from "./ext-secret.util";
 
 /**
  * Signs the short-lived tenant-context token the gateway attaches to every
@@ -10,7 +9,7 @@ import { secretForApp } from './ext-secret.util';
  */
 @Injectable()
 export class TenantTokenService {
-  sign(claims: Omit<TenantContextClaims, 'iat' | 'exp'>): string {
+  sign(claims: Omit<TenantContextClaims, "iat" | "exp">): string {
     return signTenantToken(claims, secretForApp(claims.appSlug));
   }
 }

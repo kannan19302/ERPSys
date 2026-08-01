@@ -1,13 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/utils/formatters.dart';
-import '../../../../core/widgets/state_views.dart';
-import '../../../../core/widgets/ui_card.dart';
-import '../../domain/entities/finance.dart';
-import '../providers/finance_providers.dart';
 
 class PaymentDetailPage extends ConsumerWidget {
   const PaymentDetailPage({required this.paymentId, super.key});

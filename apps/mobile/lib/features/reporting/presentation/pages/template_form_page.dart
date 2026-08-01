@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/usecase/result.dart';
-import '../../domain/entities/reporting.dart';
 import '../providers/reporting_providers.dart';
 
 class ReportTemplateFormPage extends ConsumerStatefulWidget {
@@ -75,7 +72,6 @@ class _ReportTemplateFormPageState extends ConsumerState<ReportTemplateFormPage>
 
   @override
   Widget build(BuildContext context) {
-    final t = context.tokens;
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEditing ? 'Edit Template' : 'New Template'),
@@ -106,7 +102,7 @@ class _ReportTemplateFormPageState extends ConsumerState<ReportTemplateFormPage>
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _format,
+              initialValue: _format,
               decoration: const InputDecoration(labelText: 'Format'),
               items: const [
                 DropdownMenuItem(value: 'PDF', child: Text('PDF')),
@@ -118,7 +114,7 @@ class _ReportTemplateFormPageState extends ConsumerState<ReportTemplateFormPage>
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _status,
+              initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: const [
                 DropdownMenuItem(value: 'DRAFT', child: Text('Draft')),

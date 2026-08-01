@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -130,7 +129,7 @@ class _EmailTemplateFormPageState extends ConsumerState<EmailTemplateFormPage> {
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _category.isEmpty ? null : _category,
+              initialValue: _category.isEmpty ? null : _category,
               decoration: const InputDecoration(labelText: 'Category'),
               items: _categories
                   .map(

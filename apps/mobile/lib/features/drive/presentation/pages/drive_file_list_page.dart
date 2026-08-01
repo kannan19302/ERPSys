@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -59,7 +58,7 @@ class _DriveFileListPageState extends ConsumerState<DriveFileListPage> {
                     : '${state.meta.total} file${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -96,12 +95,12 @@ class _DriveFileListPageState extends ConsumerState<DriveFileListPage> {
                   Text(f.name, style: Theme.of(context).textTheme.titleSmall),
                   const SizedBox(height: Spacing.x1),
                   Text('${f.mimeType} · ${f.size} bytes',
-                      style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs)),
+                      style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs),),
                 ],
               ),
             ),
             if (f.isStarred) Icon(Icons.star, size: TypeScale.sm, color: context.tokens.warning),
-          ]),
+          ],),
         ),
       ),
     );

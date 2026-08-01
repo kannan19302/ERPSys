@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -63,7 +62,7 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
                     : '${state.meta.total} course${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -99,10 +98,10 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(c.name,
-                          style: Theme.of(context).textTheme.titleSmall),
+                          style: Theme.of(context).textTheme.titleSmall,),
                       const SizedBox(height: 2),
                       Text(c.code,
-                          style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs)),
+                          style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs),),
                     ],
                   ),
                 ),
@@ -110,16 +109,16 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
                   label: c.status,
                   tone: c.status == 'ACTIVE' ? UiTone.success : UiTone.neutral,
                 ),
-              ]),
+              ],),
               if (c.instructor != null) ...[
                 const SizedBox(height: Spacing.x1),
                 Text('Instructor: ${c.instructor}',
-                    style: TextStyle(fontSize: TypeScale.xs)),
+                    style: const TextStyle(fontSize: TypeScale.xs),),
               ],
               if (c.credits > 0) ...[
                 const SizedBox(height: Spacing.x1),
                 Text('${c.credits} credits | ${c.durationHours}h',
-                    style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs)),
+                    style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs),),
               ],
             ],
           ),

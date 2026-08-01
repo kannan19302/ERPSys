@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -51,7 +50,7 @@ class _TaskListPageState extends ConsumerState<TaskListPage> {
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
                 .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value)))
+                    value: e.key, child: Text(e.value),),)
                 .toList(),
           ),
         ],
@@ -85,7 +84,7 @@ class _TaskListPageState extends ConsumerState<TaskListPage> {
                     : '${state.meta.total} task${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -133,13 +132,13 @@ class _TaskTile extends StatelessWidget {
             Row(children: [
               Expanded(
                 child: Text(task.title,
-                    style: Theme.of(context).textTheme.titleSmall),
+                    style: Theme.of(context).textTheme.titleSmall,),
               ),
               UiStatusBadge(
                 label: task.status,
                 tone: _statusTone(task.status),
               ),
-            ]),
+            ],),
             const SizedBox(height: Spacing.x1),
             Row(children: [
               UiStatusBadge(
@@ -151,9 +150,9 @@ class _TaskTile extends StatelessWidget {
                 Icon(Icons.person_outline, size: TypeScale.sm, color: t.textTertiary),
                 const SizedBox(width: Spacing.x0_5),
                 Text(task.assigneeName!,
-                    style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
+                    style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
               ],
-            ]),
+            ],),
             if (task.dueDate != null || task.estimatedHours != null) ...[
               const SizedBox(height: Spacing.x1),
               Row(children: [
@@ -161,14 +160,14 @@ class _TaskTile extends StatelessWidget {
                   Icon(Icons.event_outlined, size: TypeScale.sm, color: t.textTertiary),
                   const SizedBox(width: Spacing.x0_5),
                   Text(Formatters.date(task.dueDate!),
-                      style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
+                      style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
                 ],
                 if (task.estimatedHours != null) ...[
                   const Spacer(),
                   Text('${task.estimatedHours!.toStringAsFixed(1)}h est.',
-                      style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
+                      style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
                 ],
-              ]),
+              ],),
             ],
           ],
         ),

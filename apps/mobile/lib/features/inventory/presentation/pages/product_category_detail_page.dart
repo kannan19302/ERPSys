@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -105,8 +104,6 @@ class _CategoryDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Palette t = context.tokens;
-
     return ListView(
       padding: const EdgeInsets.all(Spacing.x4),
       children: <Widget>[

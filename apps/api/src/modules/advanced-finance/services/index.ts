@@ -1,4 +1,3 @@
-// @ts-nocheck
 export { GlAccountingService } from "./gl-accounting.service";
 export { BudgetingService } from "./budgeting.service";
 export { BankingService } from "./banking.service";

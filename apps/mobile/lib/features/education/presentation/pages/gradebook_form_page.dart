@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/usecase/result.dart';
 import '../providers/education_providers.dart';
 
 class GradebookFormPage extends ConsumerStatefulWidget {
@@ -46,7 +44,7 @@ class _GradebookFormPageState extends ConsumerState<GradebookFormPage> {
       'grade': _gradeCtrl.text.trim().isEmpty ? null : _gradeCtrl.text.trim(),
       'remarks': _remarksCtrl.text.trim().isEmpty ? null : _remarksCtrl.text.trim(),
       'gradeDate': DateTime.now().toIso8601String(),
-    }, id: widget.gradeId);
+    }, id: widget.gradeId,);
     if (!context.mounted) return;
     setState(() => _saving = false);
     result.fold(
@@ -65,7 +63,7 @@ class _GradebookFormPageState extends ConsumerState<GradebookFormPage> {
           child: _saving
               ? const SizedBox(height: Spacing.x5, width: Spacing.x5, child: CircularProgressIndicator(strokeWidth: 2))
               : const Text('Save'),
-        )],
+        ),],
       ),
       body: Form(
         key: _formKey,
@@ -73,23 +71,23 @@ class _GradebookFormPageState extends ConsumerState<GradebookFormPage> {
           padding: const EdgeInsets.all(Spacing.x4),
           children: [
             TextFormField(controller: _studentIdCtrl, decoration: const InputDecoration(labelText: 'Student ID *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null),
+              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,),
             const SizedBox(height: Spacing.x4),
             TextFormField(controller: _courseIdCtrl, decoration: const InputDecoration(labelText: 'Course ID *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null),
+              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,),
             const SizedBox(height: Spacing.x4),
             Row(children: [
               Expanded(child: TextFormField(controller: _scoreCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Score *'),
-                validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null)),
+                validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,),),
               const SizedBox(width: Spacing.x4),
               Expanded(child: TextFormField(controller: _maxScoreCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Max Score'))),
-            ]),
+            ],),
             const SizedBox(height: Spacing.x4),
             TextFormField(controller: _gradeCtrl, decoration: const InputDecoration(
-              labelText: 'Grade', helperText: 'e.g. A, B+, 85%')),
+              labelText: 'Grade', helperText: 'e.g. A, B+, 85%',),),
             const SizedBox(height: Spacing.x4),
             TextFormField(controller: _remarksCtrl, maxLines: 3, decoration: const InputDecoration(
-              labelText: 'Remarks', alignLabelWithHint: true)),
+              labelText: 'Remarks', alignLabelWithHint: true,),),
           ],
         ),
       ),

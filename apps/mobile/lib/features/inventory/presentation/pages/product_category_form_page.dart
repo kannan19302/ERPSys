@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -145,7 +144,7 @@ class _ProductCategoryFormPageState
           SnackBar(
             content: Text(_isEditing
                 ? 'Category updated'
-                : 'Category created'),
+                : 'Category created',),
           ),
         );
         Navigator.of(context).pop();

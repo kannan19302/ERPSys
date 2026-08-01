@@ -1,13 +1,21 @@
-// @ts-nocheck
-'use client';
-import styles from './ApiKeysTab.module.css';
-import React, { useState, useEffect } from 'react';
+"use client";
+import styles from "./ApiKeysTab.module.css";
+import React, { useState, useEffect } from "react";
 import {
-  Card, Button, Badge, DataTable, type Column,
-  Modal, TextField, FormField, Select, Spinner, ConfirmDialog,
-} from '@unerp/ui';
-import { Key, Plus, Trash2, Copy, CheckCircle } from 'lucide-react';
-import { useApiClient } from '@unerp/framework';
+  Card,
+  Button,
+  Badge,
+  DataTable,
+  type Column,
+  Modal,
+  TextField,
+  FormField,
+  Select,
+  Spinner,
+  ConfirmDialog,
+} from "@unerp/ui";
+import { Key, Plus, Trash2, Copy, CheckCircle } from "lucide-react";
+import { useApiClient } from "@unerp/framework";
 
 interface ApiKeyData {
   id: string;
@@ -20,11 +28,11 @@ interface ApiKeyData {
 }
 
 const SCOPES = [
-  { value: 'projects.project.read', label: 'View Projects' },
-  { value: 'projects.project.create', label: 'Create Projects' },
-  { value: 'pos.terminal.read', label: 'View POS Counters' },
-  { value: 'analytics.report.read', label: 'Run Reports' },
-  { value: 'admin.setting.read', label: 'View Settings' },
+  { value: "projects.project.read", label: "View Projects" },
+  { value: "projects.project.create", label: "Create Projects" },
+  { value: "pos.terminal.read", label: "View POS Counters" },
+  { value: "analytics.report.read", label: "Run Reports" },
+  { value: "admin.setting.read", label: "View Settings" },
 ];
 
 export default function ApiKeysTab() {
@@ -35,18 +43,25 @@ export default function ApiKeysTab() {
   const [deleteTarget, setDeleteTarget] = useState<ApiKeyData | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const [newName, setNewName] = useState('');
+  const [newName, setNewName] = useState("");
   const [newRate, setNewRate] = useState(120);
-  const [newScopes, setNewScopes] = useState<string[]>(['projects.project.read']);
+  const [newScopes, setNewScopes] = useState<string[]>([
+    "projects.project.read",
+  ]);
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     (async () => {
       try {
-        const data = await client.get<ApiKeyData[] | { data?: ApiKeyData[] }>('/admin/api-keys');
+        const data = await client.get<ApiKeyData[] | { data?: ApiKeyData[] }>(
+          "/admin/api-keys",
+        );
         setKeys(Array.isArray(data) ? data : data.data || []);
-      } catch { /* use empty */ }
-      finally { setLoading(false); }
+      } catch {
+        /* use empty */
+      } finally {
+        setLoading(false);
+      }
     })();
   }, [client]);
 
@@ -54,13 +69,18 @@ export default function ApiKeysTab() {
     if (!newName.trim()) return;
     setCreating(true);
     try {
-      const data = await client.post<ApiKeyData>('/admin/api-keys', { name: newName, rateLimit: newRate, scopes: newScopes });
+      const data = await client.post<ApiKeyData>("/admin/api-keys", {
+        name: newName,
+        rateLimit: newRate,
+        scopes: newScopes,
+      });
       setKeys((prev) => [...prev, data]);
-    } catch { /* handled */ }
-    finally {
+    } catch {
+      /* handled */
+    } finally {
       setCreating(false);
       setCreateOpen(false);
-      setNewName('');
+      setNewName("");
     }
   };
 
@@ -72,23 +92,32 @@ export default function ApiKeysTab() {
 
   const columns: Column<ApiKeyData>[] = [
     {
-      key: 'name', header: 'API Key',
+      key: "name",
+      header: "API Key",
       render: (row) => (
         <div className="ui-hstack-3">
-          <div className={styles.s1}
-          >
+          <div className={styles.s1}>
             <Key size={16} />
           </div>
           <div>
             <div className="ui-heading-sm">{row.name}</div>
             <div className="ui-hstack-2">
-              <code className="ui-text-caption ui-text-tertiary">{row.prefix}...</code>
+              <code className="ui-text-caption ui-text-tertiary">
+                {row.prefix}...
+              </code>
               <button
-                onClick={(e) => { e.stopPropagation(); handleCopy(row.prefix); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCopy(row.prefix);
+                }}
                 className={styles.s2}
                 title="Copy key prefix"
               >
-                {copiedId === row.prefix ? <CheckCircle size={12} className="ui-text-success" /> : <Copy size={12} />}
+                {copiedId === row.prefix ? (
+                  <CheckCircle size={12} className="ui-text-success" />
+                ) : (
+                  <Copy size={12} />
+                )}
               </button>
             </div>
           </div>
@@ -96,24 +125,38 @@ export default function ApiKeysTab() {
       ),
     },
     {
-      key: 'scopes', header: 'Scopes',
+      key: "scopes",
+      header: "Scopes",
       render: (row) => (
         <div className={styles.s3}>
-          {row.scopes.slice(0, 2).map((s) => <Badge key={s} variant="info">{s.split('.').pop()}</Badge>)}
-          {row.scopes.length > 2 && <Badge variant="default">+{row.scopes.length - 2}</Badge>}
+          {row.scopes.slice(0, 2).map((s) => (
+            <Badge key={s} variant="info">
+              {s.split(".").pop()}
+            </Badge>
+          ))}
+          {row.scopes.length > 2 && (
+            <Badge variant="default">+{row.scopes.length - 2}</Badge>
+          )}
         </div>
       ),
     },
     {
-      key: 'rateLimit', header: 'Rate Limit',
+      key: "rateLimit",
+      header: "Rate Limit",
       render: (row) => <span className="text-sm">{row.rateLimit}/min</span>,
     },
     {
-      key: 'status', header: 'Status',
-      render: (row) => <Badge variant={row.status === 'ACTIVE' ? 'success' : 'danger'}>{row.status}</Badge>,
+      key: "status",
+      header: "Status",
+      render: (row) => (
+        <Badge variant={row.status === "ACTIVE" ? "success" : "danger"}>
+          {row.status}
+        </Badge>
+      ),
     },
     {
-      key: 'createdAt', header: 'Created',
+      key: "createdAt",
+      header: "Created",
       render: (row) => (
         <span className="ui-text-xs-tertiary">
           {new Date(row.createdAt).toLocaleDateString()}
@@ -121,10 +164,16 @@ export default function ApiKeysTab() {
       ),
     },
     {
-      key: 'actions', header: '', align: 'right' as const, width: '60px',
+      key: "actions",
+      header: "",
+      align: "right" as const,
+      width: "60px",
       render: (row) => (
         <button
-          onClick={(e) => { e.stopPropagation(); setDeleteTarget(row); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            setDeleteTarget(row);
+          }}
           title="Revoke"
           className={styles.s4}
         >
@@ -162,17 +211,38 @@ export default function ApiKeysTab() {
         size="md"
         footer={
           <>
-            <Button variant="secondary" onClick={() => setCreateOpen(false)}>Cancel</Button>
-            <Button variant="primary" onClick={handleCreate} disabled={creating || !newName.trim()}>
-              {creating ? <><Spinner size="sm" /> Creating...</> : 'Create Key'}
+            <Button variant="secondary" onClick={() => setCreateOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleCreate}
+              disabled={creating || !newName.trim()}
+            >
+              {creating ? (
+                <>
+                  <Spinner size="sm" /> Creating...
+                </>
+              ) : (
+                "Create Key"
+              )}
             </Button>
           </>
         }
       >
         <div className="ui-stack-4">
-          <TextField label="Key Name" placeholder="e.g. Production Integration" required value={newName} onChange={(e) => setNewName(e.target.value)} />
+          <TextField
+            label="Key Name"
+            placeholder="e.g. Production Integration"
+            required
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+          />
           <FormField label="Rate Limit (requests/minute)">
-            <Select value={newRate} onChange={(e) => setNewRate(Number(e.target.value))}>
+            <Select
+              value={newRate}
+              onChange={(e) => setNewRate(Number(e.target.value))}
+            >
               <option value={60}>60/min</option>
               <option value={120}>120/min</option>
               <option value={300}>300/min</option>
@@ -181,17 +251,18 @@ export default function ApiKeysTab() {
             </Select>
           </FormField>
           <FormField label="Scopes" required>
-            <div className={styles.s5}
-            >
+            <div className={styles.s5}>
               {SCOPES.map((scope) => (
                 <label key={scope.value} className={styles.s6}>
                   <input
                     type="checkbox"
                     checked={newScopes.includes(scope.value)}
                     onChange={(e) => {
-                      setNewScopes(e.target.checked
-                        ? [...newScopes, scope.value]
-                        : newScopes.filter((s) => s !== scope.value));
+                      setNewScopes(
+                        e.target.checked
+                          ? [...newScopes, scope.value]
+                          : newScopes.filter((s) => s !== scope.value),
+                      );
                     }}
                     className={styles.s7}
                   />
@@ -207,9 +278,19 @@ export default function ApiKeysTab() {
       <ConfirmDialog
         open={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
-        onConfirm={() => { setKeys(keys.filter((k) => k.id !== deleteTarget?.id)); setDeleteTarget(null); }}
+        onConfirm={() => {
+          setKeys(keys.filter((k) => k.id !== deleteTarget?.id));
+          setDeleteTarget(null);
+        }}
         title="Revoke API Key"
-        message={deleteTarget ? <span>Revoke <strong>{deleteTarget.name}</strong>? This cannot be undone and will immediately break any integrations using this key.</span> : undefined}
+        message={
+          deleteTarget ? (
+            <span>
+              Revoke <strong>{deleteTarget.name}</strong>? This cannot be undone
+              and will immediately break any integrations using this key.
+            </span>
+          ) : undefined
+        }
         confirmLabel="Revoke Key"
         variant="danger"
       />

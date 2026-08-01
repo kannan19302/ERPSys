@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 
 import React from "react";
@@ -254,7 +253,8 @@ export function AppHeader({
   GLOBAL_SEARCH_ITEMS,
 }: AppHeaderProps) {
   const router = useRouter();
-  const { pathname } = typeof window !== "undefined" ? window.location : { pathname: "/" };
+  const { pathname } =
+    typeof window !== "undefined" ? window.location : { pathname: "/" };
 
   const headerClass = `${styles.header} ${theme === "light" ? styles.headerLight : styles.headerDark}`;
   const btnStyle = `${styles.actionBtn} ${theme === "light" ? styles.actionBtnLight : styles.actionBtnDark}`;
@@ -347,18 +347,27 @@ export function AppHeader({
               </div>
             )}
           </div>
-          
+
           {/* Breadcrumbs */}
           {!isAppsLanding && pathname && (
             <div className="hidden md:flex items-center space-x-2 text-sm ml-4 text-[var(--color-text-secondary)] border-l border-[var(--color-border)] pl-4">
-              {pathname.split("/").filter(Boolean).map((part, i, arr) => (
-                <React.Fragment key={i}>
-                  {i > 0 && <span>/</span>}
-                  <span className={i === arr.length - 1 ? "font-medium text-[var(--color-text)]" : "opacity-80 capitalize"}>
-                    {part.replace(/-/g, " ")}
-                  </span>
-                </React.Fragment>
-              ))}
+              {pathname
+                .split("/")
+                .filter(Boolean)
+                .map((part, i, arr) => (
+                  <React.Fragment key={i}>
+                    {i > 0 && <span>/</span>}
+                    <span
+                      className={
+                        i === arr.length - 1
+                          ? "font-medium text-[var(--color-text)]"
+                          : "opacity-80 capitalize"
+                      }
+                    >
+                      {part.replace(/-/g, " ")}
+                    </span>
+                  </React.Fragment>
+                ))}
             </div>
           )}
         </div>

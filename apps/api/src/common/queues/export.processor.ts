@@ -1,24 +1,26 @@
-// @ts-nocheck
-import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
-import { Job } from 'bullmq';
-import { pinoLogger } from '../services/logger.service';
-import { syncBackgroundJobStatus } from './job-tracking.util';
+import { Processor, WorkerHost, OnWorkerEvent } from "@nestjs/bullmq";
+import { Job } from "bullmq";
+import { pinoLogger } from "../services/logger.service";
+import { syncBackgroundJobStatus } from "./job-tracking.util";
 
 interface ExportJobData {
   tenantId: string;
   userId: string;
   entity: string;
-  format: 'csv' | 'xlsx' | 'pdf';
+  format: "csv" | "xlsx" | "pdf";
   filters?: Record<string, unknown>;
   callbackUrl?: string;
 }
 
-@Processor('export')
+@Processor("export")
 export class ExportProcessor extends WorkerHost {
   async process(job: Job<ExportJobData>): Promise<{ fileUrl: string }> {
     const { tenantId, entity, format, userId } = job.data;
 
-    pinoLogger.info({ jobId: job.id, tenantId, entity, format, queue: 'export' }, 'Processing export job');
+    pinoLogger.info(
+      { jobId: job.id, tenantId, entity, format, queue: "export" },
+      "Processing export job",
+    );
 
     await job.updateProgress(10);
 
@@ -35,7 +37,7 @@ export class ExportProcessor extends WorkerHost {
 
     await job.updateProgress(100);
 
-    pinoLogger.info({ jobId: job.id, fileUrl, userId }, 'Export completed');
+    pinoLogger.info({ jobId: job.id, fileUrl, userId }, "Export completed");
 
     return { fileUrl };
   }
@@ -45,22 +47,27 @@ export class ExportProcessor extends WorkerHost {
    * with real BullMQ lifecycle events, correlated by `bullJobId`. See P1-1 in
    * .ai/ADMIN_MODULE_COMPLETION_REQUIREMENTS.md — previously these were unconnected systems.
    */
-  @OnWorkerEvent('active')
+  @OnWorkerEvent("active")
   async onActive(job: Job<ExportJobData>) {
-    await syncBackgroundJobStatus('export', String(job.id), { status: 'ACTIVE' });
+    await syncBackgroundJobStatus("export", String(job.id), {
+      status: "ACTIVE",
+    });
   }
 
-  @OnWorkerEvent('completed')
+  @OnWorkerEvent("completed")
   async onCompleted(job: Job<ExportJobData>, result: { fileUrl: string }) {
-    await syncBackgroundJobStatus('export', String(job.id), { status: 'COMPLETED', result });
+    await syncBackgroundJobStatus("export", String(job.id), {
+      status: "COMPLETED",
+      result,
+    });
   }
 
-  @OnWorkerEvent('failed')
+  @OnWorkerEvent("failed")
   async onFailed(job: Job<ExportJobData> | undefined, error: Error) {
     if (!job) return;
-    await syncBackgroundJobStatus('export', String(job.id), {
-      status: 'FAILED',
-      error: error?.message ?? 'Unknown error',
+    await syncBackgroundJobStatus("export", String(job.id), {
+      status: "FAILED",
+      error: error?.message ?? "Unknown error",
     });
   }
 }

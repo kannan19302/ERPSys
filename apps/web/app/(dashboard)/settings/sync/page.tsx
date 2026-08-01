@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 
 export default function SyncRedirectPage() {
-  redirect('/settings/import-export?tab=sync');
+  redirect("/settings/import-export?tab=sync");
 }

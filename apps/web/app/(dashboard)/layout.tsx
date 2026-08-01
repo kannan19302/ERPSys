@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import styles from "./layout.module.css";
 // This entire route group is an authenticated, client-only dashboard: every

@@ -1,117 +1,177 @@
-// @ts-nocheck
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException, Logger } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import {
+  pipelines,
+  configMaps,
+  monitorDashboards,
+  alertConfigs,
+  logEntries,
+  backupJobs,
+  migrations,
+  healthChecks,
+  errorRecords,
+  uptimeRecords,
+  slaContracts,
+  incidents,
+  capacityPlans,
+  changeRequests,
+  certificates,
+  findRecord,
+} from "./devops-deep.store";
 
 @Injectable()
 export class DevopsDeepV3Service {
+  private readonly logger = new Logger(DevopsDeepV3Service.name);
+
   async getPipeline(tenantId: string, id: string) {
-    return this.findOrThrow("devopsPipeline", tenantId, id);
+    const item = findRecord(pipelines, tenantId, id);
+    if (!item) throw new NotFoundException("Pipeline not found");
+    return item;
   }
   async cancelPipeline(tenantId: string, id: string) {
-    await prisma.devopsPipeline.updateMany({
-      where: { id, tenantId },
-      data: { lastStatus: "CANCELLED" },
-    });
+    const item = findRecord(pipelines, tenantId, id);
+    if (!item) throw new NotFoundException("Pipeline not found");
+    item.lastStatus = "CANCELLED";
+    item.updatedAt = new Date();
     return { cancelled: true };
   }
   async getDeployment(tenantId: string, id: string) {
-    return this.findOrThrow("devopsDeployment", tenantId, id);
+    const item = await prisma.deployment.findFirst({ where: { id, tenantId } });
+    if (!item) throw new NotFoundException("Deployment not found");
+    return item;
   }
   async cancelDeployment(tenantId: string, id: string) {
-    await prisma.devopsDeployment.updateMany({
-      where: { id, tenantId },
+    const item = await prisma.deployment.findFirst({ where: { id, tenantId } });
+    if (!item) throw new NotFoundException("Deployment not found");
+    return prisma.deployment.update({
+      where: { id },
       data: { status: "CANCELLED" },
     });
-    return { cancelled: true };
   }
   async getEnvironment(tenantId: string, id: string) {
-    return this.findOrThrow("devopsEnvironment", tenantId, id);
+    const item = await prisma.environment.findFirst({
+      where: { id, tenantId },
+    });
+    if (!item) throw new NotFoundException("Environment not found");
+    return item;
   }
   async getConfigMap(tenantId: string, id: string) {
-    return this.findOrThrow("devopsConfigMap", tenantId, id);
+    const item = findRecord(configMaps, tenantId, id);
+    if (!item) throw new NotFoundException("Config map not found");
+    return item;
   }
   async getFeatureFlag(tenantId: string, flagKey: string) {
-    return prisma.devopsFeatureFlag.findUnique({
-      where: { tenantId_flagKey: { tenantId, flagKey } },
+    const item = await prisma.saasFeatureFlag.findFirst({
+      where: { tenantId, slug: flagKey },
     });
+    if (!item) throw new NotFoundException("Feature flag not found");
+    return item;
   }
   async enableFeatureFlag(tenantId: string, flagKey: string) {
-    await prisma.devopsFeatureFlag.updateMany({
-      where: { tenantId, flagKey },
+    const item = await prisma.saasFeatureFlag.findFirst({
+      where: { tenantId, slug: flagKey },
+    });
+    if (!item) throw new NotFoundException("Feature flag not found");
+    return prisma.saasFeatureFlag.update({
+      where: { id: item.id },
       data: { isEnabled: true },
     });
-    return { enabled: true };
   }
   async disableFeatureFlag(tenantId: string, flagKey: string) {
-    await prisma.devopsFeatureFlag.updateMany({
-      where: { tenantId, flagKey },
+    const item = await prisma.saasFeatureFlag.findFirst({
+      where: { tenantId, slug: flagKey },
+    });
+    if (!item) throw new NotFoundException("Feature flag not found");
+    return prisma.saasFeatureFlag.update({
+      where: { id: item.id },
       data: { isEnabled: false },
     });
-    return { disabled: true };
   }
   async getDashboard(tenantId: string, id: string) {
-    return this.findOrThrow("devopsMonitorDashboard", tenantId, id);
+    const item = findRecord(monitorDashboards, tenantId, id);
+    if (!item) throw new NotFoundException("Monitor dashboard not found");
+    return item;
   }
   async getAlertConfig(tenantId: string, id: string) {
-    return this.findOrThrow("devopsAlertConfig", tenantId, id);
+    const item = findRecord(alertConfigs, tenantId, id);
+    if (!item) throw new NotFoundException("Alert config not found");
+    return item;
   }
   async getLogEntry(tenantId: string, id: string) {
-    return this.findOrThrow("devopsLogEntry", tenantId, id);
+    const item = findRecord(logEntries, tenantId, id);
+    if (!item) throw new NotFoundException("Log entry not found");
+    return item;
   }
   async exportLogs(tenantId: string, level?: string) {
-    const where: any = { tenantId };
-    if (level) where.level = level;
-    const data = await prisma.devopsLogEntry.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-    });
+    const data = logEntries
+      .filter((l) => l.tenantId === tenantId)
+      .filter((l) => (level ? l.level === level : true))
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     return { data, format: "json" };
   }
   async getBackupJob(tenantId: string, id: string) {
-    return this.findOrThrow("devopsBackupJob", tenantId, id);
+    const item = findRecord(backupJobs, tenantId, id);
+    if (!item) throw new NotFoundException("Backup job not found");
+    return item;
   }
   async getMigration(tenantId: string, id: string) {
-    return this.findOrThrow("devopsMigrationRecord", tenantId, id);
+    const item = findRecord(migrations, tenantId, id);
+    if (!item) throw new NotFoundException("Migration record not found");
+    return item;
   }
   async getHealthCheck(tenantId: string, id: string) {
-    return this.findOrThrow("devopsHealthCheck", tenantId, id);
+    const item = findRecord(healthChecks, tenantId, id);
+    if (!item) throw new NotFoundException("Health check not found");
+    return item;
   }
   async getError(tenantId: string, id: string) {
-    return this.findOrThrow("devopsErrorRecord", tenantId, id);
+    const item = findRecord(errorRecords, tenantId, id);
+    if (!item) throw new NotFoundException("Error record not found");
+    return item;
   }
   async getUptime(tenantId: string, id: string) {
-    return this.findOrThrow("devopsUptimeRecord", tenantId, id);
+    const item = findRecord(uptimeRecords, tenantId, id);
+    if (!item) throw new NotFoundException("Uptime record not found");
+    return item;
   }
   async getSlaContract(tenantId: string, id: string) {
-    return this.findOrThrow("devopsSlaContract", tenantId, id);
+    const item = findRecord(slaContracts, tenantId, id);
+    if (!item) throw new NotFoundException("SLA contract not found");
+    return item;
   }
   async getIncident(tenantId: string, id: string) {
-    return this.findOrThrow("devopsIncident", tenantId, id);
+    const item = findRecord(incidents, tenantId, id);
+    if (!item) throw new NotFoundException("Incident not found");
+    return item;
   }
   async getCapacityPlan(tenantId: string, id: string) {
-    return this.findOrThrow("devopsCapacityPlan", tenantId, id);
+    const item = findRecord(capacityPlans, tenantId, id);
+    if (!item) throw new NotFoundException("Capacity plan not found");
+    return item;
   }
   async getChangeRequest(tenantId: string, id: string) {
-    return this.findOrThrow("devopsChangeRequest", tenantId, id);
+    const item = findRecord(changeRequests, tenantId, id);
+    if (!item) throw new NotFoundException("Change request not found");
+    return item;
   }
   async rejectChangeRequest(tenantId: string, id: string) {
-    await prisma.devopsChangeRequest.updateMany({
-      where: { id, tenantId },
-      data: { status: "REJECTED" },
-    });
+    const item = findRecord(changeRequests, tenantId, id);
+    if (!item) throw new NotFoundException("Change request not found");
+    item.status = "REJECTED";
+    item.updatedAt = new Date();
     return { rejected: true };
   }
   async getCertificate(tenantId: string, id: string) {
-    return this.findOrThrow("devopsCertificate", tenantId, id);
+    const item = findRecord(certificates, tenantId, id);
+    if (!item) throw new NotFoundException("Certificate not found");
+    return item;
   }
   async renewCertificate(tenantId: string, id: string) {
-    await prisma.devopsCertificate.updateMany({
-      where: { id, tenantId },
-      data: {
-        notBefore: new Date(),
-        notAfter: new Date(Date.now() + 365 * 86400000),
-      },
-    });
+    const item = findRecord(certificates, tenantId, id);
+    if (!item) throw new NotFoundException("Certificate not found");
+    item.notBefore = new Date();
+    item.notAfter = new Date(Date.now() + 365 * 86400000);
+    item.updatedAt = new Date();
     return { renewed: true };
   }
   async getSystemHealth(tenantId: string) {
@@ -130,12 +190,5 @@ export class DevopsDeepV3Service {
       activeConnections: 156,
       timestamp: new Date().toISOString(),
     };
-  }
-  private async findOrThrow(model: string, tenantId: string, id: string) {
-    const item = await (prisma as any)[model].findFirst({
-      where: { id, tenantId },
-    });
-    if (!item) throw new NotFoundException(`${model} not found`);
-    return item;
   }
 }

@@ -132,44 +132,44 @@ const SalesReturn _salesReturnApproved = SalesReturn(
 class FakeSalesRepository implements SalesRepository {
   @override
   Future<Result<Cacheable<Paginated<Quotation>>>> listQuotations(
-          ListQuery query) async =>
-      Result<Cacheable<Paginated<Quotation>>>.ok(
+          ListQuery query,) async =>
+      const Result<Cacheable<Paginated<Quotation>>>.ok(
         Cacheable<Paginated<Quotation>>(
           value: Paginated<Quotation>(
             data: <Quotation>[_quotationDraft, _quotationSubmitted],
-            meta: const PaginationMeta(page: 1, limit: 25, total: 2, totalPages: 1),
+            meta: PaginationMeta(page: 1, limit: 25, total: 2, totalPages: 1),
           ),
         ),
       );
 
   @override
   Future<Result<Quotation>> getQuotation(String id) async =>
-      Result<Quotation>.ok(_quotationDraft);
+      const Result<Quotation>.ok(_quotationDraft);
 
   @override
   Future<Result<Quotation>> createQuotation(Map<String, dynamic> payload) async =>
-      Result<Quotation>.ok(_quotationDraft);
+      const Result<Quotation>.ok(_quotationDraft);
 
   @override
   Future<Result<Quotation>> updateQuotation(
-          String id, Map<String, dynamic> payload) async =>
-      Result<Quotation>.ok(_quotationDraft);
+          String id, Map<String, dynamic> payload,) async =>
+      const Result<Quotation>.ok(_quotationDraft);
 
   @override
   Future<Result<void>> deleteQuotation(String id) async =>
-      Result<void>.ok(null);
+      const Result<void>.ok(null);
 
   @override
   Future<Result<Quotation>> submitQuotation(String id) async =>
-      Result<Quotation>.ok(_quotationSubmitted);
+      const Result<Quotation>.ok(_quotationSubmitted);
 
   @override
   Future<Result<Quotation>> acceptQuotation(String id) async =>
-      Result<Quotation>.ok(_quotationAccepted);
+      const Result<Quotation>.ok(_quotationAccepted);
 
   @override
   Future<Result<SalesOrder>> convertQuotation(String id) async =>
-      Result<SalesOrder>.ok(
+      const Result<SalesOrder>.ok(
         SalesOrder(
           id: 'so1',
           customerId: 'c1',
@@ -182,19 +182,19 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<Cacheable<Paginated<SalesOrder>>>> listSalesOrders(
-          ListQuery query) async =>
-      Result<Cacheable<Paginated<SalesOrder>>>.ok(
+          ListQuery query,) async =>
+      const Result<Cacheable<Paginated<SalesOrder>>>.ok(
         Cacheable<Paginated<SalesOrder>>(
           value: Paginated<SalesOrder>(
             data: <SalesOrder>[],
-            meta: const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+            meta: PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
           ),
         ),
       );
 
   @override
   Future<Result<SalesOrder>> getSalesOrder(String id) async =>
-      Result<SalesOrder>.ok(
+      const Result<SalesOrder>.ok(
         SalesOrder(
           id: 'so1',
           customerId: 'c1',
@@ -207,8 +207,8 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<SalesOrder>> createSalesOrder(
-          Map<String, dynamic> payload) async =>
-      Result<SalesOrder>.ok(
+          Map<String, dynamic> payload,) async =>
+      const Result<SalesOrder>.ok(
         SalesOrder(
           id: 'so1',
           customerId: 'c1',
@@ -221,8 +221,8 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<SalesOrder>> updateSalesOrder(
-          String id, Map<String, dynamic> payload) async =>
-      Result<SalesOrder>.ok(
+          String id, Map<String, dynamic> payload,) async =>
+      const Result<SalesOrder>.ok(
         SalesOrder(
           id: 'so1',
           customerId: 'c1',
@@ -235,11 +235,11 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<void>> deleteSalesOrder(String id) async =>
-      Result<void>.ok(null);
+      const Result<void>.ok(null);
 
   @override
   Future<Result<SalesOrder>> confirmSalesOrder(String id) async =>
-      Result<SalesOrder>.ok(
+      const Result<SalesOrder>.ok(
         SalesOrder(
           id: 'so1',
           customerId: 'c1',
@@ -252,7 +252,7 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<SalesOrder>> cancelSalesOrder(String id) async =>
-      Result<SalesOrder>.ok(
+      const Result<SalesOrder>.ok(
         SalesOrder(
           id: 'so1',
           customerId: 'c1',
@@ -265,118 +265,118 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<Paginated<DeliveryNote>>> listDeliveryNotes(
-          ListQuery query) async =>
-      Result<Paginated<DeliveryNote>>.ok(
+          ListQuery query,) async =>
+      const Result<Paginated<DeliveryNote>>.ok(
         Paginated<DeliveryNote>(
           data: <DeliveryNote>[_deliveryNoteDraft],
-          meta: const PaginationMeta(page: 1, limit: 25, total: 1, totalPages: 1),
+          meta: PaginationMeta(page: 1, limit: 25, total: 1, totalPages: 1),
         ),
       );
 
   @override
   Future<Result<DeliveryNote>> getDeliveryNote(String id) async =>
-      Result<DeliveryNote>.ok(_deliveryNoteDraft);
+      const Result<DeliveryNote>.ok(_deliveryNoteDraft);
 
   @override
   Future<Result<DeliveryNote>> createDeliveryNote(
-          Map<String, dynamic> payload) async =>
-      Result<DeliveryNote>.ok(_deliveryNoteDraft);
+          Map<String, dynamic> payload,) async =>
+      const Result<DeliveryNote>.ok(_deliveryNoteDraft);
 
   @override
   Future<Result<DeliveryNote>> updateDeliveryNote(
-          String id, Map<String, dynamic> payload) async =>
-      Result<DeliveryNote>.ok(_deliveryNoteDraft);
+          String id, Map<String, dynamic> payload,) async =>
+      const Result<DeliveryNote>.ok(_deliveryNoteDraft);
 
   @override
   Future<Result<void>> deleteDeliveryNote(String id) async =>
-      Result<void>.ok(null);
+      const Result<void>.ok(null);
 
   @override
   Future<Result<DeliveryNote>> submitDeliveryNote(String id) async =>
-      Result<DeliveryNote>.ok(_deliveryNoteSubmitted);
+      const Result<DeliveryNote>.ok(_deliveryNoteSubmitted);
 
   @override
   Future<Result<Paginated<SalesReturn>>> listSalesReturns(
-          ListQuery query) async =>
-      Result<Paginated<SalesReturn>>.ok(
+          ListQuery query,) async =>
+      const Result<Paginated<SalesReturn>>.ok(
         Paginated<SalesReturn>(
           data: <SalesReturn>[_salesReturnPending],
-          meta: const PaginationMeta(page: 1, limit: 25, total: 1, totalPages: 1),
+          meta: PaginationMeta(page: 1, limit: 25, total: 1, totalPages: 1),
         ),
       );
 
   @override
   Future<Result<SalesReturn>> getSalesReturn(String id) async =>
-      Result<SalesReturn>.ok(_salesReturnPending);
+      const Result<SalesReturn>.ok(_salesReturnPending);
 
   @override
   Future<Result<SalesReturn>> createSalesReturn(
-          Map<String, dynamic> payload) async =>
-      Result<SalesReturn>.ok(_salesReturnPending);
+          Map<String, dynamic> payload,) async =>
+      const Result<SalesReturn>.ok(_salesReturnPending);
 
   @override
   Future<Result<void>> deleteSalesReturn(String id) async =>
-      Result<void>.ok(null);
+      const Result<void>.ok(null);
 
   @override
   Future<Result<SalesReturn>> approveSalesReturn(String id) async =>
-      Result<SalesReturn>.ok(_salesReturnApproved);
+      const Result<SalesReturn>.ok(_salesReturnApproved);
 
   @override
   Future<Result<SalesReturn>> rejectSalesReturn(String id) async =>
-      Result<SalesReturn>.ok(_salesReturnPending);
+      const Result<SalesReturn>.ok(_salesReturnPending);
 
   @override
   Future<Result<List<SalesPipeline>>> listPipelines() async =>
-      Result<List<SalesPipeline>>.ok(<SalesPipeline>[]);
+      const Result<List<SalesPipeline>>.ok(<SalesPipeline>[]);
 
   @override
   Future<Result<SalesPipeline>> getSalesPipeline(String id) async =>
-      Result<SalesPipeline>.ok(
+      const Result<SalesPipeline>.ok(
         SalesPipeline(id: 'pl1', name: 'Default', stages: <PipelineStage>[]),
       );
 
   @override
   Future<Result<Paginated<Opportunity>>> listOpportunities(
-          ListQuery query) async =>
-      Result<Paginated<Opportunity>>.ok(
+          ListQuery query,) async =>
+      const Result<Paginated<Opportunity>>.ok(
         Paginated<Opportunity>(
           data: <Opportunity>[_opportunity],
-          meta: const PaginationMeta(page: 1, limit: 25, total: 1, totalPages: 1),
+          meta: PaginationMeta(page: 1, limit: 25, total: 1, totalPages: 1),
         ),
       );
 
   @override
   Future<Result<Opportunity>> getOpportunity(String id) async =>
-      Result<Opportunity>.ok(_opportunity);
+      const Result<Opportunity>.ok(_opportunity);
 
   @override
   Future<Result<Opportunity>> createOpportunity(
-          Map<String, dynamic> payload) async =>
-      Result<Opportunity>.ok(_opportunity);
+          Map<String, dynamic> payload,) async =>
+      const Result<Opportunity>.ok(_opportunity);
 
   @override
   Future<Result<Opportunity>> updateOpportunity(
-          String id, Map<String, dynamic> payload) async =>
-      Result<Opportunity>.ok(_opportunity);
+          String id, Map<String, dynamic> payload,) async =>
+      const Result<Opportunity>.ok(_opportunity);
 
   @override
   Future<Result<void>> deleteOpportunity(String id) async =>
-      Result<void>.ok(null);
+      const Result<void>.ok(null);
 
   @override
   Future<Result<Opportunity>> updateOpportunityStage(
-      String id, String stage) async =>
-      Result<Opportunity>.ok(_opportunity);
+      String id, String stage,) async =>
+      const Result<Opportunity>.ok(_opportunity);
 
   @override
   Future<Result<List<SalesActivity>>> listSalesActivity() async =>
-      Result<List<SalesActivity>>.ok(<SalesActivity>[]);
+      const Result<List<SalesActivity>>.ok(<SalesActivity>[]);
 
   @override
   Future<Result<SalesActivity>> logSalesActivity(
-          Map<String, dynamic> payload) async =>
-      Result<SalesActivity>.ok(
+          Map<String, dynamic> payload,) async =>
+      const Result<SalesActivity>.ok(
         SalesActivity(id: 'sa1', type: 'NOTE', subject: 'Call log'),
       );
 }

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Controller,
   Get,
@@ -58,7 +57,10 @@ export class ApiKeysController {
   @ApiOperation({ summary: "Create API key (returns full key once)" })
   @Permissions("saas.apikey.create")
   @Post()
-  async createApiKey(@Req() req: AuthReq, @ZodBody(createApiKeySchema) body: z.infer<typeof createApiKeySchema>) {
+  async createApiKey(
+    @Req() req: AuthReq,
+    @ZodBody(createApiKeySchema) body: z.infer<typeof createApiKeySchema>,
+  ) {
     return this.apiKeysService.createApiKey(req.user.tenantId, body);
   }
 
@@ -72,7 +74,11 @@ export class ApiKeysController {
   @ApiOperation({ summary: "Update API key" })
   @Permissions("saas.apikey.create")
   @Patch(":id")
-  async updateApiKey(@Req() req: AuthReq, @Param("id") id: string, @ZodBody(updateApiKeySchema) body: z.infer<typeof updateApiKeySchema>) {
+  async updateApiKey(
+    @Req() req: AuthReq,
+    @Param("id") id: string,
+    @ZodBody(updateApiKeySchema) body: z.infer<typeof updateApiKeySchema>,
+  ) {
     return this.apiKeysService.updateApiKey(req.user.tenantId, id, body);
   }
 
@@ -93,7 +99,11 @@ export class ApiKeysController {
   @ApiOperation({ summary: "Set API key expiry" })
   @Permissions("saas.apikey.create")
   @Patch(":id/expiry")
-  async setKeyExpiry(@Req() req: AuthReq, @Param("id") id: string, @ZodBody(setExpirySchema) body: z.infer<typeof setExpirySchema>) {
+  async setKeyExpiry(
+    @Req() req: AuthReq,
+    @Param("id") id: string,
+    @ZodBody(setExpirySchema) body: z.infer<typeof setExpirySchema>,
+  ) {
     return this.apiKeysService.setKeyExpiry(req.user.tenantId, id, body);
   }
 

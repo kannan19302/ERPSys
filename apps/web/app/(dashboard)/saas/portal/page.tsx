@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import styles from "./page.module.css";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
@@ -150,7 +149,11 @@ const mapPlan = (p: any, currentPlanId?: string): Plan => ({
   maxUsers: p.maxUsers || 0,
   maxStorageMb: p.maxStorage || 0,
   maxApiCalls: p.maxApiCalls || 0,
-  features: Array.isArray(p.features) ? p.features.map((f: any) => typeof f === "string" ? f : f.featureName || f.name || "") : [],
+  features: Array.isArray(p.features)
+    ? p.features.map((f: any) =>
+        typeof f === "string" ? f : f.featureName || f.name || "",
+      )
+    : [],
   isCurrent: p.id === currentPlanId,
   recommended: false,
 });
@@ -159,13 +162,25 @@ const mapUsageFromSummary = (summary: any): UsageRecord[] => {
   if (!summary) return [];
   const records: UsageRecord[] = [];
   if (summary.users) {
-    records.push({ metric: "USERS_COUNT", currentValue: summary.users.current || 0, limitValue: summary.users.limit || 1 });
+    records.push({
+      metric: "USERS_COUNT",
+      currentValue: summary.users.current || 0,
+      limitValue: summary.users.limit || 1,
+    });
   }
   if (summary.storage) {
-    records.push({ metric: "STORAGE_MB", currentValue: summary.storage.current || 0, limitValue: summary.storage.limit || 1 });
+    records.push({
+      metric: "STORAGE_MB",
+      currentValue: summary.storage.current || 0,
+      limitValue: summary.storage.limit || 1,
+    });
   }
   if (summary.apiCalls) {
-    records.push({ metric: "API_CALLS_COUNT", currentValue: summary.apiCalls.current || 0, limitValue: summary.apiCalls.limit || 1 });
+    records.push({
+      metric: "API_CALLS_COUNT",
+      currentValue: summary.apiCalls.current || 0,
+      limitValue: summary.apiCalls.limit || 1,
+    });
   }
   return records;
 };
@@ -214,7 +229,9 @@ export default function SaasPortalPage() {
   // Read-only status count for the "Installed Apps" card below — actual
   // install/uninstall/enable-disable management lives in the App Store
   // (/apps/store), not here (Phase 4 of the settings-to-SaaS-Portal migration).
-  const [installedAppCount, setInstalledAppCount] = useState<number | null>(null);
+  const [installedAppCount, setInstalledAppCount] = useState<number | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -231,17 +248,22 @@ export default function SaasPortalPage() {
     setLoading(true);
     setError(false);
     try {
-      const [plansRes, subRes, usageRes, storageRes, installedRes] = await Promise.all([
-        client.get<any[]>("/saas/plans").catch(() => null),
-        client.get<any>("/saas/subscription").catch(() => null),
-        client.get<any>("/saas/usage/current").catch(() => null),
-        client
-          .get<
-            Array<{ appSlug: string; rowCount: number; estimatedBytes: string }>
-          >("/saas/storage-usage")
-          .catch(() => null),
-        client.get<string[]>("/saas/installed-apps").catch(() => null),
-      ]);
+      const [plansRes, subRes, usageRes, storageRes, installedRes] =
+        await Promise.all([
+          client.get<any[]>("/saas/plans").catch(() => null),
+          client.get<any>("/saas/subscription").catch(() => null),
+          client.get<any>("/saas/usage/current").catch(() => null),
+          client
+            .get<
+              Array<{
+                appSlug: string;
+                rowCount: number;
+                estimatedBytes: string;
+              }>
+            >("/saas/storage-usage")
+            .catch(() => null),
+          client.get<string[]>("/saas/installed-apps").catch(() => null),
+        ]);
 
       if (installedRes) {
         setInstalledAppCount(installedRes.length);
@@ -252,9 +274,7 @@ export default function SaasPortalPage() {
           storageRes.map((a: any) => ({
             appSlug: a.appSlug,
             rowCount: a.rowCount,
-            estimatedMb: Math.round(
-              Number(a.estimatedBytes) / (1024 * 1024),
-            ),
+            estimatedMb: Math.round(Number(a.estimatedBytes) / (1024 * 1024)),
           })),
         );
       }
@@ -265,8 +285,11 @@ export default function SaasPortalPage() {
           planId: subRes.planId || subRes.plan?.id || "",
           planName: subRes.planName || subRes.plan?.name || "Unknown",
           status: subRes.status || "ACTIVE",
-          currentPeriodStart: subRes.currentPeriodStart || new Date().toISOString(),
-          currentPeriodEnd: subRes.currentPeriodEnd || new Date(Date.now() + 30 * 86400000).toISOString(),
+          currentPeriodStart:
+            subRes.currentPeriodStart || new Date().toISOString(),
+          currentPeriodEnd:
+            subRes.currentPeriodEnd ||
+            new Date(Date.now() + 30 * 86400000).toISOString(),
           trialEndsAt: subRes.trialEndsAt || null,
           price: subRes.price || subRes.plan?.price || 0,
           currency: subRes.currency || "USD",
@@ -399,18 +422,47 @@ export default function SaasPortalPage() {
         {loading ? (
           <Card padding="lg">
             <div className="ui-stack-4">
-              <div className="ui-skeleton" style={{ height: 24, width: "60%", borderRadius: "var(--radius-md)" }} />
-              <div className="ui-skeleton" style={{ height: 16, width: "40%", borderRadius: "var(--radius-md)" }} />
-              <div className="ui-grid-3" style={{ marginTop: "var(--space-4)" }}>
-                <div className="ui-skeleton" style={{ height: 100, borderRadius: "var(--radius-lg)" }} />
-                <div className="ui-skeleton" style={{ height: 100, borderRadius: "var(--radius-lg)" }} />
-                <div className="ui-skeleton" style={{ height: 100, borderRadius: "var(--radius-lg)" }} />
+              <div
+                className="ui-skeleton"
+                style={{
+                  height: 24,
+                  width: "60%",
+                  borderRadius: "var(--radius-md)",
+                }}
+              />
+              <div
+                className="ui-skeleton"
+                style={{
+                  height: 16,
+                  width: "40%",
+                  borderRadius: "var(--radius-md)",
+                }}
+              />
+              <div
+                className="ui-grid-3"
+                style={{ marginTop: "var(--space-4)" }}
+              >
+                <div
+                  className="ui-skeleton"
+                  style={{ height: 100, borderRadius: "var(--radius-lg)" }}
+                />
+                <div
+                  className="ui-skeleton"
+                  style={{ height: 100, borderRadius: "var(--radius-lg)" }}
+                />
+                <div
+                  className="ui-skeleton"
+                  style={{ height: 100, borderRadius: "var(--radius-lg)" }}
+                />
               </div>
             </div>
           </Card>
         ) : (
           <Card padding="lg" className={styles.s1}>
-            <div className="ui-stack-4" style={{ alignItems: "center", padding: "var(--space-8) 0" }}>
+            <div
+              className="ui-stack-4"
+              style={{ alignItems: "center", padding: "var(--space-8) 0" }}
+            >
               <AlertTriangle size={32} className="ui-text-warning" />
               <p>Could not load subscription data.</p>
               <button className="ui-btn ui-btn-primary" onClick={loadData}>
@@ -510,19 +562,24 @@ export default function SaasPortalPage() {
 
             <OnboardingChecklist variant="full" onDemoDataSeeded={loadData} />
 
-        {/* Last Updated */}
-        {lastUpdated && (
-          <div className="ui-flex-end">
-            <span className="ui-text-xs-muted">
-              Last updated: {lastUpdated.toLocaleTimeString()}{" "}
-              <button onClick={loadData} className="ui-btn-icon" title="Refresh now" style={{ verticalAlign: "middle" }}>
-                <RefreshCw size={12} />
-              </button>
-            </span>
-          </div>
-        )}
+            {/* Last Updated */}
+            {lastUpdated && (
+              <div className="ui-flex-end">
+                <span className="ui-text-xs-muted">
+                  Last updated: {lastUpdated.toLocaleTimeString()}{" "}
+                  <button
+                    onClick={loadData}
+                    className="ui-btn-icon"
+                    title="Refresh now"
+                    style={{ verticalAlign: "middle" }}
+                  >
+                    <RefreshCw size={12} />
+                  </button>
+                </span>
+              </div>
+            )}
 
-        {isOnboarding && (
+            {isOnboarding && (
               <div className="mt-6 pt-6 border-t border-border flex flex-col items-center justify-center animate-in fade-in slide-in-from-bottom-2">
                 <p className="text-sm text-muted-foreground mb-4">
                   All set? Start using your ERP system now.
@@ -590,12 +647,13 @@ export default function SaasPortalPage() {
                 {formatPrice(subscription.price)}/{subscription.interval} ·
                 {subscription.status === "TRIAL" && subscription.trialEndsAt
                   ? ` Trial ends ${new Date(subscription.trialEndsAt).toLocaleDateString()}`
-                  : ` Renews ${new Date(subscription.currentPeriodEnd).toLocaleDateString()}`
-                }
+                  : ` Renews ${new Date(subscription.currentPeriodEnd).toLocaleDateString()}`}
               </p>
             </div>
             <div className="ui-flex ui-gap-2">
-              <Link href="/saas/billing" className={styles.s14}>Manage Billing</Link>
+              <Link href="/saas/billing" className={styles.s14}>
+                Manage Billing
+              </Link>
               <button
                 onClick={() =>
                   setUpgradeTarget(
@@ -618,8 +676,12 @@ export default function SaasPortalPage() {
           <Link href="/saas/billing" className={styles.quickActionCard}>
             <CreditCard size={18} />
             <div>
-              <span className={styles.quickActionLabel}>Billing & Invoices</span>
-              <span className={styles.quickActionDesc}>View payment history</span>
+              <span className={styles.quickActionLabel}>
+                Billing & Invoices
+              </span>
+              <span className={styles.quickActionDesc}>
+                View payment history
+              </span>
             </div>
           </Link>
           <Link href="/saas/team" className={styles.quickActionCard}>
@@ -640,7 +702,9 @@ export default function SaasPortalPage() {
             <Key size={18} />
             <div>
               <span className={styles.quickActionLabel}>API Keys</span>
-              <span className={styles.quickActionDesc}>Manage integrations</span>
+              <span className={styles.quickActionDesc}>
+                Manage integrations
+              </span>
             </div>
           </Link>
           <Link href="/saas/settings" className={styles.quickActionCard}>
@@ -654,7 +718,9 @@ export default function SaasPortalPage() {
             <Webhook size={18} />
             <div>
               <span className={styles.quickActionLabel}>Webhooks</span>
-              <span className={styles.quickActionDesc}>Event notifications</span>
+              <span className={styles.quickActionDesc}>
+                Event notifications
+              </span>
             </div>
           </Link>
         </div>
@@ -673,7 +739,10 @@ export default function SaasPortalPage() {
                 </p>
               </div>
             </div>
-            <Link href="/apps/store" className="ui-btn ui-btn-secondary ui-text-sm">
+            <Link
+              href="/apps/store"
+              className="ui-btn ui-btn-secondary ui-text-sm"
+            >
               Manage in App Store <ChevronRight size={14} />
             </Link>
           </div>
@@ -729,9 +798,7 @@ export default function SaasPortalPage() {
                 >
                   <div className="ui-hstack-2">
                     <HardDrive size={14} className="ui-text-muted" />
-                    <span className="capitalize font-medium">
-                      {a.appSlug}
-                    </span>
+                    <span className="capitalize font-medium">{a.appSlug}</span>
                   </div>
                   <div className="ui-hstack-3">
                     <span className="text-xs text-muted-foreground">

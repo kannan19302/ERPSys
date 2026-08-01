@@ -35,7 +35,7 @@ class _PurchaseRequisitionFormPageState extends ConsumerState<PurchaseRequisitio
       productCtrl: TextEditingController(),
       qtyCtrl: TextEditingController(text: '1'),
       rateCtrl: TextEditingController(),
-    )));
+    ),),);
   }
 
   void _removeItem(int index) {
@@ -45,7 +45,9 @@ class _PurchaseRequisitionFormPageState extends ConsumerState<PurchaseRequisitio
   @override
   void dispose() {
     _titleCtrl.dispose(); _deptCtrl.dispose(); _requiredDateCtrl.dispose(); _notesCtrl.dispose();
-    for (final i in _items) i.dispose();
+    for (final i in _items) {
+      i.dispose();
+    }
     super.dispose();
   }
 
@@ -63,7 +65,7 @@ class _PurchaseRequisitionFormPageState extends ConsumerState<PurchaseRequisitio
         'productName': i.productCtrl.text.trim(),
         'quantity': double.tryParse(i.qtyCtrl.text) ?? 0,
         'estimatedRate': double.tryParse(i.rateCtrl.text) ?? 0,
-      }).toList(),
+      },).toList(),
     };
 
     final result = await ref.read(purchaseRequisitionListControllerProvider.notifier)
@@ -108,7 +110,7 @@ class _PurchaseRequisitionFormPageState extends ConsumerState<PurchaseRequisitio
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _priority,
+              initialValue: _priority,
               decoration: const InputDecoration(labelText: 'Priority'),
               items: const [
                 DropdownMenuItem(value: 'LOW', child: Text('Low')),
@@ -130,7 +132,7 @@ class _PurchaseRequisitionFormPageState extends ConsumerState<PurchaseRequisitio
               TextButton.icon(
                 onPressed: _addItem, icon: const Icon(Icons.add, size: 18), label: const Text('Add'),
               ),
-            ]),
+            ],),
             ...List.generate(_items.length, (i) {
               final item = _items[i];
               return Padding(
@@ -139,24 +141,24 @@ class _PurchaseRequisitionFormPageState extends ConsumerState<PurchaseRequisitio
                   Expanded(flex: 2, child: TextFormField(
                     controller: item.productCtrl,
                     decoration: const InputDecoration(labelText: 'Product', isDense: true),
-                  )),
+                  ),),
                   const SizedBox(width: Spacing.x2),
                   Expanded(flex: 1, child: TextFormField(
                     controller: item.qtyCtrl,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(labelText: 'Qty', isDense: true),
-                  )),
+                  ),),
                   const SizedBox(width: Spacing.x2),
                   Expanded(flex: 1, child: TextFormField(
                     controller: item.rateCtrl,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(labelText: 'Est. Rate', isDense: true),
-                  )),
+                  ),),
                   IconButton(
                     icon: const Icon(Icons.remove_circle_outline, size: 20),
                     onPressed: () => _removeItem(i),
                   ),
-                ]),
+                ],),
               );
             }),
             const SizedBox(height: Spacing.x4),

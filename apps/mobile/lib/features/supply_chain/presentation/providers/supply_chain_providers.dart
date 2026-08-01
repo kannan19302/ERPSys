@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -146,7 +145,7 @@ class ShipmentListController extends Notifier<ShipmentListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteShipmentUseCase(
-      ref.read(supplyChainRepositoryProvider))(id);
+      ref.read(supplyChainRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
@@ -155,7 +154,7 @@ class ShipmentListController extends Notifier<ShipmentListState> {
 final FutureProviderFamily<Shipment, String> shipmentDetailProvider =
     FutureProvider.family<Shipment, String>((Ref ref, String id) async {
   final result = await GetShipmentUseCase(
-    ref.watch(supplyChainRepositoryProvider))(id);
+    ref.watch(supplyChainRepositoryProvider),)(id);
   return result.fold((f) => throw f, (s) => s);
 });
 
@@ -252,7 +251,7 @@ class CarrierListController extends Notifier<CarrierListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteShipmentUseCase(
-      ref.read(supplyChainRepositoryProvider))(id);
+      ref.read(supplyChainRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
@@ -261,7 +260,7 @@ class CarrierListController extends Notifier<CarrierListState> {
 final FutureProviderFamily<Carrier, String> carrierDetailProvider =
     FutureProvider.family<Carrier, String>((Ref ref, String id) async {
   final result = await GetCarrierUseCase(
-    ref.watch(supplyChainRepositoryProvider))(id);
+    ref.watch(supplyChainRepositoryProvider),)(id);
   return result.fold((f) => throw f, (c) => c);
 });
 
@@ -450,7 +449,7 @@ class ReorderSuggestionListController extends Notifier<ReorderSuggestionListStat
 
   Future<Result<void>> approve(String id) async {
     final result = await ApproveReorderSuggestionUseCase(
-      ref.read(supplyChainRepositoryProvider))(id);
+      ref.read(supplyChainRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }

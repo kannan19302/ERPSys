@@ -1,5 +1,4 @@
-// @ts-nocheck
-import { z } from 'zod';
+import { z } from "zod";
 
 // ─── Global Trade Management ──────────────────────────
 
@@ -45,18 +44,22 @@ export const importDeclarationSchema = z.object({
   insuranceCost: z.number().optional(),
   brokerName: z.string().optional(),
   notes: z.string().optional(),
-  lines: z.array(z.object({
-    productId: z.string().optional(),
-    productSku: z.string().optional(),
-    productName: z.string().optional(),
-    hsCodeId: z.string().optional(),
-    countryOfOrigin: z.string().optional(),
-    quantity: z.number(),
-    uom: z.string().optional(),
-    unitValue: z.number().optional(),
-    dutyRate: z.number().optional(),
-    taxRate: z.number().optional(),
-  })).optional(),
+  lines: z
+    .array(
+      z.object({
+        productId: z.string().optional(),
+        productSku: z.string().optional(),
+        productName: z.string().optional(),
+        hsCodeId: z.string().optional(),
+        countryOfOrigin: z.string().optional(),
+        quantity: z.number(),
+        uom: z.string().optional(),
+        unitValue: z.number().optional(),
+        dutyRate: z.number().optional(),
+        taxRate: z.number().optional(),
+      }),
+    )
+    .optional(),
 });
 export type ImportDeclarationDto = z.infer<typeof importDeclarationSchema>;
 
@@ -73,18 +76,22 @@ export const exportDeclarationSchema = z.object({
   exportLicense: z.string().optional(),
   eccn: z.string().optional(),
   notes: z.string().optional(),
-  lines: z.array(z.object({
-    productId: z.string().optional(),
-    productSku: z.string().optional(),
-    quantity: z.number(),
-    uom: z.string().optional(),
-    unitValue: z.number().optional(),
-  })).optional(),
+  lines: z
+    .array(
+      z.object({
+        productId: z.string().optional(),
+        productSku: z.string().optional(),
+        quantity: z.number(),
+        uom: z.string().optional(),
+        unitValue: z.number().optional(),
+      }),
+    )
+    .optional(),
 });
 export type ExportDeclarationDto = z.infer<typeof exportDeclarationSchema>;
 
 export const complianceScreeningSchema = z.object({
-  screenType: z.enum(['PARTY', 'END_USE', 'COUNTRY', 'PRODUCT']),
+  screenType: z.enum(["PARTY", "END_USE", "COUNTRY", "PRODUCT"]),
   entityId: z.string().optional(),
   entityType: z.string().optional(),
   entityName: z.string().optional(),
@@ -115,14 +122,18 @@ export const supplyPlanSchema = z.object({
   demandSource: z.string().optional(),
   constraints: z.any().optional(),
   assumptions: z.any().optional(),
-  lines: z.array(z.object({
-    productId: z.string().optional(),
-    period: z.string(),
-    forecastedQty: z.number().optional(),
-    onHandQty: z.number().optional(),
-    safetyStockQty: z.number().optional(),
-    reorderPoint: z.number().optional(),
-  })).optional(),
+  lines: z
+    .array(
+      z.object({
+        productId: z.string().optional(),
+        period: z.string(),
+        forecastedQty: z.number().optional(),
+        onHandQty: z.number().optional(),
+        safetyStockQty: z.number().optional(),
+        reorderPoint: z.number().optional(),
+      }),
+    )
+    .optional(),
 });
 export type SupplyPlanDto = z.infer<typeof supplyPlanSchema>;
 
@@ -197,27 +208,35 @@ export const loadBuildSchema = z.object({
   temperatureReq: z.string().optional(),
   hazmat: z.boolean().optional(),
   notes: z.string().optional(),
-  stops: z.array(z.object({
-    stopSequence: z.number().int(),
-    stopType: z.string().optional(),
-    locationName: z.string().optional(),
-    address: z.string().optional(),
-    scheduledArrival: z.string().optional(),
-    scheduledDeparture: z.string().optional(),
-    contactPerson: z.string().optional(),
-    contactPhone: z.string().optional(),
-  })).optional(),
-  items: z.array(z.object({
-    productId: z.string().optional(),
-    productSku: z.string().optional(),
-    productName: z.string().optional(),
-    quantity: z.number(),
-    uom: z.string().optional(),
-    weight: z.number().optional(),
-    volume: z.number().optional(),
-    palletCount: z.number().int().optional(),
-    cartonCount: z.number().int().optional(),
-  })).optional(),
+  stops: z
+    .array(
+      z.object({
+        stopSequence: z.number().int(),
+        stopType: z.string().optional(),
+        locationName: z.string().optional(),
+        address: z.string().optional(),
+        scheduledArrival: z.string().optional(),
+        scheduledDeparture: z.string().optional(),
+        contactPerson: z.string().optional(),
+        contactPhone: z.string().optional(),
+      }),
+    )
+    .optional(),
+  items: z
+    .array(
+      z.object({
+        productId: z.string().optional(),
+        productSku: z.string().optional(),
+        productName: z.string().optional(),
+        quantity: z.number(),
+        uom: z.string().optional(),
+        weight: z.number().optional(),
+        volume: z.number().optional(),
+        palletCount: z.number().int().optional(),
+        cartonCount: z.number().int().optional(),
+      }),
+    )
+    .optional(),
 });
 export type LoadBuildDto = z.infer<typeof loadBuildSchema>;
 
@@ -253,17 +272,23 @@ export const deliveryConfirmationSchema = z.object({
   lat: z.number().optional(),
   lng: z.number().optional(),
   notes: z.string().optional(),
-  lines: z.array(z.object({
-    productId: z.string().optional(),
-    productSku: z.string().optional(),
-    expectedQty: z.number(),
-    deliveredQty: z.number(),
-    damagedQty: z.number().optional(),
-    rejectedQty: z.number().optional(),
-    condition: z.string().optional(),
-  })).optional(),
+  lines: z
+    .array(
+      z.object({
+        productId: z.string().optional(),
+        productSku: z.string().optional(),
+        expectedQty: z.number(),
+        deliveredQty: z.number(),
+        damagedQty: z.number().optional(),
+        rejectedQty: z.number().optional(),
+        condition: z.string().optional(),
+      }),
+    )
+    .optional(),
 });
-export type DeliveryConfirmationDto = z.infer<typeof deliveryConfirmationSchema>;
+export type DeliveryConfirmationDto = z.infer<
+  typeof deliveryConfirmationSchema
+>;
 
 // ─── Supplier Risk Management ─────────────────────────
 
@@ -276,14 +301,18 @@ export const supplierRiskProfileSchema = z.object({
   complianceRisk: z.number().min(0).max(100).optional(),
   qualityRisk: z.number().min(0).max(100).optional(),
   concentrationRisk: z.number().min(0).max(100).optional(),
-  factors: z.array(z.object({
-    factorType: z.string(),
-    factorName: z.string(),
-    score: z.number().min(0).max(100),
-    weight: z.number().optional(),
-    description: z.string().optional(),
-    trend: z.string().optional(),
-  })).optional(),
+  factors: z
+    .array(
+      z.object({
+        factorType: z.string(),
+        factorName: z.string(),
+        score: z.number().min(0).max(100),
+        weight: z.number().optional(),
+        description: z.string().optional(),
+        trend: z.string().optional(),
+      }),
+    )
+    .optional(),
 });
 export type SupplierRiskProfileDto = z.infer<typeof supplierRiskProfileSchema>;
 
@@ -365,13 +394,15 @@ export const controlTowerAlertConfigSchema = z.object({
   recipients: z.any().optional(),
   autoResolve: z.boolean().optional(),
 });
-export type ControlTowerAlertConfigDto = z.infer<typeof controlTowerAlertConfigSchema>;
+export type ControlTowerAlertConfigDto = z.infer<
+  typeof controlTowerAlertConfigSchema
+>;
 
 // ─── Inventory RMA ────────────────────────────────────
 
 export const rmaSchema = z.object({
   rmaNumber: z.string().min(1),
-  source: z.enum(['CUSTOMER', 'VENDOR', 'INTERNAL']),
+  source: z.enum(["CUSTOMER", "VENDOR", "INTERNAL"]),
   customerId: z.string().optional(),
   customerName: z.string().optional(),
   vendorId: z.string().optional(),
@@ -383,30 +414,38 @@ export const rmaSchema = z.object({
   priority: z.string().optional(),
   warehouseId: z.string().optional(),
   notes: z.string().optional(),
-  lines: z.array(z.object({
-    productId: z.string().optional(),
-    productSku: z.string().optional(),
-    expectedQty: z.number(),
-    uom: z.string().optional(),
-    lotNumber: z.string().optional(),
-    serialNumbers: z.string().optional(),
-    unitValue: z.number().optional(),
-  })).optional(),
+  lines: z
+    .array(
+      z.object({
+        productId: z.string().optional(),
+        productSku: z.string().optional(),
+        expectedQty: z.number(),
+        uom: z.string().optional(),
+        lotNumber: z.string().optional(),
+        serialNumbers: z.string().optional(),
+        unitValue: z.number().optional(),
+      }),
+    )
+    .optional(),
 });
 export type RmaDto = z.infer<typeof rmaSchema>;
 
 export const rmaInspectionSchema = z.object({
-  result: z.enum(['PASS', 'FAIL', 'CONDITIONAL_PASS']),
+  result: z.enum(["PASS", "FAIL", "CONDITIONAL_PASS"]),
   overallCondition: z.string().optional(),
   defects: z.any().optional(),
   notes: z.string().optional(),
-  lines: z.array(z.object({
-    lineId: z.string(),
-    disposition: z.string(),
-    acceptedQty: z.number().optional(),
-    rejectedQty: z.number().optional(),
-    condition: z.string().optional(),
-  })).optional(),
+  lines: z
+    .array(
+      z.object({
+        lineId: z.string(),
+        disposition: z.string(),
+        acceptedQty: z.number().optional(),
+        rejectedQty: z.number().optional(),
+        condition: z.string().optional(),
+      }),
+    )
+    .optional(),
 });
 export type RmaInspectionDto = z.infer<typeof rmaInspectionSchema>;
 
@@ -418,16 +457,20 @@ export const wavePlanSchema = z.object({
   optimizationStrategy: z.string().optional(),
   sortMethod: z.string().optional(),
   notes: z.string().optional(),
-  tasks: z.array(z.object({
-    taskType: z.string(),
-    sourceLocation: z.string().optional(),
-    destLocation: z.string().optional(),
-    productId: z.string().optional(),
-    quantity: z.number(),
-    uom: z.string().optional(),
-    priority: z.number().int().optional(),
-    orderRef: z.string().optional(),
-  })).optional(),
+  tasks: z
+    .array(
+      z.object({
+        taskType: z.string(),
+        sourceLocation: z.string().optional(),
+        destLocation: z.string().optional(),
+        productId: z.string().optional(),
+        quantity: z.number(),
+        uom: z.string().optional(),
+        priority: z.number().int().optional(),
+        orderRef: z.string().optional(),
+      }),
+    )
+    .optional(),
 });
 export type WavePlanDto = z.infer<typeof wavePlanSchema>;
 
@@ -457,10 +500,14 @@ export const sourcingProjectSchema = z.object({
   buyerId: z.string().optional(),
   expectedSavings: z.number().optional(),
   notes: z.string().optional(),
-  participants: z.array(z.object({
-    vendorId: z.string(),
-    vendorName: z.string().optional(),
-  })).optional(),
+  participants: z
+    .array(
+      z.object({
+        vendorId: z.string(),
+        vendorName: z.string().optional(),
+      }),
+    )
+    .optional(),
 });
 export type SourcingProjectDto = z.infer<typeof sourcingProjectSchema>;
 
@@ -469,12 +516,14 @@ export const supplierEvaluationSchema = z.object({
   vendorId: z.string(),
   vendorName: z.string().optional(),
   evaluationDate: z.string().optional(),
-  criteria: z.array(z.object({
-    criterionName: z.string(),
-    weight: z.number(),
-    score: z.number().optional(),
-    comments: z.string().optional(),
-  })),
+  criteria: z.array(
+    z.object({
+      criterionName: z.string(),
+      weight: z.number(),
+      score: z.number().optional(),
+      comments: z.string().optional(),
+    }),
+  ),
 });
 export type SupplierEvaluationDto = z.infer<typeof supplierEvaluationSchema>;
 
@@ -509,26 +558,34 @@ export const procurementContractSchema = z.object({
   deliveryTerms: z.string().optional(),
   governingLaw: z.string().optional(),
   notes: z.string().optional(),
-  priceSchedules: z.array(z.object({
-    productId: z.string().optional(),
-    productSku: z.string().optional(),
-    negotiatedPrice: z.number(),
-    currency: z.string().optional(),
-    priceType: z.string().optional(),
-    minQty: z.number().optional(),
-    maxQty: z.number().optional(),
-    effectiveDate: z.string(),
-    expirationDate: z.string().optional(),
-  })).optional(),
-  volumeCommitments: z.array(z.object({
-    productId: z.string().optional(),
-    committedQty: z.number(),
-    commitmentPeriod: z.string(),
-    startDate: z.string(),
-    endDate: z.string(),
-    rebateRate: z.number().optional(),
-    penaltyRate: z.number().optional(),
-  })).optional(),
+  priceSchedules: z
+    .array(
+      z.object({
+        productId: z.string().optional(),
+        productSku: z.string().optional(),
+        negotiatedPrice: z.number(),
+        currency: z.string().optional(),
+        priceType: z.string().optional(),
+        minQty: z.number().optional(),
+        maxQty: z.number().optional(),
+        effectiveDate: z.string(),
+        expirationDate: z.string().optional(),
+      }),
+    )
+    .optional(),
+  volumeCommitments: z
+    .array(
+      z.object({
+        productId: z.string().optional(),
+        committedQty: z.number(),
+        commitmentPeriod: z.string(),
+        startDate: z.string(),
+        endDate: z.string(),
+        rebateRate: z.number().optional(),
+        penaltyRate: z.number().optional(),
+      }),
+    )
+    .optional(),
 });
 export type ProcurementContractDto = z.infer<typeof procurementContractSchema>;
 

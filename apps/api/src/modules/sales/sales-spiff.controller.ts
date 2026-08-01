@@ -1,15 +1,37 @@
-// @ts-nocheck
-import { Controller, Get, Post, Patch, Delete, Param, UseGuards, Req, Query } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  UseGuards,
+  Req,
+  Query,
+} from "@nestjs/common";
 import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { RbacGuard } from "../../common/guards/rbac.guard";
 import { Permissions } from "../../common/decorators/permissions.decorator";
 import { ZodBody } from "../../common/decorators/zod-body.decorator";
 import { SalesSpiffService } from "./sales-spiff.service";
-import { createSpiffCampaignSchema, updateSpiffCampaignSchema, createTeamSplitSchema, updateTeamSplitSchema, processClawbackSchema, CreateSpiffCampaignDto, UpdateSpiffCampaignDto, CreateTeamSplitDto, UpdateTeamSplitDto, ProcessClawbackDto } from "./dto/sales-extra.dto";
+import {
+  createSpiffCampaignSchema,
+  updateSpiffCampaignSchema,
+  createTeamSplitSchema,
+  updateTeamSplitSchema,
+  processClawbackSchema,
+  CreateSpiffCampaignDto,
+  UpdateSpiffCampaignDto,
+  CreateTeamSplitDto,
+  UpdateTeamSplitDto,
+  ProcessClawbackDto,
+} from "./dto/sales-extra.dto";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 
-interface AuthReq extends Request { user: { tenantId: string; userId: string; orgId?: string } }
+interface AuthReq extends Request {
+  user: { tenantId: string; userId: string; orgId?: string };
+}
 
 @ApiTags("sales")
 @ApiBearerAuth()
@@ -35,14 +57,25 @@ export class SalesSpiffController {
   @Post("campaigns")
   @Permissions("sales.spiff.create")
   @ApiOperation({ summary: "Create SPIFF campaign" })
-  async createCampaign(@Req() req: AuthReq, @ZodBody(createSpiffCampaignSchema) dto: CreateSpiffCampaignDto) {
-    return this.service.createSpiffCampaign(req.user.tenantId, req.user.orgId || "org-system-default", dto);
+  async createCampaign(
+    @Req() req: AuthReq,
+    @ZodBody(createSpiffCampaignSchema) dto: CreateSpiffCampaignDto,
+  ) {
+    return this.service.createSpiffCampaign(
+      req.user.tenantId,
+      req.user.orgId || "org-system-default",
+      dto,
+    );
   }
 
   @Patch("campaigns/:id")
   @Permissions("sales.spiff.update")
   @ApiOperation({ summary: "Update SPIFF campaign" })
-  async updateCampaign(@Req() req: AuthReq, @Param("id") id: string, @ZodBody(updateSpiffCampaignSchema) dto: UpdateSpiffCampaignDto) {
+  async updateCampaign(
+    @Req() req: AuthReq,
+    @Param("id") id: string,
+    @ZodBody(updateSpiffCampaignSchema) dto: UpdateSpiffCampaignDto,
+  ) {
     return this.service.updateSpiffCampaign(req.user.tenantId, id, dto);
   }
 
@@ -63,14 +96,25 @@ export class SalesSpiffController {
   @Post("team-splits")
   @Permissions("sales.spiff.create")
   @ApiOperation({ summary: "Create team split" })
-  async createTeamSplit(@Req() req: AuthReq, @ZodBody(createTeamSplitSchema) dto: CreateTeamSplitDto) {
-    return this.service.createTeamSplit(req.user.tenantId, req.user.orgId || "org-system-default", dto);
+  async createTeamSplit(
+    @Req() req: AuthReq,
+    @ZodBody(createTeamSplitSchema) dto: CreateTeamSplitDto,
+  ) {
+    return this.service.createTeamSplit(
+      req.user.tenantId,
+      req.user.orgId || "org-system-default",
+      dto,
+    );
   }
 
   @Patch("team-splits/:id")
   @Permissions("sales.spiff.update")
   @ApiOperation({ summary: "Update team split" })
-  async updateTeamSplit(@Req() req: AuthReq, @Param("id") id: string, @ZodBody(updateTeamSplitSchema) dto: UpdateTeamSplitDto) {
+  async updateTeamSplit(
+    @Req() req: AuthReq,
+    @Param("id") id: string,
+    @ZodBody(updateTeamSplitSchema) dto: UpdateTeamSplitDto,
+  ) {
     return this.service.updateTeamSplit(req.user.tenantId, id, dto);
   }
 
@@ -84,7 +128,10 @@ export class SalesSpiffController {
   @Post("clawback")
   @Permissions("sales.spiff.update")
   @ApiOperation({ summary: "Process commission clawback" })
-  async clawback(@Req() req: AuthReq, @ZodBody(processClawbackSchema) dto: ProcessClawbackDto) {
+  async clawback(
+    @Req() req: AuthReq,
+    @ZodBody(processClawbackSchema) dto: ProcessClawbackDto,
+  ) {
     return this.service.processClawback(req.user.tenantId, dto);
   }
 
@@ -98,14 +145,20 @@ export class SalesSpiffController {
   @Get("deal-registrations")
   @Permissions("sales.partner.read")
   @ApiOperation({ summary: "List deal registrations" })
-  async getDealRegistrations(@Req() req: AuthReq, @Query("status") status?: string) {
+  async getDealRegistrations(
+    @Req() req: AuthReq,
+    @Query("status") status?: string,
+  ) {
     return this.service.getDealRegistrations(req.user.tenantId, status);
   }
 
   @Get("calculate-eligibility/:orderId")
   @Permissions("sales.spiff.read")
   @ApiOperation({ summary: "Check SPIFF eligibility for an order" })
-  async calculateEligibility(@Req() req: AuthReq, @Param("orderId") orderId: string) {
+  async calculateEligibility(
+    @Req() req: AuthReq,
+    @Param("orderId") orderId: string,
+  ) {
     return this.service.calculateSpiffEligibility(req.user.tenantId, orderId);
   }
 }

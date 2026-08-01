@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   createHash,
   randomBytes,
@@ -6,16 +5,16 @@ import {
   createCipheriv,
   createDecipheriv,
   scryptSync,
-} from 'node:crypto';
-import { authenticator } from 'otplib';
-import QRCode from 'qrcode';
-import { hashPassword, comparePassword } from '@unerp/auth';
+} from "node:crypto";
+import { authenticator } from "otplib";
+import QRCode from "qrcode";
+import { hashPassword, comparePassword } from "@unerp/auth";
 
-const TOTP_ISSUER = 'UniERP';
+const TOTP_ISSUER = "UniERP";
 
 // ── Symmetric encryption for secrets at rest (MFA TOTP seeds) ──
-const ENC_PREFIX = 'v1'; // ciphertext format marker: v1:<iv>:<tag>:<data> (all hex)
-const ENC_ALGO = 'aes-256-gcm';
+const ENC_PREFIX = "v1"; // ciphertext format marker: v1:<iv>:<tag>:<data> (all hex)
+const ENC_ALGO = "aes-256-gcm";
 
 /**
  * Derives a stable 32-byte key from the app secret. A dedicated
@@ -25,12 +24,15 @@ const ENC_ALGO = 'aes-256-gcm';
  * correct failure mode for a key rotation.
  */
 function encryptionKey(): Buffer {
-  const material = process.env.MFA_ENCRYPTION_KEY || process.env.NEXTAUTH_SECRET;
+  const material =
+    process.env.MFA_ENCRYPTION_KEY || process.env.NEXTAUTH_SECRET;
   if (!material) {
-    throw new Error('MFA_ENCRYPTION_KEY or NEXTAUTH_SECRET must be set to encrypt MFA secrets.');
+    throw new Error(
+      "MFA_ENCRYPTION_KEY or NEXTAUTH_SECRET must be set to encrypt MFA secrets.",
+    );
   }
   // Fixed salt: the key must be reproducible across restarts to decrypt.
-  return scryptSync(material, 'unerp-mfa-secret-v1', 32);
+  return scryptSync(material, "unerp-mfa-secret-v1", 32);
 }
 
 /**
@@ -40,9 +42,9 @@ function encryptionKey(): Buffer {
 export function encryptSecret(plaintext: string): string {
   const iv = randomBytes(12);
   const cipher = createCipheriv(ENC_ALGO, encryptionKey(), iv);
-  const enc = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()]);
+  const enc = Buffer.concat([cipher.update(plaintext, "utf8"), cipher.final()]);
   const tag = cipher.getAuthTag();
-  return `${ENC_PREFIX}:${iv.toString('hex')}:${tag.toString('hex')}:${enc.toString('hex')}`;
+  return `${ENC_PREFIX}:${iv.toString("hex")}:${tag.toString("hex")}:${enc.toString("hex")}`;
 }
 
 /**
@@ -54,10 +56,17 @@ export function decryptSecret(stored: string): string {
   if (!stored.startsWith(`${ENC_PREFIX}:`)) {
     return stored; // legacy plaintext
   }
-  const [, ivHex, tagHex, dataHex] = stored.split(':');
-  const decipher = createDecipheriv(ENC_ALGO, encryptionKey(), Buffer.from(ivHex!, 'hex'));
-  decipher.setAuthTag(Buffer.from(tagHex!, 'hex'));
-  return Buffer.concat([decipher.update(Buffer.from(dataHex!, 'hex')), decipher.final()]).toString('utf8');
+  const [, ivHex, tagHex, dataHex] = stored.split(":");
+  const decipher = createDecipheriv(
+    ENC_ALGO,
+    encryptionKey(),
+    Buffer.from(ivHex!, "hex"),
+  );
+  decipher.setAuthTag(Buffer.from(tagHex!, "hex"));
+  return Buffer.concat([
+    decipher.update(Buffer.from(dataHex!, "hex")),
+    decipher.final(),
+  ]).toString("utf8");
 }
 
 // Accept the adjacent 30s window on either side to tolerate clock skew.
@@ -98,7 +107,7 @@ export function verifyTotp(code: string, secret: string): boolean {
 export async function generateRecoveryCodes(count = 10) {
   const plain: string[] = [];
   for (let i = 0; i < count; i++) {
-    const raw = randomBytes(5).toString('hex'); // 10 hex chars
+    const raw = randomBytes(5).toString("hex"); // 10 hex chars
     plain.push(`${raw.slice(0, 5)}-${raw.slice(5)}`);
   }
   const hashes = await Promise.all(plain.map((c) => hashPassword(c)));
@@ -109,7 +118,10 @@ export async function generateRecoveryCodes(count = 10) {
  * Checks a candidate recovery code against the stored hashes. Returns the index
  * of the consumed code, or -1 if none match.
  */
-export async function matchRecoveryCode(candidate: string, hashes: string[]): Promise<number> {
+export async function matchRecoveryCode(
+  candidate: string,
+  hashes: string[],
+): Promise<number> {
   const normalized = candidate.trim().toLowerCase();
   for (let i = 0; i < hashes.length; i++) {
     if (await comparePassword(normalized, hashes[i]!)) return i;
@@ -122,7 +134,7 @@ export async function matchRecoveryCode(candidate: string, hashes: string[]): Pr
  * its SHA-256 hash for storage. The plaintext is never persisted.
  */
 export function createResetToken() {
-  const plain = randomBytes(32).toString('hex');
+  const plain = randomBytes(32).toString("hex");
   return { plain, hash: hashResetToken(plain) };
 }
 
@@ -131,15 +143,15 @@ export function createResetToken() {
  * DB only ever holds the hash.
  */
 export function hashResetToken(plain: string): string {
-  return createHash('sha256').update(plain).digest('hex');
+  return createHash("sha256").update(plain).digest("hex");
 }
 
 /**
  * Constant-time equality for two same-length hex digests.
  */
 export function safeEqualHex(a: string, b: string): boolean {
-  const ba = Buffer.from(a, 'hex');
-  const bb = Buffer.from(b, 'hex');
+  const ba = Buffer.from(a, "hex");
+  const bb = Buffer.from(b, "hex");
   if (ba.length !== bb.length) return false;
   return timingSafeEqual(ba, bb);
 }

@@ -187,7 +187,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
   Future<Result<void>> adjustStock(Map<String, dynamic> payload) =>
       _mutateAndInvalidate(() async {
         await _remote.adjustStock(payload);
-        return null;
+        return;
       });
 
   // ── Warehouses ───────────────────────────────────────────────────────────

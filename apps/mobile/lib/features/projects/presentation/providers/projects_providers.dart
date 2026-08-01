@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -200,15 +199,15 @@ class ProjectListController extends Notifier<ProjectListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteProjectUseCase(
-      ref.read(projectsRepositoryProvider))(id);
+      ref.read(projectsRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<Project>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveProjectUseCase(
-      ref.read(projectsRepositoryProvider))(
-      SaveProjectParams(payload: payload, id: id));
+      ref.read(projectsRepositoryProvider),)(
+      SaveProjectParams(payload: payload, id: id),);
     if (result.isOk) await refresh();
     return result;
   }
@@ -217,7 +216,7 @@ class ProjectListController extends Notifier<ProjectListState> {
 final FutureProviderFamily<Project, String> projectDetailProvider =
     FutureProvider.family<Project, String>((Ref ref, String id) async {
   final result = await GetProjectUseCase(
-    ref.watch(projectsRepositoryProvider))(id);
+    ref.watch(projectsRepositoryProvider),)(id);
   return result.fold((f) => throw f, (p) => p);
 });
 
@@ -321,15 +320,15 @@ class TaskListController extends Notifier<TaskListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteTaskUseCase(
-      ref.read(projectsRepositoryProvider))(id);
+      ref.read(projectsRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<Task>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveTaskUseCase(
-      ref.read(projectsRepositoryProvider))(
-      SaveTaskParams(payload: payload, id: id));
+      ref.read(projectsRepositoryProvider),)(
+      SaveTaskParams(payload: payload, id: id),);
     if (result.isOk) await refresh();
     return result;
   }
@@ -338,7 +337,7 @@ class TaskListController extends Notifier<TaskListState> {
 final FutureProviderFamily<Task, String> taskDetailProvider =
     FutureProvider.family<Task, String>((Ref ref, String id) async {
   final result = await GetTaskUseCase(
-    ref.watch(projectsRepositoryProvider))(id);
+    ref.watch(projectsRepositoryProvider),)(id);
   return result.fold((f) => throw f, (t) => t);
 });
 
@@ -426,15 +425,15 @@ class MilestoneListController extends Notifier<MilestoneListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteMilestoneUseCase(
-      ref.read(projectsRepositoryProvider))(id);
+      ref.read(projectsRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<Milestone>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveMilestoneUseCase(
-      ref.read(projectsRepositoryProvider))(
-      SaveMilestoneParams(payload: payload, id: id));
+      ref.read(projectsRepositoryProvider),)(
+      SaveMilestoneParams(payload: payload, id: id),);
     if (result.isOk) await refresh();
     return result;
   }
@@ -443,7 +442,7 @@ class MilestoneListController extends Notifier<MilestoneListState> {
 final FutureProviderFamily<Milestone, String> milestoneDetailProvider =
     FutureProvider.family<Milestone, String>((Ref ref, String id) async {
   final result = await GetMilestoneUseCase(
-    ref.watch(projectsRepositoryProvider))(id);
+    ref.watch(projectsRepositoryProvider),)(id);
   return result.fold((f) => throw f, (m) => m);
 });
 
@@ -557,22 +556,22 @@ class TimesheetListController extends Notifier<TimesheetListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteTimesheetUseCase(
-      ref.read(projectsRepositoryProvider))(id);
+      ref.read(projectsRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<Timesheet>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveTimesheetUseCase(
-      ref.read(projectsRepositoryProvider))(
-      SaveTimesheetParams(payload: payload, id: id));
+      ref.read(projectsRepositoryProvider),)(
+      SaveTimesheetParams(payload: payload, id: id),);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<Timesheet>> approve(String id) async {
     final result = await ApproveTimesheetUseCase(
-      ref.read(projectsRepositoryProvider))(id);
+      ref.read(projectsRepositoryProvider),)(id);
     return result;
   }
 }
@@ -580,7 +579,7 @@ class TimesheetListController extends Notifier<TimesheetListState> {
 final FutureProviderFamily<Timesheet, String> timesheetDetailProvider =
     FutureProvider.family<Timesheet, String>((Ref ref, String id) async {
   final result = await GetTimesheetUseCase(
-    ref.watch(projectsRepositoryProvider))(id);
+    ref.watch(projectsRepositoryProvider),)(id);
   return result.fold((f) => throw f, (t) => t);
 });
 
@@ -646,7 +645,7 @@ class ProjectBudgetListController extends Notifier<ProjectBudgetListState> {
     if (_projectId == null) return;
     state = state.copyWith(isLoading: true, clearFailures: true);
     final result = await ListProjectBudgetsUseCase(
-      ref.read(projectsRepositoryProvider))(_projectId!);
+      ref.read(projectsRepositoryProvider),)(_projectId!);
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
@@ -658,15 +657,15 @@ class ProjectBudgetListController extends Notifier<ProjectBudgetListState> {
 
   Future<Result<ProjectBudget>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveProjectBudgetUseCase(
-      ref.read(projectsRepositoryProvider))(
-      SaveProjectBudgetParams(payload: payload, id: id));
+      ref.read(projectsRepositoryProvider),)(
+      SaveProjectBudgetParams(payload: payload, id: id),);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteProjectBudgetUseCase(
-      ref.read(projectsRepositoryProvider))(id);
+      ref.read(projectsRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
@@ -675,7 +674,7 @@ class ProjectBudgetListController extends Notifier<ProjectBudgetListState> {
 final FutureProviderFamily<ProjectBudget, String> projectBudgetDetailProvider =
     FutureProvider.family<ProjectBudget, String>((Ref ref, String id) async {
   final result = await GetProjectBudgetUseCase(
-    ref.watch(projectsRepositoryProvider))(id);
+    ref.watch(projectsRepositoryProvider),)(id);
   return result.fold((f) => throw f, (b) => b);
 });
 
@@ -741,7 +740,7 @@ class ProjectRiskListController extends Notifier<ProjectRiskListState> {
     if (_projectId == null) return;
     state = state.copyWith(isLoading: true, clearFailures: true);
     final result = await ListProjectRisksUseCase(
-      ref.read(projectsRepositoryProvider))(_projectId!);
+      ref.read(projectsRepositoryProvider),)(_projectId!);
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
@@ -753,15 +752,15 @@ class ProjectRiskListController extends Notifier<ProjectRiskListState> {
 
   Future<Result<ProjectRisk>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveProjectRiskUseCase(
-      ref.read(projectsRepositoryProvider))(
-      SaveProjectRiskParams(payload: payload, id: id));
+      ref.read(projectsRepositoryProvider),)(
+      SaveProjectRiskParams(payload: payload, id: id),);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteProjectRiskUseCase(
-      ref.read(projectsRepositoryProvider))(id);
+      ref.read(projectsRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
@@ -770,7 +769,7 @@ class ProjectRiskListController extends Notifier<ProjectRiskListState> {
 final FutureProviderFamily<ProjectRisk, String> projectRiskDetailProvider =
     FutureProvider.family<ProjectRisk, String>((Ref ref, String id) async {
   final result = await GetProjectRiskUseCase(
-    ref.watch(projectsRepositoryProvider))(id);
+    ref.watch(projectsRepositoryProvider),)(id);
   return result.fold((f) => throw f, (r) => r);
 });
 
@@ -879,15 +878,15 @@ class ProjectPortfolioListController extends Notifier<ProjectPortfolioListState>
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteProjectPortfolioUseCase(
-      ref.read(projectsRepositoryProvider))(id);
+      ref.read(projectsRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<ProjectPortfolio>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveProjectPortfolioUseCase(
-      ref.read(projectsRepositoryProvider))(
-      SaveProjectPortfolioParams(payload: payload, id: id));
+      ref.read(projectsRepositoryProvider),)(
+      SaveProjectPortfolioParams(payload: payload, id: id),);
     if (result.isOk) await refresh();
     return result;
   }
@@ -896,6 +895,6 @@ class ProjectPortfolioListController extends Notifier<ProjectPortfolioListState>
 final FutureProviderFamily<ProjectPortfolio, String> projectPortfolioDetailProvider =
     FutureProvider.family<ProjectPortfolio, String>((Ref ref, String id) async {
   final result = await GetProjectPortfolioUseCase(
-    ref.watch(projectsRepositoryProvider))(id);
+    ref.watch(projectsRepositoryProvider),)(id);
   return result.fold((f) => throw f, (p) => p);
 });

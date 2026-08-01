@@ -1,11 +1,9 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/theme/design_tokens.dart';
 import '../../../../core/error/failures.dart';
-import '../../../../core/widgets/paginated_list_view.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/ui_card.dart';
 import '../../domain/entities/hr.dart';
@@ -36,7 +34,7 @@ class LeaveTypeListPage extends ConsumerWidget {
       body: asyncTypes.when(
         loading: () => const LoadingView(),
         error: (Object e, StackTrace _) => FailureView(
-          failure: e is Failure ? e as Failure : ServerFailure(e.toString()),
+          failure: e is Failure ? e : ServerFailure(e.toString()),
           onRetry: () => ref.invalidate(leaveTypesProvider),
         ),
         data: (List<LeaveType> types) {
@@ -77,7 +75,7 @@ class LeaveTypeListPage extends ConsumerWidget {
                       height: Spacing.x4,
                       decoration: BoxDecoration(
                         color: color ?? t.primary,
-                        borderRadius: BorderRadius.all(Radius.circular(Radii.sm)),
+                        borderRadius: const BorderRadius.all(Radius.circular(Radii.sm)),
                       ),
                     ),
                     const SizedBox(width: Spacing.x3),
@@ -102,12 +100,12 @@ class LeaveTypeListPage extends ConsumerWidget {
                     ),
                     const SizedBox(width: Spacing.x2),
                     if (lt.isPaid)
-                      UiStatusBadge(
+                      const UiStatusBadge(
                         label: 'Paid',
                         tone: UiTone.success,
                       )
                     else
-                      UiStatusBadge(
+                      const UiStatusBadge(
                         label: 'Unpaid',
                         tone: UiTone.neutral,
                       ),

@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -200,7 +199,7 @@ class SearchSynonymListController extends Notifier<SearchSynonymListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteSearchSynonymUseCase(
-      ref.read(searchRepositoryProvider))(id);
+      ref.read(searchRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }

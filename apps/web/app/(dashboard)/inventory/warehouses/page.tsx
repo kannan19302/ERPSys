@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { useState } from "react";
 import { Modal, PageHeader } from "@unerp/ui";

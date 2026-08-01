@@ -1,11 +1,18 @@
-// @ts-nocheck
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, StatusBadge, Button, Spinner, ListPageTemplate, type ListColumn } from '@unerp/ui';
-import { TrendingUp, Plus } from 'lucide-react';
-import { useApiClient } from '@unerp/framework';
-import styles from './page.module.css';
+import React, { useState, useEffect } from "react";
+import {
+  Card,
+  PageHeader,
+  StatusBadge,
+  Button,
+  Spinner,
+  ListPageTemplate,
+  type ListColumn,
+} from "@unerp/ui";
+import { TrendingUp, Plus } from "lucide-react";
+import { useApiClient } from "@unerp/framework";
+import styles from "./page.module.css";
 
 interface SuccessionPlan {
   id: string;
@@ -29,11 +36,18 @@ export default function SuccessionPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [msg, setMsg] = useState('');
+  const [msg, setMsg] = useState("");
   const [showForm, setShowForm] = useState(false);
-  
+
   // Form state
-  const [form, setForm] = useState({ position: '', currentHolderId: '', riskLevel: 'LOW', readinessLevel: 'NOT_READY', successorId: '', developmentPlan: '' });
+  const [form, setForm] = useState({
+    position: "",
+    currentHolderId: "",
+    riskLevel: "LOW",
+    readinessLevel: "NOT_READY",
+    successorId: "",
+    developmentPlan: "",
+  });
 
   useEffect(() => {
     fetchData();
@@ -43,12 +57,17 @@ export default function SuccessionPage() {
     setLoading(true);
     try {
       const [plansData, employeesData] = await Promise.all([
-        client.get<SuccessionPlan[] | { data?: SuccessionPlan[] }>('/advanced-hr/succession'),
-        client.get<Employee[] | { data?: Employee[] }>('/hr/employees'),
+        client.get<SuccessionPlan[] | { data?: SuccessionPlan[] }>(
+          "/advanced-hr/succession",
+        ),
+        client.get<Employee[] | { data?: Employee[] }>("/hr/employees"),
       ]);
-      setPlans(Array.isArray(plansData) ? plansData : (plansData.data || []));
-      setEmployees(Array.isArray(employeesData) ? employeesData : (employeesData.data || []));
-    } catch {} finally {
+      setPlans(Array.isArray(plansData) ? plansData : plansData.data || []);
+      setEmployees(
+        Array.isArray(employeesData) ? employeesData : employeesData.data || [],
+      );
+    } catch {
+    } finally {
       setLoading(false);
     }
   };
@@ -57,21 +76,28 @@ export default function SuccessionPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      await client.post('/advanced-hr/succession', form);
-      setMsg('Succession plan assigned.');
+      await client.post("/advanced-hr/succession", form);
+      setMsg("Succession plan assigned.");
       setShowForm(false);
-      setForm({ position: '', currentHolderId: '', riskLevel: 'LOW', readinessLevel: 'NOT_READY', successorId: '', developmentPlan: '' });
+      setForm({
+        position: "",
+        currentHolderId: "",
+        riskLevel: "LOW",
+        readinessLevel: "NOT_READY",
+        successorId: "",
+        developmentPlan: "",
+      });
       fetchData();
     } catch {
-      setMsg('Error saving succession plan.');
+      setMsg("Error saving succession plan.");
     } finally {
       setSubmitting(false);
     }
   };
 
   const getEmpName = (id: string | null) => {
-    if (!id) return 'None';
-    const emp = employees.find(e => e.id === id);
+    if (!id) return "None";
+    const emp = employees.find((e) => e.id === id);
     return emp ? `${emp.firstName} ${emp.lastName}` : id;
   };
 
@@ -80,7 +106,12 @@ export default function SuccessionPage() {
       <PageHeader
         title="Succession Plan"
         description="Address organizational vacancy risks, map high-potential successor roles, and coordinate readiness development plans."
-        breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'HR', href: '/hr' }, { label: 'Advanced', href: '/hr/advanced' }, { label: 'Succession' }]}
+        breadcrumbs={[
+          { label: "Home", href: "/dashboard" },
+          { label: "HR", href: "/hr" },
+          { label: "Advanced", href: "/hr/advanced" },
+          { label: "Succession" },
+        ]}
         actions={
           <Button variant="primary" onClick={() => setShowForm(!showForm)}>
             <Plus size={14} /> Design Plan
@@ -88,11 +119,7 @@ export default function SuccessionPage() {
         }
       />
 
-      {msg && (
-        <div className={styles.s0}>
-          {msg}
-        </div>
-      )}
+      {msg && <div className={styles.s0}>{msg}</div>}
 
       {showForm && (
         <Card padding="md">
@@ -102,20 +129,26 @@ export default function SuccessionPage() {
               className="ui-input"
               placeholder="Corporate Role Position (e.g. Chief Executive Officer)"
               value={form.position}
-              onChange={e => setForm({ ...form, position: e.target.value })}
+              onChange={(e) => setForm({ ...form, position: e.target.value })}
               required
             />
             <div className="ui-grid-2 ui-gap-3">
               <div>
-                <label className="ui-text-caption">Current Position Holder</label>
+                <label className="ui-text-caption">
+                  Current Position Holder
+                </label>
                 <select
                   className="ui-input"
                   value={form.currentHolderId}
-                  onChange={e => setForm({ ...form, currentHolderId: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, currentHolderId: e.target.value })
+                  }
                 >
                   <option value="">Select Employee</option>
-                  {employees.map(e => (
-                    <option key={e.id} value={e.id}>{e.firstName} {e.lastName}</option>
+                  {employees.map((e) => (
+                    <option key={e.id} value={e.id}>
+                      {e.firstName} {e.lastName}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -124,11 +157,15 @@ export default function SuccessionPage() {
                 <select
                   className="ui-input"
                   value={form.successorId}
-                  onChange={e => setForm({ ...form, successorId: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, successorId: e.target.value })
+                  }
                 >
                   <option value="">Select Successor</option>
-                  {employees.map(e => (
-                    <option key={e.id} value={e.id}>{e.firstName} {e.lastName}</option>
+                  {employees.map((e) => (
+                    <option key={e.id} value={e.id}>
+                      {e.firstName} {e.lastName}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -140,7 +177,9 @@ export default function SuccessionPage() {
                 <select
                   className="ui-input"
                   value={form.riskLevel}
-                  onChange={e => setForm({ ...form, riskLevel: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, riskLevel: e.target.value })
+                  }
                 >
                   <option value="LOW">Low Risk</option>
                   <option value="MEDIUM">Medium Risk</option>
@@ -152,7 +191,9 @@ export default function SuccessionPage() {
                 <select
                   className="ui-input"
                   value={form.readinessLevel}
-                  onChange={e => setForm({ ...form, readinessLevel: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, readinessLevel: e.target.value })
+                  }
                 >
                   <option value="READY">Ready Now</option>
                   <option value="READY_1_YEAR">Ready within 1 Year</option>
@@ -166,13 +207,23 @@ export default function SuccessionPage() {
               className="ui-input"
               placeholder="Candidate training and mentoring development pathway details..."
               value={form.developmentPlan}
-              onChange={e => setForm({ ...form, developmentPlan: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, developmentPlan: e.target.value })
+              }
               rows={3}
             />
 
             <div className="ui-flex-end ui-gap-2">
-              <Button variant="outline" type="button" onClick={() => setShowForm(false)}>Cancel</Button>
-              <Button variant="primary" type="submit" disabled={submitting}>Save Plan</Button>
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => setShowForm(false)}
+              >
+                Cancel
+              </Button>
+              <Button variant="primary" type="submit" disabled={submitting}>
+                Save Plan
+              </Button>
             </div>
           </form>
         </Card>
@@ -180,13 +231,47 @@ export default function SuccessionPage() {
 
       {(() => {
         const successionColumns: ListColumn[] = [
-          { key: 'position', header: 'Critical Role' },
-          { key: 'currentHolderId', header: 'Current Holder', render: (v) => getEmpName(v as string | null) },
-          { key: 'successorId', header: 'Designated Successor', render: (v) => getEmpName(v as string | null) },
-          { key: 'riskLevel', header: 'Vacancy Risk', render: (v) => (
-            <span className={styles.dyn0} style={{ background: v === 'HIGH' ? 'var(--color-danger-light)' : v === 'MEDIUM' ? 'var(--color-warning-light)' : 'var(--color-success-light)', color: v === 'HIGH' ? 'var(--color-danger-text)' : v === 'MEDIUM' ? 'var(--color-warning-text)' : 'var(--color-success)' }}>{String(v)}</span>
-          ) },
-          { key: 'readinessLevel', header: 'Readiness', render: (v) => <StatusBadge status={String(v)} /> },
+          { key: "position", header: "Critical Role" },
+          {
+            key: "currentHolderId",
+            header: "Current Holder",
+            render: (v) => getEmpName(v as string | null),
+          },
+          {
+            key: "successorId",
+            header: "Designated Successor",
+            render: (v) => getEmpName(v as string | null),
+          },
+          {
+            key: "riskLevel",
+            header: "Vacancy Risk",
+            render: (v) => (
+              <span
+                className={styles.dyn0}
+                style={{
+                  background:
+                    v === "HIGH"
+                      ? "var(--color-danger-light)"
+                      : v === "MEDIUM"
+                        ? "var(--color-warning-light)"
+                        : "var(--color-success-light)",
+                  color:
+                    v === "HIGH"
+                      ? "var(--color-danger-text)"
+                      : v === "MEDIUM"
+                        ? "var(--color-warning-text)"
+                        : "var(--color-success)",
+                }}
+              >
+                {String(v)}
+              </span>
+            ),
+          },
+          {
+            key: "readinessLevel",
+            header: "Readiness",
+            render: (v) => <StatusBadge status={String(v)} />,
+          },
         ];
         return (
           <ListPageTemplate
@@ -201,5 +286,3 @@ export default function SuccessionPage() {
     </div>
   );
 }
-
-

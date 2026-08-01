@@ -1,25 +1,24 @@
-// @ts-nocheck
-import { Injectable } from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
+import { Injectable } from "@nestjs/common";
+import { OnEvent } from "@nestjs/event-emitter";
 
 @Injectable()
 export class SupplyChainEventsService {
-  @OnEvent('asn.received')
+  @OnEvent("asn.received")
   handleAsnReceived() {
     // Notification dispatch placeholder
   }
 
-  @OnEvent('shipment.delivered')
+  @OnEvent("shipment.delivered")
   handleShipmentDelivered() {
     // Notification dispatch placeholder
   }
 
-  @OnEvent('vendor-return.shipped')
+  @OnEvent("vendor-return.shipped")
   handleVendorReturnShipped() {
     // Notification dispatch placeholder
   }
 
-  @OnEvent('cross-dock.order.completed')
+  @OnEvent("cross-dock.order.completed")
   handleCrossDockCompleted() {
     // Notification dispatch placeholder
   }

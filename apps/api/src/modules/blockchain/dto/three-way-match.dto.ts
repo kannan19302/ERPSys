@@ -1,7 +1,6 @@
-// @ts-nocheck
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from "@nestjs/swagger";
 
 export class ThreeWayMatchDto {
-  @ApiProperty({ description: 'Purchase Order ID to execute 3-way match for' })
+  @ApiProperty({ description: "Purchase Order ID to execute 3-way match for" })
   poId!: string;
 }

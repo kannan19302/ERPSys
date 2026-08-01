@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Injectable,
   NotFoundException,
@@ -8,7 +7,12 @@ import { prisma } from "@unerp/database";
 
 @Injectable()
 export class InvoiceEngineService {
-  async listInvoices(tenantId: string, page: number, limit: number, status?: string) {
+  async listInvoices(
+    tenantId: string,
+    page: number,
+    limit: number,
+    status?: string,
+  ) {
     const where: Record<string, unknown> = { tenantId };
     if (status) where.status = status;
 
@@ -35,17 +39,32 @@ export class InvoiceEngineService {
     return invoice;
   }
 
-  async generateInvoice(tenantId: string, body: {
-    planId: string;
-    amount: number;
-    currency?: string;
-    description?: string;
-    dueDate?: string;
-    lineItems?: Array<{ description: string; quantity: number; unitPrice: number; total: number }>;
-  }) {
+  async generateInvoice(
+    tenantId: string,
+    body: {
+      planId: string;
+      amount: number;
+      currency?: string;
+      description?: string;
+      dueDate?: string;
+      lineItems?: Array<{
+        description: string;
+        quantity: number;
+        unitPrice: number;
+        total: number;
+      }>;
+    },
+  ) {
     const invoiceNumber = await this.generateInvoiceNumber();
     const totalAmount = body.amount;
-    const lineItems = body.lineItems ?? [{ description: body.description ?? "Service", quantity: 1, unitPrice: totalAmount, total: totalAmount }];
+    const lineItems = body.lineItems ?? [
+      {
+        description: body.description ?? "Service",
+        quantity: 1,
+        unitPrice: totalAmount,
+        total: totalAmount,
+      },
+    ];
 
     return prisma.saaSInvoice.create({
       data: {
@@ -56,7 +75,9 @@ export class InvoiceEngineService {
         subtotal: totalAmount,
         totalAmount,
         amountDue: totalAmount,
-        dueDate: body.dueDate ? new Date(body.dueDate) : new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+        dueDate: body.dueDate
+          ? new Date(body.dueDate)
+          : new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
         lines: {
           create: lineItems.map((li) => ({
             description: li.description,
@@ -72,10 +93,14 @@ export class InvoiceEngineService {
   }
 
   async payInvoice(tenantId: string, id: string) {
-    const invoice = await prisma.saaSInvoice.findFirst({ where: { id, tenantId } });
+    const invoice = await prisma.saaSInvoice.findFirst({
+      where: { id, tenantId },
+    });
     if (!invoice) throw new NotFoundException("Invoice not found");
-    if (invoice.status === "PAID") throw new BadRequestException("Invoice already paid");
-    if (invoice.status === "CANCELLED") throw new BadRequestException("Invoice is cancelled");
+    if (invoice.status === "PAID")
+      throw new BadRequestException("Invoice already paid");
+    if (invoice.status === "CANCELLED")
+      throw new BadRequestException("Invoice is cancelled");
 
     return prisma.$transaction([
       prisma.saaSInvoice.update({
@@ -103,9 +128,12 @@ export class InvoiceEngineService {
   }
 
   async refundInvoice(tenantId: string, id: string) {
-    const invoice = await prisma.saaSInvoice.findFirst({ where: { id, tenantId } });
+    const invoice = await prisma.saaSInvoice.findFirst({
+      where: { id, tenantId },
+    });
     if (!invoice) throw new NotFoundException("Invoice not found");
-    if (invoice.status !== "PAID") throw new BadRequestException("Only paid invoices can be refunded");
+    if (invoice.status !== "PAID")
+      throw new BadRequestException("Only paid invoices can be refunded");
 
     return prisma.$transaction([
       prisma.saaSInvoice.update({
@@ -128,9 +156,12 @@ export class InvoiceEngineService {
   }
 
   async cancelInvoice(tenantId: string, id: string) {
-    const invoice = await prisma.saaSInvoice.findFirst({ where: { id, tenantId } });
+    const invoice = await prisma.saaSInvoice.findFirst({
+      where: { id, tenantId },
+    });
     if (!invoice) throw new NotFoundException("Invoice not found");
-    if (invoice.status !== "DRAFT") throw new BadRequestException("Only draft invoices can be cancelled");
+    if (invoice.status !== "DRAFT")
+      throw new BadRequestException("Only draft invoices can be cancelled");
     return prisma.saaSInvoice.update({
       where: { id },
       data: { status: "CANCELLED" },
@@ -138,9 +169,14 @@ export class InvoiceEngineService {
   }
 
   async downloadPdf(tenantId: string, id: string) {
-    const invoice = await prisma.saaSInvoice.findFirst({ where: { id, tenantId } });
+    const invoice = await prisma.saaSInvoice.findFirst({
+      where: { id, tenantId },
+    });
     if (!invoice) throw new NotFoundException("Invoice not found");
-    return { pdfUrl: invoice.pdfUrl || null, invoiceNumber: invoice.invoiceNumber };
+    return {
+      pdfUrl: invoice.pdfUrl || null,
+      invoiceNumber: invoice.invoiceNumber,
+    };
   }
 
   async getBillingHistory(tenantId: string) {
@@ -152,9 +188,21 @@ export class InvoiceEngineService {
   }
 
   async getInvoiceStats(tenantId: string) {
-    const invoices = await prisma.saaSInvoice.findMany({ where: { tenantId }, select: { status: true, totalAmount: true, amountPaid: true, amountDue: true } });
-    const totalPaid = invoices.filter((i) => i.status === "PAID").reduce((s, i) => s + Number(i.totalAmount), 0);
-    const totalOutstanding = invoices.filter((i) => i.status === "PENDING" || i.status === "OVERDUE").reduce((s, i) => s + Number(i.amountDue), 0);
+    const invoices = await prisma.saaSInvoice.findMany({
+      where: { tenantId },
+      select: {
+        status: true,
+        totalAmount: true,
+        amountPaid: true,
+        amountDue: true,
+      },
+    });
+    const totalPaid = invoices
+      .filter((i) => i.status === "PAID")
+      .reduce((s, i) => s + Number(i.totalAmount), 0);
+    const totalOutstanding = invoices
+      .filter((i) => i.status === "PENDING" || i.status === "OVERDUE")
+      .reduce((s, i) => s + Number(i.amountDue), 0);
 
     return {
       totalInvoices: invoices.length,
@@ -188,12 +236,17 @@ export class InvoiceEngineService {
     return `${prefix}${String(seq).padStart(5, "0")}`;
   }
 
-  async scheduleRecurringInvoice(tenantId: string, dto: {
-    interval: "MONTHLY" | "YEARLY";
-    startDate?: string;
-    endDate?: string;
-  }) {
-    const sub = await prisma.tenantSubscription.findFirst({ where: { tenantId } });
+  async scheduleRecurringInvoice(
+    tenantId: string,
+    dto: {
+      interval: "MONTHLY" | "YEARLY";
+      startDate?: string;
+      endDate?: string;
+    },
+  ) {
+    const sub = await prisma.tenantSubscription.findFirst({
+      where: { tenantId },
+    });
     if (!sub) throw new BadRequestException("No active subscription");
 
     return prisma.tenantSubscription.update({
@@ -209,7 +262,10 @@ export class InvoiceEngineService {
   async getUpcomingInvoices(tenantId: string) {
     const sub = await prisma.tenantSubscription.findFirst({
       where: { tenantId, status: { in: ["ACTIVE", "TRIAL"] } },
-      include: { plan: { include: { prices: { where: { isActive: true } } } }, addOns: { include: { addon: true } } },
+      include: {
+        plan: { include: { prices: { where: { isActive: true } } } },
+        addOns: { include: { addon: true } },
+      },
     });
     if (!sub) return [];
 
@@ -219,12 +275,22 @@ export class InvoiceEngineService {
     const planCost = sub.billingPeriod === "YEARLY" ? usdPrice * 12 : usdPrice;
     let total = planCost;
 
-    const lineItems: Array<{ description: string; type: string; amount: number }> = [{ description: `Plan: ${sub.plan.name}`, type: "PLAN", amount: planCost }];
+    const lineItems: Array<{
+      description: string;
+      type: string;
+      amount: number;
+    }> = [
+      { description: `Plan: ${sub.plan.name}`, type: "PLAN", amount: planCost },
+    ];
 
     for (const tao of sub.addOns) {
       const cost = Number(tao.addon.price) * tao.quantity;
       total += cost;
-      lineItems.push({ description: `Add-On: ${tao.addon.name} x${tao.quantity}`, type: "ADDON", amount: cost });
+      lineItems.push({
+        description: `Add-On: ${tao.addon.name} x${tao.quantity}`,
+        type: "ADDON",
+        amount: cost,
+      });
     }
 
     return {

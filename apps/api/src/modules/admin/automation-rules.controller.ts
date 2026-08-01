@@ -1,14 +1,24 @@
-// @ts-nocheck
-import { Controller, Get, Post, Patch, Delete, Param, Query, UseGuards, UseInterceptors, Req } from '@nestjs/common';
-import { z } from 'zod';
-import { ZodBody } from '../../common/decorators/zod-body.decorator';
-import { Request } from 'express';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { RbacGuard } from '../../common/guards/rbac.guard';
-import { TenantInterceptor } from '../../common/guards/tenant.interceptor';
-import { Permissions } from '../../common/decorators/permissions.decorator';
-import { AutomationRulesService } from './automation-rules.service';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Query,
+  UseGuards,
+  UseInterceptors,
+  Req,
+} from "@nestjs/common";
+import { z } from "zod";
+import { ZodBody } from "../../common/decorators/zod-body.decorator";
+import { Request } from "express";
+import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
+import { RbacGuard } from "../../common/guards/rbac.guard";
+import { TenantInterceptor } from "../../common/guards/tenant.interceptor";
+import { Permissions } from "../../common/decorators/permissions.decorator";
+import { AutomationRulesService } from "./automation-rules.service";
+import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -21,28 +31,30 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
-@ApiTags('admin')
+@ApiTags("admin")
 @ApiBearerAuth()
-@Controller('admin/automation-rules')
+@Controller("admin/automation-rules")
 @UseGuards(JwtAuthGuard, RbacGuard)
 @UseInterceptors(TenantInterceptor)
 export class AutomationRulesController {
-  constructor(private readonly automationRulesService: AutomationRulesService) {}
+  constructor(
+    private readonly automationRulesService: AutomationRulesService,
+  ) {}
 
-  @ApiOperation({ summary: 'Get rules' })
+  @ApiOperation({ summary: "Get rules" })
   @Get()
-  @Permissions('admin.automation.read')
+  @Permissions("admin.automation.read")
   async getRules(@Req() req: AuthenticatedRequest) {
     return this.automationRulesService.getRules(req.user.tenantId);
   }
 
-  @ApiOperation({ summary: 'Get execution history' })
-  @Get('executions')
-  @Permissions('admin.automation.read')
+  @ApiOperation({ summary: "Get execution history" })
+  @Get("executions")
+  @Permissions("admin.automation.read")
   async getExecutionHistory(
     @Req() req: AuthenticatedRequest,
-    @Query('ruleId') ruleId?: string,
-    @Query('limit') limit?: string,
+    @Query("ruleId") ruleId?: string,
+    @Query("limit") limit?: string,
   ) {
     return this.automationRulesService.getExecutionHistory(
       req.user.tenantId,
@@ -51,22 +63,20 @@ export class AutomationRulesController {
     );
   }
 
-  @ApiOperation({ summary: 'Get rule' })
-  @Get(':id')
-  @Permissions('admin.automation.read')
-  async getRule(
-    @Req() req: AuthenticatedRequest,
-    @Param('id') id: string,
-  ) {
+  @ApiOperation({ summary: "Get rule" })
+  @Get(":id")
+  @Permissions("admin.automation.read")
+  async getRule(@Req() req: AuthenticatedRequest, @Param("id") id: string) {
     return this.automationRulesService.getRule(req.user.tenantId, id);
   }
 
-  @ApiOperation({ summary: 'Create rule' })
+  @ApiOperation({ summary: "Create rule" })
   @Post()
-  @Permissions('admin.automation.create')
+  @Permissions("admin.automation.create")
   async createRule(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.any()) dto: {
+    @ZodBody(z.any())
+    dto: {
       name: string;
       description?: string;
       trigger: string;
@@ -77,16 +87,21 @@ export class AutomationRulesController {
       settings?: any;
     },
   ) {
-    return this.automationRulesService.createRule(req.user.tenantId, dto, req.user.userId);
+    return this.automationRulesService.createRule(
+      req.user.tenantId,
+      dto,
+      req.user.userId,
+    );
   }
 
-  @ApiOperation({ summary: 'Update rule' })
-  @Patch(':id')
-  @Permissions('admin.automation.update')
+  @ApiOperation({ summary: "Update rule" })
+  @Patch(":id")
+  @Permissions("admin.automation.update")
   async updateRule(
     @Req() req: AuthenticatedRequest,
-    @Param('id') id: string,
-    @ZodBody(z.any()) dto: {
+    @Param("id") id: string,
+    @ZodBody(z.any())
+    dto: {
       name?: string;
       description?: string;
       trigger?: string;
@@ -100,24 +115,25 @@ export class AutomationRulesController {
     return this.automationRulesService.updateRule(req.user.tenantId, id, dto);
   }
 
-  @ApiOperation({ summary: 'Delete rule' })
-  @Delete(':id')
-  @Permissions('admin.automation.delete')
-  async deleteRule(
-    @Req() req: AuthenticatedRequest,
-    @Param('id') id: string,
-  ) {
+  @ApiOperation({ summary: "Delete rule" })
+  @Delete(":id")
+  @Permissions("admin.automation.delete")
+  async deleteRule(@Req() req: AuthenticatedRequest, @Param("id") id: string) {
     return this.automationRulesService.deleteRule(req.user.tenantId, id);
   }
 
-  @ApiOperation({ summary: 'Test rule' })
-  @Post(':id/test')
-  @Permissions('admin.automation.update')
+  @ApiOperation({ summary: "Test rule" })
+  @Post(":id/test")
+  @Permissions("admin.automation.update")
   async testRule(
     @Req() req: AuthenticatedRequest,
-    @Param('id') id: string,
+    @Param("id") id: string,
     @ZodBody(z.any()) dto: { sampleData: any },
   ) {
-    return this.automationRulesService.testRule(req.user.tenantId, id, dto.sampleData);
+    return this.automationRulesService.testRule(
+      req.user.tenantId,
+      id,
+      dto.sampleData,
+    );
   }
 }

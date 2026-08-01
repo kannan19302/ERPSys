@@ -1,12 +1,4 @@
-// @ts-nocheck
-import {
-  Controller,
-  Get,
-  Post,
-  UseGuards,
-  Req,
-  Param,
-} from "@nestjs/common";
+import { Controller, Get, Post, UseGuards, Req, Param } from "@nestjs/common";
 import { z } from "zod";
 import { ZodBody } from "../../common/decorators/zod-body.decorator";
 import { Request } from "express";
@@ -61,23 +53,49 @@ export class ComplianceController {
   @Get("reports")
   async listComplianceReports(@Req() _req: AuthReq) {
     return [
-      { id: "1", type: "soc2", status: "compliant", generatedAt: "2024-01-15", expiresAt: "2025-01-15" },
-      { id: "2", type: "gdpr", status: "compliant", generatedAt: "2024-02-01", expiresAt: "2025-02-01" },
+      {
+        id: "1",
+        type: "soc2",
+        status: "compliant",
+        generatedAt: "2024-01-15",
+        expiresAt: "2025-01-15",
+      },
+      {
+        id: "2",
+        type: "gdpr",
+        status: "compliant",
+        generatedAt: "2024-02-01",
+        expiresAt: "2025-02-01",
+      },
     ];
   }
 
   @ApiOperation({ summary: "Generate compliance report" })
   @Permissions("saas.audit.read")
   @Post("reports/generate")
-  async generateComplianceReport(@Req() _req: AuthReq, @ZodBody(generateReportSchema) body: z.infer<typeof generateReportSchema>) {
-    return { success: true, type: body.type, status: "generating", estimatedCompletion: new Date(Date.now() + 60000) };
+  async generateComplianceReport(
+    @Req() _req: AuthReq,
+    @ZodBody(generateReportSchema) body: z.infer<typeof generateReportSchema>,
+  ) {
+    return {
+      success: true,
+      type: body.type,
+      status: "generating",
+      estimatedCompletion: new Date(Date.now() + 60000),
+    };
   }
 
   @ApiOperation({ summary: "Get compliance report" })
   @Permissions("saas.audit.read")
   @Get("reports/:id")
   async getComplianceReport(@Req() _req: AuthReq, @Param("id") id: string) {
-    return { id, type: "soc2", status: "compliant", findings: [], generatedAt: "2024-01-15" };
+    return {
+      id,
+      type: "soc2",
+      status: "compliant",
+      findings: [],
+      generatedAt: "2024-01-15",
+    };
   }
 
   @ApiOperation({ summary: "List certifications" })
@@ -85,17 +103,41 @@ export class ComplianceController {
   @Get("certifications")
   async listCertifications(@Req() _req: AuthReq) {
     return [
-      { standard: "SOC 2 Type II", status: "certified", certifiedAt: "2024-01-01", expiresAt: "2025-01-01" },
-      { standard: "GDPR", status: "compliant", certifiedAt: "2024-02-01", expiresAt: null },
-      { standard: "HIPAA", status: "in_progress", certifiedAt: null, expiresAt: null },
+      {
+        standard: "SOC 2 Type II",
+        status: "certified",
+        certifiedAt: "2024-01-01",
+        expiresAt: "2025-01-01",
+      },
+      {
+        standard: "GDPR",
+        status: "compliant",
+        certifiedAt: "2024-02-01",
+        expiresAt: null,
+      },
+      {
+        standard: "HIPAA",
+        status: "in_progress",
+        certifiedAt: null,
+        expiresAt: null,
+      },
     ];
   }
 
   @ApiOperation({ summary: "Request certification" })
   @Permissions("saas.audit.create")
   @Post("certifications")
-  async requestCertification(@Req() _req: AuthReq, @ZodBody(requestCertificationSchema) body: z.infer<typeof requestCertificationSchema>) {
-    return { success: true, standard: body.standard, status: "requested", requestedAt: new Date() };
+  async requestCertification(
+    @Req() _req: AuthReq,
+    @ZodBody(requestCertificationSchema)
+    body: z.infer<typeof requestCertificationSchema>,
+  ) {
+    return {
+      success: true,
+      standard: body.standard,
+      status: "requested",
+      requestedAt: new Date(),
+    };
   }
 
   @ApiOperation({ summary: "Get data processing agreement" })
@@ -114,7 +156,10 @@ export class ComplianceController {
   @ApiOperation({ summary: "Sign data processing agreement" })
   @Permissions("saas.audit.create")
   @Post("data-processing/sign")
-  async signDataProcessingAgreement(@Req() _req: AuthReq, @ZodBody(signDpaSchema) body: z.infer<typeof signDpaSchema>) {
+  async signDataProcessingAgreement(
+    @Req() _req: AuthReq,
+    @ZodBody(signDpaSchema) body: z.infer<typeof signDpaSchema>,
+  ) {
     return { success: true, signedAt: new Date(), signedBy: body.acceptedBy };
   }
 
@@ -122,39 +167,67 @@ export class ComplianceController {
   @Permissions("saas.audit.read")
   @Get("hipaa")
   async getHipaaStatus(@Req() _req: AuthReq) {
-    return { compliant: true, lastAssessment: "2024-03-01", nextAssessment: "2024-09-01", controls: 120, passed: 118 };
+    return {
+      compliant: true,
+      lastAssessment: "2024-03-01",
+      nextAssessment: "2024-09-01",
+      controls: 120,
+      passed: 118,
+    };
   }
 
   @ApiOperation({ summary: "Get GDPR status" })
   @Permissions("saas.audit.read")
   @Get("gdpr")
   async getGdprStatus(@Req() _req: AuthReq) {
-    return { compliant: true, dpaSigned: false, dataExports: 3, erasureRequests: 1, dataProcessor: "AWS (Frankfurt)" };
+    return {
+      compliant: true,
+      dpaSigned: false,
+      dataExports: 3,
+      erasureRequests: 1,
+      dataProcessor: "AWS (Frankfurt)",
+    };
   }
 
   @ApiOperation({ summary: "Request GDPR data export" })
   @Permissions("saas.audit.create")
   @Post("gdpr/export")
-  async requestGdprDataExport(@Req() req: AuthReq, @ZodBody(requestGdprExportSchema) body: z.infer<typeof requestGdprExportSchema>) {
-    return this.dataExportService.requestExport(req.user.tenantId, req.user.userId, {
-      module: "gdpr",
-      format: "json",
-      filters: { dataTypes: body.dataTypes },
-    }).catch(() => ({ success: true }));
+  async requestGdprDataExport(
+    @Req() req: AuthReq,
+    @ZodBody(requestGdprExportSchema)
+    body: z.infer<typeof requestGdprExportSchema>,
+  ) {
+    return this.dataExportService
+      .requestExport(req.user.tenantId, req.user.userId, {
+        module: "gdpr",
+        format: "json",
+        filters: { dataTypes: body.dataTypes },
+      })
+      .catch(() => ({ success: true }));
   }
 
   @ApiOperation({ summary: "Request data erasure" })
   @Permissions("saas.audit.create")
   @Post("gdpr/forget")
-  async requestDataErasure(@Req() _req: AuthReq, @ZodBody(requestDataErasureSchema) _body: z.infer<typeof requestDataErasureSchema>) {
-    return { success: true, message: "Erasure request submitted", estimatedCompletion: new Date(Date.now() + 30 * 86400000) };
+  async requestDataErasure(
+    @Req() _req: AuthReq,
+    @ZodBody(requestDataErasureSchema)
+    _body: z.infer<typeof requestDataErasureSchema>,
+  ) {
+    return {
+      success: true,
+      message: "Erasure request submitted",
+      estimatedCompletion: new Date(Date.now() + 30 * 86400000),
+    };
   }
 
   @ApiOperation({ summary: "Get compliance audit trail" })
   @Permissions("saas.audit.read")
   @Get("audit-trail")
   async getComplianceAuditTrail(@Req() req: AuthReq) {
-    return this.auditLogService.listAuditLogs(req.user.tenantId, 1, 100, {}).catch(() => ({ items: [], total: 0 }));
+    return this.auditLogService
+      .listAuditLogs(req.user.tenantId, 1, 100, {})
+      .catch(() => ({ items: [], total: 0 }));
   }
 
   @ApiOperation({ summary: "List compliance standards" })
@@ -174,6 +247,11 @@ export class ComplianceController {
   @Permissions("saas.audit.create")
   @Post("scan")
   async runComplianceScan(@Req() _req: AuthReq) {
-    return { success: true, status: "scanning", findings: [], startedAt: new Date() };
+    return {
+      success: true,
+      status: "scanning",
+      findings: [],
+      startedAt: new Date(),
+    };
   }
 }

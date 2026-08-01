@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -53,7 +52,7 @@ class _BudgetDetail extends StatelessWidget {
           children: [
             Text(budget.category, style: Theme.of(context).textTheme.titleLarge),
           ],
-        )),
+        ),),
         const SizedBox(height: Spacing.x4),
         UiCard(child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,7 +68,7 @@ class _BudgetDetail extends StatelessWidget {
                 child: Text('Over budget!', style: TextStyle(color: t.danger, fontWeight: TypeScale.semibold)),
               ),
           ],
-        )),
+        ),),
         const SizedBox(height: Spacing.x4),
         UiCard(child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,9 +86,9 @@ class _BudgetDetail extends StatelessWidget {
             ),
             const SizedBox(height: Spacing.x1),
             Text('${spentPct.toStringAsFixed(1)}% of budget used',
-                style: TextStyle(color: t.textSecondary)),
+                style: TextStyle(color: t.textSecondary),),
           ],
-        )),
+        ),),
       ],
     );
   }
@@ -107,7 +106,7 @@ class _Row extends StatelessWidget {
       child: Row(children: [
         Expanded(child: Text(label, style: TextStyle(color: t.textSecondary))),
         Text(value, style: Theme.of(context).textTheme.labelLarge),
-      ]),
+      ],),
     );
   }
 }

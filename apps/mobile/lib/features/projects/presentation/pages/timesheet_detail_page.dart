@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -56,11 +55,11 @@ class _TimesheetDetail extends StatelessWidget {
             Row(children: [
               Expanded(child: Text(
                 ts.projectName ?? 'Timesheet',
-                style: Theme.of(context).textTheme.titleLarge)),
+                style: Theme.of(context).textTheme.titleLarge,),),
               UiStatusBadge(label: ts.status, tone: _statusTone(ts.status)),
-            ]),
+            ],),
           ],
-        )),
+        ),),
         const SizedBox(height: Spacing.x4),
         UiCard(child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -76,7 +75,7 @@ class _TimesheetDetail extends StatelessWidget {
                 child: Text(ts.description!, style: Theme.of(context).textTheme.bodyMedium),
               ),
           ],
-        )),
+        ),),
       ],
     );
   }
@@ -94,7 +93,7 @@ class _Row extends StatelessWidget {
       child: Row(children: [
         Expanded(child: Text(label, style: TextStyle(color: t.textSecondary))),
         Text(value, style: Theme.of(context).textTheme.labelLarge),
-      ]),
+      ],),
     );
   }
 }

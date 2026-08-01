@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -49,15 +48,15 @@ class _DashboardContent extends StatelessWidget {
             value: stats.totalPO.toString(),
             icon: Icons.shopping_cart_outlined,
             color: t.primary,
-          )),
+          ),),
           const SizedBox(width: Spacing.x3),
           Expanded(child: _KpiCard(
             title: 'Total Spend',
             value: Formatters.compact(stats.totalSpend),
             icon: Icons.attach_money,
             color: t.success,
-          )),
-        ]),
+          ),),
+        ],),
         const SizedBox(height: Spacing.x3),
         Row(children: [
           Expanded(child: _KpiCard(
@@ -65,15 +64,15 @@ class _DashboardContent extends StatelessWidget {
             value: stats.pendingApprovals.toString(),
             icon: Icons.hourglass_empty,
             color: t.warning,
-          )),
+          ),),
           const SizedBox(width: Spacing.x3),
           Expanded(child: _KpiCard(
             title: 'Vendors',
             value: stats.vendorCount.toString(),
             icon: Icons.business,
             color: t.info,
-          )),
-        ]),
+          ),),
+        ],),
         const SizedBox(height: Spacing.x4),
         if (stats.spendByMonth.isNotEmpty) ...[
           UiCard(child: Column(
@@ -83,19 +82,19 @@ class _DashboardContent extends StatelessWidget {
               ...stats.spendByMonth.map((dp) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: Spacing.x1),
                 child: Row(children: [
-                  SizedBox(width: 100, child: Text(dp.label, style: TextStyle(fontSize: TypeScale.xs))),
+                  SizedBox(width: 100, child: Text(dp.label, style: const TextStyle(fontSize: TypeScale.xs))),
                   Expanded(child: LinearProgressIndicator(
                     value: dp.value / stats.spendByMonth
                         .map((e) => e.value)
                         .reduce((a, b) => a > b ? a : b),
                     backgroundColor: t.bgSunken,
-                  )),
+                  ),),
                   const SizedBox(width: Spacing.x2),
-                  Text(Formatters.compact(dp.value), style: TextStyle(fontSize: TypeScale.xs)),
-                ]),
-              )),
+                  Text(Formatters.compact(dp.value), style: const TextStyle(fontSize: TypeScale.xs)),
+                ],),
+              ),),
             ],
-          )),
+          ),),
           const SizedBox(height: Spacing.x4),
         ],
         UiCard(child: Column(
@@ -107,7 +106,7 @@ class _DashboardContent extends StatelessWidget {
                 onPressed: () => context.pushNamed('purchase-orders'),
                 child: const Text('View all'),
               ),
-            ]),
+            ],),
             ...stats.recentPOs.take(5).map((po) => Padding(
               padding: const EdgeInsets.symmetric(vertical: Spacing.x1),
               child: InkWell(
@@ -119,23 +118,23 @@ class _DashboardContent extends StatelessWidget {
                       Text(po.poNumber, style: Theme.of(context).textTheme.labelLarge),
                       Text(po.vendorName, style: TextStyle(fontSize: TypeScale.xs, color: t.textSecondary)),
                     ],
-                  )),
+                  ),),
                   Text(Formatters.currency(po.totalAmount), style: Theme.of(context).textTheme.labelLarge),
-                ]),
+                ],),
               ),
-            )),
+            ),),
             if (stats.recentPOs.isEmpty)
               Text('No recent orders', style: TextStyle(color: t.textTertiary)),
           ],
-        )),
+        ),),
         if (stats.overdueDeliveries > 0) ...[
           const SizedBox(height: Spacing.x3),
           UiCard(child: Row(children: [
             Icon(Icons.warning_amber_rounded, color: t.danger),
             const SizedBox(width: Spacing.x2),
             Text('${stats.overdueDeliveries} overdue deliver${stats.overdueDeliveries == 1 ? 'y' : 'ies'}',
-                style: TextStyle(color: t.danger)),
-          ])),
+                style: TextStyle(color: t.danger),),
+          ],),),
         ],
       ],
     );

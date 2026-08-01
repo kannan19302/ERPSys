@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { DevopsGeneratedController } from "./devops-generated.controller";
 import { DevopsGeneratedService } from "./devops-generated.service";
 import { Module } from "@nestjs/common";

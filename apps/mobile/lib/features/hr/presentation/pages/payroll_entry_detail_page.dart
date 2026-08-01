@@ -1,5 +1,4 @@
 import '../../../../core/error/failures.dart';
-import '../../../../core/error/exceptions.dart';
 import '../../../../core/usecase/result.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -55,8 +54,6 @@ class _PayslipDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Palette t = context.tokens;
-
     return Scaffold(
       appBar: AppBar(title: const Text('Payslip')),
       body: ListView(

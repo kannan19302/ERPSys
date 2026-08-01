@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { RealEstateFinancialsService } from "./real-estate-financials.service";
 import { NotFoundException } from "@nestjs/common";

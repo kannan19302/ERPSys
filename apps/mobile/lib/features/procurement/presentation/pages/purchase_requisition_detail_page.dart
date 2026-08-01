@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -49,12 +48,12 @@ class _PurchaseRequisitionDetail extends StatelessWidget {
             Row(children: [
               Expanded(child: Text(requisition.title, style: Theme.of(context).textTheme.titleLarge)),
               UiStatusBadge(label: requisition.status, tone: _statusTone(requisition.status)),
-            ]),
+            ],),
             const SizedBox(height: Spacing.x1),
             Text('${requisition.department ?? 'No department'} \u00b7 ${requisition.requestedBy ?? 'Unknown'}',
-                style: TextStyle(color: t.textSecondary)),
+                style: TextStyle(color: t.textSecondary),),
           ],
-        )),
+        ),),
         const SizedBox(height: Spacing.x4),
         UiCard(child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,13 +64,13 @@ class _PurchaseRequisitionDetail extends StatelessWidget {
               child: Row(children: [
                 Expanded(child: Text(item.productName ?? 'Item')),
                 Text('${item.quantity.toStringAsFixed(0)} \u00d7 \$${item.estimatedRate.toStringAsFixed(2)}'),
-              ]),
-            )),
+              ],),
+            ),),
             if (requisition.items.isEmpty) Text('No items', style: TextStyle(color: t.textTertiary)),
             const Divider(height: Spacing.x4),
             _Row('Total Estimated', Formatters.currency(requisition.totalEstimated)),
           ],
-        )),
+        ),),
         const SizedBox(height: Spacing.x4),
         UiCard(child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,7 +82,7 @@ class _PurchaseRequisitionDetail extends StatelessWidget {
             if (requisition.notes != null && requisition.notes!.isNotEmpty) _Row('Notes', requisition.notes!),
             if (requisition.createdAt != null) _Row('Created', Formatters.dateTime(requisition.createdAt!)),
           ],
-        )),
+        ),),
       ],
     );
   }
@@ -104,7 +103,7 @@ class _Row extends StatelessWidget {
       child: Row(children: [
         Expanded(child: Text(label, style: TextStyle(color: context.tokens.textSecondary))),
         Text(value, style: Theme.of(context).textTheme.labelLarge),
-      ]),
+      ],),
     );
   }
 }

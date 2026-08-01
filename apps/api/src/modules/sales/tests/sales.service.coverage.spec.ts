@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { SalesService } from "../sales.service";

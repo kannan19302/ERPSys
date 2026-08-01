@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -130,14 +129,14 @@ class CompensationBandListController extends Notifier<CompensationBandListState>
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteCompensationBandUseCase(
-      ref.read(advancedHrRepositoryProvider))(id);
+      ref.read(advancedHrRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<CompensationBand>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveCompensationBandUseCase(
-      ref.read(advancedHrRepositoryProvider))(
+      ref.read(advancedHrRepositoryProvider),)(
       SaveCompensationBandParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -238,7 +237,7 @@ class LearningPathListController extends Notifier<LearningPathListState> {
 
   Future<Result<LearningPath>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveLearningPathUseCase(
-      ref.read(advancedHrRepositoryProvider))(
+      ref.read(advancedHrRepositoryProvider),)(
       SaveLearningPathParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -249,13 +248,13 @@ class LearningPathListController extends Notifier<LearningPathListState> {
 final FutureProviderFamily<CompensationBand, String> compensationBandDetailProvider =
     FutureProvider.family<CompensationBand, String>((Ref ref, String id) async {
   final result = await GetCompensationBandUseCase(
-    ref.watch(advancedHrRepositoryProvider))(id);
+    ref.watch(advancedHrRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
 final FutureProviderFamily<LearningPath, String> learningPathDetailProvider =
     FutureProvider.family<LearningPath, String>((Ref ref, String id) async {
   final result = await GetLearningPathUseCase(
-    ref.watch(advancedHrRepositoryProvider))(id);
+    ref.watch(advancedHrRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });

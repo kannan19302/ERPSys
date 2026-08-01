@@ -1,10 +1,9 @@
-// @ts-nocheck
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Modal, PageHeader } from '@unerp/ui';
-import { ListView, FormView, RouteGuard } from '@unerp/framework';
-import { crmProductResource } from '@/modules/crm';
+import { useState } from "react";
+import { Modal, PageHeader } from "@unerp/ui";
+import { ListView, FormView, RouteGuard } from "@unerp/framework";
+import { crmProductResource } from "@/modules/crm";
 
 export default function CrmProductsPage() {
   const [showCreate, setShowCreate] = useState(false);
@@ -15,7 +14,11 @@ export default function CrmProductsPage() {
         <PageHeader
           title="Products"
           description="Manage CRM catalog products, services, and rates"
-          breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'CRM', href: '/crm' }, { label: 'Products' }]}
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "CRM", href: "/crm" },
+            { label: "Products" },
+          ]}
         />
 
         <ListView
@@ -23,7 +26,11 @@ export default function CrmProductsPage() {
           onCreate={() => setShowCreate(true)}
         />
 
-        <Modal open={showCreate} onClose={() => setShowCreate(false)} title="New Product">
+        <Modal
+          open={showCreate}
+          onClose={() => setShowCreate(false)}
+          title="New Product"
+        >
           <FormView
             resource={crmProductResource}
             onSuccess={() => setShowCreate(true)}

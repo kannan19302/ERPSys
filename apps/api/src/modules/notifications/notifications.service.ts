@@ -1,22 +1,21 @@
-// @ts-nocheck
-import { Injectable, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import { Injectable, BadRequestException } from "@nestjs/common";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class NotificationsService {
   async getChannels(tenantId: string) {
     const channels = await prisma.notificationChannel.findMany({
       where: { tenantId },
-      orderBy: { name: 'asc' },
+      orderBy: { name: "asc" },
     });
 
     if (channels.length === 0) {
       // Seed default channels
       await prisma.notificationChannel.createMany({
         data: [
-          { tenantId, name: 'Web', isEnabled: true },
-          { tenantId, name: 'Email', isEnabled: true },
-          { tenantId, name: 'SMS', isEnabled: false },
+          { tenantId, name: "Web", isEnabled: true },
+          { tenantId, name: "Email", isEnabled: true },
+          { tenantId, name: "SMS", isEnabled: false },
         ],
       });
       return prisma.notificationChannel.findMany({ where: { tenantId } });
@@ -25,7 +24,11 @@ export class NotificationsService {
     return channels;
   }
 
-  async updateChannelStatus(tenantId: string, name: string, isEnabled: boolean) {
+  async updateChannelStatus(
+    tenantId: string,
+    name: string,
+    isEnabled: boolean,
+  ) {
     const existing = await prisma.notificationChannel.findFirst({
       where: { tenantId, name },
     });
@@ -46,10 +49,15 @@ export class NotificationsService {
   async savePreference(
     tenantId: string,
     userId: string,
-    dto: { channelName: string; eventType: string; isEnabled: boolean }
+    dto: { channelName: string; eventType: string; isEnabled: boolean },
   ) {
     const existing = await prisma.notificationPreference.findFirst({
-      where: { tenantId, userId, channelName: dto.channelName, eventType: dto.eventType },
+      where: {
+        tenantId,
+        userId,
+        channelName: dto.channelName,
+        eventType: dto.eventType,
+      },
     });
 
     if (existing) {
@@ -76,15 +84,15 @@ export class NotificationsService {
    */
   async getUserNotificationPreferences(tenantId: string, userId: string) {
     const CATEGORIES = [
-      'Order Updates',
-      'Invoice Alerts',
-      'Inventory Alerts',
-      'HR Notifications',
-      'CRM Updates',
-      'System Alerts',
-      'Security Events',
+      "Order Updates",
+      "Invoice Alerts",
+      "Inventory Alerts",
+      "HR Notifications",
+      "CRM Updates",
+      "System Alerts",
+      "Security Events",
     ];
-    const CHANNELS = ['inApp', 'email', 'sms', 'push'];
+    const CHANNELS = ["inApp", "email", "sms", "push"];
 
     const existing = await prisma.notificationPreference.findMany({
       where: { tenantId, userId },
@@ -97,7 +105,12 @@ export class NotificationsService {
     }
 
     // Default values per channel
-    const defaults: Record<string, boolean> = { inApp: true, email: true, sms: false, push: false };
+    const defaults: Record<string, boolean> = {
+      inApp: true,
+      email: true,
+      sms: false,
+      push: false,
+    };
 
     return CATEGORIES.map((category) => {
       const result: Record<string, any> = { category };
@@ -115,9 +128,15 @@ export class NotificationsService {
   async updateUserNotificationPreferences(
     tenantId: string,
     userId: string,
-    dto: { category: string; inApp?: boolean; email?: boolean; sms?: boolean; push?: boolean },
+    dto: {
+      category: string;
+      inApp?: boolean;
+      email?: boolean;
+      sms?: boolean;
+      push?: boolean;
+    },
   ) {
-    const channels = ['inApp', 'email', 'sms', 'push'] as const;
+    const channels = ["inApp", "email", "sms", "push"] as const;
     const results: any[] = [];
 
     for (const ch of channels) {

@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -50,7 +49,7 @@ class _PatientListPageState extends ConsumerState<PatientListPage> {
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
                 .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value)))
+                    value: e.key, child: Text(e.value),),)
                 .toList(),
           ),
         ],
@@ -84,7 +83,7 @@ class _PatientListPageState extends ConsumerState<PatientListPage> {
                     : '${state.meta.total} patient${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -117,13 +116,13 @@ class _PatientListPageState extends ConsumerState<PatientListPage> {
               Row(children: [
                 Expanded(
                   child: Text(p.name,
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
                 UiStatusBadge(
                   label: p.status,
                   tone: p.status == 'ACTIVE' ? UiTone.success : UiTone.neutral,
                 ),
-              ]),
+              ],),
               if (p.phone != null) ...[
                 const SizedBox(height: Spacing.x1),
                 Text(p.phone!, style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs)),

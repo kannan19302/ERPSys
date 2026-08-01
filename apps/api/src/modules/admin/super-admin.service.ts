@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class SuperAdminService {
@@ -10,7 +9,7 @@ export class SuperAdminService {
         _count: { select: { users: true, organizations: true } },
         subscription: { include: { plan: true } },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     return tenants.map((t) => ({
@@ -35,8 +34,13 @@ export class SuperAdminService {
       include: {
         users: {
           select: {
-            id: true, email: true, firstName: true, lastName: true,
-            status: true, lastLoginAt: true, createdAt: true,
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            status: true,
+            lastLoginAt: true,
+            createdAt: true,
             roles: { include: { role: { select: { name: true } } } },
           },
         },
@@ -45,19 +49,24 @@ export class SuperAdminService {
       },
     });
 
-    if (!tenant) throw new NotFoundException('Tenant not found');
+    if (!tenant) throw new NotFoundException("Tenant not found");
 
     return tenant;
   }
 
-  async provisionTenant(data: { name: string; slug: string; plan: string; adminEmail: string }) {
+  async provisionTenant(data: {
+    name: string;
+    slug: string;
+    plan: string;
+    adminEmail: string;
+  }) {
     return prisma.$transaction(async (tx) => {
       const tenant = await tx.tenant.create({
         data: {
           name: data.name,
           slug: data.slug,
           plan: data.plan,
-          status: 'ACTIVE',
+          status: "ACTIVE",
         },
       });
 
@@ -65,8 +74,8 @@ export class SuperAdminService {
         data: {
           tenantId: tenant.id,
           name: data.name,
-          currency: 'USD',
-          timezone: 'UTC',
+          currency: "USD",
+          timezone: "UTC",
           fiscalYearStart: 1,
         },
       });
@@ -74,9 +83,9 @@ export class SuperAdminService {
       const adminRole = await tx.role.create({
         data: {
           tenantId: tenant.id,
-          name: 'SUPER_ADMIN',
+          name: "SUPER_ADMIN",
           isSystem: true,
-          permissions: JSON.stringify(['*']),
+          permissions: JSON.stringify(["*"]),
         },
       });
 
@@ -84,9 +93,9 @@ export class SuperAdminService {
         data: {
           tenantId: tenant.id,
           email: data.adminEmail.toLowerCase(),
-          firstName: 'Admin',
-          lastName: '',
-          status: 'INVITED',
+          firstName: "Admin",
+          lastName: "",
+          status: "INVITED",
         },
       });
 
@@ -100,7 +109,7 @@ export class SuperAdminService {
 
   async updateTenant(id: string, data: Record<string, unknown>) {
     const tenant = await prisma.tenant.findUnique({ where: { id } });
-    if (!tenant) throw new NotFoundException('Tenant not found');
+    if (!tenant) throw new NotFoundException("Tenant not found");
 
     const updateData: Record<string, unknown> = {};
     if (data.plan) updateData.plan = data.plan;
@@ -113,15 +122,20 @@ export class SuperAdminService {
   async getAllAdmins() {
     const adminRoles = await prisma.role.findMany({
       where: {
-        name: { in: ['SUPER_ADMIN', 'ADMIN'] },
+        name: { in: ["SUPER_ADMIN", "ADMIN"] },
       },
       include: {
         users: {
           include: {
             user: {
               select: {
-                id: true, email: true, firstName: true, lastName: true,
-                status: true, lastLoginAt: true, tenantId: true,
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                status: true,
+                lastLoginAt: true,
+                tenantId: true,
               },
             },
           },
@@ -147,7 +161,7 @@ export class SuperAdminService {
     const [totalTenants, totalUsers, activeTenants] = await Promise.all([
       prisma.tenant.count(),
       prisma.user.count(),
-      prisma.tenant.count({ where: { status: 'ACTIVE' } }),
+      prisma.tenant.count({ where: { status: "ACTIVE" } }),
     ]);
 
     return {
@@ -166,7 +180,7 @@ export class SuperAdminService {
     const memUsage = process.memoryUsage();
 
     return {
-      status: 'healthy',
+      status: "healthy",
       uptime: process.uptime(),
       dbLatencyMs: dbLatency,
       memory: {

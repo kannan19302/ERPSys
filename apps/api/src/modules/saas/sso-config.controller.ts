@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Controller,
   Get,
@@ -23,7 +22,16 @@ interface AuthReq extends Request {
 }
 
 const createSsoConfigSchema = z.object({
-  provider: z.enum(["google", "microsoft", "okta", "auth0", "saml", "oidc", "github", "gitlab"]),
+  provider: z.enum([
+    "google",
+    "microsoft",
+    "okta",
+    "auth0",
+    "saml",
+    "oidc",
+    "github",
+    "gitlab",
+  ]),
   clientId: z.string().min(1),
   clientSecret: z.string().min(1),
   issuerUrl: z.string().url().optional(),
@@ -59,14 +67,20 @@ export class SsoConfigController {
   @ApiOperation({ summary: "Create SSO configuration" })
   @Permissions("saas.sso.create")
   @Post()
-  async createSsoConfig(@Req() req: AuthReq, @ZodBody(createSsoConfigSchema) body: z.infer<typeof createSsoConfigSchema>) {
+  async createSsoConfig(
+    @Req() req: AuthReq,
+    @ZodBody(createSsoConfigSchema) body: z.infer<typeof createSsoConfigSchema>,
+  ) {
     return this.ssoConfigService.createSsoConfig(req.user.tenantId, body);
   }
 
   @ApiOperation({ summary: "Update SSO configuration" })
   @Permissions("saas.sso.create")
   @Put()
-  async updateSsoConfig(@Req() req: AuthReq, @ZodBody(updateSsoConfigSchema) body: z.infer<typeof updateSsoConfigSchema>) {
+  async updateSsoConfig(
+    @Req() req: AuthReq,
+    @ZodBody(updateSsoConfigSchema) body: z.infer<typeof updateSsoConfigSchema>,
+  ) {
     return this.ssoConfigService.updateSsoConfig(req.user.tenantId, body);
   }
 

@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -49,13 +48,13 @@ class _RFQDetail extends StatelessWidget {
             Row(children: [
               Expanded(child: Text(rfq.rfqNumber, style: Theme.of(context).textTheme.titleLarge)),
               UiStatusBadge(label: rfq.status, tone: _statusTone(rfq.status)),
-            ]),
+            ],),
             if (rfq.vendorName != null) ...[
               const SizedBox(height: Spacing.x1),
               Text(rfq.vendorName!, style: TextStyle(color: t.textSecondary)),
             ],
           ],
-        )),
+        ),),
         const SizedBox(height: Spacing.x4),
         UiCard(child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,11 +65,11 @@ class _RFQDetail extends StatelessWidget {
               child: Row(children: [
                 Expanded(child: Text(item.productName ?? 'Item')),
                 Text('${item.quantity.toStringAsFixed(0)} ${item.uom ?? 'pcs'}'),
-              ]),
-            )),
+              ],),
+            ),),
             if (rfq.items.isEmpty) Text('No items', style: TextStyle(color: t.textTertiary)),
           ],
-        )),
+        ),),
         const SizedBox(height: Spacing.x4),
         UiCard(child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,7 +81,7 @@ class _RFQDetail extends StatelessWidget {
             if (rfq.notes != null && rfq.notes!.isNotEmpty) _Row('Notes', rfq.notes!),
             if (rfq.createdAt != null) _Row('Created', Formatters.dateTime(rfq.createdAt!)),
           ],
-        )),
+        ),),
         if (rfq.quotations.isNotEmpty) ...[
           const SizedBox(height: Spacing.x4),
           UiCard(child: Column(
@@ -94,10 +93,10 @@ class _RFQDetail extends StatelessWidget {
                 child: Row(children: [
                   Expanded(child: Text(q.vendorName ?? 'Supplier')),
                   Text(Formatters.currency(q.totalAmount)),
-                ]),
-              )),
+                ],),
+              ),),
             ],
-          )),
+          ),),
         ],
       ],
     );
@@ -120,7 +119,7 @@ class _Row extends StatelessWidget {
       child: Row(children: [
         Expanded(child: Text(label, style: TextStyle(color: context.tokens.textSecondary))),
         Text(value, style: Theme.of(context).textTheme.labelLarge),
-      ]),
+      ],),
     );
   }
 }

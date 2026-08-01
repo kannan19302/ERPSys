@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Module } from "@nestjs/common";
 import { ExtGatewayDeepController } from "./ext-gateway-deep.controller";
 import { ExtGatewayDeepService } from "./ext-gateway-deep.service";

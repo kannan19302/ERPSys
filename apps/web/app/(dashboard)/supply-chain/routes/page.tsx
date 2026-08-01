@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 
 export default function RoutesRedirect() {
-  redirect('/supply-chain/operations?tab=routes');
+  redirect("/supply-chain/operations?tab=routes");
 }

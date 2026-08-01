@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -146,14 +145,14 @@ class FixedAssetListController extends Notifier<FixedAssetListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteFixedAssetUseCase(
-      ref.read(fixedAssetsRepositoryProvider))(id);
+      ref.read(fixedAssetsRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<FixedAsset>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveFixedAssetUseCase(
-      ref.read(fixedAssetsRepositoryProvider))(
+      ref.read(fixedAssetsRepositoryProvider),)(
       SaveFixedAssetParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -164,14 +163,14 @@ class FixedAssetListController extends Notifier<FixedAssetListState> {
 final FutureProviderFamily<FixedAsset, String> fixedAssetDetailProvider =
     FutureProvider.family<FixedAsset, String>((Ref ref, String id) async {
   final result = await GetFixedAssetUseCase(
-    ref.watch(fixedAssetsRepositoryProvider))(id);
+    ref.watch(fixedAssetsRepositoryProvider),)(id);
   return result.fold((f) => throw f, (a) => a);
 });
 
 final FutureProviderFamily<AssetMaintenanceSchedule, String> maintenanceScheduleDetailProvider =
     FutureProvider.family<AssetMaintenanceSchedule, String>((Ref ref, String id) async {
   final result = await GetMaintenanceScheduleUseCase(
-    ref.watch(fixedAssetsRepositoryProvider))(id);
+    ref.watch(fixedAssetsRepositoryProvider),)(id);
   return result.fold((f) => throw f, (m) => m);
 });
 
@@ -260,7 +259,7 @@ class MaintenanceScheduleListController extends Notifier<MaintenanceScheduleList
 
   Future<Result<AssetMaintenanceSchedule>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveMaintenanceScheduleUseCase(
-      ref.read(fixedAssetsRepositoryProvider))(
+      ref.read(fixedAssetsRepositoryProvider),)(
       SaveMaintenanceScheduleParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -271,7 +270,7 @@ class MaintenanceScheduleListController extends Notifier<MaintenanceScheduleList
 final FutureProviderFamily<AssetDisposal, String> assetDisposalDetailProvider =
     FutureProvider.family<AssetDisposal, String>((Ref ref, String id) async {
   final result = await GetDisposalUseCase(
-    ref.watch(fixedAssetsRepositoryProvider))(id);
+    ref.watch(fixedAssetsRepositoryProvider),)(id);
   return result.fold((f) => throw f, (d) => d);
 });
 
@@ -360,7 +359,7 @@ class DisposalListController extends Notifier<DisposalListState> {
 
   Future<Result<AssetDisposal>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveDisposalUseCase(
-      ref.read(fixedAssetsRepositoryProvider))(
+      ref.read(fixedAssetsRepositoryProvider),)(
       SaveDisposalParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();

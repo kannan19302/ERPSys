@@ -317,7 +317,7 @@ class TimesheetModel extends Timesheet {
     final List<TimesheetEntryModel> entries =
         (json['entries'] as List<dynamic>?)
                 ?.map((dynamic e) =>
-                    TimesheetEntryModel.fromJson(e as Map<String, dynamic>))
+                    TimesheetEntryModel.fromJson(e as Map<String, dynamic>),)
                 .toList(growable: false) ??
             const <TimesheetEntryModel>[];
     return TimesheetModel(
@@ -487,7 +487,7 @@ class SalaryStructureModel extends SalaryStructure {
     final List<SalaryComponentModel> components =
         (json['components'] as List<dynamic>?)
                 ?.map((dynamic e) =>
-                    SalaryComponentModel.fromJson(e as Map<String, dynamic>))
+                    SalaryComponentModel.fromJson(e as Map<String, dynamic>),)
                 .toList(growable: false) ??
             const <SalaryComponentModel>[];
     return SalaryStructureModel(
@@ -669,7 +669,7 @@ class OrgChartNodeModel extends OrgChartNode {
     final List<OrgChartNodeModel> children =
         (json['children'] as List<dynamic>?)
                 ?.map((dynamic e) =>
-                    OrgChartNodeModel.fromJson(e as Map<String, dynamic>))
+                    OrgChartNodeModel.fromJson(e as Map<String, dynamic>),)
                 .toList(growable: false) ??
             const <OrgChartNodeModel>[];
     return OrgChartNodeModel(

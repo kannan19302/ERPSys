@@ -1,13 +1,12 @@
-import '../../../../core/error/exceptions.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/di/providers.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecase/result.dart';
 import '../../../../core/widgets/form_fields.dart';
-import '../../data/repositories/hr_repository_impl.dart';
 import '../../domain/entities/hr.dart';
 import '../../domain/repositories/hr_repository.dart';
 import '../../domain/usecases/hr_usecases.dart';
@@ -125,7 +124,7 @@ class _LeaveRequestFormPageState extends ConsumerState<LeaveRequestFormPage> {
               error: (Object e, _) => Text('$e'),
               data: (List<LeaveType> types) {
                 return DropdownButtonFormField<String>(
-                  value: _leaveTypeId,
+                  initialValue: _leaveTypeId,
                   decoration: const InputDecoration(labelText: 'Leave Type *'),
                   isExpanded: true,
                   items: types
@@ -193,14 +192,14 @@ class _LeaveRequestFormPageState extends ConsumerState<LeaveRequestFormPage> {
     );
   }
 Future<Result<LeaveRequest>> _saveLeaveRequest(
-      Map<String, dynamic> payload) async {
+      Map<String, dynamic> payload,) async {
     final HrRepository repo = ref.read(hrRepositoryProvider);
     final Result<LeaveRequest> result =
         await SaveLeaveRequestUseCase(repo)(
       SaveLeaveRequestParams(payload: payload),
     );
     if (result.isOk) {
-      ref.read(leaveRequestListControllerProvider.notifier).refresh();
+      unawaited(ref.read(leaveRequestListControllerProvider.notifier).refresh());
     }
     return result;
   }

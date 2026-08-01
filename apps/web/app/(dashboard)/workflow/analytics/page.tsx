@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import React, { useState, useEffect } from "react";
 import { PageHeader, Spinner, StatCardRow } from "@unerp/ui";
@@ -25,7 +24,10 @@ export default function WorkflowAnalyticsPage() {
 
   return (
     <div>
-      <PageHeader title="Workflow Analytics" description="Performance metrics" />
+      <PageHeader
+        title="Workflow Analytics"
+        description="Performance metrics"
+      />
       <StatCardRow
         stats={[
           { label: "Total Instances", value: total },

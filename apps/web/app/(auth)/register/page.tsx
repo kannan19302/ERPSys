@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import styles from "./page.module.css";
 import "../../landing.css";
@@ -56,7 +55,12 @@ import {
   Wrench,
   LayoutGrid,
 } from "lucide-react";
-import { apiGet, apiPost, apiDelete, ApiRequestError } from "../../../src/lib/api";
+import {
+  apiGet,
+  apiPost,
+  apiDelete,
+  ApiRequestError,
+} from "../../../src/lib/api";
 import {
   COUNTRIES,
   CURRENCIES,
@@ -732,13 +736,20 @@ export default function RegisterPage() {
           healthcare: ["healthcare", "hr", "inventory", "finance"],
           education: ["education", "hr", "finance", "crm"],
           "real-estate": ["real-estate", "finance", "crm", "projects"],
-          manufacturing: ["manufacturing", "inventory", "procurement", "supply-chain"],
+          manufacturing: [
+            "manufacturing",
+            "inventory",
+            "procurement",
+            "supply-chain",
+          ],
           services: ["projects", "crm", "finance", "hr"],
           retail: ["pos", "inventory", "crm", "sales"],
           "field-service": ["field-service", "projects", "inventory", "crm"],
         };
         const priority = industryPrio[indKey] || ["finance", "crm", "hr"];
-        setSelectedPickerApps(new Set(priority.filter((s) => allSlugs.includes(s))));
+        setSelectedPickerApps(
+          new Set(priority.filter((s) => allSlugs.includes(s))),
+        );
       } catch {
         // Non-fatal: show success state without picker
       }
@@ -1373,9 +1384,7 @@ export default function RegisterPage() {
                 {/* App Picker */}
                 {showAppPicker && !pickerDone && (
                   <div className={styles.pickerSection}>
-                    <h3 className={styles.pickerTitle}>
-                      Choose your apps
-                    </h3>
+                    <h3 className={styles.pickerTitle}>Choose your apps</h3>
                     <p className={styles.pickerSubtitle}>
                       Kernel apps (always on) · Recommended for your industry
                       pre-selected · Toggle others as needed
@@ -1405,9 +1414,7 @@ export default function RegisterPage() {
                               {app.name}
                             </span>
                             {app.isKernel && (
-                              <span
-                                className={styles.pickerCardBadge}
-                              >
+                              <span className={styles.pickerCardBadge}>
                                 Core
                               </span>
                             )}

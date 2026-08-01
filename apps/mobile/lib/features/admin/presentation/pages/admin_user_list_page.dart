@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -59,7 +58,7 @@ class _AdminUserListPageState extends ConsumerState<AdminUserListPage> {
                     : '${state.meta.total} user${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],

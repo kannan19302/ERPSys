@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Controller, Get, Param, Query, UseGuards, Req } from "@nestjs/common";
 import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
@@ -17,25 +16,37 @@ export class AiEnterpriseController {
 
   @Get("model-performance")
   @Permissions("ai.enterprise.read")
-  async getModelPerformance(@Req() req: AuthenticatedRequest, @Query("modelId") modelId?: string) {
+  async getModelPerformance(
+    @Req() req: AuthenticatedRequest,
+    @Query("modelId") modelId?: string,
+  ) {
     return this.service.getModelPerformance(req.user.tenantId, modelId);
   }
 
   @Get("usage-analytics")
   @Permissions("ai.enterprise.read")
-  async getUsageAnalytics(@Req() req: AuthenticatedRequest, @Query("dateRange") dateRange?: string) {
+  async getUsageAnalytics(
+    @Req() req: AuthenticatedRequest,
+    @Query("dateRange") dateRange?: string,
+  ) {
     return this.service.getUsageAnalytics(req.user.tenantId, dateRange);
   }
 
   @Get("cost-optimization")
   @Permissions("ai.enterprise.read")
-  async getCostOptimization(@Req() req: AuthenticatedRequest, @Query("period") period?: string) {
+  async getCostOptimization(
+    @Req() req: AuthenticatedRequest,
+    @Query("period") period?: string,
+  ) {
     return this.service.getCostOptimization(req.user.tenantId, period);
   }
 
   @Get("training-effectiveness")
   @Permissions("ai.enterprise.read")
-  async getTrainingEffectiveness(@Req() req: AuthenticatedRequest, @Query("trainingId") trainingId?: string) {
+  async getTrainingEffectiveness(
+    @Req() req: AuthenticatedRequest,
+    @Query("trainingId") trainingId?: string,
+  ) {
     return this.service.getTrainingEffectiveness(req.user.tenantId, trainingId);
   }
 

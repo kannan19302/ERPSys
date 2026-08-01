@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -50,7 +49,7 @@ class _FixedAssetListPageState extends ConsumerState<FixedAssetListPage> {
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
                 .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value)))
+                    value: e.key, child: Text(e.value),),)
                 .toList(),
           ),
         ],
@@ -85,7 +84,7 @@ class _FixedAssetListPageState extends ConsumerState<FixedAssetListPage> {
                     : '${state.meta.total} asset${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -131,24 +130,24 @@ class _FixedAssetTile extends StatelessWidget {
           Row(children: [
             Expanded(
               child: Text(asset.name,
-                  style: Theme.of(context).textTheme.titleSmall),
+                  style: Theme.of(context).textTheme.titleSmall,),
             ),
             UiStatusBadge(
               label: asset.status,
               tone: _statusTone(asset.status),
             ),
-          ]),
+          ],),
           const SizedBox(height: Spacing.x1),
           Text(asset.assetCategory,
-              style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
+              style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
           const SizedBox(height: Spacing.x1),
           Row(children: [
             Text('\$${asset.purchaseCost.toStringAsFixed(2)}',
-                style: Theme.of(context).textTheme.labelMedium),
+                style: Theme.of(context).textTheme.labelMedium,),
             const Spacer(),
             Text('NBV: \$${asset.netBookValue.toStringAsFixed(2)}',
-                style: TextStyle(fontSize: TypeScale.xs, color: t.textSecondary)),
-          ]),
+                style: TextStyle(fontSize: TypeScale.xs, color: t.textSecondary),),
+          ],),
         ],
       ),
     );

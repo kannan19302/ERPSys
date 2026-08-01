@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Module } from "@nestjs/common";
 import { CommunicationController } from "./communication.controller";
 import { CommunicationService } from "./communication.service";

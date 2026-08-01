@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { SavedViewsSharingService } from "./saved-views-sharing.service";
 import { prisma } from "@unerp/database";

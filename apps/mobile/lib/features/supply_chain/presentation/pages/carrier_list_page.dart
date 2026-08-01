@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -49,7 +48,7 @@ class _CarrierListPageState extends ConsumerState<CarrierListPage> {
             onSelected: controller.search,
             itemBuilder: (_) => _sortOptions.entries
                 .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value)))
+                    value: e.key, child: Text(e.value),),)
                 .toList(),
           ),
         ],
@@ -83,7 +82,7 @@ class _CarrierListPageState extends ConsumerState<CarrierListPage> {
                     : '${state.meta.total} carrier${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -141,22 +140,22 @@ class _CarrierTile extends StatelessWidget {
               Row(children: [
                 Expanded(
                   child: Text(carrier.name,
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
                 UiStatusBadge(
                   label: carrier.isActive ? 'Active' : 'Inactive',
                   tone: carrier.isActive ? UiTone.success : UiTone.neutral,
                 ),
-              ]),
+              ],),
               if (carrier.email != null) ...<Widget>[
                 const SizedBox(height: Spacing.x1),
                 Text(carrier.email!,
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
+                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
               ],
               if (carrier.phone != null) ...<Widget>[
                 const SizedBox(height: Spacing.x0_5),
                 Text(carrier.phone!,
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
+                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
               ],
             ],
           ),

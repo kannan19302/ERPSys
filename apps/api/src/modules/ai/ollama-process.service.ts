@@ -1,8 +1,7 @@
-// @ts-nocheck
-import { Injectable, Logger } from '@nestjs/common';
-import { exec, spawn } from 'child_process';
-import { promisify } from 'util';
-import { AiService } from './ai.service';
+import { Injectable, Logger } from "@nestjs/common";
+import { exec, spawn } from "child_process";
+import { promisify } from "util";
+import { AiService } from "./ai.service";
 
 const execAsync = promisify(exec);
 
@@ -57,7 +56,9 @@ export class OllamaProcessService {
 
       const json: unknown = await response.json().catch(() => null);
       const version =
-        json && typeof json === 'object' && typeof (json as Record<string, unknown>).version === 'string'
+        json &&
+        typeof json === "object" &&
+        typeof (json as Record<string, unknown>).version === "string"
           ? ((json as Record<string, unknown>).version as string)
           : undefined;
 
@@ -74,9 +75,9 @@ export class OllamaProcessService {
    */
   async start(): Promise<OllamaStartResult> {
     try {
-      const child = spawn('ollama', ['serve'], {
+      const child = spawn("ollama", ["serve"], {
         detached: true,
-        stdio: 'ignore',
+        stdio: "ignore",
         windowsHide: true,
       });
       child.unref();
@@ -108,13 +109,13 @@ export class OllamaProcessService {
    * first, so it doesn't immediately restart the worker we just killed.
    */
   async stop(): Promise<OllamaStopResult> {
-    if (process.platform === 'win32') {
+    if (process.platform === "win32") {
       await this.tryExec('taskkill /IM "ollama app.exe" /F /T');
-      await this.tryExec('taskkill /IM ollama.exe /F /T');
+      await this.tryExec("taskkill /IM ollama.exe /F /T");
     } else {
       const killedByPattern = await this.tryExec('pkill -f "ollama serve"');
       if (!killedByPattern) {
-        await this.tryExec('pkill ollama');
+        await this.tryExec("pkill ollama");
       }
     }
 
@@ -129,7 +130,9 @@ export class OllamaProcessService {
       return true;
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      this.logger.debug(`Command reported no running process ("${command}"): ${message}`);
+      this.logger.debug(
+        `Command reported no running process ("${command}"): ${message}`,
+      );
       return false;
     }
   }

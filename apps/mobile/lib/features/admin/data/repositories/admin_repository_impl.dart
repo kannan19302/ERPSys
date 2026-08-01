@@ -93,7 +93,7 @@ class AdminRepositoryImpl implements AdminRepository {
   @override
   Future<Result<Cacheable<Paginated<AdminUser>>>> listUsers(ListQuery q) =>
       _paginated(_userNamespace, q, () => _remote.listUsers(q),
-        AdminUserModel.fromJson);
+        AdminUserModel.fromJson,);
 
   @override
   Future<Result<AdminUser>> getUser(String id) =>
@@ -114,7 +114,7 @@ class AdminRepositoryImpl implements AdminRepository {
   @override
   Future<Result<Cacheable<Paginated<AdminRole>>>> listRoles(ListQuery q) =>
       _paginated(_roleNamespace, q, () => _remote.listRoles(q),
-        AdminRoleModel.fromJson);
+        AdminRoleModel.fromJson,);
 
   @override
   Future<Result<AdminRole>> getRole(String id) =>
@@ -135,7 +135,7 @@ class AdminRepositoryImpl implements AdminRepository {
   @override
   Future<Result<Cacheable<Paginated<AdminSetting>>>> listSettings(ListQuery q) =>
       _paginated(_settingNamespace, q, () => _remote.listSettings(q),
-        AdminSettingModel.fromJson);
+        AdminSettingModel.fromJson,);
 
   @override
   Future<Result<AdminSetting>> updateSetting(String key, Map<String, dynamic> p) =>
@@ -144,7 +144,7 @@ class AdminRepositoryImpl implements AdminRepository {
   @override
   Future<Result<Cacheable<Paginated<AdminAuditLog>>>> listAuditLogs(ListQuery q) =>
       _paginated(_auditNamespace, q, () => _remote.listAuditLogs(q),
-        AdminAuditLogModel.fromJson);
+        AdminAuditLogModel.fromJson,);
 
   @override
   Future<Result<SystemHealth>> getSystemHealth() =>
@@ -153,7 +153,7 @@ class AdminRepositoryImpl implements AdminRepository {
   @override
   Future<Result<Cacheable<Paginated<AdminApiKey>>>> listApiKeys(ListQuery q) =>
       _paginated(_apiKeyNamespace, q, () => _remote.listApiKeys(q),
-        AdminApiKeyModel.fromJson);
+        AdminApiKeyModel.fromJson,);
 
   @override
   Future<Result<AdminApiKey>> getApiKey(String id) =>
@@ -170,7 +170,7 @@ class AdminRepositoryImpl implements AdminRepository {
   @override
   Future<Result<Cacheable<Paginated<AdminTenant>>>> listTenants(ListQuery q) =>
       _paginated(_tenantNamespace, q, () => _remote.listTenants(q),
-        AdminTenantModel.fromJson);
+        AdminTenantModel.fromJson,);
 
   @override
   Future<Result<AdminTenant>> getTenant(String id) =>

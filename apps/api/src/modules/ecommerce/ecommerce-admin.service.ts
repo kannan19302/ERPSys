@@ -1,13 +1,16 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
 import {
   UpsertStorefrontConfigDto,
   CreateStorefrontCategoryDto,
   UpdateStorefrontCategoryDto,
   CreateProductListingDto,
   UpdateProductListingDto,
-} from './dto/ecommerce.dto';
+} from "./dto/ecommerce.dto";
 
 /**
  * Admin-side (tenant-authenticated, RBAC-gated) service for the E-Commerce
@@ -26,14 +29,20 @@ export class EcommerceAdminService {
   // ─── StorefrontConfig ────────────────────────────────
 
   async getConfig(tenantId: string) {
-    const config = await prisma.storefrontConfig.findUnique({ where: { tenantId } });
+    const config = await prisma.storefrontConfig.findUnique({
+      where: { tenantId },
+    });
     return config; // null is a valid "not configured yet" response for the admin UI
   }
 
   async upsertConfig(tenantId: string, dto: UpsertStorefrontConfigDto) {
-    const existingBySlug = await prisma.storefrontConfig.findUnique({ where: { storeSlug: dto.storeSlug } });
+    const existingBySlug = await prisma.storefrontConfig.findUnique({
+      where: { storeSlug: dto.storeSlug },
+    });
     if (existingBySlug && existingBySlug.tenantId !== tenantId) {
-      throw new BadRequestException(`Store slug "${dto.storeSlug}" is already in use.`);
+      throw new BadRequestException(
+        `Store slug "${dto.storeSlug}" is already in use.`,
+      );
     }
 
     return prisma.storefrontConfig.upsert({
@@ -65,13 +74,15 @@ export class EcommerceAdminService {
   async getCategories(tenantId: string) {
     return prisma.storefrontCategory.findMany({
       where: { tenantId },
-      orderBy: { sortOrder: 'asc' },
+      orderBy: { sortOrder: "asc" },
     });
   }
 
   async getCategoryById(tenantId: string, id: string) {
-    const category = await prisma.storefrontCategory.findFirst({ where: { id, tenantId } });
-    if (!category) throw new NotFoundException('Storefront category not found');
+    const category = await prisma.storefrontCategory.findFirst({
+      where: { id, tenantId },
+    });
+    if (!category) throw new NotFoundException("Storefront category not found");
     return category;
   }
 
@@ -79,7 +90,10 @@ export class EcommerceAdminService {
     const existing = await prisma.storefrontCategory.findUnique({
       where: { tenantId_slug: { tenantId, slug: dto.slug } },
     });
-    if (existing) throw new BadRequestException(`Category slug "${dto.slug}" already exists.`);
+    if (existing)
+      throw new BadRequestException(
+        `Category slug "${dto.slug}" already exists.`,
+      );
 
     return prisma.storefrontCategory.create({
       data: {
@@ -92,7 +106,11 @@ export class EcommerceAdminService {
     });
   }
 
-  async updateCategory(tenantId: string, id: string, dto: UpdateStorefrontCategoryDto) {
+  async updateCategory(
+    tenantId: string,
+    id: string,
+    dto: UpdateStorefrontCategoryDto,
+  ) {
     await this.getCategoryById(tenantId, id);
 
     if (dto.slug) {
@@ -100,7 +118,9 @@ export class EcommerceAdminService {
         where: { tenantId_slug: { tenantId, slug: dto.slug } },
       });
       if (existing && existing.id !== id) {
-        throw new BadRequestException(`Category slug "${dto.slug}" already exists.`);
+        throw new BadRequestException(
+          `Category slug "${dto.slug}" already exists.`,
+        );
       }
     }
 
@@ -109,7 +129,9 @@ export class EcommerceAdminService {
       data: {
         ...(dto.name !== undefined && { name: dto.name }),
         ...(dto.slug !== undefined && { slug: dto.slug }),
-        ...(dto.description !== undefined && { description: dto.description || null }),
+        ...(dto.description !== undefined && {
+          description: dto.description || null,
+        }),
         ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
       },
     });
@@ -132,7 +154,7 @@ export class EcommerceAdminService {
     const listings = await prisma.productListing.findMany({
       where: { tenantId },
       include: { product: true, category: true },
-      orderBy: { sortOrder: 'asc' },
+      orderBy: { sortOrder: "asc" },
     });
 
     return listings.map((listing) => ({
@@ -144,8 +166,12 @@ export class EcommerceAdminService {
       categoryName: listing.category?.name || null,
       isPublished: listing.isPublished,
       basePrice: Number(listing.product.sellPrice),
-      priceOverride: listing.priceOverride ? Number(listing.priceOverride) : null,
-      effectivePrice: listing.priceOverride ? Number(listing.priceOverride) : Number(listing.product.sellPrice),
+      priceOverride: listing.priceOverride
+        ? Number(listing.priceOverride)
+        : null,
+      effectivePrice: listing.priceOverride
+        ? Number(listing.priceOverride)
+        : Number(listing.product.sellPrice),
       sortOrder: listing.sortOrder,
       createdAt: listing.createdAt,
       updatedAt: listing.updatedAt,
@@ -157,25 +183,34 @@ export class EcommerceAdminService {
       where: { id, tenantId },
       include: { product: true, category: true },
     });
-    if (!listing) throw new NotFoundException('Product listing not found');
+    if (!listing) throw new NotFoundException("Product listing not found");
     return listing;
   }
 
   async createListing(tenantId: string, dto: CreateProductListingDto) {
     // Validate productId belongs to the same tenant's Product before linking —
     // required by .ai/ECOMMERCE_MODULE_REQUIREMENTS.md Section 3.1 ("Admin side").
-    const product = await prisma.product.findFirst({ where: { id: dto.productId, tenantId, deletedAt: null } });
-    if (!product) throw new NotFoundException('Product not found for this tenant');
+    const product = await prisma.product.findFirst({
+      where: { id: dto.productId, tenantId, deletedAt: null },
+    });
+    if (!product)
+      throw new NotFoundException("Product not found for this tenant");
 
     if (dto.categoryId) {
-      const category = await prisma.storefrontCategory.findFirst({ where: { id: dto.categoryId, tenantId } });
-      if (!category) throw new NotFoundException('Storefront category not found');
+      const category = await prisma.storefrontCategory.findFirst({
+        where: { id: dto.categoryId, tenantId },
+      });
+      if (!category)
+        throw new NotFoundException("Storefront category not found");
     }
 
     const existing = await prisma.productListing.findUnique({
       where: { tenantId_productId: { tenantId, productId: dto.productId } },
     });
-    if (existing) throw new BadRequestException('This product is already listed on the storefront.');
+    if (existing)
+      throw new BadRequestException(
+        "This product is already listed on the storefront.",
+      );
 
     return prisma.productListing.create({
       data: {
@@ -191,13 +226,22 @@ export class EcommerceAdminService {
     });
   }
 
-  async updateListing(tenantId: string, id: string, dto: UpdateProductListingDto) {
-    const listing = await prisma.productListing.findFirst({ where: { id, tenantId } });
-    if (!listing) throw new NotFoundException('Product listing not found');
+  async updateListing(
+    tenantId: string,
+    id: string,
+    dto: UpdateProductListingDto,
+  ) {
+    const listing = await prisma.productListing.findFirst({
+      where: { id, tenantId },
+    });
+    if (!listing) throw new NotFoundException("Product listing not found");
 
     if (dto.categoryId) {
-      const category = await prisma.storefrontCategory.findFirst({ where: { id: dto.categoryId, tenantId } });
-      if (!category) throw new NotFoundException('Storefront category not found');
+      const category = await prisma.storefrontCategory.findFirst({
+        where: { id: dto.categoryId, tenantId },
+      });
+      if (!category)
+        throw new NotFoundException("Storefront category not found");
     }
 
     return prisma.productListing.update({
@@ -207,15 +251,19 @@ export class EcommerceAdminService {
         ...(dto.isPublished !== undefined && { isPublished: dto.isPublished }),
         ...(dto.displayName !== undefined && { displayName: dto.displayName }),
         ...(dto.description !== undefined && { description: dto.description }),
-        ...(dto.priceOverride !== undefined && { priceOverride: dto.priceOverride }),
+        ...(dto.priceOverride !== undefined && {
+          priceOverride: dto.priceOverride,
+        }),
         ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
       },
     });
   }
 
   async deleteListing(tenantId: string, id: string) {
-    const listing = await prisma.productListing.findFirst({ where: { id, tenantId } });
-    if (!listing) throw new NotFoundException('Product listing not found');
+    const listing = await prisma.productListing.findFirst({
+      where: { id, tenantId },
+    });
+    if (!listing) throw new NotFoundException("Product listing not found");
     return prisma.productListing.delete({ where: { id } });
   }
 }

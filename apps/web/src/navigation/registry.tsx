@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Home,
   CreditCard,
@@ -527,7 +526,6 @@ export const SEGMENT_NAMES: Record<string, string> = {
   "ext-analytics": "Analytics",
   // T4 Finance-Adjacent modules
   reporting: "Reporting",
-  subscriptions: "Subscriptions",
   "subscription-plans": "Plans",
   "subscription-tiers": "Tiers",
   "subscription-coupons": "Coupons",
@@ -535,7 +533,6 @@ export const SEGMENT_NAMES: Record<string, string> = {
   "subscription-dunning": "Dunning",
   "subscription-credit-notes": "Credit Notes",
   "subscription-migrations": "Migrations",
-  localization: "Localization",
   "localization-locales": "Locales",
   "localization-translations": "Translations",
   "localization-glossary": "Glossary",

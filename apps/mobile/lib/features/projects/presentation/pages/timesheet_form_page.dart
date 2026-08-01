@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/usecase/result.dart';
-import '../../domain/entities/projects.dart';
 import '../providers/projects_providers.dart';
 
 class TimesheetFormPage extends ConsumerStatefulWidget {
@@ -71,7 +68,7 @@ class _TimesheetFormPageState extends ConsumerState<TimesheetFormPage> {
     };
 
     final result = await ref.read(timesheetListControllerProvider.notifier).save(
-      payload, id: widget.timesheetId);
+      payload, id: widget.timesheetId,);
 
     if (!context.mounted) return;
     setState(() => _saving = false);
@@ -130,7 +127,7 @@ class _TimesheetFormPageState extends ConsumerState<TimesheetFormPage> {
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _hoursCtrl,
-              keyboardType: TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(labelText: 'Hours *'),
               validator: (v) {
                 if (v == null || v.trim().isEmpty) return 'Required';

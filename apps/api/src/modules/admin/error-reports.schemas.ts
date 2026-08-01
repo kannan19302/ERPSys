@@ -1,8 +1,7 @@
-// @ts-nocheck
-import { z } from 'zod';
+import { z } from "zod";
 
 export const errorReportSchema = z.object({
-  message: z.string().min(1, 'Error message is required').max(5000),
+  message: z.string().min(1, "Error message is required").max(5000),
   stack: z.string().max(10000).optional(),
   url: z.string().max(2000).optional(),
   userAgent: z.string().max(500).optional(),

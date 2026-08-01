@@ -1,19 +1,21 @@
-// @ts-nocheck
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma, CrossDockStatus, CrossDockType } from '@prisma/client';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma, CrossDockStatus, CrossDockType } from "@prisma/client";
 import {
   CreateCrossDockStationDto,
   CreateCrossDockOrderDto,
   UpdateCrossDockOrderStatusDto,
-} from '../dto/supply-chain.dto';
+} from "../dto/supply-chain.dto";
 
 @Injectable()
 export class CrossDockService {
   async listStations(tenantId: string, warehouseId?: string) {
     const where: Prisma.CrossDockStationWhereInput = { tenantId };
     if (warehouseId) where.warehouseId = warehouseId;
-    return prisma.crossDockStation.findMany({ where, orderBy: { name: 'asc' } });
+    return prisma.crossDockStation.findMany({
+      where,
+      orderBy: { name: "asc" },
+    });
   }
 
   async createStation(tenantId: string, dto: CreateCrossDockStationDto) {
@@ -31,7 +33,15 @@ export class CrossDockService {
     });
   }
 
-  async listOrders(tenantId: string, query: { page?: number; limit?: number; status?: string; warehouseId?: string }) {
+  async listOrders(
+    tenantId: string,
+    query: {
+      page?: number;
+      limit?: number;
+      status?: string;
+      warehouseId?: string;
+    },
+  ) {
     const page = query.page || 1;
     const limit = Math.min(query.limit || 20, 100);
     const where: Prisma.CrossDockOrderWhereInput = { tenantId };
@@ -41,10 +51,10 @@ export class CrossDockService {
     const [items, total] = await Promise.all([
       prisma.crossDockOrder.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         skip: (page - 1) * limit,
         take: limit,
-        include: { station: true, events: { orderBy: { createdAt: 'asc' } } },
+        include: { station: true, events: { orderBy: { createdAt: "asc" } } },
       }),
       prisma.crossDockOrder.count({ where }),
     ]);
@@ -54,13 +64,17 @@ export class CrossDockService {
   async getOrderById(tenantId: string, id: string) {
     const item = await prisma.crossDockOrder.findFirst({
       where: { id, tenantId },
-      include: { station: true, events: { orderBy: { createdAt: 'asc' } } },
+      include: { station: true, events: { orderBy: { createdAt: "asc" } } },
     });
-    if (!item) throw new NotFoundException('Cross-dock order not found');
+    if (!item) throw new NotFoundException("Cross-dock order not found");
     return item;
   }
 
-  async createOrder(tenantId: string, dto: CreateCrossDockOrderDto, createdById: string) {
+  async createOrder(
+    tenantId: string,
+    dto: CreateCrossDockOrderDto,
+    createdById: string,
+  ) {
     return prisma.crossDockOrder.create({
       data: {
         tenantId,
@@ -74,22 +88,35 @@ export class CrossDockService {
         outboundRef: dto.outboundRef,
         supplierName: dto.supplierName,
         customerName: dto.customerName,
-        expectedArrival: dto.expectedArrival ? new Date(dto.expectedArrival) : null,
-        expectedDispatch: dto.expectedDispatch ? new Date(dto.expectedDispatch) : null,
+        expectedArrival: dto.expectedArrival
+          ? new Date(dto.expectedArrival)
+          : null,
+        expectedDispatch: dto.expectedDispatch
+          ? new Date(dto.expectedDispatch)
+          : null,
         createdById,
       },
     });
   }
 
-  async updateOrderStatus(tenantId: string, id: string, dto: UpdateCrossDockOrderStatusDto, userId: string) {
-    const existing = await prisma.crossDockOrder.findFirst({ where: { id, tenantId } });
-    if (!existing) throw new NotFoundException('Cross-dock order not found');
+  async updateOrderStatus(
+    tenantId: string,
+    id: string,
+    dto: UpdateCrossDockOrderStatusDto,
+    userId: string,
+  ) {
+    const existing = await prisma.crossDockOrder.findFirst({
+      where: { id, tenantId },
+    });
+    if (!existing) throw new NotFoundException("Cross-dock order not found");
 
     const now = new Date();
     const extra: Record<string, unknown> = {};
-    if (dto.status === 'COMPLETED') extra.completedAt = now;
-    if (dto.receivedQty !== undefined && dto.receivedQty !== null) extra.receivedQty = new Prisma.Decimal(dto.receivedQty);
-    if (dto.dispatchedQty !== undefined && dto.dispatchedQty !== null) extra.dispatchedQty = new Prisma.Decimal(dto.dispatchedQty);
+    if (dto.status === "COMPLETED") extra.completedAt = now;
+    if (dto.receivedQty !== undefined && dto.receivedQty !== null)
+      extra.receivedQty = new Prisma.Decimal(dto.receivedQty);
+    if (dto.dispatchedQty !== undefined && dto.dispatchedQty !== null)
+      extra.dispatchedQty = new Prisma.Decimal(dto.dispatchedQty);
     if (dto.cancelReason !== undefined) extra.cancelReason = dto.cancelReason;
 
     await prisma.crossDockEvent.create({
@@ -97,8 +124,11 @@ export class CrossDockService {
         tenantId,
         orderId: id,
         eventType: `STATUS_${dto.status}`,
-        qty: dto.receivedQty !== undefined && dto.receivedQty !== null ? new Prisma.Decimal(dto.receivedQty) : null,
-        notes: `Status changed from ${existing.status} to ${dto.status}${dto.cancelReason ? ': ' + dto.cancelReason : ''}`,
+        qty:
+          dto.receivedQty !== undefined && dto.receivedQty !== null
+            ? new Prisma.Decimal(dto.receivedQty)
+            : null,
+        notes: `Status changed from ${existing.status} to ${dto.status}${dto.cancelReason ? ": " + dto.cancelReason : ""}`,
         performedBy: userId,
       },
     });
@@ -106,7 +136,7 @@ export class CrossDockService {
     return prisma.crossDockOrder.update({
       where: { id },
       data: { status: dto.status as CrossDockStatus, ...extra },
-      include: { station: true, events: { orderBy: { createdAt: 'asc' } } },
+      include: { station: true, events: { orderBy: { createdAt: "asc" } } },
     });
   }
 }

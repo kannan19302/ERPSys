@@ -23,16 +23,16 @@ abstract class PeopleRepository {
   Future<Result<void>> deleteTeam(String id);
 
   Future<Result<Cacheable<Paginated<PeopleOnboardingTask>>>> listOnboardingTasks(
-    ListQuery query);
+    ListQuery query,);
   Future<Result<PeopleOnboardingTask>> getOnboardingTask(String id);
   Future<Result<PeopleOnboardingTask>> createOnboardingTask(Map<String, dynamic> payload);
   Future<Result<PeopleOnboardingTask>> updateOnboardingTask(
-    String id, Map<String, dynamic> payload);
+    String id, Map<String, dynamic> payload,);
   Future<Result<void>> deleteOnboardingTask(String id);
   Future<Result<PeopleOnboardingTask>> completeOnboardingTask(String id);
 
   Future<Result<Cacheable<Paginated<PeopleRecognitionEntry>>>> listRecognitionEntries(
-    ListQuery query);
+    ListQuery query,);
   Future<Result<PeopleRecognitionEntry>> createRecognitionEntry(Map<String, dynamic> payload);
   Future<Result<void>> deleteRecognitionEntry(String id);
 }

@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 
 export default function SystemHealthRedirectPage() {
-  redirect('/settings/system-operations?tab=health');
+  redirect("/settings/system-operations?tab=health");
 }

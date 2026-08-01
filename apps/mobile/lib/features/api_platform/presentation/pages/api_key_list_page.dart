@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -53,12 +52,12 @@ class _ApiKeyListPageState extends ConsumerState<ApiKeyListPage> {
                   Text(k.name, style: Theme.of(context).textTheme.titleSmall),
                   const SizedBox(height: Spacing.x1),
                   Text('${k.prefix}... · ${k.status}',
-                      style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs)),
+                      style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs),),
                 ],
               ),
             ),
             Text('${k.rateLimit}/min', style: TextStyle(color: context.tokens.textTertiary, fontSize: TypeScale.xs)),
-          ]),
+          ],),
         ),
       ),
     );

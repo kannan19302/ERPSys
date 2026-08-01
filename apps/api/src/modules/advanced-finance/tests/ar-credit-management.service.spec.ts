@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ArCreditManagementService } from "../services/ar-credit-management.service";
 import { BadRequestException, NotFoundException } from "@nestjs/common";
@@ -7,10 +6,18 @@ vi.mock("@prisma/client", () => ({
   Prisma: {
     Decimal: class Decimal {
       private _v: number;
-      constructor(v: unknown) { this._v = Number(v); }
-      toNumber() { return this._v; }
-      valueOf() { return this._v; }
-      toFixed(d: number) { return this._v.toFixed(d); }
+      constructor(v: unknown) {
+        this._v = Number(v);
+      }
+      toNumber() {
+        return this._v;
+      }
+      valueOf() {
+        return this._v;
+      }
+      toFixed(d: number) {
+        return this._v.toFixed(d);
+      }
     },
   },
 }));
@@ -90,11 +97,29 @@ describe("ArCreditManagementService", () => {
   describe("listCustomerCreditProfiles", () => {
     it("returns credit profiles for all customers", async () => {
       const customers = [
-        { id: "c1", name: "Alpha Corp", email: "a@test.com", creditLimit: null, creditHold: false, riskRating: "LOW", status: "ACTIVE" },
-        { id: "c2", name: "Beta Inc", email: "b@test.com", creditLimit: null, creditHold: false, riskRating: "MEDIUM", status: "ACTIVE" },
+        {
+          id: "c1",
+          name: "Alpha Corp",
+          email: "a@test.com",
+          creditLimit: null,
+          creditHold: false,
+          riskRating: "LOW",
+          status: "ACTIVE",
+        },
+        {
+          id: "c2",
+          name: "Beta Inc",
+          email: "b@test.com",
+          creditLimit: null,
+          creditHold: false,
+          riskRating: "MEDIUM",
+          status: "ACTIVE",
+        },
       ];
       vi.mocked(prisma.customer.findMany).mockResolvedValue(customers as any);
-      vi.mocked(prisma.invoice.aggregate).mockResolvedValue({ _sum: { totalAmount: 5000 } } as any);
+      vi.mocked(prisma.invoice.aggregate).mockResolvedValue({
+        _sum: { totalAmount: 5000 },
+      } as any);
 
       const result = await service.listCustomerCreditProfiles(TENANT);
 
@@ -110,7 +135,9 @@ describe("ArCreditManagementService", () => {
       await service.listCustomerCreditProfiles(TENANT, "Alpha");
 
       expect(prisma.customer.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({ where: expect.objectContaining({ OR: expect.any(Array) }) }),
+        expect.objectContaining({
+          where: expect.objectContaining({ OR: expect.any(Array) }),
+        }),
       );
     });
 
@@ -128,14 +155,28 @@ describe("ArCreditManagementService", () => {
   describe("getCustomerCreditProfile", () => {
     it("returns full credit profile for a customer", async () => {
       const customer = {
-        id: "c1", name: "Alpha Corp", email: "a@test.com",
-        phone: "123", creditLimit: null, creditHold: false,
-        creditHoldReason: null, riskRating: "LOW", status: "ACTIVE",
+        id: "c1",
+        name: "Alpha Corp",
+        email: "a@test.com",
+        phone: "123",
+        creditLimit: null,
+        creditHold: false,
+        creditHoldReason: null,
+        riskRating: "LOW",
+        status: "ACTIVE",
       };
       vi.mocked(prisma.customer.findFirst).mockResolvedValue(customer as any);
-      vi.mocked(prisma.invoice.aggregate).mockResolvedValue({ _sum: { totalAmount: 3000 } } as any);
+      vi.mocked(prisma.invoice.aggregate).mockResolvedValue({
+        _sum: { totalAmount: 3000 },
+      } as any);
       vi.mocked(prisma.invoice.findMany).mockResolvedValue([
-        { id: "i1", invoiceNumber: "INV-001", status: "SENT", totalAmount: 3000, dueDate: new Date() },
+        {
+          id: "i1",
+          invoiceNumber: "INV-001",
+          status: "SENT",
+          totalAmount: 3000,
+          dueDate: new Date(),
+        },
       ] as any);
       vi.mocked(prisma.aRPromiseToPay.findMany).mockResolvedValue([] as any);
       vi.mocked(prisma.aRDispute.findMany).mockResolvedValue([] as any);
@@ -150,7 +191,9 @@ describe("ArCreditManagementService", () => {
     it("throws NotFoundException when customer does not exist", async () => {
       vi.mocked(prisma.customer.findFirst).mockResolvedValue(null);
 
-      await expect(service.getCustomerCreditProfile(TENANT, "nonexistent")).rejects.toThrow(NotFoundException);
+      await expect(
+        service.getCustomerCreditProfile(TENANT, "nonexistent"),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -158,10 +201,21 @@ describe("ArCreditManagementService", () => {
 
   describe("updateCreditLimit", () => {
     it("updates credit limit successfully", async () => {
-      vi.mocked(prisma.customer.findFirst).mockResolvedValue({ id: "c1", name: "Test" } as any);
-      vi.mocked(prisma.customer.update).mockResolvedValue({ id: "c1", creditLimit: 50000 } as any);
+      vi.mocked(prisma.customer.findFirst).mockResolvedValue({
+        id: "c1",
+        name: "Test",
+      } as any);
+      vi.mocked(prisma.customer.update).mockResolvedValue({
+        id: "c1",
+        creditLimit: 50000,
+      } as any);
 
-      const result = await service.updateCreditLimit(TENANT, "c1", { creditLimit: 50000, reason: "Increased limit" }, USER_ID);
+      const result = await service.updateCreditLimit(
+        TENANT,
+        "c1",
+        { creditLimit: 50000, reason: "Increased limit" },
+        USER_ID,
+      );
 
       expect(result).toBeDefined();
       expect(prisma.customer.update).toHaveBeenCalled();
@@ -171,7 +225,12 @@ describe("ArCreditManagementService", () => {
       vi.mocked(prisma.customer.findFirst).mockResolvedValue(null);
 
       await expect(
-        service.updateCreditLimit(TENANT, "nonexistent", { creditLimit: 10000, reason: "Test" }, USER_ID),
+        service.updateCreditLimit(
+          TENANT,
+          "nonexistent",
+          { creditLimit: 10000, reason: "Test" },
+          USER_ID,
+        ),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -180,47 +239,81 @@ describe("ArCreditManagementService", () => {
 
   describe("placeCreditHold", () => {
     it("places customer on hold", async () => {
-      vi.mocked(prisma.customer.findFirst).mockResolvedValue({ id: "c1", creditHold: false } as any);
-      vi.mocked(prisma.customer.update).mockResolvedValue({ id: "c1", creditHold: true, creditHoldReason: "Overdue" } as any);
+      vi.mocked(prisma.customer.findFirst).mockResolvedValue({
+        id: "c1",
+        creditHold: false,
+      } as any);
+      vi.mocked(prisma.customer.update).mockResolvedValue({
+        id: "c1",
+        creditHold: true,
+        creditHoldReason: "Overdue",
+      } as any);
 
-      const result = await service.placeCreditHold(TENANT, "c1", "Overdue", USER_ID);
+      const result = await service.placeCreditHold(
+        TENANT,
+        "c1",
+        "Overdue",
+        USER_ID,
+      );
 
       expect(result).toBeDefined();
       expect(prisma.customer.update).toHaveBeenCalledWith(
-        expect.objectContaining({ data: expect.objectContaining({ creditHold: true }) }),
+        expect.objectContaining({
+          data: expect.objectContaining({ creditHold: true }),
+        }),
       );
     });
 
     it("throws BadRequestException if already on hold", async () => {
-      vi.mocked(prisma.customer.findFirst).mockResolvedValue({ id: "c1", creditHold: true } as any);
+      vi.mocked(prisma.customer.findFirst).mockResolvedValue({
+        id: "c1",
+        creditHold: true,
+      } as any);
 
-      await expect(service.placeCreditHold(TENANT, "c1", "Overdue", USER_ID)).rejects.toThrow(BadRequestException);
+      await expect(
+        service.placeCreditHold(TENANT, "c1", "Overdue", USER_ID),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it("throws NotFoundException if customer not found", async () => {
       vi.mocked(prisma.customer.findFirst).mockResolvedValue(null);
 
-      await expect(service.placeCreditHold(TENANT, "nonexistent", "Reason", USER_ID)).rejects.toThrow(NotFoundException);
+      await expect(
+        service.placeCreditHold(TENANT, "nonexistent", "Reason", USER_ID),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
   describe("releaseCreditHold", () => {
     it("releases credit hold", async () => {
-      vi.mocked(prisma.customer.findFirst).mockResolvedValue({ id: "c1", creditHold: true } as any);
-      vi.mocked(prisma.customer.update).mockResolvedValue({ id: "c1", creditHold: false } as any);
+      vi.mocked(prisma.customer.findFirst).mockResolvedValue({
+        id: "c1",
+        creditHold: true,
+      } as any);
+      vi.mocked(prisma.customer.update).mockResolvedValue({
+        id: "c1",
+        creditHold: false,
+      } as any);
 
       const result = await service.releaseCreditHold(TENANT, "c1", USER_ID);
 
       expect(result).toBeDefined();
       expect(prisma.customer.update).toHaveBeenCalledWith(
-        expect.objectContaining({ data: expect.objectContaining({ creditHold: false }) }),
+        expect.objectContaining({
+          data: expect.objectContaining({ creditHold: false }),
+        }),
       );
     });
 
     it("throws BadRequestException if not on hold", async () => {
-      vi.mocked(prisma.customer.findFirst).mockResolvedValue({ id: "c1", creditHold: false } as any);
+      vi.mocked(prisma.customer.findFirst).mockResolvedValue({
+        id: "c1",
+        creditHold: false,
+      } as any);
 
-      await expect(service.releaseCreditHold(TENANT, "c1", USER_ID)).rejects.toThrow(BadRequestException);
+      await expect(
+        service.releaseCreditHold(TENANT, "c1", USER_ID),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -236,7 +329,9 @@ describe("ArCreditManagementService", () => {
 
       expect(result).toHaveLength(1);
       expect(prisma.customer.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({ where: { tenantId: TENANT, creditHold: true } }),
+        expect.objectContaining({
+          where: { tenantId: TENANT, creditHold: true },
+        }),
       );
     });
 
@@ -254,8 +349,18 @@ describe("ArCreditManagementService", () => {
   describe("listAgingSummary", () => {
     it("returns aging buckets", async () => {
       vi.mocked(prisma.invoice.findMany).mockResolvedValue([
-        { id: "i1", totalAmount: 1000, dueDate: new Date(Date.now() - 45 * 86400000), customer: { name: "Test Co" } },
-        { id: "i2", totalAmount: 2000, dueDate: new Date(Date.now() - 120 * 86400000), customer: { name: "Test Co" } },
+        {
+          id: "i1",
+          totalAmount: 1000,
+          dueDate: new Date(Date.now() - 45 * 86400000),
+          customer: { name: "Test Co" },
+        },
+        {
+          id: "i2",
+          totalAmount: 2000,
+          dueDate: new Date(Date.now() - 120 * 86400000),
+          customer: { name: "Test Co" },
+        },
       ] as any);
 
       const result = await service.listAgingSummary(TENANT);
@@ -299,15 +404,22 @@ describe("ArCreditManagementService", () => {
 
   describe("computeBadDebtProvision", () => {
     it("creates a bad debt provision based on aging", async () => {
-      vi.mocked(prisma.organization.findFirst).mockResolvedValue({ id: "org-1" } as any);
+      vi.mocked(prisma.organization.findFirst).mockResolvedValue({
+        id: "org-1",
+      } as any);
       vi.mocked(prisma.invoice.findMany).mockResolvedValue([
         {
-          id: "i1", totalAmount: 10000, dueDate: new Date(Date.now() - 400 * 86400000),
+          id: "i1",
+          totalAmount: 10000,
+          dueDate: new Date(Date.now() - 400 * 86400000),
           customer: { name: "Old Co" },
         },
       ] as any);
       vi.mocked(prisma.badDebtProvision.create).mockResolvedValue({
-        id: "prov-1", period: "2026-Q2", provisionAmount: 5000, status: "DRAFT",
+        id: "prov-1",
+        period: "2026-Q2",
+        provisionAmount: 5000,
+        status: "DRAFT",
       } as any);
 
       const result = await service.computeBadDebtProvision(TENANT);
@@ -317,10 +429,15 @@ describe("ArCreditManagementService", () => {
     });
 
     it("creates a zero provision when no overdue invoices", async () => {
-      vi.mocked(prisma.organization.findFirst).mockResolvedValue({ id: "org-1" } as any);
+      vi.mocked(prisma.organization.findFirst).mockResolvedValue({
+        id: "org-1",
+      } as any);
       vi.mocked(prisma.invoice.findMany).mockResolvedValue([] as any);
       vi.mocked(prisma.badDebtProvision.create).mockResolvedValue({
-        id: "prov-0", period: "2026-Q2", provisionAmount: 0, status: "DRAFT",
+        id: "prov-0",
+        period: "2026-Q2",
+        provisionAmount: 0,
+        status: "DRAFT",
       } as any);
 
       const result = await service.computeBadDebtProvision(TENANT);
@@ -333,8 +450,13 @@ describe("ArCreditManagementService", () => {
 
   describe("getDsoTrend", () => {
     it("returns DSO trend data points", async () => {
-      vi.mocked(prisma.invoice.aggregate).mockResolvedValue({ _sum: { totalAmount: 100000 }, _count: { id: 10 } } as any);
-      vi.mocked(prisma.payment.aggregate).mockResolvedValue({ _sum: { amount: 80000 } } as any);
+      vi.mocked(prisma.invoice.aggregate).mockResolvedValue({
+        _sum: { totalAmount: 100000 },
+        _count: { id: 10 },
+      } as any);
+      vi.mocked(prisma.payment.aggregate).mockResolvedValue({
+        _sum: { amount: 80000 },
+      } as any);
 
       const result = await service.getDsoTrend(TENANT, 3);
 
@@ -352,7 +474,9 @@ describe("ArCreditManagementService", () => {
       vi.mocked(prisma.invoice.count).mockResolvedValue(30);
       vi.mocked(prisma.aRPromiseToPay.count).mockResolvedValue(15);
       vi.mocked(prisma.aRDispute.count).mockResolvedValue(5);
-      vi.mocked(prisma.badDebtProvision.aggregate).mockResolvedValue({ _sum: { provisionAmount: 25000 } } as any);
+      vi.mocked(prisma.badDebtProvision.aggregate).mockResolvedValue({
+        _sum: { provisionAmount: 25000 },
+      } as any);
       vi.mocked(prisma.customer.count).mockResolvedValue(3);
 
       // Re-mock invoice.count to return different values per call

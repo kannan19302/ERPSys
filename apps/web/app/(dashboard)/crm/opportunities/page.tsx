@@ -1,11 +1,10 @@
-// @ts-nocheck
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Modal, PageHeader } from '@unerp/ui';
-import { ListView, FormView, RouteGuard } from '@unerp/framework';
-import { opportunityResource } from '@/modules/crm';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Modal, PageHeader } from "@unerp/ui";
+import { ListView, FormView, RouteGuard } from "@unerp/framework";
+import { opportunityResource } from "@/modules/crm";
 
 export default function OpportunitiesPage() {
   const router = useRouter();
@@ -17,7 +16,11 @@ export default function OpportunitiesPage() {
         <PageHeader
           title="Opportunities"
           description="Track sales deals and pipeline progress"
-          breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'CRM', href: '/crm' }, { label: 'Opportunities' }]}
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "CRM", href: "/crm" },
+            { label: "Opportunities" },
+          ]}
         />
 
         <ListView
@@ -26,7 +29,11 @@ export default function OpportunitiesPage() {
           onCreate={() => setShowCreate(true)}
         />
 
-        <Modal open={showCreate} onClose={() => setShowCreate(false)} title="New Opportunity">
+        <Modal
+          open={showCreate}
+          onClose={() => setShowCreate(false)}
+          title="New Opportunity"
+        >
           <FormView
             resource={opportunityResource}
             onSuccess={() => setShowCreate(false)}

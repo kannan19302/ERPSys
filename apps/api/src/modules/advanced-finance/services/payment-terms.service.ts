@@ -1,14 +1,17 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
 
 @Injectable()
 export class PaymentTermsService {
   async getPaymentTerms(tenantId: string) {
     return prisma.paymentTermTemplate.findMany({
       where: { tenantId },
-      orderBy: { dueDays: 'asc' },
+      orderBy: { dueDays: "asc" },
     });
   }
 
@@ -16,7 +19,7 @@ export class PaymentTermsService {
     const term = await prisma.paymentTermTemplate.findFirst({
       where: { id, tenantId },
     });
-    if (!term) throw new NotFoundException('Payment term template not found');
+    if (!term) throw new NotFoundException("Payment term template not found");
     return term;
   }
 
@@ -31,7 +34,7 @@ export class PaymentTermsService {
     },
   ) {
     if (dto.dueDays < 0) {
-      throw new BadRequestException('dueDays cannot be negative');
+      throw new BadRequestException("dueDays cannot be negative");
     }
 
     return prisma.paymentTermTemplate.create({
@@ -41,7 +44,10 @@ export class PaymentTermsService {
         description: dto.description || null,
         dueDays: dto.dueDays,
         discountDays: dto.discountDays || 0,
-        discountPct: dto.discountPct !== undefined ? new Prisma.Decimal(dto.discountPct) : new Prisma.Decimal(0),
+        discountPct:
+          dto.discountPct !== undefined
+            ? new Prisma.Decimal(dto.discountPct)
+            : new Prisma.Decimal(0),
         isActive: true,
       },
     });
@@ -63,13 +69,17 @@ export class PaymentTermsService {
 
     const updateData: Prisma.PaymentTermTemplateUpdateInput = {};
     if (dto.name !== undefined) updateData.name = dto.name;
-    if (dto.description !== undefined) updateData.description = dto.description || null;
+    if (dto.description !== undefined)
+      updateData.description = dto.description || null;
     if (dto.dueDays !== undefined) {
-      if (dto.dueDays < 0) throw new BadRequestException('dueDays cannot be negative');
+      if (dto.dueDays < 0)
+        throw new BadRequestException("dueDays cannot be negative");
       updateData.dueDays = dto.dueDays;
     }
-    if (dto.discountDays !== undefined) updateData.discountDays = dto.discountDays;
-    if (dto.discountPct !== undefined) updateData.discountPct = new Prisma.Decimal(dto.discountPct);
+    if (dto.discountDays !== undefined)
+      updateData.discountDays = dto.discountDays;
+    if (dto.discountPct !== undefined)
+      updateData.discountPct = new Prisma.Decimal(dto.discountPct);
     if (dto.isActive !== undefined) updateData.isActive = dto.isActive;
 
     return prisma.paymentTermTemplate.update({

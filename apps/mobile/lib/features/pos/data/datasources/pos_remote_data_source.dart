@@ -260,7 +260,7 @@ class PosRemoteDataSourceImpl implements PosRemoteDataSource {
 
   @override
   Future<PosPriceListModel> getPosPriceList(String id) async =>
-      PosPriceListModel.fromJson(await _client.getObject(ApiPaths.posPriceLists + '/$id'));
+      PosPriceListModel.fromJson(await _client.getObject('${ApiPaths.posPriceLists}/$id'));
 
   @override
   Future<PosPriceListModel> createPosPriceList(Map<String, dynamic> payload) async =>
@@ -268,8 +268,8 @@ class PosRemoteDataSourceImpl implements PosRemoteDataSource {
 
   @override
   Future<PosPriceListModel> updatePosPriceList(String id, Map<String, dynamic> payload) async =>
-      PosPriceListModel.fromJson(await _client.patch(ApiPaths.posPriceLists + '/$id', body: payload));
+      PosPriceListModel.fromJson(await _client.patch('${ApiPaths.posPriceLists}/$id', body: payload));
 
   @override
-  Future<void> deletePosPriceList(String id) => _client.delete(ApiPaths.posPriceLists + '/$id');
+  Future<void> deletePosPriceList(String id) => _client.delete('${ApiPaths.posPriceLists}/$id');
 }

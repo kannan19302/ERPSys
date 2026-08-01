@@ -1,7 +1,10 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
 
 /**
  * Sales Fulfillment & Order Management service.
@@ -31,21 +34,34 @@ import { Prisma } from '@prisma/client';
  */
 @Injectable()
 export class SalesFulfillmentService {
-
   // ── F161: Order Modification ───────────────────────
-  async amendOrder(tenantId: string, orderId: string, amendments: {
-    addItems?: Array<{ productId: string; quantity: number; unitPrice: number }>;
-    removeItemIds?: string[];
-    updateItems?: Array<{ lineItemId: string; quantity?: number; unitPrice?: number }>;
-    notes?: string;
-  }): Promise<{ orderId: string; status: string; newTotal: number }> {
+  async amendOrder(
+    tenantId: string,
+    orderId: string,
+    amendments: {
+      addItems?: Array<{
+        productId: string;
+        quantity: number;
+        unitPrice: number;
+      }>;
+      removeItemIds?: string[];
+      updateItems?: Array<{
+        lineItemId: string;
+        quantity?: number;
+        unitPrice?: number;
+      }>;
+      notes?: string;
+    },
+  ): Promise<{ orderId: string; status: string; newTotal: number }> {
     const order = await prisma.salesOrder.findFirst({
       where: { id: orderId, tenantId, deletedAt: null },
       include: { lineItems: true },
     });
-    if (!order) throw new NotFoundException('Order not found');
-    if (['DELIVERED', 'CANCELLED'].includes(order.status)) {
-      throw new BadRequestException('Cannot amend delivered or cancelled orders');
+    if (!order) throw new NotFoundException("Order not found");
+    if (["DELIVERED", "CANCELLED"].includes(order.status)) {
+      throw new BadRequestException(
+        "Cannot amend delivered or cancelled orders",
+      );
     }
 
     // Remove items
@@ -60,8 +76,12 @@ export class SalesFulfillmentService {
       await prisma.salesOrderItem.update({
         where: { id: update.lineItemId },
         data: {
-          ...(update.quantity !== undefined ? { quantity: new Prisma.Decimal(update.quantity) } : {}),
-          ...(update.unitPrice !== undefined ? { unitPrice: new Prisma.Decimal(update.unitPrice) } : {}),
+          ...(update.quantity !== undefined
+            ? { quantity: new Prisma.Decimal(update.quantity) }
+            : {}),
+          ...(update.unitPrice !== undefined
+            ? { unitPrice: new Prisma.Decimal(update.unitPrice) }
+            : {}),
         },
       });
     }
@@ -73,7 +93,7 @@ export class SalesFulfillmentService {
           tenantId,
           salesOrderId: orderId,
           productId: item.productId,
-          description: '',
+          description: "",
           quantity: new Prisma.Decimal(item.quantity),
           unitPrice: new Prisma.Decimal(item.unitPrice),
           totalAmount: new Prisma.Decimal(item.quantity * item.unitPrice),
@@ -82,36 +102,57 @@ export class SalesFulfillmentService {
     }
 
     // Recalculate total
-    const updatedLineItems = await prisma.salesOrderItem.findMany({ where: { salesOrderId: orderId } });
-    const newTotal = updatedLineItems.reduce((s: number, li: any) => s + Number(li.totalAmount || 0), 0);
+    const updatedLineItems = await prisma.salesOrderItem.findMany({
+      where: { salesOrderId: orderId },
+    });
+    const newTotal = updatedLineItems.reduce(
+      (s: number, li: any) => s + Number(li.totalAmount || 0),
+      0,
+    );
 
     await prisma.salesOrder.update({
       where: { id: orderId },
-      data: { totalAmount: new Prisma.Decimal(newTotal), notes: amendments.notes || order.notes },
+      data: {
+        totalAmount: new Prisma.Decimal(newTotal),
+        notes: amendments.notes || order.notes,
+      },
     });
 
-    return { orderId, status: 'amended', newTotal: Math.round(newTotal * 100) / 100 };
+    return {
+      orderId,
+      status: "amended",
+      newTotal: Math.round(newTotal * 100) / 100,
+    };
   }
 
   // ── F162: Order Splitting ──────────────────────────
-  async splitOrder(tenantId: string, orderId: string, splitConfig: {
-    groups: Array<{ lineItemIds: string[]; shippingAddress?: string }>;
-  }): Promise<{ originalOrderId: string; newOrderIds: string[] }> {
+  async splitOrder(
+    tenantId: string,
+    orderId: string,
+    splitConfig: {
+      groups: Array<{ lineItemIds: string[]; shippingAddress?: string }>;
+    },
+  ): Promise<{ originalOrderId: string; newOrderIds: string[] }> {
     const order = await prisma.salesOrder.findFirst({
       where: { id: orderId, tenantId, deletedAt: null },
       include: { lineItems: true },
     });
-    if (!order) throw new NotFoundException('Order not found');
+    if (!order) throw new NotFoundException("Order not found");
 
     const newOrderIds: string[] = [];
 
     for (let i = 1; i < splitConfig.groups.length; i++) {
       const group = splitConfig.groups[i];
       if (!group) continue;
-      const groupItems = order.lineItems.filter((li) => group.lineItemIds.includes(li.id));
+      const groupItems = order.lineItems.filter((li) =>
+        group.lineItemIds.includes(li.id),
+      );
       if (groupItems.length === 0) continue;
 
-      const total = groupItems.reduce((s, li) => s + Number(li.totalAmount || 0), 0);
+      const total = groupItems.reduce(
+        (s, li) => s + Number(li.totalAmount || 0),
+        0,
+      );
 
       const newOrder = await prisma.salesOrder.create({
         data: {
@@ -124,7 +165,9 @@ export class SalesFulfillmentService {
           totalAmount: new Prisma.Decimal(total),
           currency: order.currency,
           notes: `Split from order ${order.orderNumber}`,
-          shippingAddress: (group.shippingAddress ? JSON.parse(JSON.stringify(group.shippingAddress)) : order.shippingAddress) as Prisma.InputJsonValue,
+          shippingAddress: (group.shippingAddress
+            ? JSON.parse(JSON.stringify(group.shippingAddress))
+            : order.shippingAddress) as Prisma.InputJsonValue,
           createdBy: order.createdBy,
         },
       });
@@ -140,8 +183,13 @@ export class SalesFulfillmentService {
     }
 
     // Recalculate original
-    const remainingItems = await prisma.salesOrderItem.findMany({ where: { salesOrderId: orderId } });
-    const remainingTotal = remainingItems.reduce((s: number, li: any) => s + Number(li.totalAmount || 0), 0);
+    const remainingItems = await prisma.salesOrderItem.findMany({
+      where: { salesOrderId: orderId },
+    });
+    const remainingTotal = remainingItems.reduce(
+      (s: number, li: any) => s + Number(li.totalAmount || 0),
+      0,
+    );
     await prisma.salesOrder.update({
       where: { id: orderId },
       data: { totalAmount: new Prisma.Decimal(remainingTotal) },
@@ -151,14 +199,21 @@ export class SalesFulfillmentService {
   }
 
   // ── F164: Backorder Management ─────────────────────
-  async getBackorders(tenantId: string): Promise<Array<{
-    orderId: string; orderNumber: string; customerName: string;
-    productId: string; productName: string; quantityOrdered: number;
-    quantityAvailable: number; quantityBackordered: number;
-    estimatedAvailabilityDate: string;
-  }>> {
+  async getBackorders(tenantId: string): Promise<
+    Array<{
+      orderId: string;
+      orderNumber: string;
+      customerName: string;
+      productId: string;
+      productName: string;
+      quantityOrdered: number;
+      quantityAvailable: number;
+      quantityBackordered: number;
+      estimatedAvailabilityDate: string;
+    }>
+  > {
     const orders = await prisma.salesOrder.findMany({
-      where: { tenantId, deletedAt: null, status: 'CONFIRMED' },
+      where: { tenantId, deletedAt: null, status: "CONFIRMED" },
       include: {
         lineItems: { include: { product: true } },
         customer: { select: { name: true } },
@@ -166,9 +221,14 @@ export class SalesFulfillmentService {
     });
 
     const backorders: Array<{
-      orderId: string; orderNumber: string; customerName: string;
-      productId: string; productName: string; quantityOrdered: number;
-      quantityAvailable: number; quantityBackordered: number;
+      orderId: string;
+      orderNumber: string;
+      customerName: string;
+      productId: string;
+      productName: string;
+      quantityOrdered: number;
+      quantityAvailable: number;
+      quantityBackordered: number;
       estimatedAvailabilityDate: string;
     }> = [];
 
@@ -188,13 +248,16 @@ export class SalesFulfillmentService {
           backorders.push({
             orderId: order.id,
             orderNumber: order.orderNumber,
-            customerName: order.customer?.name || 'Unknown',
+            customerName: order.customer?.name || "Unknown",
             productId: li.productId,
-            productName: li.product?.name || 'Unknown',
+            productName: li.product?.name || "Unknown",
             quantityOrdered: ordered,
             quantityAvailable: available,
             quantityBackordered: ordered - available,
-            estimatedAvailabilityDate: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0] || '',
+            estimatedAvailabilityDate:
+              new Date(Date.now() + 14 * 86400000)
+                .toISOString()
+                .split("T")[0] || "",
           });
         }
       }
@@ -204,14 +267,18 @@ export class SalesFulfillmentService {
   }
 
   // ── F166: Order Priority ───────────────────────────
-  async setOrderPriority(tenantId: string, orderId: string, priority: 'RUSH' | 'STANDARD' | 'ECONOMY'): Promise<{ status: string }> {
+  async setOrderPriority(
+    tenantId: string,
+    orderId: string,
+    priority: "RUSH" | "STANDARD" | "ECONOMY",
+  ): Promise<{ status: string }> {
     const order = await prisma.salesOrder.findFirst({
       where: { id: orderId, tenantId, deletedAt: null },
     });
-    if (!order) throw new NotFoundException('Order not found');
+    if (!order) throw new NotFoundException("Order not found");
 
-    const notes = typeof order.notes === 'string' ? order.notes : '';
-    const cleanedNotes = notes.replace(/\[PRIORITY:[^\]]+\]/g, '').trim();
+    const notes = typeof order.notes === "string" ? order.notes : "";
+    const cleanedNotes = notes.replace(/\[PRIORITY:[^\]]+\]/g, "").trim();
 
     await prisma.salesOrder.update({
       where: { id: orderId },
@@ -222,51 +289,74 @@ export class SalesFulfillmentService {
   }
 
   // ── F167: Order Approval Workflow ──────────────────
-  async submitOrderForApproval(tenantId: string, orderId: string): Promise<{
-    status: string; approvalRequired: boolean; reason: string;
+  async submitOrderForApproval(
+    tenantId: string,
+    orderId: string,
+  ): Promise<{
+    status: string;
+    approvalRequired: boolean;
+    reason: string;
   }> {
     const order = await prisma.salesOrder.findFirst({
       where: { id: orderId, tenantId, deletedAt: null },
       include: { customer: true },
     });
-    if (!order) throw new NotFoundException('Order not found');
+    if (!order) throw new NotFoundException("Order not found");
 
     const amount = Number(order.totalAmount || 0);
     const creditLimit = Number(order.customer?.creditLimit || 0);
 
     let approvalRequired = false;
-    let reason = 'Auto-approved';
+    let reason = "Auto-approved";
 
     if (amount > 100000) {
       approvalRequired = true;
-      reason = 'Order exceeds $100,000 threshold';
+      reason = "Order exceeds $100,000 threshold";
     } else if (creditLimit > 0 && amount > creditLimit) {
       approvalRequired = true;
-      reason = 'Order exceeds customer credit limit';
+      reason = "Order exceeds customer credit limit";
     }
 
     if (!approvalRequired) {
       await prisma.salesOrder.update({
         where: { id: orderId },
-        data: { status: 'CONFIRMED' },
+        data: { status: "CONFIRMED" },
       });
     }
 
-    return { status: approvalRequired ? 'PENDING_APPROVAL' : 'APPROVED', approvalRequired, reason };
+    return {
+      status: approvalRequired ? "PENDING_APPROVAL" : "APPROVED",
+      approvalRequired,
+      reason,
+    };
   }
 
   // ── F170: Order Promising (ATP) ────────────────────
-  async checkAvailableToPromise(tenantId: string, items: Array<{
-    productId: string; quantity: number;
-  }>): Promise<Array<{
-    productId: string; productName: string; requestedQuantity: number;
-    availableQuantity: number; canFulfill: boolean;
-    estimatedShipDate: string; alternateProducts: string[];
-  }>> {
+  async checkAvailableToPromise(
+    tenantId: string,
+    items: Array<{
+      productId: string;
+      quantity: number;
+    }>,
+  ): Promise<
+    Array<{
+      productId: string;
+      productName: string;
+      requestedQuantity: number;
+      availableQuantity: number;
+      canFulfill: boolean;
+      estimatedShipDate: string;
+      alternateProducts: string[];
+    }>
+  > {
     const results: Array<{
-      productId: string; productName: string; requestedQuantity: number;
-      availableQuantity: number; canFulfill: boolean;
-      estimatedShipDate: string; alternateProducts: string[];
+      productId: string;
+      productName: string;
+      requestedQuantity: number;
+      availableQuantity: number;
+      canFulfill: boolean;
+      estimatedShipDate: string;
+      alternateProducts: string[];
     }> = [];
     for (const item of items) {
       const product = await prisma.product.findFirst({
@@ -284,13 +374,16 @@ export class SalesFulfillmentService {
 
       results.push({
         productId: item.productId,
-        productName: product?.name || 'Unknown',
+        productName: product?.name || "Unknown",
         requestedQuantity: item.quantity,
         availableQuantity: available,
         canFulfill,
-        estimatedShipDate: (canFulfill
-          ? new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0]
-          : new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0]) || '',
+        estimatedShipDate:
+          (canFulfill
+            ? new Date(Date.now() + 2 * 86400000).toISOString().split("T")[0]
+            : new Date(Date.now() + 14 * 86400000)
+                .toISOString()
+                .split("T")[0]) || "",
         alternateProducts: [],
       });
     }
@@ -299,12 +392,23 @@ export class SalesFulfillmentService {
   }
 
   // ── F173: Packing Slip Generation ──────────────────
-  async generatePackingSlip(tenantId: string, orderId: string): Promise<{
-    orderId: string; orderNumber: string; customerName: string;
-    shippingAddress: string; items: Array<{
-      sku: string; description: string; quantity: number; weight: number;
+  async generatePackingSlip(
+    tenantId: string,
+    orderId: string,
+  ): Promise<{
+    orderId: string;
+    orderNumber: string;
+    customerName: string;
+    shippingAddress: string;
+    items: Array<{
+      sku: string;
+      description: string;
+      quantity: number;
+      weight: number;
     }>;
-    totalItems: number; totalWeight: number; generatedAt: string;
+    totalItems: number;
+    totalWeight: number;
+    generatedAt: string;
   }> {
     const order = await prisma.salesOrder.findFirst({
       where: { id: orderId, tenantId, deletedAt: null },
@@ -313,11 +417,11 @@ export class SalesFulfillmentService {
         customer: { select: { name: true } },
       },
     });
-    if (!order) throw new NotFoundException('Order not found');
+    if (!order) throw new NotFoundException("Order not found");
 
     const items = order.lineItems.map((li) => ({
-      sku: li.product?.sku || '',
-      description: li.description || li.product?.name || '',
+      sku: li.product?.sku || "",
+      description: li.description || li.product?.name || "",
       quantity: Number(li.quantity),
       weight: Number(li.quantity) * 0.5,
     }));
@@ -325,8 +429,10 @@ export class SalesFulfillmentService {
     return {
       orderId,
       orderNumber: order.orderNumber,
-      customerName: order.customer?.name || '',
-      shippingAddress: order.shippingAddress ? JSON.stringify(order.shippingAddress) : '',
+      customerName: order.customer?.name || "",
+      shippingAddress: order.shippingAddress
+        ? JSON.stringify(order.shippingAddress)
+        : "",
       items,
       totalItems: items.reduce((s, i) => s + i.quantity, 0),
       totalWeight: items.reduce((s, i) => s + i.weight, 0),
@@ -335,19 +441,36 @@ export class SalesFulfillmentService {
   }
 
   // ── F174: Pick List Generation ─────────────────────
-  async generatePickList(tenantId: string, orderIds: string[]): Promise<{
-    pickListId: string; generatedAt: string;
+  async generatePickList(
+    tenantId: string,
+    orderIds: string[],
+  ): Promise<{
+    pickListId: string;
+    generatedAt: string;
     items: Array<{
-      productId: string; productName: string; sku: string;
-      totalQuantity: number; warehouseLocation: string;
+      productId: string;
+      productName: string;
+      sku: string;
+      totalQuantity: number;
+      warehouseLocation: string;
       orders: Array<{ orderId: string; orderNumber: string; quantity: number }>;
     }>;
-    totalUniqueProducts: number; totalItems: number;
+    totalUniqueProducts: number;
+    totalItems: number;
   }> {
-    const productMap = new Map<string, {
-      productName: string; sku: string; totalQuantity: number;
-      orders: Array<{ orderId: string; orderNumber: string; quantity: number }>;
-    }>();
+    const productMap = new Map<
+      string,
+      {
+        productName: string;
+        sku: string;
+        totalQuantity: number;
+        orders: Array<{
+          orderId: string;
+          orderNumber: string;
+          quantity: number;
+        }>;
+      }
+    >();
 
     for (const orderId of orderIds) {
       const order = await prisma.salesOrder.findFirst({
@@ -359,8 +482,8 @@ export class SalesFulfillmentService {
       for (const li of order.lineItems) {
         if (!li.productId) continue;
         const entry = productMap.get(li.productId) || {
-          productName: li.product?.name || '',
-          sku: li.product?.sku || '',
+          productName: li.product?.name || "",
+          sku: li.product?.sku || "",
           totalQuantity: 0,
           orders: [],
         };
@@ -374,14 +497,16 @@ export class SalesFulfillmentService {
       }
     }
 
-    const items = Array.from(productMap.entries()).map(([productId, entry]) => ({
-      productId,
-      productName: entry.productName,
-      sku: entry.sku,
-      totalQuantity: entry.totalQuantity,
-      warehouseLocation: 'A-1-01', // Would come from warehouse management
-      orders: entry.orders,
-    }));
+    const items = Array.from(productMap.entries()).map(
+      ([productId, entry]) => ({
+        productId,
+        productName: entry.productName,
+        sku: entry.sku,
+        totalQuantity: entry.totalQuantity,
+        warehouseLocation: "A-1-01", // Would come from warehouse management
+        orders: entry.orders,
+      }),
+    );
 
     return {
       pickListId: `PL-${Date.now()}`,
@@ -393,32 +518,48 @@ export class SalesFulfillmentService {
   }
 
   // ── F178: Order SLA Monitoring ─────────────────────
-  async getOrderSlaStatus(tenantId: string): Promise<Array<{
-    orderId: string; orderNumber: string; customerName: string;
-    promisedDate: string; status: string; daysRemaining: number;
-    slaStatus: 'ON_TRACK' | 'AT_RISK' | 'BREACHED';
-  }>> {
+  async getOrderSlaStatus(tenantId: string): Promise<
+    Array<{
+      orderId: string;
+      orderNumber: string;
+      customerName: string;
+      promisedDate: string;
+      status: string;
+      daysRemaining: number;
+      slaStatus: "ON_TRACK" | "AT_RISK" | "BREACHED";
+    }>
+  > {
     const orders = await prisma.salesOrder.findMany({
-      where: { tenantId, deletedAt: null, status: { in: ['CONFIRMED', 'PROCESSING'] } },
+      where: {
+        tenantId,
+        deletedAt: null,
+        status: { in: ["CONFIRMED", "PROCESSING"] },
+      },
       include: { customer: { select: { name: true } } },
     });
 
     return orders.map((o) => {
-      const promisedDate = o.deliveryDate || new Date(new Date(o.orderDate).getTime() + 7 * 86400000);
-      const daysRemaining = Math.round((new Date(promisedDate).getTime() - Date.now()) / 86400000);
+      const promisedDate =
+        o.deliveryDate ||
+        new Date(new Date(o.orderDate).getTime() + 7 * 86400000);
+      const daysRemaining = Math.round(
+        (new Date(promisedDate).getTime() - Date.now()) / 86400000,
+      );
 
-      let slaStatus: 'ON_TRACK' | 'AT_RISK' | 'BREACHED';
-      if (daysRemaining < 0) slaStatus = 'BREACHED';
-      else if (daysRemaining <= 2) slaStatus = 'AT_RISK';
-      else slaStatus = 'ON_TRACK';
+      let slaStatus: "ON_TRACK" | "AT_RISK" | "BREACHED";
+      if (daysRemaining < 0) slaStatus = "BREACHED";
+      else if (daysRemaining <= 2) slaStatus = "AT_RISK";
+      else slaStatus = "ON_TRACK";
 
-      const promisedDateStr = new Date(promisedDate).toISOString().split('T')[0];
+      const promisedDateStr = new Date(promisedDate)
+        .toISOString()
+        .split("T")[0];
 
       return {
         orderId: o.id,
         orderNumber: o.orderNumber,
-        customerName: o.customer?.name || '',
-        promisedDate: promisedDateStr || '',
+        customerName: o.customer?.name || "",
+        promisedDate: promisedDateStr || "",
         status: o.status,
         daysRemaining: Math.max(0, daysRemaining),
         slaStatus,
@@ -428,9 +569,19 @@ export class SalesFulfillmentService {
 
   // ── F180: Return Reason Analysis ───────────────────
   async getReturnReasonAnalysis(tenantId: string): Promise<{
-    totalReturns: number; totalReturnValue: number;
-    byReason: Array<{ reason: string; count: number; value: number; pct: number }>;
-    byProduct: Array<{ productName: string; returnCount: number; returnRate: number }>;
+    totalReturns: number;
+    totalReturnValue: number;
+    byReason: Array<{
+      reason: string;
+      count: number;
+      value: number;
+      pct: number;
+    }>;
+    byProduct: Array<{
+      productName: string;
+      returnCount: number;
+      returnRate: number;
+    }>;
     returnRateTrend: Array<{ month: string; returnRate: number }>;
   }> {
     const returns = await prisma.salesReturn.findMany({
@@ -439,11 +590,14 @@ export class SalesFulfillmentService {
     });
 
     const totalReturns = returns.length;
-    const totalReturnValue = returns.reduce((s, r) => s + Number(r.totalAmount || 0), 0);
+    const totalReturnValue = returns.reduce(
+      (s, r) => s + Number(r.totalAmount || 0),
+      0,
+    );
 
     const reasonMap = new Map<string, { count: number; value: number }>();
     for (const r of returns) {
-      const reason = r.reason || 'Unknown';
+      const reason = r.reason || "Unknown";
       const entry = reasonMap.get(reason) || { count: 0, value: 0 };
       entry.count += 1;
       entry.value += Number(r.totalAmount || 0);
@@ -458,7 +612,8 @@ export class SalesFulfillmentService {
           reason,
           count: v.count,
           value: Math.round(v.value),
-          pct: totalReturns > 0 ? Math.round((v.count / totalReturns) * 100) : 0,
+          pct:
+            totalReturns > 0 ? Math.round((v.count / totalReturns) * 100) : 0,
         }))
         .sort((a, b) => b.count - a.count),
       byProduct: [],
@@ -467,44 +622,70 @@ export class SalesFulfillmentService {
   }
 
   // ── F185: Recurring Order / Subscription Management ─
-  async getRecurringOrders(tenantId: string): Promise<Array<{
-    orderId: string; orderNumber: string; customerName: string;
-    frequency: string; nextOrderDate: string; totalValue: number;
-    status: 'ACTIVE' | 'PAUSED' | 'CANCELLED';
-  }>> {
+  async getRecurringOrders(tenantId: string): Promise<
+    Array<{
+      orderId: string;
+      orderNumber: string;
+      customerName: string;
+      frequency: string;
+      nextOrderDate: string;
+      totalValue: number;
+      status: "ACTIVE" | "PAUSED" | "CANCELLED";
+    }>
+  > {
     // Find orders with recurring tags
     const orders = await prisma.salesOrder.findMany({
-      where: { tenantId, deletedAt: null, notes: { contains: '[RECURRING:' } },
+      where: { tenantId, deletedAt: null, notes: { contains: "[RECURRING:" } },
       include: { customer: { select: { name: true } } },
     });
 
     return orders.map((o) => {
-      const notes = typeof o.notes === 'string' ? o.notes : '';
+      const notes = typeof o.notes === "string" ? o.notes : "";
       const recurMatch = notes.match(/\[RECURRING:([^\]]+)\]/);
-      const frequency = recurMatch ? recurMatch[1] : 'MONTHLY';
-      const nextDateStr = new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0];
+      const frequency = recurMatch ? recurMatch[1] : "MONTHLY";
+      const nextDateStr = new Date(Date.now() + 30 * 86400000)
+        .toISOString()
+        .split("T")[0];
 
       return {
         orderId: o.id,
         orderNumber: o.orderNumber,
-        customerName: o.customer?.name || '',
-        frequency: frequency || 'MONTHLY',
-        nextOrderDate: nextDateStr || '',
+        customerName: o.customer?.name || "",
+        frequency: frequency || "MONTHLY",
+        nextOrderDate: nextDateStr || "",
         totalValue: Number(o.totalAmount || 0),
-        status: 'ACTIVE' as const,
+        status: "ACTIVE" as const,
       };
     });
   }
 
   // ── F189: Order Profitability Analysis ─────────────
   async getOrderProfitabilityAnalysis(tenantId: string): Promise<{
-    totalOrders: number; totalRevenue: number; totalCost: number;
-    avgMarginPct: number; profitableOrders: number; unprofitableOrders: number;
-    byCustomerSegment: Array<{ segment: string; orderCount: number; revenue: number; margin: number }>;
-    byProduct: Array<{ productName: string; orderCount: number; revenue: number; marginPct: number }>;
+    totalOrders: number;
+    totalRevenue: number;
+    totalCost: number;
+    avgMarginPct: number;
+    profitableOrders: number;
+    unprofitableOrders: number;
+    byCustomerSegment: Array<{
+      segment: string;
+      orderCount: number;
+      revenue: number;
+      margin: number;
+    }>;
+    byProduct: Array<{
+      productName: string;
+      orderCount: number;
+      revenue: number;
+      marginPct: number;
+    }>;
   }> {
     const orders = await prisma.salesOrder.findMany({
-      where: { tenantId, deletedAt: null, status: { in: ['CONFIRMED', 'DELIVERED'] } },
+      where: {
+        tenantId,
+        deletedAt: null,
+        status: { in: ["CONFIRMED", "DELIVERED"] },
+      },
       include: { lineItems: { include: { product: true } } },
     });
 
@@ -517,7 +698,9 @@ export class SalesFulfillmentService {
     for (const order of orders) {
       const revenue = Number(order.totalAmount || 0);
       const cost = order.lineItems.reduce((s, li) => {
-        const productCost = li.product ? Number(li.product.costPrice || 0) * Number(li.quantity) : revenue * 0.6;
+        const productCost = li.product
+          ? Number(li.product.costPrice || 0) * Number(li.quantity)
+          : revenue * 0.6;
         return s + productCost;
       }, 0);
 
@@ -528,7 +711,10 @@ export class SalesFulfillmentService {
       else unprofitableOrders++;
     }
 
-    const avgMarginPct = totalRevenue > 0 ? Math.round(((totalRevenue - totalCost) / totalRevenue) * 100) : 0;
+    const avgMarginPct =
+      totalRevenue > 0
+        ? Math.round(((totalRevenue - totalCost) / totalRevenue) * 100)
+        : 0;
 
     return {
       totalOrders,
@@ -543,41 +729,57 @@ export class SalesFulfillmentService {
   }
 
   // ── F193: Order Cancellation ───────────────────────
-  async cancelOrder(tenantId: string, orderId: string, reason: string): Promise<{
-    orderId: string; status: string; reversalActions: string[];
+  async cancelOrder(
+    tenantId: string,
+    orderId: string,
+    reason: string,
+  ): Promise<{
+    orderId: string;
+    status: string;
+    reversalActions: string[];
   }> {
     const order = await prisma.salesOrder.findFirst({
       where: { id: orderId, tenantId, deletedAt: null },
     });
-    if (!order) throw new NotFoundException('Order not found');
-    if (order.status === 'DELIVERED') throw new BadRequestException('Cannot cancel delivered orders — use RMA process');
+    if (!order) throw new NotFoundException("Order not found");
+    if (order.status === "DELIVERED")
+      throw new BadRequestException(
+        "Cannot cancel delivered orders — use RMA process",
+      );
 
     const reversalActions: string[] = [];
 
     // Cancel the order
     await prisma.salesOrder.update({
       where: { id: orderId },
-      data: { status: 'CANCELLED', notes: `Cancelled: ${reason} at ${new Date().toISOString()}` },
+      data: {
+        status: "CANCELLED",
+        notes: `Cancelled: ${reason} at ${new Date().toISOString()}`,
+      },
     });
-    reversalActions.push('Order status set to CANCELLED');
+    reversalActions.push("Order status set to CANCELLED");
 
     // Reverse inventory reservations if any
-    reversalActions.push('Inventory reservations released');
+    reversalActions.push("Inventory reservations released");
 
     // Cancel related invoices if any
     if (order.invoiceId) {
       const invoices = await prisma.invoice.findMany({
-        where: { tenantId, id: order.invoiceId, status: { in: ['DRAFT', 'SENT'] } },
+        where: {
+          tenantId,
+          id: order.invoiceId,
+          status: { in: ["DRAFT", "SENT"] },
+        },
       });
       if (invoices.length > 0) {
         await prisma.invoice.updateMany({
           where: { id: { in: invoices.map((i) => i.id) } },
-          data: { status: 'CANCELLED' },
+          data: { status: "CANCELLED" },
         });
         reversalActions.push(`${invoices.length} related invoice(s) cancelled`);
       }
     }
 
-    return { orderId, status: 'CANCELLED', reversalActions };
+    return { orderId, status: "CANCELLED", reversalActions };
   }
 }

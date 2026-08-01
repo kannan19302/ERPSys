@@ -1,12 +1,13 @@
-// @ts-nocheck
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 
 @Injectable()
 export class EducationAcademicService {
-
   // ── REPORT CARDS ──
-  async getReportCards(tenantId: string, query: { studentId?: string; term?: string }) {
+  async getReportCards(
+    tenantId: string,
+    query: { studentId?: string; term?: string },
+  ) {
     const where: any = { tenantId };
     if (query.studentId) where.studentId = query.studentId;
     if (query.term) where.term = query.term;
@@ -33,7 +34,10 @@ export class EducationAcademicService {
   }
 
   // ── SCHOLARSHIPS ──
-  async getScholarships(tenantId: string, query: { studentId?: string; status?: string }) {
+  async getScholarships(
+    tenantId: string,
+    query: { studentId?: string; status?: string },
+  ) {
     const where: any = { tenantId };
     if (query.studentId) where.studentId = query.studentId;
     if (query.status) where.status = query.status;
@@ -59,7 +63,10 @@ export class EducationAcademicService {
   }
 
   // ── ASSIGNMENT SUBMISSIONS ──
-  async getSubmissions(tenantId: string, query: { assignmentId?: string; studentId?: string }) {
+  async getSubmissions(
+    tenantId: string,
+    query: { assignmentId?: string; studentId?: string },
+  ) {
     const where: any = { tenantId };
     if (query.assignmentId) where.assignmentId = query.assignmentId;
     if (query.studentId) where.studentId = query.studentId;

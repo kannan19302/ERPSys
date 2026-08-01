@@ -1,5 +1,8 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
 import { PrismaService } from "@unerp/database";
 import { OutboxService } from "@unerp/shared";
 
@@ -7,14 +10,27 @@ import { OutboxService } from "@unerp/shared";
 export class TicketLifecycleService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly outbox: OutboxService
+    private readonly outbox: OutboxService,
   ) {}
 
-  async createTicket(tenantId: string, data: { title: string, description: string, type: string, priority: string, source: string, categoryId?: string, reporterId?: string }) {
+  async createTicket(
+    tenantId: string,
+    data: {
+      title: string;
+      description: string;
+      type: string;
+      priority: string;
+      source: string;
+      categoryId?: string;
+      reporterId?: string;
+    },
+  ) {
     // Generate a simple number
-    const count = await this.prisma.serviceTicket.count({ where: { tenantId } });
-    const number = `INC-${(count + 1).toString().padStart(5, '0')}`;
-    
+    const count = await this.prisma.serviceTicket.count({
+      where: { tenantId },
+    });
+    const number = `INC-${(count + 1).toString().padStart(5, "0")}`;
+
     const ticket = await this.prisma.serviceTicket.create({
       data: {
         tenantId,
@@ -27,10 +43,12 @@ export class TicketLifecycleService {
         source: data.source,
         categoryId: data.categoryId,
         reporterId: data.reporterId,
-      }
+      },
     });
 
-    await this.logActivity(tenantId, ticket.id, null, "CREATED", { new: ticket });
+    await this.logActivity(tenantId, ticket.id, null, "CREATED", {
+      new: ticket,
+    });
     await this.outbox.writeEvent(this.prisma as any, {
       tenantId,
       eventName: "service.ticket.created",
@@ -48,7 +66,7 @@ export class TicketLifecycleService {
       include: {
         category: true,
         slaPolicy: true,
-      }
+      },
     });
     if (!ticket || ticket.tenantId !== tenantId) {
       throw new NotFoundException("Ticket not found");
@@ -56,7 +74,12 @@ export class TicketLifecycleService {
     return ticket;
   }
 
-  async updateStatus(tenantId: string, id: string, status: string, actorId: string) {
+  async updateStatus(
+    tenantId: string,
+    id: string,
+    status: string,
+    actorId: string,
+  ) {
     const ticket = await this.getTicket(tenantId, id);
     const oldStatus = ticket.status;
     if (oldStatus === status) return ticket;
@@ -67,10 +90,13 @@ export class TicketLifecycleService {
 
     const updated = await this.prisma.serviceTicket.update({
       where: { id },
-      data
+      data,
     });
 
-    await this.logActivity(tenantId, id, actorId, "STATUS_CHANGE", { old: oldStatus, new: status });
+    await this.logActivity(tenantId, id, actorId, "STATUS_CHANGE", {
+      old: oldStatus,
+      new: status,
+    });
     await this.outbox.writeEvent(this.prisma as any, {
       tenantId,
       eventName: "service.ticket.updated",
@@ -82,15 +108,21 @@ export class TicketLifecycleService {
     return updated;
   }
 
-  private async logActivity(tenantId: string, ticketId: string, actorId: string | null, action: string, details: any) {
+  private async logActivity(
+    tenantId: string,
+    ticketId: string,
+    actorId: string | null,
+    action: string,
+    details: any,
+  ) {
     await this.prisma.serviceTicketActivity.create({
       data: {
         tenantId,
         ticketId,
         actorId,
         action,
-        details
-      }
+        details,
+      },
     });
   }
 }

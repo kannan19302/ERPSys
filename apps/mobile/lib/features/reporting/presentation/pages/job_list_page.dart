@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -48,7 +47,7 @@ class _ReportJobListPageState extends ConsumerState<ReportJobListPage> {
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
                 .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value)))
+                    value: e.key, child: Text(e.value),),)
                 .toList(),
           ),
         ],
@@ -82,7 +81,7 @@ class _ReportJobListPageState extends ConsumerState<ReportJobListPage> {
                     : '${state.meta.total} job${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -137,22 +136,22 @@ class _JobTile extends StatelessWidget {
               Row(children: [
                 Expanded(
                   child: Text(job.templateName ?? job.id,
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
                 UiStatusBadge(
                   label: job.status,
                   tone: _statusTone(job.status),
                 ),
-              ]),
+              ],),
               if (job.createdAt != null) ...[
                 const SizedBox(height: Spacing.x1),
                 Text(DateFormat.yMMMd().add_jm().format(job.createdAt!.toLocal()),
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.sm)),
+                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.sm),),
               ],
               if (job.error != null) ...[
                 const SizedBox(height: Spacing.x1),
                 Text(job.error!,
-                    style: TextStyle(color: t.danger, fontSize: TypeScale.xs)),
+                    style: TextStyle(color: t.danger, fontSize: TypeScale.xs),),
               ],
             ],
           ),

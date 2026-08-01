@@ -1,9 +1,8 @@
-// @ts-nocheck
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { InventoryService } from '../inventory.service';
-import { Product } from '@prisma/client';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { InventoryService } from "../inventory.service";
+import { Product } from "@prisma/client";
 
-vi.mock('@unerp/database', () => {
+vi.mock("@unerp/database", () => {
   const mockTx = {
     inventoryItem: {
       findFirst: vi.fn(),
@@ -59,7 +58,7 @@ vi.mock('@unerp/database', () => {
   };
 });
 
-describe('InventoryService', () => {
+describe("InventoryService", () => {
   let inventoryService: InventoryService;
 
   beforeEach(() => {
@@ -67,28 +66,28 @@ describe('InventoryService', () => {
     vi.clearAllMocks();
   });
 
-  describe('getProducts', () => {
-    it('should return all products in the tenant', async () => {
-      const { prisma } = await import('@unerp/database');
+  describe("getProducts", () => {
+    it("should return all products in the tenant", async () => {
+      const { prisma } = await import("@unerp/database");
       const mockProducts = [
         {
-          id: 'prod-1',
-          sku: 'SKU-VIB-001',
-          name: 'Refined Vibranium Alloy',
-          type: 'STORABLE',
+          id: "prod-1",
+          sku: "SKU-VIB-001",
+          name: "Refined Vibranium Alloy",
+          type: "STORABLE",
           costPrice: 8500,
           sellPrice: 12000,
         },
       ];
 
-      vi.mocked(prisma.product.findMany).mockResolvedValue(mockProducts as unknown as Product[]);
+      vi.mocked(prisma.product.findMany).mockResolvedValue(
+        mockProducts as unknown as Product[],
+      );
 
-      const result = await inventoryService.getProducts('tenant-123');
+      const result = await inventoryService.getProducts("tenant-123");
 
       expect(result).toBeDefined();
-      expect((result.data || result)[0]?.sku).toBe('SKU-VIB-001');
+      expect((result.data || result)[0]?.sku).toBe("SKU-VIB-001");
     });
   });
-
-  
 });

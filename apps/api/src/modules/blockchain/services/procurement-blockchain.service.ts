@@ -1,21 +1,20 @@
-// @ts-nocheck
-import { Injectable, Logger } from '@nestjs/common';
-import { FabricGatewayProvider } from '../providers/fabric-gateway.provider';
+import { Injectable, Logger } from "@nestjs/common";
+import { FabricGatewayProvider } from "../providers/fabric-gateway.provider";
 import {
   ProcurementLifecycleContract,
   FABRIC_CHAINCODES,
-} from '@unerp/blockchain';
+} from "@unerp/blockchain";
 
 @Injectable()
 export class ProcurementBlockchainService {
   private readonly logger = new Logger(ProcurementBlockchainService.name);
 
-  constructor(
-    private readonly fabricGateway: FabricGatewayProvider,
-  ) {}
+  constructor(private readonly fabricGateway: FabricGatewayProvider) {}
 
   private getContract(): ProcurementLifecycleContract | null {
-    const rawContract = this.fabricGateway.getContract(FABRIC_CHAINCODES.PROCUREMENT);
+    const rawContract = this.fabricGateway.getContract(
+      FABRIC_CHAINCODES.PROCUREMENT,
+    );
     if (!rawContract) return null;
     return new ProcurementLifecycleContract(rawContract);
   }
@@ -25,7 +24,7 @@ export class ProcurementBlockchainService {
     poId: string,
   ): Promise<{
     matched: boolean;
-    matchResult: 'FULL_MATCH' | 'PARTIAL_MATCH' | 'MISMATCH';
+    matchResult: "FULL_MATCH" | "PARTIAL_MATCH" | "MISMATCH";
     details: string;
     paymentAuthorized: boolean;
     txId?: string;
@@ -34,8 +33,8 @@ export class ProcurementBlockchainService {
     if (!contract) {
       return {
         matched: false,
-        matchResult: 'MISMATCH',
-        details: 'Blockchain network unavailable — manual review required',
+        matchResult: "MISMATCH",
+        details: "Blockchain network unavailable — manual review required",
         paymentAuthorized: false,
       };
     }
@@ -47,10 +46,12 @@ export class ProcurementBlockchainService {
       );
       return result;
     } catch (err) {
-      this.logger.error(`3-Way match failed for PO ${poId}: ${(err as Error).message}`);
+      this.logger.error(
+        `3-Way match failed for PO ${poId}: ${(err as Error).message}`,
+      );
       return {
         matched: false,
-        matchResult: 'MISMATCH',
+        matchResult: "MISMATCH",
         details: `Blockchain error: ${(err as Error).message}`,
         paymentAuthorized: false,
       };

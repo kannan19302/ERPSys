@@ -1,10 +1,9 @@
-// @ts-nocheck
-'use client';
-import styles from './EmailTemplatesTab.module.css';
-import React, { useState, useEffect } from 'react';
-import { Button, Modal } from '@unerp/ui';
-import { Plus, Edit2, Trash2, RefreshCw } from 'lucide-react';
-import { useApiClient } from '@unerp/framework';
+"use client";
+import styles from "./EmailTemplatesTab.module.css";
+import React, { useState, useEffect } from "react";
+import { Button, Modal } from "@unerp/ui";
+import { Plus, Edit2, Trash2, RefreshCw } from "lucide-react";
+import { useApiClient } from "@unerp/framework";
 
 interface EmailTemplate {
   id: string;
@@ -20,22 +19,39 @@ export default function EmailTemplatesTab() {
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [loading, setLoading] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<Partial<EmailTemplate> | null>(null);
+  const [editingTemplate, setEditingTemplate] =
+    useState<Partial<EmailTemplate> | null>(null);
   const [saving, setSaving] = useState(false);
-  const [feedback, setFeedback] = useState<{ success?: boolean; message?: string } | null>(null);
+  const [feedback, setFeedback] = useState<{
+    success?: boolean;
+    message?: string;
+  } | null>(null);
 
   const fetchTemplates = async () => {
     setLoading(true);
     try {
-      setTemplates(await client.get<EmailTemplate[]>('/admin/platform/email-templates'));
-    } catch (e) { console.error(e); }
-    finally { setLoading(false); }
+      setTemplates(
+        await client.get<EmailTemplate[]>("/admin/platform/email-templates"),
+      );
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => { void fetchTemplates(); }, [client]);
+  useEffect(() => {
+    void fetchTemplates();
+  }, [client]);
 
   const handleOpenCreate = () => {
-    setEditingTemplate({ name: '', category: 'GENERAL', subject: '', body: '', isActive: true });
+    setEditingTemplate({
+      name: "",
+      category: "GENERAL",
+      subject: "",
+      body: "",
+      isActive: true,
+    });
     setEditorOpen(true);
   };
 
@@ -45,26 +61,36 @@ export default function EmailTemplatesTab() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this email template?')) return;
+    if (!confirm("Are you sure you want to delete this email template?"))
+      return;
     try {
       await client.delete(`/admin/platform/email-templates/${id}`);
-      setTemplates((previous) => previous.filter((template) => template.id !== id));
-      showFeedback(true, 'Template deleted successfully');
-    } catch (e) { console.error(e); }
+      setTemplates((previous) =>
+        previous.filter((template) => template.id !== id),
+      );
+      showFeedback(true, "Template deleted successfully");
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingTemplate?.name || !editingTemplate?.subject || !editingTemplate?.body) return;
+    if (
+      !editingTemplate?.name ||
+      !editingTemplate?.subject ||
+      !editingTemplate?.body
+    )
+      return;
     setSaving(true);
     try {
-      await client.post('/admin/platform/email-templates', editingTemplate);
+      await client.post("/admin/platform/email-templates", editingTemplate);
       setEditorOpen(false);
       setEditingTemplate(null);
       void fetchTemplates();
-      showFeedback(true, 'Template saved successfully');
+      showFeedback(true, "Template saved successfully");
     } catch {
-      showFeedback(false, 'Network error saving email template');
+      showFeedback(false, "Network error saving email template");
     } finally {
       setSaving(false);
     }
@@ -84,7 +110,17 @@ export default function EmailTemplatesTab() {
       </div>
 
       {feedback && (
-        <div style={{ background: feedback.success ? 'var(--color-success-light)' : 'var(--color-error-light)', border: `1px solid ${feedback.success ? 'var(--color-success)' : 'var(--color-error)'}`, color: feedback.success ? 'var(--color-success)' : 'var(--color-error)' }} className={styles.s1}
+        <div
+          style={{
+            background: feedback.success
+              ? "var(--color-success-light)"
+              : "var(--color-error-light)",
+            border: `1px solid ${feedback.success ? "var(--color-success)" : "var(--color-error)"}`,
+            color: feedback.success
+              ? "var(--color-success)"
+              : "var(--color-error)",
+          }}
+          className={styles.s1}
         >
           {feedback.message}
         </div>
@@ -97,17 +133,22 @@ export default function EmailTemplatesTab() {
       ) : (
         <div className={styles.p1}>
           {templates.map((t) => (
-            <div key={t.id} className={styles.s2}
-            >
+            <div key={t.id} className={styles.s2}>
               <div>
                 <div className={styles.p2}>
-                  <span className={styles.s3}
+                  <span className={styles.s3}>{t.category}</span>
+                  <span
+                    style={{
+                      background: t.isActive
+                        ? "var(--color-success-light)"
+                        : "var(--color-bg-sunken)",
+                      color: t.isActive
+                        ? "var(--color-success)"
+                        : "var(--color-text-secondary)",
+                    }}
+                    className={styles.s4}
                   >
-                    {t.category}
-                  </span>
-                  <span style={{ background: t.isActive ? 'var(--color-success-light)' : 'var(--color-bg-sunken)', color: t.isActive ? 'var(--color-success)' : 'var(--color-text-secondary)' }} className={styles.s4}
-                  >
-                    {t.isActive ? 'Active' : 'Draft'}
+                    {t.isActive ? "Active" : "Draft"}
                   </span>
                 </div>
                 <h3 className={styles.p3}>{t.name}</h3>
@@ -120,7 +161,10 @@ export default function EmailTemplatesTab() {
                 <button onClick={() => handleOpenEdit(t)} className={styles.p6}>
                   <Edit2 size={12} /> Edit
                 </button>
-                <button onClick={() => handleDelete(t.id)} className={styles.p7}>
+                <button
+                  onClick={() => handleDelete(t.id)}
+                  className={styles.p7}
+                >
                   <Trash2 size={12} /> Delete
                 </button>
               </div>
@@ -138,13 +182,25 @@ export default function EmailTemplatesTab() {
       <Modal
         open={editorOpen && !!editingTemplate}
         onClose={() => setEditorOpen(false)}
-        title={editingTemplate?.id ? 'Edit Email Template' : 'New Email Template'}
+        title={
+          editingTemplate?.id ? "Edit Email Template" : "New Email Template"
+        }
         size="lg"
         footer={
           <>
-            <Button variant="secondary" onClick={() => setEditorOpen(false)} disabled={saving}>Cancel</Button>
-            <Button variant="primary" onClick={handleSave as any} disabled={saving}>
-              {saving ? 'Saving...' : 'Save Template'}
+            <Button
+              variant="secondary"
+              onClick={() => setEditorOpen(false)}
+              disabled={saving}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleSave as any}
+              disabled={saving}
+            >
+              {saving ? "Saving..." : "Save Template"}
             </Button>
           </>
         }
@@ -154,11 +210,31 @@ export default function EmailTemplatesTab() {
             <div className={styles.p9}>
               <div>
                 <label className="ui-label">Template Name</label>
-                <input value={editingTemplate.name} onChange={(e) => setEditingTemplate({ ...editingTemplate, name: e.target.value })} required placeholder="e.g. Welcome Message" className="ui-field-box" />
+                <input
+                  value={editingTemplate.name}
+                  onChange={(e) =>
+                    setEditingTemplate({
+                      ...editingTemplate,
+                      name: e.target.value,
+                    })
+                  }
+                  required
+                  placeholder="e.g. Welcome Message"
+                  className="ui-field-box"
+                />
               </div>
               <div>
                 <label className="ui-label">Category</label>
-                <select value={editingTemplate.category} onChange={(e) => setEditingTemplate({ ...editingTemplate, category: e.target.value })} className="ui-field-box">
+                <select
+                  value={editingTemplate.category}
+                  onChange={(e) =>
+                    setEditingTemplate({
+                      ...editingTemplate,
+                      category: e.target.value,
+                    })
+                  }
+                  className="ui-field-box"
+                >
                   <option value="GENERAL">General</option>
                   <option value="AUTH">Authentication / MFA</option>
                   <option value="WORKFLOW">Workflow / Approvals</option>
@@ -169,19 +245,60 @@ export default function EmailTemplatesTab() {
 
             <div>
               <label className="ui-label">Subject Line</label>
-              <input value={editingTemplate.subject} onChange={(e) => setEditingTemplate({ ...editingTemplate, subject: e.target.value })} required placeholder="e.g. Account activation for {{user.name}}" className="ui-field-box" />
+              <input
+                value={editingTemplate.subject}
+                onChange={(e) =>
+                  setEditingTemplate({
+                    ...editingTemplate,
+                    subject: e.target.value,
+                  })
+                }
+                required
+                placeholder="e.g. Account activation for {{user.name}}"
+                className="ui-field-box"
+              />
             </div>
 
             <div>
               <label className="ui-label">Email Body (HTML/Text)</label>
-              <textarea value={editingTemplate.body} onChange={(e) => setEditingTemplate({ ...editingTemplate, body: e.target.value })} required rows={10} placeholder="Type your email template body here. Use variables like {{user.name}}, {{login.url}}, {{company.name}} to customize values." className={styles.p10} />
+              <textarea
+                value={editingTemplate.body}
+                onChange={(e) =>
+                  setEditingTemplate({
+                    ...editingTemplate,
+                    body: e.target.value,
+                  })
+                }
+                required
+                rows={10}
+                placeholder="Type your email template body here. Use variables like {{user.name}}, {{login.url}}, {{company.name}} to customize values."
+                className={styles.p10}
+              />
             </div>
 
             <div className={styles.p11}>
-              <span className={styles.p12}>Supported Dynamic Placeholders:</span>
+              <span className={styles.p12}>
+                Supported Dynamic Placeholders:
+              </span>
               <div className={styles.p13}>
-                {['{{user.name}}', '{{user.email}}', '{{company.name}}', '{{login.url}}', '{{ticket.id}}', '{{approval.link}}'].map((v) => (
-                  <code key={v} onClick={() => setEditingTemplate({ ...editingTemplate, body: (editingTemplate.body || '') + v })} className={styles.p14}>
+                {[
+                  "{{user.name}}",
+                  "{{user.email}}",
+                  "{{company.name}}",
+                  "{{login.url}}",
+                  "{{ticket.id}}",
+                  "{{approval.link}}",
+                ].map((v) => (
+                  <code
+                    key={v}
+                    onClick={() =>
+                      setEditingTemplate({
+                        ...editingTemplate,
+                        body: (editingTemplate.body || "") + v,
+                      })
+                    }
+                    className={styles.p14}
+                  >
                     {v}
                   </code>
                 ))}
@@ -189,8 +306,20 @@ export default function EmailTemplatesTab() {
             </div>
 
             <div className="ui-hstack-2">
-              <input type="checkbox" id="tpl-active" checked={editingTemplate.isActive} onChange={(e) => setEditingTemplate({ ...editingTemplate, isActive: e.target.checked })} />
-              <label htmlFor="tpl-active" className="text-sm">Active & available for workflows</label>
+              <input
+                type="checkbox"
+                id="tpl-active"
+                checked={editingTemplate.isActive}
+                onChange={(e) =>
+                  setEditingTemplate({
+                    ...editingTemplate,
+                    isActive: e.target.checked,
+                  })
+                }
+              />
+              <label htmlFor="tpl-active" className="text-sm">
+                Active & available for workflows
+              </label>
             </div>
           </form>
         )}

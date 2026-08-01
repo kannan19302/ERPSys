@@ -1,7 +1,10 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
 
 @Injectable()
 export class BankFeedsService {
@@ -9,7 +12,7 @@ export class BankFeedsService {
     return prisma.bankConnection.findMany({
       where: { tenantId },
       include: { bankAccount: true },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -19,7 +22,7 @@ export class BankFeedsService {
       include: { bankAccount: true },
     });
     if (!connection) {
-      throw new NotFoundException('Bank connection not found');
+      throw new NotFoundException("Bank connection not found");
     }
     return connection;
   }
@@ -40,7 +43,7 @@ export class BankFeedsService {
       where: { id: dto.bankAccountId, tenantId },
     });
     if (!bankAccount) {
-      throw new NotFoundException('Target Bank Account not found');
+      throw new NotFoundException("Target Bank Account not found");
     }
 
     return prisma.bankConnection.create({
@@ -50,9 +53,9 @@ export class BankFeedsService {
         bankName: dto.bankName,
         accountNumber: dto.accountNumber,
         accountType: dto.accountType,
-        credentialsHash: dto.credentialsHash || 'simulated-token',
+        credentialsHash: dto.credentialsHash || "simulated-token",
         bankAccountId: dto.bankAccountId,
-        status: 'ACTIVE',
+        status: "ACTIVE",
       },
     });
   }
@@ -75,18 +78,18 @@ export class BankFeedsService {
     const simulatedTxData = [
       {
         date: new Date(),
-        description: 'Plaid Simulated Inflow — Customer Payment Receipt',
-        amount: new Prisma.Decimal(350.00),
+        description: "Plaid Simulated Inflow — Customer Payment Receipt",
+        amount: new Prisma.Decimal(350.0),
       },
       {
         date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-        description: 'Simulated Outflow — Software Subscription Service',
-        amount: new Prisma.Decimal(-45.00),
+        description: "Simulated Outflow — Software Subscription Service",
+        amount: new Prisma.Decimal(-45.0),
       },
       {
         date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
-        description: 'Simulated Outflow — Bank Maintenance Fee',
-        amount: new Prisma.Decimal(-15.00),
+        description: "Simulated Outflow — Bank Maintenance Fee",
+        amount: new Prisma.Decimal(-15.0),
       },
     ];
 
@@ -114,7 +117,7 @@ export class BankFeedsService {
             date: tx.date,
             description: tx.description,
             amount: tx.amount,
-            status: 'UNMATCHED',
+            status: "UNMATCHED",
           },
         });
         createdTx.push(item);
@@ -156,14 +159,17 @@ export class BankFeedsService {
       whereClause.status = params.status;
     }
     if (params.search) {
-      whereClause.description = { contains: params.search, mode: 'insensitive' };
+      whereClause.description = {
+        contains: params.search,
+        mode: "insensitive",
+      };
     }
 
     const [transactions, total] = await Promise.all([
       prisma.bankTransaction.findMany({
         where: whereClause,
         include: { connection: true },
-        orderBy: { date: 'desc' },
+        orderBy: { date: "desc" },
         skip,
         take: limit,
       }),
@@ -182,12 +188,17 @@ export class BankFeedsService {
     const transaction = await prisma.bankTransaction.findFirst({
       where: { id, tenantId },
     });
-    if (!transaction) throw new NotFoundException('Transaction not found');
-    if (transaction.status === 'MATCHED') throw new BadRequestException('Transaction is already matched');
+    if (!transaction) throw new NotFoundException("Transaction not found");
+    if (transaction.status === "MATCHED")
+      throw new BadRequestException("Transaction is already matched");
 
     const amount = Number(transaction.amount);
-    const dateLimitStart = new Date(transaction.date.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const dateLimitEnd = new Date(transaction.date.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const dateLimitStart = new Date(
+      transaction.date.getTime() - 7 * 24 * 60 * 60 * 1000,
+    );
+    const dateLimitEnd = new Date(
+      transaction.date.getTime() + 7 * 24 * 60 * 60 * 1000,
+    );
 
     // 1. Look for matching Payment
     // Note: outflow is negative, inflow is positive. Match payment amount exactly.
@@ -203,12 +214,17 @@ export class BankFeedsService {
       const updated = await prisma.bankTransaction.update({
         where: { id },
         data: {
-          status: 'MATCHED',
+          status: "MATCHED",
           matchedEntityId: paymentMatch.id,
-          matchedEntityType: 'PAYMENT',
+          matchedEntityType: "PAYMENT",
         },
       });
-      return { matched: true, type: 'PAYMENT', record: paymentMatch, transaction: updated };
+      return {
+        matched: true,
+        type: "PAYMENT",
+        record: paymentMatch,
+        transaction: updated,
+      };
     }
 
     // 2. Look for matching POSTED JournalEntry
@@ -222,7 +238,7 @@ export class BankFeedsService {
         debit: targetDebit,
         credit: targetCredit,
         journal: {
-          status: 'POSTED',
+          status: "POSTED",
           date: { gte: dateLimitStart, lte: dateLimitEnd },
         },
       },
@@ -233,39 +249,56 @@ export class BankFeedsService {
       const updated = await prisma.bankTransaction.update({
         where: { id },
         data: {
-          status: 'MATCHED',
+          status: "MATCHED",
           matchedEntityId: journalEntryMatch.id,
-          matchedEntityType: 'JOURNAL_ENTRY',
+          matchedEntityType: "JOURNAL_ENTRY",
         },
       });
-      return { matched: true, type: 'JOURNAL_ENTRY', record: journalEntryMatch, transaction: updated };
+      return {
+        matched: true,
+        type: "JOURNAL_ENTRY",
+        record: journalEntryMatch,
+        transaction: updated,
+      };
     }
 
-    return { matched: false, message: 'No matching general ledger records or payments found within the matching window' };
+    return {
+      matched: false,
+      message:
+        "No matching general ledger records or payments found within the matching window",
+    };
   }
 
   async manualMatchTransaction(
     tenantId: string,
     id: string,
-    dto: { matchedEntityId: string; matchedEntityType: 'PAYMENT' | 'JOURNAL_ENTRY' },
+    dto: {
+      matchedEntityId: string;
+      matchedEntityType: "PAYMENT" | "JOURNAL_ENTRY";
+    },
   ) {
     const transaction = await prisma.bankTransaction.findFirst({
       where: { id, tenantId },
     });
-    if (!transaction) throw new NotFoundException('Transaction not found');
+    if (!transaction) throw new NotFoundException("Transaction not found");
 
-    if (dto.matchedEntityType === 'PAYMENT') {
-      const payment = await prisma.payment.findFirst({ where: { id: dto.matchedEntityId, tenantId } });
-      if (!payment) throw new NotFoundException('Linked Payment not found');
+    if (dto.matchedEntityType === "PAYMENT") {
+      const payment = await prisma.payment.findFirst({
+        where: { id: dto.matchedEntityId, tenantId },
+      });
+      if (!payment) throw new NotFoundException("Linked Payment not found");
     } else {
-      const journalEntry = await prisma.journalEntry.findFirst({ where: { id: dto.matchedEntityId, tenantId } });
-      if (!journalEntry) throw new NotFoundException('Linked Journal Entry not found');
+      const journalEntry = await prisma.journalEntry.findFirst({
+        where: { id: dto.matchedEntityId, tenantId },
+      });
+      if (!journalEntry)
+        throw new NotFoundException("Linked Journal Entry not found");
     }
 
     const updated = await prisma.bankTransaction.update({
       where: { id },
       data: {
-        status: 'MATCHED',
+        status: "MATCHED",
         matchedEntityId: dto.matchedEntityId,
         matchedEntityType: dto.matchedEntityType,
       },
@@ -278,11 +311,11 @@ export class BankFeedsService {
     const transaction = await prisma.bankTransaction.findFirst({
       where: { id, tenantId },
     });
-    if (!transaction) throw new NotFoundException('Transaction not found');
+    if (!transaction) throw new NotFoundException("Transaction not found");
 
     return prisma.bankTransaction.update({
       where: { id },
-      data: { status: 'IGNORED' },
+      data: { status: "IGNORED" },
     });
   }
 }

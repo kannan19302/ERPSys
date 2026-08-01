@@ -1,18 +1,17 @@
-// @ts-nocheck
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { FabricGatewayProvider } from '../providers/fabric-gateway.provider';
+import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { FabricGatewayProvider } from "../providers/fabric-gateway.provider";
 import {
   BlockchainEventListener,
   FABRIC_CHAINCODES,
   FABRIC_CHANNELS,
   BlockchainTxStatus,
-} from '@unerp/blockchain';
+} from "@unerp/blockchain";
 
 @Injectable()
 export class BlockchainSyncService implements OnModuleInit {
   private readonly logger = new Logger(BlockchainSyncService.name);
-  private readonly isEnabled = process.env['BLOCKCHAIN_ENABLED'] === 'true';
+  private readonly isEnabled = process.env["BLOCKCHAIN_ENABLED"] === "true";
 
   constructor(
     private readonly fabricGateway: FabricGatewayProvider,
@@ -31,13 +30,19 @@ export class BlockchainSyncService implements OnModuleInit {
     try {
       await this.startDocumentRegistryListener();
       await this.startFinanceLedgerListener();
-      this.logger.log('Blockchain event listeners started (durable checkpoint)');
+      this.logger.log(
+        "Blockchain event listeners started (durable checkpoint)",
+      );
     } catch (err) {
-      this.logger.warn(`Failed to start event listeners: ${(err as Error).message}`);
+      this.logger.warn(
+        `Failed to start event listeners: ${(err as Error).message}`,
+      );
     }
   }
 
-  private async readCheckpoint(chaincodeName: string): Promise<bigint | undefined> {
+  private async readCheckpoint(
+    chaincodeName: string,
+  ): Promise<bigint | undefined> {
     try {
       const checkpoint = await prisma.blockchainSyncCheckpoint.findUnique({
         where: {
@@ -49,15 +54,19 @@ export class BlockchainSyncService implements OnModuleInit {
       });
       if (checkpoint) {
         const block = BigInt(checkpoint.lastBlockNumber);
-        this.logger.debug(`Resuming ${chaincodeName} listener from block ${block + 1n}`);
+        this.logger.debug(
+          `Resuming ${chaincodeName} listener from block ${block + 1n}`,
+        );
         return block + 1n;
       }
-    } catch {
-    }
+    } catch {}
     return undefined;
   }
 
-  private async updateCheckpoint(chaincodeName: string, blockNumber: bigint): Promise<void> {
+  private async updateCheckpoint(
+    chaincodeName: string,
+    blockNumber: bigint,
+  ): Promise<void> {
     try {
       await prisma.blockchainSyncCheckpoint.upsert({
         where: {
@@ -74,7 +83,9 @@ export class BlockchainSyncService implements OnModuleInit {
         },
       });
     } catch (err) {
-      this.logger.error(`Failed to update checkpoint for ${chaincodeName}: ${(err as Error).message}`);
+      this.logger.error(
+        `Failed to update checkpoint for ${chaincodeName}: ${(err as Error).message}`,
+      );
     }
   }
 
@@ -82,21 +93,50 @@ export class BlockchainSyncService implements OnModuleInit {
     const network = this.fabricGateway.getNetwork(FABRIC_CHANNELS.UNERP_MAIN);
     if (!network) return;
 
-    const startBlock = await this.readCheckpoint(FABRIC_CHAINCODES.DOCUMENT_REGISTRY);
+    const startBlock = await this.readCheckpoint(
+      FABRIC_CHAINCODES.DOCUMENT_REGISTRY,
+    );
     const chaincodeName = FABRIC_CHAINCODES.DOCUMENT_REGISTRY;
 
     this.eventListener
-      .on('DocumentRegistered', async (_eventName: string, payload: unknown, txId: string, blockNumber: bigint) => {
-        const p = payload as { tenantId: string; documentId: string; documentHash: string };
-        await this.updateBlockchainTransaction(p.tenantId, p.documentId, txId, blockNumber);
-        await this.updateCheckpoint(chaincodeName, blockNumber);
-        this.logger.debug(`Event: DocumentRegistered — ${p.documentId} (block: ${blockNumber})`);
-      })
-      .on('DocumentRevoked', async (_eventName: string, payload: unknown, _txId: string, blockNumber: bigint) => {
-        const p = payload as { tenantId: string; documentId: string };
-        this.logger.log(`Event: DocumentRevoked — ${p.documentId}`);
-        await this.updateCheckpoint(chaincodeName, blockNumber);
-      });
+      .on(
+        "DocumentRegistered",
+        async (
+          _eventName: string,
+          payload: unknown,
+          txId: string,
+          blockNumber: bigint,
+        ) => {
+          const p = payload as {
+            tenantId: string;
+            documentId: string;
+            documentHash: string;
+          };
+          await this.updateBlockchainTransaction(
+            p.tenantId,
+            p.documentId,
+            txId,
+            blockNumber,
+          );
+          await this.updateCheckpoint(chaincodeName, blockNumber);
+          this.logger.debug(
+            `Event: DocumentRegistered — ${p.documentId} (block: ${blockNumber})`,
+          );
+        },
+      )
+      .on(
+        "DocumentRevoked",
+        async (
+          _eventName: string,
+          payload: unknown,
+          _txId: string,
+          blockNumber: bigint,
+        ) => {
+          const p = payload as { tenantId: string; documentId: string };
+          this.logger.log(`Event: DocumentRevoked — ${p.documentId}`);
+          await this.updateCheckpoint(chaincodeName, blockNumber);
+        },
+      );
 
     await this.eventListener.startListening(network, {
       channelName: FABRIC_CHANNELS.UNERP_MAIN,
@@ -109,21 +149,44 @@ export class BlockchainSyncService implements OnModuleInit {
     const network = this.fabricGateway.getNetwork(FABRIC_CHANNELS.UNERP_MAIN);
     if (!network) return;
 
-    const startBlock = await this.readCheckpoint(FABRIC_CHAINCODES.FINANCE_LEDGER);
+    const startBlock = await this.readCheckpoint(
+      FABRIC_CHAINCODES.FINANCE_LEDGER,
+    );
     const chaincodeName = FABRIC_CHAINCODES.FINANCE_LEDGER;
 
     this.eventListener
-      .on('JournalEntryRecorded', async (_eventName: string, payload: unknown, txId: string, blockNumber: bigint) => {
-        const p = payload as { tenantId: string; journalId: string };
-        await this.updateBlockchainTransaction(p.tenantId, p.journalId, txId, blockNumber);
-        await this.updateCheckpoint(chaincodeName, blockNumber);
-        this.logger.debug(`Event: JournalEntryRecorded — ${p.journalId}`);
-      })
-      .on('PeriodClosed', async (_eventName: string, payload: unknown, _txId: string, blockNumber: bigint) => {
-        const p = payload as { tenantId: string; periodId: string };
-        this.logger.log(`Event: PeriodClosed — ${p.periodId}`);
-        await this.updateCheckpoint(chaincodeName, blockNumber);
-      });
+      .on(
+        "JournalEntryRecorded",
+        async (
+          _eventName: string,
+          payload: unknown,
+          txId: string,
+          blockNumber: bigint,
+        ) => {
+          const p = payload as { tenantId: string; journalId: string };
+          await this.updateBlockchainTransaction(
+            p.tenantId,
+            p.journalId,
+            txId,
+            blockNumber,
+          );
+          await this.updateCheckpoint(chaincodeName, blockNumber);
+          this.logger.debug(`Event: JournalEntryRecorded — ${p.journalId}`);
+        },
+      )
+      .on(
+        "PeriodClosed",
+        async (
+          _eventName: string,
+          payload: unknown,
+          _txId: string,
+          blockNumber: bigint,
+        ) => {
+          const p = payload as { tenantId: string; periodId: string };
+          this.logger.log(`Event: PeriodClosed — ${p.periodId}`);
+          await this.updateCheckpoint(chaincodeName, blockNumber);
+        },
+      );
 
     await this.eventListener.startListening(network, {
       channelName: FABRIC_CHANNELS.UNERP_MAIN,
@@ -143,7 +206,9 @@ export class BlockchainSyncService implements OnModuleInit {
         where: {
           tenantId,
           entityId,
-          status: { in: [BlockchainTxStatus.PENDING, BlockchainTxStatus.SUBMITTED] },
+          status: {
+            in: [BlockchainTxStatus.PENDING, BlockchainTxStatus.SUBMITTED],
+          },
         },
         data: {
           status: BlockchainTxStatus.CONFIRMED,
@@ -153,7 +218,9 @@ export class BlockchainSyncService implements OnModuleInit {
         },
       });
     } catch (err) {
-      this.logger.error(`Failed to update blockchain tx for ${entityId}: ${(err as Error).message}`);
+      this.logger.error(
+        `Failed to update blockchain tx for ${entityId}: ${(err as Error).message}`,
+      );
     }
   }
 

@@ -1,8 +1,11 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
-import { z } from 'zod';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
+import { z } from "zod";
 
 export const computeAtpSchema = z.object({
   productId: z.string().optional(),
@@ -13,11 +16,13 @@ export type ComputeAtpInput = z.infer<typeof computeAtpSchema>;
 export const createAtpReservationSchema = z.object({
   atpId: z.string().min(1),
   referenceId: z.string().min(1),
-  referenceType: z.enum(['SALES_ORDER', 'TRANSFER', 'MANUAL']),
+  referenceType: z.enum(["SALES_ORDER", "TRANSFER", "MANUAL"]),
   quantity: z.number().positive(),
   committedUntil: z.string().datetime().optional(),
 });
-export type CreateAtpReservationInput = z.infer<typeof createAtpReservationSchema>;
+export type CreateAtpReservationInput = z.infer<
+  typeof createAtpReservationSchema
+>;
 
 export const multiWarehouseAtpSchema = z.object({
   warehouseIds: z.array(z.string().min(1)).min(1),
@@ -33,14 +38,13 @@ export const listReservationsQuerySchema = z.object({
 
 @Injectable()
 export class InventoryAtpCtpService {
-
   async computeAtp(tenantId: string, productId?: string, warehouseId?: string) {
     const productWhere: Prisma.StockLedgerEntryWhereInput = { tenantId };
     if (productId) productWhere.productId = productId;
     if (warehouseId) productWhere.warehouseId = warehouseId;
 
     const stockAgg = await prisma.stockLedgerEntry.groupBy({
-      by: ['productId', 'warehouseId'],
+      by: ["productId", "warehouseId"],
       where: productWhere,
       _max: { balanceQty: true },
     });
@@ -57,12 +61,13 @@ export class InventoryAtpCtpService {
           tenantId,
           productId: pid,
           purchaseOrder: {
-            status: { in: ['SUBMITTED', 'APPROVED', 'PARTIALLY_RECEIVED'] },
+            status: { in: ["SUBMITTED", "APPROVED", "PARTIALLY_RECEIVED"] },
           },
         },
       });
       const totalQty = onOrderAgg._sum.quantity ?? new Prisma.Decimal(0);
-      const totalReceived = onOrderAgg._sum.receivedQty ?? new Prisma.Decimal(0);
+      const totalReceived =
+        onOrderAgg._sum.receivedQty ?? new Prisma.Decimal(0);
       const onOrder = Prisma.Decimal.sub(totalQty, totalReceived);
 
       const allocatedAgg = await prisma.salesOrderItem.aggregate({
@@ -71,18 +76,28 @@ export class InventoryAtpCtpService {
           tenantId,
           productId: pid,
           salesOrder: {
-            status: { in: ['CONFIRMED', 'PROCESSING', 'PARTIALLY_DELIVERED'] },
+            status: { in: ["CONFIRMED", "PROCESSING", "PARTIALLY_DELIVERED"] },
           },
         },
       });
       const soQty = allocatedAgg._sum.quantity ?? new Prisma.Decimal(0);
-      const soDelivered = allocatedAgg._sum.deliveredQty ?? new Prisma.Decimal(0);
+      const soDelivered =
+        allocatedAgg._sum.deliveredQty ?? new Prisma.Decimal(0);
       const allocated = Prisma.Decimal.sub(soQty, soDelivered);
 
-      const available = Prisma.Decimal.sub(Prisma.Decimal.add(onHand, onOrder), allocated);
+      const available = Prisma.Decimal.sub(
+        Prisma.Decimal.add(onHand, onOrder),
+        allocated,
+      );
 
       const upserted = await prisma.availableToPromise.upsert({
-        where: { tenantId_productId_warehouseId: { tenantId, productId: pid, warehouseId: wid } },
+        where: {
+          tenantId_productId_warehouseId: {
+            tenantId,
+            productId: pid,
+            warehouseId: wid,
+          },
+        },
         create: {
           tenantId,
           productId: pid,
@@ -122,20 +137,26 @@ export class InventoryAtpCtpService {
       prisma.availableToPromise.findMany({
         where,
         include: { product: true, warehouse: true },
-        orderBy: { computedAt: 'desc' },
+        orderBy: { computedAt: "desc" },
         skip: (page - 1) * limit,
         take: limit,
       }),
       prisma.availableToPromise.count({ where }),
     ]);
-    return { data, total, page, limit, totalPages: Math.max(1, Math.ceil(total / limit)) };
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+    };
   }
 
   async getProductAvailability(tenantId: string, productId: string) {
     const records = await prisma.availableToPromise.findMany({
       where: { tenantId, productId },
       include: { warehouse: true },
-      orderBy: { computedAt: 'desc' },
+      orderBy: { computedAt: "desc" },
     });
     const totalAvailable = records.reduce(
       (sum, r) => Prisma.Decimal.add(sum, r.available),
@@ -144,9 +165,18 @@ export class InventoryAtpCtpService {
     return {
       productId,
       totalAvailable,
-      totalOnHand: records.reduce((s, r) => Prisma.Decimal.add(s, r.onHand), new Prisma.Decimal(0)),
-      totalOnOrder: records.reduce((s, r) => Prisma.Decimal.add(s, r.onOrder), new Prisma.Decimal(0)),
-      totalAllocated: records.reduce((s, r) => Prisma.Decimal.add(s, r.allocated), new Prisma.Decimal(0)),
+      totalOnHand: records.reduce(
+        (s, r) => Prisma.Decimal.add(s, r.onHand),
+        new Prisma.Decimal(0),
+      ),
+      totalOnOrder: records.reduce(
+        (s, r) => Prisma.Decimal.add(s, r.onOrder),
+        new Prisma.Decimal(0),
+      ),
+      totalAllocated: records.reduce(
+        (s, r) => Prisma.Decimal.add(s, r.allocated),
+        new Prisma.Decimal(0),
+      ),
       warehouseCount: records.length,
       records,
     };
@@ -157,7 +187,7 @@ export class InventoryAtpCtpService {
     return prisma.availableToPromise.findMany({
       where: { tenantId, warehouseId: { in: warehouseIds } },
       include: { product: true, warehouse: true },
-      orderBy: { computedAt: 'desc' },
+      orderBy: { computedAt: "desc" },
     });
   }
 
@@ -165,7 +195,7 @@ export class InventoryAtpCtpService {
     const atp = await prisma.availableToPromise.findFirst({
       where: { id: dto.atpId, tenantId },
     });
-    if (!atp) throw new NotFoundException('ATP record not found');
+    if (!atp) throw new NotFoundException("ATP record not found");
 
     const qty = new Prisma.Decimal(dto.quantity);
     if (qty.gt(atp.available)) {
@@ -182,7 +212,9 @@ export class InventoryAtpCtpService {
           referenceId: dto.referenceId,
           referenceType: dto.referenceType,
           quantity: qty,
-          committedUntil: dto.committedUntil ? new Date(dto.committedUntil) : null,
+          committedUntil: dto.committedUntil
+            ? new Date(dto.committedUntil)
+            : null,
         },
       }),
       prisma.availableToPromise.update({
@@ -197,22 +229,26 @@ export class InventoryAtpCtpService {
   }
 
   async releaseReservation(tenantId: string, id: string) {
-    const reservation = await prisma.atpReservation.findFirst({ where: { id, tenantId } });
-    if (!reservation) throw new NotFoundException('Reservation not found');
-    if (reservation.status !== 'ACTIVE') {
-      throw new BadRequestException(`Reservation is already ${reservation.status}`);
+    const reservation = await prisma.atpReservation.findFirst({
+      where: { id, tenantId },
+    });
+    if (!reservation) throw new NotFoundException("Reservation not found");
+    if (reservation.status !== "ACTIVE") {
+      throw new BadRequestException(
+        `Reservation is already ${reservation.status}`,
+      );
     }
 
     const qty = reservation.quantity;
     const atp = await prisma.availableToPromise.findFirst({
       where: { id: reservation.atpId, tenantId },
     });
-    if (!atp) throw new NotFoundException('ATP record not found');
+    if (!atp) throw new NotFoundException("ATP record not found");
 
     const [released] = await prisma.$transaction([
       prisma.atpReservation.update({
         where: { id },
-        data: { status: 'RELEASED' },
+        data: { status: "RELEASED" },
       }),
       prisma.availableToPromise.update({
         where: { id: reservation.atpId },
@@ -226,21 +262,30 @@ export class InventoryAtpCtpService {
   }
 
   async fulfillReservation(tenantId: string, id: string) {
-    const reservation = await prisma.atpReservation.findFirst({ where: { id, tenantId } });
-    if (!reservation) throw new NotFoundException('Reservation not found');
-    if (reservation.status !== 'ACTIVE') {
-      throw new BadRequestException(`Reservation is already ${reservation.status}`);
+    const reservation = await prisma.atpReservation.findFirst({
+      where: { id, tenantId },
+    });
+    if (!reservation) throw new NotFoundException("Reservation not found");
+    if (reservation.status !== "ACTIVE") {
+      throw new BadRequestException(
+        `Reservation is already ${reservation.status}`,
+      );
     }
 
     return prisma.atpReservation.update({
       where: { id },
-      data: { status: 'FULFILLED' },
+      data: { status: "FULFILLED" },
     });
   }
 
   async listReservations(
     tenantId: string,
-    query: { page?: number; limit?: number; status?: string; atpId?: string } = {},
+    query: {
+      page?: number;
+      limit?: number;
+      status?: string;
+      atpId?: string;
+    } = {},
   ) {
     const page = Math.max(1, query.page ?? 1);
     const limit = Math.min(100, query.limit ?? 20);
@@ -252,23 +297,29 @@ export class InventoryAtpCtpService {
       prisma.atpReservation.findMany({
         where,
         include: { atp: true },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         skip: (page - 1) * limit,
         take: limit,
       }),
       prisma.atpReservation.count({ where }),
     ]);
-    return { data, total, page, limit, totalPages: Math.max(1, Math.ceil(total / limit)) };
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+    };
   }
 
   async getAtpDashboard(tenantId: string) {
     const [totalAtp, totalReservations, lowAvailability] = await Promise.all([
       prisma.availableToPromise.count({ where: { tenantId } }),
-      prisma.atpReservation.count({ where: { tenantId, status: 'ACTIVE' } }),
+      prisma.atpReservation.count({ where: { tenantId, status: "ACTIVE" } }),
       prisma.availableToPromise.findMany({
         where: { tenantId, available: { lte: 0 } },
         include: { product: true, warehouse: true },
-        orderBy: { available: 'asc' },
+        orderBy: { available: "asc" },
         take: 20,
       }),
     ]);

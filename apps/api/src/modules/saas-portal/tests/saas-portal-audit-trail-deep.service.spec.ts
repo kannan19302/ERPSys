@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { describe, it, expect, beforeEach } from "vitest";
 import { Test, TestingModule } from "@nestjs/testing";
 import { SaasPortalAuditTrailDeepService } from "../saas-portal-audit-trail-deep.service";

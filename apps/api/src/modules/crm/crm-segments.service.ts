@@ -1,20 +1,23 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { z } from 'zod';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { z } from "zod";
 
 const ruleSchema = z.object({
   field: z.string().min(1),
-  op: z.enum(['eq', 'ne', 'contains']),
+  op: z.enum(["eq", "ne", "contains"]),
   value: z.union([z.string(), z.number(), z.boolean(), z.null()]),
 });
 export const segmentCriteriaSchema = z.object({
-  combinator: z.enum(['AND', 'OR']).default('AND'),
+  combinator: z.enum(["AND", "OR"]).default("AND"),
   rules: z.array(ruleSchema).min(1),
 });
 export const createSegmentSchema = z.object({
   name: z.string().min(1),
-  entity: z.enum(['CONTACT', 'LEAD', 'ACCOUNT']),
+  entity: z.enum(["CONTACT", "LEAD", "ACCOUNT"]),
   criteria: segmentCriteriaSchema,
   isDynamic: z.boolean().optional(),
 });
@@ -23,7 +26,7 @@ export type CreateSegmentInput = z.infer<typeof createSegmentSchema>;
 export type UpdateSegmentInput = z.infer<typeof updateSegmentSchema>;
 type Criteria = z.infer<typeof segmentCriteriaSchema>;
 
-type Entity = 'CONTACT' | 'LEAD' | 'ACCOUNT';
+type Entity = "CONTACT" | "LEAD" | "ACCOUNT";
 
 /**
  * Dynamic segments: run a simple {combinator, rules[]} predicate against the
@@ -32,12 +35,15 @@ type Entity = 'CONTACT' | 'LEAD' | 'ACCOUNT';
 @Injectable()
 export class CrmSegmentsService {
   async listSegments(tenantId: string) {
-    return prisma.segment.findMany({ where: { tenantId }, orderBy: { createdAt: 'desc' } });
+    return prisma.segment.findMany({
+      where: { tenantId },
+      orderBy: { createdAt: "desc" },
+    });
   }
 
   async getSegment(tenantId: string, id: string) {
     const seg = await prisma.segment.findFirst({ where: { id, tenantId } });
-    if (!seg) throw new NotFoundException('Segment not found');
+    if (!seg) throw new NotFoundException("Segment not found");
     return seg;
   }
 
@@ -61,7 +67,9 @@ export class CrmSegmentsService {
         ...(dto.name !== undefined ? { name: dto.name } : {}),
         ...(dto.entity !== undefined ? { entity: dto.entity } : {}),
         ...(dto.isDynamic !== undefined ? { isDynamic: dto.isDynamic } : {}),
-        ...(dto.criteria !== undefined ? { criteria: dto.criteria as unknown as never } : {}),
+        ...(dto.criteria !== undefined
+          ? { criteria: dto.criteria as unknown as never }
+          : {}),
       },
     });
   }
@@ -71,34 +79,58 @@ export class CrmSegmentsService {
     return prisma.segment.delete({ where: { id } });
   }
 
-  private matches(record: Record<string, unknown>, criteria: Criteria): boolean {
-    const evalRule = (r: { field: string; op: string; value: unknown }): boolean => {
+  private matches(
+    record: Record<string, unknown>,
+    criteria: Criteria,
+  ): boolean {
+    const evalRule = (r: {
+      field: string;
+      op: string;
+      value: unknown;
+    }): boolean => {
       const raw = record[r.field];
       switch (r.op) {
-        case 'eq':
-          return String(raw ?? '') === String(r.value ?? '');
-        case 'ne':
-          return String(raw ?? '') !== String(r.value ?? '');
-        case 'contains':
-          return raw != null && String(raw).toLowerCase().includes(String(r.value ?? '').toLowerCase());
+        case "eq":
+          return String(raw ?? "") === String(r.value ?? "");
+        case "ne":
+          return String(raw ?? "") !== String(r.value ?? "");
+        case "contains":
+          return (
+            raw != null &&
+            String(raw)
+              .toLowerCase()
+              .includes(String(r.value ?? "").toLowerCase())
+          );
         default:
           return false;
       }
     };
-    if (criteria.combinator === 'OR') return criteria.rules.some(evalRule);
+    if (criteria.combinator === "OR") return criteria.rules.some(evalRule);
     return criteria.rules.every(evalRule);
   }
 
-  private async fetchAll(tenantId: string, entity: Entity): Promise<Array<Record<string, unknown>>> {
-    if (entity === 'LEAD') return prisma.lead.findMany({ where: { tenantId, deletedAt: null } }) as unknown as Promise<Array<Record<string, unknown>>>;
-    if (entity === 'CONTACT') return prisma.contact.findMany({ where: { tenantId } }) as unknown as Promise<Array<Record<string, unknown>>>;
-    return prisma.customer.findMany({ where: { tenantId } }) as unknown as Promise<Array<Record<string, unknown>>>;
+  private async fetchAll(
+    tenantId: string,
+    entity: Entity,
+  ): Promise<Array<Record<string, unknown>>> {
+    if (entity === "LEAD")
+      return prisma.lead.findMany({
+        where: { tenantId, deletedAt: null },
+      }) as unknown as Promise<Array<Record<string, unknown>>>;
+    if (entity === "CONTACT")
+      return prisma.contact.findMany({
+        where: { tenantId },
+      }) as unknown as Promise<Array<Record<string, unknown>>>;
+    return prisma.customer.findMany({
+      where: { tenantId },
+    }) as unknown as Promise<Array<Record<string, unknown>>>;
   }
 
   async evaluate(tenantId: string, segmentId: string) {
     const seg = await this.getSegment(tenantId, segmentId);
     const parsed = segmentCriteriaSchema.safeParse(seg.criteria);
-    if (!parsed.success) throw new BadRequestException('Segment criteria are invalid');
+    if (!parsed.success)
+      throw new BadRequestException("Segment criteria are invalid");
     const criteria = parsed.data;
 
     const all = await this.fetchAll(tenantId, seg.entity as Entity);
@@ -121,6 +153,9 @@ export class CrmSegmentsService {
 
   async listMembers(tenantId: string, segmentId: string) {
     await this.getSegment(tenantId, segmentId);
-    return prisma.segmentMember.findMany({ where: { segmentId }, orderBy: { addedAt: 'desc' } });
+    return prisma.segmentMember.findMany({
+      where: { segmentId },
+      orderBy: { addedAt: "desc" },
+    });
   }
 }

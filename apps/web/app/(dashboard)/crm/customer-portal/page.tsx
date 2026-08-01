@@ -1,11 +1,25 @@
-// @ts-nocheck
-'use client';
+"use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Card, PageHeader, Button, StatusBadge, Spinner, ProtectedComponent, useToast, ListPageTemplate, type ListColumn } from '@unerp/ui';
-import { Search, UserPlus, Ban, RotateCcw, Copy } from 'lucide-react';
-import { apiGet, apiPost, apiPatch, ApiRequestError } from '../../../../src/lib/api';
-import styles from './page.module.css';
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  Card,
+  PageHeader,
+  Button,
+  StatusBadge,
+  Spinner,
+  ProtectedComponent,
+  useToast,
+  ListPageTemplate,
+  type ListColumn,
+} from "@unerp/ui";
+import { Search, UserPlus, Ban, RotateCcw, Copy } from "lucide-react";
+import {
+  apiGet,
+  apiPost,
+  apiPatch,
+  ApiRequestError,
+} from "../../../../src/lib/api";
+import styles from "./page.module.css";
 
 interface Customer {
   id: string;
@@ -24,13 +38,13 @@ interface PortalUser {
 
 export default function CustomerPortalAdminPage() {
   const { success, error } = useToast();
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [selected, setSelected] = useState<Customer | null>(null);
   const [users, setUsers] = useState<PortalUser[]>([]);
   const [loadingCustomers, setLoadingCustomers] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteEmail, setInviteEmail] = useState("");
   const [inviting, setInviting] = useState(false);
 
   const searchCustomers = useCallback(async () => {
@@ -43,10 +57,14 @@ export default function CustomerPortalAdminPage() {
       const res = await apiGet<{ data: Customer[] } | Customer[]>(
         `/crm/customers?search=${encodeURIComponent(search)}&limit=10`,
       );
-      const list = Array.isArray(res) ? res : (res as { data: Customer[] }).data ?? [];
+      const list = Array.isArray(res)
+        ? res
+        : ((res as { data: Customer[] }).data ?? []);
       setCustomers(list);
     } catch (e) {
-      error(e instanceof ApiRequestError ? e.message : 'Failed to search customers');
+      error(
+        e instanceof ApiRequestError ? e.message : "Failed to search customers",
+      );
     } finally {
       setLoadingCustomers(false);
     }
@@ -57,17 +75,26 @@ export default function CustomerPortalAdminPage() {
     return () => clearTimeout(t);
   }, [searchCustomers]);
 
-  const loadUsers = useCallback(async (customerId: string) => {
-    setLoadingUsers(true);
-    try {
-      const list = await apiGet<PortalUser[]>(`/crm/customers/${customerId}/portal-users`);
-      setUsers(list);
-    } catch (e) {
-      error(e instanceof ApiRequestError ? e.message : 'Failed to load portal users');
-    } finally {
-      setLoadingUsers(false);
-    }
-  }, [error]);
+  const loadUsers = useCallback(
+    async (customerId: string) => {
+      setLoadingUsers(true);
+      try {
+        const list = await apiGet<PortalUser[]>(
+          `/crm/customers/${customerId}/portal-users`,
+        );
+        setUsers(list);
+      } catch (e) {
+        error(
+          e instanceof ApiRequestError
+            ? e.message
+            : "Failed to load portal users",
+        );
+      } finally {
+        setLoadingUsers(false);
+      }
+    },
+    [error],
+  );
 
   useEffect(() => {
     if (selected) loadUsers(selected.id);
@@ -82,10 +109,14 @@ export default function CustomerPortalAdminPage() {
         { email: inviteEmail.trim() },
       );
       success(`Invited ${result.email}. Temp password: ${result.tempPassword}`);
-      setInviteEmail('');
+      setInviteEmail("");
       loadUsers(selected.id);
     } catch (e) {
-      error(e instanceof ApiRequestError ? e.message : 'Failed to invite portal user');
+      error(
+        e instanceof ApiRequestError
+          ? e.message
+          : "Failed to invite portal user",
+      );
     } finally {
       setInviting(false);
     }
@@ -94,22 +125,34 @@ export default function CustomerPortalAdminPage() {
   const handleDisable = async (userId: string) => {
     if (!selected) return;
     try {
-      await apiPatch(`/crm/customers/${selected.id}/portal-users/${userId}/disable`);
-      success('Portal user disabled');
+      await apiPatch(
+        `/crm/customers/${selected.id}/portal-users/${userId}/disable`,
+      );
+      success("Portal user disabled");
       loadUsers(selected.id);
     } catch (e) {
-      error(e instanceof ApiRequestError ? e.message : 'Failed to disable portal user');
+      error(
+        e instanceof ApiRequestError
+          ? e.message
+          : "Failed to disable portal user",
+      );
     }
   };
 
   const handleReactivate = async (userId: string) => {
     if (!selected) return;
     try {
-      await apiPatch(`/crm/customers/${selected.id}/portal-users/${userId}/reactivate`);
-      success('Portal user reactivated');
+      await apiPatch(
+        `/crm/customers/${selected.id}/portal-users/${userId}/reactivate`,
+      );
+      success("Portal user reactivated");
       loadUsers(selected.id);
     } catch (e) {
-      error(e instanceof ApiRequestError ? e.message : 'Failed to reactivate portal user');
+      error(
+        e instanceof ApiRequestError
+          ? e.message
+          : "Failed to reactivate portal user",
+      );
     }
   };
 
@@ -140,25 +183,41 @@ export default function CustomerPortalAdminPage() {
           <ul className="ui-list-simple">
             {customers.map((c) => (
               <li key={c.id}>
-                <button className="ui-list-item-button" onClick={() => setSelected(c)}>
+                <button
+                  className="ui-list-item-button"
+                  onClick={() => setSelected(c)}
+                >
                   <strong>{c.name}</strong>
-                  {c.email ? <span className={styles.email}> — {c.email}</span> : null}
+                  {c.email ? (
+                    <span className={styles.email}> — {c.email}</span>
+                  ) : null}
                 </button>
               </li>
             ))}
           </ul>
         )}
 
-        {!loadingCustomers && search.trim() && customers.length === 0 && !selected && (
-          <p className="ui-empty-state">No customers match &quot;{search}&quot;.</p>
-        )}
+        {!loadingCustomers &&
+          search.trim() &&
+          customers.length === 0 &&
+          !selected && (
+            <p className="ui-empty-state">
+              No customers match &quot;{search}&quot;.
+            </p>
+          )}
       </Card>
 
       {selected && (
         <Card className={`ui-card ${styles.selectedCard}`}>
           <div className="ui-card-header">
             <h3>{selected.name}</h3>
-            <Button variant="secondary" onClick={() => { setSelected(null); setUsers([]); }}>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setSelected(null);
+                setUsers([]);
+              }}
+            >
               Change customer
             </Button>
           </div>
@@ -171,7 +230,10 @@ export default function CustomerPortalAdminPage() {
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
               />
-              <Button onClick={handleInvite} disabled={inviting || !inviteEmail.trim()}>
+              <Button
+                onClick={handleInvite}
+                disabled={inviting || !inviteEmail.trim()}
+              >
                 <UserPlus size={16} /> Invite portal user
               </Button>
             </div>
@@ -180,23 +242,52 @@ export default function CustomerPortalAdminPage() {
           {loadingUsers ? (
             <Spinner size="sm" />
           ) : users.length === 0 ? (
-            <p className="ui-empty-state">No portal users invited for this customer yet.</p>
+            <p className="ui-empty-state">
+              No portal users invited for this customer yet.
+            </p>
           ) : (
             <ListPageTemplate
-              columns={[
-                { key: 'email', header: 'Email' },
-                { key: 'status', header: 'Status', render: (v) => <StatusBadge status={String(v)} /> },
-                { key: 'lastLoginAt', header: 'Last login', render: (v) => v ? new Date(String(v)).toLocaleString() : 'Never' },
-                { key: 'id', header: 'Actions', render: (v, row) => (
-                  <ProtectedComponent permission="crm.customer-portal.manage">
-                    {row.status === 'DISABLED' ? (
-                      <Button size="sm" variant="secondary" onClick={() => handleReactivate(String(v))}><RotateCcw size={14} /> Reactivate</Button>
-                    ) : (
-                      <Button size="sm" variant="danger" onClick={() => handleDisable(String(v))}><Ban size={14} /> Disable</Button>
-                    )}
-                  </ProtectedComponent>
-                ) },
-              ] as ListColumn[]}
+              columns={
+                [
+                  { key: "email", header: "Email" },
+                  {
+                    key: "status",
+                    header: "Status",
+                    render: (v) => <StatusBadge status={String(v)} />,
+                  },
+                  {
+                    key: "lastLoginAt",
+                    header: "Last login",
+                    render: (v) =>
+                      v ? new Date(String(v)).toLocaleString() : "Never",
+                  },
+                  {
+                    key: "id",
+                    header: "Actions",
+                    render: (v, row) => (
+                      <ProtectedComponent permission="crm.customer-portal.manage">
+                        {row.status === "DISABLED" ? (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => handleReactivate(String(v))}
+                          >
+                            <RotateCcw size={14} /> Reactivate
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="danger"
+                            onClick={() => handleDisable(String(v))}
+                          >
+                            <Ban size={14} /> Disable
+                          </Button>
+                        )}
+                      </ProtectedComponent>
+                    ),
+                  },
+                ] as ListColumn[]
+              }
               data={users as unknown as Record<string, unknown>[]}
               loading={false}
               emptyTitle="No portal users"

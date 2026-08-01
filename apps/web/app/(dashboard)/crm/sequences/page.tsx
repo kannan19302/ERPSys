@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 
 export default function SequencesRedirect() {
-  redirect('/crm/marketing-outreach?tab=sequences');
+  redirect("/crm/marketing-outreach?tab=sequences");
 }

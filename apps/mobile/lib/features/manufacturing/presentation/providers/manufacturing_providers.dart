@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -142,21 +141,21 @@ class WorkOrderListController extends Notifier<WorkOrderListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteWorkOrderUseCase(
-      ref.read(manufacturingRepositoryProvider))(id);
+      ref.read(manufacturingRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<void>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveWorkOrderUseCase(
-      ref.read(manufacturingRepositoryProvider))(SaveWorkOrderParams(payload: payload, id: id));
+      ref.read(manufacturingRepositoryProvider),)(SaveWorkOrderParams(payload: payload, id: id));
     if (result.isOk) await refresh();
     return result.fold((f) => Result<void>.err(f), (_) => const Result<void>.ok(null));
   }
 } FutureProviderFamily<WorkOrder, String> workOrderDetailProvider =
     FutureProvider.family<WorkOrder, String>((Ref ref, String id) async {
   final result = await GetWorkOrderUseCase(
-    ref.watch(manufacturingRepositoryProvider))(id);
+    ref.watch(manufacturingRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -275,14 +274,14 @@ class BomListController extends Notifier<BomListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteBomUseCase(
-      ref.read(manufacturingRepositoryProvider))(id);
+      ref.read(manufacturingRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<void>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveBomUseCase(
-      ref.read(manufacturingRepositoryProvider))(SaveBomParams(payload: payload, id: id));
+      ref.read(manufacturingRepositoryProvider),)(SaveBomParams(payload: payload, id: id));
     if (result.isOk) await refresh();
     return result.fold((f) => Result<void>.err(f), (_) => const Result<void>.ok(null));
   }
@@ -291,7 +290,7 @@ class BomListController extends Notifier<BomListState> {
 final FutureProviderFamily<Bom, String> bomDetailProvider =
     FutureProvider.family<Bom, String>((Ref ref, String id) async {
   final result = await GetBomUseCase(
-    ref.watch(manufacturingRepositoryProvider))(id);
+    ref.watch(manufacturingRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -394,7 +393,7 @@ class MrpRunListController extends Notifier<MrpRunListState> {
 
   Future<Result<void>> save(Map<String, dynamic> payload) async {
     final result = await CreateMrpRunUseCase(
-      ref.read(manufacturingRepositoryProvider))(payload);
+      ref.read(manufacturingRepositoryProvider),)(payload);
     if (result.isOk) await refresh();
     return result.fold((f) => Result<void>.err(f), (_) => const Result<void>.ok(null));
   }
@@ -403,7 +402,7 @@ class MrpRunListController extends Notifier<MrpRunListState> {
 final FutureProviderFamily<MrpRun, String> mrpRunDetailProvider =
     FutureProvider.family<MrpRun, String>((Ref ref, String id) async {
   final result = await GetMrpRunUseCase(
-    ref.watch(manufacturingRepositoryProvider))(id);
+    ref.watch(manufacturingRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -502,7 +501,7 @@ class WorkstationListController extends Notifier<WorkstationListState> {
 final FutureProviderFamily<Workstation, String> workstationDetailProvider =
     FutureProvider.family<Workstation, String>((Ref ref, String id) async {
   final result = await GetWorkstationUseCase(
-    ref.watch(manufacturingRepositoryProvider))(id);
+    ref.watch(manufacturingRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -599,7 +598,7 @@ class QualityInspectionListController extends Notifier<QualityInspectionListStat
 
   Future<Result<void>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveQualityInspectionUseCase(
-      ref.read(manufacturingRepositoryProvider))(SaveQualityInspectionParams(payload: payload, id: id));
+      ref.read(manufacturingRepositoryProvider),)(SaveQualityInspectionParams(payload: payload, id: id));
     if (result.isOk) await refresh();
     return result.fold((f) => Result<void>.err(f), (_) => const Result<void>.ok(null));
   }
@@ -608,7 +607,7 @@ class QualityInspectionListController extends Notifier<QualityInspectionListStat
 final FutureProviderFamily<QualityInspection, String> qualityInspectionDetailProvider =
     FutureProvider.family<QualityInspection, String>((Ref ref, String id) async {
   final result = await GetQualityInspectionUseCase(
-    ref.watch(manufacturingRepositoryProvider))(id);
+    ref.watch(manufacturingRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -705,7 +704,7 @@ class RoutingListController extends Notifier<RoutingListState> {
 
   Future<Result<void>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveRoutingUseCase(
-      ref.read(manufacturingRepositoryProvider))(SaveRoutingParams(payload: payload, id: id));
+      ref.read(manufacturingRepositoryProvider),)(SaveRoutingParams(payload: payload, id: id));
     if (result.isOk) await refresh();
     return result.fold((f) => Result<void>.err(f), (_) => const Result<void>.ok(null));
   }
@@ -714,7 +713,7 @@ class RoutingListController extends Notifier<RoutingListState> {
 final FutureProviderFamily<Routing, String> routingDetailProvider =
     FutureProvider.family<Routing, String>((Ref ref, String id) async {
   final result = await GetRoutingUseCase(
-    ref.watch(manufacturingRepositoryProvider))(id);
+    ref.watch(manufacturingRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -811,14 +810,14 @@ class EngineeringChangeOrderListController extends Notifier<EngineeringChangeOrd
 
   Future<Result<void>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveEngineeringChangeOrderUseCase(
-      ref.read(manufacturingRepositoryProvider))(SaveEngineeringChangeOrderParams(payload: payload, id: id));
+      ref.read(manufacturingRepositoryProvider),)(SaveEngineeringChangeOrderParams(payload: payload, id: id));
     if (result.isOk) await refresh();
     return result.fold((f) => Result<void>.err(f), (_) => const Result<void>.ok(null));
   }
 
   Future<Result<void>> approve(String id) async {
     final result = await ApproveEngineeringChangeOrderUseCase(
-      ref.read(manufacturingRepositoryProvider))(id);
+      ref.read(manufacturingRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result.fold((f) => Result<void>.err(f), (_) => const Result<void>.ok(null));
   }
@@ -827,6 +826,6 @@ class EngineeringChangeOrderListController extends Notifier<EngineeringChangeOrd
 final FutureProviderFamily<EngineeringChangeOrder, String> engineeringChangeOrderDetailProvider =
     FutureProvider.family<EngineeringChangeOrder, String>((Ref ref, String id) async {
   final result = await GetEngineeringChangeOrderUseCase(
-    ref.watch(manufacturingRepositoryProvider))(id);
+    ref.watch(manufacturingRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });

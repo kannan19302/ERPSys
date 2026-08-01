@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Processor, WorkerHost, OnWorkerEvent } from "@nestjs/bullmq";
 import { Job } from "bullmq";
 import nodemailer, { type Transporter } from "nodemailer";

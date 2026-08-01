@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failures.dart';

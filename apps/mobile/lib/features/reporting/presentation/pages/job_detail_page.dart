@@ -1,15 +1,9 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/widgets/ui_card.dart';
 import '../../../../core/utils/formatters.dart';
-import '../../../../core/widgets/permission_gate.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/widgets/state_views.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/utils/formatters.dart';
-import '../../../../core/widgets/state_views.dart';
 import '../../domain/entities/reporting.dart';
 import '../providers/reporting_providers.dart';
 
@@ -60,15 +54,15 @@ class _JobDetail extends StatelessWidget {
               const SizedBox(width: Spacing.x3),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(job.templateName ?? 'Report Job', style: Theme.of(context).textTheme.titleLarge),
-              ])),
+              ],),),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: Spacing.x2_5, vertical: Spacing.x1),
                 decoration: BoxDecoration(color: statusBg, borderRadius: Radii.pill),
                 child: Text(statusLabel, style: TextStyle(color: statusColor, fontSize: TypeScale.xs, fontWeight: TypeScale.medium)),
               ),
-            ]),
+            ],),
             if (job.error != null) Padding(padding: const EdgeInsets.only(top: Spacing.x2), child: Text(job.error!, style: TextStyle(color: t.danger))),
-          ]),
+          ],),
         ),
         const SizedBox(height: Spacing.x4),
         _SectionCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -79,7 +73,7 @@ class _JobDetail extends StatelessWidget {
           if (job.completedAt != null) _FieldRow('Completed', Formatters.dateTime(job.completedAt!)),
           if (job.duration != null) _FieldRow('Duration', Formatters.compact(job.duration!.inSeconds)),
           if (job.createdAt != null) _FieldRow('Created', Formatters.dateTime(job.createdAt!)),
-        ])),
+        ],),),
       ],
     );
   }

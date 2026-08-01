@@ -1,12 +1,11 @@
-// @ts-nocheck
-import { z } from 'zod';
+import { z } from "zod";
 
 export const offboardTenantSchema = z.object({
   retentionDays: z.number().int().min(1).max(365).default(90),
 });
 
 export const exportTenantSchema = z.object({
-  format: z.enum(['json', 'csv']).default('json'),
+  format: z.enum(["json", "csv"]).default("json"),
   includeFiles: z.boolean().default(false),
 });
 

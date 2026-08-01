@@ -90,9 +90,9 @@ class ReportingRepositoryImpl implements ReportingRepository {
 
   @override
   Future<Result<Cacheable<Paginated<ReportTemplate>>>> listTemplates(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_templateNamespace, query, () => _remote.listTemplates(query),
-        ReportTemplateModel.fromJson);
+        ReportTemplateModel.fromJson,);
 
   @override
   Future<Result<ReportTemplate>> getTemplate(String id) =>
@@ -117,7 +117,7 @@ class ReportingRepositoryImpl implements ReportingRepository {
   @override
   Future<Result<Cacheable<Paginated<ReportJob>>>> listJobs(ListQuery query) =>
       _paginated(_jobNamespace, query, () => _remote.listJobs(query),
-        ReportJobModel.fromJson);
+        ReportJobModel.fromJson,);
 
   @override
   Future<Result<ReportJob>> getJob(String id) =>
@@ -125,9 +125,9 @@ class ReportingRepositoryImpl implements ReportingRepository {
 
   @override
   Future<Result<Cacheable<Paginated<ReportExport>>>> listExports(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_exportNamespace, query, () => _remote.listExports(query),
-        ReportExportModel.fromJson);
+        ReportExportModel.fromJson,);
 
   @override
   Future<Result<ReportExport>> getExport(String id) =>
@@ -135,9 +135,9 @@ class ReportingRepositoryImpl implements ReportingRepository {
 
   @override
   Future<Result<Cacheable<Paginated<ReportCompliance>>>> listCompliance(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_complianceNamespace, query, () => _remote.listCompliance(query),
-        ReportComplianceModel.fromJson);
+        ReportComplianceModel.fromJson,);
 
   @override
   Future<Result<ReportCompliance>> createCompliance(Map<String, dynamic> p) async => throw UnimplementedError();
@@ -151,10 +151,8 @@ class ReportingRepositoryImpl implements ReportingRepository {
   @override
   Future<Result<void>> deleteCompliance(String id) async => throw UnimplementedError();
 
-  @override
   Future<Result<void>> deleteExport(String id) async => throw UnimplementedError();
 
-  @override
   Future<Result<void>> deleteJob(String id) async => throw UnimplementedError();
 
   @override

@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -24,7 +23,6 @@ class StockLevelListPage extends ConsumerStatefulWidget {
 
 class _StockLevelListPageState extends ConsumerState<StockLevelListPage> {
   final TextEditingController _search = TextEditingController();
-  String? _warehouseFilter;
 
   @override
   void dispose() {

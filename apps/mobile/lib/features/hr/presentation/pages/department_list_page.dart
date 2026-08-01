@@ -1,11 +1,9 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/theme/design_tokens.dart';
 import '../../../../core/error/failures.dart';
-import '../../../../core/widgets/paginated_list_view.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/ui_card.dart';
 import '../../domain/entities/hr.dart';
@@ -75,7 +73,7 @@ class _DepartmentListPageState extends ConsumerState<DepartmentListPage> {
     return asyncDepts.when(
       loading: () => const LoadingView(),
 error: (Object e, StackTrace _) => FailureView(
-          failure: e is Failure ? e as Failure : ServerFailure(e.toString()),
+          failure: e is Failure ? e : ServerFailure(e.toString()),
           onRetry: () => ref.invalidate(departmentsProvider),
       ),
       data: (List<Department> departments) {
@@ -84,7 +82,7 @@ error: (Object e, StackTrace _) => FailureView(
             : departments
                 .where((Department d) => d.name
                     .toLowerCase()
-                    .contains(_search.text.toLowerCase()))
+                    .contains(_search.text.toLowerCase()),)
                 .toList(growable: false);
 
         if (filtered.isEmpty) {
@@ -123,7 +121,7 @@ error: (Object e, StackTrace _) => FailureView(
                   Row(
                     children: <Widget>[
                       Icon(Icons.account_tree_outlined,
-                          color: context.tokens.textSecondary),
+                          color: context.tokens.textSecondary,),
                       const SizedBox(width: Spacing.x2),
                       Expanded(
                         child: Text(

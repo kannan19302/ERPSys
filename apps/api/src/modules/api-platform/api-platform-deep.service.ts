@@ -1,11 +1,45 @@
-// @ts-nocheck
 import { Injectable, NotFoundException, Logger } from "@nestjs/common";
 import { prisma } from "@unerp/database";
-import { randomBytes, createHash } from "node:crypto";
+import { randomBytes, createHash, randomUUID } from "node:crypto";
+
+interface CorsConfigRecord {
+  id: string;
+  tenantId: string;
+  origin: string;
+  methods: string[];
+  headers: string[];
+  allowCredentials: boolean;
+}
+
+interface IntegrationTemplateRecord {
+  id: string;
+  tenantId: string;
+  name: string;
+  description: string | null;
+  provider: string;
+  config: unknown;
+  isPrebuilt: boolean;
+}
+
+interface HealthCheckRecord {
+  id: string;
+  tenantId: string;
+  name: string;
+  endpoint: string;
+  method: string;
+  intervalSec: number;
+  timeoutMs: number;
+  isActive: boolean;
+  lastCheckedAt: Date | null;
+  lastStatus: string;
+}
 
 @Injectable()
 export class ApiPlatformDeepService {
   private readonly logger = new Logger(ApiPlatformDeepService.name);
+  private corsConfigs: CorsConfigRecord[] = [];
+  private integrationTemplates: IntegrationTemplateRecord[] = [];
+  private healthChecks: HealthCheckRecord[] = [];
 
   async listApiKeys(tenantId: string) {
     return prisma.apiKey.findMany({
@@ -13,10 +47,9 @@ export class ApiPlatformDeepService {
       select: {
         id: true,
         name: true,
-        keyPrefix: true,
-        scopes: true,
-        isActive: true,
-        lastUsedAt: true,
+        prefix: true,
+        apiScopes: true,
+        status: true,
         expiresAt: true,
         createdAt: true,
       },
@@ -31,12 +64,11 @@ export class ApiPlatformDeepService {
       data: {
         tenantId,
         name: data.name,
-        keyPrefix: prefix,
-        keyHash: hash,
-        scopes: data.scopes ?? ["*"],
-        rateLimitPerMin: data.rateLimitPerMin,
+        prefix,
+        hashedKey: hash,
+        apiScopes: (data.scopes ?? ["*"]).join(","),
+        rateLimit: data.rateLimitPerMin ?? 60,
         expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
-        createdBy: userId,
       },
     });
     return {
@@ -44,7 +76,7 @@ export class ApiPlatformDeepService {
       name: record.name,
       key: plainKey,
       prefix,
-      scopes: record.scopes,
+      scopes: record.apiScopes ? record.apiScopes.split(",") : [],
     };
   }
   async updateApiKey(tenantId: string, id: string, data: any) {
@@ -59,75 +91,82 @@ export class ApiPlatformDeepService {
   }
 
   async listRateLimits(tenantId: string) {
-    return prisma.apiRateLimit.findMany({ where: { tenantId } });
+    return prisma.apiRateLimitRule.findMany({ where: { tenantId } });
   }
   async createRateLimit(tenantId: string, data: any) {
-    return prisma.apiRateLimit.create({
+    return prisma.apiRateLimitRule.create({
       data: {
         tenantId,
-        endpoint: data.endpoint,
-        maxRequests: data.maxRequests,
-        windowSec: data.windowSec ?? 60,
+        name: data.endpoint,
+        endpointPath: data.endpoint,
+        limitPerMinute: data.maxRequests,
+        burstLimit: data.maxRequests,
       },
     });
   }
   async updateRateLimit(tenantId: string, id: string, data: any) {
-    const r = await prisma.apiRateLimit.findFirst({ where: { id, tenantId } });
+    const r = await prisma.apiRateLimitRule.findFirst({
+      where: { id, tenantId },
+    });
     if (!r) throw new NotFoundException("Rate limit not found");
-    return prisma.apiRateLimit.update({ where: { id }, data });
+    return prisma.apiRateLimitRule.update({ where: { id }, data });
   }
   async deleteRateLimit(tenantId: string, id: string) {
-    const r = await prisma.apiRateLimit.findFirst({ where: { id, tenantId } });
+    const r = await prisma.apiRateLimitRule.findFirst({
+      where: { id, tenantId },
+    });
     if (!r) throw new NotFoundException("Rate limit not found");
-    return prisma.apiRateLimit.delete({ where: { id } });
+    return prisma.apiRateLimitRule.delete({ where: { id } });
   }
 
   async listWebhooks(tenantId: string) {
-    return prisma.apiWebhook.findMany({
+    return prisma.webhookSubscription.findMany({
       where: { tenantId },
       orderBy: { createdAt: "desc" },
     });
   }
   async createWebhook(tenantId: string, userId: string, data: any) {
     const secret = randomBytes(24).toString("hex");
-    return prisma.apiWebhook.create({
+    return prisma.webhookSubscription.create({
       data: {
         tenantId,
         name: data.name,
-        url: data.url,
+        targetUrl: data.url,
         secret,
         events: data.events,
-        retryCount: data.retryCount ?? 3,
-        timeoutMs: data.timeoutMs ?? 5000,
-        createdBy: userId,
+        status: "ACTIVE",
       },
     });
   }
   async updateWebhook(tenantId: string, id: string, data: any) {
-    const w = await prisma.apiWebhook.findFirst({ where: { id, tenantId } });
+    const w = await prisma.webhookSubscription.findFirst({
+      where: { id, tenantId },
+    });
     if (!w) throw new NotFoundException("Webhook not found");
-    return prisma.apiWebhook.update({ where: { id }, data });
+    return prisma.webhookSubscription.update({ where: { id }, data });
   }
   async deleteWebhook(tenantId: string, id: string) {
-    const w = await prisma.apiWebhook.findFirst({ where: { id, tenantId } });
+    const w = await prisma.webhookSubscription.findFirst({
+      where: { id, tenantId },
+    });
     if (!w) throw new NotFoundException("Webhook not found");
-    return prisma.apiWebhook.delete({ where: { id } });
+    return prisma.webhookSubscription.delete({ where: { id } });
   }
   async listWebhookDeliveries(tenantId: string, webhookId: string) {
-    return prisma.apiWebhookDelivery.findMany({
-      where: { webhookId, tenantId },
+    return prisma.webhookDeliveryLog.findMany({
+      where: { subscriptionId: webhookId, tenantId },
       orderBy: { createdAt: "desc" },
       take: 100,
     });
   }
   async retryWebhookDelivery(tenantId: string, id: string) {
-    const d = await prisma.apiWebhookDelivery.findFirst({
+    const d = await prisma.webhookDeliveryLog.findFirst({
       where: { id, tenantId },
     });
     if (!d) throw new NotFoundException("Webhook delivery not found");
-    return prisma.apiWebhookDelivery.update({
+    return prisma.webhookDeliveryLog.update({
       where: { id },
-      data: { status: "PENDING", attempt: d.attempt + 1 },
+      data: { status: "PENDING", attempts: d.attempts + 1 },
     });
   }
 
@@ -138,13 +177,13 @@ export class ApiPlatformDeepService {
       if (from) where.createdAt.gte = new Date(from);
       if (to) where.createdAt.lte = new Date(to);
     }
-    const totalCalls = await prisma.apiAccessLog.count({ where });
-    const methodDist = await prisma.apiAccessLog.groupBy({
+    const totalCalls = await prisma.apiUsageMetric.count({ where });
+    const methodDist = await prisma.apiUsageMetric.groupBy({
       by: ["method"],
       where,
       _count: true,
     });
-    const statusDist = await prisma.apiAccessLog.groupBy({
+    const statusDist = await prisma.apiUsageMetric.groupBy({
       by: ["statusCode"],
       where,
       _count: true,
@@ -165,124 +204,145 @@ export class ApiPlatformDeepService {
   }
 
   async listCorsConfigs(tenantId: string) {
-    return prisma.apiCorsConfig.findMany({ where: { tenantId } });
+    return this.corsConfigs.filter((c) => c.tenantId === tenantId);
   }
   async upsertCorsConfig(tenantId: string, origin: string, data: any) {
-    return prisma.apiCorsConfig.upsert({
-      where: { tenantId_origin: { tenantId, origin } },
-      create: {
-        tenantId,
-        origin,
-        methods: data.methods ?? ["GET", "POST", "PUT", "DELETE", "PATCH"],
-        headers: data.headers ?? ["Content-Type", "Authorization"],
-        allowCredentials: data.allowCredentials ?? false,
-      },
-      update: {
-        methods: data.methods,
-        headers: data.headers,
-        allowCredentials: data.allowCredentials,
-      },
-    });
+    const existing = this.corsConfigs.find(
+      (c) => c.tenantId === tenantId && c.origin === origin,
+    );
+    if (existing) {
+      existing.methods = data.methods ?? existing.methods;
+      existing.headers = data.headers ?? existing.headers;
+      existing.allowCredentials =
+        data.allowCredentials ?? existing.allowCredentials;
+      return existing;
+    }
+    const record: CorsConfigRecord = {
+      id: randomUUID(),
+      tenantId,
+      origin,
+      methods: data.methods ?? ["GET", "POST", "PUT", "DELETE", "PATCH"],
+      headers: data.headers ?? ["Content-Type", "Authorization"],
+      allowCredentials: data.allowCredentials ?? false,
+    };
+    this.corsConfigs.push(record);
+    return record;
   }
 
   async listSchemas(tenantId: string) {
-    return prisma.apiSchemaRegistry.findMany({ where: { tenantId } });
+    return prisma.schemaRegistry.findMany({ where: { tenantId } });
   }
   async registerSchema(tenantId: string, data: any) {
-    return prisma.apiSchemaRegistry.create({
+    return prisma.schemaRegistry.create({
       data: {
         tenantId,
+        module: "api-platform",
         name: data.name,
-        schema: data.schema,
-        version: data.version ?? "1.0",
-        format: data.format ?? "openapi",
+        slug: data.name,
+        fields: data.schema,
+        settings: {
+          version: data.version ?? "1.0",
+          format: data.format ?? "openapi",
+        },
+        status: "ACTIVE",
       },
     });
   }
   async deleteSchema(tenantId: string, id: string) {
-    const s = await prisma.apiSchemaRegistry.findFirst({
+    const s = await prisma.schemaRegistry.findFirst({
       where: { id, tenantId },
     });
     if (!s) throw new NotFoundException("Schema not found");
-    return prisma.apiSchemaRegistry.delete({ where: { id } });
+    return prisma.schemaRegistry.delete({ where: { id } });
   }
 
   async listIntegrationTemplates(tenantId: string) {
-    return prisma.apiIntegrationTemplate.findMany({ where: { tenantId } });
+    return this.integrationTemplates.filter((t) => t.tenantId === tenantId);
   }
   async createIntegrationTemplate(tenantId: string, data: any) {
-    return prisma.apiIntegrationTemplate.create({
-      data: {
-        tenantId,
-        name: data.name,
-        description: data.description,
-        provider: data.provider,
-        config: data.config,
-      },
-    });
+    const record: IntegrationTemplateRecord = {
+      id: randomUUID(),
+      tenantId,
+      name: data.name,
+      description: data.description ?? null,
+      provider: data.provider,
+      config: data.config,
+      isPrebuilt: false,
+    };
+    this.integrationTemplates.push(record);
+    return record;
   }
   async deleteIntegrationTemplate(tenantId: string, id: string) {
-    const t = await prisma.apiIntegrationTemplate.findFirst({
-      where: { id, tenantId },
-    });
-    if (!t) throw new NotFoundException("Integration template not found");
-    return prisma.apiIntegrationTemplate.delete({ where: { id } });
+    const idx = this.integrationTemplates.findIndex(
+      (t) => t.id === id && t.tenantId === tenantId,
+    );
+    if (idx === -1)
+      throw new NotFoundException("Integration template not found");
+    this.integrationTemplates.splice(idx, 1);
+    return { deleted: true };
   }
 
   async listDataExports(tenantId: string) {
-    return prisma.apiDataExport.findMany({
+    return prisma.dataExportJob.findMany({
       where: { tenantId },
       orderBy: { createdAt: "desc" },
     });
   }
   async createDataExport(tenantId: string, userId: string, data: any) {
-    return prisma.apiDataExport.create({
+    return prisma.dataExportJob.create({
       data: {
         tenantId,
-        name: data.name,
+        type: "EXPORT",
         format: data.format ?? "CSV",
         scope: data.scope ?? {},
-        createdBy: userId,
+        status: "PENDING",
       },
     });
   }
 
   async listDataImports(tenantId: string) {
-    return prisma.apiDataImport.findMany({
+    return prisma.dataImportJob.findMany({
       where: { tenantId },
       orderBy: { createdAt: "desc" },
     });
   }
   async createDataImport(tenantId: string, userId: string, data: any) {
-    return prisma.apiDataImport.create({
+    return prisma.dataImportJob.create({
       data: {
         tenantId,
         name: data.name,
-        format: data.format ?? "CSV",
-        mapping: data.mapping ?? {},
+        targetModel: data.name,
+        fileName: data.name,
+        fileSize: 0,
+        columnMapping: data.mapping ?? {},
+        status: "PENDING",
         createdBy: userId,
       },
     });
   }
 
   async listHealthChecks(tenantId: string) {
-    return prisma.apiHealthCheck.findMany({ where: { tenantId } });
+    return this.healthChecks.filter((h) => h.tenantId === tenantId);
   }
   async createHealthCheck(tenantId: string, data: any) {
-    return prisma.apiHealthCheck.create({
-      data: {
-        tenantId,
-        name: data.name,
-        endpoint: data.endpoint,
-        method: data.method ?? "GET",
-        intervalSec: data.intervalSec ?? 300,
-        timeoutMs: data.timeoutMs ?? 5000,
-      },
-    });
+    const record: HealthCheckRecord = {
+      id: randomUUID(),
+      tenantId,
+      name: data.name,
+      endpoint: data.endpoint,
+      method: data.method ?? "GET",
+      intervalSec: data.intervalSec ?? 300,
+      timeoutMs: data.timeoutMs ?? 5000,
+      isActive: true,
+      lastCheckedAt: null,
+      lastStatus: "UNKNOWN",
+    };
+    this.healthChecks.push(record);
+    return record;
   }
 
   async listUsageQuotas(tenantId: string) {
-    return prisma.apiAccessLog.groupBy({
+    return prisma.apiUsageMetric.groupBy({
       by: ["endpoint"],
       where: { tenantId },
       _count: { id: true },
@@ -298,24 +358,24 @@ export class ApiPlatformDeepService {
   }
 
   async listIpAccessRules(tenantId: string) {
-    return prisma.adminIpRestriction.findMany({ where: { tenantId } });
+    return prisma.ipRestriction.findMany({ where: { tenantId } });
   }
   async createIpAccessRule(tenantId: string, data: any) {
-    return prisma.adminIpRestriction.create({
+    return prisma.ipRestriction.create({
       data: {
         tenantId,
-        cidr: data.cidr,
-        type: data.type ?? "ALLOW",
-        reason: data.reason,
+        ipRange: data.cidr,
+        ruleType: data.type ?? "ALLOW",
+        description: data.reason ?? null,
       },
     });
   }
   async deleteIpAccessRule(tenantId: string, id: string) {
-    const r = await prisma.adminIpRestriction.findFirst({
+    const r = await prisma.ipRestriction.findFirst({
       where: { id, tenantId },
     });
     if (!r) throw new NotFoundException("IP access rule not found");
-    return prisma.adminIpRestriction.delete({ where: { id } });
+    return prisma.ipRestriction.delete({ where: { id } });
   }
 
   async listEndpoints(tenantId: string) {
@@ -356,13 +416,13 @@ export class ApiPlatformDeepService {
   ) {
     const where = { tenantId };
     const [items, total] = await Promise.all([
-      prisma.apiAccessLog.findMany({
+      prisma.apiUsageMetric.findMany({
         where,
         orderBy: { createdAt: "desc" },
         skip: (query.page - 1) * query.limit,
         take: query.limit,
       }),
-      prisma.apiAccessLog.count({ where }),
+      prisma.apiUsageMetric.count({ where }),
     ]);
     return {
       items,

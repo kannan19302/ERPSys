@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Controller,
   Get,
@@ -51,20 +50,14 @@ export class SalesReturnsController {
   @Get(":id")
   @Permissions("sales.returns.view")
   @ApiOperation({ summary: "Get sales return by id" })
-  async getReturn(
-    @Req() req: AuthenticatedRequest,
-    @Param("id") id: string,
-  ) {
+  async getReturn(@Req() req: AuthenticatedRequest, @Param("id") id: string) {
     return this.returnsService.getReturn(req.user.tenantId, id);
   }
 
   @Post()
   @Permissions("sales.returns.manage")
   @ApiOperation({ summary: "Create a sales return" })
-  async createReturn(
-    @Req() req: AuthenticatedRequest,
-    @Body() body: any,
-  ) {
+  async createReturn(@Req() req: AuthenticatedRequest, @Body() body: any) {
     return this.returnsService.createReturn(
       req.user.tenantId,
       body,
@@ -148,10 +141,7 @@ export class SalesReturnsController {
   @Post("rmas")
   @Permissions("sales.returns.manage")
   @ApiOperation({ summary: "Create an RMA" })
-  async createRMA(
-    @Req() req: AuthenticatedRequest,
-    @Body() body: any,
-  ) {
+  async createRMA(@Req() req: AuthenticatedRequest, @Body() body: any) {
     return this.returnsService.createRMA(
       req.user.tenantId,
       body,
@@ -200,10 +190,7 @@ export class SalesReturnsController {
     @Req() req: AuthenticatedRequest,
     @Query("customerId") customerId?: string,
   ) {
-    return this.returnsService.listCreditNotes(
-      req.user.tenantId,
-      customerId,
-    );
+    return this.returnsService.listCreditNotes(req.user.tenantId, customerId);
   }
 
   @Get("analytics")
@@ -213,9 +200,6 @@ export class SalesReturnsController {
     @Req() req: AuthenticatedRequest,
     @Query("period") period?: string,
   ) {
-    return this.returnsService.getReturnAnalytics(
-      req.user.tenantId,
-      period,
-    );
+    return this.returnsService.getReturnAnalytics(req.user.tenantId, period);
   }
 }

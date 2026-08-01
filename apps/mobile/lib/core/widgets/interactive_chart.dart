@@ -369,7 +369,6 @@ class _PieChartPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final Rect rect = Rect.fromLTWH(0, 0, size.width, size.height);
     final double radius = size.width < size.height ? size.width / 2 : size.height / 2;
     final Offset center = Offset(size.width / 2, size.height / 2);
     final double innerRadius = radius * innerRadiusRatio;
@@ -524,10 +523,10 @@ class _LineChartPainter extends CustomPainter {
     final double range = maxValue - minValue;
     if (range == 0) return;
 
-    final double leftPadding = 8;
-    final double rightPadding = 8;
+    const double leftPadding = 8;
+    const double rightPadding = 8;
     final double bottomPadding = showLabels ? 24 : 8;
-    final double topPadding = 8;
+    const double topPadding = 8;
     final double chartWidth = size.width - leftPadding - rightPadding;
     final double chartHeight = size.height - topPadding - bottomPadding;
 
@@ -673,7 +672,6 @@ class KpiCard extends StatelessWidget {
         : null;
 
     final bool isUp = trend != null && trend >= 0;
-    final bool isDown = trend != null && trend < 0;
 
     return UiCard(
       onTap: onTap,

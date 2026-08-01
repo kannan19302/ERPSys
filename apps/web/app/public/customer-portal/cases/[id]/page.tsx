@@ -1,11 +1,16 @@
-// @ts-nocheck
-'use client';
-import styles from './page.module.css';
-import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { Card, Button, Spinner, StatusBadge, useToast } from '@unerp/ui';
-import { ArrowLeft, Send } from 'lucide-react';
-import { portalGet, portalPost, getPortalToken, clearPortalToken, PortalApiError } from '../../../../../src/lib/portal-api';
+"use client";
+import styles from "./page.module.css";
+import React, { useState, useEffect, useCallback } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { Card, Button, Spinner, StatusBadge, useToast } from "@unerp/ui";
+import { ArrowLeft, Send } from "lucide-react";
+import {
+  portalGet,
+  portalPost,
+  getPortalToken,
+  clearPortalToken,
+  PortalApiError,
+} from "../../../../../src/lib/portal-api";
 
 interface CaseComment {
   id: string;
@@ -33,11 +38,11 @@ export default function PortalCaseDetailPage() {
 
   const [caseDetail, setCaseDetail] = useState<CaseDetail | null>(null);
   const [loading, setLoading] = useState(true);
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState("");
   const [sending, setSending] = useState(false);
 
   useEffect(() => {
-    if (!getPortalToken()) router.push('/public/customer-portal/login');
+    if (!getPortalToken()) router.push("/public/customer-portal/login");
   }, [router]);
 
   const load = useCallback(async () => {
@@ -48,10 +53,12 @@ export default function PortalCaseDetailPage() {
     } catch (e) {
       if (e instanceof PortalApiError && e.statusCode === 401) {
         clearPortalToken();
-        router.push('/public/customer-portal/login');
+        router.push("/public/customer-portal/login");
         return;
       }
-      toastError(e instanceof PortalApiError ? e.message : 'Failed to load case');
+      toastError(
+        e instanceof PortalApiError ? e.message : "Failed to load case",
+      );
     } finally {
       setLoading(false);
     }
@@ -65,12 +72,16 @@ export default function PortalCaseDetailPage() {
     if (!comment.trim()) return;
     setSending(true);
     try {
-      await portalPost(`/portal/cases/${id}/comments`, { body: comment.trim() });
-      setComment('');
-      success('Comment added');
+      await portalPost(`/portal/cases/${id}/comments`, {
+        body: comment.trim(),
+      });
+      setComment("");
+      success("Comment added");
       load();
     } catch (e) {
-      toastError(e instanceof PortalApiError ? e.message : 'Failed to add comment');
+      toastError(
+        e instanceof PortalApiError ? e.message : "Failed to add comment",
+      );
     } finally {
       setSending(false);
     }
@@ -89,15 +100,21 @@ export default function PortalCaseDetailPage() {
   }
 
   return (
-    <div className={`ui-page ${styles.s3}`} >
-      <Button variant="secondary" onClick={() => router.push('/public/customer-portal/dashboard')} style={{ marginBottom: 16 }}>
+    <div className={`ui-page ${styles.s3}`}>
+      <Button
+        variant="secondary"
+        onClick={() => router.push("/public/customer-portal/dashboard")}
+        style={{ marginBottom: 16 }}
+      >
         <ArrowLeft size={14} /> Back to dashboard
       </Button>
 
       <Card className="ui-card">
         <div className={styles.s4}>
           <div>
-            <h3>{caseDetail.caseNumber} — {caseDetail.subject}</h3>
+            <h3>
+              {caseDetail.caseNumber} — {caseDetail.subject}
+            </h3>
             <p className={styles.s5}>{caseDetail.description}</p>
           </div>
           <StatusBadge status={caseDetail.status} />
@@ -111,10 +128,19 @@ export default function PortalCaseDetailPage() {
             caseDetail.comments.map((c) => (
               <div
                 key={c.id}
-                style={{ background: c.authorType === 'PORTAL' ? 'var(--surface-secondary, #eef2ff)' : 'var(--surface-tertiary, #f4f4f5)', alignSelf: c.authorType === 'PORTAL' ? 'flex-end' : 'flex-start' }} className={styles.s8}
+                style={{
+                  background:
+                    c.authorType === "PORTAL"
+                      ? "var(--surface-secondary, #eef2ff)"
+                      : "var(--surface-tertiary, #f4f4f5)",
+                  alignSelf:
+                    c.authorType === "PORTAL" ? "flex-end" : "flex-start",
+                }}
+                className={styles.s8}
               >
                 <div className={styles.s9}>
-                  {c.authorType === 'PORTAL' ? 'You' : 'Support team'} · {new Date(c.createdAt).toLocaleString()}
+                  {c.authorType === "PORTAL" ? "You" : "Support team"} ·{" "}
+                  {new Date(c.createdAt).toLocaleString()}
                 </div>
                 {c.body}
               </div>
@@ -128,7 +154,7 @@ export default function PortalCaseDetailPage() {
             placeholder="Type a message…"
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+            onKeyDown={(e) => e.key === "Enter" && handleSend()}
           />
           <Button onClick={handleSend} disabled={sending || !comment.trim()}>
             <Send size={14} /> Send

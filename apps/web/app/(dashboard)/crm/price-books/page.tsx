@@ -1,10 +1,9 @@
-// @ts-nocheck
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Modal, PageHeader } from '@unerp/ui';
-import { ListView, FormView, RouteGuard } from '@unerp/framework';
-import { priceBookResource } from '@/modules/crm';
+import { useState } from "react";
+import { Modal, PageHeader } from "@unerp/ui";
+import { ListView, FormView, RouteGuard } from "@unerp/framework";
+import { priceBookResource } from "@/modules/crm";
 
 export default function PriceBooksPage() {
   const [showCreate, setShowCreate] = useState(false);
@@ -15,7 +14,11 @@ export default function PriceBooksPage() {
         <PageHeader
           title="Price Books"
           description="Manage standard and custom price lists for products"
-          breadcrumbs={[{ label: 'Home', href: '/dashboard' }, { label: 'CRM', href: '/crm' }, { label: 'Price Books' }]}
+          breadcrumbs={[
+            { label: "Home", href: "/dashboard" },
+            { label: "CRM", href: "/crm" },
+            { label: "Price Books" },
+          ]}
         />
 
         <ListView
@@ -23,7 +26,11 @@ export default function PriceBooksPage() {
           onCreate={() => setShowCreate(true)}
         />
 
-        <Modal open={showCreate} onClose={() => setShowCreate(false)} title="New Price Book">
+        <Modal
+          open={showCreate}
+          onClose={() => setShowCreate(false)}
+          title="New Price Book"
+        >
           <FormView
             resource={priceBookResource}
             onSuccess={() => setShowCreate(false)}

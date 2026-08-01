@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { PwaPushService } from "./pwa-push.service";
 import { prisma } from "@unerp/database";

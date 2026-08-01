@@ -1,7 +1,6 @@
-// @ts-nocheck
-import { Module } from '@nestjs/common';
-import { DemandForecastingController } from './demand-forecasting.controller';
-import { DemandForecastingService } from './demand-forecasting.service';
+import { Module } from "@nestjs/common";
+import { DemandForecastingController } from "./demand-forecasting.controller";
+import { DemandForecastingService } from "./demand-forecasting.service";
 
 @Module({
   controllers: [DemandForecastingController],

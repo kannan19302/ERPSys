@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   WebSocketGateway,
   WebSocketServer,
@@ -143,32 +142,91 @@ export class SaasGateway
     this.server?.emit(event, data);
   }
 
-  emitUsageUpdate(tenantId: string, data: { metric: string; current: number; limit: number; pct: number }) {
+  emitUsageUpdate(
+    tenantId: string,
+    data: { metric: string; current: number; limit: number; pct: number },
+  ) {
     this.server?.to(`tenant:${tenantId}`).emit("usage:update", data);
-    this.server?.to(`usage:${tenantId}:${data.metric}`).emit("usage:update", data);
+    this.server
+      ?.to(`usage:${tenantId}:${data.metric}`)
+      .emit("usage:update", data);
   }
 
-  emitBillingInvoice(tenantId: string, data: { invoiceId: string; amount: number; currency: string; dueDate: string; status: string }) {
+  emitBillingInvoice(
+    tenantId: string,
+    data: {
+      invoiceId: string;
+      amount: number;
+      currency: string;
+      dueDate: string;
+      status: string;
+    },
+  ) {
     this.server?.to(`billing:${tenantId}`).emit("billing:invoice", data);
   }
 
-  emitBillingPayment(tenantId: string, data: { paymentId: string; invoiceId: string; amount: number; status: string; method: string }) {
+  emitBillingPayment(
+    tenantId: string,
+    data: {
+      paymentId: string;
+      invoiceId: string;
+      amount: number;
+      status: string;
+      method: string;
+    },
+  ) {
     this.server?.to(`billing:${tenantId}`).emit("billing:payment", data);
   }
 
-  emitAlert(tenantId: string, data: { alertId: string; type: string; severity: string; message: string; metric?: string; currentValue?: number; threshold?: number }) {
+  emitAlert(
+    tenantId: string,
+    data: {
+      alertId: string;
+      type: string;
+      severity: string;
+      message: string;
+      metric?: string;
+      currentValue?: number;
+      threshold?: number;
+    },
+  ) {
     this.server?.to(`alerts:${tenantId}`).emit("alert:triggered", data);
   }
 
-  emitActivity(tenantId: string, data: { userId: string; userName: string; action: string; resource: string; details?: string; timestamp: string }) {
+  emitActivity(
+    tenantId: string,
+    data: {
+      userId: string;
+      userName: string;
+      action: string;
+      resource: string;
+      details?: string;
+      timestamp: string;
+    },
+  ) {
     this.server?.to(`activity:${tenantId}`).emit("activity:team", data);
   }
 
-  emitSubscriptionChange(tenantId: string, data: { planId: string; planName: string; status: string; previousPlan?: string; effectiveDate: string }) {
+  emitSubscriptionChange(
+    tenantId: string,
+    data: {
+      planId: string;
+      planName: string;
+      status: string;
+      previousPlan?: string;
+      effectiveDate: string;
+    },
+  ) {
     this.server?.to(`tenant:${tenantId}`).emit("subscription:changed", data);
   }
 
-  emitAnnouncement(data: { id: string; title: string; body: string; priority: string; publishedAt: string }) {
+  emitAnnouncement(data: {
+    id: string;
+    title: string;
+    body: string;
+    priority: string;
+    publishedAt: string;
+  }) {
     this.server?.emit("announcement:new", data);
   }
 
@@ -176,7 +234,10 @@ export class SaasGateway
     this.logger.warn("broadcastChatMessage not implemented in SaasGateway");
   }
 
-  broadcastPresenceUpdate(_tenantId: string, _payload: Record<string, unknown>) {
+  broadcastPresenceUpdate(
+    _tenantId: string,
+    _payload: Record<string, unknown>,
+  ) {
     this.logger.warn("broadcastPresenceUpdate not implemented in SaasGateway");
   }
 }

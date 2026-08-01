@@ -1,6 +1,4 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/widgets/ui_card.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/permission_gate.dart';
 import '../../../../core/error/failures.dart';
@@ -8,11 +6,7 @@ import '../../../../core/widgets/state_views.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
 import '../../../../core/rbac/permissions.dart';
-import '../../../../core/utils/formatters.dart';
-import '../../../../core/widgets/permission_gate.dart';
-import '../../../../core/widgets/state_views.dart';
 import '../../domain/entities/real_estate.dart';
 import '../providers/real_estate_providers.dart';
 
@@ -34,14 +28,14 @@ class TenantDetailPage extends ConsumerWidget {
             final confirmed = await showDialog<bool>(context: context, builder: (c) => AlertDialog(
               title: const Text('Delete tenant?'), content: const Text('This cannot be undone.'),
               actions: [TextButton(onPressed: () => Navigator.of(c).pop(false), child: const Text('Cancel')),
-                FilledButton(onPressed: () => Navigator.of(c).pop(true), child: const Text('Delete'))],
-            ));
+                FilledButton(onPressed: () => Navigator.of(c).pop(true), child: const Text('Delete')),],
+            ),);
             if (confirmed != true || !context.mounted) return;
             final r = await ref.read(propertyListControllerProvider.notifier).deleteTenant(tenantId);
             if (!context.mounted) return;
             r.fold((f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))), (_) => Navigator.of(context).pop());
           },
-        ))],
+        ),),],
       ),
       body: async.when(
         loading: () => const LoadingView(),
@@ -75,13 +69,13 @@ class _TenantDetail extends StatelessWidget {
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(tenant.name, style: Theme.of(context).textTheme.titleLarge),
               if (tenant.company != null) Text(tenant.company!, style: TextStyle(color: t.textSecondary)),
-            ])),
+            ],),),
             Container(padding: const EdgeInsets.symmetric(horizontal: Spacing.x2_5, vertical: Spacing.x1),
               decoration: BoxDecoration(color: bg, borderRadius: Radii.pill),
-              child: Text(label, style: TextStyle(color: color, fontSize: TypeScale.xs, fontWeight: TypeScale.medium))),
-          ]),
+              child: Text(label, style: TextStyle(color: color, fontSize: TypeScale.xs, fontWeight: TypeScale.medium)),),
+          ],),
           if (tenant.notes != null && tenant.notes!.isNotEmpty) Padding(padding: const EdgeInsets.only(top: Spacing.x2), child: Text(tenant.notes!, style: TextStyle(color: t.textSecondary))),
-        ])),
+        ],),),
         const SizedBox(height: Spacing.x4),
         _SectionCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const _SectionTitle(title: 'Contact'),
@@ -89,14 +83,14 @@ class _TenantDetail extends StatelessWidget {
           _FieldRow('Phone', tenant.phone ?? '—'),
           if (tenant.emergencyContact != null) _FieldRow('Emergency Contact', tenant.emergencyContact!),
           if (tenant.emergencyPhone != null) _FieldRow('Emergency Phone', tenant.emergencyPhone!),
-        ])),
+        ],),),
         const SizedBox(height: Spacing.x4),
         _SectionCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const _SectionTitle(title: 'Leasing Activity'),
           _FieldRow('Active Leases', '${tenant.leaseCount}'),
           _FieldRow('Total Rent', Formatters.currency(tenant.totalRent)),
           _FieldRow('Outstanding', Formatters.currency(tenant.outstandingBalance)),
-        ])),
+        ],),),
         if (tenant.createdAt != null) ...[
           const SizedBox(height: Spacing.x4),
           _SectionCard(child: _FieldRow('Created', Formatters.dateTime(tenant.createdAt!))),

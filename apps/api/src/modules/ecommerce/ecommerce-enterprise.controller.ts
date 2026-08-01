@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Controller, Get, Param, Query, UseGuards, Req } from "@nestjs/common";
 import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
@@ -17,25 +16,53 @@ export class EcommerceEnterpriseController {
 
   @Get("sales-analytics")
   @Permissions("ecommerce.enterprise.read")
-  async getSalesAnalytics(@Req() req: AuthenticatedRequest, @Query("periodStart") periodStart?: string, @Query("periodEnd") periodEnd?: string) {
-    return this.service.getSalesAnalytics(req.user.tenantId, periodStart, periodEnd);
+  async getSalesAnalytics(
+    @Req() req: AuthenticatedRequest,
+    @Query("periodStart") periodStart?: string,
+    @Query("periodEnd") periodEnd?: string,
+  ) {
+    return this.service.getSalesAnalytics(
+      req.user.tenantId,
+      periodStart,
+      periodEnd,
+    );
   }
 
   @Get("customer-behavior")
   @Permissions("ecommerce.enterprise.read")
-  async getCustomerBehavior(@Req() req: AuthenticatedRequest, @Query("periodStart") periodStart?: string, @Query("periodEnd") periodEnd?: string) {
-    return this.service.getCustomerBehavior(req.user.tenantId, periodStart, periodEnd);
+  async getCustomerBehavior(
+    @Req() req: AuthenticatedRequest,
+    @Query("periodStart") periodStart?: string,
+    @Query("periodEnd") periodEnd?: string,
+  ) {
+    return this.service.getCustomerBehavior(
+      req.user.tenantId,
+      periodStart,
+      periodEnd,
+    );
   }
 
   @Get("product-performance")
   @Permissions("ecommerce.enterprise.read")
-  async getProductPerformance(@Req() req: AuthenticatedRequest, @Query("periodStart") periodStart?: string, @Query("periodEnd") periodEnd?: string) {
-    return this.service.getProductPerformance(req.user.tenantId, periodStart, periodEnd);
+  async getProductPerformance(
+    @Req() req: AuthenticatedRequest,
+    @Query("periodStart") periodStart?: string,
+    @Query("periodEnd") periodEnd?: string,
+  ) {
+    return this.service.getProductPerformance(
+      req.user.tenantId,
+      periodStart,
+      periodEnd,
+    );
   }
 
   @Get("marketing-roi")
   @Permissions("ecommerce.enterprise.read")
-  async getMarketingRoi(@Req() req: AuthenticatedRequest, @Query("campaignId") campaignId?: string, @Query("period") period?: string) {
+  async getMarketingRoi(
+    @Req() req: AuthenticatedRequest,
+    @Query("campaignId") campaignId?: string,
+    @Query("period") period?: string,
+  ) {
     return this.service.getMarketingRoi(req.user.tenantId, campaignId, period);
   }
 
@@ -47,20 +74,32 @@ export class EcommerceEnterpriseController {
 
   @Get("fraud-detection")
   @Permissions("ecommerce.enterprise.read")
-  async getFraudDetection(@Req() req: AuthenticatedRequest, @Query("period") period?: string) {
+  async getFraudDetection(
+    @Req() req: AuthenticatedRequest,
+    @Query("period") period?: string,
+  ) {
     return this.service.getFraudDetection(req.user.tenantId, period);
   }
 
   @Get("customer-loyalty")
   @Permissions("ecommerce.enterprise.read")
-  async getCustomerLoyalty(@Req() req: AuthenticatedRequest, @Query("period") period?: string) {
+  async getCustomerLoyalty(
+    @Req() req: AuthenticatedRequest,
+    @Query("period") period?: string,
+  ) {
     return this.service.getCustomerLoyalty(req.user.tenantId, period);
   }
 
   @Get("storefront-performance")
   @Permissions("ecommerce.enterprise.read")
-  async getStorefrontPerformance(@Req() req: AuthenticatedRequest, @Query("storefrontId") storefrontId?: string) {
-    return this.service.getStorefrontPerformance(req.user.tenantId, storefrontId);
+  async getStorefrontPerformance(
+    @Req() req: AuthenticatedRequest,
+    @Query("storefrontId") storefrontId?: string,
+  ) {
+    return this.service.getStorefrontPerformance(
+      req.user.tenantId,
+      storefrontId,
+    );
   }
 
   @Get("dashboard-kpis")

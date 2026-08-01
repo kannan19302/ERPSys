@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Injectable, BadRequestException, Optional } from "@nestjs/common";
 import { AppLogger } from "../../../common/services/logger.service";
 import type {

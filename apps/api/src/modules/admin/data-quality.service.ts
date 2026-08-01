@@ -1,23 +1,23 @@
-// @ts-nocheck
-import { Injectable } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import { Injectable } from "@nestjs/common";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class DataQualityService {
-
   /* ── Scan for Duplicates ───────────────────── */
 
   async scanForDuplicates(tenantId: string, entityType: string) {
     let setsCreated = 0;
 
-    if (entityType === 'Customer') {
+    if (entityType === "Customer") {
       setsCreated = await this.scanCustomerDuplicates(tenantId);
-    } else if (entityType === 'Product') {
+    } else if (entityType === "Product") {
       setsCreated = await this.scanProductDuplicates(tenantId);
-    } else if (entityType === 'Vendor') {
+    } else if (entityType === "Vendor") {
       setsCreated = await this.scanVendorDuplicates(tenantId);
     } else {
-      throw new Error(`Unsupported entity type for duplicate scan: ${entityType}`);
+      throw new Error(
+        `Unsupported entity type for duplicate scan: ${entityType}`,
+      );
     }
 
     return { entityType, setsCreated };
@@ -46,11 +46,11 @@ export class DataQualityService {
       await prisma.duplicateSet.create({
         data: {
           tenantId,
-          entityType: 'Customer',
+          entityType: "Customer",
           recordIds: ids,
           matchScore: 1.0,
-          matchFields: ['email'],
-          status: 'PENDING',
+          matchFields: ["email"],
+          status: "PENDING",
         },
       });
       setsCreated++;
@@ -60,7 +60,7 @@ export class DataQualityService {
     const phoneGroups = new Map<string, string[]>();
     for (const c of customers) {
       if (c.phone) {
-        const key = c.phone.replace(/\D/g, '');
+        const key = c.phone.replace(/\D/g, "");
         if (!phoneGroups.has(key)) phoneGroups.set(key, []);
         phoneGroups.get(key)!.push(c.id);
       }
@@ -71,11 +71,11 @@ export class DataQualityService {
       await prisma.duplicateSet.create({
         data: {
           tenantId,
-          entityType: 'Customer',
+          entityType: "Customer",
           recordIds: ids,
           matchScore: 0.9,
-          matchFields: ['phone'],
-          status: 'PENDING',
+          matchFields: ["phone"],
+          status: "PENDING",
         },
       });
       setsCreated++;
@@ -107,11 +107,11 @@ export class DataQualityService {
       await prisma.duplicateSet.create({
         data: {
           tenantId,
-          entityType: 'Product',
+          entityType: "Product",
           recordIds: ids,
           matchScore: 1.0,
-          matchFields: ['name'],
-          status: 'PENDING',
+          matchFields: ["name"],
+          status: "PENDING",
         },
       });
       setsCreated++;
@@ -132,11 +132,11 @@ export class DataQualityService {
       await prisma.duplicateSet.create({
         data: {
           tenantId,
-          entityType: 'Product',
+          entityType: "Product",
           recordIds: ids,
           matchScore: 1.0,
-          matchFields: ['sku'],
-          status: 'PENDING',
+          matchFields: ["sku"],
+          status: "PENDING",
         },
       });
       setsCreated++;
@@ -168,11 +168,11 @@ export class DataQualityService {
       await prisma.duplicateSet.create({
         data: {
           tenantId,
-          entityType: 'Vendor',
+          entityType: "Vendor",
           recordIds: ids,
           matchScore: 1.0,
-          matchFields: ['name'],
-          status: 'PENDING',
+          matchFields: ["name"],
+          status: "PENDING",
         },
       });
       setsCreated++;
@@ -193,11 +193,11 @@ export class DataQualityService {
       await prisma.duplicateSet.create({
         data: {
           tenantId,
-          entityType: 'Vendor',
+          entityType: "Vendor",
           recordIds: ids,
           matchScore: 1.0,
-          matchFields: ['taxId'],
-          status: 'PENDING',
+          matchFields: ["taxId"],
+          status: "PENDING",
         },
       });
       setsCreated++;
@@ -208,13 +208,17 @@ export class DataQualityService {
 
   /* ── Get Duplicate Sets ────────────────────── */
 
-  async getDuplicateSets(tenantId: string, entityType?: string, status = 'PENDING') {
+  async getDuplicateSets(
+    tenantId: string,
+    entityType?: string,
+    status = "PENDING",
+  ) {
     const where: Record<string, any> = { tenantId, status };
     if (entityType) where.entityType = entityType;
 
     return prisma.duplicateSet.findMany({
       where,
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -224,12 +228,12 @@ export class DataQualityService {
     const set = await prisma.duplicateSet.findFirst({
       where: { id: setId, tenantId },
     });
-    if (!set) throw new Error('Duplicate set not found');
+    if (!set) throw new Error("Duplicate set not found");
 
     return prisma.duplicateSet.update({
       where: { id: setId },
       data: {
-        status: 'MERGED',
+        status: "MERGED",
         mergedIntoId: masterId,
         resolvedAt: new Date(),
       },
@@ -242,12 +246,12 @@ export class DataQualityService {
     const set = await prisma.duplicateSet.findFirst({
       where: { id: setId, tenantId },
     });
-    if (!set) throw new Error('Duplicate set not found');
+    if (!set) throw new Error("Duplicate set not found");
 
     return prisma.duplicateSet.update({
       where: { id: setId },
       data: {
-        status: 'DISMISSED',
+        status: "DISMISSED",
         resolvedBy: userId,
         resolvedAt: new Date(),
       },

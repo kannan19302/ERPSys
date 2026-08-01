@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -49,13 +48,13 @@ class _SupplierQuotationDetail extends StatelessWidget {
             Row(children: [
               Expanded(child: Text(quotation.vendorName ?? 'Quotation', style: Theme.of(context).textTheme.titleLarge)),
               UiStatusBadge(label: quotation.status, tone: _statusTone(quotation.status)),
-            ]),
+            ],),
             if (quotation.rfqNumber != null) ...[
               const SizedBox(height: Spacing.x1),
               Text('RFQ: ${quotation.rfqNumber}', style: TextStyle(color: t.textSecondary)),
             ],
           ],
-        )),
+        ),),
         const SizedBox(height: Spacing.x4),
         UiCard(child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,16 +67,16 @@ class _SupplierQuotationDetail extends StatelessWidget {
                 Text('${item.quantity} \u00d7 \$${item.rate.toStringAsFixed(2)}'),
                 const SizedBox(width: Spacing.x2),
                 Text('\$${item.amount.toStringAsFixed(2)}',
-                    style: Theme.of(context).textTheme.labelLarge),
-              ]),
-            )),
+                    style: Theme.of(context).textTheme.labelLarge,),
+              ],),
+            ),),
             if (quotation.items.isEmpty) Text('No items', style: TextStyle(color: t.textTertiary)),
             const Divider(height: Spacing.x4),
             _Row('Subtotal', Formatters.currency(quotation.subtotal)),
             _Row('Tax', Formatters.currency(quotation.taxTotal)),
             _Row('Total', Formatters.currency(quotation.totalAmount)),
           ],
-        )),
+        ),),
         const SizedBox(height: Spacing.x4),
         UiCard(child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,7 +87,7 @@ class _SupplierQuotationDetail extends StatelessWidget {
             if (quotation.notes != null && quotation.notes!.isNotEmpty) _Row('Notes', quotation.notes!),
             if (quotation.createdAt != null) _Row('Created', Formatters.dateTime(quotation.createdAt!)),
           ],
-        )),
+        ),),
       ],
     );
   }
@@ -110,7 +109,7 @@ class _Row extends StatelessWidget {
       child: Row(children: [
         Expanded(child: Text(label, style: TextStyle(color: context.tokens.textSecondary))),
         Text(value, style: Theme.of(context).textTheme.labelLarge),
-      ]),
+      ],),
     );
   }
 }

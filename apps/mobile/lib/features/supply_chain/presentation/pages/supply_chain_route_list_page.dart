@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -108,7 +107,7 @@ class _SupplyChainRouteListPageState extends ConsumerState<SupplyChainRouteListP
                   }
                 },
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -167,7 +166,7 @@ class _RouteTile extends StatelessWidget {
                   label: route.isActive ? 'Active' : 'Inactive',
                   tone: route.isActive ? UiTone.success : UiTone.neutral,
                 ),
-              ]),
+              ],),
               const SizedBox(height: Spacing.x1),
               Row(children: [
                 Icon(Icons.trip_origin, size: TypeScale.sm, color: t.textTertiary),
@@ -179,18 +178,18 @@ class _RouteTile extends StatelessWidget {
                 Icon(Icons.location_on, size: TypeScale.sm, color: t.textTertiary),
                 const SizedBox(width: Spacing.x1),
                 Expanded(child: Text(route.destination, style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs))),
-              ]),
+              ],),
               const SizedBox(height: Spacing.x1),
               Row(children: [
                 if (route.carrierName != null)
                   Text(route.carrierName!, style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
                 const Spacer(),
-                Text('\$${route.cost.toStringAsFixed(2)}', style: TextStyle(fontWeight: TypeScale.semibold)),
+                Text('\$${route.cost.toStringAsFixed(2)}', style: const TextStyle(fontWeight: TypeScale.semibold)),
                 if (route.transitTime != null) ...[
                   const SizedBox(width: Spacing.x2),
                   Text('${route.transitTime}d', style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
                 ],
-              ]),
+              ],),
             ],
           ),
         ),

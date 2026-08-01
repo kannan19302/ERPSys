@@ -43,24 +43,24 @@ class FieldServiceRemoteDataSourceImpl implements FieldServiceRemoteDataSource {
   @override
   Future<Paginated<ServiceTicketModel>> listServiceTickets(ListQuery query) =>
       _client.getPaginated<ServiceTicketModel>(
-        ApiPaths.serviceTickets, query, ServiceTicketModel.fromJson);
+        ApiPaths.serviceTickets, query, ServiceTicketModel.fromJson,);
 
   @override
   Future<ServiceTicketModel> getServiceTicket(String id) async =>
       ServiceTicketModel.fromJson(
-        await _client.getObject(ApiPaths.serviceTicket(id)));
+        await _client.getObject(ApiPaths.serviceTicket(id)),);
 
   @override
   Future<ServiceTicketModel> createServiceTicket(
-    Map<String, dynamic> payload) async =>
+    Map<String, dynamic> payload,) async =>
       ServiceTicketModel.fromJson(
-        await _client.post(ApiPaths.serviceTickets, body: payload));
+        await _client.post(ApiPaths.serviceTickets, body: payload),);
 
   @override
   Future<ServiceTicketModel> updateServiceTicket(
-    String id, Map<String, dynamic> payload) async =>
+    String id, Map<String, dynamic> payload,) async =>
       ServiceTicketModel.fromJson(
-        await _client.patch(ApiPaths.serviceTicket(id), body: payload));
+        await _client.patch(ApiPaths.serviceTicket(id), body: payload),);
 
   @override
   Future<void> deleteServiceTicket(String id) =>
@@ -68,44 +68,44 @@ class FieldServiceRemoteDataSourceImpl implements FieldServiceRemoteDataSource {
 
   @override
   Future<ServiceTicketModel> dispatchServiceTicket(
-    String id, Map<String, dynamic> payload) async =>
+    String id, Map<String, dynamic> payload,) async =>
       ServiceTicketModel.fromJson(
         await _client.post(
-          '${ApiPaths.serviceTicket(id)}/dispatch', body: payload));
+          '${ApiPaths.serviceTicket(id)}/dispatch', body: payload,),);
 
   @override
   Future<ServiceTicketModel> completeServiceTicket(
-    String id, Map<String, dynamic> payload) async =>
+    String id, Map<String, dynamic> payload,) async =>
       ServiceTicketModel.fromJson(
         await _client.post(
-          '${ApiPaths.serviceTicket(id)}/complete', body: payload));
+          '${ApiPaths.serviceTicket(id)}/complete', body: payload,),);
 
   @override
   Future<ServiceTicketModel> cancelServiceTicket(String id) async =>
       ServiceTicketModel.fromJson(
         await _client.post(
-          '${ApiPaths.serviceTicket(id)}/cancel'));
+          '${ApiPaths.serviceTicket(id)}/cancel',),);
 
   @override
   Future<Paginated<TechnicianModel>> listTechnicians(ListQuery query) =>
       _client.getPaginated<TechnicianModel>(
-        ApiPaths.technicians, query, TechnicianModel.fromJson);
+        ApiPaths.technicians, query, TechnicianModel.fromJson,);
 
   @override
   Future<TechnicianModel> getTechnician(String id) async =>
       TechnicianModel.fromJson(
-        await _client.getObject(ApiPaths.technician(id)));
+        await _client.getObject(ApiPaths.technician(id)),);
 
   @override
   Future<TechnicianModel> createTechnician(Map<String, dynamic> payload) async =>
       TechnicianModel.fromJson(
-        await _client.post(ApiPaths.technicians, body: payload));
+        await _client.post(ApiPaths.technicians, body: payload),);
 
   @override
   Future<TechnicianModel> updateTechnician(
-    String id, Map<String, dynamic> payload) async =>
+    String id, Map<String, dynamic> payload,) async =>
       TechnicianModel.fromJson(
-        await _client.patch(ApiPaths.technician(id), body: payload));
+        await _client.patch(ApiPaths.technician(id), body: payload),);
 
   @override
   Future<void> deleteTechnician(String id) =>
@@ -113,26 +113,26 @@ class FieldServiceRemoteDataSourceImpl implements FieldServiceRemoteDataSource {
 
   @override
   Future<Paginated<ServiceScheduleModel>> listServiceSchedules(
-    ListQuery query) =>
+    ListQuery query,) =>
       _client.getPaginated<ServiceScheduleModel>(
-        ApiPaths.serviceSchedules, query, ServiceScheduleModel.fromJson);
+        ApiPaths.serviceSchedules, query, ServiceScheduleModel.fromJson,);
 
   @override
   Future<ServiceScheduleModel> getServiceSchedule(String id) async =>
       ServiceScheduleModel.fromJson(
-        await _client.getObject(ApiPaths.serviceSchedule(id)));
+        await _client.getObject(ApiPaths.serviceSchedule(id)),);
 
   @override
   Future<ServiceScheduleModel> createServiceSchedule(
-    Map<String, dynamic> payload) async =>
+    Map<String, dynamic> payload,) async =>
       ServiceScheduleModel.fromJson(
-        await _client.post(ApiPaths.serviceSchedules, body: payload));
+        await _client.post(ApiPaths.serviceSchedules, body: payload),);
 
   @override
   Future<ServiceScheduleModel> updateServiceSchedule(
-    String id, Map<String, dynamic> payload) async =>
+    String id, Map<String, dynamic> payload,) async =>
       ServiceScheduleModel.fromJson(
-        await _client.patch(ApiPaths.serviceSchedule(id), body: payload));
+        await _client.patch(ApiPaths.serviceSchedule(id), body: payload),);
 
   @override
   Future<void> deleteServiceSchedule(String id) =>
@@ -142,36 +142,36 @@ class FieldServiceRemoteDataSourceImpl implements FieldServiceRemoteDataSource {
   Future<ServiceScheduleModel> startServiceSchedule(String id) async =>
       ServiceScheduleModel.fromJson(
         await _client.post(
-          '${ApiPaths.serviceSchedule(id)}/start'));
+          '${ApiPaths.serviceSchedule(id)}/start',),);
 
   @override
   Future<ServiceScheduleModel> completeServiceSchedule(String id) async =>
       ServiceScheduleModel.fromJson(
         await _client.post(
-          '${ApiPaths.serviceSchedule(id)}/complete'));
+          '${ApiPaths.serviceSchedule(id)}/complete',),);
 
   @override
   Future<Paginated<ServiceContractModel>> listServiceContracts(
-    ListQuery query) =>
+    ListQuery query,) =>
       _client.getPaginated<ServiceContractModel>(
-        ApiPaths.serviceContracts, query, ServiceContractModel.fromJson);
+        ApiPaths.serviceContracts, query, ServiceContractModel.fromJson,);
 
   @override
   Future<ServiceContractModel> getServiceContract(String id) async =>
       ServiceContractModel.fromJson(
-        await _client.getObject(ApiPaths.serviceContract(id)));
+        await _client.getObject(ApiPaths.serviceContract(id)),);
 
   @override
   Future<ServiceContractModel> createServiceContract(
-    Map<String, dynamic> payload) async =>
+    Map<String, dynamic> payload,) async =>
       ServiceContractModel.fromJson(
-        await _client.post(ApiPaths.serviceContracts, body: payload));
+        await _client.post(ApiPaths.serviceContracts, body: payload),);
 
   @override
   Future<ServiceContractModel> updateServiceContract(
-    String id, Map<String, dynamic> payload) async =>
+    String id, Map<String, dynamic> payload,) async =>
       ServiceContractModel.fromJson(
-        await _client.patch(ApiPaths.serviceContract(id), body: payload));
+        await _client.patch(ApiPaths.serviceContract(id), body: payload),);
 
   @override
   Future<void> deleteServiceContract(String id) =>
@@ -181,5 +181,5 @@ class FieldServiceRemoteDataSourceImpl implements FieldServiceRemoteDataSource {
   Future<ServiceContractModel> renewServiceContract(String id) async =>
       ServiceContractModel.fromJson(
         await _client.post(
-          '${ApiPaths.serviceContract(id)}/renew'));
+          '${ApiPaths.serviceContract(id)}/renew',),);
 }

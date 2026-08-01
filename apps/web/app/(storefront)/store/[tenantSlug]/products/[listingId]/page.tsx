@@ -1,16 +1,19 @@
-// @ts-nocheck
-'use client';
-import styles from './page.module.css';
-import Image from 'next/image';
-import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { Card, Button, Badge, Spinner } from '@unerp/ui';
-import { ArrowLeft, ShoppingCart, Store, Minus, Plus } from 'lucide-react';
+"use client";
+import styles from "./page.module.css";
+import Image from "next/image";
+import React, { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { Card, Button, Badge, Spinner } from "@unerp/ui";
+import { ArrowLeft, ShoppingCart, Store, Minus, Plus } from "lucide-react";
 import {
-  storefrontGet, storefrontPost, StorefrontApiError, formatMoney,
-  type StorefrontPublicProduct, type StorefrontPublicConfig,
-} from '../../../../lib/storefront-api';
-import { ensureCart } from '../../../../lib/cart-session';
+  storefrontGet,
+  storefrontPost,
+  StorefrontApiError,
+  formatMoney,
+  type StorefrontPublicProduct,
+  type StorefrontPublicConfig,
+} from "../../../../lib/storefront-api";
+import { ensureCart } from "../../../../lib/cart-session";
 
 export default function ProductDetailPage() {
   const params = useParams<{ tenantSlug: string; listingId: string }>();
@@ -32,7 +35,9 @@ export default function ProductDetailPage() {
       try {
         const [cfg, item] = await Promise.all([
           storefrontGet<StorefrontPublicConfig>(`/store/${tenantSlug}/config`),
-          storefrontGet<StorefrontPublicProduct>(`/store/${tenantSlug}/products/${listingId}`),
+          storefrontGet<StorefrontPublicProduct>(
+            `/store/${tenantSlug}/products/${listingId}`,
+          ),
         ]);
         setConfig(cfg);
         setProduct(item);
@@ -40,7 +45,11 @@ export default function ProductDetailPage() {
         if (err instanceof StorefrontApiError && err.statusCode === 404) {
           setNotFound(true);
         } else {
-          setError(err instanceof StorefrontApiError ? err.message : 'Failed to load product.');
+          setError(
+            err instanceof StorefrontApiError
+              ? err.message
+              : "Failed to load product.",
+          );
         }
       } finally {
         setLoading(false);
@@ -54,13 +63,20 @@ export default function ProductDetailPage() {
     setAdded(false);
     try {
       const cart = await ensureCart(tenantSlug, config?.currency);
-      await storefrontPost(`/store/${tenantSlug}/cart/${cart.sessionToken}/items`, {
-        productListingId: product.listingId,
-        quantity,
-      });
+      await storefrontPost(
+        `/store/${tenantSlug}/cart/${cart.sessionToken}/items`,
+        {
+          productListingId: product.listingId,
+          quantity,
+        },
+      );
       setAdded(true);
     } catch (err) {
-      setError(err instanceof StorefrontApiError ? err.message : 'Failed to add item to cart.');
+      setError(
+        err instanceof StorefrontApiError
+          ? err.message
+          : "Failed to add item to cart.",
+      );
     } finally {
       setAdding(false);
     }
@@ -85,20 +101,28 @@ export default function ProductDetailPage() {
             </p>
           </div>
         </Card>
-        <Button variant="outline" onClick={() => router.push(`/store/${tenantSlug}`)} leftIcon={<ArrowLeft size={14} />}>
+        <Button
+          variant="outline"
+          onClick={() => router.push(`/store/${tenantSlug}`)}
+          leftIcon={<ArrowLeft size={14} />}
+        >
           Back to store
         </Button>
       </div>
     );
   }
 
-  const brandColor = config?.primaryColor || 'var(--color-primary)';
+  const brandColor = config?.primaryColor || "var(--color-primary)";
 
   return (
     <div className={styles.s6}>
       <header className={styles.s7}>
-        <Button variant="ghost" onClick={() => router.push(`/store/${tenantSlug}`)} leftIcon={<ArrowLeft size={14} />}>
-          Back to {config?.storeName || 'store'}
+        <Button
+          variant="ghost"
+          onClick={() => router.push(`/store/${tenantSlug}`)}
+          leftIcon={<ArrowLeft size={14} />}
+        >
+          Back to {config?.storeName || "store"}
         </Button>
       </header>
 
@@ -111,22 +135,29 @@ export default function ProductDetailPage() {
         <div className={styles.s10}>
           <div className={styles.s11}>
             {Array.isArray(product.images) && product.images.length > 0 ? (
-              <Image src={product.images[0] ?? ''} alt={product.name} fill unoptimized sizes="(max-width: 768px) 100vw, 450px" className={styles.s12} />
+              <Image
+                src={product.images[0] ?? ""}
+                alt={product.name}
+                fill
+                unoptimized
+                sizes="(max-width: 768px) 100vw, 450px"
+                className={styles.s12}
+              />
             ) : (
               <Store size={64} />
             )}
           </div>
 
           <div className={styles.s13}>
-            {product.categoryName && <Badge variant="info">{product.categoryName}</Badge>}
+            {product.categoryName && (
+              <Badge variant="info">{product.categoryName}</Badge>
+            )}
             <h1 className={styles.s14}>{product.name}</h1>
             <div style={{ color: brandColor }} className={styles.s15}>
-              {formatMoney(product.price, config?.currency || 'USD')}
+              {formatMoney(product.price, config?.currency || "USD")}
             </div>
             {product.description && (
-              <p className={styles.s16}>
-                {product.description}
-              </p>
+              <p className={styles.s16}>{product.description}</p>
             )}
             <div className={styles.s17}>SKU: {product.sku}</div>
 
@@ -148,14 +179,25 @@ export default function ProductDetailPage() {
                   <Plus size={14} />
                 </button>
               </div>
-              <Button variant="primary" onClick={handleAddToCart} disabled={adding} leftIcon={<ShoppingCart size={14} />}>
-                {adding ? 'Adding...' : 'Add to Cart'}
+              <Button
+                variant="primary"
+                onClick={handleAddToCart}
+                disabled={adding}
+                leftIcon={<ShoppingCart size={14} />}
+              >
+                {adding ? "Adding..." : "Add to Cart"}
               </Button>
             </div>
 
             {added && (
               <div className={styles.s22}>
-                Added to cart. <a href={`/store/${tenantSlug}/cart`} style={{ color: brandColor }}>View cart</a>
+                Added to cart.{" "}
+                <a
+                  href={`/store/${tenantSlug}/cart`}
+                  style={{ color: brandColor }}
+                >
+                  View cart
+                </a>
               </div>
             )}
           </div>

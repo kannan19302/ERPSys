@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -50,7 +49,7 @@ class _DashboardListPageState extends ConsumerState<DashboardListPage> {
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
                 .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value)))
+                    value: e.key, child: Text(e.value),),)
                 .toList(),
           ),
         ],
@@ -92,7 +91,7 @@ class _DashboardListPageState extends ConsumerState<DashboardListPage> {
                     : '${state.meta.total} dashboard${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -147,21 +146,21 @@ class _DashboardTile extends StatelessWidget {
               Row(children: [
                 Expanded(
                   child: Text(dashboard.title,
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
                 UiStatusBadge(
                   label: dashboard.status,
                   tone: _statusTone(dashboard.status),
                 ),
-              ]),
+              ],),
               if (dashboard.description != null) ...[
                 const SizedBox(height: Spacing.x1),
                 Text(dashboard.description!,
-                    style: TextStyle(color: t.textSecondary)),
+                    style: TextStyle(color: t.textSecondary),),
               ],
               const SizedBox(height: Spacing.x1),
               Text('${dashboard.widgets.length} widget${dashboard.widgets.length == 1 ? '' : 's'}',
-                  style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
+                  style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
             ],
           ),
         ),

@@ -1,17 +1,31 @@
-// @ts-nocheck
-'use client';
+"use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
+import React, { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import {
-  Plus, Eye, Play, Pause, XCircle, RefreshCw,
-  TrendingUp, CreditCard, Users, Percent, Search
-} from 'lucide-react';
+  Plus,
+  Eye,
+  Play,
+  Pause,
+  XCircle,
+  RefreshCw,
+  TrendingUp,
+  CreditCard,
+  Users,
+  Percent,
+  Search,
+} from "lucide-react";
 import {
-  Card, Button, Badge, DataTable, PageHeader,
-  Spinner, ConfirmDialog, KPICard
-} from '@unerp/ui';
-import { apiGet, apiPost, apiPatch } from '@/lib/api';
+  Card,
+  Button,
+  Badge,
+  DataTable,
+  PageHeader,
+  Spinner,
+  ConfirmDialog,
+  KPICard,
+} from "@unerp/ui";
+import { apiGet, apiPost, apiPatch } from "@/lib/api";
 
 interface Subscription {
   id: string;
@@ -38,16 +52,20 @@ interface Metrics {
   avgRevenuePerSub: number;
 }
 
-const fmt = (n: number, currency = 'USD') =>
-  n.toLocaleString('en-US', { style: 'currency', currency, maximumFractionDigits: 0 });
+const fmt = (n: number, currency = "USD") =>
+  n.toLocaleString("en-US", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 0,
+  });
 
 export default function SubscriptionsListPage() {
   const [subs, setSubs] = useState<Subscription[]>([]);
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [runningBilling, setRunningBilling] = useState(false);
-  const [search, setSearch] = useState('');
-  const [status, setStatus] = useState('');
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -59,20 +77,22 @@ export default function SubscriptionsListPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ page: String(page), limit: '20' });
-      if (search) params.set('search', search);
-      if (status) params.set('status', status);
+      const params = new URLSearchParams({ page: String(page), limit: "20" });
+      if (search) params.set("search", search);
+      if (status) params.set("status", status);
 
       const [res, met] = await Promise.all([
-        apiGet<{ data: Subscription[]; meta: { totalPages: number } }>(`/subscriptions?${params}`),
-        apiGet<Metrics>('/subscriptions/metrics')
+        apiGet<{ data: Subscription[]; meta: { totalPages: number } }>(
+          `/subscriptions?${params}`,
+        ),
+        apiGet<Metrics>("/subscriptions/metrics"),
       ]);
 
       setSubs(res.data ?? []);
       setTotalPages(res.meta?.totalPages ?? 1);
       setMetrics(met);
     } catch (err) {
-      console.error('Failed to load subscriptions data', err);
+      console.error("Failed to load subscriptions data", err);
     } finally {
       setLoading(false);
     }
@@ -85,8 +105,12 @@ export default function SubscriptionsListPage() {
   const handleRunBilling = async () => {
     setRunningBilling(true);
     try {
-      const res = await apiPost<{ processed: number; billed: number }>('/subscriptions/billing/run');
-      alert(`Billing run completed. Processed: ${res.processed}, Billed: ${res.billed}`);
+      const res = await apiPost<{ processed: number; billed: number }>(
+        "/subscriptions/billing/run",
+      );
+      alert(
+        `Billing run completed. Processed: ${res.processed}, Billed: ${res.billed}`,
+      );
       loadData();
     } catch (err: any) {
       alert(`Error during billing run: ${err.message}`);
@@ -127,98 +151,133 @@ export default function SubscriptionsListPage() {
 
   const columns = [
     {
-      key: 'name',
-      header: 'Plan Name',
+      key: "name",
+      header: "Plan Name",
       render: (row: Subscription) => (
         <div>
           <p className="font-medium text-slate-900">{row.name}</p>
           <p className="text-xs text-slate-500">ID: {row.id.slice(-8)}</p>
         </div>
-      )
+      ),
     },
     {
-      key: 'customer',
-      header: 'Customer ID',
+      key: "customer",
+      header: "Customer ID",
       render: (row: Subscription) => (
-        <span className="text-sm text-slate-600 font-mono">{row.customerId || '—'}</span>
-      )
+        <span className="text-sm text-slate-600 font-mono">
+          {row.customerId || "—"}
+        </span>
+      ),
     },
     {
-      key: 'amount',
-      header: 'Amount',
+      key: "amount",
+      header: "Amount",
       render: (row: Subscription) => (
         <span className="text-sm font-medium">
           {fmt(Number(row.unitAmount) * row.quantity, row.currency)}
         </span>
-      )
+      ),
     },
     {
-      key: 'period',
-      header: 'Billing Period',
+      key: "period",
+      header: "Billing Period",
       render: (row: Subscription) => (
         <Badge variant="info">{row.billingPeriod}</Badge>
-      )
+      ),
     },
     {
-      key: 'status',
-      header: 'Status',
+      key: "status",
+      header: "Status",
       render: (row: Subscription) => {
-        let variant: 'success' | 'warning' | 'danger' | 'info' = 'success';
-        if (row.status === 'PAUSED') variant = 'warning';
-        if (row.status === 'CANCELED') variant = 'danger';
-        if (row.status === 'TRIALING') variant = 'info';
+        let variant: "success" | "warning" | "danger" | "info" = "success";
+        if (row.status === "PAUSED") variant = "warning";
+        if (row.status === "CANCELED") variant = "danger";
+        if (row.status === "TRIALING") variant = "info";
         return <Badge variant={variant}>{row.status}</Badge>;
-      }
+      },
     },
     {
-      key: 'periodRange',
-      header: 'Current Period',
+      key: "periodRange",
+      header: "Current Period",
       render: (row: Subscription) => (
         <span className="text-xs text-slate-500">
-          {new Date(row.currentPeriodStart).toLocaleDateString()} - {new Date(row.currentPeriodEnd).toLocaleDateString()}
+          {new Date(row.currentPeriodStart).toLocaleDateString()} -{" "}
+          {new Date(row.currentPeriodEnd).toLocaleDateString()}
         </span>
-      )
+      ),
     },
     {
-      key: 'actions',
-      header: 'Actions',
+      key: "actions",
+      header: "Actions",
       render: (row: Subscription) => (
-        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="flex items-center gap-2"
+          onClick={(e) => e.stopPropagation()}
+        >
           <Link href={`/finance/advanced/subscriptions/${row.id}`}>
             <Button size="sm" variant="secondary" className="p-1">
               <Eye size={14} />
             </Button>
           </Link>
-          {row.status === 'ACTIVE' && (
-            <Button size="sm" variant="secondary" className="p-1" onClick={() => setConfirmPauseId(row.id)}>
+          {row.status === "ACTIVE" && (
+            <Button
+              size="sm"
+              variant="secondary"
+              className="p-1"
+              onClick={() => setConfirmPauseId(row.id)}
+            >
               <Pause size={14} className="text-yellow-600" />
             </Button>
           )}
-          {row.status === 'PAUSED' && (
-            <Button size="sm" variant="secondary" className="p-1" onClick={() => setConfirmResumeId(row.id)}>
+          {row.status === "PAUSED" && (
+            <Button
+              size="sm"
+              variant="secondary"
+              className="p-1"
+              onClick={() => setConfirmResumeId(row.id)}
+            >
               <Play size={14} className="text-green-600" />
             </Button>
           )}
-          {(row.status === 'ACTIVE' || row.status === 'PAUSED' || row.status === 'TRIALING') && (
-            <Button size="sm" variant="secondary" className="p-1" onClick={() => setConfirmCancelId(row.id)}>
+          {(row.status === "ACTIVE" ||
+            row.status === "PAUSED" ||
+            row.status === "TRIALING") && (
+            <Button
+              size="sm"
+              variant="secondary"
+              className="p-1"
+              onClick={() => setConfirmCancelId(row.id)}
+            >
               <XCircle size={14} className="text-red-600" />
             </Button>
           )}
         </div>
-      )
-    }
+      ),
+    },
   ];
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold ui-text-primary">Subscription Billing</h1>
-          <p className="text-sm ui-text-muted mt-1">Manage plans, automated recurring schedules, and ARR/MRR metrics</p>
+          <h1 className="text-2xl font-bold ui-text-primary">
+            Subscription Billing
+          </h1>
+          <p className="text-sm ui-text-muted mt-1">
+            Manage plans, automated recurring schedules, and ARR/MRR metrics
+          </p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="secondary" onClick={handleRunBilling} disabled={runningBilling} className="flex items-center gap-2">
-            <RefreshCw size={16} className={runningBilling ? 'animate-spin' : ''} />
+          <Button
+            variant="secondary"
+            onClick={handleRunBilling}
+            disabled={runningBilling}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw
+              size={16}
+              className={runningBilling ? "animate-spin" : ""}
+            />
             Run Billing
           </Button>
           <Link href="/finance/advanced/subscriptions/new">
@@ -236,8 +295,12 @@ export default function SubscriptionsListPage() {
               <TrendingUp size={24} />
             </div>
             <div>
-              <p className="text-xs text-slate-500 font-medium">Monthly Recurring Revenue (MRR)</p>
-              <p className="text-xl font-bold text-slate-900">{fmt(metrics.mrr)}</p>
+              <p className="text-xs text-slate-500 font-medium">
+                Monthly Recurring Revenue (MRR)
+              </p>
+              <p className="text-xl font-bold text-slate-900">
+                {fmt(metrics.mrr)}
+              </p>
             </div>
           </Card>
           <Card className="p-4 flex items-center gap-4">
@@ -245,8 +308,12 @@ export default function SubscriptionsListPage() {
               <CreditCard size={24} />
             </div>
             <div>
-              <p className="text-xs text-slate-500 font-medium">Annual Recurring Revenue (ARR)</p>
-              <p className="text-xl font-bold text-slate-900">{fmt(metrics.arr)}</p>
+              <p className="text-xs text-slate-500 font-medium">
+                Annual Recurring Revenue (ARR)
+              </p>
+              <p className="text-xl font-bold text-slate-900">
+                {fmt(metrics.arr)}
+              </p>
             </div>
           </Card>
           <Card className="p-4 flex items-center gap-4">
@@ -254,8 +321,12 @@ export default function SubscriptionsListPage() {
               <Users size={24} />
             </div>
             <div>
-              <p className="text-xs text-slate-500 font-medium">Active Subscriptions</p>
-              <p className="text-xl font-bold text-slate-900">{metrics.totalActiveSubs}</p>
+              <p className="text-xs text-slate-500 font-medium">
+                Active Subscriptions
+              </p>
+              <p className="text-xl font-bold text-slate-900">
+                {metrics.totalActiveSubs}
+              </p>
             </div>
           </Card>
           <Card className="p-4 flex items-center gap-4">
@@ -263,8 +334,12 @@ export default function SubscriptionsListPage() {
               <Percent size={24} />
             </div>
             <div>
-              <p className="text-xs text-slate-500 font-medium">Churn Rate (This Month)</p>
-              <p className="text-xl font-bold text-slate-900">{metrics.churnRate}%</p>
+              <p className="text-xs text-slate-500 font-medium">
+                Churn Rate (This Month)
+              </p>
+              <p className="text-xl font-bold text-slate-900">
+                {metrics.churnRate}%
+              </p>
             </div>
           </Card>
         </div>
@@ -304,15 +379,28 @@ export default function SubscriptionsListPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            <DataTable
-              data={subs}
-              columns={columns}
-            />
+            <DataTable data={subs} columns={columns} />
             {totalPages > 1 && (
               <div className="flex justify-end gap-2 mt-4">
-                <Button variant="secondary" size="sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}>Prev</Button>
-                <span className="text-sm text-slate-500 self-center">Page {page} of {totalPages}</span>
-                <Button variant="secondary" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>Next</Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={page === 1}
+                  onClick={() => setPage((p) => p - 1)}
+                >
+                  Prev
+                </Button>
+                <span className="text-sm text-slate-500 self-center">
+                  Page {page} of {totalPages}
+                </span>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={page >= totalPages}
+                  onClick={() => setPage((p) => p + 1)}
+                >
+                  Next
+                </Button>
               </div>
             )}
           </div>

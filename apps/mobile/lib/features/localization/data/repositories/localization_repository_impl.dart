@@ -82,7 +82,7 @@ class LocalizationRepositoryImpl implements LocalizationRepository {
   @override
   Future<Result<Cacheable<Paginated<LocalizationTranslation>>>> listTranslations(ListQuery q) =>
       _paginated(_translationNamespace, q, () => _remote.listTranslations(q),
-        LocalizationTranslationModel.fromJson);
+        LocalizationTranslationModel.fromJson,);
 
   @override
   Future<Result<LocalizationTranslation>> createTranslation(Map<String, dynamic> p) =>
@@ -99,7 +99,7 @@ class LocalizationRepositoryImpl implements LocalizationRepository {
   @override
   Future<Result<Cacheable<Paginated<LocalizationLanguage>>>> listLanguages(ListQuery q) =>
       _paginated(_languageNamespace, q, () => _remote.listLanguages(q),
-        LocalizationLanguageModel.fromJson);
+        LocalizationLanguageModel.fromJson,);
 
   @override
   Future<Result<LocalizationLanguage>> createLanguage(Map<String, dynamic> p) =>
@@ -116,7 +116,7 @@ class LocalizationRepositoryImpl implements LocalizationRepository {
   @override
   Future<Result<Cacheable<Paginated<LocalizationRegion>>>> listRegions(ListQuery q) =>
       _paginated(_regionNamespace, q, () => _remote.listRegions(q),
-        LocalizationRegionModel.fromJson);
+        LocalizationRegionModel.fromJson,);
 
   @override
   Future<Result<LocalizationRegion>> createRegion(Map<String, dynamic> p) =>

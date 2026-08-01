@@ -1,11 +1,9 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../app/theme/design_tokens.dart';
 import '../../../../core/widgets/paginated_list_view.dart';
 import '../../../../core/widgets/state_views.dart';
-import '../../../../core/widgets/ui_card.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../domain/entities/projects.dart';
 import '../providers/projects_providers.dart';
@@ -38,7 +36,7 @@ class _ProjectBudgetListPageState extends ConsumerState<ProjectBudgetListPage> {
                     : '${state.meta.total} budget${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -96,22 +94,22 @@ class _BudgetTile extends StatelessWidget {
             children: [
               Row(children: [
                 Expanded(child: Text(budget.category,
-                    style: Theme.of(context).textTheme.titleSmall)),
+                    style: Theme.of(context).textTheme.titleSmall,),),
                 Text(Formatters.currency(budget.budgetedAmount),
-                    style: Theme.of(context).textTheme.labelLarge),
-              ]),
+                    style: Theme.of(context).textTheme.labelLarge,),
+              ],),
               const SizedBox(height: Spacing.x1),
               Row(children: [
                 Text('Spent: ${Formatters.currency(budget.spentAmount)}',
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
+                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
                 const Spacer(),
                 Text('Remaining: ${Formatters.currency(budget.remainingAmount)}',
                     style: TextStyle(
                       color: budget.remainingAmount < 0 ? t.danger : t.success,
                       fontSize: TypeScale.xs,
                       fontWeight: TypeScale.semibold,
-                    )),
-              ]),
+                    ),),
+              ],),
               const SizedBox(height: Spacing.x1),
               ClipRRect(
                 borderRadius: Radii.pill,
@@ -124,7 +122,7 @@ class _BudgetTile extends StatelessWidget {
               ),
               const SizedBox(height: Spacing.x0_5),
               Text('${spentPct.toStringAsFixed(0)}% used',
-                  style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
+                  style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
             ],
           ),
         ),

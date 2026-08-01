@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -139,7 +138,7 @@ class _AdminRoleFormPageState extends ConsumerState<AdminRoleFormPage> {
             const SizedBox(height: Spacing.x2),
             if (_isSystem)
               Text('System role permissions cannot be modified.',
-                  style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs))
+                  style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),)
             else
               ...grouped.entries.map((MapEntry<String, List<String>> entry) {
                 final String module = entry.key;
@@ -162,10 +161,10 @@ class _AdminRoleFormPageState extends ConsumerState<AdminRoleFormPage> {
                         child: Row(
                           children: <Widget>[
                             Icon(allSelected ? Icons.check_box : Icons.check_box_outline_blank,
-                                size: TypeScale.xl, color: allSelected ? t.primary : t.textTertiary),
+                                size: TypeScale.xl, color: allSelected ? t.primary : t.textTertiary,),
                             const SizedBox(width: Spacing.x2),
                             Text(module[0].toUpperCase() + module.substring(1),
-                                style: Theme.of(context).textTheme.labelLarge),
+                                style: Theme.of(context).textTheme.labelLarge,),
                           ],
                         ),
                       ),
@@ -180,7 +179,7 @@ class _AdminRoleFormPageState extends ConsumerState<AdminRoleFormPage> {
                             return FilterChip(
                               label: Text(perm.split('.').last,
                                   style: TextStyle(fontSize: TypeScale.xs,
-                                      color: sel ? t.primary : t.textSecondary)),
+                                      color: sel ? t.primary : t.textSecondary,),),
                               selected: sel,
                               onSelected: (bool v) => setState(() {
                                 if (v) { _selectedPermissions.add(perm); } else { _selectedPermissions.remove(perm); }

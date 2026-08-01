@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,7 +5,6 @@ import '../../../../app/theme/design_tokens.dart';
 import '../../../../core/widgets/paginated_list_view.dart';
 import '../../../../core/widgets/permission_gate.dart';
 import '../../../../core/widgets/state_views.dart';
-import '../../../../core/widgets/ui_card.dart';
 import '../../../../core/rbac/permissions.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../domain/entities/projects.dart';
@@ -75,7 +73,7 @@ class _ProjectPortfolioListPageState extends ConsumerState<ProjectPortfolioListP
                 state.isLoading ? 'Loading...' : '${state.meta.total} portfolio${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -131,21 +129,21 @@ class _PortfolioTile extends StatelessWidget {
             children: [
               Row(children: [
                 Expanded(child: Text(portfolio.name,
-                    style: Theme.of(context).textTheme.titleSmall)),
+                    style: Theme.of(context).textTheme.titleSmall,),),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: Spacing.x2_5, vertical: Spacing.x1),
                   decoration: BoxDecoration(color: t.primaryLight, borderRadius: Radii.pill),
                   child: Text('${portfolio.projectCount} projects',
-                      style: TextStyle(color: t.primary, fontSize: TypeScale.xs)),
+                      style: TextStyle(color: t.primary, fontSize: TypeScale.xs),),
                 ),
-              ]),
+              ],),
               if (portfolio.description != null && portfolio.description!.isNotEmpty) ...[
                 const SizedBox(height: Spacing.x1),
                 Text(portfolio.description!, style: TextStyle(color: t.textSecondary)),
               ],
               const SizedBox(height: Spacing.x1),
               Text('Budget: ${Formatters.currency(portfolio.totalBudget)}',
-                  style: Theme.of(context).textTheme.labelLarge),
+                  style: Theme.of(context).textTheme.labelLarge,),
             ],
           ),
         ),

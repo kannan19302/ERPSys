@@ -1,5 +1,14 @@
-// @ts-nocheck
-import { Controller, Get, Post, Patch, UseGuards, Req, Param, Query, Body } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  UseGuards,
+  Req,
+  Param,
+  Query,
+  Body,
+} from "@nestjs/common";
 import { z } from "zod";
 import { ZodBody } from "../../common/decorators/zod-body.decorator";
 import { Request } from "express";
@@ -10,7 +19,13 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import { ArCreditManagementService } from "./services/ar-credit-management.service";
 
 interface AuthenticatedRequest extends Request {
-  user: { tenantId: string; userId: string; email: string; roles: string[]; orgId?: string };
+  user: {
+    tenantId: string;
+    userId: string;
+    email: string;
+    roles: string[];
+    orgId?: string;
+  };
 }
 
 const creditLimitSchema = z.object({
@@ -36,7 +51,10 @@ export class ArCreditManagementController {
     @Req() req: AuthenticatedRequest,
     @Query("search") search?: string,
   ) {
-    return this.creditService.listCustomerCreditProfiles(req.user.tenantId, search);
+    return this.creditService.listCustomerCreditProfiles(
+      req.user.tenantId,
+      search,
+    );
   }
 
   @Get("on-hold")
@@ -63,7 +81,10 @@ export class ArCreditManagementController {
     @Req() req: AuthenticatedRequest,
     @Query("customerId") customerId?: string,
   ) {
-    return this.creditService.listCustomerStatements(req.user.tenantId, customerId);
+    return this.creditService.listCustomerStatements(
+      req.user.tenantId,
+      customerId,
+    );
   }
 
   @Get("dso-trend")
@@ -73,7 +94,10 @@ export class ArCreditManagementController {
     @Req() req: AuthenticatedRequest,
     @Query("months") months?: string,
   ) {
-    return this.creditService.getDsoTrend(req.user.tenantId, months ? parseInt(months, 10) : undefined);
+    return this.creditService.getDsoTrend(
+      req.user.tenantId,
+      months ? parseInt(months, 10) : undefined,
+    );
   }
 
   @Get("collector-dashboard")
@@ -90,7 +114,10 @@ export class ArCreditManagementController {
     @Req() req: AuthenticatedRequest,
     @Query("asOfDate") asOfDate?: string,
   ) {
-    return this.creditService.computeBadDebtProvision(req.user.tenantId, asOfDate);
+    return this.creditService.computeBadDebtProvision(
+      req.user.tenantId,
+      asOfDate,
+    );
   }
 
   @Get(":id")
@@ -111,7 +138,12 @@ export class ArCreditManagementController {
     @Param("id") id: string,
     @ZodBody(creditLimitSchema) dto: any,
   ) {
-    return this.creditService.updateCreditLimit(req.user.tenantId, id, dto, req.user.userId);
+    return this.creditService.updateCreditLimit(
+      req.user.tenantId,
+      id,
+      dto,
+      req.user.userId,
+    );
   }
 
   @Post(":id/credit-hold")
@@ -122,7 +154,12 @@ export class ArCreditManagementController {
     @Param("id") id: string,
     @ZodBody(creditHoldSchema) dto: any,
   ) {
-    return this.creditService.placeCreditHold(req.user.tenantId, id, dto.reason, req.user.userId);
+    return this.creditService.placeCreditHold(
+      req.user.tenantId,
+      id,
+      dto.reason,
+      req.user.userId,
+    );
   }
 
   @Post(":id/release-hold")
@@ -132,6 +169,10 @@ export class ArCreditManagementController {
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
   ) {
-    return this.creditService.releaseCreditHold(req.user.tenantId, id, req.user.userId);
+    return this.creditService.releaseCreditHold(
+      req.user.tenantId,
+      id,
+      req.user.userId,
+    );
   }
 }

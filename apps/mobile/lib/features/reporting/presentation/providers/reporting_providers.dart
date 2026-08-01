@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -137,15 +136,15 @@ class ReportTemplateListController extends Notifier<ReportTemplateListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteReportTemplateUseCase(
-      ref.read(reportingRepositoryProvider))(id);
+      ref.read(reportingRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<ReportTemplate>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveReportTemplateUseCase(
-      ref.read(reportingRepositoryProvider))(
-      SaveReportTemplateParams(id: id, payload: payload));
+      ref.read(reportingRepositoryProvider),)(
+      SaveReportTemplateParams(id: id, payload: payload),);
     if (result.isOk) await refresh();
     return result;
   }
@@ -154,7 +153,7 @@ class ReportTemplateListController extends Notifier<ReportTemplateListState> {
 final FutureProviderFamily<ReportTemplate, String> reportTemplateDetailProvider =
     FutureProvider.family<ReportTemplate, String>((Ref ref, String id) async {
   final result = await GetReportTemplateUseCase(
-    ref.watch(reportingRepositoryProvider))(id);
+    ref.watch(reportingRepositoryProvider),)(id);
   return result.fold((f) => throw f, (t) => t);
 });
 
@@ -256,8 +255,8 @@ class ReportJobListController extends Notifier<ReportJobListState> {
 
   Future<Result<ReportJob>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveReportJobUseCase(
-      ref.read(reportingRepositoryProvider))(
-      SaveReportJobUseCaseParams(id: id, payload: payload));
+      ref.read(reportingRepositoryProvider),)(
+      SaveReportJobUseCaseParams(id: id, payload: payload),);
     if (result.isOk) await refresh();
     return result;
   }
@@ -266,7 +265,7 @@ class ReportJobListController extends Notifier<ReportJobListState> {
 final FutureProviderFamily<ReportJob, String> reportJobDetailProvider =
     FutureProvider.family<ReportJob, String>((Ref ref, String id) async {
   final result = await GetReportJobUseCase(
-    ref.watch(reportingRepositoryProvider))(id);
+    ref.watch(reportingRepositoryProvider),)(id);
   return result.fold((f) => throw f, (j) => j);
 });
 
@@ -368,8 +367,8 @@ class ReportExportListController extends Notifier<ReportExportListState> {
 
   Future<Result<ReportExport>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveExportUseCase(
-      ref.read(reportingRepositoryProvider))(
-      SaveExportParams(id: id, payload: payload));
+      ref.read(reportingRepositoryProvider),)(
+      SaveExportParams(id: id, payload: payload),);
     if (result.isOk) await refresh();
     return result;
   }
@@ -378,7 +377,7 @@ class ReportExportListController extends Notifier<ReportExportListState> {
 final FutureProviderFamily<ReportExport, String> reportExportDetailProvider =
     FutureProvider.family<ReportExport, String>((Ref ref, String id) async {
   final result = await GetReportExportUseCase(
-    ref.watch(reportingRepositoryProvider))(id);
+    ref.watch(reportingRepositoryProvider),)(id);
   return result.fold((f) => throw f, (e) => e);
 });
 
@@ -480,8 +479,8 @@ class ReportComplianceListController extends Notifier<ReportComplianceListState>
 
   Future<Result<ReportCompliance>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveComplianceUseCase(
-      ref.read(reportingRepositoryProvider))(
-      SaveComplianceParams(id: id, payload: payload));
+      ref.read(reportingRepositoryProvider),)(
+      SaveComplianceParams(id: id, payload: payload),);
     if (result.isOk) await refresh();
     return result;
   }
@@ -490,7 +489,7 @@ class ReportComplianceListController extends Notifier<ReportComplianceListState>
 final FutureProviderFamily<ReportCompliance, String> reportComplianceDetailProvider =
     FutureProvider.family<ReportCompliance, String>((Ref ref, String id) async {
   final result = await GetReportComplianceUseCase(
-    ref.watch(reportingRepositoryProvider))(id);
+    ref.watch(reportingRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 

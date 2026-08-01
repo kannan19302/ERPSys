@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 
@@ -57,7 +56,7 @@ export class ReportingService {
     tenantId: string,
     dto: {
       dashboardId: string;
-      name: string;
+      title: string;
       chartType: string;
       queryConfig: string;
       position: string;
@@ -67,7 +66,7 @@ export class ReportingService {
       data: {
         tenantId,
         dashboardId: dto.dashboardId,
-        name: dto.name,
+        title: dto.title,
         chartType: dto.chartType,
         queryConfig: dto.queryConfig,
         position: dto.position,

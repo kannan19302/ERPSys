@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -124,7 +123,7 @@ class _ChannelFormPageState extends ConsumerState<ChannelFormPage> {
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _type,
+              initialValue: _type,
               decoration: const InputDecoration(labelText: 'Type'),
               items: const <DropdownMenuItem<String>>[
                 DropdownMenuItem<String>(value: 'PUBLIC', child: Text('Public')),

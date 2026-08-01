@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { create } from 'zustand';
-import { arrayMove } from '@dnd-kit/sortable';
+import { create } from "zustand";
+import { arrayMove } from "@dnd-kit/sortable";
 
 export interface FormField {
   id: string;
@@ -62,7 +61,7 @@ interface BuilderState {
   duplicateField: (id: string) => void;
   setSelectedFieldId: (id: string | null) => void;
   setPreviewMode: (mode: boolean) => void;
-  updateFormSettings: (settings: Partial<BuilderState['formSettings']>) => void;
+  updateFormSettings: (settings: Partial<BuilderState["formSettings"]>) => void;
   undo: () => void;
   redo: () => void;
   canUndo: () => boolean;
@@ -88,70 +87,86 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   },
 
   setFields: (fields) => {
-    set({ fields, history: [JSON.parse(JSON.stringify(fields))], historyIndex: 0 });
+    set({
+      fields,
+      history: [JSON.parse(JSON.stringify(fields))],
+      historyIndex: 0,
+    });
   },
 
-  addField: (field, index) => set((state) => {
-    const newFields = [...state.fields];
-    if (index !== undefined) {
-      newFields.splice(index, 0, field);
-    } else {
-      newFields.push(field);
-    }
-    get().pushHistory(newFields);
-    return { fields: newFields, selectedFieldId: field.id };
-  }),
+  addField: (field, index) =>
+    set((state) => {
+      const newFields = [...state.fields];
+      if (index !== undefined) {
+        newFields.splice(index, 0, field);
+      } else {
+        newFields.push(field);
+      }
+      get().pushHistory(newFields);
+      return { fields: newFields, selectedFieldId: field.id };
+    }),
 
-  updateField: (id, updates) => set((state) => {
-    const newFields = state.fields.map(f => f.id === id ? { ...f, ...updates } : f);
-    get().pushHistory(newFields);
-    return { fields: newFields };
-  }),
+  updateField: (id, updates) =>
+    set((state) => {
+      const newFields = state.fields.map((f) =>
+        f.id === id ? { ...f, ...updates } : f,
+      );
+      get().pushHistory(newFields);
+      return { fields: newFields };
+    }),
 
-  removeField: (id) => set((state) => {
-    const newFields = state.fields.filter(f => f.id !== id);
-    get().pushHistory(newFields);
-    return {
-      fields: newFields,
-      selectedFieldId: state.selectedFieldId === id ? null : state.selectedFieldId
-    };
-  }),
+  removeField: (id) =>
+    set((state) => {
+      const newFields = state.fields.filter((f) => f.id !== id);
+      get().pushHistory(newFields);
+      return {
+        fields: newFields,
+        selectedFieldId:
+          state.selectedFieldId === id ? null : state.selectedFieldId,
+      };
+    }),
 
-  moveField: (fromIndex, toIndex) => set((state) => {
-    const newFields = arrayMove(state.fields, fromIndex, toIndex);
-    get().pushHistory(newFields);
-    return { fields: newFields };
-  }),
+  moveField: (fromIndex, toIndex) =>
+    set((state) => {
+      const newFields = arrayMove(state.fields, fromIndex, toIndex);
+      get().pushHistory(newFields);
+      return { fields: newFields };
+    }),
 
-  duplicateField: (id) => set((state) => {
-    const source = state.fields.find(f => f.id === id);
-    if (!source) return state;
-    const dup: FormField = {
-      ...source,
-      id: 'f_' + Math.random().toString(36).substr(2, 9),
-      name: source.name + '_copy',
-      label: source.label + ' (Copy)',
-    };
-    const idx = state.fields.findIndex(f => f.id === id);
-    const newFields = [...state.fields];
-    newFields.splice(idx + 1, 0, dup);
-    get().pushHistory(newFields);
-    return { fields: newFields, selectedFieldId: dup.id };
-  }),
+  duplicateField: (id) =>
+    set((state) => {
+      const source = state.fields.find((f) => f.id === id);
+      if (!source) return state;
+      const dup: FormField = {
+        ...source,
+        id: "f_" + Math.random().toString(36).substr(2, 9),
+        name: source.name + "_copy",
+        label: source.label + " (Copy)",
+      };
+      const idx = state.fields.findIndex((f) => f.id === id);
+      const newFields = [...state.fields];
+      newFields.splice(idx + 1, 0, dup);
+      get().pushHistory(newFields);
+      return { fields: newFields, selectedFieldId: dup.id };
+    }),
 
   setSelectedFieldId: (id) => set({ selectedFieldId: id }),
 
   setPreviewMode: (mode) => set({ previewMode: mode }),
 
-  updateFormSettings: (settings) => set((state) => ({
-    formSettings: { ...state.formSettings, ...settings }
-  })),
+  updateFormSettings: (settings) =>
+    set((state) => ({
+      formSettings: { ...state.formSettings, ...settings },
+    })),
 
   undo: () => {
     const { historyIndex, history } = get();
     if (historyIndex > 0) {
       const newIndex = historyIndex - 1;
-      set({ fields: JSON.parse(JSON.stringify(history[newIndex])), historyIndex: newIndex });
+      set({
+        fields: JSON.parse(JSON.stringify(history[newIndex])),
+        historyIndex: newIndex,
+      });
     }
   },
 
@@ -159,7 +174,10 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
     const { historyIndex, history } = get();
     if (historyIndex < history.length - 1) {
       const newIndex = historyIndex + 1;
-      set({ fields: JSON.parse(JSON.stringify(history[newIndex])), historyIndex: newIndex });
+      set({
+        fields: JSON.parse(JSON.stringify(history[newIndex])),
+        historyIndex: newIndex,
+      });
     }
   },
 

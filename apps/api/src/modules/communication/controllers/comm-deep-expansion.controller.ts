@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Controller, Get, Post, Body, Param, Headers } from "@nestjs/common";
 import { CommDeepExpansionService } from "../services/comm-deep-expansion.service";
 

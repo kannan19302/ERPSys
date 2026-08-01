@@ -1,8 +1,7 @@
-// @ts-nocheck
-import { Injectable, Logger } from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
-import { prisma } from '@unerp/database';
-import { FinanceService } from './finance.service';
+import { Injectable, Logger } from "@nestjs/common";
+import { OnEvent } from "@nestjs/event-emitter";
+import { prisma } from "@unerp/database";
+import { FinanceService } from "./finance.service";
 
 @Injectable()
 export class FinanceEventHandler {
@@ -10,7 +9,7 @@ export class FinanceEventHandler {
 
   constructor(private readonly financeService: FinanceService) {}
 
-  @OnEvent('sales.delivery.created')
+  @OnEvent("sales.delivery.created")
   async handleSalesDeliveryCreated(event: {
     tenantId: string;
     salesOrderId: string;
@@ -21,7 +20,9 @@ export class FinanceEventHandler {
       deliveredQty: number;
     }>;
   }) {
-    this.logger.log(`Handling sales.delivery.created event for auto-invoicing: ${event.deliveryNumber}`);
+    this.logger.log(
+      `Handling sales.delivery.created event for auto-invoicing: ${event.deliveryNumber}`,
+    );
 
     try {
       // Fetch Sales Order to get customer ID and pricing details
@@ -33,7 +34,9 @@ export class FinanceEventHandler {
       });
 
       if (!salesOrder) {
-        this.logger.error(`Sales order ${event.salesOrderId} not found. Cannot auto-create invoice.`);
+        this.logger.error(
+          `Sales order ${event.salesOrderId} not found. Cannot auto-create invoice.`,
+        );
         return;
       }
 
@@ -41,7 +44,7 @@ export class FinanceEventHandler {
       const invoiceLineItems = event.lineItems.map((deliveredItem) => {
         // Find matching pricing from sales order line items
         const orderLine = salesOrder.lineItems.find(
-          (li) => li.productId === deliveredItem.productId
+          (li) => li.productId === deliveredItem.productId,
         );
         const unitPrice = orderLine ? Number(orderLine.unitPrice) : 0;
         const taxRate = orderLine ? Number(orderLine.taxRate) : 0;
@@ -73,7 +76,7 @@ export class FinanceEventHandler {
           notes: `Auto-generated from delivery note: ${event.deliveryNumber}`,
           lineItems: invoiceLineItems,
         },
-        'system'
+        "system",
       );
 
       // Link invoice ID to Sales Order
@@ -82,9 +85,13 @@ export class FinanceEventHandler {
         data: { invoiceId: invoice.id },
       });
 
-      this.logger.log(`Successfully auto-created invoice ${invoice.invoiceNumber} for sales order ${salesOrder.id}`);
+      this.logger.log(
+        `Successfully auto-created invoice ${invoice.invoiceNumber} for sales order ${salesOrder.id}`,
+      );
     } catch (err) {
-      this.logger.error(`Failed to auto-create invoice for delivery ${event.deliveryNumber}: ${err instanceof Error ? err.message : String(err)}`);
+      this.logger.error(
+        `Failed to auto-create invoice for delivery ${event.deliveryNumber}: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
   }
 }

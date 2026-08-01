@@ -91,7 +91,7 @@ class ApiPlatformRepositoryImpl implements ApiPlatformRepository {
   @override
   Future<Result<Cacheable<Paginated<ApiKey>>>> listApiKeys(ListQuery q) =>
       _paginated(_keyNamespace, q, () => _remote.listApiKeys(q),
-        ApiKeyModel.fromJson);
+        ApiKeyModel.fromJson,);
 
   @override
   Future<Result<ApiKey>> getApiKey(String id) =>
@@ -116,7 +116,7 @@ class ApiPlatformRepositoryImpl implements ApiPlatformRepository {
   @override
   Future<Result<Cacheable<Paginated<WebhookEndpoint>>>> listWebhooks(ListQuery q) =>
       _paginated(_webhookNamespace, q, () => _remote.listWebhooks(q),
-        WebhookEndpointModel.fromJson);
+        WebhookEndpointModel.fromJson,);
 
   @override
   Future<Result<WebhookEndpoint>> getWebhook(String id) =>
@@ -137,12 +137,12 @@ class ApiPlatformRepositoryImpl implements ApiPlatformRepository {
   @override
   Future<Result<Cacheable<Paginated<ApiUsageLog>>>> listUsageLogs(ListQuery q) =>
       _paginated(_usageNamespace, q, () => _remote.listUsageLogs(q),
-        ApiUsageLogModel.fromJson);
+        ApiUsageLogModel.fromJson,);
 
   @override
   Future<Result<Cacheable<Paginated<ApiRateLimitRule>>>> listRateLimits(ListQuery q) =>
       _paginated(_rateLimitNamespace, q, () => _remote.listRateLimits(q),
-        ApiRateLimitRuleModel.fromJson);
+        ApiRateLimitRuleModel.fromJson,);
 
   @override
   Future<Result<ApiRateLimitRule>> createRateLimit(Map<String, dynamic> p) =>

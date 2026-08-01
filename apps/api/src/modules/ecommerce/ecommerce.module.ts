@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Module } from "@nestjs/common";
 import { OutboxModule } from "../outbox/outbox.module";
 import { EcommerceAdminController } from "./ecommerce-admin.controller";
@@ -24,7 +23,11 @@ import { PlatformCredentialsModule } from "../../common/platform-credentials/pla
  */
 @Module({
   imports: [OutboxModule, PlatformCredentialsModule, EcommerceEnterpriseModule],
-  controllers: [EcommerceAdminController, EcommercePublicController, EcommerceExpansionController],
+  controllers: [
+    EcommerceAdminController,
+    EcommercePublicController,
+    EcommerceExpansionController,
+  ],
   providers: [
     EcommerceAdminService,
     EcommercePublicService,
@@ -47,6 +50,11 @@ import { PlatformCredentialsModule } from "../../common/platform-credentials/pla
       inject: [StripePaymentGatewayService, MockPaymentGatewayService],
     },
   ],
-  exports: [EcommerceAdminService, EcommercePublicService, EcommerceExpansionService, "PAYMENT_GATEWAY"],
+  exports: [
+    EcommerceAdminService,
+    EcommercePublicService,
+    EcommerceExpansionService,
+    "PAYMENT_GATEWAY",
+  ],
 })
 export class EcommerceModule {}

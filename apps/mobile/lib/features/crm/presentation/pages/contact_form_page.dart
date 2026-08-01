@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -190,7 +189,7 @@ class _ContactFormPageState extends ConsumerState<ContactFormPage> {
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
-              value: _customerId.isEmpty ? null : _customerId,
+              initialValue: _customerId.isEmpty ? null : _customerId,
               decoration: InputDecoration(
                 labelText: 'Customer',
                 errorText: _customerIdError,

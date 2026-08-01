@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -228,7 +227,7 @@ class _OpportunityDetail extends ConsumerWidget {
             .map((String stage) => SimpleDialogOption(
                   onPressed: () => Navigator.of(dialogContext).pop(stage),
                   child: Text(stage),
-                ))
+                ),)
             .toList(),
       ),
     );

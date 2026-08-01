@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 
 export default function MfaRedirectPage() {
-  redirect('/settings/security-policies?tab=mfa');
+  redirect("/settings/security-policies?tab=mfa");
 }

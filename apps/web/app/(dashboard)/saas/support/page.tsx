@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
 import { Card, PageHeader, DataTable } from "@unerp/ui";
@@ -56,7 +55,9 @@ export default function SaasSupportPage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const res = await client.get<Ticket[]>("/saas/support/tickets").catch(() => []);
+      const res = await client
+        .get<Ticket[]>("/saas/support/tickets")
+        .catch(() => []);
       setTickets(res || []);
     } catch {
     } finally {
@@ -64,14 +65,21 @@ export default function SaasSupportPage() {
     }
   };
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    loadData();
+  }, []);
 
-  const stats = useMemo(() => ({
-    open: tickets.filter((t) => t.status === "OPEN" || t.status === "IN_PROGRESS").length,
-    resolved: tickets.filter((t) => t.status === "RESOLVED").length,
-    urgent: tickets.filter((t) => t.priority === "URGENT").length,
-    total: tickets.length,
-  }), [tickets]);
+  const stats = useMemo(
+    () => ({
+      open: tickets.filter(
+        (t) => t.status === "OPEN" || t.status === "IN_PROGRESS",
+      ).length,
+      resolved: tickets.filter((t) => t.status === "RESOLVED").length,
+      urgent: tickets.filter((t) => t.priority === "URGENT").length,
+      total: tickets.length,
+    }),
+    [tickets],
+  );
 
   const handleCreateTicket = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,10 +110,14 @@ export default function SaasSupportPage() {
         content: replyText.trim(),
       });
       setReplyText("");
-      const updated = await client.get<Ticket>(`/saas/support/tickets/${selectedTicket.id}`).catch(() => null);
+      const updated = await client
+        .get<Ticket>(`/saas/support/tickets/${selectedTicket.id}`)
+        .catch(() => null);
       if (updated) {
         setSelectedTicket(updated);
-        setTickets((prev) => prev.map((t) => t.id === updated.id ? updated : t));
+        setTickets((prev) =>
+          prev.map((t) => (t.id === updated.id ? updated : t)),
+        );
       } else {
         loadData();
       }
@@ -119,23 +131,39 @@ export default function SaasSupportPage() {
     try {
       await client.patch(`/saas/support/tickets/${ticketId}`, { status });
       if (selectedTicket?.id === ticketId) {
-        setSelectedTicket((prev) => prev ? { ...prev, status: status as any } : null);
+        setSelectedTicket((prev) =>
+          prev ? { ...prev, status: status as any } : null,
+        );
       }
-      setTickets((prev) => prev.map((t) => t.id === ticketId ? { ...t, status: status as any } : t));
+      setTickets((prev) =>
+        prev.map((t) =>
+          t.id === ticketId ? { ...t, status: status as any } : t,
+        ),
+      );
     } catch {}
   };
 
   const priorityBadge = (p: string) => {
-    const cls = p === "URGENT" ? "ui-badge-danger" :
-      p === "HIGH" ? "ui-badge-warning" :
-      p === "MEDIUM" ? "ui-badge-info" : "ui-badge-neutral";
+    const cls =
+      p === "URGENT"
+        ? "ui-badge-danger"
+        : p === "HIGH"
+          ? "ui-badge-warning"
+          : p === "MEDIUM"
+            ? "ui-badge-info"
+            : "ui-badge-neutral";
     return <span className={`ui-badge ${cls}`}>{p}</span>;
   };
 
   const statusBadge = (s: string) => {
-    const cls = s === "OPEN" ? "ui-badge-info" :
-      s === "IN_PROGRESS" ? "ui-badge-warning" :
-      s === "RESOLVED" ? "ui-badge-success" : "ui-badge-neutral";
+    const cls =
+      s === "OPEN"
+        ? "ui-badge-info"
+        : s === "IN_PROGRESS"
+          ? "ui-badge-warning"
+          : s === "RESOLVED"
+            ? "ui-badge-success"
+            : "ui-badge-neutral";
     return <span className={`ui-badge ${cls}`}>{s.replace("_", " ")}</span>;
   };
 
@@ -172,7 +200,10 @@ export default function SaasSupportPage() {
 
         <div className="ui-list-toolbar">
           <div></div>
-          <button className="ui-btn ui-btn-primary" onClick={() => setShowCreate(true)}>
+          <button
+            className="ui-btn ui-btn-primary"
+            onClick={() => setShowCreate(true)}
+          >
             <Plus size={14} /> New Ticket
           </button>
         </div>
@@ -187,13 +218,15 @@ export default function SaasSupportPage() {
               { key: "created", header: "Created", sortable: true },
               { key: "updated", header: "Updated", sortable: true },
             ]}
-            data={tickets.map((t) => ({
-              ...t,
-              status: statusBadge(t.status),
-              priority: priorityBadge(t.priority),
-              created: new Date(t.createdAt).toLocaleDateString(),
-              updated: new Date(t.updatedAt).toLocaleDateString(),
-            })) as unknown as Record<string, unknown>[]}
+            data={
+              tickets.map((t) => ({
+                ...t,
+                status: statusBadge(t.status),
+                priority: priorityBadge(t.priority),
+                created: new Date(t.createdAt).toLocaleDateString(),
+                updated: new Date(t.updatedAt).toLocaleDateString(),
+              })) as unknown as Record<string, unknown>[]
+            }
             onRowClick={(row) => {
               const ticket = tickets.find((t) => t.id === (row as any).id);
               if (ticket) setSelectedTicket(ticket);
@@ -204,11 +237,20 @@ export default function SaasSupportPage() {
         </Card>
 
         {showCreate && (
-          <div className="ui-modal-overlay" onClick={() => setShowCreate(false)}>
-            <div className="ui-modal ui-modal-lg" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="ui-modal-overlay"
+            onClick={() => setShowCreate(false)}
+          >
+            <div
+              className="ui-modal ui-modal-lg"
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="ui-modal-header">
                 <span>Create Support Ticket</span>
-                <button className="ui-btn-icon" onClick={() => setShowCreate(false)}>
+                <button
+                  className="ui-btn-icon"
+                  onClick={() => setShowCreate(false)}
+                >
                   <X size={16} />
                 </button>
               </div>
@@ -216,12 +258,22 @@ export default function SaasSupportPage() {
                 <div className="ui-modal-body ui-stack-4">
                   <div className="ui-form-group">
                     <label className="ui-label">Subject</label>
-                    <input className="ui-input" required placeholder="Brief description of the issue" value={createSubject} onChange={(e) => setCreateSubject(e.target.value)} />
+                    <input
+                      className="ui-input"
+                      required
+                      placeholder="Brief description of the issue"
+                      value={createSubject}
+                      onChange={(e) => setCreateSubject(e.target.value)}
+                    />
                   </div>
                   <div className="ui-grid-2">
                     <div className="ui-form-group">
                       <label className="ui-label">Category</label>
-                      <select className="ui-select" value={createCategory} onChange={(e) => setCreateCategory(e.target.value)}>
+                      <select
+                        className="ui-select"
+                        value={createCategory}
+                        onChange={(e) => setCreateCategory(e.target.value)}
+                      >
                         <option value="technical">Technical Issue</option>
                         <option value="billing">Billing</option>
                         <option value="account">Account</option>
@@ -231,7 +283,11 @@ export default function SaasSupportPage() {
                     </div>
                     <div className="ui-form-group">
                       <label className="ui-label">Priority</label>
-                      <select className="ui-select" value={createPriority} onChange={(e) => setCreatePriority(e.target.value)}>
+                      <select
+                        className="ui-select"
+                        value={createPriority}
+                        onChange={(e) => setCreatePriority(e.target.value)}
+                      >
                         <option value="LOW">Low</option>
                         <option value="MEDIUM">Medium</option>
                         <option value="HIGH">High</option>
@@ -241,13 +297,34 @@ export default function SaasSupportPage() {
                   </div>
                   <div className="ui-form-group">
                     <label className="ui-label">Description</label>
-                    <textarea className="ui-textarea" required rows={5} placeholder="Describe your issue in detail..." value={createDescription} onChange={(e) => setCreateDescription(e.target.value)} />
+                    <textarea
+                      className="ui-textarea"
+                      required
+                      rows={5}
+                      placeholder="Describe your issue in detail..."
+                      value={createDescription}
+                      onChange={(e) => setCreateDescription(e.target.value)}
+                    />
                   </div>
                 </div>
                 <div className="ui-modal-footer">
-                  <button type="button" className="ui-btn ui-btn-secondary" onClick={() => setShowCreate(false)}>Cancel</button>
-                  <button type="submit" className="ui-btn ui-btn-primary" disabled={submitting}>
-                    {submitting ? <RefreshCw size={14} className="animate-spin" /> : <MessageSquare size={14} />}
+                  <button
+                    type="button"
+                    className="ui-btn ui-btn-secondary"
+                    onClick={() => setShowCreate(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="ui-btn ui-btn-primary"
+                    disabled={submitting}
+                  >
+                    {submitting ? (
+                      <RefreshCw size={14} className="animate-spin" />
+                    ) : (
+                      <MessageSquare size={14} />
+                    )}
                     {submitting ? "Creating..." : "Create Ticket"}
                   </button>
                 </div>
@@ -257,44 +334,81 @@ export default function SaasSupportPage() {
         )}
 
         {selectedTicket && (
-          <div className="ui-modal-overlay" onClick={() => setSelectedTicket(null)}>
-            <div className="ui-modal ui-modal-xl" onClick={(e) => e.stopPropagation()} style={{ maxHeight: "90vh" }}>
+          <div
+            className="ui-modal-overlay"
+            onClick={() => setSelectedTicket(null)}
+          >
+            <div
+              className="ui-modal ui-modal-xl"
+              onClick={(e) => e.stopPropagation()}
+              style={{ maxHeight: "90vh" }}
+            >
               <div className="ui-modal-header">
                 <div className="ui-stack-1">
-                  <span className="font-semibold">{selectedTicket.subject}</span>
+                  <span className="font-semibold">
+                    {selectedTicket.subject}
+                  </span>
                   <div className="ui-hstack-2">
                     {statusBadge(selectedTicket.status)}
                     {priorityBadge(selectedTicket.priority)}
-                    <span className="ui-text-xs-muted">{selectedTicket.category}</span>
+                    <span className="ui-text-xs-muted">
+                      {selectedTicket.category}
+                    </span>
                   </div>
                 </div>
-                <button className="ui-btn-icon" onClick={() => setSelectedTicket(null)}>
+                <button
+                  className="ui-btn-icon"
+                  onClick={() => setSelectedTicket(null)}
+                >
                   <X size={16} />
                 </button>
               </div>
-              <div className="ui-modal-body" style={{ overflowY: "auto", maxHeight: "60vh" }}>
+              <div
+                className="ui-modal-body"
+                style={{ overflowY: "auto", maxHeight: "60vh" }}
+              >
                 <p className="text-sm ui-mb-4">{selectedTicket.description}</p>
 
                 <div className="ui-stack-4">
                   {selectedTicket.messages.map((msg) => (
-                    <div key={msg.id} className={`ui-card ${msg.isStaff ? "" : ""}`} style={{
-                      padding: "var(--space-3)",
-                      marginLeft: msg.isStaff ? "0" : "var(--space-6)",
-                      marginRight: msg.isStaff ? "var(--space-6)" : "0",
-                      background: msg.isStaff ? "var(--color-bg-sunken)" : "var(--color-bg-elevated)",
-                    }}>
+                    <div
+                      key={msg.id}
+                      className={`ui-card ${msg.isStaff ? "" : ""}`}
+                      style={{
+                        padding: "var(--space-3)",
+                        marginLeft: msg.isStaff ? "0" : "var(--space-6)",
+                        marginRight: msg.isStaff ? "var(--space-6)" : "0",
+                        background: msg.isStaff
+                          ? "var(--color-bg-sunken)"
+                          : "var(--color-bg-elevated)",
+                      }}
+                    >
                       <div className="ui-flex-between ui-mb-2">
                         <div className="ui-hstack-2">
-                          <span className="font-semibold text-sm">{msg.author}</span>
-                          {msg.isStaff && <span className="ui-badge ui-badge-primary">Staff</span>}
+                          <span className="font-semibold text-sm">
+                            {msg.author}
+                          </span>
+                          {msg.isStaff && (
+                            <span className="ui-badge ui-badge-primary">
+                              Staff
+                            </span>
+                          )}
                         </div>
-                        <span className="ui-text-xs-muted">{new Date(msg.createdAt).toLocaleString()}</span>
+                        <span className="ui-text-xs-muted">
+                          {new Date(msg.createdAt).toLocaleString()}
+                        </span>
                       </div>
                       <p className="text-sm">{msg.content}</p>
                       {msg.attachments.length > 0 && (
                         <div className="ui-hstack-2 ui-mt-2">
                           {msg.attachments.map((att, idx) => (
-                            <a key={idx} href={att.url} className="ui-chip" target="_blank" rel="noopener noreferrer">
+                            <a
+                              key={idx}
+                              href={att.url}
+                              className="ui-chip"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
                               <Paperclip size={12} /> {att.name}
                             </a>
                           ))}
@@ -314,8 +428,16 @@ export default function SaasSupportPage() {
                       onChange={(e) => setReplyText(e.target.value)}
                     />
                     <div className="ui-flex-end ui-hstack-2">
-                      <button type="submit" className="ui-btn ui-btn-primary" disabled={submitting || !replyText.trim()}>
-                        {submitting ? <RefreshCw size={14} className="animate-spin" /> : <Send size={14} />}
+                      <button
+                        type="submit"
+                        className="ui-btn ui-btn-primary"
+                        disabled={submitting || !replyText.trim()}
+                      >
+                        {submitting ? (
+                          <RefreshCw size={14} className="animate-spin" />
+                        ) : (
+                          <Send size={14} />
+                        )}
                         Send Reply
                       </button>
                     </div>
@@ -325,27 +447,54 @@ export default function SaasSupportPage() {
               <div className="ui-modal-footer ui-flex-between">
                 <div className="ui-hstack-2">
                   {selectedTicket.status === "OPEN" && (
-                    <button className="ui-btn ui-btn-secondary" onClick={() => handleStatusChange(selectedTicket.id, "IN_PROGRESS")}>
+                    <button
+                      className="ui-btn ui-btn-secondary"
+                      onClick={() =>
+                        handleStatusChange(selectedTicket.id, "IN_PROGRESS")
+                      }
+                    >
                       <ArrowUp size={14} /> Start Progress
                     </button>
                   )}
                   {selectedTicket.status === "IN_PROGRESS" && (
-                    <button className="ui-btn ui-btn-secondary" onClick={() => handleStatusChange(selectedTicket.id, "RESOLVED")}>
+                    <button
+                      className="ui-btn ui-btn-secondary"
+                      onClick={() =>
+                        handleStatusChange(selectedTicket.id, "RESOLVED")
+                      }
+                    >
                       <CheckCircle size={14} /> Mark Resolved
                     </button>
                   )}
-                  {(selectedTicket.status === "OPEN" || selectedTicket.status === "IN_PROGRESS") && (
-                    <button className="ui-btn ui-btn-danger" onClick={() => handleStatusChange(selectedTicket.id, "CLOSED")}>
+                  {(selectedTicket.status === "OPEN" ||
+                    selectedTicket.status === "IN_PROGRESS") && (
+                    <button
+                      className="ui-btn ui-btn-danger"
+                      onClick={() =>
+                        handleStatusChange(selectedTicket.id, "CLOSED")
+                      }
+                    >
                       <X size={14} /> Close
                     </button>
                   )}
-                  {(selectedTicket.status === "RESOLVED" || selectedTicket.status === "CLOSED") && (
-                    <button className="ui-btn ui-btn-secondary" onClick={() => handleStatusChange(selectedTicket.id, "OPEN")}>
+                  {(selectedTicket.status === "RESOLVED" ||
+                    selectedTicket.status === "CLOSED") && (
+                    <button
+                      className="ui-btn ui-btn-secondary"
+                      onClick={() =>
+                        handleStatusChange(selectedTicket.id, "OPEN")
+                      }
+                    >
                       <RefreshCw size={14} /> Reopen
                     </button>
                   )}
                 </div>
-                <button className="ui-btn ui-btn-secondary" onClick={() => setSelectedTicket(null)}>Close</button>
+                <button
+                  className="ui-btn ui-btn-secondary"
+                  onClick={() => setSelectedTicket(null)}
+                >
+                  Close
+                </button>
               </div>
             </div>
           </div>

@@ -1,11 +1,10 @@
-// @ts-nocheck
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { Button, Modal, ChangeHistory } from '@unerp/ui';
-import { DetailView, FormView, RouteGuard } from '@unerp/framework';
-import { contactResource } from '@/modules/crm';
+import { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { Button, Modal, ChangeHistory } from "@unerp/ui";
+import { DetailView, FormView, RouteGuard } from "@unerp/framework";
+import { contactResource } from "@/modules/crm";
 
 export default function ContactDetailPage() {
   const params = useParams();
@@ -21,7 +20,10 @@ export default function ContactDetailPage() {
           id={id}
           onEdit={() => setShowEdit(true)}
           actions={
-            <Button variant="outline" onClick={() => router.push('/crm/contacts')}>
+            <Button
+              variant="outline"
+              onClick={() => router.push("/crm/contacts")}
+            >
               Back to List
             </Button>
           }
@@ -29,7 +31,11 @@ export default function ContactDetailPage() {
           <ChangeHistory entityType="Contact" entityId={id} />
         </DetailView>
 
-        <Modal open={showEdit} onClose={() => setShowEdit(false)} title="Edit Contact">
+        <Modal
+          open={showEdit}
+          onClose={() => setShowEdit(false)}
+          title="Edit Contact"
+        >
           <FormView
             resource={contactResource}
             id={id}

@@ -1,7 +1,6 @@
-// @ts-nocheck
-'use client';
-import styles from './global-error.module.css';
-import { ErrorFallback } from '@/components/ErrorFallback';
+"use client";
+import styles from "./global-error.module.css";
+import { ErrorFallback } from "@/components/ErrorFallback";
 
 export default function GlobalError({
   error,

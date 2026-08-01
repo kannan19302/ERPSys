@@ -1,13 +1,20 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class AslService {
-
   // ── Approved Suppliers ───────────────────────────────────────────────────
 
-  async listApprovedSuppliers(tenantId: string, productId?: string, vendorId?: string, status?: string) {
+  async listApprovedSuppliers(
+    tenantId: string,
+    productId?: string,
+    vendorId?: string,
+    status?: string,
+  ) {
     return prisma.approvedSupplier.findMany({
       where: {
         tenantId,
@@ -16,29 +23,49 @@ export class AslService {
         ...(status && { status: status as never }),
       },
       include: { priceTiers: true },
-      orderBy: [{ preferenceRank: 'asc' }, { createdAt: 'desc' }],
+      orderBy: [{ preferenceRank: "asc" }, { createdAt: "desc" }],
     });
   }
 
   async getApprovedSupplier(tenantId: string, id: string) {
     const asl = await prisma.approvedSupplier.findFirst({
       where: { tenantId, id },
-      include: { priceTiers: true, changeLog: { orderBy: { changedAt: 'desc' }, take: 20 } },
+      include: {
+        priceTiers: true,
+        changeLog: { orderBy: { changedAt: "desc" }, take: 20 },
+      },
     });
-    if (!asl) throw new NotFoundException('Approved supplier record not found');
+    if (!asl) throw new NotFoundException("Approved supplier record not found");
     return asl;
   }
 
-  async createApprovedSupplier(tenantId: string, createdBy: string, dto: {
-    productId: string; vendorId: string; vendorProductRef?: string; vendorProductName?: string;
-    unitPrice?: number; currency?: string; moq?: number; leadTimeDays?: number;
-    maxOrderQty?: number; uom?: string; packSize?: number;
-    qualificationDate?: string; expiryDate?: string; conditionalNote?: string;
-  }) {
+  async createApprovedSupplier(
+    tenantId: string,
+    createdBy: string,
+    dto: {
+      productId: string;
+      vendorId: string;
+      vendorProductRef?: string;
+      vendorProductName?: string;
+      unitPrice?: number;
+      currency?: string;
+      moq?: number;
+      leadTimeDays?: number;
+      maxOrderQty?: number;
+      uom?: string;
+      packSize?: number;
+      qualificationDate?: string;
+      expiryDate?: string;
+      conditionalNote?: string;
+    },
+  ) {
     const existing = await prisma.approvedSupplier.findFirst({
       where: { tenantId, productId: dto.productId, vendorId: dto.vendorId },
     });
-    if (existing) throw new BadRequestException('Vendor is already in ASL for this product');
+    if (existing)
+      throw new BadRequestException(
+        "Vendor is already in ASL for this product",
+      );
 
     const asl = await prisma.approvedSupplier.create({
       data: {
@@ -48,13 +75,15 @@ export class AslService {
         vendorProductRef: dto.vendorProductRef ?? null,
         vendorProductName: dto.vendorProductName ?? null,
         unitPrice: dto.unitPrice ?? null,
-        currency: dto.currency ?? 'USD',
+        currency: dto.currency ?? "USD",
         moq: dto.moq ?? null,
         leadTimeDays: dto.leadTimeDays ?? null,
         maxOrderQty: dto.maxOrderQty ?? null,
-        uom: dto.uom ?? 'UNIT',
+        uom: dto.uom ?? "UNIT",
         packSize: dto.packSize ?? null,
-        qualificationDate: dto.qualificationDate ? new Date(dto.qualificationDate) : null,
+        qualificationDate: dto.qualificationDate
+          ? new Date(dto.qualificationDate)
+          : null,
         expiryDate: dto.expiryDate ? new Date(dto.expiryDate) : null,
         conditionalNote: dto.conditionalNote ?? null,
         createdBy,
@@ -64,27 +93,46 @@ export class AslService {
 
     await prisma.aslChangeLog.create({
       data: {
-        tenantId, approvedSupplierId: asl.id,
-        changeType: 'APPROVED', newValue: 'PENDING_APPROVAL',
-        reason: 'Initial creation', changedBy: createdBy,
+        tenantId,
+        approvedSupplierId: asl.id,
+        changeType: "APPROVED",
+        newValue: "PENDING_APPROVAL",
+        reason: "Initial creation",
+        changedBy: createdBy,
       },
     });
 
     return asl;
   }
 
-  async updateApprovedSupplier(tenantId: string, id: string, changedBy: string, dto: Partial<{
-    vendorProductRef: string; vendorProductName: string; unitPrice: number; currency: string;
-    moq: number; leadTimeDays: number; maxOrderQty: number; uom: string; packSize: number;
-    expiryDate: string; conditionalNote: string;
-  }>) {
+  async updateApprovedSupplier(
+    tenantId: string,
+    id: string,
+    changedBy: string,
+    dto: Partial<{
+      vendorProductRef: string;
+      vendorProductName: string;
+      unitPrice: number;
+      currency: string;
+      moq: number;
+      leadTimeDays: number;
+      maxOrderQty: number;
+      uom: string;
+      packSize: number;
+      expiryDate: string;
+      conditionalNote: string;
+    }>,
+  ) {
     const asl = await this.getApprovedSupplier(tenantId, id);
 
     if (dto.unitPrice !== undefined && asl.unitPrice !== null) {
       await prisma.aslChangeLog.create({
         data: {
-          tenantId, approvedSupplierId: id, changeType: 'PRICE_UPDATE',
-          previousValue: String(asl.unitPrice), newValue: String(dto.unitPrice),
+          tenantId,
+          approvedSupplierId: id,
+          changeType: "PRICE_UPDATE",
+          previousValue: String(asl.unitPrice),
+          newValue: String(dto.unitPrice),
           changedBy,
         },
       });
@@ -92,8 +140,11 @@ export class AslService {
     if (dto.leadTimeDays !== undefined && asl.leadTimeDays !== null) {
       await prisma.aslChangeLog.create({
         data: {
-          tenantId, approvedSupplierId: id, changeType: 'LEAD_TIME_UPDATE',
-          previousValue: String(asl.leadTimeDays), newValue: String(dto.leadTimeDays),
+          tenantId,
+          approvedSupplierId: id,
+          changeType: "LEAD_TIME_UPDATE",
+          previousValue: String(asl.leadTimeDays),
+          newValue: String(dto.leadTimeDays),
           changedBy,
         },
       });
@@ -102,80 +153,141 @@ export class AslService {
     return prisma.approvedSupplier.update({
       where: { id },
       data: {
-        ...(dto.vendorProductRef !== undefined && { vendorProductRef: dto.vendorProductRef }),
-        ...(dto.vendorProductName !== undefined && { vendorProductName: dto.vendorProductName }),
+        ...(dto.vendorProductRef !== undefined && {
+          vendorProductRef: dto.vendorProductRef,
+        }),
+        ...(dto.vendorProductName !== undefined && {
+          vendorProductName: dto.vendorProductName,
+        }),
         ...(dto.unitPrice !== undefined && { unitPrice: dto.unitPrice }),
         ...(dto.currency !== undefined && { currency: dto.currency }),
         ...(dto.moq !== undefined && { moq: dto.moq }),
-        ...(dto.leadTimeDays !== undefined && { leadTimeDays: dto.leadTimeDays }),
+        ...(dto.leadTimeDays !== undefined && {
+          leadTimeDays: dto.leadTimeDays,
+        }),
         ...(dto.maxOrderQty !== undefined && { maxOrderQty: dto.maxOrderQty }),
         ...(dto.uom !== undefined && { uom: dto.uom }),
         ...(dto.packSize !== undefined && { packSize: dto.packSize }),
-        ...(dto.expiryDate !== undefined && { expiryDate: new Date(dto.expiryDate) }),
-        ...(dto.conditionalNote !== undefined && { conditionalNote: dto.conditionalNote }),
+        ...(dto.expiryDate !== undefined && {
+          expiryDate: new Date(dto.expiryDate),
+        }),
+        ...(dto.conditionalNote !== undefined && {
+          conditionalNote: dto.conditionalNote,
+        }),
       },
     });
   }
 
-  async approveSupplier(tenantId: string, id: string, approvedBy: string, qualificationDate?: string) {
+  async approveSupplier(
+    tenantId: string,
+    id: string,
+    approvedBy: string,
+    qualificationDate?: string,
+  ) {
     const asl = await this.getApprovedSupplier(tenantId, id);
-    if (asl.status === 'APPROVED') throw new BadRequestException('Supplier is already approved');
+    if (asl.status === "APPROVED")
+      throw new BadRequestException("Supplier is already approved");
 
     await prisma.aslChangeLog.create({
       data: {
-        tenantId, approvedSupplierId: id, changeType: 'APPROVED',
-        previousValue: asl.status, newValue: 'APPROVED', changedBy: approvedBy,
+        tenantId,
+        approvedSupplierId: id,
+        changeType: "APPROVED",
+        previousValue: asl.status,
+        newValue: "APPROVED",
+        changedBy: approvedBy,
       },
     });
 
     return prisma.approvedSupplier.update({
       where: { id },
       data: {
-        status: 'APPROVED', approvedBy,
-        qualificationDate: qualificationDate ? new Date(qualificationDate) : new Date(),
+        status: "APPROVED",
+        approvedBy,
+        qualificationDate: qualificationDate
+          ? new Date(qualificationDate)
+          : new Date(),
       },
     });
   }
 
-  async disqualifySupplier(tenantId: string, id: string, changedBy: string, reason: string) {
+  async disqualifySupplier(
+    tenantId: string,
+    id: string,
+    changedBy: string,
+    reason: string,
+  ) {
     const asl = await this.getApprovedSupplier(tenantId, id);
-    if (asl.status === 'DISQUALIFIED') throw new BadRequestException('Supplier is already disqualified');
+    if (asl.status === "DISQUALIFIED")
+      throw new BadRequestException("Supplier is already disqualified");
 
     await prisma.aslChangeLog.create({
       data: {
-        tenantId, approvedSupplierId: id, changeType: 'DISQUALIFIED',
-        previousValue: asl.status, newValue: 'DISQUALIFIED', reason, changedBy,
+        tenantId,
+        approvedSupplierId: id,
+        changeType: "DISQUALIFIED",
+        previousValue: asl.status,
+        newValue: "DISQUALIFIED",
+        reason,
+        changedBy,
       },
     });
 
     return prisma.approvedSupplier.update({
       where: { id },
-      data: { status: 'DISQUALIFIED', disqualifiedReason: reason, isPreferred: false, preferenceRank: 999 },
+      data: {
+        status: "DISQUALIFIED",
+        disqualifiedReason: reason,
+        isPreferred: false,
+        preferenceRank: 999,
+      },
     });
   }
 
-  async setConditional(tenantId: string, id: string, changedBy: string, note: string) {
+  async setConditional(
+    tenantId: string,
+    id: string,
+    changedBy: string,
+    note: string,
+  ) {
     const asl = await this.getApprovedSupplier(tenantId, id);
     await prisma.aslChangeLog.create({
       data: {
-        tenantId, approvedSupplierId: id, changeType: 'CONDITIONAL',
-        previousValue: asl.status, newValue: 'CONDITIONAL', reason: note, changedBy,
+        tenantId,
+        approvedSupplierId: id,
+        changeType: "CONDITIONAL",
+        previousValue: asl.status,
+        newValue: "CONDITIONAL",
+        reason: note,
+        changedBy,
       },
     });
     return prisma.approvedSupplier.update({
       where: { id },
-      data: { status: 'CONDITIONAL', conditionalNote: note },
+      data: { status: "CONDITIONAL", conditionalNote: note },
     });
   }
 
-  async setPreferred(tenantId: string, id: string, changedBy: string, rank?: number) {
+  async setPreferred(
+    tenantId: string,
+    id: string,
+    changedBy: string,
+    rank?: number,
+  ) {
     const asl = await this.getApprovedSupplier(tenantId, id);
-    if (asl.status !== 'APPROVED') throw new BadRequestException('Only APPROVED suppliers can be set as preferred');
+    if (asl.status !== "APPROVED")
+      throw new BadRequestException(
+        "Only APPROVED suppliers can be set as preferred",
+      );
 
     await prisma.aslChangeLog.create({
       data: {
-        tenantId, approvedSupplierId: id, changeType: 'PREFERRED_UPDATE',
-        previousValue: String(asl.preferenceRank), newValue: String(rank ?? 1), changedBy,
+        tenantId,
+        approvedSupplierId: id,
+        changeType: "PREFERRED_UPDATE",
+        previousValue: String(asl.preferenceRank),
+        newValue: String(rank ?? 1),
+        changedBy,
       },
     });
 
@@ -189,8 +301,11 @@ export class AslService {
     await this.getApprovedSupplier(tenantId, id);
     await prisma.aslChangeLog.create({
       data: {
-        tenantId, approvedSupplierId: id, changeType: 'PREFERRED_UPDATE',
-        newValue: 'not-preferred', changedBy,
+        tenantId,
+        approvedSupplierId: id,
+        changeType: "PREFERRED_UPDATE",
+        newValue: "not-preferred",
+        changedBy,
       },
     });
     return prisma.approvedSupplier.update({
@@ -201,10 +316,17 @@ export class AslService {
 
   // ── Price Tiers ──────────────────────────────────────────────────────────
 
-  async addPriceTier(tenantId: string, approvedSupplierId: string, dto: {
-    fromQty: number; toQty?: number; unitPrice: number;
-    effectiveFrom: string; effectiveTo?: string;
-  }) {
+  async addPriceTier(
+    tenantId: string,
+    approvedSupplierId: string,
+    dto: {
+      fromQty: number;
+      toQty?: number;
+      unitPrice: number;
+      effectiveFrom: string;
+      effectiveTo?: string;
+    },
+  ) {
     await this.getApprovedSupplier(tenantId, approvedSupplierId);
     return prisma.supplierPriceTier.create({
       data: {
@@ -220,21 +342,28 @@ export class AslService {
   }
 
   async deletePriceTier(tenantId: string, tierId: string) {
-    const tier = await prisma.supplierPriceTier.findFirst({ where: { tenantId, id: tierId } });
-    if (!tier) throw new NotFoundException('Price tier not found');
+    const tier = await prisma.supplierPriceTier.findFirst({
+      where: { tenantId, id: tierId },
+    });
+    if (!tier) throw new NotFoundException("Price tier not found");
     await prisma.supplierPriceTier.delete({ where: { id: tierId } });
     return { deleted: true };
   }
 
-  async getEffectivePrice(tenantId: string, approvedSupplierId: string, qty: number) {
+  async getEffectivePrice(
+    tenantId: string,
+    approvedSupplierId: string,
+    qty: number,
+  ) {
     const now = new Date();
     const tiers = await prisma.supplierPriceTier.findMany({
       where: {
-        tenantId, approvedSupplierId,
+        tenantId,
+        approvedSupplierId,
         effectiveFrom: { lte: now },
         OR: [{ effectiveTo: null }, { effectiveTo: { gte: now } }],
       },
-      orderBy: { fromQty: 'asc' },
+      orderBy: { fromQty: "asc" },
     });
 
     let applicableTier = tiers.find((t) => {
@@ -251,7 +380,9 @@ export class AslService {
     return {
       approvedSupplierId,
       qty,
-      effectivePrice: applicableTier ? Number(applicableTier.unitPrice) : Number(asl.unitPrice ?? 0),
+      effectivePrice: applicableTier
+        ? Number(applicableTier.unitPrice)
+        : Number(asl.unitPrice ?? 0),
       tierId: applicableTier?.id ?? null,
       currency: asl.currency,
     };
@@ -265,13 +396,22 @@ export class AslService {
     });
   }
 
-  async upsertAttribute(tenantId: string, dto: {
-    productId: string; vendorId: string; attributeKey: string; attributeValue: string;
-  }) {
+  async upsertAttribute(
+    tenantId: string,
+    dto: {
+      productId: string;
+      vendorId: string;
+      attributeKey: string;
+      attributeValue: string;
+    },
+  ) {
     return prisma.vendorItemAttribute.upsert({
       where: {
         tenantId_productId_vendorId_attributeKey: {
-          tenantId, productId: dto.productId, vendorId: dto.vendorId, attributeKey: dto.attributeKey,
+          tenantId,
+          productId: dto.productId,
+          vendorId: dto.vendorId,
+          attributeKey: dto.attributeKey,
         },
       },
       update: { attributeValue: dto.attributeValue },
@@ -280,8 +420,10 @@ export class AslService {
   }
 
   async deleteAttribute(tenantId: string, id: string) {
-    const attr = await prisma.vendorItemAttribute.findFirst({ where: { tenantId, id } });
-    if (!attr) throw new NotFoundException('Attribute not found');
+    const attr = await prisma.vendorItemAttribute.findFirst({
+      where: { tenantId, id },
+    });
+    if (!attr) throw new NotFoundException("Attribute not found");
     await prisma.vendorItemAttribute.delete({ where: { id } });
     return { deleted: true };
   }
@@ -292,14 +434,22 @@ export class AslService {
     return prisma.aslComplianceRule.findMany({ where: { tenantId } });
   }
 
-  async upsertComplianceRule(tenantId: string, dto: {
-    productCategory?: string; minApprovedVendors?: number;
-    requiresQualification?: boolean; qualificationValidityDays?: number;
-    requiresPreferred?: boolean; notes?: string;
-  }) {
+  async upsertComplianceRule(
+    tenantId: string,
+    dto: {
+      productCategory?: string;
+      minApprovedVendors?: number;
+      requiresQualification?: boolean;
+      qualificationValidityDays?: number;
+      requiresPreferred?: boolean;
+      notes?: string;
+    },
+  ) {
     const key = dto.productCategory ?? null;
     return prisma.aslComplianceRule.upsert({
-      where: { tenantId_productCategory: { tenantId, productCategory: key as string } },
+      where: {
+        tenantId_productCategory: { tenantId, productCategory: key as string },
+      },
       update: {
         minApprovedVendors: dto.minApprovedVendors ?? 1,
         requiresQualification: dto.requiresQualification ?? false,
@@ -308,7 +458,8 @@ export class AslService {
         notes: dto.notes ?? null,
       },
       create: {
-        tenantId, productCategory: key,
+        tenantId,
+        productCategory: key,
         minApprovedVendors: dto.minApprovedVendors ?? 1,
         requiresQualification: dto.requiresQualification ?? false,
         qualificationValidityDays: dto.qualificationValidityDays ?? null,
@@ -318,12 +469,16 @@ export class AslService {
     });
   }
 
-  async checkProductCompliance(tenantId: string, productId: string, productCategory?: string) {
+  async checkProductCompliance(
+    tenantId: string,
+    productId: string,
+    productCategory?: string,
+  ) {
     const approvedCount = await prisma.approvedSupplier.count({
-      where: { tenantId, productId, status: 'APPROVED' },
+      where: { tenantId, productId, status: "APPROVED" },
     });
     const preferredCount = await prisma.approvedSupplier.count({
-      where: { tenantId, productId, status: 'APPROVED', isPreferred: true },
+      where: { tenantId, productId, status: "APPROVED", isPreferred: true },
     });
 
     const rule = await prisma.aslComplianceRule.findFirst({
@@ -331,22 +486,41 @@ export class AslService {
         tenantId,
         OR: [{ productCategory }, { productCategory: null }],
       },
-      orderBy: { productCategory: 'desc' },
+      orderBy: { productCategory: "desc" },
     });
 
     const now = new Date();
     const expiredCount = await prisma.approvedSupplier.count({
-      where: { tenantId, productId, status: 'APPROVED', expiryDate: { lt: now } },
+      where: {
+        tenantId,
+        productId,
+        status: "APPROVED",
+        expiryDate: { lt: now },
+      },
     });
 
     const issues: string[] = [];
     if (rule) {
-      if (approvedCount < rule.minApprovedVendors) issues.push(`Requires at least ${rule.minApprovedVendors} approved vendors (have ${approvedCount})`);
-      if (rule.requiresPreferred && preferredCount === 0) issues.push('Requires a preferred vendor');
+      if (approvedCount < rule.minApprovedVendors)
+        issues.push(
+          `Requires at least ${rule.minApprovedVendors} approved vendors (have ${approvedCount})`,
+        );
+      if (rule.requiresPreferred && preferredCount === 0)
+        issues.push("Requires a preferred vendor");
     }
-    if (expiredCount > 0) issues.push(`${expiredCount} approved supplier(s) have expired qualifications`);
+    if (expiredCount > 0)
+      issues.push(
+        `${expiredCount} approved supplier(s) have expired qualifications`,
+      );
 
-    return { productId, approvedCount, preferredCount, expiredCount, compliant: issues.length === 0, issues };
+    return {
+      productId,
+      approvedCount,
+      preferredCount,
+      expiredCount,
+      compliant: issues.length === 0,
+      issues,
+    };
   }
 
   // ── Change Log ───────────────────────────────────────────────────────────
@@ -355,39 +529,71 @@ export class AslService {
     await this.getApprovedSupplier(tenantId, approvedSupplierId);
     return prisma.aslChangeLog.findMany({
       where: { tenantId, approvedSupplierId },
-      orderBy: { changedAt: 'desc' },
+      orderBy: { changedAt: "desc" },
     });
   }
 
   // ── Dashboard & Reports ──────────────────────────────────────────────────
 
   async getDashboard(tenantId: string) {
-    const [total, approved, conditional, disqualified, pending, preferred] = await Promise.all([
-      prisma.approvedSupplier.count({ where: { tenantId } }),
-      prisma.approvedSupplier.count({ where: { tenantId, status: 'APPROVED' } }),
-      prisma.approvedSupplier.count({ where: { tenantId, status: 'CONDITIONAL' } }),
-      prisma.approvedSupplier.count({ where: { tenantId, status: 'DISQUALIFIED' } }),
-      prisma.approvedSupplier.count({ where: { tenantId, status: 'PENDING_APPROVAL' } }),
-      prisma.approvedSupplier.count({ where: { tenantId, isPreferred: true } }),
-    ]);
+    const [total, approved, conditional, disqualified, pending, preferred] =
+      await Promise.all([
+        prisma.approvedSupplier.count({ where: { tenantId } }),
+        prisma.approvedSupplier.count({
+          where: { tenantId, status: "APPROVED" },
+        }),
+        prisma.approvedSupplier.count({
+          where: { tenantId, status: "CONDITIONAL" },
+        }),
+        prisma.approvedSupplier.count({
+          where: { tenantId, status: "DISQUALIFIED" },
+        }),
+        prisma.approvedSupplier.count({
+          where: { tenantId, status: "PENDING_APPROVAL" },
+        }),
+        prisma.approvedSupplier.count({
+          where: { tenantId, isPreferred: true },
+        }),
+      ]);
 
     const now = new Date();
     const cutoff30 = new Date();
     cutoff30.setDate(cutoff30.getDate() + 30);
 
     const [expiring, expired] = await Promise.all([
-      prisma.approvedSupplier.count({ where: { tenantId, status: 'APPROVED', expiryDate: { gte: now, lte: cutoff30 } } }),
-      prisma.approvedSupplier.count({ where: { tenantId, status: 'APPROVED', expiryDate: { lt: now } } }),
+      prisma.approvedSupplier.count({
+        where: {
+          tenantId,
+          status: "APPROVED",
+          expiryDate: { gte: now, lte: cutoff30 },
+        },
+      }),
+      prisma.approvedSupplier.count({
+        where: { tenantId, status: "APPROVED", expiryDate: { lt: now } },
+      }),
     ]);
 
-    return { total, approved, conditional, disqualified, pending, preferred, expiring, expired };
+    return {
+      total,
+      approved,
+      conditional,
+      disqualified,
+      pending,
+      preferred,
+      expiring,
+      expired,
+    };
   }
 
   async getVendorSourcingReport(tenantId: string, productId: string) {
     const suppliers = await prisma.approvedSupplier.findMany({
-      where: { tenantId, productId, status: { in: ['APPROVED', 'CONDITIONAL'] } },
+      where: {
+        tenantId,
+        productId,
+        status: { in: ["APPROVED", "CONDITIONAL"] },
+      },
       include: { priceTiers: true },
-      orderBy: { preferenceRank: 'asc' },
+      orderBy: { preferenceRank: "asc" },
     });
 
     return {
@@ -419,8 +625,12 @@ export class AslService {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() + daysAhead);
     return prisma.approvedSupplier.findMany({
-      where: { tenantId, status: 'APPROVED', expiryDate: { lte: cutoff, gte: new Date() } },
-      orderBy: { expiryDate: 'asc' },
+      where: {
+        tenantId,
+        status: "APPROVED",
+        expiryDate: { lte: cutoff, gte: new Date() },
+      },
+      orderBy: { expiryDate: "asc" },
     });
   }
 }

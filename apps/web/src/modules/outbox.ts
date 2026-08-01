@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { defineModule, defineResource } from "@unerp/framework";
 
 export const outboxEntity1Resource = defineResource({

@@ -1,8 +1,7 @@
-// @ts-nocheck
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { AiClient } from '../../common/integrations/ai-client';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { EventEmitter2 } from "@nestjs/event-emitter";
+import { AiClient } from "../../common/integrations/ai-client";
 
 interface WorkflowContext {
   tenantId: string;
@@ -16,17 +15,27 @@ interface WorkflowContext {
 export class WorkflowEngineService {
   constructor(
     private eventEmitter: EventEmitter2,
-    private readonly aiService: AiClient
+    private readonly aiService: AiClient,
   ) {}
 
-  async executeWorkflow(tenantId: string, workflowId: string, context: WorkflowContext) {
+  async executeWorkflow(
+    tenantId: string,
+    workflowId: string,
+    context: WorkflowContext,
+  ) {
     const workflow = await prisma.workflow.findFirst({
-      where: { id: workflowId, tenantId, status: 'ACTIVE' },
-      include: { steps: { orderBy: { stepOrder: 'asc' } } },
+      where: { id: workflowId, tenantId, status: "ACTIVE" },
+      include: { steps: { orderBy: { stepOrder: "asc" } } },
     });
-    if (!workflow) throw new NotFoundException('Workflow not found or inactive');
+    if (!workflow)
+      throw new NotFoundException("Workflow not found or inactive");
 
-    const executionLog: Array<{ stepId: string; actionType: string; result: string; timestamp: string }> = [];
+    const executionLog: Array<{
+      stepId: string;
+      actionType: string;
+      result: string;
+      timestamp: string;
+    }> = [];
 
     for (const step of workflow.steps) {
       try {
@@ -34,7 +43,7 @@ export class WorkflowEngineService {
         executionLog.push({
           stepId: step.id,
           actionType: step.actionType,
-          result: 'SUCCESS',
+          result: "SUCCESS",
           timestamp: new Date().toISOString(),
         });
         if (result.halt) break;
@@ -42,14 +51,14 @@ export class WorkflowEngineService {
         executionLog.push({
           stepId: step.id,
           actionType: step.actionType,
-          result: `ERROR: ${err.message || 'Unknown'}`,
+          result: `ERROR: ${err.message || "Unknown"}`,
           timestamp: new Date().toISOString(),
         });
         break;
       }
     }
 
-    this.eventEmitter.emit('workflow.executed', {
+    this.eventEmitter.emit("workflow.executed", {
       tenantId,
       workflowId,
       entityType: context.entityType,
@@ -67,41 +76,46 @@ export class WorkflowEngineService {
   }
 
   private async executeStep(
-    step: { id: string; actionType: string; assigneeRole: string; slaLimitHours: number | null },
+    step: {
+      id: string;
+      actionType: string;
+      assigneeRole: string;
+      slaLimitHours: number | null;
+    },
     context: WorkflowContext,
   ): Promise<{ halt?: boolean }> {
     switch (step.actionType.toUpperCase()) {
-      case 'APPROVAL': {
+      case "APPROVAL": {
         await prisma.approvalChain.create({
           data: {
             tenantId: context.tenantId,
             entityType: context.entityType,
             entityId: context.entityId,
             stepId: step.id,
-            status: 'PENDING',
+            status: "PENDING",
           },
         });
 
-        this.eventEmitter.emit('notification.send', {
+        this.eventEmitter.emit("notification.send", {
           tenantId: context.tenantId,
           userId: context.triggeredBy,
-          type: 'APPROVAL_REQUEST',
+          type: "APPROVAL_REQUEST",
           title: `Approval required: ${context.entityType}`,
         });
         return {};
       }
 
-      case 'NOTIFICATION': {
-        this.eventEmitter.emit('notification.send', {
+      case "NOTIFICATION": {
+        this.eventEmitter.emit("notification.send", {
           tenantId: context.tenantId,
           userId: context.triggeredBy,
-          type: 'WORKFLOW',
+          type: "WORKFLOW",
           title: `Workflow step completed for ${context.entityType}`,
         });
         return {};
       }
 
-      case 'AI_REVIEWER': {
+      case "AI_REVIEWER": {
         return this.runAiReviewStep(step, context);
       }
 
@@ -111,7 +125,12 @@ export class WorkflowEngineService {
   }
 
   private async runAiReviewStep(
-    step: { id: string; actionType: string; assigneeRole: string; slaLimitHours: number | null },
+    step: {
+      id: string;
+      actionType: string;
+      assigneeRole: string;
+      slaLimitHours: number | null;
+    },
     context: WorkflowContext,
   ): Promise<{ halt?: boolean }> {
     const entitySummary = JSON.stringify(context.data, null, 2).slice(0, 3000);
@@ -130,20 +149,24 @@ Assess the risk level. Respond ONLY with a JSON object like:
 
 LOW + APPROVE = auto-approve. MEDIUM or HIGH + ESCALATE = route to human reviewer.`;
 
-    let riskLevel = 'MEDIUM';
-    let reasoning = 'AI review unavailable; defaulting to human escalation.';
-    let recommendation = 'ESCALATE';
+    let riskLevel = "MEDIUM";
+    let reasoning = "AI review unavailable; defaulting to human escalation.";
+    let recommendation = "ESCALATE";
 
     if (this.aiService.isConfigured()) {
       try {
         const res = await this.aiService.chat(
-          [{ role: 'user', content: prompt }],
-          { maxTokens: 256, tenantId: context.tenantId }
+          [{ role: "user", content: prompt }],
+          { maxTokens: 256, tenantId: context.tenantId },
         );
         const text = res.content;
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
-          const parsed = JSON.parse(jsonMatch[0]) as { riskLevel?: string; reasoning?: string; recommendation?: string };
+          const parsed = JSON.parse(jsonMatch[0]) as {
+            riskLevel?: string;
+            reasoning?: string;
+            recommendation?: string;
+          };
           riskLevel = parsed.riskLevel || riskLevel;
           reasoning = parsed.reasoning || reasoning;
           recommendation = parsed.recommendation || recommendation;
@@ -153,20 +176,20 @@ LOW + APPROVE = auto-approve. MEDIUM or HIGH + ESCALATE = route to human reviewe
       }
     }
 
-    if (recommendation === 'APPROVE' && riskLevel === 'LOW') {
-      this.eventEmitter.emit('notification.send', {
+    if (recommendation === "APPROVE" && riskLevel === "LOW") {
+      this.eventEmitter.emit("notification.send", {
         tenantId: context.tenantId,
         userId: context.triggeredBy,
-        type: 'WORKFLOW',
+        type: "WORKFLOW",
         title: `AI auto-approved ${context.entityType}: ${reasoning}`,
       });
-      this.eventEmitter.emit('workflow.ai-reviewed', {
+      this.eventEmitter.emit("workflow.ai-reviewed", {
         tenantId: context.tenantId,
         entityType: context.entityType,
         entityId: context.entityId,
         riskLevel,
         reasoning,
-        outcome: 'AUTO_APPROVED',
+        outcome: "AUTO_APPROVED",
       });
       return {};
     }
@@ -178,38 +201,49 @@ LOW + APPROVE = auto-approve. MEDIUM or HIGH + ESCALATE = route to human reviewe
         entityType: context.entityType,
         entityId: context.entityId,
         stepId: step.id,
-        status: 'PENDING',
+        status: "PENDING",
       },
     });
 
-    this.eventEmitter.emit('notification.send', {
+    this.eventEmitter.emit("notification.send", {
       tenantId: context.tenantId,
       userId: context.triggeredBy,
-      type: 'APPROVAL_REQUEST',
+      type: "APPROVAL_REQUEST",
       title: `AI flagged ${context.entityType} for human review (${riskLevel} risk): ${reasoning}`,
     });
 
-    this.eventEmitter.emit('workflow.ai-reviewed', {
+    this.eventEmitter.emit("workflow.ai-reviewed", {
       tenantId: context.tenantId,
       entityType: context.entityType,
       entityId: context.entityId,
       riskLevel,
       reasoning,
-      outcome: 'ESCALATED_TO_HUMAN',
+      outcome: "ESCALATED_TO_HUMAN",
     });
 
     return {};
   }
 
-  async processEventTrigger(tenantId: string, triggerType: string, entityType: string, entityId: string, data: Record<string, unknown>, triggeredBy: string) {
+  async processEventTrigger(
+    tenantId: string,
+    triggerType: string,
+    entityType: string,
+    entityId: string,
+    data: Record<string, unknown>,
+    triggeredBy: string,
+  ) {
     const workflows = await prisma.workflow.findMany({
-      where: { tenantId, triggerType, status: 'ACTIVE' },
+      where: { tenantId, triggerType, status: "ACTIVE" },
     });
 
     const results: any[] = [];
     for (const wf of workflows) {
       const result = await this.executeWorkflow(tenantId, wf.id, {
-        tenantId, triggeredBy, entityType, entityId, data,
+        tenantId,
+        triggeredBy,
+        entityType,
+        entityId,
+        data,
       });
       results.push(result);
     }

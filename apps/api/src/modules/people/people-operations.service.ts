@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 
@@ -6,7 +5,10 @@ import { prisma } from "@unerp/database";
 export class PeopleOperationsService {
   private readonly prisma = prisma;
   // ── ONBOARDING TASKS ──
-  async getOnboardingTasks(tenantId: string, query: { employeeId?: string; status?: string }) {
+  async getOnboardingTasks(
+    tenantId: string,
+    query: { employeeId?: string; status?: string },
+  ) {
     const where: any = { tenantId };
     if (query.employeeId) where.employeeId = query.employeeId;
     if (query.status) where.status = query.status;
@@ -32,7 +34,10 @@ export class PeopleOperationsService {
   }
 
   // ── TIME OFF REQUESTS ──
-  async getTimeOffRequests(tenantId: string, query: { employeeId?: string; status?: string }) {
+  async getTimeOffRequests(
+    tenantId: string,
+    query: { employeeId?: string; status?: string },
+  ) {
     const where: any = { tenantId };
     if (query.employeeId) where.employeeId = query.employeeId;
     if (query.status) where.status = query.status;

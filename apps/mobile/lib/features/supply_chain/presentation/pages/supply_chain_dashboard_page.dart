@@ -1,10 +1,8 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/ui_card.dart';
-import '../../domain/entities/supply_chain.dart';
 import '../providers/supply_chain_providers.dart';
 
 class SupplyChainDashboardPage extends ConsumerWidget {
@@ -62,11 +60,11 @@ class SupplyChainDashboardPage extends ConsumerWidget {
                               padding: const EdgeInsets.symmetric(vertical: Spacing.x1),
                               child: Row(children: [
                                 Expanded(child: Text(entry.key,
-                                    style: TextStyle(color: t.textSecondary))),
+                                    style: TextStyle(color: t.textSecondary),),),
                                 Text('${entry.value}',
-                                    style: Theme.of(context).textTheme.labelLarge),
-                              ]),
-                            )),
+                                    style: Theme.of(context).textTheme.labelLarge,),
+                              ],),
+                            ),),
                         ],
                       ),
                     ),
@@ -85,9 +83,9 @@ class SupplyChainDashboardPage extends ConsumerWidget {
                                 Expanded(child: Text(
                                   '${event.status ?? 'Update'}${event.location != null ? ' @ ${event.location}' : ''}',
                                   style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-                                )),
-                              ]),
-                            )),
+                                ),),
+                              ],),
+                            ),),
                           ],
                         ),
                       ),
@@ -112,7 +110,7 @@ class _KpiCard extends StatelessWidget {
       child: Row(children: [
         Container(
           padding: const EdgeInsets.all(Spacing.x3),
-          decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: Radii.control),
+          decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: Radii.control),
           child: Icon(icon, color: color),
         ),
         const SizedBox(width: Spacing.x3),
@@ -122,8 +120,8 @@ class _KpiCard extends StatelessWidget {
             Text(value, style: Theme.of(context).textTheme.headlineSmall),
             Text(label, style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
           ],
-        )),
-      ]),
+        ),),
+      ],),
     );
   }
 }

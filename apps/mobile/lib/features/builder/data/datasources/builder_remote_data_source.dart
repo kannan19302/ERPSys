@@ -37,22 +37,22 @@ class BuilderRemoteDataSourceImpl implements BuilderRemoteDataSource {
   @override
   Future<Paginated<BuilderFormModel>> listForms(ListQuery query) =>
       _client.getPaginated<BuilderFormModel>(
-        ApiPaths.builderForms, query, BuilderFormModel.fromJson);
+        ApiPaths.builderForms, query, BuilderFormModel.fromJson,);
 
   @override
   Future<BuilderFormModel> getForm(String id) async =>
       BuilderFormModel.fromJson(
-        await _client.getObject(ApiPaths.builderForm(id)));
+        await _client.getObject(ApiPaths.builderForm(id)),);
 
   @override
   Future<BuilderFormModel> createForm(Map<String, dynamic> payload) async =>
       BuilderFormModel.fromJson(
-        await _client.post(ApiPaths.builderForms, body: payload));
+        await _client.post(ApiPaths.builderForms, body: payload),);
 
   @override
   Future<BuilderFormModel> updateForm(String id, Map<String, dynamic> payload) async =>
       BuilderFormModel.fromJson(
-        await _client.patch(ApiPaths.builderForm(id), body: payload));
+        await _client.patch(ApiPaths.builderForm(id), body: payload),);
 
   @override
   Future<void> deleteForm(String id) =>
@@ -61,22 +61,22 @@ class BuilderRemoteDataSourceImpl implements BuilderRemoteDataSource {
   @override
   Future<Paginated<BuilderPageModel>> listPages(ListQuery query) =>
       _client.getPaginated<BuilderPageModel>(
-        ApiPaths.builderPages, query, BuilderPageModel.fromJson);
+        ApiPaths.builderPages, query, BuilderPageModel.fromJson,);
 
   @override
   Future<BuilderPageModel> getPage(String id) async =>
       BuilderPageModel.fromJson(
-        await _client.getObject(ApiPaths.builderPage(id)));
+        await _client.getObject(ApiPaths.builderPage(id)),);
 
   @override
   Future<BuilderPageModel> createPage(Map<String, dynamic> payload) async =>
       BuilderPageModel.fromJson(
-        await _client.post(ApiPaths.builderPages, body: payload));
+        await _client.post(ApiPaths.builderPages, body: payload),);
 
   @override
   Future<BuilderPageModel> updatePage(String id, Map<String, dynamic> payload) async =>
       BuilderPageModel.fromJson(
-        await _client.patch(ApiPaths.builderPage(id), body: payload));
+        await _client.patch(ApiPaths.builderPage(id), body: payload),);
 
   @override
   Future<void> deletePage(String id) =>
@@ -85,22 +85,22 @@ class BuilderRemoteDataSourceImpl implements BuilderRemoteDataSource {
   @override
   Future<Paginated<BuilderWorkflowModel>> listWorkflows(ListQuery query) =>
       _client.getPaginated<BuilderWorkflowModel>(
-        ApiPaths.builderWorkflows, query, BuilderWorkflowModel.fromJson);
+        ApiPaths.builderWorkflows, query, BuilderWorkflowModel.fromJson,);
 
   @override
   Future<BuilderWorkflowModel> getWorkflow(String id) async =>
       BuilderWorkflowModel.fromJson(
-        await _client.getObject(ApiPaths.builderWorkflow(id)));
+        await _client.getObject(ApiPaths.builderWorkflow(id)),);
 
   @override
   Future<BuilderWorkflowModel> createWorkflow(Map<String, dynamic> payload) async =>
       BuilderWorkflowModel.fromJson(
-        await _client.post(ApiPaths.builderWorkflows, body: payload));
+        await _client.post(ApiPaths.builderWorkflows, body: payload),);
 
   @override
   Future<BuilderWorkflowModel> updateWorkflow(String id, Map<String, dynamic> payload) async =>
       BuilderWorkflowModel.fromJson(
-        await _client.patch(ApiPaths.builderWorkflow(id), body: payload));
+        await _client.patch(ApiPaths.builderWorkflow(id), body: payload),);
 
   @override
   Future<void> deleteWorkflow(String id) =>
@@ -109,22 +109,22 @@ class BuilderRemoteDataSourceImpl implements BuilderRemoteDataSource {
   @override
   Future<Paginated<BuilderTemplateModel>> listTemplates(ListQuery query) =>
       _client.getPaginated<BuilderTemplateModel>(
-        ApiPaths.builderTemplates, query, BuilderTemplateModel.fromJson);
+        ApiPaths.builderTemplates, query, BuilderTemplateModel.fromJson,);
 
   @override
   Future<BuilderTemplateModel> getTemplate(String id) async =>
       BuilderTemplateModel.fromJson(
-        await _client.getObject(ApiPaths.builderTemplate(id)));
+        await _client.getObject(ApiPaths.builderTemplate(id)),);
 
   @override
   Future<BuilderTemplateModel> createTemplate(Map<String, dynamic> payload) async =>
       BuilderTemplateModel.fromJson(
-        await _client.post(ApiPaths.builderTemplates, body: payload));
+        await _client.post(ApiPaths.builderTemplates, body: payload),);
 
   @override
   Future<BuilderTemplateModel> updateTemplate(String id, Map<String, dynamic> payload) async =>
       BuilderTemplateModel.fromJson(
-        await _client.patch(ApiPaths.builderTemplate(id), body: payload));
+        await _client.patch(ApiPaths.builderTemplate(id), body: payload),);
 
   @override
   Future<void> deleteTemplate(String id) =>

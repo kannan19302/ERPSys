@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Maps Prisma model names to the app slug that owns them.
  *

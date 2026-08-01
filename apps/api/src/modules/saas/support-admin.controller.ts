@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Controller,
   Get,
@@ -23,7 +22,13 @@ interface AuthReq extends Request {
 }
 
 const updateTicketStatusSchema = z.object({
-  status: z.enum(["OPEN", "IN_PROGRESS", "WAITING_CUSTOMER", "RESOLVED", "CLOSED"]),
+  status: z.enum([
+    "OPEN",
+    "IN_PROGRESS",
+    "WAITING_CUSTOMER",
+    "RESOLVED",
+    "CLOSED",
+  ]),
 });
 
 const updateTicketPrioritySchema = z.object({
@@ -52,9 +57,7 @@ const configureAutoResponderSchema = z.object({
 @Controller("saas/support-admin")
 @UseGuards(JwtAuthGuard, RbacGuard)
 export class SupportAdminController {
-  constructor(
-    private readonly supportTicketsService: SupportTicketsService,
-  ) {}
+  constructor(private readonly supportTicketsService: SupportTicketsService) {}
 
   @ApiOperation({ summary: "List all tickets [Admin]" })
   @Permissions("saas.ticket.read")
@@ -66,40 +69,62 @@ export class SupportAdminController {
     @Query("page") page?: string,
     @Query("limit") limit?: string,
   ) {
-    return this.supportTicketsService.listTickets(
-      req.user.tenantId,
-      { status, priority },
-      page ? parseInt(page, 10) : 1,
-      limit ? parseInt(limit, 10) : 20,
-    ).catch(() => ({ items: [], total: 0 }));
+    return this.supportTicketsService
+      .listTickets(
+        req.user.tenantId,
+        { status, priority },
+        page ? parseInt(page, 10) : 1,
+        limit ? parseInt(limit, 10) : 20,
+      )
+      .catch(() => ({ items: [], total: 0 }));
   }
 
   @ApiOperation({ summary: "Get ticket detail [Admin]" })
   @Permissions("saas.ticket.read")
   @Get("tickets/:id")
   async getTicketDetail(@Req() req: AuthReq, @Param("id") id: string) {
-    return this.supportTicketsService.getTicket(req.user.tenantId, id).catch(() => null);
+    return this.supportTicketsService
+      .getTicket(req.user.tenantId, id)
+      .catch(() => null);
   }
 
   @ApiOperation({ summary: "Update ticket status [Admin]" })
   @Permissions("saas.ticket.update")
   @Patch("tickets/:id/status")
-  async updateTicketStatus(@Req() req: AuthReq, @Param("id") id: string, @ZodBody(updateTicketStatusSchema) _body: z.infer<typeof updateTicketStatusSchema>) {
-    return this.supportTicketsService.updateTicket(req.user.tenantId, id, {}).catch(() => ({ success: false }));
+  async updateTicketStatus(
+    @Req() req: AuthReq,
+    @Param("id") id: string,
+    @ZodBody(updateTicketStatusSchema)
+    _body: z.infer<typeof updateTicketStatusSchema>,
+  ) {
+    return this.supportTicketsService
+      .updateTicket(req.user.tenantId, id, {})
+      .catch(() => ({ success: false }));
   }
 
   @ApiOperation({ summary: "Update ticket priority [Admin]" })
   @Permissions("saas.ticket.update")
   @Patch("tickets/:id/priority")
-  async updateTicketPriority(@Req() _req: AuthReq, @Param("id") id: string, @ZodBody(updateTicketPrioritySchema) body: z.infer<typeof updateTicketPrioritySchema>) {
+  async updateTicketPriority(
+    @Req() _req: AuthReq,
+    @Param("id") id: string,
+    @ZodBody(updateTicketPrioritySchema)
+    body: z.infer<typeof updateTicketPrioritySchema>,
+  ) {
     return { success: true, ticketId: id, priority: body.priority };
   }
 
   @ApiOperation({ summary: "Assign ticket [Admin]" })
   @Permissions("saas.ticket.update")
   @Post("tickets/:id/assign")
-  async assignTicket(@Req() req: AuthReq, @Param("id") id: string, @ZodBody(assignTicketSchema) body: z.infer<typeof assignTicketSchema>) {
-    return this.supportTicketsService.assignTicket(req.user.tenantId, id, body.assigneeId).catch(() => ({ success: false }));
+  async assignTicket(
+    @Req() req: AuthReq,
+    @Param("id") id: string,
+    @ZodBody(assignTicketSchema) body: z.infer<typeof assignTicketSchema>,
+  ) {
+    return this.supportTicketsService
+      .assignTicket(req.user.tenantId, id, body.assigneeId)
+      .catch(() => ({ success: false }));
   }
 
   @ApiOperation({ summary: "Unassign ticket [Admin]" })
@@ -112,26 +137,36 @@ export class SupportAdminController {
   @ApiOperation({ summary: "Add staff message [Admin]" })
   @Permissions("saas.ticket.create")
   @Post("tickets/:id/message")
-  async addStaffMessage(@Req() req: AuthReq, @Param("id") id: string, @ZodBody(addStaffMessageSchema) body: z.infer<typeof addStaffMessageSchema>) {
-    return this.supportTicketsService.addMessage(req.user.tenantId, req.user.userId, id, {
-      content: body.message,
-      attachments: body.attachments,
-      isInternal: body.isInternal,
-    }).catch(() => ({ success: false }));
+  async addStaffMessage(
+    @Req() req: AuthReq,
+    @Param("id") id: string,
+    @ZodBody(addStaffMessageSchema) body: z.infer<typeof addStaffMessageSchema>,
+  ) {
+    return this.supportTicketsService
+      .addMessage(req.user.tenantId, req.user.userId, id, {
+        content: body.message,
+        attachments: body.attachments,
+        isInternal: body.isInternal,
+      })
+      .catch(() => ({ success: false }));
   }
 
   @ApiOperation({ summary: "Get support stats [Admin]" })
   @Permissions("saas.ticket.read")
   @Get("stats")
   async getSupportStats(@Req() req: AuthReq) {
-    return this.supportTicketsService.getTicketStats(req.user.tenantId).catch(() => null);
+    return this.supportTicketsService
+      .getTicketStats(req.user.tenantId)
+      .catch(() => null);
   }
 
   @ApiOperation({ summary: "Get ticket trends [Admin]" })
   @Permissions("saas.ticket.read")
   @Get("tickets/trends")
   async getTicketTrends(@Req() req: AuthReq) {
-    const stats = await this.supportTicketsService.getTicketStats(req.user.tenantId).catch(() => null);
+    const stats = await this.supportTicketsService
+      .getTicketStats(req.user.tenantId)
+      .catch(() => null);
     return { trends: [], period: "30d", currentStats: stats };
   }
 
@@ -139,21 +174,32 @@ export class SupportAdminController {
   @Permissions("saas.ticket.read")
   @Get("response-times")
   async getResponseTimeMetrics(@Req() _req: AuthReq) {
-    return { averageResponseTime: "2.5h", medianResponseTime: "1.5h", p95ResponseTime: "8h", byPriority: {} };
+    return {
+      averageResponseTime: "2.5h",
+      medianResponseTime: "1.5h",
+      p95ResponseTime: "8h",
+      byPriority: {},
+    };
   }
 
   @ApiOperation({ summary: "Get satisfaction metrics [Admin]" })
   @Permissions("saas.ticket.read")
   @Get("satisfaction")
   async getSatisfactionMetrics(@Req() _req: AuthReq) {
-    return { averageRating: 4.5, totalRatings: 0, distribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } };
+    return {
+      averageRating: 4.5,
+      totalRatings: 0,
+      distribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
+    };
   }
 
   @ApiOperation({ summary: "Get ticket categories [Admin]" })
   @Permissions("saas.ticket.read")
   @Get("categories")
   async getTicketCategories(@Req() req: AuthReq) {
-    const stats = await this.supportTicketsService.getTicketStats(req.user.tenantId).catch(() => null);
+    const stats = await this.supportTicketsService
+      .getTicketStats(req.user.tenantId)
+      .catch(() => null);
     return { categories: {}, total: (stats as any)?.total || 0 };
   }
 
@@ -168,14 +214,24 @@ export class SupportAdminController {
   @Permissions("saas.ticket.read")
   @Get("tickets/export")
   async exportTickets(@Req() req: AuthReq) {
-    const tickets = await this.supportTicketsService.listTickets(req.user.tenantId, {}, 1, 1000).catch(() => ({ items: [] }));
-    return { format: "csv", data: JSON.stringify(tickets.items), filename: `tickets-export-${req.user.tenantId}.csv` };
+    const tickets = await this.supportTicketsService
+      .listTickets(req.user.tenantId, {}, 1, 1000)
+      .catch(() => ({ items: [] }));
+    return {
+      format: "csv",
+      data: JSON.stringify(tickets.items),
+      filename: `tickets-export-${req.user.tenantId}.csv`,
+    };
   }
 
   @ApiOperation({ summary: "Configure auto-responder [Admin]" })
   @Permissions("saas.ticket.create")
   @Post("auto-responder")
-  async configureAutoResponder(@Req() _req: AuthReq, @ZodBody(configureAutoResponderSchema) body: z.infer<typeof configureAutoResponderSchema>) {
+  async configureAutoResponder(
+    @Req() _req: AuthReq,
+    @ZodBody(configureAutoResponderSchema)
+    body: z.infer<typeof configureAutoResponderSchema>,
+  ) {
     return { success: true, enabled: body.enabled };
   }
 

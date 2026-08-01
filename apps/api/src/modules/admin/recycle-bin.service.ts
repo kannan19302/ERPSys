@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { Injectable } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import { Injectable } from "@nestjs/common";
+import { prisma } from "@unerp/database";
 
 @Injectable()
 export class RecycleBinService {
@@ -14,7 +13,7 @@ export class RecycleBinService {
     const [items, total] = await prisma.$transaction([
       prisma.recycleBinItem.findMany({
         where,
-        orderBy: { deletedAt: 'desc' },
+        orderBy: { deletedAt: "desc" },
         skip: (page - 1) * limit,
         take: limit,
       }),
@@ -55,7 +54,7 @@ export class RecycleBinService {
 
   async getStats(tenantId: string) {
     const items = await prisma.recycleBinItem.groupBy({
-      by: ['entityType'],
+      by: ["entityType"],
       where: { tenantId, restored: false },
       _count: { id: true },
     });

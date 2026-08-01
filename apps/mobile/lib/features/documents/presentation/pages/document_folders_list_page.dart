@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -65,7 +64,7 @@ class _DocumentFoldersListPageState extends ConsumerState<DocumentFoldersListPag
                     : '${state.meta.total} folder${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -115,7 +114,7 @@ class _FolderTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(folder.name,
-                    style: Theme.of(context).textTheme.titleSmall),
+                    style: Theme.of(context).textTheme.titleSmall,),
                 if (folder.description != null && folder.description!.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: Spacing.x1),
@@ -125,14 +124,14 @@ class _FolderTile extends StatelessWidget {
                           fontSize: TypeScale.sm,
                         ),
                         maxLines: 2,
-                        overflow: TextOverflow.ellipsis),
+                        overflow: TextOverflow.ellipsis,),
                   ),
                 const SizedBox(height: Spacing.x1),
                 Text('${folder.documentCount} document${folder.documentCount == 1 ? '' : 's'}',
                     style: TextStyle(
                       color: t.textTertiary,
                       fontSize: TypeScale.xs,
-                    )),
+                    ),),
               ],
             ),
           ),

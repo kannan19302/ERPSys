@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Injectable, Logger } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 
@@ -8,7 +7,9 @@ export class SaasIntegrationsComplianceDeepService {
     SaasIntegrationsComplianceDeepService.name,
   );
 
-  private get db() { return prisma; }
+  private get db() {
+    return prisma;
+  }
 
   // 1. Integrations & Webhooks (25 methods)
   async registerSaasWebhook(tenantId: string, webhookData: any) {

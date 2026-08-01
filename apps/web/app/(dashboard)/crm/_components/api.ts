@@ -1,13 +1,13 @@
-// @ts-nocheck
-'use client';
+"use client";
 
-const BASE = '/api/v1';
+const BASE = "/api/v1";
 
 function authHeaders(): HeadersInit {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : "";
   return {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${token || ''}`,
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token || ""}`,
   };
 }
 
@@ -20,7 +20,7 @@ export async function apiGet<T>(path: string): Promise<T> {
 
 export async function apiSend<T>(
   path: string,
-  method: 'POST' | 'PATCH' | 'PUT' | 'DELETE',
+  method: "POST" | "PATCH" | "PUT" | "DELETE",
   body?: unknown,
 ): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
@@ -36,10 +36,9 @@ export async function apiSend<T>(
 }
 
 export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
-  return apiSend<T>(path, 'POST', body);
+  return apiSend<T>(path, "POST", body);
 }
 
 export async function apiPut<T>(path: string, body?: unknown): Promise<T> {
-  return apiSend<T>(path, 'PUT', body);
+  return apiSend<T>(path, "PUT", body);
 }
-

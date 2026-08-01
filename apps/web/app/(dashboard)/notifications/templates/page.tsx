@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 
 import { useState, useEffect } from "react";
@@ -120,7 +119,8 @@ export default function NotificationTemplatesPage() {
           .map((l: string) => {
             const [k, ...v] = l.split("=");
             return k ? [k.trim(), v.join("=").trim()] : [];
-          }).filter((pair) => pair.length > 0),
+          })
+          .filter((pair) => pair.length > 0),
       );
       const res = await fetch(`/api/notifications/templates/${id}/render`, {
         method: "POST",

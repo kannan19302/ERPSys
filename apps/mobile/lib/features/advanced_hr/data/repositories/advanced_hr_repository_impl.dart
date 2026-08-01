@@ -91,9 +91,9 @@ class AdvancedHrRepositoryImpl implements AdvancedHrRepository {
 
   @override
   Future<Result<Cacheable<Paginated<CompensationBand>>>> listCompensationBands(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_compBandsNamespace, query, () => _remote.listCompensationBands(query),
-        CompensationBandModel.fromJson);
+        CompensationBandModel.fromJson,);
 
   @override
   Future<Result<CompensationBand>> getCompensationBand(String id) =>
@@ -113,9 +113,9 @@ class AdvancedHrRepositoryImpl implements AdvancedHrRepository {
 
   @override
   Future<Result<Cacheable<Paginated<BenefitPlan>>>> listBenefitPlans(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_benefitsNamespace, query, () => _remote.listBenefitPlans(query),
-        BenefitPlanModel.fromJson);
+        BenefitPlanModel.fromJson,);
 
   @override
   Future<Result<BenefitPlan>> getBenefitPlan(String id) =>
@@ -135,9 +135,9 @@ class AdvancedHrRepositoryImpl implements AdvancedHrRepository {
 
   @override
   Future<Result<Cacheable<Paginated<SuccessionPlan>>>> listSuccessionPlans(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_successionNamespace, query, () => _remote.listSuccessionPlans(query),
-        SuccessionPlanModel.fromJson);
+        SuccessionPlanModel.fromJson,);
 
   @override
   Future<Result<SuccessionPlan>> getSuccessionPlan(String id) =>
@@ -153,9 +153,9 @@ class AdvancedHrRepositoryImpl implements AdvancedHrRepository {
 
   @override
   Future<Result<Cacheable<Paginated<WorkforceAnalytic>>>> listWorkforceAnalytics(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_analyticsNamespace, query, () => _remote.listWorkforceAnalytics(query),
-        WorkforceAnalyticModel.fromJson);
+        WorkforceAnalyticModel.fromJson,);
 
   @override
   Future<Result<WorkforceAnalytic>> getWorkforceAnalytic(String id) =>
@@ -163,9 +163,9 @@ class AdvancedHrRepositoryImpl implements AdvancedHrRepository {
 
   @override
   Future<Result<Cacheable<Paginated<LearningPath>>>> listLearningPaths(
-    ListQuery query) =>
+    ListQuery query,) =>
       _paginated(_learningNamespace, query, () => _remote.listLearningPaths(query),
-        LearningPathModel.fromJson);
+        LearningPathModel.fromJson,);
 
   @override
   Future<Result<LearningPath>> getLearningPath(String id) =>

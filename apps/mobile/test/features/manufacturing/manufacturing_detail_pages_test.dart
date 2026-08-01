@@ -24,7 +24,6 @@ import 'package:dio/dio.dart';
 
 import 'package:unerp_mobile/core/contracts/paginated.dart';
 
-import 'package:unerp_mobile/core/error/failures.dart';
 
 import 'package:unerp_mobile/core/usecase/result.dart';
 
@@ -184,11 +183,11 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<WorkOrder>> Function(String) getWorkOrderFn =
 
-      (String id) async => Result<WorkOrder>.ok(_workOrderDraft);
+      (String id) async => const Result<WorkOrder>.ok(_workOrderDraft);
 
   Future<Result<Bom>> Function(String) getBomFn =
 
-      (String id) async => Result<Bom>.ok(_bom);
+      (String id) async => const Result<Bom>.ok(_bom);
 
 
 
@@ -196,9 +195,9 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<Cacheable<Paginated<WorkOrder>>>> listWorkOrders(
 
-          ListQuery query) async =>
+          ListQuery query,) async =>
 
-      Result<Cacheable<Paginated<WorkOrder>>>.ok(
+      const Result<Cacheable<Paginated<WorkOrder>>>.ok(
 
         Cacheable<Paginated<WorkOrder>>(
 
@@ -206,7 +205,7 @@ class FakeDetailRepository implements ManufacturingRepository {
 
             page: 1, limit: 25, total: 0, totalPages: 0,
 
-          )),
+          ),),
 
         ),
 
@@ -224,9 +223,9 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<WorkOrder>> createWorkOrder(
 
-          Map<String, dynamic> payload) async =>
+          Map<String, dynamic> payload,) async =>
 
-      Result<WorkOrder>.ok(_workOrderDraft);
+      const Result<WorkOrder>.ok(_workOrderDraft);
 
 
 
@@ -234,9 +233,9 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<WorkOrder>> updateWorkOrder(
 
-          String id, Map<String, dynamic> payload) async =>
+          String id, Map<String, dynamic> payload,) async =>
 
-      Result<WorkOrder>.ok(_workOrderDraft);
+      const Result<WorkOrder>.ok(_workOrderDraft);
 
 
 
@@ -244,7 +243,7 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<void>> deleteWorkOrder(String id) async =>
 
-      Result<void>.ok(null);
+      const Result<void>.ok(null);
 
 
 
@@ -252,7 +251,7 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<WorkOrder>> startWorkOrder(String id) async =>
 
-      Result<WorkOrder>.ok(_workOrderInProgress);
+      const Result<WorkOrder>.ok(_workOrderInProgress);
 
 
 
@@ -260,7 +259,7 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<WorkOrder>> completeWorkOrder(String id) async =>
 
-      Result<WorkOrder>.ok(_workOrderCompleted);
+      const Result<WorkOrder>.ok(_workOrderCompleted);
 
 
 
@@ -268,7 +267,7 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<WorkOrder>> cancelWorkOrder(String id) async =>
 
-      Result<WorkOrder>.ok(_workOrderDraft);
+      const Result<WorkOrder>.ok(_workOrderDraft);
 
 
 
@@ -276,9 +275,9 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<Cacheable<Paginated<Bom>>>> listBoms(
 
-          ListQuery query) async =>
+          ListQuery query,) async =>
 
-      Result<Cacheable<Paginated<Bom>>>.ok(
+      const Result<Cacheable<Paginated<Bom>>>.ok(
 
         Cacheable<Paginated<Bom>>(
 
@@ -286,7 +285,7 @@ class FakeDetailRepository implements ManufacturingRepository {
 
             page: 1, limit: 25, total: 0, totalPages: 0,
 
-          )),
+          ),),
 
         ),
 
@@ -304,7 +303,7 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<Bom>> createBom(Map<String, dynamic> payload) async =>
 
-      Result<Bom>.ok(_bom);
+      const Result<Bom>.ok(_bom);
 
 
 
@@ -312,9 +311,9 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<Bom>> updateBom(
 
-          String id, Map<String, dynamic> payload) async =>
+          String id, Map<String, dynamic> payload,) async =>
 
-      Result<Bom>.ok(_bom);
+      const Result<Bom>.ok(_bom);
 
 
 
@@ -322,7 +321,7 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<void>> deleteBom(String id) async =>
 
-      Result<void>.ok(null);
+      const Result<void>.ok(null);
 
 
 
@@ -330,9 +329,9 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<Cacheable<Paginated<MrpRun>>>> listMrpRuns(
 
-          ListQuery query) async =>
+          ListQuery query,) async =>
 
-      Result<Cacheable<Paginated<MrpRun>>>.ok(
+      const Result<Cacheable<Paginated<MrpRun>>>.ok(
 
         Cacheable<Paginated<MrpRun>>(
 
@@ -340,7 +339,7 @@ class FakeDetailRepository implements ManufacturingRepository {
 
             page: 1, limit: 25, total: 0, totalPages: 0,
 
-          )),
+          ),),
 
         ),
 
@@ -352,13 +351,13 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<MrpRun>> getMrpRun(String id) async =>
 
-      Result<MrpRun>.ok(MrpRun(
+      const Result<MrpRun>.ok(MrpRun(
 
         id: 'mrp1', productId: 'p1', productName: 'P1',
 
         demandQuantity: 100, supplyQuantity: 50, netRequirement: 50,
 
-      ));
+      ),);
 
 
 
@@ -366,13 +365,13 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<MrpRun>> createMrpRun(Map<String, dynamic> payload) async =>
 
-      Result<MrpRun>.ok(MrpRun(
+      const Result<MrpRun>.ok(MrpRun(
 
         id: 'mrp1', productId: 'p1', productName: 'P1',
 
         demandQuantity: 100, supplyQuantity: 50, netRequirement: 50,
 
-      ));
+      ),);
 
 
 
@@ -380,9 +379,9 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<Cacheable<Paginated<Workstation>>>> listWorkstations(
 
-          ListQuery query) async =>
+          ListQuery query,) async =>
 
-      Result<Cacheable<Paginated<Workstation>>>.ok(
+      const Result<Cacheable<Paginated<Workstation>>>.ok(
 
         Cacheable<Paginated<Workstation>>(
 
@@ -390,7 +389,7 @@ class FakeDetailRepository implements ManufacturingRepository {
 
             page: 1, limit: 25, total: 0, totalPages: 0,
 
-          )),
+          ),),
 
         ),
 
@@ -402,11 +401,11 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<Workstation>> getWorkstation(String id) async =>
 
-      Result<Workstation>.ok(Workstation(
+      const Result<Workstation>.ok(Workstation(
 
         id: 'ws1', name: 'Station 1',
 
-      ));
+      ),);
 
 
 
@@ -414,9 +413,9 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<Workstation>> createWorkstation(
 
-          Map<String, dynamic> payload) async =>
+          Map<String, dynamic> payload,) async =>
 
-      Result<Workstation>.ok(Workstation(id: 'ws1', name: 'Station 1'));
+      const Result<Workstation>.ok(Workstation(id: 'ws1', name: 'Station 1'));
 
 
 
@@ -424,9 +423,9 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<Workstation>> updateWorkstation(
 
-          String id, Map<String, dynamic> payload) async =>
+          String id, Map<String, dynamic> payload,) async =>
 
-      Result<Workstation>.ok(Workstation(id: 'ws1', name: 'Station 1'));
+      const Result<Workstation>.ok(Workstation(id: 'ws1', name: 'Station 1'));
 
 
 
@@ -434,7 +433,7 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<void>> deleteWorkstation(String id) async =>
 
-      Result<void>.ok(null);
+      const Result<void>.ok(null);
 
 
 
@@ -442,9 +441,9 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<Cacheable<Paginated<Routing>>>> listRoutings(
 
-          ListQuery query) async =>
+          ListQuery query,) async =>
 
-      Result<Cacheable<Paginated<Routing>>>.ok(
+      const Result<Cacheable<Paginated<Routing>>>.ok(
 
         Cacheable<Paginated<Routing>>(
 
@@ -452,7 +451,7 @@ class FakeDetailRepository implements ManufacturingRepository {
 
             page: 1, limit: 25, total: 0, totalPages: 0,
 
-          )),
+          ),),
 
         ),
 
@@ -464,7 +463,7 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<Routing>> getRouting(String id) async =>
 
-      Result<Routing>.ok(Routing(id: 'r1', name: 'Routing 1'));
+      const Result<Routing>.ok(Routing(id: 'r1', name: 'Routing 1'));
 
 
 
@@ -472,7 +471,7 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<Routing>> createRouting(Map<String, dynamic> payload) async =>
 
-      Result<Routing>.ok(Routing(id: 'r1', name: 'Routing 1'));
+      const Result<Routing>.ok(Routing(id: 'r1', name: 'Routing 1'));
 
 
 
@@ -480,9 +479,9 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<Routing>> updateRouting(
 
-          String id, Map<String, dynamic> payload) async =>
+          String id, Map<String, dynamic> payload,) async =>
 
-      Result<Routing>.ok(Routing(id: 'r1', name: 'Routing 1'));
+      const Result<Routing>.ok(Routing(id: 'r1', name: 'Routing 1'));
 
 
 
@@ -490,7 +489,7 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<void>> deleteRouting(String id) async =>
 
-      Result<void>.ok(null);
+      const Result<void>.ok(null);
 
 
 
@@ -500,7 +499,7 @@ class FakeDetailRepository implements ManufacturingRepository {
 
       listQualityInspections(ListQuery query) async =>
 
-      Result<Cacheable<Paginated<QualityInspection>>>.ok(
+      const Result<Cacheable<Paginated<QualityInspection>>>.ok(
 
         Cacheable<Paginated<QualityInspection>>(
 
@@ -508,7 +507,7 @@ class FakeDetailRepository implements ManufacturingRepository {
 
             page: 1, limit: 25, total: 0, totalPages: 0,
 
-          )),
+          ),),
 
         ),
 
@@ -520,13 +519,13 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<QualityInspection>> getQualityInspection(String id) async =>
 
-      Result<QualityInspection>.ok(QualityInspection(
+      const Result<QualityInspection>.ok(QualityInspection(
 
         id: 'qi1', inspectionNumber: 'QI-001', productId: 'p1',
 
         productName: 'P1',
 
-      ));
+      ),);
 
 
 
@@ -534,15 +533,15 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<QualityInspection>> createQualityInspection(
 
-          Map<String, dynamic> payload) async =>
+          Map<String, dynamic> payload,) async =>
 
-      Result<QualityInspection>.ok(QualityInspection(
+      const Result<QualityInspection>.ok(QualityInspection(
 
         id: 'qi1', inspectionNumber: 'QI-001', productId: 'p1',
 
         productName: 'P1',
 
-      ));
+      ),);
 
 
 
@@ -550,15 +549,15 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<QualityInspection>> updateQualityInspection(
 
-          String id, Map<String, dynamic> payload) async =>
+          String id, Map<String, dynamic> payload,) async =>
 
-      Result<QualityInspection>.ok(QualityInspection(
+      const Result<QualityInspection>.ok(QualityInspection(
 
         id: 'qi1', inspectionNumber: 'QI-001', productId: 'p1',
 
         productName: 'P1',
 
-      ));
+      ),);
 
 
 
@@ -566,7 +565,7 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<void>> deleteQualityInspection(String id) async =>
 
-      Result<void>.ok(null);
+      const Result<void>.ok(null);
 
 
 
@@ -576,7 +575,7 @@ class FakeDetailRepository implements ManufacturingRepository {
 
       listEngineeringChangeOrders(ListQuery query) async =>
 
-      Result<Cacheable<Paginated<EngineeringChangeOrder>>>.ok(
+      const Result<Cacheable<Paginated<EngineeringChangeOrder>>>.ok(
 
         Cacheable<Paginated<EngineeringChangeOrder>>(
 
@@ -584,7 +583,7 @@ class FakeDetailRepository implements ManufacturingRepository {
 
             page: 1, limit: 25, total: 0, totalPages: 0,
 
-          )),
+          ),),
 
         ),
 
@@ -596,13 +595,13 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<EngineeringChangeOrder>> getEngineeringChangeOrder(
 
-          String id) async =>
+          String id,) async =>
 
-      Result<EngineeringChangeOrder>.ok(EngineeringChangeOrder(
+      const Result<EngineeringChangeOrder>.ok(EngineeringChangeOrder(
 
         id: 'eco1', name: 'ECO-001',
 
-      ));
+      ),);
 
 
 
@@ -610,13 +609,13 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<EngineeringChangeOrder>> createEngineeringChangeOrder(
 
-          Map<String, dynamic> payload) async =>
+          Map<String, dynamic> payload,) async =>
 
-      Result<EngineeringChangeOrder>.ok(EngineeringChangeOrder(
+      const Result<EngineeringChangeOrder>.ok(EngineeringChangeOrder(
 
         id: 'eco1', name: 'ECO-001',
 
-      ));
+      ),);
 
 
 
@@ -624,13 +623,13 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<EngineeringChangeOrder>> updateEngineeringChangeOrder(
 
-          String id, Map<String, dynamic> payload) async =>
+          String id, Map<String, dynamic> payload,) async =>
 
-      Result<EngineeringChangeOrder>.ok(EngineeringChangeOrder(
+      const Result<EngineeringChangeOrder>.ok(EngineeringChangeOrder(
 
         id: 'eco1', name: 'ECO-001',
 
-      ));
+      ),);
 
 
 
@@ -638,7 +637,7 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<void>> deleteEngineeringChangeOrder(String id) async =>
 
-      Result<void>.ok(null);
+      const Result<void>.ok(null);
 
 
 
@@ -646,13 +645,13 @@ class FakeDetailRepository implements ManufacturingRepository {
 
   Future<Result<EngineeringChangeOrder>> approveEngineeringChangeOrder(
 
-          String id) async =>
+          String id,) async =>
 
-      Result<EngineeringChangeOrder>.ok(EngineeringChangeOrder(
+      const Result<EngineeringChangeOrder>.ok(EngineeringChangeOrder(
 
         id: 'eco1', name: 'ECO-001',
 
-      ));
+      ),);
 
 }
 
@@ -696,7 +695,7 @@ void main() {
 
       repo.getWorkOrderFn = (String id) async =>
 
-          Result<WorkOrder>.ok(_workOrderDraft);
+          const Result<WorkOrder>.ok(_workOrderDraft);
 
 
 
@@ -732,7 +731,7 @@ void main() {
 
       repo.getWorkOrderFn = (String id) async =>
 
-          Result<WorkOrder>.ok(_workOrderInProgress);
+          const Result<WorkOrder>.ok(_workOrderInProgress);
 
 
 
@@ -764,7 +763,7 @@ void main() {
 
       repo.getWorkOrderFn = (String id) async =>
 
-          Result<WorkOrder>.ok(_workOrderCompleted);
+          const Result<WorkOrder>.ok(_workOrderCompleted);
 
 
 
@@ -794,7 +793,7 @@ void main() {
 
       repo.getWorkOrderFn = (String id) async =>
 
-          Result<WorkOrder>.ok(_workOrderDraft);
+          const Result<WorkOrder>.ok(_workOrderDraft);
 
 
 
@@ -824,7 +823,7 @@ void main() {
 
       repo.getWorkOrderFn = (String id) async =>
 
-          Result<WorkOrder>.ok(WorkOrder(
+          const Result<WorkOrder>.ok(WorkOrder(
 
         id: 'wo4',
 
@@ -846,7 +845,7 @@ void main() {
 
         routingId: 'r1',
 
-      ));
+      ),);
 
 
 
@@ -1092,7 +1091,7 @@ void main() {
 
       final repo = FakeDetailRepository();
 
-      repo.getBomFn = (String id) async => Result<Bom>.ok(Bom(
+      repo.getBomFn = (String id) async => const Result<Bom>.ok(Bom(
 
         id: 'bom2',
 
@@ -1110,7 +1109,7 @@ void main() {
 
         items: <BomItem>[],
 
-      ));
+      ),);
 
 
 
@@ -1134,7 +1133,7 @@ void main() {
 
       final repo = FakeDetailRepository();
 
-      repo.getBomFn = (String id) async => Result<Bom>.ok(Bom(
+      repo.getBomFn = (String id) async => const Result<Bom>.ok(Bom(
 
         id: 'bom3',
 
@@ -1152,7 +1151,7 @@ void main() {
 
         items: <BomItem>[],
 
-      ));
+      ),);
 
 
 

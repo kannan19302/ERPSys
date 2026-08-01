@@ -1,7 +1,6 @@
-// @ts-nocheck
-import { Injectable } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { AiService } from './ai.service';
+import { Injectable } from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { AiService } from "./ai.service";
 
 export interface AiConfig {
   enabled: boolean;
@@ -9,7 +8,7 @@ export interface AiConfig {
   baseUrl: string;
 }
 
-const SETTING_KEY = 'ai.config';
+const SETTING_KEY = "ai.config";
 
 /**
  * Tenant-scoped AI kill switch and (read-only, for now) engine display info.
@@ -30,8 +29,9 @@ export class AiConfigService {
       where: { tenantId_key: { tenantId, key: SETTING_KEY } },
     });
 
-    const stored = (setting?.value as Record<string, unknown> | undefined) ?? {};
-    const enabled = typeof stored.enabled === 'boolean' ? stored.enabled : true;
+    const stored =
+      (setting?.value as Record<string, unknown> | undefined) ?? {};
+    const enabled = typeof stored.enabled === "boolean" ? stored.enabled : true;
 
     return {
       enabled,
@@ -44,13 +44,19 @@ export class AiConfigService {
     const setting = await prisma.setting.findUnique({
       where: { tenantId_key: { tenantId, key: SETTING_KEY } },
     });
-    const existing = (setting?.value as Record<string, unknown> | undefined) ?? {};
+    const existing =
+      (setting?.value as Record<string, unknown> | undefined) ?? {};
     const updated = { ...existing, enabled };
 
     await prisma.setting.upsert({
       where: { tenantId_key: { tenantId, key: SETTING_KEY } },
-      update: { value: updated as any, category: 'ai' },
-      create: { tenantId, key: SETTING_KEY, value: updated as any, category: 'ai' },
+      update: { value: updated as any, category: "ai" },
+      create: {
+        tenantId,
+        key: SETTING_KEY,
+        value: updated as any,
+        category: "ai",
+      },
     });
 
     return this.getConfig(tenantId);

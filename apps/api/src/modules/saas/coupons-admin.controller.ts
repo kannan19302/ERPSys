@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Controller,
   Get,
@@ -61,8 +60,13 @@ export class CouponsAdminController {
   @ApiOperation({ summary: "Create coupon [Admin]" })
   @Permissions("saas.coupon.create")
   @Post()
-  async createCoupon(@Req() _req: AuthReq, @ZodBody(createCouponSchema) body: z.infer<typeof createCouponSchema>) {
-    return this.saasService.createCoupon(body).catch(() => ({ success: false }));
+  async createCoupon(
+    @Req() _req: AuthReq,
+    @ZodBody(createCouponSchema) body: z.infer<typeof createCouponSchema>,
+  ) {
+    return this.saasService
+      .createCoupon(body)
+      .catch(() => ({ success: false }));
   }
 
   @ApiOperation({ summary: "Get coupon [Admin]" })
@@ -76,29 +80,41 @@ export class CouponsAdminController {
   @ApiOperation({ summary: "Update coupon [Admin]" })
   @Permissions("saas.coupon.update")
   @Patch(":id")
-  async updateCoupon(@Req() _req: AuthReq, @Param("id") id: string, @ZodBody(updateCouponSchema) body: z.infer<typeof updateCouponSchema>) {
-    return this.saasService.db.saaSCoupon.update({ where: { id }, data: body as any }).catch(() => ({ success: false }));
+  async updateCoupon(
+    @Req() _req: AuthReq,
+    @Param("id") id: string,
+    @ZodBody(updateCouponSchema) body: z.infer<typeof updateCouponSchema>,
+  ) {
+    return this.saasService.db.saaSCoupon
+      .update({ where: { id }, data: body as any })
+      .catch(() => ({ success: false }));
   }
 
   @ApiOperation({ summary: "Delete coupon [Admin]" })
   @Permissions("saas.coupon.delete")
   @Delete(":id")
   async deleteCoupon(@Req() _req: AuthReq, @Param("id") id: string) {
-    return this.saasService.db.saaSCoupon.delete({ where: { id } }).catch(() => ({ success: false }));
+    return this.saasService.db.saaSCoupon
+      .delete({ where: { id } })
+      .catch(() => ({ success: false }));
   }
 
   @ApiOperation({ summary: "Disable coupon [Admin]" })
   @Permissions("saas.coupon.update")
   @Post(":id/disable")
   async disableCoupon(@Req() _req: AuthReq, @Param("id") id: string) {
-    return this.saasService.db.saaSCoupon.update({ where: { id }, data: { status: "DISABLED" } }).catch(() => ({ success: false }));
+    return this.saasService.db.saaSCoupon
+      .update({ where: { id }, data: { status: "DISABLED" } })
+      .catch(() => ({ success: false }));
   }
 
   @ApiOperation({ summary: "Enable coupon [Admin]" })
   @Permissions("saas.coupon.update")
   @Post(":id/enable")
   async enableCoupon(@Req() _req: AuthReq, @Param("id") id: string) {
-    return this.saasService.db.saaSCoupon.update({ where: { id }, data: { status: "ACTIVE" } }).catch(() => ({ success: false }));
+    return this.saasService.db.saaSCoupon
+      .update({ where: { id }, data: { status: "ACTIVE" } })
+      .catch(() => ({ success: false }));
   }
 
   @ApiOperation({ summary: "Get coupon stats [Admin]" })
@@ -107,7 +123,10 @@ export class CouponsAdminController {
   async getCouponStats(@Req() _req: AuthReq) {
     const coupons = await this.saasService.getCoupons().catch(() => []);
     const total = coupons.length;
-    const totalRedeemed = (coupons as any[]).reduce((s, c) => s + (c.timesRedeemed || 0), 0);
+    const totalRedeemed = (coupons as any[]).reduce(
+      (s, c) => s + (c.timesRedeemed || 0),
+      0,
+    );
     return { total, activeCount: total, totalRedeemed, topCoupons: [] };
   }
 
@@ -122,17 +141,29 @@ export class CouponsAdminController {
   @ApiOperation({ summary: "Bulk create coupons [Admin]" })
   @Permissions("saas.coupon.create")
   @Post("bulk-create")
-  async bulkCreateCoupons(@Req() _req: AuthReq, @ZodBody(bulkCreateCouponsSchema) body: z.infer<typeof bulkCreateCouponsSchema>) {
+  async bulkCreateCoupons(
+    @Req() _req: AuthReq,
+    @ZodBody(bulkCreateCouponsSchema)
+    body: z.infer<typeof bulkCreateCouponsSchema>,
+  ) {
     const results: any[] = [];
     for (const code of body.codes) {
       try {
-        const c = await this.saasService.createCoupon({ code, discountType: body.discountType, discountValue: body.discountValue });
+        const c = await this.saasService.createCoupon({
+          code,
+          discountType: body.discountType,
+          discountValue: body.discountValue,
+        });
         results.push(c);
       } catch {
         results.push({ code, error: "duplicate" });
       }
     }
-    return { created: results.filter((r: any) => !r.error).length, duplicates: results.filter((r: any) => r.error).length, results };
+    return {
+      created: results.filter((r: any) => !r.error).length,
+      duplicates: results.filter((r: any) => r.error).length,
+      results,
+    };
   }
 
   @ApiOperation({ summary: "Export coupons [Admin]" })
@@ -140,13 +171,22 @@ export class CouponsAdminController {
   @Get("export")
   async exportCoupons(@Req() _req: AuthReq) {
     const coupons = await this.saasService.getCoupons().catch(() => []);
-    return { format: "csv", data: JSON.stringify(coupons), filename: `coupons-export-${Date.now()}.csv` };
+    return {
+      format: "csv",
+      data: JSON.stringify(coupons),
+      filename: `coupons-export-${Date.now()}.csv`,
+    };
   }
 
   @ApiOperation({ summary: "Generate coupon codes [Admin]" })
   @Permissions("saas.coupon.read")
   @Get("codes")
-  async generateCouponCodes(@Req() _req: AuthReq, @Query("count") count?: string, @Query("prefix") prefix?: string, @Query("length") length?: string) {
+  async generateCouponCodes(
+    @Req() _req: AuthReq,
+    @Query("count") count?: string,
+    @Query("prefix") prefix?: string,
+    @Query("length") length?: string,
+  ) {
     const cnt = count ? parseInt(count, 10) : 10;
     const len = length ? parseInt(length, 10) : 10;
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";

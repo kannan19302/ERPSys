@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { FinanceDemoDataService } from "../finance-demo-data.service";
 import { BadRequestException } from "@nestjs/common";
@@ -44,20 +43,16 @@ vi.mock("@unerp/database", () => {
             create: vi.fn().mockResolvedValue({ id: "cust-demo-1" }),
           },
           invoice: {
-            create: vi
-              .fn()
-              .mockImplementation(async (args) => ({
-                id: `inv-${Math.random()}`,
-                ...args.data,
-              })),
+            create: vi.fn().mockImplementation(async (args) => ({
+              id: `inv-${Math.random()}`,
+              ...args.data,
+            })),
           },
           payment: {
-            create: vi
-              .fn()
-              .mockImplementation(async (args) => ({
-                id: `pay-${Math.random()}`,
-                ...args.data,
-              })),
+            create: vi.fn().mockImplementation(async (args) => ({
+              id: `pay-${Math.random()}`,
+              ...args.data,
+            })),
           },
           demoDataRecord: {
             create: vi.fn().mockResolvedValue({ id: "rec-1" }),

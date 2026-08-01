@@ -46,7 +46,7 @@ class HealthcareRemoteDataSourceImpl implements HealthcareRemoteDataSource {
   @override
   Future<Paginated<PatientModel>> listPatients(ListQuery query) =>
       _client.getPaginated<PatientModel>(
-        ApiPaths.patients, query, PatientModel.fromJson);
+        ApiPaths.patients, query, PatientModel.fromJson,);
 
   @override
   Future<PatientModel> getPatient(String id) async =>
@@ -59,7 +59,7 @@ class HealthcareRemoteDataSourceImpl implements HealthcareRemoteDataSource {
   @override
   Future<PatientModel> updatePatient(String id, Map<String, dynamic> payload) async =>
       PatientModel.fromJson(
-        await _client.patch(ApiPaths.patient(id), body: payload));
+        await _client.patch(ApiPaths.patient(id), body: payload),);
 
   @override
   Future<void> deletePatient(String id) =>
@@ -68,23 +68,23 @@ class HealthcareRemoteDataSourceImpl implements HealthcareRemoteDataSource {
   @override
   Future<Paginated<AppointmentModel>> listAppointments(ListQuery query) =>
       _client.getPaginated<AppointmentModel>(
-        ApiPaths.appointments, query, AppointmentModel.fromJson);
+        ApiPaths.appointments, query, AppointmentModel.fromJson,);
 
   @override
   Future<AppointmentModel> getAppointment(String id) async =>
       AppointmentModel.fromJson(
-        await _client.getObject(ApiPaths.appointment(id)));
+        await _client.getObject(ApiPaths.appointment(id)),);
 
   @override
   Future<AppointmentModel> createAppointment(Map<String, dynamic> payload) async =>
       AppointmentModel.fromJson(
-        await _client.post(ApiPaths.appointments, body: payload));
+        await _client.post(ApiPaths.appointments, body: payload),);
 
   @override
   Future<AppointmentModel> updateAppointment(
-    String id, Map<String, dynamic> payload) async =>
+    String id, Map<String, dynamic> payload,) async =>
       AppointmentModel.fromJson(
-        await _client.patch(ApiPaths.appointment(id), body: payload));
+        await _client.patch(ApiPaths.appointment(id), body: payload),);
 
   @override
   Future<void> deleteAppointment(String id) =>
@@ -93,22 +93,22 @@ class HealthcareRemoteDataSourceImpl implements HealthcareRemoteDataSource {
   @override
   Future<Paginated<PrescriptionModel>> listPrescriptions(ListQuery query) =>
       _client.getPaginated<PrescriptionModel>(
-        ApiPaths.prescriptions, query, PrescriptionModel.fromJson);
+        ApiPaths.prescriptions, query, PrescriptionModel.fromJson,);
 
   @override
   Future<PrescriptionModel> getPrescription(String id) async =>
       PrescriptionModel.fromJson(
-        await _client.getObject(ApiPaths.prescription(id)));
+        await _client.getObject(ApiPaths.prescription(id)),);
 
   @override
   Future<PrescriptionModel> createPrescription(Map<String, dynamic> payload) async =>
       PrescriptionModel.fromJson(
-        await _client.post(ApiPaths.prescriptions, body: payload));
+        await _client.post(ApiPaths.prescriptions, body: payload),);
 
   @override
   Future<Paginated<LabOrderModel>> listLabOrders(ListQuery query) =>
       _client.getPaginated<LabOrderModel>(
-        ApiPaths.labOrders, query, LabOrderModel.fromJson);
+        ApiPaths.labOrders, query, LabOrderModel.fromJson,);
 
   @override
   Future<LabOrderModel> getLabOrder(String id) async =>
@@ -117,64 +117,64 @@ class HealthcareRemoteDataSourceImpl implements HealthcareRemoteDataSource {
   @override
   Future<LabOrderModel> createLabOrder(Map<String, dynamic> payload) async =>
       LabOrderModel.fromJson(
-        await _client.post(ApiPaths.labOrders, body: payload));
+        await _client.post(ApiPaths.labOrders, body: payload),);
 
   @override
   Future<LabOrderModel> updateLabOrderResult(
-    String id, Map<String, dynamic> payload) async =>
+    String id, Map<String, dynamic> payload,) async =>
       LabOrderModel.fromJson(
-        await _client.patch(ApiPaths.labOrder(id), body: payload));
+        await _client.patch(ApiPaths.labOrder(id), body: payload),);
 
   @override
   Future<Paginated<MedicalRecordModel>> listMedicalRecords(ListQuery query) =>
       _client.getPaginated<MedicalRecordModel>(
-        ApiPaths.medicalRecords, query, MedicalRecordModel.fromJson);
+        ApiPaths.medicalRecords, query, MedicalRecordModel.fromJson,);
 
   @override
   Future<MedicalRecordModel> getMedicalRecord(String id) async =>
       MedicalRecordModel.fromJson(
-        await _client.getObject(ApiPaths.medicalRecord(id)));
+        await _client.getObject(ApiPaths.medicalRecord(id)),);
 
   @override
   Future<MedicalRecordModel> createMedicalRecord(
-    Map<String, dynamic> payload) async =>
+    Map<String, dynamic> payload,) async =>
       MedicalRecordModel.fromJson(
-        await _client.post(ApiPaths.medicalRecords, body: payload));
+        await _client.post(ApiPaths.medicalRecords, body: payload),);
 
   @override
   Future<Paginated<InsuranceClaimModel>> listInsuranceClaims(ListQuery query) =>
       _client.getPaginated<InsuranceClaimModel>(
-        ApiPaths.insuranceClaims, query, InsuranceClaimModel.fromJson);
+        ApiPaths.insuranceClaims, query, InsuranceClaimModel.fromJson,);
 
   @override
   Future<InsuranceClaimModel> getInsuranceClaim(String id) async =>
       InsuranceClaimModel.fromJson(
-        await _client.getObject(ApiPaths.insuranceClaim(id)));
+        await _client.getObject(ApiPaths.insuranceClaim(id)),);
 
   @override
   Future<InsuranceClaimModel> createInsuranceClaim(
-    Map<String, dynamic> payload) async =>
+    Map<String, dynamic> payload,) async =>
       InsuranceClaimModel.fromJson(
-        await _client.post(ApiPaths.insuranceClaims, body: payload));
+        await _client.post(ApiPaths.insuranceClaims, body: payload),);
 
   @override
   Future<InsuranceClaimModel> updateInsuranceClaim(
-    String id, Map<String, dynamic> payload) async =>
+    String id, Map<String, dynamic> payload,) async =>
       InsuranceClaimModel.fromJson(
-        await _client.patch(ApiPaths.insuranceClaim(id), body: payload));
+        await _client.patch(ApiPaths.insuranceClaim(id), body: payload),);
 
   @override
   Future<InsuranceClaimModel> submitInsuranceClaim(String id) async =>
       InsuranceClaimModel.fromJson(
-        await _client.post(ApiPaths.insuranceClaim(id), body: <String, dynamic>{'action': 'submit'}));
+        await _client.post(ApiPaths.insuranceClaim(id), body: <String, dynamic>{'action': 'submit'}),);
 
   @override
   Future<InsuranceClaimModel> approveInsuranceClaim(String id) async =>
       InsuranceClaimModel.fromJson(
-        await _client.post(ApiPaths.insuranceClaim(id), body: <String, dynamic>{'action': 'approve'}));
+        await _client.post(ApiPaths.insuranceClaim(id), body: <String, dynamic>{'action': 'approve'}),);
 
   @override
   Future<InsuranceClaimModel> rejectInsuranceClaim(String id) async =>
       InsuranceClaimModel.fromJson(
-        await _client.post(ApiPaths.insuranceClaim(id), body: <String, dynamic>{'action': 'reject'}));
+        await _client.post(ApiPaths.insuranceClaim(id), body: <String, dynamic>{'action': 'reject'}),);
 }

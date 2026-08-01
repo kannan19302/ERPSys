@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Controller, Get, Query, UseGuards, Req } from "@nestjs/common";
 import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";

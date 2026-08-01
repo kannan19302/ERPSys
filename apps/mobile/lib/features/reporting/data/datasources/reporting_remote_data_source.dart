@@ -28,23 +28,23 @@ class ReportingRemoteDataSourceImpl implements ReportingRemoteDataSource {
   @override
   Future<Paginated<ReportTemplateModel>> listTemplates(ListQuery query) =>
       _client.getPaginated<ReportTemplateModel>(
-        ApiPaths.reportTemplates, query, ReportTemplateModel.fromJson);
+        ApiPaths.reportTemplates, query, ReportTemplateModel.fromJson,);
 
   @override
   Future<ReportTemplateModel> getTemplate(String id) async =>
       ReportTemplateModel.fromJson(
-        await _client.getObject(ApiPaths.reportTemplate(id)));
+        await _client.getObject(ApiPaths.reportTemplate(id)),);
 
   @override
   Future<ReportTemplateModel> createTemplate(Map<String, dynamic> payload) async =>
       ReportTemplateModel.fromJson(
-        await _client.post(ApiPaths.reportTemplates, body: payload));
+        await _client.post(ApiPaths.reportTemplates, body: payload),);
 
   @override
   Future<ReportTemplateModel> updateTemplate(
-    String id, Map<String, dynamic> payload) async =>
+    String id, Map<String, dynamic> payload,) async =>
       ReportTemplateModel.fromJson(
-        await _client.patch(ApiPaths.reportTemplate(id), body: payload));
+        await _client.patch(ApiPaths.reportTemplate(id), body: payload),);
 
   @override
   Future<void> deleteTemplate(String id) =>
@@ -53,32 +53,32 @@ class ReportingRemoteDataSourceImpl implements ReportingRemoteDataSource {
   @override
   Future<ReportTemplateModel> generateTemplate(String id) async =>
       ReportTemplateModel.fromJson(
-        await _client.post(ApiPaths.reportTemplateGenerate(id)));
+        await _client.post(ApiPaths.reportTemplateGenerate(id)),);
 
   @override
   Future<Paginated<ReportJobModel>> listJobs(ListQuery query) =>
       _client.getPaginated<ReportJobModel>(
-        ApiPaths.reportJobs, query, ReportJobModel.fromJson);
+        ApiPaths.reportJobs, query, ReportJobModel.fromJson,);
 
   @override
   Future<ReportJobModel> getJob(String id) async =>
       ReportJobModel.fromJson(
-        await _client.getObject(ApiPaths.reportJob(id)));
+        await _client.getObject(ApiPaths.reportJob(id)),);
 
   @override
   Future<Paginated<ReportExportModel>> listExports(ListQuery query) =>
       _client.getPaginated<ReportExportModel>(
-        ApiPaths.reportExports, query, ReportExportModel.fromJson);
+        ApiPaths.reportExports, query, ReportExportModel.fromJson,);
 
   @override
   Future<ReportExportModel> getExport(String id) async =>
       ReportExportModel.fromJson(
-        await _client.getObject(ApiPaths.reportExport(id)));
+        await _client.getObject(ApiPaths.reportExport(id)),);
 
   @override
   Future<Paginated<ReportComplianceModel>> listCompliance(ListQuery query) =>
       _client.getPaginated<ReportComplianceModel>(
-        ApiPaths.reportCompliance, query, ReportComplianceModel.fromJson);
+        ApiPaths.reportCompliance, query, ReportComplianceModel.fromJson,);
 }
 
 

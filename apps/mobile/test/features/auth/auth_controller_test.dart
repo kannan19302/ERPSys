@@ -28,11 +28,11 @@ const Session _session = Session(accessToken: 'token', user: _user, tenant: _ten
 /// Hand-written fake — swaps behaviour per test via the mutable fields below,
 /// no mock framework required for this small a surface.
 class FakeAuthRepository implements AuthRepository {
-  Result<Session?> restoreResult = Result<Session?>.ok(null);
-  Result<Session> loginResult = Result<Session>.ok(_session);
-  Result<Session> mfaResult = Result<Session>.ok(_session);
-  Result<List<Tenant>> tenantsResult = Result<List<Tenant>>.ok(<Tenant>[_tenant]);
-  Result<Session> switchTenantResult = Result<Session>.ok(_session);
+  Result<Session?> restoreResult = const Result<Session?>.ok(null);
+  Result<Session> loginResult = const Result<Session>.ok(_session);
+  Result<Session> mfaResult = const Result<Session>.ok(_session);
+  Result<List<Tenant>> tenantsResult = const Result<List<Tenant>>.ok(<Tenant>[_tenant]);
+  Result<Session> switchTenantResult = const Result<Session>.ok(_session);
   int logoutCalls = 0;
 
   @override
@@ -51,10 +51,10 @@ class FakeAuthRepository implements AuthRepository {
       );
 
   @override
-  Future<Result<void>> verifyEmail(String token) async => Result<void>.ok(null);
+  Future<Result<void>> verifyEmail(String token) async => const Result<void>.ok(null);
 
   @override
-  Future<Result<void>> resendVerification(String email) async => Result<void>.ok(null);
+  Future<Result<void>> resendVerification(String email) async => const Result<void>.ok(null);
 
   @override
   Future<Result<Session?>> restoreSession() async => restoreResult;
@@ -78,10 +78,10 @@ class FakeAuthRepository implements AuthRepository {
 
   @override
   Future<Result<Session?>> pollMfaPush({required String challengeToken}) async =>
-      Result<Session?>.ok(null);
+      const Result<Session?>.ok(null);
 
   @override
-  Future<Result<AuthUser>> fetchProfile() async => Result<AuthUser>.ok(_user);
+  Future<Result<AuthUser>> fetchProfile() async => const Result<AuthUser>.ok(_user);
 
   @override
   Future<Result<List<Tenant>>> listTenants() async => tenantsResult;
@@ -92,11 +92,11 @@ class FakeAuthRepository implements AuthRepository {
   @override
   Future<Result<void>> logout() async {
     logoutCalls++;
-    return Result<void>.ok(null);
+    return const Result<void>.ok(null);
   }
 
   @override
-  Future<Result<void>> forgotPassword(String email) async => Result<void>.ok(null);
+  Future<Result<void>> forgotPassword(String email) async => const Result<void>.ok(null);
 }
 
 void main() {
@@ -126,7 +126,7 @@ void main() {
     });
 
     test('restores straight to authenticated when a session exists', () async {
-      fakeRepository.restoreResult = Result<Session?>.ok(_session);
+      fakeRepository.restoreResult = const Result<Session?>.ok(_session);
       container.read(authControllerProvider);
       await Future<void>.delayed(Duration.zero);
 
@@ -152,7 +152,7 @@ void main() {
     });
 
     test('an MFA challenge moves to mfaRequired without authenticating', () async {
-      fakeRepository.loginResult = Result<Session>.err(
+      fakeRepository.loginResult = const Result<Session>.err(
         MfaRequiredFailure('MFA required', challengeToken: 'chal-1', pushSent: true),
       );
       container.read(authControllerProvider);
@@ -170,7 +170,7 @@ void main() {
     });
 
     test('a multi-tenant email sets requiresTenantSlug instead of failing silently', () async {
-      fakeRepository.loginResult = Result<Session>.err(
+      fakeRepository.loginResult = const Result<Session>.err(
         TenantSelectionRequiredFailure('Multiple organizations use this email.'),
       );
       container.read(authControllerProvider);
@@ -186,7 +186,7 @@ void main() {
     });
 
     test('a plain failure surfaces the message without changing status', () async {
-      fakeRepository.loginResult = Result<Session>.err(
+      fakeRepository.loginResult = const Result<Session>.err(
         UnauthorizedFailure('Invalid credentials'),
       );
       container.read(authControllerProvider);
@@ -204,7 +204,7 @@ void main() {
 
   group('AuthController.verifyMfa', () {
     test('completes the session once the challenge is verified', () async {
-      fakeRepository.loginResult = Result<Session>.err(
+      fakeRepository.loginResult = const Result<Session>.err(
         MfaRequiredFailure('MFA required', challengeToken: 'chal-1'),
       );
       container.read(authControllerProvider);
@@ -221,7 +221,7 @@ void main() {
 
   group('AuthController.logout', () {
     test('resets to unauthenticated and calls the repository once', () async {
-      fakeRepository.restoreResult = Result<Session?>.ok(_session);
+      fakeRepository.restoreResult = const Result<Session?>.ok(_session);
       container.read(authControllerProvider);
       await Future<void>.delayed(Duration.zero);
 
@@ -234,7 +234,7 @@ void main() {
 
   group('AuthController.onSessionExpired', () {
     test('signs the user out with an explanatory failure', () async {
-      fakeRepository.restoreResult = Result<Session?>.ok(_session);
+      fakeRepository.restoreResult = const Result<Session?>.ok(_session);
       container.read(authControllerProvider);
       await Future<void>.delayed(Duration.zero);
 
@@ -258,7 +258,7 @@ void main() {
 
   group('permissionSetProvider', () {
     test('reflects the authenticated user\'s permissions', () async {
-      fakeRepository.restoreResult = Result<Session?>.ok(_session);
+      fakeRepository.restoreResult = const Result<Session?>.ok(_session);
       container.read(authControllerProvider);
       await Future<void>.delayed(Duration.zero);
 

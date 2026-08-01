@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Module } from "@nestjs/common";
 import { MarketplaceEnterpriseService } from "./marketplace-enterprise.service";
 import { MarketplaceEnterpriseController } from "./marketplace-enterprise.controller";

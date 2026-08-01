@@ -1,11 +1,26 @@
-// @ts-nocheck
-import React from 'react';
-import { HeroBlock, TrustBarBlock, FeaturesGridBlock, SocialProofBlock, HowItWorksBlock, PricingBlock, FaqBlock } from '@unerp/ui';
-import { CollectionBlock } from './CollectionBlock';
+import React from "react";
 import {
-  RichTextBlock, ImageBlock, GalleryBlock, ColumnsBlock, LogoCloudBlock,
-  CtaBannerBlock, NavbarBlock, FooterBlock, ContactFormBlock, CartBlock,
-} from './RichBlocks';
+  HeroBlock,
+  TrustBarBlock,
+  FeaturesGridBlock,
+  SocialProofBlock,
+  HowItWorksBlock,
+  PricingBlock,
+  FaqBlock,
+} from "@unerp/ui";
+import { CollectionBlock } from "./CollectionBlock";
+import {
+  RichTextBlock,
+  ImageBlock,
+  GalleryBlock,
+  ColumnsBlock,
+  LogoCloudBlock,
+  CtaBannerBlock,
+  NavbarBlock,
+  FooterBlock,
+  ContactFormBlock,
+  CartBlock,
+} from "./RichBlocks";
 
 /** Single source of truth for section type → component, used by the builder
  *  canvas preview and the public page renderer. */

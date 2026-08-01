@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Controller, Get, UseGuards, Req } from "@nestjs/common";
 import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
@@ -19,35 +18,57 @@ export class HealthController {
   @Permissions("saas.analytics.read")
   @Get()
   async healthCheck() {
-    return { status: "ok", timestamp: new Date().toISOString(), services: { api: "healthy", database: "healthy", redis: "healthy" } };
+    return {
+      status: "ok",
+      timestamp: new Date().toISOString(),
+      services: { api: "healthy", database: "healthy", redis: "healthy" },
+    };
   }
 
   @ApiOperation({ summary: "Get API version info" })
   @Permissions("saas.analytics.read")
   @Get("version")
   async getVersion() {
-    return { version: "1.0.0", build: Date.now(), name: "UniERP SaaS Platform" };
+    return {
+      version: "1.0.0",
+      build: Date.now(),
+      name: "UniERP SaaS Platform",
+    };
   }
 
   @ApiOperation({ summary: "Get uptime status" })
   @Permissions("saas.analytics.read")
   @Get("uptime")
   async getUptime() {
-    return { uptime: process.uptime(), startedAt: new Date(Date.now() - process.uptime() * 1000).toISOString() };
+    return {
+      uptime: process.uptime(),
+      startedAt: new Date(Date.now() - process.uptime() * 1000).toISOString(),
+    };
   }
 
   @ApiOperation({ summary: "Get rate limit status" })
   @Permissions("saas.analytics.read")
   @Get("rate-limits")
   async getRateLimits() {
-    return { current: 0, limit: 1000, remaining: 1000, resetAt: new Date(Date.now() + 3600000).toISOString() };
+    return {
+      current: 0,
+      limit: 1000,
+      remaining: 1000,
+      resetAt: new Date(Date.now() + 3600000).toISOString(),
+    };
   }
 
   @ApiOperation({ summary: "Get service dependencies status" })
   @Permissions("saas.analytics.read")
   @Get("dependencies")
   async getDependencies(@Req() req: AuthReq) {
-    return { database: "connected", redis: "connected", storage: "available", queue: "running", tenantId: req.user.tenantId };
+    return {
+      database: "connected",
+      redis: "connected",
+      storage: "available",
+      queue: "running",
+      tenantId: req.user.tenantId,
+    };
   }
 
   @ApiOperation({ summary: "Get latency metrics" })
@@ -55,7 +76,10 @@ export class HealthController {
   @Get("latency")
   async getLatency() {
     const start = Date.now();
-    return { latencyMs: Date.now() - start, timestamp: new Date().toISOString() };
+    return {
+      latencyMs: Date.now() - start,
+      timestamp: new Date().toISOString(),
+    };
   }
 
   @ApiOperation({ summary: "Get cache statistics" })
@@ -69,6 +93,12 @@ export class HealthController {
   @Permissions("saas.portal.read")
   @Get("tenant")
   async getTenantHealth(@Req() req: AuthReq) {
-    return { tenantId: req.user.tenantId, status: "active", quotaOk: true, billingOk: true, subscriptionActive: true };
+    return {
+      tenantId: req.user.tenantId,
+      status: "active",
+      quotaOk: true,
+      billingOk: true,
+      subscriptionActive: true,
+    };
   }
 }

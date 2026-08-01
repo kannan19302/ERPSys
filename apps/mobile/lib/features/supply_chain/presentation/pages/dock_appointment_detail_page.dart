@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -54,9 +53,9 @@ class _DockAppointmentDetail extends StatelessWidget {
             children: [
               Row(children: [
                 Expanded(child: Text(appointment.reference ?? 'Dock Appointment',
-                    style: Theme.of(context).textTheme.titleLarge)),
+                    style: Theme.of(context).textTheme.titleLarge,),),
                 UiStatusBadge(label: appointment.status, tone: _statusTone(appointment.status)),
-              ]),
+              ],),
             ],
           ),
         ),
@@ -117,7 +116,7 @@ class _Row extends StatelessWidget {
       child: Row(children: [
         Expanded(child: Text(label, style: TextStyle(color: t.textSecondary))),
         Text(value, style: Theme.of(context).textTheme.labelLarge),
-      ]),
+      ],),
     );
   }
 }

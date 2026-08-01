@@ -41,7 +41,7 @@ class EducationRemoteDataSourceImpl implements EducationRemoteDataSource {
   @override
   Future<Paginated<StudentModel>> listStudents(ListQuery query) =>
       _client.getPaginated<StudentModel>(
-        ApiPaths.students, query, StudentModel.fromJson);
+        ApiPaths.students, query, StudentModel.fromJson,);
 
   @override
   Future<StudentModel> getStudent(String id) async =>
@@ -50,12 +50,12 @@ class EducationRemoteDataSourceImpl implements EducationRemoteDataSource {
   @override
   Future<StudentModel> createStudent(Map<String, dynamic> payload) async =>
       StudentModel.fromJson(
-        await _client.post(ApiPaths.students, body: payload));
+        await _client.post(ApiPaths.students, body: payload),);
 
   @override
   Future<StudentModel> updateStudent(String id, Map<String, dynamic> payload) async =>
       StudentModel.fromJson(
-        await _client.patch(ApiPaths.student(id), body: payload));
+        await _client.patch(ApiPaths.student(id), body: payload),);
 
   @override
   Future<void> deleteStudent(String id) =>
@@ -64,7 +64,7 @@ class EducationRemoteDataSourceImpl implements EducationRemoteDataSource {
   @override
   Future<Paginated<CourseModel>> listCourses(ListQuery query) =>
       _client.getPaginated<CourseModel>(
-        ApiPaths.courses, query, CourseModel.fromJson);
+        ApiPaths.courses, query, CourseModel.fromJson,);
 
   @override
   Future<CourseModel> getCourse(String id) async =>
@@ -73,12 +73,12 @@ class EducationRemoteDataSourceImpl implements EducationRemoteDataSource {
   @override
   Future<CourseModel> createCourse(Map<String, dynamic> payload) async =>
       CourseModel.fromJson(
-        await _client.post(ApiPaths.courses, body: payload));
+        await _client.post(ApiPaths.courses, body: payload),);
 
   @override
   Future<CourseModel> updateCourse(String id, Map<String, dynamic> payload) async =>
       CourseModel.fromJson(
-        await _client.patch(ApiPaths.course(id), body: payload));
+        await _client.patch(ApiPaths.course(id), body: payload),);
 
   @override
   Future<void> deleteCourse(String id) =>
@@ -87,7 +87,7 @@ class EducationRemoteDataSourceImpl implements EducationRemoteDataSource {
   @override
   Future<Paginated<EnrollmentModel>> listEnrollments(ListQuery query) =>
       _client.getPaginated<EnrollmentModel>(
-        ApiPaths.enrollments, query, EnrollmentModel.fromJson);
+        ApiPaths.enrollments, query, EnrollmentModel.fromJson,);
 
   @override
   Future<EnrollmentModel> getEnrollment(String id) async =>
@@ -96,7 +96,7 @@ class EducationRemoteDataSourceImpl implements EducationRemoteDataSource {
   @override
   Future<EnrollmentModel> createEnrollment(Map<String, dynamic> payload) async =>
       EnrollmentModel.fromJson(
-        await _client.post(ApiPaths.enrollments, body: payload));
+        await _client.post(ApiPaths.enrollments, body: payload),);
 
   @override
   Future<void> deleteEnrollment(String id) =>
@@ -105,43 +105,43 @@ class EducationRemoteDataSourceImpl implements EducationRemoteDataSource {
   @override
   Future<Paginated<GradeEntryModel>> listGradeEntries(ListQuery query) =>
       _client.getPaginated<GradeEntryModel>(
-        ApiPaths.gradebook, query, GradeEntryModel.fromJson);
+        ApiPaths.gradebook, query, GradeEntryModel.fromJson,);
 
   @override
   Future<GradeEntryModel> createGradeEntry(Map<String, dynamic> payload) async =>
       GradeEntryModel.fromJson(
-        await _client.post(ApiPaths.gradebook, body: payload));
+        await _client.post(ApiPaths.gradebook, body: payload),);
 
   @override
   Future<GradeEntryModel> updateGradeEntry(
-    String id, Map<String, dynamic> payload) async =>
+    String id, Map<String, dynamic> payload,) async =>
       GradeEntryModel.fromJson(
-        await _client.patch('${ApiPaths.gradebook}/$id', body: payload));
+        await _client.patch('${ApiPaths.gradebook}/$id', body: payload),);
 
   @override
   Future<Paginated<EducationFeeInvoiceModel>> listEducationFeeInvoices(
-    ListQuery query) =>
+    ListQuery query,) =>
       _client.getPaginated<EducationFeeInvoiceModel>(
-        ApiPaths.educationFees, query, EducationFeeInvoiceModel.fromJson);
+        ApiPaths.educationFees, query, EducationFeeInvoiceModel.fromJson,);
 
   @override
   Future<EducationFeeInvoiceModel> getEducationFeeInvoice(String id) async =>
       EducationFeeInvoiceModel.fromJson(
-        await _client.getObject(ApiPaths.educationFeeInvoice(id)));
+        await _client.getObject(ApiPaths.educationFeeInvoice(id)),);
 
   @override
   Future<EducationFeeInvoiceModel> createEducationFeeInvoice(
-    Map<String, dynamic> payload) async =>
+    Map<String, dynamic> payload,) async =>
       EducationFeeInvoiceModel.fromJson(
-        await _client.post(ApiPaths.educationFees, body: payload));
+        await _client.post(ApiPaths.educationFees, body: payload),);
 
   @override
   Future<Paginated<ExamModel>> listExams(ListQuery query) =>
       _client.getPaginated<ExamModel>(
-        ApiPaths.exams, query, ExamModel.fromJson);
+        ApiPaths.exams, query, ExamModel.fromJson,);
 
   @override
   Future<ExamModel> createExam(Map<String, dynamic> payload) async =>
       ExamModel.fromJson(
-        await _client.post(ApiPaths.exams, body: payload));
+        await _client.post(ApiPaths.exams, body: payload),);
 }

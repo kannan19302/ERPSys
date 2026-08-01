@@ -1,16 +1,10 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/widgets/ui_card.dart';
 import '../../../../core/utils/formatters.dart';
-import '../../../../core/widgets/permission_gate.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/widgets/state_views.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/utils/formatters.dart';
-import '../../../../core/widgets/state_views.dart';
 import '../../domain/entities/ecommerce.dart';
 import '../providers/ecommerce_providers.dart';
 
@@ -125,25 +119,25 @@ class _OrderDetail extends StatelessWidget {
                     Text(Formatters.currency(item.totalPrice, currencyCode: order.currency)),
                   ],
                 ),
-              )),
+              ),),
               const Divider(height: Spacing.x6),
               Row(
                 children: <Widget>[
-                  Expanded(child: Text('Subtotal')),
+                  const Expanded(child: Text('Subtotal')),
                   Text(Formatters.currency(order.subtotal, currencyCode: order.currency)),
                 ],
               ),
               const SizedBox(height: Spacing.x1),
               Row(
                 children: <Widget>[
-                  Expanded(child: Text('Shipping')),
+                  const Expanded(child: Text('Shipping')),
                   Text(Formatters.currency(order.shippingCost, currencyCode: order.currency)),
                 ],
               ),
               const SizedBox(height: Spacing.x1),
               Row(
                 children: <Widget>[
-                  Expanded(child: Text('Tax')),
+                  const Expanded(child: Text('Tax')),
                   Text(Formatters.currency(order.taxTotal, currencyCode: order.currency)),
                 ],
               ),

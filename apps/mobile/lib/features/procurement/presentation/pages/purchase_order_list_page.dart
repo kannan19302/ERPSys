@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -53,7 +52,7 @@ class _PurchaseOrderListPageState extends ConsumerState<PurchaseOrderListPage> {
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
                 .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value)))
+                    value: e.key, child: Text(e.value),),)
                 .toList(),
           ),
         ],
@@ -96,7 +95,7 @@ class _PurchaseOrderListPageState extends ConsumerState<PurchaseOrderListPage> {
                     : '${state.meta.total} PO${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -154,19 +153,19 @@ class _PoTile extends StatelessWidget {
               Row(children: [
                 Expanded(
                   child: Text(po.poNumber,
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
                 UiStatusBadge(
                   label: po.status,
                   tone: _statusTone(po.status),
                 ),
-              ]),
+              ],),
               const SizedBox(height: Spacing.x1),
               Text(po.vendorName,
-                  style: TextStyle(color: t.textSecondary)),
+                  style: TextStyle(color: t.textSecondary),),
               const SizedBox(height: Spacing.x1),
               Text('\$${po.totalAmount.toStringAsFixed(2)}',
-                  style: Theme.of(context).textTheme.labelLarge),
+                  style: Theme.of(context).textTheme.labelLarge,),
             ],
           ),
         ),

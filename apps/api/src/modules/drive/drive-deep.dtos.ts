@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { z } from "zod";
 
 export const shareFolderSchema = z.object({
@@ -28,4 +27,6 @@ export const generateDownloadLinkSchema = z.object({
   expiresInHours: z.number().int().positive().default(24),
 });
 
-export type GenerateDownloadLinkInput = z.infer<typeof generateDownloadLinkSchema>;
+export type GenerateDownloadLinkInput = z.infer<
+  typeof generateDownloadLinkSchema
+>;

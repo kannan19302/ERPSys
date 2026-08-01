@@ -1,11 +1,18 @@
-// @ts-nocheck
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { Observable, from, switchMap } from 'rxjs';
-import { prisma } from '@unerp/database';
-import { ChangeHistoryService } from '../services/change-history.service';
-import { TRACK_CHANGES_KEY, TrackChangesMetadata } from '../decorators/track-changes.decorator';
-import type { ChangeAction } from '@unerp/shared';
+import {
+  Injectable,
+  NestInterceptor,
+  ExecutionContext,
+  CallHandler,
+} from "@nestjs/common";
+import { Reflector } from "@nestjs/core";
+import { Observable, from, switchMap } from "rxjs";
+import { prisma } from "@unerp/database";
+import { ChangeHistoryService } from "../services/change-history.service";
+import {
+  TRACK_CHANGES_KEY,
+  TrackChangesMetadata,
+} from "../decorators/track-changes.decorator";
+import type { ChangeAction } from "@unerp/shared";
 
 @Injectable()
 export class ChangeHistoryInterceptor implements NestInterceptor {
@@ -27,11 +34,19 @@ export class ChangeHistoryInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest();
     const method = request.method;
 
-    if (method === 'GET') {
+    if (method === "GET") {
       return next.handle();
     }
 
-    const user = request.user as { tenantId: string; userId: string; email: string; firstName?: string; lastName?: string } | undefined;
+    const user = request.user as
+      | {
+          tenantId: string;
+          userId: string;
+          email: string;
+          firstName?: string;
+          lastName?: string;
+        }
+      | undefined;
     if (!user) {
       return next.handle();
     }
@@ -39,9 +54,11 @@ export class ChangeHistoryInterceptor implements NestInterceptor {
     const entityId = request.params[metadata.entityIdParam];
     const entityType = metadata.entityType;
     const tenantId = user.tenantId;
-    const userName = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email;
+    const userName =
+      [user.firstName, user.lastName].filter(Boolean).join(" ") || user.email;
 
-    const action: ChangeAction = method === 'DELETE' ? 'DELETE' : entityId ? 'UPDATE' : 'CREATE';
+    const action: ChangeAction =
+      method === "DELETE" ? "DELETE" : entityId ? "UPDATE" : "CREATE";
 
     const snapshotPromise = entityId
       ? this.getEntitySnapshot(entityType, entityId)
@@ -53,27 +70,45 @@ export class ChangeHistoryInterceptor implements NestInterceptor {
           next.handle().subscribe({
             next: async (result) => {
               try {
-                const newEntityId = entityId || (result as Record<string, unknown>)?.id as string;
+                const newEntityId =
+                  entityId ||
+                  ((result as Record<string, unknown>)?.id as string);
                 if (newEntityId) {
-                  const newSnapshot = action === 'DELETE'
-                    ? {}
-                    : await this.getEntitySnapshot(entityType, newEntityId);
+                  const newSnapshot =
+                    action === "DELETE"
+                      ? {}
+                      : await this.getEntitySnapshot(entityType, newEntityId);
 
-                  const fieldChanges = action === 'CREATE'
-                    ? Object.entries(newSnapshot || {})
-                        .filter(([k]) => !['id', 'tenantId', 'tenant_id', 'updatedAt', 'updated_at', 'createdAt', 'created_at'].includes(k))
-                        .map(([k, v]) => ({
-                          field: k,
-                          label: k.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase()).trim(),
-                          oldValue: null,
-                          newValue: v,
-                        }))
-                    : this.changeHistoryService.diffFields(
-                        oldSnapshot || {},
-                        newSnapshot || {},
-                      );
+                  const fieldChanges =
+                    action === "CREATE"
+                      ? Object.entries(newSnapshot || {})
+                          .filter(
+                            ([k]) =>
+                              ![
+                                "id",
+                                "tenantId",
+                                "tenant_id",
+                                "updatedAt",
+                                "updated_at",
+                                "createdAt",
+                                "created_at",
+                              ].includes(k),
+                          )
+                          .map(([k, v]) => ({
+                            field: k,
+                            label: k
+                              .replace(/([A-Z])/g, " $1")
+                              .replace(/^./, (s) => s.toUpperCase())
+                              .trim(),
+                            oldValue: null,
+                            newValue: v,
+                          }))
+                      : this.changeHistoryService.diffFields(
+                          oldSnapshot || {},
+                          newSnapshot || {},
+                        );
 
-                  if (fieldChanges.length > 0 || action === 'DELETE') {
+                  if (fieldChanges.length > 0 || action === "DELETE") {
                     await this.changeHistoryService.recordChange({
                       tenantId,
                       userId: user.userId,
@@ -84,7 +119,7 @@ export class ChangeHistoryInterceptor implements NestInterceptor {
                       fieldChanges,
                       metadata: {
                         ipAddress: request.ip,
-                        userAgent: request.headers['user-agent'],
+                        userAgent: request.headers["user-agent"],
                       },
                     });
                   }
@@ -102,12 +137,21 @@ export class ChangeHistoryInterceptor implements NestInterceptor {
     );
   }
 
-  private async getEntitySnapshot(entityType: string, entityId: string): Promise<Record<string, unknown> | null> {
+  private async getEntitySnapshot(
+    entityType: string,
+    entityId: string,
+  ): Promise<Record<string, unknown> | null> {
     const modelName = entityType.charAt(0).toLowerCase() + entityType.slice(1);
     const model = (prisma as any)[modelName];
-    if (model && typeof (model as any).findUnique === 'function') {
+    if (model && typeof (model as any).findUnique === "function") {
       try {
-        return await (model as { findUnique: (args: { where: { id: string } }) => Promise<Record<string, unknown> | null> }).findUnique({ where: { id: entityId } });
+        return await (
+          model as {
+            findUnique: (args: {
+              where: { id: string };
+            }) => Promise<Record<string, unknown> | null>;
+          }
+        ).findUnique({ where: { id: entityId } });
       } catch {
         return null;
       }

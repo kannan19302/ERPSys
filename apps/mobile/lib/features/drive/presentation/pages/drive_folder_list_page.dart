@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -55,11 +54,11 @@ class _DriveFolderListPageState extends ConsumerState<DriveFolderListPage> {
                   Text(f.name, style: Theme.of(context).textTheme.titleSmall),
                   const SizedBox(height: Spacing.x1),
                   Text('${f.fileCount} files',
-                      style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs)),
+                      style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs),),
                 ],
               ),
             ),
-          ]),
+          ],),
         ),
       ),
     );

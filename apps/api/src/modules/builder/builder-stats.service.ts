@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { Injectable, Logger } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import { Injectable, Logger } from "@nestjs/common";
+import { prisma } from "@unerp/database";
 
 /**
  * Cross-module analytics for the Builder home: platform-wide KPI rollups,
@@ -21,50 +20,54 @@ export class BuilderStatsService {
     try {
       const invoices = await prisma.invoice.findMany({
         where: { tenantId },
-        select: { totalAmount: true, status: true }
+        select: { totalAmount: true, status: true },
       });
       if (invoices.length > 0) {
         totalRevenue = invoices
-          .filter(inv => inv.status === 'PAID' || inv.status === 'Paid')
+          .filter((inv) => inv.status === "PAID" || inv.status === "Paid")
           .reduce((sum, inv) => sum + Number(inv.totalAmount || 0), 0);
-        pendingInvoices = invoices
-          .filter(inv => inv.status === 'UNPAID' || inv.status === 'Unpaid' || inv.status === 'Draft' || inv.status === 'Pending')
-          .length;
+        pendingInvoices = invoices.filter(
+          (inv) =>
+            inv.status === "UNPAID" ||
+            inv.status === "Unpaid" ||
+            inv.status === "Draft" ||
+            inv.status === "Pending",
+        ).length;
       }
     } catch (err) {
-      this.logger.error('Error fetching invoices for global stats', err);
+      this.logger.error("Error fetching invoices for global stats", err);
     }
 
     try {
       const empCount = await prisma.employee.count({
-        where: { tenantId, deletedAt: null, status: 'ACTIVE' }
+        where: { tenantId, deletedAt: null, status: "ACTIVE" },
       });
       activeEmployees = empCount;
     } catch (err) {
-      this.logger.error('Error fetching employees for global stats', err);
+      this.logger.error("Error fetching employees for global stats", err);
     }
 
     try {
       const leadCount = await prisma.lead.count({
-        where: { tenantId }
+        where: { tenantId },
       });
       totalLeads = leadCount;
     } catch (err) {
-      this.logger.error('Error fetching leads for global stats', err);
+      this.logger.error("Error fetching leads for global stats", err);
     }
 
     try {
       const items = await prisma.inventoryItem.findMany({
         where: { tenantId },
-        select: { quantity: true, reorderPoint: true }
+        select: { quantity: true, reorderPoint: true },
       });
-      stockAlerts = items.filter(item => {
+      stockAlerts = items.filter((item) => {
         const q = Number(item.quantity || 0);
         const rp = item.reorderPoint ? Number(item.reorderPoint) : 0;
         return q <= rp;
       }).length;
     } catch (err) {
-      this.logger.error('Error fetching stock alerts for global stats', err);
+      this.logger.error("Error fetching stock alerts for global stats", err);
     }
 
     // Custom Apps / Modules Details
@@ -84,8 +87,8 @@ export class BuilderStatsService {
           status: true,
           pages: true,
           components: true,
-          dataModels: true
-        }
+          dataModels: true,
+        },
       });
 
       totalCustomApps = modules.length;
@@ -99,21 +102,27 @@ export class BuilderStatsService {
           module: true,
           name: true,
           _count: {
-            select: { customRecords: true }
-          }
-        }
+            select: { customRecords: true },
+          },
+        },
       });
 
-      totalCustomRecords = schemas.reduce((sum, s) => sum + s._count.customRecords, 0);
+      totalCustomRecords = schemas.reduce(
+        (sum, s) => sum + s._count.customRecords,
+        0,
+      );
 
       // Map moduleSlug to count
       const moduleRecordCountMap = new Map<string, number>();
       for (const s of schemas) {
         const modKey = s.module.toLowerCase();
-        moduleRecordCountMap.set(modKey, (moduleRecordCountMap.get(modKey) || 0) + s._count.customRecords);
+        moduleRecordCountMap.set(
+          modKey,
+          (moduleRecordCountMap.get(modKey) || 0) + s._count.customRecords,
+        );
       }
 
-      customApps = modules.map(m => {
+      customApps = modules.map((m) => {
         const mSlug = m.slug.toLowerCase();
         const pagesArr = Array.isArray(m.pages) ? m.pages : [];
         const componentsArr = Array.isArray(m.components) ? m.components : [];
@@ -123,17 +132,18 @@ export class BuilderStatsService {
           id: m.id,
           name: m.name,
           slug: m.slug,
-          category: m.category || 'Operations',
+          category: m.category || "Operations",
           version: m.version,
           status: m.status,
           pagesCount: pagesArr.length,
-          formsCount: componentsArr.filter((c: any) => c.type === 'form').length,
+          formsCount: componentsArr.filter((c: any) => c.type === "form")
+            .length,
           dataModelsCount: dmsArr.length,
-          submissionsCount: moduleRecordCountMap.get(mSlug) || 0
+          submissionsCount: moduleRecordCountMap.get(mSlug) || 0,
         };
       });
     } catch (err) {
-      this.logger.error('Error fetching custom apps for global stats', err);
+      this.logger.error("Error fetching custom apps for global stats", err);
     }
 
     // Fetch recent custom records submissions across all custom apps
@@ -142,50 +152,66 @@ export class BuilderStatsService {
       const records = await prisma.customRecord.findMany({
         where: { tenantId },
         take: 10,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         include: {
           schemaRegistry: {
             select: {
               name: true,
               slug: true,
-              module: true
-            }
-          }
-        }
+              module: true,
+            },
+          },
+        },
       });
 
-      recentSubmissions = records.map(r => {
+      recentSubmissions = records.map((r) => {
         return {
           id: r.id,
           appSlug: r.schemaRegistry.module,
-          appName: r.schemaRegistry.module.toUpperCase() + ' App',
+          appName: r.schemaRegistry.module.toUpperCase() + " App",
           schemaSlug: r.schemaRegistry.slug,
           schemaName: r.schemaRegistry.name,
           createdAt: r.createdAt,
-          data: r.data
+          data: r.data,
         };
       });
     } catch (err) {
-      this.logger.error('Error fetching recent submissions for global stats', err);
+      this.logger.error(
+        "Error fetching recent submissions for global stats",
+        err,
+      );
     }
 
     // Analytics Chart Data
-    const submissionsByApp = customApps.map(app => ({
+    const submissionsByApp = customApps.map((app) => ({
       appName: app.name,
-      count: app.submissionsCount
+      count: app.submissionsCount,
     }));
 
     // Dynamic month grouping from actual records
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
     const trendMap = new Map<string, number>();
-    months.forEach(m => trendMap.set(m, 0));
+    months.forEach((m) => trendMap.set(m, 0));
 
     try {
       const allRecords = await prisma.customRecord.findMany({
         where: { tenantId },
-        select: { createdAt: true }
+        select: { createdAt: true },
       });
-      allRecords.forEach(r => {
+      allRecords.forEach((r) => {
         const date = new Date(r.createdAt);
         const monthName = months[date.getMonth()];
         if (monthName) {
@@ -193,12 +219,12 @@ export class BuilderStatsService {
         }
       });
     } catch (err) {
-      this.logger.error('Error fetching trend records for global stats', err);
+      this.logger.error("Error fetching trend records for global stats", err);
     }
 
-    const monthlySubmissionsTrend = months.map(m => ({
+    const monthlySubmissionsTrend = months.map((m) => ({
       month: m,
-      count: trendMap.get(m) || 0
+      count: trendMap.get(m) || 0,
     }));
 
     return {
@@ -209,19 +235,32 @@ export class BuilderStatsService {
         totalCustomRecords,
         pendingInvoices,
         stockAlerts,
-        totalLeads
+        totalLeads,
       },
       customApps,
       recentSubmissions,
       charts: {
         submissionsByApp,
-        monthlySubmissionsTrend
-      }
+        monthlySubmissionsTrend,
+      },
     };
   }
 
   async getStats(tenantId: string) {
-    const [forms, workflows, dashboards, modules, rules, imports, webPages, blogPosts, webAssets, webTemplates, webMenus, webSeo] = await Promise.all([
+    const [
+      forms,
+      workflows,
+      dashboards,
+      modules,
+      rules,
+      imports,
+      webPages,
+      blogPosts,
+      webAssets,
+      webTemplates,
+      webMenus,
+      webSeo,
+    ] = await Promise.all([
       prisma.builderForm.count({ where: { tenantId } }),
       prisma.builderWorkflow.count({ where: { tenantId } }),
       prisma.builderDashboard.count({ where: { tenantId } }),
@@ -236,9 +275,15 @@ export class BuilderStatsService {
       prisma.webSeo.count({ where: { tenantId } }),
     ]);
 
-    const activeRules = await prisma.automationRule.count({ where: { tenantId, status: 'ACTIVE' } });
-    const publishedPages = await prisma.webPage.count({ where: { tenantId, status: 'PUBLISHED' } });
-    const publishedPosts = await prisma.blogPost.count({ where: { tenantId, status: 'PUBLISHED' } });
+    const activeRules = await prisma.automationRule.count({
+      where: { tenantId, status: "ACTIVE" },
+    });
+    const publishedPages = await prisma.webPage.count({
+      where: { tenantId, status: "PUBLISHED" },
+    });
+    const publishedPosts = await prisma.blogPost.count({
+      where: { tenantId, status: "PUBLISHED" },
+    });
 
     return {
       erp: {
@@ -267,42 +312,77 @@ export class BuilderStatsService {
     const [forms, workflows, dashboards, pages, posts] = await Promise.all([
       prisma.builderForm.findMany({
         where: { tenantId },
-        orderBy: { updatedAt: 'desc' },
+        orderBy: { updatedAt: "desc" },
         take: 3,
-        select: { id: true, name: true, status: true, updatedAt: true }
+        select: { id: true, name: true, status: true, updatedAt: true },
       }),
       prisma.builderWorkflow.findMany({
         where: { tenantId },
-        orderBy: { updatedAt: 'desc' },
+        orderBy: { updatedAt: "desc" },
         take: 3,
-        select: { id: true, name: true, status: true, updatedAt: true }
+        select: { id: true, name: true, status: true, updatedAt: true },
       }),
       prisma.builderDashboard.findMany({
         where: { tenantId },
-        orderBy: { updatedAt: 'desc' },
+        orderBy: { updatedAt: "desc" },
         take: 3,
-        select: { id: true, name: true, status: true, updatedAt: true }
+        select: { id: true, name: true, status: true, updatedAt: true },
       }),
       prisma.webPage.findMany({
         where: { tenantId },
-        orderBy: { updatedAt: 'desc' },
+        orderBy: { updatedAt: "desc" },
         take: 3,
-        select: { id: true, name: true, status: true, updatedAt: true }
+        select: { id: true, name: true, status: true, updatedAt: true },
       }),
       prisma.blogPost.findMany({
         where: { tenantId },
-        orderBy: { updatedAt: 'desc' },
+        orderBy: { updatedAt: "desc" },
         take: 3,
-        select: { id: true, title: true, status: true, updatedAt: true }
-      })
+        select: { id: true, title: true, status: true, updatedAt: true },
+      }),
     ]);
 
     const mapped = [
-      ...forms.map(f => ({ id: f.id, name: f.name, type: 'erp', path: `/builder/erp/forms`, status: f.status, updatedAt: f.updatedAt })),
-      ...workflows.map(w => ({ id: w.id, name: w.name, type: 'erp', path: `/builder/erp/workflows`, status: w.status, updatedAt: w.updatedAt })),
-      ...dashboards.map(d => ({ id: d.id, name: d.name, type: 'erp', path: `/builder/erp/dashboards`, status: d.status, updatedAt: d.updatedAt })),
-      ...pages.map(p => ({ id: p.id, name: p.name, type: 'web', path: `/builder/web/pages`, status: p.status, updatedAt: p.updatedAt })),
-      ...posts.map(p => ({ id: p.id, name: p.title, type: 'web', path: `/builder/web/blog-posts`, status: p.status, updatedAt: p.updatedAt }))
+      ...forms.map((f) => ({
+        id: f.id,
+        name: f.name,
+        type: "erp",
+        path: `/builder/erp/forms`,
+        status: f.status,
+        updatedAt: f.updatedAt,
+      })),
+      ...workflows.map((w) => ({
+        id: w.id,
+        name: w.name,
+        type: "erp",
+        path: `/builder/erp/workflows`,
+        status: w.status,
+        updatedAt: w.updatedAt,
+      })),
+      ...dashboards.map((d) => ({
+        id: d.id,
+        name: d.name,
+        type: "erp",
+        path: `/builder/erp/dashboards`,
+        status: d.status,
+        updatedAt: d.updatedAt,
+      })),
+      ...pages.map((p) => ({
+        id: p.id,
+        name: p.name,
+        type: "web",
+        path: `/builder/web/pages`,
+        status: p.status,
+        updatedAt: p.updatedAt,
+      })),
+      ...posts.map((p) => ({
+        id: p.id,
+        name: p.title,
+        type: "web",
+        path: `/builder/web/blog-posts`,
+        status: p.status,
+        updatedAt: p.updatedAt,
+      })),
     ];
 
     mapped.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());

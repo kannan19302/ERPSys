@@ -1,12 +1,18 @@
-// @ts-nocheck
-'use client';
+"use client";
 
-import styles from './page.module.css';
+import styles from "./page.module.css";
 
-import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, Button, Spinner, useToast, Badge } from '@unerp/ui';
-import { Calculator, DollarSign, Percent, BarChart3, Settings, ShieldCheck } from 'lucide-react';
-import { apiGet } from '../../crm/_components/api';
+import React, { useState, useEffect } from "react";
+import { Card, PageHeader, Button, Spinner, useToast, Badge } from "@unerp/ui";
+import {
+  Calculator,
+  DollarSign,
+  Percent,
+  BarChart3,
+  Settings,
+  ShieldCheck,
+} from "lucide-react";
+import { apiGet } from "../../crm/_components/api";
 
 interface ProductConfig {
   id: string;
@@ -28,21 +34,25 @@ interface Profitability {
 export default function CpqPage() {
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState<any[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState<string>('');
+  const [selectedProduct, setSelectedProduct] = useState<string>("");
   const [config, setConfig] = useState<ProductConfig | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
   const [pricingResult, setPricingResult] = useState<any>(null);
-  const [profitability, setProfitability] = useState<Profitability | null>(null);
+  const [profitability, setProfitability] = useState<Profitability | null>(
+    null,
+  );
   const toast = useToast();
 
   useEffect(() => {
     const init = async () => {
       try {
         const [prodList, profitData] = await Promise.all([
-          apiGet<any[]>('/inventory/products?limit=50'),
-          apiGet<Profitability>('/sales/expansion/quote-profitability'),
+          apiGet<any[]>("/inventory/products?limit=50"),
+          apiGet<Profitability>("/sales/expansion/quote-profitability"),
         ]);
-        setProducts(Array.isArray(prodList) ? prodList : (prodList as any)?.data || []);
+        setProducts(
+          Array.isArray(prodList) ? prodList : (prodList as any)?.data || [],
+        );
         setProfitability(profitData);
         if (Array.isArray(prodList) && prodList.length > 0) {
           setSelectedProduct(prodList[0].id);
@@ -50,7 +60,10 @@ export default function CpqPage() {
           setSelectedProduct((prodList as any).data[0].id);
         }
       } catch (err) {
-        toast.error('Failed to load CPQ dashboard', err instanceof Error ? err.message : 'Please try again');
+        toast.error(
+          "Failed to load CPQ dashboard",
+          err instanceof Error ? err.message : "Please try again",
+        );
       } finally {
         setLoading(false);
       }
@@ -62,11 +75,14 @@ export default function CpqPage() {
     if (!selectedProduct) return;
     const fetchConfig = async () => {
       try {
-        const data = await apiGet<ProductConfig>(`/sales/expansion/product-configuration/${selectedProduct}`);
+        const data = await apiGet<ProductConfig>(
+          `/sales/expansion/product-configuration/${selectedProduct}`,
+        );
         setConfig(data);
         // Reset dynamic pricing
         const basePrice = data.sellPrice;
-        const discountPct = quantity >= 100 ? 15 : quantity >= 50 ? 10 : quantity >= 20 ? 5 : 0;
+        const discountPct =
+          quantity >= 100 ? 15 : quantity >= 50 ? 10 : quantity >= 20 ? 5 : 0;
         const finalPrice = basePrice * (1 - discountPct / 100);
         setPricingResult({
           basePrice,
@@ -87,10 +103,15 @@ export default function CpqPage() {
   };
 
   if (loading) {
-    return <div className="ui-center-pad"><Spinner size="lg" /></div>;
+    return (
+      <div className="ui-center-pad">
+        <Spinner size="lg" />
+      </div>
+    );
   }
 
-  const fmtCurrency = (v: number) => `$${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const fmtCurrency = (v: number) =>
+    `$${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   return (
     <div className="ui-stack-6 ui-animate-in">
@@ -98,9 +119,9 @@ export default function CpqPage() {
         title="Configure, Price, Quote (CPQ)"
         description="Configure product variations, analyze margins, and view quote profitability"
         breadcrumbs={[
-          { label: 'Home', href: '/dashboard' },
-          { label: 'Sales', href: '/sales' },
-          { label: 'CPQ Dashboard' },
+          { label: "Home", href: "/dashboard" },
+          { label: "Sales", href: "/sales" },
+          { label: "CPQ Dashboard" },
         ]}
       />
 
@@ -113,7 +134,9 @@ export default function CpqPage() {
               </div>
               <div>
                 <div className={styles.p3}>Total Value</div>
-                <div className={styles.p4}>{fmtCurrency(profitability.totalRevenue)}</div>
+                <div className={styles.p4}>
+                  {fmtCurrency(profitability.totalRevenue)}
+                </div>
               </div>
             </div>
           </Card>
@@ -124,7 +147,10 @@ export default function CpqPage() {
               </div>
               <div>
                 <div className={styles.p6}>Net Margin</div>
-                <div className={styles.p7}>{fmtCurrency(profitability.netMargin)} ({profitability.marginPct}%)</div>
+                <div className={styles.p7}>
+                  {fmtCurrency(profitability.netMargin)} (
+                  {profitability.marginPct}%)
+                </div>
               </div>
             </div>
           </Card>
@@ -135,7 +161,9 @@ export default function CpqPage() {
               </div>
               <div>
                 <div className={styles.p9}>Avg Discount</div>
-                <div className={styles.p10}>{profitability.averageDiscountPct}%</div>
+                <div className={styles.p10}>
+                  {profitability.averageDiscountPct}%
+                </div>
               </div>
             </div>
           </Card>
@@ -168,8 +196,10 @@ export default function CpqPage() {
                   onChange={(e) => setSelectedProduct(e.target.value)}
                   className={styles.p16}
                 >
-                  {products.map(p => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
+                  {products.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -217,11 +247,13 @@ export default function CpqPage() {
             </h3>
             {profitability && (
               <div className="ui-stack-4">
-                {profitability.byCategory.map(c => (
+                {profitability.byCategory.map((c) => (
                   <div key={c.category}>
                     <div className={styles.p26}>
                       <span>{c.category}</span>
-                      <strong>{c.marginPct}% Margin ({fmtCurrency(c.revenue)})</strong>
+                      <strong>
+                        {c.marginPct}% Margin ({fmtCurrency(c.revenue)})
+                      </strong>
                     </div>
                     <div className={styles.p27}>
                       <div style={{ width: `${c.marginPct}%` }} />

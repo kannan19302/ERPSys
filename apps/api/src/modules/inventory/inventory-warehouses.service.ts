@@ -1,14 +1,17 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { CreateWarehouseInput, UpdateWarehouseInput } from '@unerp/shared';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { CreateWarehouseInput, UpdateWarehouseInput } from "@unerp/shared";
 import {
   buildPaginationValues,
   buildOrderBy,
   paginatedResult,
   resolveOrgId,
   PaginationParams,
-} from '../../common/utils/pagination.util';
+} from "../../common/utils/pagination.util";
 
 @Injectable()
 export class InventoryWarehousesService {
@@ -41,17 +44,24 @@ export class InventoryWarehousesService {
         binLocations: true,
       },
     });
-    if (!warehouse) throw new NotFoundException('Warehouse not found');
+    if (!warehouse) throw new NotFoundException("Warehouse not found");
     return warehouse;
   }
 
-  async createWarehouse(tenantId: string, orgId: string, dto: CreateWarehouseInput) {
+  async createWarehouse(
+    tenantId: string,
+    orgId: string,
+    dto: CreateWarehouseInput,
+  ) {
     const resolvedOrgId = await resolveOrgId(tenantId, orgId);
 
     const existing = await prisma.warehouse.findFirst({
       where: { tenantId, orgId: resolvedOrgId, code: dto.code },
     });
-    if (existing) throw new BadRequestException(`Warehouse code ${dto.code} already exists.`);
+    if (existing)
+      throw new BadRequestException(
+        `Warehouse code ${dto.code} already exists.`,
+      );
 
     return prisma.warehouse.create({
       data: {
@@ -65,9 +75,15 @@ export class InventoryWarehousesService {
     });
   }
 
-  async updateWarehouse(tenantId: string, id: string, dto: UpdateWarehouseInput) {
-    const warehouse = await prisma.warehouse.findFirst({ where: { id, tenantId } });
-    if (!warehouse) throw new NotFoundException('Warehouse not found');
+  async updateWarehouse(
+    tenantId: string,
+    id: string,
+    dto: UpdateWarehouseInput,
+  ) {
+    const warehouse = await prisma.warehouse.findFirst({
+      where: { id, tenantId },
+    });
+    if (!warehouse) throw new NotFoundException("Warehouse not found");
 
     return prisma.warehouse.update({
       where: { id },
@@ -81,8 +97,10 @@ export class InventoryWarehousesService {
   }
 
   async deleteWarehouse(tenantId: string, id: string) {
-    const warehouse = await prisma.warehouse.findFirst({ where: { id, tenantId } });
-    if (!warehouse) throw new NotFoundException('Warehouse not found');
+    const warehouse = await prisma.warehouse.findFirst({
+      where: { id, tenantId },
+    });
+    if (!warehouse) throw new NotFoundException("Warehouse not found");
 
     await prisma.warehouse.update({ where: { id }, data: { isActive: false } });
     return { success: true };

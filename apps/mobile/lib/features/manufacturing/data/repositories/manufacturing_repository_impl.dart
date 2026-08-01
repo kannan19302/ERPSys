@@ -49,7 +49,7 @@ class ManufacturingRepositoryImpl implements ManufacturingRepository {
       );
     } on NetworkException catch (error) {
       final cached = _cache.read<Map<String, dynamic>>(
-        _tenantId, namespace, query.cacheKey);
+        _tenantId, namespace, query.cacheKey,);
       if (cached == null) {
         return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
       }
@@ -95,7 +95,7 @@ class ManufacturingRepositoryImpl implements ManufacturingRepository {
   @override
   Future<Result<Cacheable<Paginated<Bom>>>> listBoms(ListQuery query) =>
       _paginated(_bomNamespace, query, () => _remote.listBoms(query),
-        BomModel.fromJson);
+        BomModel.fromJson,);
 
   @override
   Future<Result<Bom>> getBom(String id) => _single(() => _remote.getBom(id));
@@ -115,7 +115,7 @@ class ManufacturingRepositoryImpl implements ManufacturingRepository {
   @override
   Future<Result<Cacheable<Paginated<WorkOrder>>>> listWorkOrders(ListQuery q) =>
       _paginated(_woNamespace, q, () => _remote.listWorkOrders(q),
-        WorkOrderModel.fromJson);
+        WorkOrderModel.fromJson,);
 
   @override
   Future<Result<WorkOrder>> getWorkOrder(String id) =>
@@ -148,7 +148,7 @@ class ManufacturingRepositoryImpl implements ManufacturingRepository {
   @override
   Future<Result<Cacheable<Paginated<MrpRun>>>> listMrpRuns(ListQuery q) =>
       _paginated(_mrpNamespace, q, () => _remote.listMrpRuns(q),
-        MrpRunModel.fromJson);
+        MrpRunModel.fromJson,);
 
   @override
   Future<Result<MrpRun>> getMrpRun(String id) =>
@@ -161,7 +161,7 @@ class ManufacturingRepositoryImpl implements ManufacturingRepository {
   @override
   Future<Result<Cacheable<Paginated<Workstation>>>> listWorkstations(ListQuery q) =>
       _paginated(_wsNamespace, q, () => _remote.listWorkstations(q),
-        WorkstationModel.fromJson);
+        WorkstationModel.fromJson,);
 
   @override
   Future<Result<Workstation>> getWorkstation(String id) =>
@@ -182,7 +182,7 @@ class ManufacturingRepositoryImpl implements ManufacturingRepository {
   @override
   Future<Result<Cacheable<Paginated<Routing>>>> listRoutings(ListQuery q) =>
       _paginated(_rtNamespace, q, () => _remote.listRoutings(q),
-        RoutingModel.fromJson);
+        RoutingModel.fromJson,);
 
   @override
   Future<Result<Routing>> getRouting(String id) =>
@@ -202,9 +202,9 @@ class ManufacturingRepositoryImpl implements ManufacturingRepository {
 
   @override
   Future<Result<Cacheable<Paginated<QualityInspection>>>> listQualityInspections(
-    ListQuery q) =>
+    ListQuery q,) =>
       _paginated(_qiNamespace, q, () => _remote.listQualityInspections(q),
-        QualityInspectionModel.fromJson);
+        QualityInspectionModel.fromJson,);
 
   @override
   Future<Result<QualityInspection>> getQualityInspection(String id) =>
@@ -216,7 +216,7 @@ class ManufacturingRepositoryImpl implements ManufacturingRepository {
 
   @override
   Future<Result<QualityInspection>> updateQualityInspection(
-    String id, Map<String, dynamic> p) =>
+    String id, Map<String, dynamic> p,) =>
       _write(() => _remote.updateQualityInspection(id, p));
 
   @override
@@ -227,7 +227,7 @@ class ManufacturingRepositoryImpl implements ManufacturingRepository {
   Future<Result<Cacheable<Paginated<EngineeringChangeOrder>>>>
       listEngineeringChangeOrders(ListQuery q) =>
       _paginated(_ecoNamespace, q, () => _remote.listEngineeringChangeOrders(q),
-        EngineeringChangeOrderModel.fromJson);
+        EngineeringChangeOrderModel.fromJson,);
 
   @override
   Future<Result<EngineeringChangeOrder>> getEngineeringChangeOrder(String id) =>
@@ -235,12 +235,12 @@ class ManufacturingRepositoryImpl implements ManufacturingRepository {
 
   @override
   Future<Result<EngineeringChangeOrder>> createEngineeringChangeOrder(
-    Map<String, dynamic> p) =>
+    Map<String, dynamic> p,) =>
       _write(() => _remote.createEngineeringChangeOrder(p));
 
   @override
   Future<Result<EngineeringChangeOrder>> updateEngineeringChangeOrder(
-    String id, Map<String, dynamic> p) =>
+    String id, Map<String, dynamic> p,) =>
       _write(() => _remote.updateEngineeringChangeOrder(id, p));
 
   @override
@@ -249,5 +249,5 @@ class ManufacturingRepositoryImpl implements ManufacturingRepository {
 
   @override
   Future<Result<EngineeringChangeOrder>> approveEngineeringChangeOrder(
-    String id) => _single(() => _remote.approveEngineeringChangeOrder(id));
+    String id,) => _single(() => _remote.approveEngineeringChangeOrder(id));
 }

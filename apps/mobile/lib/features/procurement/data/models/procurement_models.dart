@@ -46,7 +46,7 @@ class PurchaseOrderModel extends PurchaseOrder {
       status: json['status'] as String? ?? 'DRAFT',
       items: (json['items'] as List<dynamic>?)
               ?.map((e) =>
-                  PurchaseOrderItemModel.fromJson(e as Map<String, dynamic>))
+                  PurchaseOrderItemModel.fromJson(e as Map<String, dynamic>),)
               .toList(growable: false) ??
           const [],
       subtotal: asDouble(json['subtotal']),
@@ -213,7 +213,7 @@ class RFQModel extends RFQ {
       status: json['status'] as String? ?? 'DRAFT',
       items: (json['items'] as List<dynamic>?)
               ?.map((e) =>
-                  RFQItemModel.fromJson(e as Map<String, dynamic>))
+                  RFQItemModel.fromJson(e as Map<String, dynamic>),)
               .toList(growable: false) ??
           const [],
       deliveryDate: DateTime.tryParse('${json['deliveryDate']}'),
@@ -221,7 +221,7 @@ class RFQModel extends RFQ {
       vendorCount: asInt(json['vendorCount']),
       quotations: (json['quotations'] as List<dynamic>?)
               ?.map((e) => SupplierQuotationModel.fromJson(
-                  e as Map<String, dynamic>))
+                  e as Map<String, dynamic>,),)
               .toList(growable: false) ??
           const [],
       notes: json['notes'] as String?,
@@ -305,7 +305,7 @@ class SupplierQuotationModel extends SupplierQuotation {
       status: json['status'] as String? ?? 'DRAFT',
       items: (json['items'] as List<dynamic>?)
               ?.map((e) => SupplierQuotationItemModel.fromJson(
-                  e as Map<String, dynamic>))
+                  e as Map<String, dynamic>,),)
               .toList(growable: false) ??
           const [],
       subtotal: asDouble(json['subtotal']),
@@ -405,7 +405,7 @@ class PurchaseRequisitionModel extends PurchaseRequisition {
       priority: json['priority'] as String? ?? 'MEDIUM',
       items: (json['items'] as List<dynamic>?)
               ?.map((e) => PurchaseRequisitionItemModel.fromJson(
-                  e as Map<String, dynamic>))
+                  e as Map<String, dynamic>,),)
               .toList(growable: false) ??
           const [],
       totalEstimated: asDouble(json['totalEstimated']),
@@ -502,7 +502,7 @@ class PurchaseReceiptModel extends PurchaseReceipt {
       status: json['status'] as String? ?? 'DRAFT',
       items: (json['items'] as List<dynamic>?)
               ?.map((e) => PurchaseReceiptItemModel.fromJson(
-                  e as Map<String, dynamic>))
+                  e as Map<String, dynamic>,),)
               .toList(growable: false) ??
           const [],
       receivedDate: DateTime.tryParse('${json['receivedDate']}'),
@@ -645,17 +645,17 @@ class ProcurementDashboardStatsModel extends ProcurementDashboardStats {
         vendorCount: asInt(json['vendorCount']),
         spendByVendor: (json['spendByVendor'] as List<dynamic>?)
                 ?.map((e) => DashboardDataPointModel.fromJson(
-                    e as Map<String, dynamic>))
+                    e as Map<String, dynamic>,),)
                 .toList(growable: false) ??
             const [],
         spendByMonth: (json['spendByMonth'] as List<dynamic>?)
                 ?.map((e) => DashboardDataPointModel.fromJson(
-                    e as Map<String, dynamic>))
+                    e as Map<String, dynamic>,),)
                 .toList(growable: false) ??
             const [],
         recentPOs: (json['recentPOs'] as List<dynamic>?)
                 ?.map((e) =>
-                    PurchaseOrderModel.fromJson(e as Map<String, dynamic>))
+                    PurchaseOrderModel.fromJson(e as Map<String, dynamic>),)
                 .toList(growable: false) ??
             const [],
         overdueDeliveries: asInt(json['overdueDeliveries']),

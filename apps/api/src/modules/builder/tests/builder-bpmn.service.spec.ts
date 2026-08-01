@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { BuilderBpmnService } from "../services/builder-bpmn.service";
 import { BuilderBpmnModuleTest } from "./fixtures/builder-bpmn-module-test";
 import { vi, describe, it, expect, beforeEach } from "vitest";

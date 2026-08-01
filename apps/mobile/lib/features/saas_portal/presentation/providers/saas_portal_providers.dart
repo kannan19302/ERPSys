@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,7 +30,7 @@ final Provider<SaasPortalRepository> saasPortalRepositoryProvider =
 final FutureProvider<PortalBillingInfo> portalBillingInfoProvider =
     FutureProvider<PortalBillingInfo>((Ref ref) async {
   final result = await GetPortalBillingInfoUseCase(
-    ref.watch(saasPortalRepositoryProvider))(const NoParams());
+    ref.watch(saasPortalRepositoryProvider),)(const NoParams());
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -209,8 +208,8 @@ class PortalSupportTicketListController extends Notifier<PortalSupportTicketList
 
   Future<Result<PortalSupportTicket>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SavePortalSupportTicketUseCase(
-      ref.read(saasPortalRepositoryProvider))(
-      SavePortalSupportTicketParams(id: id, payload: payload));
+      ref.read(saasPortalRepositoryProvider),)(
+      SavePortalSupportTicketParams(id: id, payload: payload),);
     if (result.isOk) await refresh();
     return result;
   }

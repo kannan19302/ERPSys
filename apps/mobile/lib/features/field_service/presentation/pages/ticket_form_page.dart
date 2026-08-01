@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/widgets/form_fields.dart';
-import '../../../../core/widgets/state_views.dart';
 import '../providers/field_service_providers.dart';
 
 class TicketFormPage extends ConsumerStatefulWidget {

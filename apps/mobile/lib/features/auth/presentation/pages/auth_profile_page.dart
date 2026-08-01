@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/usecase/result.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../auth/presentation/providers/auth_state.dart';
 
@@ -83,7 +81,7 @@ class AuthProfilePage extends ConsumerWidget {
                 _SectionCard(
                   child: InkWell(
                     onTap: () {
-                      showDialog(
+                      showDialog<void>(
                         context: context,
                         builder: (BuildContext dc) => AlertDialog(
                           title: const Text('Change Password'),
@@ -111,7 +109,7 @@ class AuthProfilePage extends ConsumerWidget {
                       const SizedBox(width: Spacing.x2),
                       Expanded(child: Text('Change Password', style: Theme.of(context).textTheme.labelLarge)),
                       Icon(Icons.chevron_right, color: t.textTertiary),
-                    ]),
+                    ],),
                   ),
                 ),
               ],
@@ -156,7 +154,7 @@ class _FieldRow extends StatelessWidget {
       child: Row(children: <Widget>[
         Expanded(child: Text(label, style: TextStyle(color: t.textSecondary))),
         Flexible(child: Text(value, style: Theme.of(context).textTheme.labelLarge, textAlign: TextAlign.end)),
-      ]),
+      ],),
     );
   }
 }

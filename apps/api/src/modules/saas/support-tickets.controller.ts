@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Controller,
   Get,
@@ -75,8 +74,15 @@ export class SupportTicketsController {
   @ApiOperation({ summary: "Create support ticket" })
   @Permissions("saas.ticket.create")
   @Post("tickets")
-  async createTicket(@Req() req: AuthReq, @ZodBody(createTicketSchema) body: z.infer<typeof createTicketSchema>) {
-    return this.supportTicketsService.createTicket(req.user.tenantId, req.user.userId, body);
+  async createTicket(
+    @Req() req: AuthReq,
+    @ZodBody(createTicketSchema) body: z.infer<typeof createTicketSchema>,
+  ) {
+    return this.supportTicketsService.createTicket(
+      req.user.tenantId,
+      req.user.userId,
+      body,
+    );
   }
 
   @ApiOperation({ summary: "Get support ticket" })
@@ -89,15 +95,28 @@ export class SupportTicketsController {
   @ApiOperation({ summary: "Update support ticket" })
   @Permissions("saas.ticket.update")
   @Patch("tickets/:id")
-  async updateTicket(@Req() req: AuthReq, @Param("id") id: string, @ZodBody(updateTicketSchema) body: z.infer<typeof updateTicketSchema>) {
+  async updateTicket(
+    @Req() req: AuthReq,
+    @Param("id") id: string,
+    @ZodBody(updateTicketSchema) body: z.infer<typeof updateTicketSchema>,
+  ) {
     return this.supportTicketsService.updateTicket(req.user.tenantId, id, body);
   }
 
   @ApiOperation({ summary: "Add message to ticket" })
   @Permissions("saas.ticket.update")
   @Post("tickets/:id/messages")
-  async addMessage(@Req() req: AuthReq, @Param("id") id: string, @ZodBody(addMessageSchema) body: z.infer<typeof addMessageSchema>) {
-    return this.supportTicketsService.addMessage(req.user.tenantId, req.user.userId, id, body);
+  async addMessage(
+    @Req() req: AuthReq,
+    @Param("id") id: string,
+    @ZodBody(addMessageSchema) body: z.infer<typeof addMessageSchema>,
+  ) {
+    return this.supportTicketsService.addMessage(
+      req.user.tenantId,
+      req.user.userId,
+      id,
+      body,
+    );
   }
 
   @ApiOperation({ summary: "Close ticket" })
@@ -124,8 +143,16 @@ export class SupportTicketsController {
   @ApiOperation({ summary: "Assign ticket" })
   @Permissions("saas.ticket.update")
   @Patch("tickets/:id/assign")
-  async assignTicket(@Req() req: AuthReq, @Param("id") id: string, @ZodBody(assignTicketSchema) body: z.infer<typeof assignTicketSchema>) {
-    return this.supportTicketsService.assignTicket(req.user.tenantId, id, body.assigneeId);
+  async assignTicket(
+    @Req() req: AuthReq,
+    @Param("id") id: string,
+    @ZodBody(assignTicketSchema) body: z.infer<typeof assignTicketSchema>,
+  ) {
+    return this.supportTicketsService.assignTicket(
+      req.user.tenantId,
+      id,
+      body.assigneeId,
+    );
   }
 
   @ApiOperation({ summary: "Get ticket stats" })

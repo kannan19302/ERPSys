@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Spinner } from "@unerp/ui";
 
 export default function LoadingPage() {

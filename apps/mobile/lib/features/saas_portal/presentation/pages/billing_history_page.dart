@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../providers/saas_portal_providers.dart';
 
@@ -18,7 +17,7 @@ class BillingHistoryPage extends ConsumerWidget {
       appBar: AppBar(title: const Text('Billing & History')),
       body: billingAsync.when(
         loading: () => const LoadingView(),
-        error: (e, _) => Text('Error: '),
+        error: (e, _) => const Text('Error: '),
         data: (info) {
           final t = context.tokens;
           return ListView(padding: const EdgeInsets.all(Spacing.x4), children: [
@@ -27,9 +26,9 @@ class BillingHistoryPage extends ConsumerWidget {
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(info.companyName ?? 'Billing Info', style: Theme.of(context).textTheme.titleLarge),
                   if (info.email != null) Text(info.email!, style: TextStyle(color: t.textSecondary)),
-                ])),
-              ]),
-            ])),
+                ],),),
+              ],),
+            ],),),
             const SizedBox(height: Spacing.x4),
             _SectionCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const _SectionTitle(title: 'Payment Method'),
@@ -37,18 +36,18 @@ class BillingHistoryPage extends ConsumerWidget {
                 Row(children: [
                   Icon(info.cardBrand == 'Visa' ? Icons.credit_card : Icons.payment, color: t.primary),
                   const SizedBox(width: Spacing.x2),
-                  Text(' ending in '),
-                ]),
+                  const Text(' ending in '),
+                ],),
                 if (info.expMonth != null && info.expYear != null) Text('Expires /', style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
               ] else const Text('No payment method on file', style: TextStyle(color: Colors.grey)),
-            ])),
+            ],),),
             const SizedBox(height: Spacing.x4),
             _SectionCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const _SectionTitle(title: 'Address'),
               if (info.address != null) Text(info.address!), if (info.city != null) Text(info.city!),
               if (info.country != null) Text(info.country!), if (info.zipCode != null) Text(info.zipCode!),
-            ])),
-          ]);
+            ],),),
+          ],);
         },
       ),
     );

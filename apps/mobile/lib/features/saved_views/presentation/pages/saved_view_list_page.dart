@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -62,7 +61,7 @@ class _SavedViewListPageState extends ConsumerState<SavedViewListPage> {
                     : '${state.meta.total} view${state.meta.total == 1 ? '' : 's'}',
                 style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -96,18 +95,18 @@ class _SavedViewListPageState extends ConsumerState<SavedViewListPage> {
               Row(children: [
                 Expanded(
                   child: Text(view.name,
-                      style: Theme.of(context).textTheme.titleSmall),
+                      style: Theme.of(context).textTheme.titleSmall,),
                 ),
                 if (view.isDefault)
-                  UiStatusBadge(label: 'DEFAULT', tone: UiTone.info),
-              ]),
+                  const UiStatusBadge(label: 'DEFAULT', tone: UiTone.info),
+              ],),
               const SizedBox(height: Spacing.x1),
               Text(view.resourceType,
-                  style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs)),
+                  style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs),),
               if (view.description != null) ...[
                 const SizedBox(height: Spacing.x1),
                 Text(view.description!,
-                    style: TextStyle(color: palette.textTertiary, fontSize: TypeScale.xs)),
+                    style: TextStyle(color: palette.textTertiary, fontSize: TypeScale.xs),),
               ],
               if (view.ownerName != null) ...[
                 const SizedBox(height: Spacing.x1),
@@ -115,12 +114,12 @@ class _SavedViewListPageState extends ConsumerState<SavedViewListPage> {
                   Icon(Icons.person_outline, size: TypeScale.xs, color: palette.textTertiary),
                   const SizedBox(width: Spacing.x1),
                   Text(view.ownerName!,
-                      style: TextStyle(fontSize: TypeScale.xs, color: palette.textTertiary)),
+                      style: TextStyle(fontSize: TypeScale.xs, color: palette.textTertiary),),
                   if (view.isShared) ...[
                     const SizedBox(width: Spacing.x2),
                     Icon(Icons.share_outlined, size: TypeScale.xs, color: palette.textTertiary),
                   ],
-                ]),
+                ],),
               ],
             ],
           ),

@@ -1,5 +1,8 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
 import { prisma } from "@unerp/database";
 import { Prisma } from "@prisma/client";
 
@@ -14,11 +17,18 @@ export class ArCreditManagementService {
         { taxId: { contains: search, mode: "insensitive" } },
       ];
     }
-    const customers = await prisma.customer.findMany({ where, orderBy: { name: "asc" } });
+    const customers = await prisma.customer.findMany({
+      where,
+      orderBy: { name: "asc" },
+    });
     const profiles = await Promise.all(
       customers.map(async (c) => {
         const outstanding = await prisma.invoice.aggregate({
-          where: { tenantId, customerId: c.id, status: { notIn: ["PAID", "CANCELLED", "DRAFT"] } },
+          where: {
+            tenantId,
+            customerId: c.id,
+            status: { notIn: ["PAID", "CANCELLED", "DRAFT"] },
+          },
           _sum: { totalAmount: true },
         });
         return {
@@ -37,11 +47,17 @@ export class ArCreditManagementService {
   }
 
   async getCustomerCreditProfile(tenantId: string, customerId: string) {
-    const customer = await prisma.customer.findFirst({ where: { id: customerId, tenantId } });
+    const customer = await prisma.customer.findFirst({
+      where: { id: customerId, tenantId },
+    });
     if (!customer) throw new NotFoundException("Customer not found");
     const [outstanding, invoices, promises, disputes] = await Promise.all([
       prisma.invoice.aggregate({
-        where: { tenantId, customerId, status: { notIn: ["PAID", "CANCELLED", "DRAFT"] } },
+        where: {
+          tenantId,
+          customerId,
+          status: { notIn: ["PAID", "CANCELLED", "DRAFT"] },
+        },
         _sum: { totalAmount: true },
       }),
       prisma.invoice.findMany({
@@ -99,28 +115,48 @@ export class ArCreditManagementService {
     data: { creditLimit: number; reason: string },
     _userId: string,
   ) {
-    const customer = await prisma.customer.findFirst({ where: { id: customerId, tenantId } });
+    const customer = await prisma.customer.findFirst({
+      where: { id: customerId, tenantId },
+    });
     if (!customer) throw new NotFoundException("Customer not found");
     return prisma.customer.update({
       where: { id: customerId },
-      data: { creditLimit: new Prisma.Decimal(data.creditLimit), notes: data.reason },
+      data: {
+        creditLimit: new Prisma.Decimal(data.creditLimit),
+        notes: data.reason,
+      },
     });
   }
 
-  async placeCreditHold(tenantId: string, customerId: string, reason: string, _userId: string) {
-    const customer = await prisma.customer.findFirst({ where: { id: customerId, tenantId } });
+  async placeCreditHold(
+    tenantId: string,
+    customerId: string,
+    reason: string,
+    _userId: string,
+  ) {
+    const customer = await prisma.customer.findFirst({
+      where: { id: customerId, tenantId },
+    });
     if (!customer) throw new NotFoundException("Customer not found");
-    if (customer.creditHold) throw new BadRequestException("Customer is already on credit hold");
+    if (customer.creditHold)
+      throw new BadRequestException("Customer is already on credit hold");
     return prisma.customer.update({
       where: { id: customerId },
       data: { creditHold: true, creditHoldReason: reason },
     });
   }
 
-  async releaseCreditHold(tenantId: string, customerId: string, _userId: string) {
-    const customer = await prisma.customer.findFirst({ where: { id: customerId, tenantId } });
+  async releaseCreditHold(
+    tenantId: string,
+    customerId: string,
+    _userId: string,
+  ) {
+    const customer = await prisma.customer.findFirst({
+      where: { id: customerId, tenantId },
+    });
     if (!customer) throw new NotFoundException("Customer not found");
-    if (!customer.creditHold) throw new BadRequestException("Customer is not on credit hold");
+    if (!customer.creditHold)
+      throw new BadRequestException("Customer is not on credit hold");
     return prisma.customer.update({
       where: { id: customerId },
       data: { creditHold: false, creditHoldReason: null },
@@ -155,7 +191,9 @@ export class ArCreditManagementService {
     const bucketData = buckets.map((b) => {
       const invoices = overdue.filter((inv) => {
         if (!inv.dueDate) return false;
-        const days = Math.floor((now.getTime() - inv.dueDate.getTime()) / 86400000);
+        const days = Math.floor(
+          (now.getTime() - inv.dueDate.getTime()) / 86400000,
+        );
         return days >= b.min && days <= b.max;
       });
       return {
@@ -192,10 +230,19 @@ export class ArCreditManagementService {
       include: { customer: true },
     });
     let provisionAmount = 0;
-    const details: { invoiceId: string; customerName: string; amount: number; agingDays: number; provisionPct: number; provision: number }[] = [];
+    const details: {
+      invoiceId: string;
+      customerName: string;
+      amount: number;
+      agingDays: number;
+      provisionPct: number;
+      provision: number;
+    }[] = [];
     for (const inv of openInvoices) {
       if (!inv.dueDate) continue;
-      const agingDays = Math.floor((now.getTime() - inv.dueDate.getTime()) / 86400000);
+      const agingDays = Math.floor(
+        (now.getTime() - inv.dueDate.getTime()) / 86400000,
+      );
       let provisionPct = 0;
       if (agingDays >= 365) provisionPct = 0.5;
       else if (agingDays >= 180) provisionPct = 0.25;
@@ -257,14 +304,33 @@ export class ArCreditManagementService {
 
   async getCollectorDashboard(tenantId: string) {
     const now = new Date();
-    const [totalOpen, overdueCount, promises, disputes, provisions, onHold] = await Promise.all([
-      prisma.invoice.count({ where: { tenantId, status: { notIn: ["PAID", "CANCELLED", "DRAFT"] } } }),
-      prisma.invoice.count({ where: { tenantId, status: { notIn: ["PAID", "CANCELLED", "DRAFT"] }, dueDate: { lt: now } } }),
-      prisma.aRPromiseToPay.count({ where: { tenantId, status: "PROMISED" } }),
-      prisma.aRDispute.count({ where: { tenantId, status: { notIn: ["RESOLVED"] } } }),
-      prisma.badDebtProvision.aggregate({ where: { tenantId, status: "POSTED" }, _sum: { provisionAmount: true } }),
-      prisma.customer.count({ where: { tenantId, creditHold: true } }),
-    ]);
+    const [totalOpen, overdueCount, promises, disputes, provisions, onHold] =
+      await Promise.all([
+        prisma.invoice.count({
+          where: {
+            tenantId,
+            status: { notIn: ["PAID", "CANCELLED", "DRAFT"] },
+          },
+        }),
+        prisma.invoice.count({
+          where: {
+            tenantId,
+            status: { notIn: ["PAID", "CANCELLED", "DRAFT"] },
+            dueDate: { lt: now },
+          },
+        }),
+        prisma.aRPromiseToPay.count({
+          where: { tenantId, status: "PROMISED" },
+        }),
+        prisma.aRDispute.count({
+          where: { tenantId, status: { notIn: ["RESOLVED"] } },
+        }),
+        prisma.badDebtProvision.aggregate({
+          where: { tenantId, status: "POSTED" },
+          _sum: { provisionAmount: true },
+        }),
+        prisma.customer.count({ where: { tenantId, creditHold: true } }),
+      ]);
     return {
       openInvoices: totalOpen,
       overdueInvoices: overdueCount,

@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -120,15 +119,15 @@ class BucketListController extends Notifier<BucketListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteBucketUseCase(
-      ref.read(storageRepositoryProvider))(id);
+      ref.read(storageRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<StorageBucket>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveBucketUseCase(
-      ref.read(storageRepositoryProvider))(
-      SaveBucketParams(id: id, payload: payload));
+      ref.read(storageRepositoryProvider),)(
+      SaveBucketParams(id: id, payload: payload),);
     if (result.isOk) await refresh();
     return result;
   }
@@ -227,15 +226,15 @@ class FileListController extends Notifier<FileListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteFileUseCase(
-      ref.read(storageRepositoryProvider))(id);
+      ref.read(storageRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<StorageFile>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveFileUseCase(
-      ref.read(storageRepositoryProvider))(
-      SaveFileParams(id: id, payload: payload));
+      ref.read(storageRepositoryProvider),)(
+      SaveFileParams(id: id, payload: payload),);
     if (result.isOk) await refresh();
     return result;
   }
@@ -244,14 +243,14 @@ class FileListController extends Notifier<FileListState> {
 final FutureProviderFamily<StorageBucket, String> storageBucketDetailProvider =
     FutureProvider.family<StorageBucket, String>((Ref ref, String id) async {
   final result = await GetBucketUseCase(
-    ref.watch(storageRepositoryProvider))(id);
+    ref.watch(storageRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
 final FutureProviderFamily<StorageFile, String> storageFileDetailProvider =
     FutureProvider.family<StorageFile, String>((Ref ref, String id) async {
   final result = await GetFileUseCase(
-    ref.watch(storageRepositoryProvider))(id);
+    ref.watch(storageRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 

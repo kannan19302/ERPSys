@@ -1,7 +1,11 @@
-// @ts-nocheck
-'use client';
+"use client";
 
-import { storefrontGet, storefrontPost, StorefrontApiError, type CartDetail } from './storefront-api';
+import {
+  storefrontGet,
+  storefrontPost,
+  StorefrontApiError,
+  type CartDetail,
+} from "./storefront-api";
 
 /**
  * Cart/session persistence — implements the design from
@@ -14,17 +18,17 @@ function storageKey(tenantSlug: string): string {
 }
 
 export function getStoredSessionToken(tenantSlug: string): string | null {
-  if (typeof window === 'undefined') return null;
+  if (typeof window === "undefined") return null;
   return localStorage.getItem(storageKey(tenantSlug));
 }
 
 export function setStoredSessionToken(tenantSlug: string, token: string): void {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   localStorage.setItem(storageKey(tenantSlug), token);
 }
 
 export function clearStoredSessionToken(tenantSlug: string): void {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   localStorage.removeItem(storageKey(tenantSlug));
 }
 
@@ -33,11 +37,16 @@ export function clearStoredSessionToken(tenantSlug: string): void {
  * still resolves (GET succeeds), otherwise transparently creates a fresh cart
  * (covers both "no cart yet" and "stored token 404s / expired" cases).
  */
-export async function ensureCart(tenantSlug: string, currency?: string): Promise<CartDetail> {
+export async function ensureCart(
+  tenantSlug: string,
+  currency?: string,
+): Promise<CartDetail> {
   const existingToken = getStoredSessionToken(tenantSlug);
   if (existingToken) {
     try {
-      const cart = await storefrontGet<CartDetail>(`/store/${tenantSlug}/cart/${existingToken}`);
+      const cart = await storefrontGet<CartDetail>(
+        `/store/${tenantSlug}/cart/${existingToken}`,
+      );
       return cart;
     } catch (err) {
       if (err instanceof StorefrontApiError && err.statusCode === 404) {
@@ -48,17 +57,26 @@ export async function ensureCart(tenantSlug: string, currency?: string): Promise
     }
   }
 
-  const created = await storefrontPost<{ sessionToken: string }>(`/store/${tenantSlug}/cart`, currency ? { currency } : undefined);
+  const created = await storefrontPost<{ sessionToken: string }>(
+    `/store/${tenantSlug}/cart`,
+    currency ? { currency } : undefined,
+  );
   setStoredSessionToken(tenantSlug, created.sessionToken);
-  const cart = await storefrontGet<CartDetail>(`/store/${tenantSlug}/cart/${created.sessionToken}`);
+  const cart = await storefrontGet<CartDetail>(
+    `/store/${tenantSlug}/cart/${created.sessionToken}`,
+  );
   return cart;
 }
 
-export async function getCartQuietly(tenantSlug: string): Promise<CartDetail | null> {
+export async function getCartQuietly(
+  tenantSlug: string,
+): Promise<CartDetail | null> {
   const token = getStoredSessionToken(tenantSlug);
   if (!token) return null;
   try {
-    return await storefrontGet<CartDetail>(`/store/${tenantSlug}/cart/${token}`);
+    return await storefrontGet<CartDetail>(
+      `/store/${tenantSlug}/cart/${token}`,
+    );
   } catch (err) {
     if (err instanceof StorefrontApiError && err.statusCode === 404) {
       clearStoredSessionToken(tenantSlug);

@@ -1,13 +1,12 @@
-import '../../../../core/error/exceptions.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/di/providers.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecase/result.dart';
 import '../../../../core/widgets/form_fields.dart';
-import '../../data/repositories/hr_repository_impl.dart';
 import '../../domain/entities/hr.dart';
 import '../../domain/repositories/hr_repository.dart';
 import '../../domain/usecases/hr_usecases.dart';
@@ -155,14 +154,14 @@ class _TimesheetFormPageState extends ConsumerState<TimesheetFormPage> {
     );
   }
 Future<Result<Timesheet>> _saveTimesheet(
-      Map<String, dynamic> payload) async {
+      Map<String, dynamic> payload,) async {
     final HrRepository repo = ref.read(hrRepositoryProvider);
     final Result<Timesheet> result =
         await SaveTimesheetUseCase(repo)(
       SaveTimesheetParams(payload: payload),
     );
     if (result.isOk) {
-      ref.read(timesheetListControllerProvider.notifier).refresh();
+      unawaited(ref.read(timesheetListControllerProvider.notifier).refresh());
     }
     return result;
   }

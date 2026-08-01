@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NotFoundException, BadRequestException } from "@nestjs/common";
 
@@ -303,9 +302,9 @@ describe("SalesReturnsService", () => {
           inspection: null,
         },
       ];
-      vi.mocked(prisma.returnMerchandiseAuthorization.findMany).mockResolvedValue(
-        mockRmas as never,
-      );
+      vi.mocked(
+        prisma.returnMerchandiseAuthorization.findMany,
+      ).mockResolvedValue(mockRmas as never);
 
       const result = await service.listRMAs("tenant-1");
       expect(result).toHaveLength(1);
@@ -317,13 +316,13 @@ describe("SalesReturnsService", () => {
       vi.mocked(prisma.returnMerchandiseAuthorization.count).mockResolvedValue(
         3 as never,
       );
-      vi.mocked(
-        prisma.returnMerchandiseAuthorization.create,
-      ).mockResolvedValue({
-        id: "rma-new",
-        rmaNumber: "RMA-2026-00004",
-        lines: [{ id: "l1" }],
-      } as never);
+      vi.mocked(prisma.returnMerchandiseAuthorization.create).mockResolvedValue(
+        {
+          id: "rma-new",
+          rmaNumber: "RMA-2026-00004",
+          lines: [{ id: "l1" }],
+        } as never,
+      );
 
       const result = await service.createRMA(
         "tenant-1",
@@ -354,9 +353,7 @@ describe("SalesReturnsService", () => {
         receivedQty: 10,
         condition: "GOOD",
       } as never);
-      vi.mocked(prisma.rMAInspection.upsert).mockResolvedValue(
-        {} as never,
-      );
+      vi.mocked(prisma.rMAInspection.upsert).mockResolvedValue({} as never);
 
       const result = await service.rmaReceiveItem(
         "tenant-1",
@@ -395,9 +392,7 @@ describe("SalesReturnsService", () => {
         id: "cn-new",
         noteNumber: "CN-2026-00011",
       } as never);
-      vi.mocked(prisma.salesReturn.update).mockResolvedValue(
-        {} as never,
-      );
+      vi.mocked(prisma.salesReturn.update).mockResolvedValue({} as never);
 
       const result = await service.createCreditNote(
         "tenant-1",
@@ -441,7 +436,12 @@ describe("SalesReturnsService", () => {
       vi.mocked(prisma.salesReturn.findMany).mockResolvedValue([
         { id: "r1", status: "REFUNDED", totalAmount: 500, reason: "DEFECTIVE" },
         { id: "r2", status: "APPROVED", totalAmount: 200, reason: "DEFECTIVE" },
-        { id: "r3", status: "DRAFT", totalAmount: 100, reason: "BUYER_REMORSE" },
+        {
+          id: "r3",
+          status: "DRAFT",
+          totalAmount: 100,
+          reason: "BUYER_REMORSE",
+        },
       ] as never);
 
       const result = await service.getReturnAnalytics("tenant-1");
@@ -461,8 +461,9 @@ describe("SalesReturnsService", () => {
     it("should filter by period", async () => {
       vi.mocked(prisma.salesReturn.findMany).mockResolvedValue([] as never);
       await service.getReturnAnalytics("tenant-1", "30d");
-      const callWhere = (vi.mocked(prisma.salesReturn.findMany).mock
-        .calls[0][0] as any).where;
+      const callWhere = (
+        vi.mocked(prisma.salesReturn.findMany).mock.calls[0][0] as any
+      ).where;
       expect(callWhere.createdAt).toBeDefined();
       expect(callWhere.createdAt.gte).toBeInstanceOf(Date);
     });

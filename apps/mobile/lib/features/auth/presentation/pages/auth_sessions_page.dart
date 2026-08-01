@@ -1,5 +1,3 @@
-import '../../../../core/error/exceptions.dart';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/design_tokens.dart';
@@ -110,7 +108,7 @@ class _AuthSessionsPageState extends ConsumerState<AuthSessionsPage> {
                                       decoration: BoxDecoration(color: t.primaryLight, borderRadius: Radii.pill),
                                       child: Text('Current', style: TextStyle(color: t.primary, fontSize: TypeScale.xs, fontWeight: TypeScale.medium)),
                                     ),
-                                ]),
+                                ],),
                                 const SizedBox(height: Spacing.x2),
                                 if (location.isNotEmpty)
                                   Text(location, style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
@@ -118,7 +116,7 @@ class _AuthSessionsPageState extends ConsumerState<AuthSessionsPage> {
                                   Text(ip, style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
                                 if (lastActive.isNotEmpty)
                                   Text('Last active: ${_parseDate(lastActive)}',
-                                      style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
+                                      style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
                                 if (!isCurrent) ...<Widget>[
                                   const SizedBox(height: Spacing.x2),
                                   Align(

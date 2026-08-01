@@ -1,7 +1,6 @@
-// @ts-nocheck
-import { Module } from '@nestjs/common';
-import { FinanceEnterpriseService } from './finance-enterprise.service';
-import { FinanceEnterpriseController } from './finance-enterprise.controller';
+import { Module } from "@nestjs/common";
+import { FinanceEnterpriseService } from "./finance-enterprise.service";
+import { FinanceEnterpriseController } from "./finance-enterprise.controller";
 
 @Module({
   controllers: [FinanceEnterpriseController],

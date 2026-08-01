@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Controller,
   Get,
@@ -85,7 +84,11 @@ export class NotificationPrefsController {
   @ApiOperation({ summary: "Update notification preferences" })
   @Permissions("saas.alert.create")
   @Put("preferences")
-  async updateNotificationPreferences(@Req() _req: AuthReq, @ZodBody(updateNotificationPrefsSchema) body: z.infer<typeof updateNotificationPrefsSchema>) {
+  async updateNotificationPreferences(
+    @Req() _req: AuthReq,
+    @ZodBody(updateNotificationPrefsSchema)
+    body: z.infer<typeof updateNotificationPrefsSchema>,
+  ) {
     return { success: true, ...body };
   }
 
@@ -94,7 +97,12 @@ export class NotificationPrefsController {
   @Get("channels")
   async listNotificationChannels(@Req() _req: AuthReq) {
     return [
-      { id: "email", name: "Email", verified: true, address: "user@example.com" },
+      {
+        id: "email",
+        name: "Email",
+        verified: true,
+        address: "user@example.com",
+      },
       { id: "in_app", name: "In-App", verified: true, address: null },
       { id: "push", name: "Push", verified: false, address: null },
       { id: "sms", name: "SMS", verified: false, address: null },
@@ -104,14 +112,21 @@ export class NotificationPrefsController {
   @ApiOperation({ summary: "Update notification channels" })
   @Permissions("saas.alert.create")
   @Put("channels")
-  async updateNotificationChannels(@Req() _req: AuthReq, @ZodBody(updateNotificationChannelsSchema) body: z.infer<typeof updateNotificationChannelsSchema>) {
+  async updateNotificationChannels(
+    @Req() _req: AuthReq,
+    @ZodBody(updateNotificationChannelsSchema)
+    body: z.infer<typeof updateNotificationChannelsSchema>,
+  ) {
     return { success: true, ...body };
   }
 
   @ApiOperation({ summary: "Verify channel" })
   @Permissions("saas.alert.create")
   @Post("channels/verify")
-  async verifyChannel(@Req() _req: AuthReq, @ZodBody(verifyChannelSchema) body: z.infer<typeof verifyChannelSchema>) {
+  async verifyChannel(
+    @Req() _req: AuthReq,
+    @ZodBody(verifyChannelSchema) body: z.infer<typeof verifyChannelSchema>,
+  ) {
     return { success: true, channel: body.channel, verified: true };
   }
 
@@ -119,13 +134,19 @@ export class NotificationPrefsController {
   @Permissions("saas.alert.read")
   @Get("history")
   async getNotificationHistory(@Req() req: AuthReq) {
-    return this.usageAlertsService.getAlertHistory(req.user.tenantId).catch(() => ({ items: [], total: 0 }));
+    return this.usageAlertsService
+      .getAlertHistory(req.user.tenantId)
+      .catch(() => ({ items: [], total: 0 }));
   }
 
   @ApiOperation({ summary: "Send test notification" })
   @Permissions("saas.alert.create")
   @Post("test")
-  async sendTestNotification(@Req() _req: AuthReq, @ZodBody(sendTestNotificationSchema) body: z.infer<typeof sendTestNotificationSchema>) {
+  async sendTestNotification(
+    @Req() _req: AuthReq,
+    @ZodBody(sendTestNotificationSchema)
+    body: z.infer<typeof sendTestNotificationSchema>,
+  ) {
     return { success: true, channel: body.channel, sentAt: new Date() };
   }
 
@@ -139,14 +160,21 @@ export class NotificationPrefsController {
   @ApiOperation({ summary: "Schedule notification" })
   @Permissions("saas.alert.create")
   @Post("scheduled")
-  async scheduleNotification(@Req() _req: AuthReq, @ZodBody(scheduleNotificationSchema) body: z.infer<typeof scheduleNotificationSchema>) {
+  async scheduleNotification(
+    @Req() _req: AuthReq,
+    @ZodBody(scheduleNotificationSchema)
+    body: z.infer<typeof scheduleNotificationSchema>,
+  ) {
     return { success: true, id: "sched_" + Date.now(), ...body };
   }
 
   @ApiOperation({ summary: "Cancel scheduled notification" })
   @Permissions("saas.alert.create")
   @Delete("scheduled/:id")
-  async cancelScheduledNotification(@Req() _req: AuthReq, @Param("id") id: string) {
+  async cancelScheduledNotification(
+    @Req() _req: AuthReq,
+    @Param("id") id: string,
+  ) {
     return { success: true, cancelledId: id };
   }
 
@@ -154,13 +182,23 @@ export class NotificationPrefsController {
   @Permissions("saas.alert.read")
   @Get("digest")
   async getDigestSettings(@Req() _req: AuthReq) {
-    return { enabled: false, frequency: "weekly", time: "09:00", includeBilling: true, includeUsage: true };
+    return {
+      enabled: false,
+      frequency: "weekly",
+      time: "09:00",
+      includeBilling: true,
+      includeUsage: true,
+    };
   }
 
   @ApiOperation({ summary: "Update digest settings" })
   @Permissions("saas.alert.create")
   @Put("digest")
-  async updateDigestSettings(@Req() _req: AuthReq, @ZodBody(updateDigestSettingsSchema) body: z.infer<typeof updateDigestSettingsSchema>) {
+  async updateDigestSettings(
+    @Req() _req: AuthReq,
+    @ZodBody(updateDigestSettingsSchema)
+    body: z.infer<typeof updateDigestSettingsSchema>,
+  ) {
     return { success: true, ...body };
   }
 }

@@ -1,7 +1,6 @@
-// @ts-nocheck
-import { Module } from '@nestjs/common';
-import { StockTakeController } from './stock-take.controller';
-import { StockTakeService } from './stock-take.service';
+import { Module } from "@nestjs/common";
+import { StockTakeController } from "./stock-take.controller";
+import { StockTakeService } from "./stock-take.service";
 
 @Module({
   controllers: [StockTakeController],

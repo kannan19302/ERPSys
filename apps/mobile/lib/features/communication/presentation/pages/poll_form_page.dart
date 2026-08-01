@@ -49,9 +49,9 @@ class _PollFormPageState extends ConsumerState<PollFormPage> {
     setState(() => _saving = true);
 
     // Poll creation logic would go here
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future<void>.delayed(const Duration(milliseconds: 500));
 
-    if (!context.mounted) return;
+    if (!mounted) return;
     setState(() => _saving = false);
     Navigator.of(context).pop();
   }

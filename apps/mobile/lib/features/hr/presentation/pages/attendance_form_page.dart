@@ -1,11 +1,9 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/design_tokens.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecase/result.dart';
-import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/form_fields.dart';
 import '../../domain/entities/hr.dart';
 import '../providers/hr_providers.dart';
@@ -119,8 +117,6 @@ class _AttendanceFormPageState extends ConsumerState<AttendanceFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final Palette t = context.tokens;
-
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEditing ? 'Edit Attendance' : 'Mark Attendance'),

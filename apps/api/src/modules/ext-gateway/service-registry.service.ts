@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { prisma } from "@unerp/database";
 
 export interface ResolvedService {
   appSlug: string;
@@ -36,39 +35,54 @@ export class ServiceRegistryService {
     const key = `${tenantId}:${appSlug}`;
     const hit = this.cache.get(key);
     if (hit && hit.expires > Date.now()) {
-      if (!hit.value) throw new NotFoundException(`App "${appSlug}" is not installed or has no service`);
+      if (!hit.value)
+        throw new NotFoundException(
+          `App "${appSlug}" is not installed or has no service`,
+        );
       return hit.value;
     }
 
     const installed = await prisma.installedApp.findFirst({
-      where: { tenantId, appSlug, status: 'ACTIVE' },
+      where: { tenantId, appSlug, status: "ACTIVE" },
     });
     const serviceConfig = (installed?.serviceConfig ?? null) as any;
     let value: ResolvedService | null = null;
     if (installed && serviceConfig) {
       const baseUrl =
         (serviceConfig.baseUrlEnv && process.env[serviceConfig.baseUrlEnv]) ||
-        process.env[`${appSlug.replace(/-/g, '_').toUpperCase()}_SERVICE_URL`] ||
+        process.env[
+          `${appSlug.replace(/-/g, "_").toUpperCase()}_SERVICE_URL`
+        ] ||
         serviceConfig.defaultBaseUrl;
       if (baseUrl) {
         value = {
           appSlug,
-          baseUrl: String(baseUrl).replace(/\/+$/, ''),
-          scopes: Array.isArray(serviceConfig.scopes) ? serviceConfig.scopes : [],
+          baseUrl: String(baseUrl).replace(/\/+$/, ""),
+          scopes: Array.isArray(serviceConfig.scopes)
+            ? serviceConfig.scopes
+            : [],
           timeoutMs: Number(serviceConfig.timeoutMs) || 15_000,
-          healthcheck: serviceConfig.healthcheck || '/svc/health',
-          events: Array.isArray(serviceConfig.events) ? serviceConfig.events : [],
+          healthcheck: serviceConfig.healthcheck || "/svc/health",
+          events: Array.isArray(serviceConfig.events)
+            ? serviceConfig.events
+            : [],
         };
       }
     }
 
     this.cache.set(key, { value, expires: Date.now() + CACHE_TTL_MS });
-    if (!value) throw new NotFoundException(`App "${appSlug}" is not installed or has no service`);
+    if (!value)
+      throw new NotFoundException(
+        `App "${appSlug}" is not installed or has no service`,
+      );
     return value;
   }
 
   /** Like resolve() but returns null instead of throwing (used by the event dispatcher). */
-  async resolveOrNull(tenantId: string, appSlug: string): Promise<ResolvedService | null> {
+  async resolveOrNull(
+    tenantId: string,
+    appSlug: string,
+  ): Promise<ResolvedService | null> {
     try {
       return await this.resolve(tenantId, appSlug);
     } catch {
@@ -79,7 +93,11 @@ export class ServiceRegistryService {
   /** All service-backed apps installed for a tenant (for event fan-out). */
   async listServiceApps(tenantId: string): Promise<ResolvedService[]> {
     const rows = await prisma.installedApp.findMany({
-      where: { tenantId, status: 'ACTIVE', NOT: { serviceConfig: { equals: null as any } } },
+      where: {
+        tenantId,
+        status: "ACTIVE",
+        NOT: { serviceConfig: { equals: null as any } },
+      },
       select: { appSlug: true },
     });
     const out: ResolvedService[] = [];

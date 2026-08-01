@@ -35,22 +35,22 @@ class EcommerceRemoteDataSourceImpl implements EcommerceRemoteDataSource {
   @override
   Future<Paginated<EcommerceProductModel>> listProducts(ListQuery query) =>
       _client.getPaginated<EcommerceProductModel>(
-        ApiPaths.ecommerceProducts, query, EcommerceProductModel.fromJson);
+        ApiPaths.ecommerceProducts, query, EcommerceProductModel.fromJson,);
 
   @override
   Future<EcommerceProductModel> getProduct(String id) async =>
       EcommerceProductModel.fromJson(
-        await _client.getObject(ApiPaths.ecommerceProduct(id)));
+        await _client.getObject(ApiPaths.ecommerceProduct(id)),);
 
   @override
   Future<EcommerceProductModel> createProduct(Map<String, dynamic> payload) async =>
       EcommerceProductModel.fromJson(
-        await _client.post(ApiPaths.ecommerceProducts, body: payload));
+        await _client.post(ApiPaths.ecommerceProducts, body: payload),);
 
   @override
   Future<EcommerceProductModel> updateProduct(String id, Map<String, dynamic> payload) async =>
       EcommerceProductModel.fromJson(
-        await _client.patch(ApiPaths.ecommerceProduct(id), body: payload));
+        await _client.patch(ApiPaths.ecommerceProduct(id), body: payload),);
 
   @override
   Future<void> deleteProduct(String id) =>
@@ -59,22 +59,22 @@ class EcommerceRemoteDataSourceImpl implements EcommerceRemoteDataSource {
   @override
   Future<Paginated<EcommerceCategoryModel>> listCategories(ListQuery query) =>
       _client.getPaginated<EcommerceCategoryModel>(
-        ApiPaths.ecommerceCategories, query, EcommerceCategoryModel.fromJson);
+        ApiPaths.ecommerceCategories, query, EcommerceCategoryModel.fromJson,);
 
   @override
   Future<EcommerceCategoryModel> getCategory(String id) async =>
       EcommerceCategoryModel.fromJson(
-        await _client.getObject(ApiPaths.ecommerceCategory(id)));
+        await _client.getObject(ApiPaths.ecommerceCategory(id)),);
 
   @override
   Future<EcommerceCategoryModel> createCategory(Map<String, dynamic> payload) async =>
       EcommerceCategoryModel.fromJson(
-        await _client.post(ApiPaths.ecommerceCategories, body: payload));
+        await _client.post(ApiPaths.ecommerceCategories, body: payload),);
 
   @override
   Future<EcommerceCategoryModel> updateCategory(String id, Map<String, dynamic> payload) async =>
       EcommerceCategoryModel.fromJson(
-        await _client.patch(ApiPaths.ecommerceCategory(id), body: payload));
+        await _client.patch(ApiPaths.ecommerceCategory(id), body: payload),);
 
   @override
   Future<void> deleteCategory(String id) =>
@@ -83,17 +83,17 @@ class EcommerceRemoteDataSourceImpl implements EcommerceRemoteDataSource {
   @override
   Future<Paginated<EcommerceOrderModel>> listOrders(ListQuery query) =>
       _client.getPaginated<EcommerceOrderModel>(
-        ApiPaths.ecommerceOrders, query, EcommerceOrderModel.fromJson);
+        ApiPaths.ecommerceOrders, query, EcommerceOrderModel.fromJson,);
 
   @override
   Future<EcommerceOrderModel> getOrder(String id) async =>
       EcommerceOrderModel.fromJson(
-        await _client.getObject(ApiPaths.ecommerceOrder(id)));
+        await _client.getObject(ApiPaths.ecommerceOrder(id)),);
 
   @override
   Future<EcommerceOrderModel> updateOrderStatus(String id, String status) async =>
       EcommerceOrderModel.fromJson(
-        await _client.patch(ApiPaths.ecommerceOrder(id), body: <String, dynamic>{'status': status}));
+        await _client.patch(ApiPaths.ecommerceOrder(id), body: <String, dynamic>{'status': status}),);
 
   @override
   Future<List<EcommerceCartItemModel>> getCart() async {
@@ -107,12 +107,12 @@ class EcommerceRemoteDataSourceImpl implements EcommerceRemoteDataSource {
   @override
   Future<EcommerceCartItemModel> addToCart(Map<String, dynamic> payload) async =>
       EcommerceCartItemModel.fromJson(
-        await _client.post(ApiPaths.ecommerceCart, body: payload));
+        await _client.post(ApiPaths.ecommerceCart, body: payload),);
 
   @override
   Future<EcommerceCartItemModel> updateCartItem(String id, Map<String, dynamic> payload) async =>
       EcommerceCartItemModel.fromJson(
-        await _client.patch(ApiPaths.ecommerceCart, body: <String, dynamic>{'itemId': id, ...payload}));
+        await _client.patch(ApiPaths.ecommerceCart, body: <String, dynamic>{'itemId': id, ...payload}),);
 
   @override
   Future<void> removeFromCart(String id) =>

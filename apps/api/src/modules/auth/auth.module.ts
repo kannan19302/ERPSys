@@ -1,15 +1,8 @@
-// @ts-nocheck
 import { Module } from "@nestjs/common";
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 import { AuthDeepController } from "./auth-deep.controller";
 import { AuthDeepService } from "./auth-deep.service";
-import { AuthDeepExtController } from "./auth-deep-ext.controller";
-import { AuthDeepExtService } from "./auth-deep-ext.service";
-import { AuthDeepV2Controller } from "./auth-deep-v2.controller";
-import { AuthDeepV2Service } from "./auth-deep-v2.service";
-import { AuthDeepV3Controller } from "./auth-deep-v3.controller";
-import { AuthDeepV3Service } from "./auth-deep-v3.service";
 import { OAuthController } from "./oauth.controller";
 import { OAuthService } from "./oauth.service";
 import { SsoController } from "./sso.controller";
@@ -25,9 +18,6 @@ import { PlatformCredentialsModule } from "../../common/platform-credentials/pla
   controllers: [
     AuthController,
     AuthDeepController,
-    AuthDeepExtController,
-    AuthDeepV2Controller,
-    AuthDeepV3Controller,
     OAuthController,
     SsoController,
     OnboardingController,
@@ -35,8 +25,6 @@ import { PlatformCredentialsModule } from "../../common/platform-credentials/pla
   providers: [
     AuthService,
     AuthDeepService,
-    AuthDeepExtService,
-    AuthDeepV3Service,
     OAuthService,
     SsoService,
     ProvisioningService,
@@ -46,9 +34,6 @@ import { PlatformCredentialsModule } from "../../common/platform-credentials/pla
   exports: [
     AuthService,
     AuthDeepService,
-    AuthDeepExtService,
-    AuthDeepV2Service,
-    AuthDeepV3Service,
     OAuthService,
     SsoService,
     ProvisioningService,

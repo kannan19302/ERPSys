@@ -1,9 +1,7 @@
-import '../../../../core/error/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../app/theme/design_tokens.dart';
-import '../../../../core/error/failures.dart';
 import '../../../../core/widgets/paginated_list_view.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/ui_card.dart';
@@ -43,7 +41,7 @@ class _TimesheetListPageState extends ConsumerState<TimesheetListPage> {
     final t = context.tokens;
 
     final double totalHours = state.items.fold<double>(
-      0, (double sum, Timesheet ts) => sum + ts.hours);
+      0, (double sum, Timesheet ts) => sum + ts.hours,);
 
     return Scaffold(
       appBar: AppBar(
@@ -56,7 +54,7 @@ class _TimesheetListPageState extends ConsumerState<TimesheetListPage> {
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
                 .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value)))
+                    value: e.key, child: Text(e.value),),)
                 .toList(),
           ),
         ],
@@ -99,7 +97,7 @@ class _TimesheetListPageState extends ConsumerState<TimesheetListPage> {
                   fontWeight: TypeScale.semibold,
                 ),
               ),
-            ]),
+            ],),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -168,14 +166,14 @@ class _TimesheetTile extends StatelessWidget {
                       Text(ts.projectName!, style: Theme.of(context).textTheme.titleSmall),
                     const SizedBox(height: Spacing.x0_5),
                     Text(Formatters.date(ts.date),
-                        style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
+                        style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
                     if (ts.employeeName != null) ...[
                       const SizedBox(height: Spacing.x0_5),
                       Row(children: [
                         Icon(Icons.person_outline, size: TypeScale.sm, color: t.textTertiary),
                         const SizedBox(width: Spacing.x0_5),
                         Text(ts.employeeName!, style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
-                      ]),
+                      ],),
                     ],
                   ],
                 ),
@@ -184,7 +182,7 @@ class _TimesheetTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text('${ts.hours.toStringAsFixed(1)}h',
-                      style: Theme.of(context).textTheme.labelLarge),
+                      style: Theme.of(context).textTheme.labelLarge,),
                   const SizedBox(height: Spacing.x0_5),
                   UiStatusBadge(label: ts.status, tone: _statusTone(ts.status)),
                 ],

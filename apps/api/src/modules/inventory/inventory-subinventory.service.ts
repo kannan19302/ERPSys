@@ -1,14 +1,27 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
-import { z } from 'zod';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
+import { z } from "zod";
 
 export const createSubinventorySchema = z.object({
   warehouseId: z.string().min(1),
   code: z.string().min(1).max(20),
   name: z.string().min(1).max(100),
-  type: z.enum(['STORAGE', 'RECEIVING', 'SHIPPING', 'QUARANTINE', 'DAMAGE', 'SCRAP', 'INSPECTION']).default('STORAGE'),
+  type: z
+    .enum([
+      "STORAGE",
+      "RECEIVING",
+      "SHIPPING",
+      "QUARANTINE",
+      "DAMAGE",
+      "SCRAP",
+      "INSPECTION",
+    ])
+    .default("STORAGE"),
   description: z.string().optional(),
   isActive: z.boolean().optional(),
 });
@@ -24,14 +37,20 @@ export const transferBetweenSubinventoriesSchema = z.object({
   quantity: z.number().positive(),
   reference: z.string().optional(),
 });
-export type TransferBetweenSubinventoriesInput = z.infer<typeof transferBetweenSubinventoriesSchema>;
+export type TransferBetweenSubinventoriesInput = z.infer<
+  typeof transferBetweenSubinventoriesSchema
+>;
 
 @Injectable()
 export class InventorySubinventoryService {
-
   async listSubinventories(
     tenantId: string,
-    query: { warehouseId?: string; type?: string; page?: number; limit?: number },
+    query: {
+      warehouseId?: string;
+      type?: string;
+      page?: number;
+      limit?: number;
+    },
   ) {
     const page = Math.max(1, query.page ?? 1);
     const limit = Math.min(100, query.limit ?? 20);
@@ -42,18 +61,26 @@ export class InventorySubinventoryService {
     const [data, total] = await Promise.all([
       prisma.subinventory.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         skip: (page - 1) * limit,
         take: limit,
       }),
       prisma.subinventory.count({ where }),
     ]);
-    return { data, total, page, limit, totalPages: Math.max(1, Math.ceil(total / limit)) };
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+    };
   }
 
   async getSubinventory(tenantId: string, id: string) {
-    const record = await prisma.subinventory.findFirst({ where: { id, tenantId } });
-    if (!record) throw new NotFoundException('Subinventory not found');
+    const record = await prisma.subinventory.findFirst({
+      where: { id, tenantId },
+    });
+    if (!record) throw new NotFoundException("Subinventory not found");
     return record;
   }
 
@@ -62,7 +89,9 @@ export class InventorySubinventoryService {
       where: { tenantId, warehouseId: dto.warehouseId, code: dto.code },
     });
     if (existing) {
-      throw new BadRequestException(`Subinventory code '${dto.code}' already exists in this warehouse`);
+      throw new BadRequestException(
+        `Subinventory code '${dto.code}' already exists in this warehouse`,
+      );
     }
     return prisma.subinventory.create({
       data: {
@@ -77,15 +106,29 @@ export class InventorySubinventoryService {
     });
   }
 
-  async updateSubinventory(tenantId: string, id: string, dto: UpdateSubinventoryInput) {
-    const record = await prisma.subinventory.findFirst({ where: { id, tenantId } });
-    if (!record) throw new NotFoundException('Subinventory not found');
+  async updateSubinventory(
+    tenantId: string,
+    id: string,
+    dto: UpdateSubinventoryInput,
+  ) {
+    const record = await prisma.subinventory.findFirst({
+      where: { id, tenantId },
+    });
+    if (!record) throw new NotFoundException("Subinventory not found");
 
     if (dto.code && dto.code !== record.code) {
       const dup = await prisma.subinventory.findFirst({
-        where: { tenantId, warehouseId: dto.warehouseId ?? record.warehouseId, code: dto.code, id: { not: id } },
+        where: {
+          tenantId,
+          warehouseId: dto.warehouseId ?? record.warehouseId,
+          code: dto.code,
+          id: { not: id },
+        },
       });
-      if (dup) throw new BadRequestException(`Subinventory code '${dto.code}' already exists`);
+      if (dup)
+        throw new BadRequestException(
+          `Subinventory code '${dto.code}' already exists`,
+        );
     }
 
     return prisma.subinventory.update({
@@ -102,21 +145,35 @@ export class InventorySubinventoryService {
   }
 
   async deleteSubinventory(tenantId: string, id: string) {
-    const record = await prisma.subinventory.findFirst({ where: { id, tenantId } });
-    if (!record) throw new NotFoundException('Subinventory not found');
-    return prisma.subinventory.update({ where: { id }, data: { isActive: false } });
+    const record = await prisma.subinventory.findFirst({
+      where: { id, tenantId },
+    });
+    if (!record) throw new NotFoundException("Subinventory not found");
+    return prisma.subinventory.update({
+      where: { id },
+      data: { isActive: false },
+    });
   }
 
-  async transferStock(tenantId: string, dto: TransferBetweenSubinventoriesInput) {
+  async transferStock(
+    tenantId: string,
+    dto: TransferBetweenSubinventoriesInput,
+  ) {
     if (dto.fromSubinventoryId === dto.toSubinventoryId) {
-      throw new BadRequestException('Source and destination subinventories must be different');
+      throw new BadRequestException(
+        "Source and destination subinventories must be different",
+      );
     }
 
-    const from = await prisma.subinventory.findFirst({ where: { id: dto.fromSubinventoryId, tenantId } });
-    if (!from) throw new NotFoundException('Source subinventory not found');
+    const from = await prisma.subinventory.findFirst({
+      where: { id: dto.fromSubinventoryId, tenantId },
+    });
+    if (!from) throw new NotFoundException("Source subinventory not found");
 
-    const to = await prisma.subinventory.findFirst({ where: { id: dto.toSubinventoryId, tenantId } });
-    if (!to) throw new NotFoundException('Destination subinventory not found');
+    const to = await prisma.subinventory.findFirst({
+      where: { id: dto.toSubinventoryId, tenantId },
+    });
+    if (!to) throw new NotFoundException("Destination subinventory not found");
 
     const entryNumber = `SUBTR-${Date.now()}`;
     const qty = new Prisma.Decimal(dto.quantity);
@@ -126,13 +183,13 @@ export class InventorySubinventoryService {
         tenantId,
         orgId: tenantId,
         entryNumber,
-        type: 'MATERIAL_TRANSFER',
-        purpose: 'SUBINVENTORY_TRANSFER',
-        status: 'SUBMITTED',
+        type: "MATERIAL_TRANSFER",
+        purpose: "SUBINVENTORY_TRANSFER",
+        status: "SUBMITTED",
         fromWarehouseId: from.warehouseId,
         toWarehouseId: to.warehouseId,
         referenceDoc: dto.reference ?? null,
-        referenceType: 'SUBINVENTORY_TRANSFER',
+        referenceType: "SUBINVENTORY_TRANSFER",
         totalValue: new Prisma.Decimal(0),
         submittedAt: new Date(),
         items: {

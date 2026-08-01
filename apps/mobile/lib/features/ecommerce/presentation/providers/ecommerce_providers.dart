@@ -1,4 +1,3 @@
-import '../../../../core/error/exceptions.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -125,14 +124,14 @@ class EcommerceProductListController extends Notifier<EcommerceProductListState>
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteEcommerceProductUseCase(
-      ref.read(ecommerceRepositoryProvider))(id);
+      ref.read(ecommerceRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<EcommerceProduct>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveEcommerceProductUseCase(
-      ref.read(ecommerceRepositoryProvider))(
+      ref.read(ecommerceRepositoryProvider),)(
       SaveEcommerceProductParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -143,7 +142,7 @@ class EcommerceProductListController extends Notifier<EcommerceProductListState>
 final FutureProviderFamily<EcommerceProduct, String> ecommerceProductDetailProvider =
     FutureProvider.family<EcommerceProduct, String>((Ref ref, String id) async {
   final result = await GetEcommerceProductUseCase(
-    ref.watch(ecommerceRepositoryProvider))(id);
+    ref.watch(ecommerceRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -242,7 +241,7 @@ class EcommerceOrderListController extends Notifier<EcommerceOrderListState> {
 final FutureProviderFamily<EcommerceOrder, String> ecommerceOrderDetailProvider =
     FutureProvider.family<EcommerceOrder, String>((Ref ref, String id) async {
   final result = await GetEcommerceOrderUseCase(
-    ref.watch(ecommerceRepositoryProvider))(id);
+    ref.watch(ecommerceRepositoryProvider),)(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -339,14 +338,14 @@ class EcommerceCategoryListController extends Notifier<EcommerceCategoryListStat
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteEcommerceCategoryUseCase(
-      ref.read(ecommerceRepositoryProvider))(id);
+      ref.read(ecommerceRepositoryProvider),)(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<EcommerceCategory>> saveCategory(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveEcommerceCategoryUseCase(
-      ref.read(ecommerceRepositoryProvider))(
+      ref.read(ecommerceRepositoryProvider),)(
       SaveEcommerceCategoryParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();

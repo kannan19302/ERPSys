@@ -1,7 +1,10 @@
-// @ts-nocheck
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { prisma } from '@unerp/database';
-import { Prisma } from '@prisma/client';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
 
 @Injectable()
 export class ProjectsService {
@@ -12,7 +15,7 @@ export class ProjectsService {
         tasks: true,
         milestones: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -20,31 +23,42 @@ export class ProjectsService {
     const project = await prisma.project.findFirst({
       where: { id, tenantId, deletedAt: null },
       include: {
-        tasks: { orderBy: { createdAt: 'desc' } },
-        milestones: { orderBy: { dueDate: 'asc' } },
+        tasks: { orderBy: { createdAt: "desc" } },
+        milestones: { orderBy: { dueDate: "asc" } },
       },
     });
-    if (!project) throw new NotFoundException('Project not found');
+    if (!project) throw new NotFoundException("Project not found");
     return project;
   }
 
   async createProject(
     tenantId: string,
     orgId: string,
-    dto: { name: string; code: string; description?: string; budget?: number; startDate?: string; endDate?: string; estimatedCost?: number; contractValue?: number },
-    _createdBy: string
+    dto: {
+      name: string;
+      code: string;
+      description?: string;
+      budget?: number;
+      startDate?: string;
+      endDate?: string;
+      estimatedCost?: number;
+      contractValue?: number;
+    },
+    _createdBy: string,
   ) {
     let resolvedOrgId = orgId;
-    if (!orgId || orgId === 'org-system-default') {
+    if (!orgId || orgId === "org-system-default") {
       const org = await prisma.organization.findFirst({ where: { tenantId } });
-      if (!org) throw new BadRequestException('No Organization found for this Tenant.');
+      if (!org)
+        throw new BadRequestException("No Organization found for this Tenant.");
       resolvedOrgId = org.id;
     }
 
     const existing = await prisma.project.findFirst({
       where: { tenantId, orgId: resolvedOrgId, code: dto.code },
     });
-    if (existing) throw new BadRequestException(`Project code ${dto.code} already exists.`);
+    if (existing)
+      throw new BadRequestException(`Project code ${dto.code} already exists.`);
 
     return prisma.project.create({
       data: {
@@ -54,11 +68,15 @@ export class ProjectsService {
         code: dto.code,
         description: dto.description || null,
         budget: dto.budget ? new Prisma.Decimal(dto.budget) : null,
-        estimatedCost: dto.estimatedCost ? new Prisma.Decimal(dto.estimatedCost) : null,
-        contractValue: dto.contractValue ? new Prisma.Decimal(dto.contractValue) : null,
+        estimatedCost: dto.estimatedCost
+          ? new Prisma.Decimal(dto.estimatedCost)
+          : null,
+        contractValue: dto.contractValue
+          ? new Prisma.Decimal(dto.contractValue)
+          : null,
         startDate: dto.startDate ? new Date(dto.startDate) : null,
         endDate: dto.endDate ? new Date(dto.endDate) : null,
-        status: 'PLANNED',
+        status: "PLANNED",
       },
     });
   }
@@ -67,17 +85,25 @@ export class ProjectsService {
     return prisma.task.findMany({
       where: { tenantId, projectId },
       include: { timesheets: true },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
   async createTask(
     tenantId: string,
     projectId: string,
-    dto: { name: string; description?: string; priority?: string; dueDate?: string; assignedToId?: string }
+    dto: {
+      name: string;
+      description?: string;
+      priority?: string;
+      dueDate?: string;
+      assignedToId?: string;
+    },
   ) {
-    const project = await prisma.project.findFirst({ where: { id: projectId, tenantId } });
-    if (!project) throw new NotFoundException('Project not found');
+    const project = await prisma.project.findFirst({
+      where: { id: projectId, tenantId },
+    });
+    if (!project) throw new NotFoundException("Project not found");
 
     return prisma.task.create({
       data: {
@@ -85,10 +111,10 @@ export class ProjectsService {
         projectId,
         name: dto.name,
         description: dto.description || null,
-        priority: dto.priority || 'MEDIUM',
+        priority: dto.priority || "MEDIUM",
         dueDate: dto.dueDate ? new Date(dto.dueDate) : null,
         assignedToId: dto.assignedToId || null,
-        status: 'TODO',
+        status: "TODO",
       },
     });
   }
@@ -96,10 +122,12 @@ export class ProjectsService {
   async logTime(
     tenantId: string,
     taskId: string,
-    dto: { employeeId: string; date: string; hours: number; notes?: string }
+    dto: { employeeId: string; date: string; hours: number; notes?: string },
   ) {
-    const task = await prisma.task.findFirst({ where: { id: taskId, tenantId } });
-    if (!task) throw new NotFoundException('Task not found');
+    const task = await prisma.task.findFirst({
+      where: { id: taskId, tenantId },
+    });
+    if (!task) throw new NotFoundException("Task not found");
 
     return prisma.timesheet.create({
       data: {
@@ -113,9 +141,15 @@ export class ProjectsService {
     });
   }
 
-  async saveBaseline(tenantId: string, projectId: string, dto: { baselineSchedule: string }) {
-    const project = await prisma.project.findFirst({ where: { id: projectId, tenantId } });
-    if (!project) throw new NotFoundException('Project not found');
+  async saveBaseline(
+    tenantId: string,
+    projectId: string,
+    dto: { baselineSchedule: string },
+  ) {
+    const project = await prisma.project.findFirst({
+      where: { id: projectId, tenantId },
+    });
+    if (!project) throw new NotFoundException("Project not found");
 
     return prisma.project.update({
       where: { id: projectId },
@@ -128,7 +162,7 @@ export class ProjectsService {
       where: { id: projectId, tenantId },
       include: { tasks: true },
     });
-    if (!project) throw new NotFoundException('Project not found');
+    if (!project) throw new NotFoundException("Project not found");
 
     const tasks = [...project.tasks].sort((a, b) => {
       const dateA = a.dueDate ? new Date(a.dueDate).getTime() : 0;
@@ -136,18 +170,23 @@ export class ProjectsService {
       return dateA - dateB;
     });
 
-    const criticalPathTasks = tasks.filter(t => t.priority === 'HIGH' || t.priority === 'URGENT');
-    const pathIds = criticalPathTasks.map(t => t.id);
+    const criticalPathTasks = tasks.filter(
+      (t) => t.priority === "HIGH" || t.priority === "URGENT",
+    );
+    const pathIds = criticalPathTasks.map((t) => t.id);
 
     await prisma.project.update({
       where: { id: projectId },
-      data: { criticalPath: JSON.stringify(pathIds), overallHealth: pathIds.length > 3 ? 'AT_RISK' : 'HEALTHY' },
+      data: {
+        criticalPath: JSON.stringify(pathIds),
+        overallHealth: pathIds.length > 3 ? "AT_RISK" : "HEALTHY",
+      },
     });
 
     return {
       projectId,
       criticalPathTaskIds: pathIds,
-      overallHealth: pathIds.length > 3 ? 'AT_RISK' : 'HEALTHY',
+      overallHealth: pathIds.length > 3 ? "AT_RISK" : "HEALTHY",
     };
   }
 
@@ -160,21 +199,28 @@ export class ProjectsService {
    * 7-day window so allocatedHours/capacityHours are comparable.
    */
   async getResourceWorkload(tenantId: string, weekStart?: string) {
-    const start = weekStart ? new Date(weekStart) : (() => {
-      const now = new Date();
-      const day = now.getDay();
-      const diffToMonday = day === 0 ? -6 : 1 - day;
-      const monday = new Date(now);
-      monday.setDate(now.getDate() + diffToMonday);
-      monday.setHours(0, 0, 0, 0);
-      return monday;
-    })();
+    const start = weekStart
+      ? new Date(weekStart)
+      : (() => {
+          const now = new Date();
+          const day = now.getDay();
+          const diffToMonday = day === 0 ? -6 : 1 - day;
+          const monday = new Date(now);
+          monday.setDate(now.getDate() + diffToMonday);
+          monday.setHours(0, 0, 0, 0);
+          return monday;
+        })();
     const end = new Date(start);
     end.setDate(start.getDate() + 7);
 
     const employees = await prisma.employee.findMany({
       where: { tenantId },
-      select: { id: true, firstName: true, lastName: true, department: { select: { name: true } } },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        department: { select: { name: true } },
+      },
     });
 
     const timesheets = await prisma.timesheet.findMany({
@@ -184,13 +230,16 @@ export class ProjectsService {
 
     const CAPACITY_HOURS_PER_WEEK = 40;
 
-    return employees.map(emp => {
-      const empTimesheets = timesheets.filter(ts => ts.employeeId === emp.id);
-      const totalHours = empTimesheets.reduce((sum, ts) => sum + Number(ts.hours), 0);
+    return employees.map((emp) => {
+      const empTimesheets = timesheets.filter((ts) => ts.employeeId === emp.id);
+      const totalHours = empTimesheets.reduce(
+        (sum, ts) => sum + Number(ts.hours),
+        0,
+      );
       return {
         employeeId: emp.id,
         name: `${emp.firstName} ${emp.lastName}`,
-        department: emp.department?.name || 'Unassigned',
+        department: emp.department?.name || "Unassigned",
         capacityHours: CAPACITY_HOURS_PER_WEEK,
         allocatedHours: totalHours,
         utilizationRate: (totalHours / CAPACITY_HOURS_PER_WEEK) * 100,
@@ -210,8 +259,17 @@ export class ProjectsService {
   async getRevenueRecognition(tenantId: string) {
     const projects = await prisma.project.findMany({
       where: { tenantId, deletedAt: null },
-      select: { id: true, name: true, code: true, status: true, budget: true, startDate: true, endDate: true, customerId: true },
-      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        name: true,
+        code: true,
+        status: true,
+        budget: true,
+        startDate: true,
+        endDate: true,
+        customerId: true,
+      },
+      orderBy: { createdAt: "desc" },
     });
 
     const now = new Date();
@@ -228,7 +286,8 @@ export class ProjectsService {
           percentComplete: null,
           recognizedRevenue: 0,
           remainingRevenue: budget,
-          reason: 'Missing budget, start date, or end date — cannot compute a recognition schedule.',
+          reason:
+            "Missing budget, start date, or end date — cannot compute a recognition schedule.",
         };
       }
 
@@ -237,9 +296,9 @@ export class ProjectsService {
       const totalDurationMs = end.getTime() - start.getTime();
 
       let percentComplete: number;
-      if (project.status === 'COMPLETED') {
+      if (project.status === "COMPLETED") {
         percentComplete = 1;
-      } else if (project.status === 'CANCELLED') {
+      } else if (project.status === "CANCELLED") {
         percentComplete = 0;
       } else if (totalDurationMs <= 0) {
         percentComplete = now >= start ? 1 : 0;
@@ -248,7 +307,8 @@ export class ProjectsService {
         percentComplete = Math.min(1, Math.max(0, elapsedMs / totalDurationMs));
       }
 
-      const recognizedRevenue = Math.round(budget * percentComplete * 100) / 100;
+      const recognizedRevenue =
+        Math.round(budget * percentComplete * 100) / 100;
 
       return {
         projectId: project.id,
@@ -270,19 +330,27 @@ export class ProjectsService {
     const portfolios = await prisma.projectPortfolio.findMany({
       where: { tenantId },
       include: { projects: { include: { tasks: true, risks: true } } },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     return portfolios.map((portfolio) => {
       const totalProjects = portfolio.projects.length;
-      const totalBudget = portfolio.projects.reduce((sum, p) => sum + Number(p.budget || 0), 0);
-      const activeProjects = portfolio.projects.filter((p) => p.status === 'ACTIVE').length;
-      const totalRisks = portfolio.projects.reduce((sum, p) => sum + p.risks.length, 0);
-      const openRisks = portfolio.projects.reduce(
-        (sum, p) => sum + p.risks.filter((r) => r.status === 'OPEN').length,
-        0
+      const totalBudget = portfolio.projects.reduce(
+        (sum, p) => sum + Number(p.budget || 0),
+        0,
       );
-      
+      const activeProjects = portfolio.projects.filter(
+        (p) => p.status === "ACTIVE",
+      ).length;
+      const totalRisks = portfolio.projects.reduce(
+        (sum, p) => sum + p.risks.length,
+        0,
+      );
+      const openRisks = portfolio.projects.reduce(
+        (sum, p) => sum + p.risks.filter((r) => r.status === "OPEN").length,
+        0,
+      );
+
       return {
         ...portfolio,
         totalProjects,
@@ -297,12 +365,18 @@ export class ProjectsService {
   async createPortfolio(
     tenantId: string,
     orgId: string,
-    dto: { name: string; description?: string; strategicAlignment?: string; budget?: number }
+    dto: {
+      name: string;
+      description?: string;
+      strategicAlignment?: string;
+      budget?: number;
+    },
   ) {
     let resolvedOrgId = orgId;
-    if (!orgId || orgId === 'org-system-default') {
+    if (!orgId || orgId === "org-system-default") {
       const org = await prisma.organization.findFirst({ where: { tenantId } });
-      if (!org) throw new BadRequestException('No Organization found for this Tenant.');
+      if (!org)
+        throw new BadRequestException("No Organization found for this Tenant.");
       resolvedOrgId = org.id;
     }
 
@@ -312,7 +386,7 @@ export class ProjectsService {
         orgId: resolvedOrgId,
         name: dto.name,
         description: dto.description || null,
-        strategicAlignment: dto.strategicAlignment || 'MEDIUM',
+        strategicAlignment: dto.strategicAlignment || "MEDIUM",
         budget: dto.budget ? new Prisma.Decimal(dto.budget) : null,
       },
     });
@@ -322,17 +396,25 @@ export class ProjectsService {
   async getRisks(tenantId: string, projectId: string) {
     return prisma.projectRisk.findMany({
       where: { tenantId, projectId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
   async createRisk(
     tenantId: string,
     projectId: string,
-    dto: { title: string; description?: string; probability: string; impact: string; mitigationPlan?: string }
+    dto: {
+      title: string;
+      description?: string;
+      probability: string;
+      impact: string;
+      mitigationPlan?: string;
+    },
   ) {
-    const project = await prisma.project.findFirst({ where: { id: projectId, tenantId } });
-    if (!project) throw new NotFoundException('Project not found');
+    const project = await prisma.project.findFirst({
+      where: { id: projectId, tenantId },
+    });
+    if (!project) throw new NotFoundException("Project not found");
 
     return prisma.projectRisk.create({
       data: {
@@ -343,7 +425,7 @@ export class ProjectsService {
         probability: dto.probability,
         impact: dto.impact,
         mitigationPlan: dto.mitigationPlan || null,
-        status: 'OPEN',
+        status: "OPEN",
       },
     });
   }
@@ -351,19 +433,31 @@ export class ProjectsService {
   async updateRisk(
     tenantId: string,
     riskId: string,
-    dto: { title?: string; description?: string; probability?: string; impact?: string; mitigationPlan?: string; status?: string }
+    dto: {
+      title?: string;
+      description?: string;
+      probability?: string;
+      impact?: string;
+      mitigationPlan?: string;
+      status?: string;
+    },
   ) {
-    const risk = await prisma.projectRisk.findFirst({ where: { id: riskId, tenantId } });
-    if (!risk) throw new NotFoundException('Risk item not found');
+    const risk = await prisma.projectRisk.findFirst({
+      where: { id: riskId, tenantId },
+    });
+    if (!risk) throw new NotFoundException("Risk item not found");
 
     return prisma.projectRisk.update({
       where: { id: riskId },
       data: {
         title: dto.title !== undefined ? dto.title : undefined,
-        description: dto.description !== undefined ? dto.description : undefined,
-        probability: dto.probability !== undefined ? dto.probability : undefined,
+        description:
+          dto.description !== undefined ? dto.description : undefined,
+        probability:
+          dto.probability !== undefined ? dto.probability : undefined,
         impact: dto.impact !== undefined ? dto.impact : undefined,
-        mitigationPlan: dto.mitigationPlan !== undefined ? dto.mitigationPlan : undefined,
+        mitigationPlan:
+          dto.mitigationPlan !== undefined ? dto.mitigationPlan : undefined,
         status: dto.status !== undefined ? dto.status : undefined,
       },
     });
@@ -373,17 +467,24 @@ export class ProjectsService {
   async getChangeRequests(tenantId: string, projectId: string) {
     return prisma.changeRequest.findMany({
       where: { tenantId, projectId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
   async createChangeRequest(
     tenantId: string,
     projectId: string,
-    dto: { title: string; description?: string; requestedAmount: number; requestedScheduleDays: number }
+    dto: {
+      title: string;
+      description?: string;
+      requestedAmount: number;
+      requestedScheduleDays: number;
+    },
   ) {
-    const project = await prisma.project.findFirst({ where: { id: projectId, tenantId } });
-    if (!project) throw new NotFoundException('Project not found');
+    const project = await prisma.project.findFirst({
+      where: { id: projectId, tenantId },
+    });
+    if (!project) throw new NotFoundException("Project not found");
 
     return prisma.changeRequest.create({
       data: {
@@ -393,22 +494,29 @@ export class ProjectsService {
         description: dto.description || null,
         requestedAmount: new Prisma.Decimal(dto.requestedAmount),
         requestedScheduleDays: dto.requestedScheduleDays,
-        status: 'PENDING',
+        status: "PENDING",
       },
     });
   }
 
-  async approveChangeRequest(tenantId: string, changeRequestId: string, userId: string) {
+  async approveChangeRequest(
+    tenantId: string,
+    changeRequestId: string,
+    userId: string,
+  ) {
     const cr = await prisma.changeRequest.findFirst({
       where: { id: changeRequestId, tenantId },
     });
-    if (!cr) throw new NotFoundException('Change request not found');
-    if (cr.status !== 'PENDING') throw new BadRequestException('Change request has already been processed');
+    if (!cr) throw new NotFoundException("Change request not found");
+    if (cr.status !== "PENDING")
+      throw new BadRequestException(
+        "Change request has already been processed",
+      );
 
     const updatedCr = await prisma.changeRequest.update({
       where: { id: changeRequestId },
       data: {
-        status: 'APPROVED',
+        status: "APPROVED",
         approvedBy: userId,
         approvedAt: new Date(),
       },
@@ -421,7 +529,7 @@ export class ProjectsService {
     if (project) {
       const currentBudget = Number(project.budget || 0);
       const newBudget = currentBudget + Number(cr.requestedAmount);
-      
+
       let newEndDate: Date | null = null;
       if (project.endDate) {
         newEndDate = new Date(project.endDate);
@@ -446,12 +554,12 @@ export class ProjectsService {
       where: { id: projectId, tenantId },
       include: {
         tasks: {
-          include: { timesheets: true }
-        }
-      }
+          include: { timesheets: true },
+        },
+      },
     });
 
-    if (!project) throw new NotFoundException('Project not found');
+    if (!project) throw new NotFoundException("Project not found");
 
     const totalTasksCount = project.tasks.length;
     const projectBudget = Number(project.budget || 0);
@@ -461,7 +569,7 @@ export class ProjectsService {
     if (totalTasksCount > 0) {
       const taskBudgetShare = projectBudget / totalTasksCount;
       const plannedTasksCount = project.tasks.filter(
-        (t) => t.dueDate && new Date(t.dueDate) <= today
+        (t) => t.dueDate && new Date(t.dueDate) <= today,
       ).length;
       plannedValue = plannedTasksCount * taskBudgetShare;
     } else {
@@ -471,14 +579,19 @@ export class ProjectsService {
     let actualCost = 0;
     const defaultHourlyRate = 50;
     project.tasks.forEach((t) => {
-      const totalHours = t.timesheets.reduce((sum, ts) => sum + Number(ts.hours), 0);
+      const totalHours = t.timesheets.reduce(
+        (sum, ts) => sum + Number(ts.hours),
+        0,
+      );
       actualCost += totalHours * defaultHourlyRate;
     });
 
     let earnedValue = 0;
     if (totalTasksCount > 0) {
       const taskBudgetShare = projectBudget / totalTasksCount;
-      const completedTasksCount = project.tasks.filter((t) => t.status === 'DONE').length;
+      const completedTasksCount = project.tasks.filter(
+        (t) => t.status === "DONE",
+      ).length;
       earnedValue = completedTasksCount * taskBudgetShare;
     }
 
@@ -493,9 +606,13 @@ export class ProjectsService {
 
     let predictiveEndDate = project.endDate;
     if (project.endDate && project.startDate && SPI > 0 && SPI < 1) {
-      const totalDuration = new Date(project.endDate).getTime() - new Date(project.startDate).getTime();
+      const totalDuration =
+        new Date(project.endDate).getTime() -
+        new Date(project.startDate).getTime();
       const stretchedDuration = totalDuration / SPI;
-      predictiveEndDate = new Date(new Date(project.startDate).getTime() + stretchedDuration);
+      predictiveEndDate = new Date(
+        new Date(project.startDate).getTime() + stretchedDuration,
+      );
     }
 
     return {
@@ -513,36 +630,50 @@ export class ProjectsService {
   }
 
   // --- Finance Integration (Invoice Auto-Generation) ---
-  async generateProjectInvoice(tenantId: string, projectId: string, userId: string) {
+  async generateProjectInvoice(
+    tenantId: string,
+    projectId: string,
+    userId: string,
+  ) {
     const project = await prisma.project.findFirst({
       where: { id: projectId, tenantId },
       include: {
         tasks: {
-          include: { timesheets: true }
+          include: { timesheets: true },
         },
         milestones: true,
-      }
+      },
     });
 
-    if (!project) throw new NotFoundException('Project not found');
+    if (!project) throw new NotFoundException("Project not found");
 
     let customerId = project.customerId;
     if (!customerId) {
-      const firstCustomer = await prisma.customer.findFirst({ where: { tenantId } });
-      if (!firstCustomer) throw new BadRequestException('No CRM Customer found to bill this project. Please create a customer first.');
+      const firstCustomer = await prisma.customer.findFirst({
+        where: { tenantId },
+      });
+      if (!firstCustomer)
+        throw new BadRequestException(
+          "No CRM Customer found to bill this project. Please create a customer first.",
+        );
       customerId = firstCustomer.id;
     }
 
     const orgId = project.orgId;
-    const lineItemsData: { description: string; quantity: number; unitPrice: number; totalAmount: number }[] = [];
+    const lineItemsData: {
+      description: string;
+      quantity: number;
+      unitPrice: number;
+      totalAmount: number;
+    }[] = [];
 
     const completedMilestones = project.milestones.filter((m) => m.isCompleted);
     completedMilestones.forEach((m) => {
       lineItemsData.push({
         description: `Project Milestone Completed: ${m.name}`,
         quantity: 1,
-        unitPrice: 1000.00,
-        totalAmount: 1000.00,
+        unitPrice: 1000.0,
+        totalAmount: 1000.0,
       });
     });
 
@@ -554,23 +685,28 @@ export class ProjectsService {
 
     if (billableHours > 0) {
       lineItemsData.push({
-        description: `Project Timesheet Logged Hours (Tasks: ${project.tasks.map(t => t.name).slice(0,2).join(', ')}...)`,
+        description: `Project Timesheet Logged Hours (Tasks: ${project.tasks
+          .map((t) => t.name)
+          .slice(0, 2)
+          .join(", ")}...)`,
         quantity: billableHours,
-        unitPrice: 100.00,
-        totalAmount: billableHours * 100.00,
+        unitPrice: 100.0,
+        totalAmount: billableHours * 100.0,
       });
     }
 
     if (lineItemsData.length === 0) {
-      throw new BadRequestException('No completed milestones or timesheet hours found to bill on this project.');
+      throw new BadRequestException(
+        "No completed milestones or timesheet hours found to bill on this project.",
+      );
     }
 
     const subtotal = lineItemsData.reduce((sum, li) => sum + li.totalAmount, 0);
-    const taxAmount = subtotal * 0.10;
+    const taxAmount = subtotal * 0.1;
     const totalAmount = subtotal + taxAmount;
 
     const count = await prisma.invoice.count({ where: { tenantId, orgId } });
-    const invoiceNumber = `INV-PRJ-${String(count + 1).padStart(4, '0')}`;
+    const invoiceNumber = `INV-PRJ-${String(count + 1).padStart(4, "0")}`;
 
     const invoice = await prisma.invoice.create({
       data: {
@@ -579,14 +715,14 @@ export class ProjectsService {
         customerId,
         invoiceNumber,
         projectId: project.id,
-        status: 'DRAFT',
+        status: "DRAFT",
         dueDate: new Date(new Date().setDate(new Date().getDate() + 30)),
         subtotal: new Prisma.Decimal(subtotal),
         taxAmount: new Prisma.Decimal(taxAmount),
         discountAmount: new Prisma.Decimal(0),
         totalAmount: new Prisma.Decimal(totalAmount),
         paidAmount: new Prisma.Decimal(0),
-        currency: 'USD',
+        currency: "USD",
         notes: `Automatically generated billing for Project: ${project.name} (${project.code})`,
         createdBy: userId,
         lineItems: {
@@ -595,15 +731,15 @@ export class ProjectsService {
             description: li.description,
             quantity: new Prisma.Decimal(li.quantity),
             unitPrice: new Prisma.Decimal(li.unitPrice),
-            taxRate: new Prisma.Decimal(10.00),
-            taxAmount: new Prisma.Decimal(li.totalAmount * 0.10),
-            totalAmount: new Prisma.Decimal(li.totalAmount * 1.10),
-          }))
-        }
+            taxRate: new Prisma.Decimal(10.0),
+            taxAmount: new Prisma.Decimal(li.totalAmount * 0.1),
+            totalAmount: new Prisma.Decimal(li.totalAmount * 1.1),
+          })),
+        },
       },
       include: {
         lineItems: true,
-      }
+      },
     });
 
     return invoice;
@@ -614,15 +750,17 @@ export class ProjectsService {
   async createCostEntry(
     tenantId: string,
     projectId: string,
-    dto: { type: string; amount: number; date: string; description?: string }
+    dto: { type: string; amount: number; date: string; description?: string },
   ) {
     const project = await prisma.project.findFirst({
       where: { id: projectId, tenantId, deletedAt: null },
     });
-    if (!project) throw new NotFoundException('Project not found');
+    if (!project) throw new NotFoundException("Project not found");
 
-    if (!['LABOR', 'MATERIAL', 'OVERHEAD'].includes(dto.type)) {
-      throw new BadRequestException('Invalid cost entry type. Must be LABOR, MATERIAL, or OVERHEAD.');
+    if (!["LABOR", "MATERIAL", "OVERHEAD"].includes(dto.type)) {
+      throw new BadRequestException(
+        "Invalid cost entry type. Must be LABOR, MATERIAL, or OVERHEAD.",
+      );
     }
 
     return prisma.projectCostEntry.create({
@@ -641,11 +779,11 @@ export class ProjectsService {
     const project = await prisma.project.findFirst({
       where: { id: projectId, tenantId, deletedAt: null },
     });
-    if (!project) throw new NotFoundException('Project not found');
+    if (!project) throw new NotFoundException("Project not found");
 
     return prisma.projectCostEntry.findMany({
       where: { tenantId, projectId },
-      orderBy: { date: 'desc' },
+      orderBy: { date: "desc" },
     });
   }
 
@@ -653,7 +791,7 @@ export class ProjectsService {
     const entry = await prisma.projectCostEntry.findFirst({
       where: { id, tenantId },
     });
-    if (!entry) throw new NotFoundException('Cost entry not found');
+    if (!entry) throw new NotFoundException("Cost entry not found");
 
     return prisma.projectCostEntry.delete({
       where: { id },
@@ -670,18 +808,18 @@ export class ProjectsService {
         },
       },
     });
-    if (!project) throw new NotFoundException('Project not found');
+    if (!project) throw new NotFoundException("Project not found");
 
     const laborCost = project.costEntries
-      .filter((e) => e.type === 'LABOR')
+      .filter((e) => e.type === "LABOR")
       .reduce((sum, e) => sum + Number(e.amount), 0);
 
     const materialCost = project.costEntries
-      .filter((e) => e.type === 'MATERIAL')
+      .filter((e) => e.type === "MATERIAL")
       .reduce((sum, e) => sum + Number(e.amount), 0);
 
     const overheadCost = project.costEntries
-      .filter((e) => e.type === 'OVERHEAD')
+      .filter((e) => e.type === "OVERHEAD")
       .reduce((sum, e) => sum + Number(e.amount), 0);
 
     const totalCost = laborCost + materialCost + overheadCost;
@@ -689,16 +827,24 @@ export class ProjectsService {
     const contractValue = Number(project.contractValue || project.budget || 0);
 
     let percentComplete = 0;
-    if (project.status === 'COMPLETED') {
+    if (project.status === "COMPLETED") {
       percentComplete = 100;
     } else if (estimatedCost > 0) {
-      percentComplete = Math.min(100, Math.max(0, (totalCost / estimatedCost) * 100));
+      percentComplete = Math.min(
+        100,
+        Math.max(0, (totalCost / estimatedCost) * 100),
+      );
     }
 
-    const recognizedRevenue = Math.round((percentComplete / 100) * contractValue * 100) / 100;
+    const recognizedRevenue =
+      Math.round((percentComplete / 100) * contractValue * 100) / 100;
 
-    const billedAmount = project.invoices.reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
-    const overUnderBilling = Math.round((recognizedRevenue - billedAmount) * 100) / 100;
+    const billedAmount = project.invoices.reduce(
+      (sum, inv) => sum + Number(inv.totalAmount),
+      0,
+    );
+    const overUnderBilling =
+      Math.round((recognizedRevenue - billedAmount) * 100) / 100;
 
     return {
       projectId: project.id,
@@ -715,7 +861,12 @@ export class ProjectsService {
       recognizedRevenue,
       billedAmount,
       overUnderBilling,
-      billingStatus: overUnderBilling > 0 ? 'UNDERBILLED' : overUnderBilling < 0 ? 'OVERBILLED' : 'IN_BALANCE',
+      billingStatus:
+        overUnderBilling > 0
+          ? "UNDERBILLED"
+          : overUnderBilling < 0
+            ? "OVERBILLED"
+            : "IN_BALANCE",
     };
   }
 
@@ -728,37 +879,47 @@ export class ProjectsService {
           where: { deletedAt: null },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     return projects.map((project) => {
       const laborCost = project.costEntries
-        .filter((e) => e.type === 'LABOR')
+        .filter((e) => e.type === "LABOR")
         .reduce((sum, e) => sum + Number(e.amount), 0);
 
       const materialCost = project.costEntries
-        .filter((e) => e.type === 'MATERIAL')
+        .filter((e) => e.type === "MATERIAL")
         .reduce((sum, e) => sum + Number(e.amount), 0);
 
       const overheadCost = project.costEntries
-        .filter((e) => e.type === 'OVERHEAD')
+        .filter((e) => e.type === "OVERHEAD")
         .reduce((sum, e) => sum + Number(e.amount), 0);
 
       const totalCost = laborCost + materialCost + overheadCost;
       const estimatedCost = Number(project.estimatedCost || 0);
-      const contractValue = Number(project.contractValue || project.budget || 0);
+      const contractValue = Number(
+        project.contractValue || project.budget || 0,
+      );
 
       let percentComplete = 0;
-      if (project.status === 'COMPLETED') {
+      if (project.status === "COMPLETED") {
         percentComplete = 100;
       } else if (estimatedCost > 0) {
-        percentComplete = Math.min(100, Math.max(0, (totalCost / estimatedCost) * 100));
+        percentComplete = Math.min(
+          100,
+          Math.max(0, (totalCost / estimatedCost) * 100),
+        );
       }
 
-      const recognizedRevenue = Math.round((percentComplete / 100) * contractValue * 100) / 100;
+      const recognizedRevenue =
+        Math.round((percentComplete / 100) * contractValue * 100) / 100;
 
-      const billedAmount = project.invoices.reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
-      const overUnderBilling = Math.round((recognizedRevenue - billedAmount) * 100) / 100;
+      const billedAmount = project.invoices.reduce(
+        (sum, inv) => sum + Number(inv.totalAmount),
+        0,
+      );
+      const overUnderBilling =
+        Math.round((recognizedRevenue - billedAmount) * 100) / 100;
 
       return {
         projectId: project.id,
@@ -775,9 +936,13 @@ export class ProjectsService {
         recognizedRevenue,
         billedAmount,
         overUnderBilling,
-        billingStatus: overUnderBilling > 0 ? 'UNDERBILLED' : overUnderBilling < 0 ? 'OVERBILLED' : 'IN_BALANCE',
+        billingStatus:
+          overUnderBilling > 0
+            ? "UNDERBILLED"
+            : overUnderBilling < 0
+              ? "OVERBILLED"
+              : "IN_BALANCE",
       };
     });
   }
 }
-

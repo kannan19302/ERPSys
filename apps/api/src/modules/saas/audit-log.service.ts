@@ -1,10 +1,11 @@
-// @ts-nocheck
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 
 @Injectable()
 export class AuditLogService {
-  public get db(): any { return prisma; }
+  public get db(): any {
+    return prisma;
+  }
   async logAction(
     tenantId: string,
     action: string,
@@ -19,7 +20,7 @@ export class AuditLogService {
         action,
         resource,
         resourceId,
-        details: details as any ?? {},
+        details: (details as any) ?? {},
         ipAddress,
       },
     });
@@ -36,8 +37,12 @@ export class AuditLogService {
     if (filters.action) where.action = filters.action;
     if (filters.from || filters.to) {
       where.createdAt = {};
-      if (filters.from) (where.createdAt as Record<string, unknown>).gte = new Date(filters.from);
-      if (filters.to) (where.createdAt as Record<string, unknown>).lte = new Date(filters.to);
+      if (filters.from)
+        (where.createdAt as Record<string, unknown>).gte = new Date(
+          filters.from,
+        );
+      if (filters.to)
+        (where.createdAt as Record<string, unknown>).lte = new Date(filters.to);
     }
 
     const [items, total] = await Promise.all([
@@ -54,7 +59,9 @@ export class AuditLogService {
   }
 
   async getAuditLog(tenantId: string, id: string) {
-    const log = await prisma.tenantAuditLog.findFirst({ where: { id, tenantId } });
+    const log = await prisma.tenantAuditLog.findFirst({
+      where: { id, tenantId },
+    });
     if (!log) throw new NotFoundException("Audit log entry not found");
     return log;
   }
@@ -67,8 +74,12 @@ export class AuditLogService {
     const where: Record<string, unknown> = { tenantId };
     if (filters.from || filters.to) {
       where.createdAt = {};
-      if (filters.from) (where.createdAt as Record<string, unknown>).gte = new Date(filters.from);
-      if (filters.to) (where.createdAt as Record<string, unknown>).lte = new Date(filters.to);
+      if (filters.from)
+        (where.createdAt as Record<string, unknown>).gte = new Date(
+          filters.from,
+        );
+      if (filters.to)
+        (where.createdAt as Record<string, unknown>).lte = new Date(filters.to);
     }
 
     const logs = await prisma.tenantAuditLog.findMany({
@@ -77,16 +88,27 @@ export class AuditLogService {
     });
 
     if (format === "json" || format === "JSON") {
-      return { format: "JSON", data: JSON.stringify(logs), filename: `audit-log-${tenantId}.json` };
+      return {
+        format: "JSON",
+        data: JSON.stringify(logs),
+        filename: `audit-log-${tenantId}.json`,
+      };
     }
 
-    const header = "id,tenantId,action,resource,resourceId,details,ipAddress,createdAt";
-    const rows = logs.map((l) =>
-      `"${l.id}","${l.tenantId}","${l.action}","${l.resource ?? ""}","${l.resourceId ?? ""}","${JSON.stringify(l.details).replace(/"/g, '""')}","${l.ipAddress ?? ""}","${l.createdAt.toISOString()}"`,
+    const header =
+      "id,tenantId,action,resource,resourceId,details,ipAddress,createdAt";
+    const rows = logs.map(
+      (l) =>
+        `"${l.id}","${l.tenantId}","${l.action}","${l.resource ?? ""}","${l.resourceId ?? ""}","${JSON.stringify(l.details).replace(/"/g, '""')}","${l.ipAddress ?? ""}","${l.createdAt.toISOString()}"`,
     );
     const csv = [header, ...rows].join("\n");
 
-    return { format: "CSV", data: csv, filename: `audit-log-${tenantId}.csv`, rowCount: logs.length };
+    return {
+      format: "CSV",
+      data: csv,
+      filename: `audit-log-${tenantId}.csv`,
+      rowCount: logs.length,
+    };
   }
 
   async getAuditStats(tenantId: string) {
@@ -105,7 +127,10 @@ export class AuditLogService {
 
     return {
       totalEntries: total,
-      byAction: actionGroups.map((g) => ({ action: g.action, count: g._count })),
+      byAction: actionGroups.map((g) => ({
+        action: g.action,
+        count: g._count,
+      })),
       mostRecentEntry: recent,
     };
   }

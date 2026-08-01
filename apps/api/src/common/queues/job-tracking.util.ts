@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { Queue } from 'bullmq';
-import { prisma } from '@unerp/database';
+import { Queue } from "bullmq";
+import { prisma } from "@unerp/database";
 
 /**
  * Connects the admin "Background Jobs" UI (which reads the `BackgroundJob` Prisma table)
@@ -34,7 +33,7 @@ export async function enqueueTrackedJob(
       jobType: params.jobType,
       bullJobId,
       payload: params.payload as any,
-      status: 'PENDING',
+      status: "PENDING",
       priority: params.priority ?? 0,
     },
   });
@@ -51,7 +50,7 @@ export async function syncBackgroundJobStatus(
   queueName: string,
   bullJobId: string,
   update: {
-    status: 'ACTIVE' | 'COMPLETED' | 'FAILED';
+    status: "ACTIVE" | "COMPLETED" | "FAILED";
     result?: unknown;
     error?: string;
   },
@@ -68,9 +67,15 @@ export async function syncBackgroundJobStatus(
       status: update.status,
       result: update.result !== undefined ? (update.result as any) : undefined,
       error: update.error,
-      startedAt: update.status === 'ACTIVE' ? (existing.startedAt ?? now) : existing.startedAt,
-      completedAt: update.status === 'COMPLETED' || update.status === 'FAILED' ? now : existing.completedAt,
-      attempts: { increment: update.status === 'FAILED' ? 1 : 0 },
+      startedAt:
+        update.status === "ACTIVE"
+          ? (existing.startedAt ?? now)
+          : existing.startedAt,
+      completedAt:
+        update.status === "COMPLETED" || update.status === "FAILED"
+          ? now
+          : existing.completedAt,
+      attempts: { increment: update.status === "FAILED" ? 1 : 0 },
     },
   });
 }
