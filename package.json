@@ -66,7 +66,7 @@
     "debt:report": "node scripts/ci/check-suppressions.mjs --report && node scripts/ci/check-policy.mjs"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.31.0",
+    "@changesets/cli": "^2.31.1",
     "@commitlint/cli": "^19.6.0",
     "@commitlint/config-conventional": "^19.6.0",
     "@next/eslint-plugin-next": "^15.1.0",
