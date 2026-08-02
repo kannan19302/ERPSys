@@ -12,11 +12,11 @@
  */
 export function formatCurrency(
   amount: number,
-  currency: string = 'USD',
-  locale: string = 'en-US',
+  currency: string = "USD",
+  locale: string = "en-US",
 ): string {
   return new Intl.NumberFormat(locale, {
-    style: 'currency',
+    style: "currency",
     currency,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -37,7 +37,7 @@ export function generateDocumentNumber(
   year?: number,
 ): string {
   const yr = year ?? new Date().getFullYear();
-  const seq = String(sequence).padStart(4, '0');
+  const seq = String(sequence).padStart(4, "0");
   return `${prefix}-${yr}-${seq}`;
 }
 
@@ -49,7 +49,11 @@ export function generateDocumentNumber(
  * @param limit - Items per page
  * @returns Pagination meta object
  */
-export function calculatePagination(total: number, page: number, limit: number) {
+export function calculatePagination(
+  total: number,
+  page: number,
+  limit: number,
+) {
   return {
     page,
     limit,
@@ -69,37 +73,83 @@ export function parsePermission(permission: string): {
   resource: string;
   action: string;
 } {
-  const parts = permission.split('.');
+  const parts = permission.split(".");
   if (parts.length !== 3) {
-    throw new Error(`Invalid permission format: ${permission}. Expected "module.resource.action"`);
+    throw new Error(
+      `Invalid permission format: ${permission}. Expected "module.resource.action"`,
+    );
   }
   const [module, resource, action] = parts;
   return { module: module!, resource: resource!, action: action! };
 }
 
 /**
+ * Permission namespaces that belong to the CONTROL PLANE — the SaaS provider's
+ * own operations (tenant lifecycle, platform billing, licensing, cross-tenant
+ * analytics). See docs/PLATFORM_ARCHITECTURE.md § 3.
+ *
+ * These may only ever be granted EXPLICITLY, by exact code or by a wildcard
+ * that is itself inside the namespace (`system.*`, `platform.tenant.*`). A
+ * tenant-scoped wildcard must never reach them.
+ *
+ * Why this exists: every tenant's first user is seeded with the `SUPER_ADMIN`
+ * role carrying `permissions: ["*"]` (see the registration flow in
+ * apps/api/src/modules/auth/auth.service.ts). Before this guard, that bare `*`
+ * satisfied `system.tenant.read` — the permission protecting
+ * `SuperAdminController`, which is `@SkipTenantScope()` and deliberately
+ * aggregates across every tenant. Any customer's own administrator could
+ * therefore enumerate and modify every tenant on the platform. `*` means
+ * "everything in MY tenant", never "everything on the platform".
+ */
+export const CONTROL_PLANE_NAMESPACES = ["system", "platform"] as const;
+
+function isControlPlanePermission(permission: string): boolean {
+  return CONTROL_PLANE_NAMESPACES.some(
+    (ns) => permission === ns || permission.startsWith(`${ns}.`),
+  );
+}
+
+/**
  * Checks if a user has a specific permission based on their roles.
+ *
+ * Tenant-scoped grants never confer control-plane authority: a grant only
+ * satisfies a control-plane permission when the grant is itself scoped to a
+ * control-plane namespace.
  *
  * @param userPermissions - Array of permission strings from user's roles
  * @param requiredPermission - The permission to check
  * @returns True if the user has the permission
  */
-export function hasPermission(userPermissions: string[], requiredPermission: string): boolean {
+export function hasPermission(
+  userPermissions: string[],
+  requiredPermission: string,
+): boolean {
+  const requiresControlPlane = isControlPlanePermission(requiredPermission);
+
   return userPermissions.some((p) => {
-    // Exact match
+    // Exact match. Safe for control-plane codes too: an exact grant is explicit.
     if (p === requiredPermission) return true;
+
+    // A control-plane permission can only be satisfied by a grant that is
+    // itself inside a control-plane namespace. This is what stops a bare `*`
+    // or a tenant wildcard from crossing the plane boundary.
+    if (requiresControlPlane && !isControlPlanePermission(p)) return false;
 
     // Wildcard match: "finance.*" matches "finance.invoice.create", but must
     // respect the "." boundary — otherwise "finance.invoice.*" would also
     // match an unrelated permission like "finance.invoiceapproval.create"
     // just because the string happens to start with the same prefix.
-    if (p.endsWith('.*')) {
+    if (p.endsWith(".*")) {
       const prefix = p.slice(0, -2);
-      return requiredPermission === prefix || requiredPermission.startsWith(`${prefix}.`);
+      return (
+        requiredPermission === prefix ||
+        requiredPermission.startsWith(`${prefix}.`)
+      );
     }
 
-    // Super admin: "*" matches everything
-    if (p === '*') return true;
+    // Tenant super admin: "*" matches everything within the tenant. The
+    // control-plane check above has already excluded platform scope.
+    if (p === "*") return true;
 
     return false;
   });
@@ -130,10 +180,10 @@ export function slugify(text: string): string {
   return text
     .toLowerCase()
     .trim()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/[\s_]+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
 }
 
 /**
@@ -145,7 +195,7 @@ export function slugify(text: string): string {
  */
 export function truncate(text: string, maxLength: number = 100): string {
   if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength - 3) + '...';
+  return text.slice(0, maxLength - 3) + "...";
 }
 
 /**
@@ -160,9 +210,9 @@ export function getFullName(firstName: string, lastName: string): string {
  */
 export function getInitials(name: string): string {
   return name
-    .split(' ')
+    .split(" ")
     .filter(Boolean)
-    .map((word) => word[0]?.toUpperCase() ?? '')
+    .map((word) => word[0]?.toUpperCase() ?? "")
     .slice(0, 2)
-    .join('');
+    .join("");
 }
