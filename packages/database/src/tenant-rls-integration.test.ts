@@ -25,7 +25,50 @@ let testOrgIdA: string;
 let testOrgIdB: string;
 let isSuperuser = false;
 
+/**
+ * These tests prove a database-level guarantee, so they need a live database.
+ * A developer machine usually has none, and previously the suite failed at the
+ * first query in `beforeAll` with PrismaClientInitializationError — turning
+ * `pnpm verify` red for an environmental reason and training people to ignore
+ * a red test run. That is the failure mode this repository cares most about.
+ *
+ * So: skip cleanly when the database is unreachable, and NEVER skip in CI.
+ * This mirrors how scripts/ci/verify.mjs already treats the RLS gate
+ * (`optional: true` locally, a hard blocking job in CI). If the database is
+ * missing in CI, that is an infrastructure failure and must fail loudly rather
+ * than silently pass — otherwise the tenant-isolation proof, which is the only
+ * mechanical evidence of tenant isolation, could evaporate unnoticed.
+ *
+ * The probe runs at module scope, before `describe` registration, so the
+ * suites can be skipped declaratively rather than each test guarding itself.
+ */
+const databaseAvailable = await (async (): Promise<boolean> => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    return true;
+  } catch (error) {
+    if (process.env.CI) {
+      throw new Error(
+        "RLS proof suite requires a database and none was reachable in CI. " +
+          "This suite is the only proof of tenant isolation; refusing to skip it. " +
+          `Underlying error: ${(error as Error).message}`,
+      );
+    }
+    console.warn(
+      "\n  [skip] RLS proof suite — no database reachable.\n" +
+        "         Start one with: docker compose -f docker-compose.dev.yml up -d postgres\n" +
+        "         CI runs this suite as a hard, non-skippable gate.\n",
+    );
+    return false;
+  }
+})();
+
+/** Every suite in this file is database-bound. */
+const describeDb = describe.skipIf(!databaseAvailable);
+
 beforeAll(async () => {
+  if (!databaseAvailable) return;
+
   // Clean up any previous test data (order matters for FK constraints)
   await prisma.$executeRawUnsafe(
     `DELETE FROM "customers" WHERE "tenant_id" IN ($1, $2)`,
@@ -69,7 +112,7 @@ beforeAll(async () => {
   });
 });
 
-describe("RLS: Role and policy baseline", () => {
+describeDb("RLS: Role and policy baseline", () => {
   it("runs under a non-bypass role (unerp_api expected)", async () => {
     const [row] = await prisma.$queryRawUnsafe<
       Array<{ rolsuper: boolean; rolbypassrls: boolean }>
@@ -133,7 +176,7 @@ describe("RLS: Role and policy baseline", () => {
   });
 });
 
-describe("RLS: Two-tenant data isolation", () => {
+describeDb("RLS: Two-tenant data isolation", () => {
   it("creates test data for tenant A and tenant B under tenant sessions", async () => {
     await runWithTenantSession(
       { tenantId: TENANT_A, userId: USER_A },
@@ -254,7 +297,7 @@ describe("RLS: Two-tenant data isolation", () => {
   });
 });
 
-describe("RLS: No-context returns no rows", () => {
+describeDb("RLS: No-context returns no rows", () => {
   it("returns no rows when querying outside a tenant session", async () => {
     // Without a tenant session, the Prisma extension does NOT set
     // app.current_tenant_id. When connected as the non-bypass role
@@ -276,7 +319,7 @@ describe("RLS: No-context returns no rows", () => {
   });
 });
 
-describe("RLS: Spoofed tenant_id prevented", () => {
+describeDb("RLS: Spoofed tenant_id prevented", () => {
   it("session tenant_id overrides caller-supplied value", async () => {
     await runWithTenantSession(
       { tenantId: TENANT_A, userId: USER_A },
@@ -315,7 +358,7 @@ describe("RLS: Spoofed tenant_id prevented", () => {
   });
 });
 
-describe("RLS: Concurrent tenant isolation", () => {
+describeDb("RLS: Concurrent tenant isolation", () => {
   it("sequential A→B queries use separate tenant contexts", async () => {
     const resultsA: string[] = [];
     const resultsB: string[] = [];
@@ -343,7 +386,7 @@ describe("RLS: Concurrent tenant isolation", () => {
   });
 });
 
-describe("RLS: Write isolation (update and delete)", () => {
+describeDb("RLS: Write isolation (update and delete)", () => {
   it("tenant A cannot update tenant B rows", async () => {
     await runWithTenantSession(
       { tenantId: TENANT_A, userId: USER_A },
