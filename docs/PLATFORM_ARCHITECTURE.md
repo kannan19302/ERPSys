@@ -1015,6 +1015,42 @@ manifest, not fifteen repositories.**
 4. **Every extraction preserves history** (`git filter-repo`) and is tagged at the extraction
    point. Every phase is independently revertable.
 
+### Programme status — 2026-08-03
+
+Measured, not asserted. Every "done" below is backed by a gate that passes and, where the item
+was a defect, by a gate that was proven able to fail.
+
+| Item                                                | At `v1.0.0`        | Now                | Status                   |
+| :-------------------------------------------------- | :----------------- | :----------------- | :----------------------- |
+| `@ts-nocheck`                                       | 3,241 (100%)       | **0**              | ✅ done, baseline locked |
+| `apps/api` typecheck                                | not runnable       | **0 errors**       | ✅                       |
+| Full `pnpm verify`                                  | red, unpushable    | green              | ✅                       |
+| explicit `any`                                      | 15,483 (over base) | 14,319             | 🟡 ratcheting            |
+| Hardcoded hex                                       | 1,625 (over base)  | 1,321              | 🟡 ratcheting            |
+| Fabricated endpoints                                | 2,411              | **0**              | ✅ 17,321 lines removed  |
+| Unguarded controller routes                         | 1,889              | 589                | 🟡 ratcheting            |
+| **Cross-tenant escalation via tenant `*` wildcard** | **exploitable**    | **closed + gated** | ✅                       |
+| **Cross-tenant escalation via `admin.tenant.*`**    | **exploitable**    | **closed + gated** | ✅                       |
+| Control-plane boundary enforced in code             | none               | 2 layers           | 🟡 Phase 1 partial       |
+| `Float` money fields                                | 92                 | 29 (mostly rates)  | 🟡 needs a database      |
+| Unsafe raw SQL                                      | 1 (reviewed)       | 1 (reviewed)       | ✅ documented exception  |
+| RLS coverage 1,029/1,029                            | unverified         | unverified locally | ⛔ needs a database      |
+| `apps/console` extraction                           | —                  | not started        | ⛔ Phase 1 remainder     |
+| Phases 2–6                                          | —                  | not started        | ⛔                       |
+
+**Phase 1 is partially delivered.** The control-plane _boundary_ is now enforced in code
+(reserved namespaces, `ControlPlaneGuard`, two hard CI gates). The control-plane _deployable_ —
+`apps/console` on its own origin, realm, and ingress — is not.
+
+**Two items are blocked on infrastructure, not on decisions:** RLS coverage verification and the
+`Float`→`Decimal` migrations both require a running PostgreSQL, which was unavailable in this
+environment. They are the first work to pick up once a database is reachable.
+
+**The control plane is currently fail-closed.** No role grants `system.*`, so platform-operator
+endpoints are unreachable by anyone. That is the correct posture; provisioning platform-staff
+roles — outside tenant role seeding, which the new gate now forbids — is a prerequisite for the
+console.
+
 ### Phase 0 — Foundation restoration _(in flight — unchanged, blocking)_
 
 R1 type-safety ratchet · R3 close 364 RLS gaps · R4 CI/CD · R5 hygiene · R7 supply chain ·
