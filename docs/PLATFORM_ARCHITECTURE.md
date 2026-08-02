@@ -148,12 +148,38 @@ permission decorator at all.
 > means "everything in _my_ tenant", never "everything on the platform". Six regression tests
 > cover the escalation path.
 >
-> **This is the argument for Phase 1 in one incident.** A permission string was the only thing
-> separating a customer from platform-global control, and a single wildcard defeated it. After
-> Phase 1 the separation is network, origin, IdP realm, and guard — four independent layers, none
-> of which a permission-matching bug can cross. It is also the argument for the § 4.2 repository
-> split: once the console is its own deployable, a tenant session cannot reach control-plane code
-> even if the authorization logic is wrong again.
+> #### 🔴 A second, independent path — also confirmed and fixed
+>
+> Fixing the first one immediately exposed a second. `TenantLifecycleController` is
+> `@SkipTenantScope()` and **every route takes a `tenantId` straight from the URL**, yet it was
+> guarded by `admin.tenant.export / suspend / unsuspend / offboard / purge`.
+>
+> `admin.*` is a **tenant** namespace, and the seeded `ADMIN` role carries exactly that grant. So
+> any customer's _ordinary_ admin — not even their super admin — could suspend, fully export,
+> offboard or purge any other tenant on the platform by id. `export` is the worst: a complete data
+> export of an arbitrary tenant.
+>
+> **The reserved-namespace fix above did not close this**, because `admin.*` is not a
+> control-plane namespace. One wrong permission string was enough to reopen the hole — which is
+> the whole argument for not relying on a string.
+>
+> **Fix:** rescoped to `system.tenant.*`, plus a new `ControlPlaneGuard` applied to all three
+> `@SkipTenantScope()` controllers. For any cross-tenant handler it fails closed when no
+> permission is declared, **rejects any cross-tenant handler guarded by a tenant-scoped code** —
+> making this defect unrepresentable rather than merely fixed — and audit-logs grants and denials.
+>
+> #### Why this is the argument for Phase 1, in two incidents
+>
+> A permission string was the only thing separating a customer from platform-global control. A
+> wildcard defeated it; fixing that, a mis-scoped code defeated it again. Both were single points
+> of failure in application code.
+>
+> The layers now stand at: (1) reserved namespace in permission matching, (2) `ControlPlaneGuard`
+> asserting the boundary structurally. Phase 1 adds (3) separate origin, IdP realm, and restricted
+> ingress. The § 4.2 repository split adds (4): once the console is its own deployable,
+> **tenant-plane code cannot link against control-plane handlers at all**, and no authorization
+> bug can reach them. That is the difference between a boundary that is enforced and one that is
+> merely intended.
 
 ### 1.3 Naming entropy is a load-bearing signal
 

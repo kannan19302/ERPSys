@@ -56,6 +56,66 @@ const read = (f) => {
 
 const HARD = [
   {
+    id: 'control-plane-seeded-to-tenant',
+    label: 'Control-plane permission granted by a seeded tenant role',
+    why:
+      'Tenant roles must never carry system.*/platform.* grants. A tenant role that does ' +
+      'hands every customer administrator platform-global authority — this was a real, ' +
+      'confirmed escalation (PLATFORM_ARCHITECTURE § 1.2), not a hypothetical.',
+    scan() {
+      const hits = [];
+      const targets = [
+        join(ROOT, 'packages/database/prisma/seed.ts'),
+        join(ROOT, 'apps/api/src/modules/auth/auth.service.ts'),
+      ];
+      for (const f of targets) {
+        const src = read(f);
+        if (!src) continue;
+        // Only look inside role-definition blocks: `permissions: [ ... ]`.
+        for (const m of src.matchAll(/permissions:\s*\[([^\]]*)\]/g)) {
+          for (const g of m[1].matchAll(/["'`]([^"'`]+)["'`]/g)) {
+            const grant = g[1];
+            if (/^(system|platform)(\.|$)/.test(grant)) {
+              const line = src.slice(0, m.index + g.index).split('\n').length;
+              hits.push(`${relative(ROOT, f)}:${line}  seeds "${grant}" into a tenant role`);
+            }
+          }
+        }
+      }
+      return hits;
+    },
+  },
+  {
+    id: 'cross-tenant-tenant-scoped-permission',
+    label: '@SkipTenantScope() handler guarded by a tenant-scoped permission',
+    why:
+      'A cross-tenant handler authorised by a tenant-namespace code lets tenant authority ' +
+      'act platform-wide. This is exactly how any customer admin could suspend, export or ' +
+      'offboard any other tenant via TenantLifecycleController.',
+    scan() {
+      const hits = [];
+      for (const f of files('apps/api/src', ['.controller.ts'])) {
+        const src = read(f);
+        if (!src.includes('@SkipTenantScope()')) continue;
+        const lines = src.split('\n');
+        // Class-level @SkipTenantScope applies to every route in the file.
+        const classLevel = /@Controller\([^)]*\)[\s\S]{0,400}?@SkipTenantScope\(\)/.test(src);
+        lines.forEach((line, i) => {
+          const m = line.match(/@Permissions\(\s*["']([^"']+)["']/);
+          if (!m) return;
+          const inScope =
+            classLevel ||
+            lines.slice(Math.max(0, i - 8), i + 8).some((l) => l.includes('@SkipTenantScope()'));
+          if (!inScope) return;
+          if (!/^(system|platform)(\.|$)/.test(m[1])) {
+            hits.push(`${relative(ROOT, f)}:${i + 1}  cross-tenant route guarded by "${m[1]}"`);
+          }
+        });
+      }
+      return hits;
+    },
+  },
+  {
     id: 'ci-bypass',
     label: 'Gate bypass in CI or git hooks (continue-on-error / --no-verify / || true)',
     why: 'A gate that cannot fail is worse than no gate — it manufactures false confidence.',
