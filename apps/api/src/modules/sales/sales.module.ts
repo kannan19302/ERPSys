@@ -57,26 +57,6 @@ import { SalesGlobalRevenueOpsDeepService } from "./sales-global-revenue-ops-dee
 import { SalesGlobalRevenueOpsDeepController } from "./sales-global-revenue-ops-deep.controller";
 import { SalesAdvancedEnterpriseCoreDeepService } from "./sales-advanced-enterprise-core-deep.service";
 import { SalesAdvancedEnterpriseCoreDeepController } from "./sales-advanced-enterprise-core-deep.controller";
-import { SalesDeepeningMasterSuiteService } from "./sales-deepening-master-suite.service";
-import { SalesDeepeningMasterSuiteController } from "./sales-deepening-master-suite.controller";
-import { SalesDeepeningUltraPackService } from "./sales-deepening-ultra-pack.service";
-import { SalesDeepeningUltraPackController } from "./sales-deepening-ultra-pack.controller";
-import { SalesDeepeningApexSuiteService } from "./sales-deepening-apex-suite.service";
-import { SalesDeepeningApexSuiteController } from "./sales-deepening-apex-suite.controller";
-import { SalesDeepeningPinnacleSuiteService } from "./sales-deepening-pinnacle-suite.service";
-import { SalesDeepeningPinnacleSuiteController } from "./sales-deepening-pinnacle-suite.controller";
-import { SalesDeepeningInfinityPackService } from "./sales-deepening-infinity-pack.service";
-import { SalesDeepeningInfinityPackController } from "./sales-deepening-infinity-pack.controller";
-import { SalesDeepeningQuantumSuiteService } from "./sales-deepening-quantum-suite.service";
-import { SalesDeepeningQuantumSuiteController } from "./sales-deepening-quantum-suite.controller";
-import { SalesDeepeningSuperApexService } from "./sales-deepening-super-apex.service";
-import { SalesDeepeningSuperApexController } from "./sales-deepening-super-apex.controller";
-import { SalesDeepeningCrownSuiteService } from "./sales-deepening-crown-suite.service";
-import { SalesDeepeningCrownSuiteController } from "./sales-deepening-crown-suite.controller";
-import { SalesDeepeningMilestoneGateService } from "./sales-deepening-milestone-gate.service";
-import { SalesDeepeningMilestoneGateController } from "./sales-deepening-milestone-gate.controller";
-import { SalesDeepeningApexFinalService } from "./sales-deepening-apex-final.service";
-import { SalesDeepeningApexFinalController } from "./sales-deepening-apex-final.controller";
 import { SalesEnterpriseController } from "./sales-enterprise.controller";
 import { SalesEnterpriseService } from "./sales-enterprise.service";
 import { SalesEnterpriseModule } from "./sales-enterprise.module";
@@ -111,16 +91,6 @@ import { SalesEnterpriseModule } from "./sales-enterprise.module";
     SalesOmnichannelDealsDeepController,
     SalesGlobalRevenueOpsDeepController,
     SalesAdvancedEnterpriseCoreDeepController,
-    SalesDeepeningMasterSuiteController,
-    SalesDeepeningUltraPackController,
-    SalesDeepeningApexSuiteController,
-    SalesDeepeningPinnacleSuiteController,
-    SalesDeepeningInfinityPackController,
-    SalesDeepeningQuantumSuiteController,
-    SalesDeepeningSuperApexController,
-    SalesDeepeningCrownSuiteController,
-    SalesDeepeningMilestoneGateController,
-    SalesDeepeningApexFinalController,
     SalesEnterpriseController,
   ],
   providers: [
@@ -152,16 +122,6 @@ import { SalesEnterpriseModule } from "./sales-enterprise.module";
     SalesOmnichannelDealsDeepService,
     SalesGlobalRevenueOpsDeepService,
     SalesAdvancedEnterpriseCoreDeepService,
-    SalesDeepeningMasterSuiteService,
-    SalesDeepeningUltraPackService,
-    SalesDeepeningApexSuiteService,
-    SalesDeepeningPinnacleSuiteService,
-    SalesDeepeningInfinityPackService,
-    SalesDeepeningQuantumSuiteService,
-    SalesDeepeningSuperApexService,
-    SalesDeepeningCrownSuiteService,
-    SalesDeepeningMilestoneGateService,
-    SalesDeepeningApexFinalService,
     SalesEnterpriseService,
   ],
   exports: [
@@ -186,16 +146,6 @@ import { SalesEnterpriseModule } from "./sales-enterprise.module";
     SalesOmnichannelDealsDeepService,
     SalesGlobalRevenueOpsDeepService,
     SalesAdvancedEnterpriseCoreDeepService,
-    SalesDeepeningMasterSuiteService,
-    SalesDeepeningUltraPackService,
-    SalesDeepeningApexSuiteService,
-    SalesDeepeningPinnacleSuiteService,
-    SalesDeepeningInfinityPackService,
-    SalesDeepeningQuantumSuiteService,
-    SalesDeepeningSuperApexService,
-    SalesDeepeningCrownSuiteService,
-    SalesDeepeningMilestoneGateService,
-    SalesDeepeningApexFinalService,
     SalesEnterpriseService,
   ],
 })
