@@ -217,7 +217,13 @@ export class ProjectsEnterpriseService {
           orderBy: { measurementDate: "desc" },
         })
       : null;
-    const totalBudget = baseline?.budgetAtCompletion ?? 0;
+    // EVM operates on money, so every currency term stays a Decimal end to end.
+    // Only the dimensionless indices (SPI, CPI, TCPI, % complete) become numbers,
+    // and only at the point they are reported.
+    const dec = (v: Prisma.Decimal | number | null | undefined) =>
+      new Prisma.Decimal(v ?? 0);
+
+    const totalBudget = dec(baseline?.budgetAtCompletion);
     const project = await prisma.project.findFirst({
       where: { id: projectId, tenantId },
     });
@@ -225,26 +231,33 @@ export class ProjectsEnterpriseService {
       where: { tenantId, projectId, date: { lte: asOfDate } },
     });
     const actualCost = totalCostEntries.reduce(
-      (s, e) => s + Number(e.amount),
-      0,
+      (s, e) => s.plus(dec(e.amount)),
+      new Prisma.Decimal(0),
     );
-    const pv = latestMeasurement?.plannedValue ?? 0;
-    const ev = latestMeasurement?.earnedValue ?? 0;
-    const ac = latestMeasurement?.actualCost ?? actualCost;
-    const spi = pv > 0 ? Number((ev / pv).toFixed(4)) : null;
-    const cpi = ac > 0 ? Number((ev / ac).toFixed(4)) : null;
-    const eac =
-      cpi && cpi > 0 ? Number((totalBudget / cpi).toFixed(2)) : totalBudget;
-    const etc = eac - ac;
+    const pv = dec(latestMeasurement?.plannedValue);
+    const ev = dec(latestMeasurement?.earnedValue);
+    const ac =
+      latestMeasurement?.actualCost != null
+        ? dec(latestMeasurement.actualCost)
+        : actualCost;
+    const spi = pv.gt(0) ? Number(ev.div(pv).toFixed(4)) : null;
+    const cpi = ac.gt(0) ? Number(ev.div(ac).toFixed(4)) : null;
+    const eac = cpi && cpi > 0 ? totalBudget.div(cpi) : totalBudget;
+    const etc = eac.minus(ac);
+    const workRemaining = totalBudget.minus(ev);
+    const fundsRemaining = totalBudget.minus(ac);
+    // Guard the denominator: at BAC == AC the original expression divided by zero
+    // and produced Infinity, which then serialised into the API response.
     const tcpi =
-      totalBudget - ev > 0
-        ? Number(((totalBudget - ev) / (totalBudget - ac)).toFixed(4))
+      workRemaining.gt(0) && !fundsRemaining.isZero()
+        ? Number(workRemaining.div(fundsRemaining).toFixed(4))
         : null;
-    const vac = Number((totalBudget - eac).toFixed(2));
-    const scheduleVariance = ev - pv;
-    const costVariance = ev - ac;
-    const percentComplete =
-      totalBudget > 0 ? Number(((ev / totalBudget) * 100).toFixed(1)) : 0;
+    const vac = totalBudget.minus(eac);
+    const scheduleVariance = ev.minus(pv);
+    const costVariance = ev.minus(ac);
+    const percentComplete = totalBudget.gt(0)
+      ? Number(ev.div(totalBudget).times(100).toFixed(1))
+      : 0;
     return {
       projectId,
       asOf: asOfDate,
@@ -267,7 +280,7 @@ export class ProjectsEnterpriseService {
         eac: Number(eac.toFixed(2)),
         etc: Number(etc.toFixed(2)),
         tcpi,
-        vac,
+        vac: Number(vac.toFixed(2)),
         percentComplete,
       },
       interpretation: {

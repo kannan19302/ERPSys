@@ -40,7 +40,6 @@ import { InventoryQualityComplianceService } from "./inventory-quality-complianc
 import { InventoryQualityComplianceController } from "./inventory-quality-compliance.controller";
 import { InventoryIntelligenceService } from "./inventory-intelligence.service";
 import { InventoryIntelligenceController } from "./inventory-intelligence.controller";
-import { InventoryDeepExpansionBulkController } from "./inventory-deep-expansion-bulk.controller";
 
 @Module({
   imports: [InventoryEnterpriseModule],
@@ -62,7 +61,6 @@ import { InventoryDeepExpansionBulkController } from "./inventory-deep-expansion
     InventorySupplyChainController,
     InventoryQualityComplianceController,
     InventoryIntelligenceController,
-    InventoryDeepExpansionBulkController,
   ],
   providers: [
     InventoryService,

@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { Prisma } from "@prisma/client";
 import type {
   CreateWebCollectionInput,
   UpdateWebCollectionInput,
@@ -488,9 +489,13 @@ export class WebCollectionsService {
       where: { tenantId },
       select: { total: true, status: true },
     });
+    // `total` is Decimal(19,4); summing it as a float loses cents on large books.
     const revenue = orders
       .filter((o) => o.status !== "CANCELLED")
-      .reduce((s, o) => s + (o.total || 0), 0);
+      .reduce(
+        (s, o) => s.plus(new Prisma.Decimal(o.total ?? 0)),
+        new Prisma.Decimal(0),
+      );
     return {
       total: orders.length,
       pending: orders.filter((o) => o.status === "PENDING").length,
