@@ -32,14 +32,6 @@ import { InventorySerialBatchGenealogyDeepController } from "./inventory-serial-
 import { InventoryCycleCountingDeepService } from "./inventory-cycle-counting-deep.service";
 import { InventoryCycleCountingDeepController } from "./inventory-cycle-counting-deep.controller";
 // Phase 2 — Deep Feature Packs (Push Inventory to 1500+)
-import { InventoryAdvancedWmsService } from "./inventory-advanced-wms.service";
-import { InventoryAdvancedWmsController } from "./inventory-advanced-wms.controller";
-import { InventorySupplyChainService } from "./inventory-supply-chain.service";
-import { InventorySupplyChainController } from "./inventory-supply-chain.controller";
-import { InventoryQualityComplianceService } from "./inventory-quality-compliance.service";
-import { InventoryQualityComplianceController } from "./inventory-quality-compliance.controller";
-import { InventoryIntelligenceService } from "./inventory-intelligence.service";
-import { InventoryIntelligenceController } from "./inventory-intelligence.controller";
 
 @Module({
   imports: [InventoryEnterpriseModule],
@@ -57,10 +49,6 @@ import { InventoryIntelligenceController } from "./inventory-intelligence.contro
     InventoryLpnTrackingDeepController,
     InventorySerialBatchGenealogyDeepController,
     InventoryCycleCountingDeepController,
-    InventoryAdvancedWmsController,
-    InventorySupplyChainController,
-    InventoryQualityComplianceController,
-    InventoryIntelligenceController,
   ],
   providers: [
     InventoryService,
@@ -80,10 +68,6 @@ import { InventoryIntelligenceController } from "./inventory-intelligence.contro
     InventoryLpnTrackingDeepService,
     InventorySerialBatchGenealogyDeepService,
     InventoryCycleCountingDeepService,
-    InventoryAdvancedWmsService,
-    InventorySupplyChainService,
-    InventoryQualityComplianceService,
-    InventoryIntelligenceService,
   ],
   exports: [
     InventoryService,
@@ -102,10 +86,6 @@ import { InventoryIntelligenceController } from "./inventory-intelligence.contro
     InventoryLpnTrackingDeepService,
     InventorySerialBatchGenealogyDeepService,
     InventoryCycleCountingDeepService,
-    InventoryAdvancedWmsService,
-    InventorySupplyChainService,
-    InventoryQualityComplianceService,
-    InventoryIntelligenceService,
   ],
 })
 export class InventoryModule {}
