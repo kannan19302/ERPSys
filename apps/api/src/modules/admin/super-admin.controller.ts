@@ -3,6 +3,7 @@ import { z } from "zod";
 import { ZodBody } from "../../common/decorators/zod-body.decorator";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { RbacGuard } from "../../common/guards/rbac.guard";
+import { ControlPlaneGuard } from "../../common/guards/control-plane.guard";
 import { Permissions } from "../../common/decorators/permissions.decorator";
 import { SkipTenantScope } from "../../common/decorators/skip-tenant-scope.decorator";
 import { SuperAdminService } from "./super-admin.service";
@@ -14,7 +15,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 @ApiTags("admin")
 @ApiBearerAuth()
 @Controller("super-admin")
-@UseGuards(JwtAuthGuard, RbacGuard)
+@UseGuards(JwtAuthGuard, RbacGuard, ControlPlaneGuard)
 @SkipTenantScope()
 export class SuperAdminController {
   constructor(private readonly superAdminService: SuperAdminService) {}

@@ -13,6 +13,7 @@ import {
 import { Request } from "express";
 import { JwtAuthGuard } from "../../../common/guards/jwt-auth.guard";
 import { RbacGuard } from "../../../common/guards/rbac.guard";
+import { ControlPlaneGuard } from "../../../common/guards/control-plane.guard";
 import { SkipTenantScope } from "../../../common/decorators/skip-tenant-scope.decorator";
 import { Permissions } from "../../../common/decorators/permissions.decorator";
 import { TrackChanges } from "../../../common/decorators/track-changes.decorator";
@@ -36,8 +37,14 @@ interface AuthenticatedRequest extends Request {
 
 @ApiTags("admin")
 @ApiBearerAuth()
+// Cross-tenant: every route here takes a tenantId from the URL and acts on that
+// tenant, so it is control-plane surface. It was previously guarded by
+// `admin.tenant.*`, which the seeded tenant ADMIN role satisfies via its
+// `admin.*` grant — meaning any customer's admin could suspend, export or
+// offboard any other tenant by id. Permissions are now `system.tenant.*` and
+// ControlPlaneGuard enforces the plane boundary independently of the codes.
 @Controller("admin/tenants")
-@UseGuards(JwtAuthGuard, RbacGuard)
+@UseGuards(JwtAuthGuard, RbacGuard, ControlPlaneGuard)
 @SkipTenantScope()
 export class TenantLifecycleController {
   constructor(
@@ -46,14 +53,14 @@ export class TenantLifecycleController {
 
   @ApiOperation({ summary: "Get tenant lifecycle status and history" })
   @Get(":id/lifecycle")
-  @Permissions("admin.tenant.lifecycle.read")
+  @Permissions("system.tenant.lifecycle.read")
   async getLifecycleStatus(@Param("id") tenantId: string) {
     return this.tenantLifecycleService.getLifecycleStatus(tenantId);
   }
 
   @ApiOperation({ summary: "Export all tenant data" })
   @Post(":id/export")
-  @Permissions("admin.tenant.export")
+  @Permissions("system.tenant.export")
   async exportTenant(
     @Param("id") tenantId: string,
     @Body() body: Record<string, unknown>,
@@ -64,7 +71,7 @@ export class TenantLifecycleController {
 
   @ApiOperation({ summary: "Suspend tenant" })
   @Post(":id/suspend")
-  @Permissions("admin.tenant.suspend")
+  @Permissions("system.tenant.suspend")
   @TrackChanges("Tenant")
   @HttpCode(200)
   async suspendTenant(
@@ -79,7 +86,7 @@ export class TenantLifecycleController {
 
   @ApiOperation({ summary: "Unsuspend tenant" })
   @Post(":id/unsuspend")
-  @Permissions("admin.tenant.unsuspend")
+  @Permissions("system.tenant.unsuspend")
   @TrackChanges("Tenant")
   @HttpCode(200)
   async unsuspendTenant(
@@ -94,7 +101,7 @@ export class TenantLifecycleController {
 
   @ApiOperation({ summary: "Start tenant offboarding" })
   @Post(":id/offboard")
-  @Permissions("admin.tenant.offboard")
+  @Permissions("system.tenant.offboard")
   @TrackChanges("Tenant")
   @HttpCode(200)
   async offboardTenant(
@@ -112,7 +119,7 @@ export class TenantLifecycleController {
 
   @ApiOperation({ summary: "Cancel pending offboarding" })
   @Post(":id/cancel-offboarding")
-  @Permissions("admin.tenant.offboard")
+  @Permissions("system.tenant.offboard")
   @TrackChanges("Tenant")
   @HttpCode(200)
   async cancelOffboarding(
@@ -127,7 +134,7 @@ export class TenantLifecycleController {
 
   @ApiOperation({ summary: "Permanently purge tenant" })
   @Post(":id/purge")
-  @Permissions("admin.tenant.purge")
+  @Permissions("system.tenant.purge")
   @TrackChanges("Tenant")
   @HttpCode(200)
   async purgeTenant(
@@ -146,7 +153,7 @@ export class TenantLifecycleController {
 
   @ApiOperation({ summary: "List tenant export history" })
   @Get("lifecycle/export-history")
-  @Permissions("admin.tenant.lifecycle.read")
+  @Permissions("system.tenant.lifecycle.read")
   async getExportHistory(@Query("tenantId") tenantId: string) {
     if (!tenantId) {
       return { exports: [] };

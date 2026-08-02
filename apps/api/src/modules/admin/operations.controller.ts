@@ -11,6 +11,7 @@ import {
 import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { RbacGuard } from "../../common/guards/rbac.guard";
+import { ControlPlaneGuard } from "../../common/guards/control-plane.guard";
 import { TenantInterceptor } from "../../common/guards/tenant.interceptor";
 import { SkipTenantScope } from "../../common/decorators/skip-tenant-scope.decorator";
 import { OperationsService } from "./operations.service";
@@ -29,7 +30,7 @@ interface AuthenticatedRequest extends Request {
 @ApiTags("admin")
 @ApiBearerAuth()
 @Controller("admin/operations")
-@UseGuards(JwtAuthGuard, RbacGuard)
+@UseGuards(JwtAuthGuard, RbacGuard, ControlPlaneGuard)
 @UseInterceptors(TenantInterceptor)
 export class OperationsController {
   constructor(private readonly operationsService: OperationsService) {}

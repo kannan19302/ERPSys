@@ -2688,6 +2688,60 @@ export const PERMISSION_REGISTRY: PermissionDefinition[] = [
     level: "endpoint",
     description: "Access Superadmin (system)",
   },
+  // Tenant lifecycle. These were `admin.tenant.*` until 2026-08-02, which the
+  // seeded tenant ADMIN role satisfied through its `admin.*` grant — so any
+  // customer's admin could suspend, export or offboard any other tenant by id
+  // on the @SkipTenantScope() TenantLifecycleController. They are control-plane
+  // operations and now live in the reserved `system` namespace, which no
+  // tenant-scoped wildcard can reach. Never seed these to a tenant role.
+  {
+    code: "system.tenant.lifecycle.read",
+    module: "system",
+    resource: "tenant",
+    action: "lifecycle.read",
+    level: "endpoint",
+    description: "View tenant lifecycle status and history (platform operator)",
+  },
+  {
+    code: "system.tenant.export",
+    module: "system",
+    resource: "tenant",
+    action: "export",
+    level: "endpoint",
+    description: "Export all data for a tenant (platform operator)",
+  },
+  {
+    code: "system.tenant.suspend",
+    module: "system",
+    resource: "tenant",
+    action: "suspend",
+    level: "endpoint",
+    description: "Suspend a tenant (platform operator)",
+  },
+  {
+    code: "system.tenant.unsuspend",
+    module: "system",
+    resource: "tenant",
+    action: "unsuspend",
+    level: "endpoint",
+    description: "Reinstate a suspended tenant (platform operator)",
+  },
+  {
+    code: "system.tenant.offboard",
+    module: "system",
+    resource: "tenant",
+    action: "offboard",
+    level: "endpoint",
+    description: "Offboard a tenant (platform operator)",
+  },
+  {
+    code: "system.tenant.purge",
+    module: "system",
+    resource: "tenant",
+    action: "purge",
+    level: "endpoint",
+    description: "Permanently purge an offboarded tenant (platform operator)",
+  },
   {
     code: "system.analytics.read",
     module: "system",

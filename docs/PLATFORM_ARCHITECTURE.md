@@ -25,14 +25,14 @@
 
 Before any change described here, the stable state was frozen:
 
-| Repository                  | Branch   | `v1.0` branch | Tag      |
-| :-------------------------- | :------- | :------------ | :------- |
-| `ERPSys`                    | `main`   | existing      | `v1.0.0` |
-| `unierp-app-education`      | `main`   | created       | `v1.0.0` |
-| `unierp-app-fieldservice`   | `main`   | created       | `v1.0.0` |
-| `unierp-app-healthcare`     | `main`   | created       | `v1.0.0` |
-| `unierp-app-realestate`     | `main`   | created       | `v1.0.0` |
-| `unierp-corporate-website`  | `master` | created       | `v1.0.0` |
+| Repository                 | Branch   | `v1.0` branch | Tag      |
+| :------------------------- | :------- | :------------ | :------- |
+| `ERPSys`                   | `main`   | existing      | `v1.0.0` |
+| `unierp-app-education`     | `main`   | created       | `v1.0.0` |
+| `unierp-app-fieldservice`  | `main`   | created       | `v1.0.0` |
+| `unierp-app-healthcare`    | `main`   | created       | `v1.0.0` |
+| `unierp-app-realestate`    | `main`   | created       | `v1.0.0` |
+| `unierp-corporate-website` | `master` | created       | `v1.0.0` |
 
 Full-programme rollback is `git checkout v1.0.0` in six repositories plus a database restore to
 the pre-migration PITR marker. No step in § 14 removes that option. Every repository extracted
@@ -45,18 +45,18 @@ in § 14 carries its own `v1.0.0`-equivalent tag at the moment of extraction.
 Design must start from evidence. These are counts taken from the tree at `v1.0.0`, not
 estimates.
 
-| Fact                                          | Measure                                                                 |
-| :-------------------------------------------- | :---------------------------------------------------------------------- |
-| Repositories                                  | 6 (1 monorepo + 4 vertical services + 1 marketing site)                 |
-| API modules in `apps/api/src/modules`         | 45                                                                      |
-| Application code in those modules             | **655,100 lines**                                                       |
-| Workspace packages                            | 23 (`@unerp/*`), of which **14 are UI**                                 |
-| Prisma models / enums                         | 1,836 / 65, in a **single 40,577-line file**                            |
-| `@ts-nocheck` files                           | 3,241 of 3,241 (**100%**)                                               |
-| Tenant tables without an RLS policy           | 364 of 1,029 (**35%**)                                                  |
-| Controller routes without `@Permissions`      | 1,889 of 14,225 (**13.3%**)                                             |
-| Monetary fields typed `Float`                 | 92                                                                      |
-| Clients                                       | Next.js 15 web, Flutter mobile, Tauri desktop                           |
+| Fact                                     | Measure                                                 |
+| :--------------------------------------- | :------------------------------------------------------ |
+| Repositories                             | 6 (1 monorepo + 4 vertical services + 1 marketing site) |
+| API modules in `apps/api/src/modules`    | 45                                                      |
+| Application code in those modules        | **655,100 lines**                                       |
+| Workspace packages                       | 23 (`@unerp/*`), of which **14 are UI**                 |
+| Prisma models / enums                    | 1,836 / 65, in a **single 40,577-line file**            |
+| `@ts-nocheck` files                      | 3,241 of 3,241 (**100%**)                               |
+| Tenant tables without an RLS policy      | 364 of 1,029 (**35%**)                                  |
+| Controller routes without `@Permissions` | 1,889 of 14,225 (**13.3%**)                             |
+| Monetary fields typed `Float`            | 92                                                      |
+| Clients                                  | Next.js 15 web, Flutter mobile, Tauri desktop           |
 
 ### 1.1 The size distribution is the architecture's real shape
 
@@ -88,12 +88,12 @@ healthcare         2.8  ▏
 Each satellite repo's `src/` is eleven files: a module, two controllers, two services, a health
 controller, an events controller, a Prisma client, a tenant helper, and a scope guard.
 
-**The repository boundaries that exist today were drawn around the four *smallest* domains in
+**The repository boundaries that exist today were drawn around the four _smallest_ domains in
 the system** — 13.6 KLoc in total, 2% of the codebase — while a 90 KLoc CRM, a 69 KLoc finance
 engine, and a 57 KLoc inventory engine remain inside the monolith. `ai/TRD.md` ADR-003 states
-that extraction must be *earned* by "a stable contract, outbox delivery, explicit data
+that extraction must be _earned_ by "a stable contract, outbox delivery, explicit data
 ownership, verified tenant isolation, an SLO and runbook, and a rehearsed cutover." None of the
-four meets that bar. They were extracted because they were *easy to extract*, which is the
+four meets that bar. They were extracted because they were _easy to extract_, which is the
 opposite of the criterion.
 
 The cost is being paid now: six lockfiles, six CI pipelines, six dependabot streams (the
@@ -103,15 +103,15 @@ copy-pasted from `fieldservice` — as three of the four repos' most recent comm
 
 **This is the evidence base for § 4.5.** A split topology is a legitimate choice; a split
 topology without orchestration is what produced those three identical bug fixes. The
-architecture below chooses the split *and* pays for the orchestration.
+architecture below chooses the split _and_ pays for the orchestration.
 
 ### 1.2 The plane separation the requirement asks for does not exist yet
 
-| Required plane                | Where it actually lives now                                                                      | Verdict                    |
-| :---------------------------- | :----------------------------------------------------------------------------------------------- | :------------------------- |
-| **1. Platform Admin Console** | `apps/web/app/(dashboard)/saas/*` — 33 route folders, inside the customer-facing dashboard shell | 🔴 **Not separated at all** |
-| **2. Tenant Admin Portal**    | `apps/web/app/(dashboard)/settings/*` (60+ routes) + `(dashboard)/saas-portal/*` (6 routes)      | 🟠 Split across two trees   |
-| **3. Application Layer**      | `apps/web/app/(dashboard)/<module>` + `apps/api/src/modules/<module>` — 45 of each                | 🟢 Genuinely modular        |
+| Required plane                | Where it actually lives now                                                                           | Verdict                     |
+| :---------------------------- | :---------------------------------------------------------------------------------------------------- | :-------------------------- |
+| **1. Platform Admin Console** | `apps/web/app/(dashboard)/saas/*` — 33 route folders, inside the customer-facing dashboard shell      | 🔴 **Not separated at all** |
+| **2. Tenant Admin Portal**    | `apps/web/app/(dashboard)/settings/*` (60+ routes) + `(dashboard)/saas-portal/*` (6 routes)           | 🟠 Split across two trees   |
+| **3. Application Layer**      | `apps/web/app/(dashboard)/<module>` + `apps/api/src/modules/<module>` — 45 of each                    | 🟢 Genuinely modular        |
 | **4. Developer Platform**     | `modules/builder` (30.5 KLoc), `modules/api-platform`, `(dashboard)/builder/{app-hub,erp,web,manage}` | 🟢 Exists, needs a boundary |
 
 Plane 1 is the problem. **`/saas/clusters`, `/saas/resellers`, `/saas/maintenance`,
@@ -119,8 +119,41 @@ Plane 1 is the problem. **`/saas/clusters`, `/saas/resellers`, `/saas/maintenanc
 served from the same Next.js application, the same session cookie, the same middleware, and the
 same origin as a tenant user's invoice list.** The only thing standing between a customer and
 platform-global control is a permission check in application code — and 13.3% of routes have no
-permission decorator at all. Requirement 1 says "not customer-facing"; today it is one
-authorization bug away from being exactly that.
+permission decorator at all.
+
+> #### 🔴 The "one authorization bug away" case was not theoretical — CONFIRMED AND FIXED 2026-08-02
+>
+> The first revision of this document said plane 1 was "one authorization bug away" from being
+> customer-facing. It was not one bug away. It was already there. The chain, each link verified:
+>
+> 1. Every tenant's first user is seeded with the `SUPER_ADMIN` role carrying
+>    `permissions: ["*"]` — `apps/api/src/modules/auth/auth.service.ts`, registration flow.
+> 2. `hasPermission()` returned `true` for a bare `"*"` against **any** required permission —
+>    `packages/shared/src/utils/index.ts`.
+> 3. `SuperAdminController` is `@SkipTenantScope()` and says so in its own header comment:
+>    _"Deliberately cross-tenant: this controller aggregates data across every tenant for the
+>    platform operator (e.g. `prisma.user.count()` platform-wide)."_
+> 4. It is gated by `@Permissions("system.tenant.read")` — which `["*"]` satisfied.
+>
+> **Any customer's own administrator could enumerate every tenant on the platform**, read tenant
+> detail, list all admins, read platform analytics and system health, and reach `provisionTenant`
+> and `updateTenant` on the same controller.
+>
+> What makes it conclusive rather than suggestive: **no seeded role grants `system.*`
+> explicitly.** The tenant wildcard was not one of several paths to those endpoints — it was the
+> only one.
+>
+> **Fix:** `system` and `platform` are now reserved control-plane namespaces. A control-plane
+> permission is satisfied only by a grant that is itself inside a control-plane namespace. `*`
+> means "everything in _my_ tenant", never "everything on the platform". Six regression tests
+> cover the escalation path.
+>
+> **This is the argument for Phase 1 in one incident.** A permission string was the only thing
+> separating a customer from platform-global control, and a single wildcard defeated it. After
+> Phase 1 the separation is network, origin, IdP realm, and guard — four independent layers, none
+> of which a permission-matching bug can cross. It is also the argument for the § 4.2 repository
+> split: once the console is its own deployable, a tenant session cannot reach control-plane code
+> even if the authorization logic is wrong again.
 
 ### 1.3 Naming entropy is a load-bearing signal
 
@@ -141,7 +174,7 @@ in `saas-portal` and `builder`.
 
 **The developer platform in requirement 4 is a promise that third parties can navigate and
 extend this system.** A module namespace that cannot be navigated by its own authors cannot be
-published to partners. Renaming these into real bounded contexts is a *functional* prerequisite
+published to partners. Renaming these into real bounded contexts is a _functional_ prerequisite
 for the marketplace, not tidying. In a split topology it becomes more urgent, not less: a repo
 boundary makes a bad name permanent, because renaming across a published package boundary is a
 breaking change.
@@ -167,10 +200,10 @@ Everything in § 3 onward follows from these, in priority order.
    already running in-process is not possible.
 4. **Every guarantee must be mechanically provable.** The current architecture is sound on paper
    and unproven in the repository. Structure that cannot be checked by a script will decay —
-   and in a split topology, *the checks must work across repository boundaries*, because the
+   and in a split topology, _the checks must work across repository boundaries_, because the
    compiler no longer does.
 5. **Cost of change must fall over time.** Adding module 46 in 2030 should cost what module 46
-   costs today. The *platform* surface must be small, versioned, and stable; the *application*
+   costs today. The _platform_ surface must be small, versioned, and stable; the _application_
    surface may be large and churning.
 
 ---
@@ -226,14 +259,14 @@ network-restricted ingress. A customer's browser never receives control-plane Ja
 holds a control-plane cookie, and cannot reach control-plane routes even with a stolen tenant
 token.
 
-The control plane's *business logic* stays in `unierp-api`, exposed under a distinct router
+The control plane's _business logic_ stays in `unierp-api`, exposed under a distinct router
 (`/api/platform/v1`) behind a distinct guard:
 
 - Tenant lifecycle, billing, and licensing read and write the same `Tenant`, `Subscription`, and
   `Plan` aggregates the tenant plane reads. Splitting them into a separate service means either
   a distributed transaction on every provisioning operation or a second database with a sync
   problem. Both are worse than a router boundary.
-- The boundary is *enforceable today* and *upgradeable later*: `/api/platform/v1` is a distinct
+- The boundary is _enforceable today_ and _upgradeable later_: `/api/platform/v1` is a distinct
   Nest module tree with no imports from tenant modules, checked by `architecture:check`.
   Extracting it to its own process in 2029 is a deployment change, not a refactor.
 
@@ -258,7 +291,7 @@ modules/<context>/
 Dependencies point inward, always, enforced by `dependency-cruiser` rather than by review. The
 rule is the deliverable; the folder convention is how the rule is expressed.
 
-Today's flat `<module>.{controller,service}.ts` shape is a *degenerate case* — a module where
+Today's flat `<module>.{controller,service}.ts` shape is a _degenerate case_ — a module where
 domain and infrastructure are fused inside the service. Acceptable for CRUD, unacceptable for
 finance. The rule is therefore **tiered** (§ 6.2).
 
@@ -272,17 +305,17 @@ finance. The rule is therefore **tiered** (§ 6.2).
 
 Revision 1 of this document recommended consolidating to four repositories, on the grounds that
 a repo boundary should be earned by a different release cadence or a different consumer. That
-analysis was correct about the *cost* of a split and is retained in § 4.5. The direction has
+analysis was correct about the _cost_ of a split and is retained in § 4.5. The direction has
 been reconsidered and set to full split, and the argument for it is legitimate:
 
 - **A layered polyrepo makes the dependency graph physically acyclic.** In a monorepo, the rule
   "UI must not import from API" is a lint rule that a determined developer or agent can defeat.
-  Across a published package boundary it is *impossible* — you cannot import what is not in your
+  Across a published package boundary it is _impossible_ — you cannot import what is not in your
   `package.json`. For a platform intended to last twenty years and to be extended by third
   parties, structural impossibility is a stronger guarantee than an enforced convention.
 - **It forces the public contract to be real.** Every boundary in § 4.2 is a published, versioned
   artifact. The extension API, the SDK, and the design system stop being internal folders that
-  partners are told to treat as stable and become artifacts that *are* stable, because breaking
+  partners are told to treat as stable and become artifacts that _are_ stable, because breaking
   them breaks a published SemVer promise with an audit trail.
 - **It matches the ownership model a platform organisation eventually needs.** Layer ownership
   maps to team ownership without renegotiation.
@@ -320,39 +353,39 @@ L1  FOUNDATION      unierp-kernel   unierp-design-system   unierp-sdk
 L0  CONTRACT        unierp-contracts
 ```
 
-| L | Repository                | Publishes                                              | Depends on                        | Why it is its own repository                                                                                                              |
-| - | :------------------------ | :----------------------------------------------------- | :-------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
-| 0 | **`unierp-contracts`**    | `@unerp/contracts`, `@unerp/events`                    | *nothing*                         | The single source of API, event, and entity truth. Zero dependencies is what makes it the root: it can never be made to depend on an implementation. |
-| 1 | **`unierp-kernel`**       | `@unerp/kernel`                                        | L0                                | Tenancy context, `PolicyEngine`, audit, outbox, idempotency, rate limiting, versioning, observability. The primitives every plane shares.  |
-| 1 | **`unierp-design-system`**| `@unerp/ui` (subpath exports)                          | —                                 | Tokens → theme → components → charts → grid → forms → workflow, plus Storybook. Consumed by three frontends and by partner extensions.     |
-| 1 | **`unierp-sdk`**          | `@unierp/sdk` (TS), Python, Java, Go, `@unierp/cli`    | L0                                | **Different consumers** (third parties), **different cadence**, must be installable without the platform. Generated, never hand-written.  |
-| 2 | **`unierp-data`**         | `@unerp/database`                                      | L0                                | Prisma multi-file schema, migrations, RLS policies, seeds, and the tenant-isolation test generator. The data model versions independently of the code that uses it. |
-| 2 | **`unierp-framework`**    | `@unerp/framework`                                     | L0, L1                            | The schema-driven page runtime. First-party and customer modules render through the *same* runtime — so it must be a published artifact, not an internal folder. |
-| 2 | **`unierp-extension-api`**| `@unerp/extension-api`                                 | L0, L1                            | The public contract customer code compiles against, plus the sandbox host interface. **3-year support, 12-month deprecation.** Its own repo because its promise outlives any platform release. |
-| 3 | **`unierp-api`**          | container image                                        | L0, L1, L2                        | The modular monolith. `platform/` + `tenant/` + `modules/` + `developer/`. One deployable, two routers.                                   |
-| 4 | **`unierp-web`**          | container image                                        | L0, L1, L2, L3 *(SDK only)*       | Tenant Admin Portal + Application Layer.                                                                                                  |
-| 4 | **`unierp-console`**      | container image                                        | L0, L1, L2, L3 *(SDK only)*       | Platform Admin Console. **Separate repo reinforces the trust boundary**: console code cannot accidentally import a tenant component.       |
-| 4 | **`unierp-www`**          | container image                                        | L1 (design system)                | Marketing, docs, status, pricing. Ships daily; must never be able to break a payroll release. Already correctly separate today.            |
-| 5 | **`unierp-mobile`**       | IPA / APK                                              | SDK (Dart client)                 | **Different language** (Dart), **different toolchain** (Gradle/Xcode/macOS runners), **different cadence** (app-store review).             |
-| 5 | **`unierp-desktop`**      | MSI / DMG / AppImage                                   | L4 `unierp-web` build output      | Tauri shell. Split from web at the artifact level, not the source level — it consumes web's build.                                         |
-| 6 | **`unierp-extensions`**   | signed extension bundles                               | `@unerp/extension-api` **only**   | First-party apps including the four verticals, plus templates. **Depends on nothing but the public API** — that constraint is the proof the API is real. |
-| 7 | **`unierp-infra`**        | Kustomize, Terraform, Grafana, alerts, runbooks        | manifest only                     | Environment topology and operational assets.                                                                                              |
-| 7 | **`unierp-workspace`**    | `platform-manifest.json`, `@unierp/cli-dev`            | all (build-time only)             | **The meta-repository.** Release train manifest, local dev orchestrator, golden-path integration CI, federated ratchet. § 4.5.            |
+| L   | Repository                 | Publishes                                           | Depends on                      | Why it is its own repository                                                                                                                                                                   |
+| --- | :------------------------- | :-------------------------------------------------- | :------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0   | **`unierp-contracts`**     | `@unerp/contracts`, `@unerp/events`                 | _nothing_                       | The single source of API, event, and entity truth. Zero dependencies is what makes it the root: it can never be made to depend on an implementation.                                           |
+| 1   | **`unierp-kernel`**        | `@unerp/kernel`                                     | L0                              | Tenancy context, `PolicyEngine`, audit, outbox, idempotency, rate limiting, versioning, observability. The primitives every plane shares.                                                      |
+| 1   | **`unierp-design-system`** | `@unerp/ui` (subpath exports)                       | —                               | Tokens → theme → components → charts → grid → forms → workflow, plus Storybook. Consumed by three frontends and by partner extensions.                                                         |
+| 1   | **`unierp-sdk`**           | `@unierp/sdk` (TS), Python, Java, Go, `@unierp/cli` | L0                              | **Different consumers** (third parties), **different cadence**, must be installable without the platform. Generated, never hand-written.                                                       |
+| 2   | **`unierp-data`**          | `@unerp/database`                                   | L0                              | Prisma multi-file schema, migrations, RLS policies, seeds, and the tenant-isolation test generator. The data model versions independently of the code that uses it.                            |
+| 2   | **`unierp-framework`**     | `@unerp/framework`                                  | L0, L1                          | The schema-driven page runtime. First-party and customer modules render through the _same_ runtime — so it must be a published artifact, not an internal folder.                               |
+| 2   | **`unierp-extension-api`** | `@unerp/extension-api`                              | L0, L1                          | The public contract customer code compiles against, plus the sandbox host interface. **3-year support, 12-month deprecation.** Its own repo because its promise outlives any platform release. |
+| 3   | **`unierp-api`**           | container image                                     | L0, L1, L2                      | The modular monolith. `platform/` + `tenant/` + `modules/` + `developer/`. One deployable, two routers.                                                                                        |
+| 4   | **`unierp-web`**           | container image                                     | L0, L1, L2, L3 _(SDK only)_     | Tenant Admin Portal + Application Layer.                                                                                                                                                       |
+| 4   | **`unierp-console`**       | container image                                     | L0, L1, L2, L3 _(SDK only)_     | Platform Admin Console. **Separate repo reinforces the trust boundary**: console code cannot accidentally import a tenant component.                                                           |
+| 4   | **`unierp-www`**           | container image                                     | L1 (design system)              | Marketing, docs, status, pricing. Ships daily; must never be able to break a payroll release. Already correctly separate today.                                                                |
+| 5   | **`unierp-mobile`**        | IPA / APK                                           | SDK (Dart client)               | **Different language** (Dart), **different toolchain** (Gradle/Xcode/macOS runners), **different cadence** (app-store review).                                                                 |
+| 5   | **`unierp-desktop`**       | MSI / DMG / AppImage                                | L4 `unierp-web` build output    | Tauri shell. Split from web at the artifact level, not the source level — it consumes web's build.                                                                                             |
+| 6   | **`unierp-extensions`**    | signed extension bundles                            | `@unerp/extension-api` **only** | First-party apps including the four verticals, plus templates. **Depends on nothing but the public API** — that constraint is the proof the API is real.                                       |
+| 7   | **`unierp-infra`**         | Kustomize, Terraform, Grafana, alerts, runbooks     | manifest only                   | Environment topology and operational assets.                                                                                                                                                   |
+| 7   | **`unierp-workspace`**     | `platform-manifest.json`, `@unierp/cli-dev`         | all (build-time only)           | **The meta-repository.** Release train manifest, local dev orchestrator, golden-path integration CI, federated ratchet. § 4.5.                                                                 |
 
 ### 4.3 What the layering buys, concretely
 
-| Property                                | How the layering delivers it                                                                                          |
-| :-------------------------------------- | :--------------------------------------------------------------------------------------------------------------------- |
-| **No architectural drift, ever**         | `unierp-design-system` has no dependency on `unierp-api`, so a UI component *cannot* import a service. Structurally, not by rule. |
-| **The extension API is honest**          | `unierp-extensions` depends on `@unerp/extension-api` and nothing else. If a first-party vertical needs a private hook, the build fails and the hook must be made public. |
-| **Contract-first is not optional**       | `unierp-api` cannot define an endpoint that is not in `@unerp/contracts`, because the DTO type comes from the package.  |
-| **The data model versions independently**| `@unerp/database` can ship a migration ahead of the API that uses it — which is exactly what expand→migrate→contract requires. |
-| **Team ownership scales**                | A layer is an ownership unit. Adding a team means adding a repo in the right layer, not renegotiating a monorepo CODEOWNERS file. |
-| **Blast radius is bounded**              | A break in L4 cannot reach L0. Failure propagates upward only.                                                          |
+| Property                                  | How the layering delivers it                                                                                                                                              |
+| :---------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **No architectural drift, ever**          | `unierp-design-system` has no dependency on `unierp-api`, so a UI component _cannot_ import a service. Structurally, not by rule.                                         |
+| **The extension API is honest**           | `unierp-extensions` depends on `@unerp/extension-api` and nothing else. If a first-party vertical needs a private hook, the build fails and the hook must be made public. |
+| **Contract-first is not optional**        | `unierp-api` cannot define an endpoint that is not in `@unerp/contracts`, because the DTO type comes from the package.                                                    |
+| **The data model versions independently** | `@unerp/database` can ship a migration ahead of the API that uses it — which is exactly what expand→migrate→contract requires.                                            |
+| **Team ownership scales**                 | A layer is an ownership unit. Adding a team means adding a repo in the right layer, not renegotiating a monorepo CODEOWNERS file.                                         |
+| **Blast radius is bounded**               | A break in L4 cannot reach L0. Failure propagates upward only.                                                                                                            |
 
-### 4.4 What is deliberately *not* split
+### 4.4 What is deliberately _not_ split
 
-- **The 45 business modules stay in `unierp-api`.** They are separated by *module* boundaries,
+- **The 45 business modules stay in `unierp-api`.** They are separated by _module_ boundaries,
   not repository boundaries. Finance, Inventory, and Commerce write to each other constantly
   (a stock movement posts a GL entry; an invoice reserves inventory). Splitting them means a
   distributed transaction on the most correctness-critical paths in the system. Extraction stays
@@ -369,7 +402,7 @@ L0  CONTRACT        unierp-contracts
 **This section is the load-bearing part of the split. Without all four, § 4.2 degrades into the
 failure already measured in § 1.1.** Each is a Phase-2 deliverable and each is a hard gate.
 
-#### M1 — The release train and the manifest *(replaces atomic change)*
+#### M1 — The release train and the manifest _(replaces atomic change)_
 
 `unierp-workspace/platform-manifest.json` pins the exact version of all fifteen repositories for
 a dated train:
@@ -398,7 +431,7 @@ a dated train:
 monorepo gave for free: the unit of release is the train, not the repository. Nothing is
 deployed except by manifest; no environment ever runs an unpinned combination.
 
-#### M2 — Consumer-driven contract tests *(replaces the compiler across boundaries)*
+#### M2 — Consumer-driven contract tests _(replaces the compiler across boundaries)_
 
 This is the mechanism that matters most, because it addresses the split's sharpest cost: **the
 TypeScript compiler no longer sees across a repository boundary.**
@@ -415,13 +448,13 @@ name of the consumer and the symbol. Breakage is caught at author time, in the r
 it — which is where a compiler would have caught it. Without M2 you find these at runtime in
 staging, or worse.
 
-#### M3 — Automated change choreography *(replaces the single PR)*
+#### M3 — Automated change choreography _(replaces the single PR)_
 
 Changesets plus a topological release bot. Merging a change in a lower layer automatically opens
 version-bump PRs in every direct dependent, in dependency order, with the changeset summary and
 the CDC results attached.
 
-The canonical multi-repo change — *add a field to an invoice* — becomes:
+The canonical multi-repo change — _add a field to an invoice_ — becomes:
 
 ```
 1 human PR  →  unierp-contracts   (add the field to the schema)
@@ -436,7 +469,7 @@ Three human touchpoints instead of six, and the ordering is enforced by the bot 
 remembered by a person. **This is what makes a fifteen-repo daily workflow tolerable, and it is
 non-optional.**
 
-#### M4 — Golden-path integration CI *(replaces the single test suite)*
+#### M4 — Golden-path integration CI _(replaces the single test suite)_
 
 `unierp-workspace` runs, on every manifest change and nightly:
 
@@ -458,15 +491,15 @@ aggregate is checked on every manifest update.
 
 ### 4.6 Naming, licensing, and repository conventions
 
-| Convention          | Rule                                                                                                          |
-| :------------------ | :------------------------------------------------------------------------------------------------------------ |
-| Repository name     | `unierp-<layer-role>`, lowercase, no product-marketing names                                                  |
-| npm scope           | `@unerp/*` internal artifacts · `@unierp/*` public artifacts (SDK, CLI, extension-api)                        |
-| Default branch      | `main` everywhere (`unierp-www` renames from `master` during extraction)                                      |
-| Branch protection   | PR review, all checks green, linear history, signed commits, **administrators not exempt** — identical in all 15 |
-| Versioning          | SemVer per repo; L3–L5 additionally carry the dated train version                                             |
-| Governance files    | `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `GOVERNANCE.md`, `SECURITY.md` generated from `unierp-workspace` templates and drift-checked — **never hand-copied**, which is exactly how the Dockerfile bug of § 1.1 propagated |
-| Shared CI           | Reusable workflows in `unierp-workspace`; a repo defines *which* gates apply, never *how* a gate works        |
+| Convention        | Rule                                                                                                                                                                                                                     |
+| :---------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Repository name   | `unierp-<layer-role>`, lowercase, no product-marketing names                                                                                                                                                             |
+| npm scope         | `@unerp/*` internal artifacts · `@unierp/*` public artifacts (SDK, CLI, extension-api)                                                                                                                                   |
+| Default branch    | `main` everywhere (`unierp-www` renames from `master` during extraction)                                                                                                                                                 |
+| Branch protection | PR review, all checks green, linear history, signed commits, **administrators not exempt** — identical in all 15                                                                                                         |
+| Versioning        | SemVer per repo; L3–L5 additionally carry the dated train version                                                                                                                                                        |
+| Governance files  | `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `GOVERNANCE.md`, `SECURITY.md` generated from `unierp-workspace` templates and drift-checked — **never hand-copied**, which is exactly how the Dockerfile bug of § 1.1 propagated |
+| Shared CI         | Reusable workflows in `unierp-workspace`; a repo defines _which_ gates apply, never _how_ a gate works                                                                                                                   |
 
 ---
 
@@ -475,17 +508,17 @@ aggregate is checked on every manifest update.
 ### 5.1 Isolation model — unchanged mechanism, closed coverage
 
 The four-layer model in `ai/BACKEND_SCHEMA.md` is correct and stays. What changes is that all
-four layers become *provable*:
+four layers become _provable_:
 
-| Layer | Mechanism                                                         | Enforcement change                                                                       |
-| :---- | :---------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
-| 1     | Network / origin: control plane on a separate, restricted ingress | **New.** Closes the plane-1 exposure in § 1.2.                                            |
-| 2     | Identity: tenant claim bound to the session, never to a parameter | Tenant id may never be read from a request body or query. Lint rule + runtime assertion. |
+| Layer | Mechanism                                                         | Enforcement change                                                                                          |
+| :---- | :---------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- |
+| 1     | Network / origin: control plane on a separate, restricted ingress | **New.** Closes the plane-1 exposure in § 1.2.                                                              |
+| 2     | Identity: tenant claim bound to the session, never to a parameter | Tenant id may never be read from a request body or query. Lint rule + runtime assertion.                    |
 | 3     | Application: Prisma client scoped by `TenantContext`              | Repository base class in `@unerp/kernel`; a raw `prisma.` reference in a module fails `architecture:check`. |
-| 4     | **Database: RLS, `ENABLE` + `FORCE`, app role `NOBYPASSRLS`**     | The only layer that is proof. 364 gaps closed by catalogue sweep; drift blocked in CI.   |
+| 4     | **Database: RLS, `ENABLE` + `FORCE`, app role `NOBYPASSRLS`**     | The only layer that is proof. 364 gaps closed by catalogue sweep; drift blocked in CI.                      |
 
 **The generated-test rule:** for every table carrying `tenant_id`, a two-tenant isolation test is
-*generated from the schema* by `unierp-data`, not written by hand. 1,029 hand-written tests will
+_generated from the schema_ by `unierp-data`, not written by hand. 1,029 hand-written tests will
 never exist; 1,029 generated ones cost one script. The generator ships as part of
 `@unerp/database`, so `unierp-api` and every extension inherit it. A table with no generated test
 is a build failure.
@@ -520,7 +553,7 @@ without a consent record is not possible in the code path.
 ### 5.3 Authorization — RBAC now, ABAC-shaped from day one
 
 The permission string is already `module.resource.action`. That stays, and gains a fourth,
-optional segment that is *ignored today and load-bearing later*:
+optional segment that is _ignored today and load-bearing later_:
 
 ```
 finance.invoice.approve                    → RBAC (today)
@@ -542,20 +575,20 @@ a policy engine that 13% of routes bypass is decorative.
 The 45 modules are not 45 bounded contexts. Several pairs are the same context split by the word
 "advanced" — a packaging concept, not a domain concept:
 
-| Today                                        | Target context      | Note                                                  |
-| :------------------------------------------- | :------------------ | :---------------------------------------------------- |
-| `finance` + `advanced-finance` + `fixed-assets` | **Finance**         | 92 KLoc. Sub-modules by ledger, AR, AP, assets, tax.  |
-| `hr` + `advanced-hr` + `hr-advanced` + `people` | **People**          | Three "advanced HR" modules is a naming accident.     |
-| `inventory` + `supply-chain` + `procurement`    | **Supply**          | One physical-goods lifecycle.                          |
-| `sales` + `crm` + `pos` + `ecommerce`           | **Commerce**        | 136 KLoc — the largest; needs internal sub-boundaries. |
-| `manufacturing`                                 | **Manufacturing**   | —                                                      |
-| `projects` + `service-management` + `field-service` | **Service Delivery** | —                                                  |
-| `documents` + `drive` + `storage`               | **Content**         | Three modules, one concept.                            |
-| `analytics` + `reporting` + `saved-views` + `search` | **Insight**    | —                                                      |
-| `communication` + `notifications`               | **Messaging**       | —                                                      |
-| `workflow` + `ai`                               | **Automation**      | Merges into Developer Platform runtime (§ 8).         |
-| `localization` + `blockchain` + `pwa` + `devops` | **Platform Services** | Cross-cutting capabilities, not business domains.  |
-| `education` `healthcare` `real-estate` `field-service` (repos) | **Verticals** | Become extensions in L6.                       |
+| Today                                                          | Target context        | Note                                                   |
+| :------------------------------------------------------------- | :-------------------- | :----------------------------------------------------- |
+| `finance` + `advanced-finance` + `fixed-assets`                | **Finance**           | 92 KLoc. Sub-modules by ledger, AR, AP, assets, tax.   |
+| `hr` + `advanced-hr` + `hr-advanced` + `people`                | **People**            | Three "advanced HR" modules is a naming accident.      |
+| `inventory` + `supply-chain` + `procurement`                   | **Supply**            | One physical-goods lifecycle.                          |
+| `sales` + `crm` + `pos` + `ecommerce`                          | **Commerce**          | 136 KLoc — the largest; needs internal sub-boundaries. |
+| `manufacturing`                                                | **Manufacturing**     | —                                                      |
+| `projects` + `service-management` + `field-service`            | **Service Delivery**  | —                                                      |
+| `documents` + `drive` + `storage`                              | **Content**           | Three modules, one concept.                            |
+| `analytics` + `reporting` + `saved-views` + `search`           | **Insight**           | —                                                      |
+| `communication` + `notifications`                              | **Messaging**         | —                                                      |
+| `workflow` + `ai`                                              | **Automation**        | Merges into Developer Platform runtime (§ 8).          |
+| `localization` + `blockchain` + `pwa` + `devops`               | **Platform Services** | Cross-cutting capabilities, not business domains.      |
+| `education` `healthcare` `real-estate` `field-service` (repos) | **Verticals**         | Become extensions in L6.                               |
 
 **Contexts are a naming and boundary concept, not a folder move.** Consolidation is
 opportunistic — tied to each module's `@ts-nocheck` removal cycle. No big-bang rename. The
@@ -565,10 +598,10 @@ is a breaking change.
 
 ### 6.2 The tiered structural rule
 
-| Tier | Modules                                                                | Required structure                                             |
-| :--- | :--------------------------------------------------------------------- | :-------------------------------------------------------------- |
+| Tier  | Modules                                                                  | Required structure                                                                                                                                          |
+| :---- | :----------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **A** | Finance, People, Commerce, Supply, Manufacturing, and all of `platform/` | Full four-layer Clean Architecture. `max-lines`: 400 controller / 800 service. Domain layer has zero framework imports. 100% coverage on calculation paths. |
-| **B** | Everything else                                                        | Controller / service / dto / tests. `max-lines` enforced. Promote to Tier A when the module exceeds 15 KLoc or acquires money. |
+| **B** | Everything else                                                          | Controller / service / dto / tests. `max-lines` enforced. Promote to Tier A when the module exceeds 15 KLoc or acquires money.                              |
 
 Declared per module in a manifest and checked in CI. This is how the rule survives: it is data,
 not culture.
@@ -615,19 +648,19 @@ Tree-shaking preserved via `exports` + `sideEffects: false`.
 
 In a split topology this is not optional: publishing and version-resolving 14 packages across
 three consuming frontends is 42 version-coherence problems per release. **Do this collapse
-*before* extracting the repo**, not after (§ 14, Phase 2).
+_before_ extracting the repo**, not after (§ 14, Phase 2).
 
 ### 7.3 SDK strategy
 
 `unierp-sdk` publishes, generated from L0:
 
-| Artifact                | Purpose                                                                |
-| :---------------------- | :--------------------------------------------------------------------- |
-| `@unierp/sdk` (TS)      | First-class client: typed, retrying, tenant-aware, idempotency-aware   |
-| `unierp` (Python)       | Data/integration teams                                                  |
-| `unierp-sdk` (Java, Go) | Enterprise integration                                                  |
-| `unierp` (Dart)         | Consumed by `unierp-mobile`                                             |
-| `@unierp/cli`           | `unierp login / app scaffold / app dev / app test / app publish`        |
+| Artifact                | Purpose                                                              |
+| :---------------------- | :------------------------------------------------------------------- |
+| `@unierp/sdk` (TS)      | First-class client: typed, retrying, tenant-aware, idempotency-aware |
+| `unierp` (Python)       | Data/integration teams                                               |
+| `unierp-sdk` (Java, Go) | Enterprise integration                                               |
+| `unierp` (Dart)         | Consumed by `unierp-mobile`                                          |
+| `@unierp/cli`           | `unierp login / app scaffold / app dev / app test / app publish`     |
 
 SemVer, independent of the platform train, with a published support matrix. **The API is
 versioned; the SDK follows the API, not the platform.** The frontends depend on the SDK, never on
@@ -643,11 +676,11 @@ This is the requirement that determines whether UniERP is a product or a platfor
 
 Every successful platform offers a ladder, not a single door:
 
-| Tier                 | Audience              | Mechanism                                                                 | Isolation                                       |
-| :------------------- | :-------------------- | :------------------------------------------------------------------------ | :---------------------------------------------- |
-| **1 — Configure**    | Business admin        | Custom fields, layouts, views, validation rules, approval chains, reports | Metadata rows. No code. RLS-scoped.             |
-| **2 — Compose**      | Power user / low-code | Workflow Designer, Form Builder, Report Builder, Automation Rules, API Builder | Declarative graphs interpreted by the runtime. |
-| **3 — Code**         | Professional dev      | Custom modules, custom business logic, custom UI, plugins                 | **Sandboxed** (§ 8.3).                          |
+| Tier              | Audience              | Mechanism                                                                      | Isolation                                      |
+| :---------------- | :-------------------- | :----------------------------------------------------------------------------- | :--------------------------------------------- |
+| **1 — Configure** | Business admin        | Custom fields, layouts, views, validation rules, approval chains, reports      | Metadata rows. No code. RLS-scoped.            |
+| **2 — Compose**   | Power user / low-code | Workflow Designer, Form Builder, Report Builder, Automation Rules, API Builder | Declarative graphs interpreted by the runtime. |
+| **3 — Code**      | Professional dev      | Custom modules, custom business logic, custom UI, plugins                      | **Sandboxed** (§ 8.3).                         |
 
 Tiers 1 and 2 already exist in embryo: `modules/builder` (30.5 KLoc), `(dashboard)/builder/
 {app-hub,erp,web,manage}`, `(dashboard)/custom/[moduleSlug]`, `(dashboard)/app/[module]`, and
@@ -675,15 +708,15 @@ my-extension/
 
 **Extension points** are explicit, versioned, and enumerable — never "patch this class":
 
-| Point                | Contract                                                                    |
-| :------------------- | :-------------------------------------------------------------------------- |
-| Domain events        | Subscribe to `finance.invoice.approved` via the outbox, at-least-once, idempotent |
-| Lifecycle hooks      | `before/after` create, update, delete on any entity — with a hard time budget |
-| Validation rules     | Pure predicates over an entity; may reject, may not mutate                  |
-| Scheduled jobs       | Registered with the Job Scheduler; per-tenant quota                          |
-| API endpoints        | Mounted under `/api/v1/ext/<extension-id>/*`; never at a core path          |
-| UI extension slots   | Named slots in `@unerp/framework` layouts                                    |
-| Navigation & permissions | Declared in the manifest; merged into the tenant's nav and role model   |
+| Point                    | Contract                                                                          |
+| :----------------------- | :-------------------------------------------------------------------------------- |
+| Domain events            | Subscribe to `finance.invoice.approved` via the outbox, at-least-once, idempotent |
+| Lifecycle hooks          | `before/after` create, update, delete on any entity — with a hard time budget     |
+| Validation rules         | Pure predicates over an entity; may reject, may not mutate                        |
+| Scheduled jobs           | Registered with the Job Scheduler; per-tenant quota                               |
+| API endpoints            | Mounted under `/api/v1/ext/<extension-id>/*`; never at a core path                |
+| UI extension slots       | Named slots in `@unerp/framework` layouts                                         |
+| Navigation & permissions | Declared in the manifest; merged into the tenant's nav and role model             |
 
 **The compatibility promise is the whole product.** An extension built against extension-API `v1`
 runs unmodified on every platform release for the life of `v1` — minimum 3 years' support, 12
@@ -716,7 +749,7 @@ an extension API and then adding isolation is not a migration anyone has complet
 
 ### 8.4 AI-assisted development
 
-Positioned as a *generator of declarative artifacts*, never as a runtime authority:
+Positioned as a _generator of declarative artifacts_, never as a runtime authority:
 
 - Natural language → workflow graph, form schema, report definition, module scaffold — all
   emitted as reviewable declarative artifacts a human approves before activation.
@@ -729,11 +762,11 @@ Positioned as a *generator of declarative artifacts*, never as a runtime authori
 
 ## 9. Communication, events, and API versioning
 
-**Synchronous, in-process:** direct method calls only *within* a bounded context. Across
+**Synchronous, in-process:** direct method calls only _within_ a bounded context. Across
 contexts: never. Enforced by `architecture:check`.
 
 **Asynchronous, cross-context:** the transactional outbox, already built and one of the strongest
-pieces of this codebase. It becomes the *only* cross-context mechanism. `EventEmitter2` is
+pieces of this codebase. It becomes the _only_ cross-context mechanism. `EventEmitter2` is
 restricted to same-process, non-critical notification and lint-banned in `platform/` and Tier-A
 modules.
 
@@ -747,14 +780,14 @@ caller, and an entry in `API_VERSIONING_POLICY.md`. Two majors supported concurr
 
 **Cross-repository compatibility policy** — the rule that keeps fifteen repos coherent:
 
-| Boundary                                | Compatibility window                                    |
-| :-------------------------------------- | :------------------------------------------------------- |
-| `@unerp/extension-api` (public)         | 3 years support, 12 months deprecation notice           |
-| `@unierp/sdk` ↔ API major               | 2 majors concurrent                                      |
-| `@unerp/contracts` ↔ `unierp-api`       | Same train ± 1                                           |
-| `@unerp/database` ↔ `unierp-api`        | **Migration must be backward-compatible for one full train** — this is what makes rollback work without a DB rollback |
-| `@unerp/ui` ↔ frontends                 | Major bumps coordinated in one train                     |
-| Internal L0/L1 packages                 | Same train; may break freely between trains, subject to M2 |
+| Boundary                          | Compatibility window                                                                                                  |
+| :-------------------------------- | :-------------------------------------------------------------------------------------------------------------------- |
+| `@unerp/extension-api` (public)   | 3 years support, 12 months deprecation notice                                                                         |
+| `@unierp/sdk` ↔ API major         | 2 majors concurrent                                                                                                   |
+| `@unerp/contracts` ↔ `unierp-api` | Same train ± 1                                                                                                        |
+| `@unerp/database` ↔ `unierp-api`  | **Migration must be backward-compatible for one full train** — this is what makes rollback work without a DB rollback |
+| `@unerp/ui` ↔ frontends           | Major bumps coordinated in one train                                                                                  |
+| Internal L0/L1 packages           | Same train; may break freely between trains, subject to M2                                                            |
 
 ---
 
@@ -763,20 +796,20 @@ caller, and an entry in `API_VERSIONING_POLICY.md`. Two majors supported concurr
 Zero Trust and Defense in Depth, expressed as controls a script can verify rather than principles
 a document asserts.
 
-| Layer            | Controls                                                                                                                        | Verified by                                    |
-| :--------------- | :------------------------------------------------------------------------------------------------------------------------------ | :--------------------------------------------- |
-| **Network**      | mTLS between services; control-plane ingress IP-allowlisted and off public DNS; egress allowlist; WAF at Traefik                 | Infra tests in CI against the staging cluster  |
-| **Identity**     | OAuth 2.1 + OIDC, PKCE mandatory, no implicit flow; separate realms per plane; MFA mandatory on control plane; SCIM provisioning | Auth integration suite                          |
-| **Authorization**| `@Permissions` on every route (ratchet to 0 undecorated); `PolicyEngine` single decision point; extension scopes ⊆ installer's   | `check-policy.mjs` route-guard gate            |
-| **Tenant**       | Four-layer isolation (§ 5.1); RLS `ENABLE` + `FORCE`; app role `NOBYPASSRLS` asserted at startup                                 | Generated two-tenant test per table            |
-| **Application**  | Zod validation at every boundary; parameterised SQL only (1 reviewed exception, RLS-asserted at runtime); output encoding; CSRF double-submit; strict CSP; `helmet` | `check-policy.mjs` raw-SQL gate |
-| **Data**         | TLS 1.3 in transit; AES-256 at rest; column-level encryption for PII/secrets; per-tenant KMS key path; `Decimal(19,4)` for money  | Schema policy gate                              |
-| **Files**        | Content-type sniffing, size caps, AV scan, quarantine-then-promote, signed time-limited URLs, per-tenant MinIO prefix            | Storage integration tests                       |
-| **API**          | Per-tenant + per-key rate limits, quota enforcement, idempotency keys on all mutations, request signing for webhooks             | k6 suite + throttler tests                      |
-| **Secrets**      | OpenBao / SOPS+age; injected at runtime; never in CI logs; gitleaks at pre-commit, pre-push, and CI **in all 15 repos**          | Secret-scan gate at three layers                |
-| **Supply chain** | Pinned base-image digests; `pnpm audit` blocking on high/critical; CycloneDX SBOM per image **and per published package**; cosign signatures; Trivy scan; licence gate | CI, no `continue-on-error` |
-| **Audit**        | Append-only, hash-chained audit log; separate tenant and platform streams; impersonation double-logged                          | Audit integrity job                             |
-| **Recovery**     | WAL archiving, RPO ≤ 5 min, RTO ≤ 1 h, monthly automated restore verification, quarterly rehearsal                              | Restore-verification job pages on failure       |
+| Layer             | Controls                                                                                                                                                               | Verified by                                   |
+| :---------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------- |
+| **Network**       | mTLS between services; control-plane ingress IP-allowlisted and off public DNS; egress allowlist; WAF at Traefik                                                       | Infra tests in CI against the staging cluster |
+| **Identity**      | OAuth 2.1 + OIDC, PKCE mandatory, no implicit flow; separate realms per plane; MFA mandatory on control plane; SCIM provisioning                                       | Auth integration suite                        |
+| **Authorization** | `@Permissions` on every route (ratchet to 0 undecorated); `PolicyEngine` single decision point; extension scopes ⊆ installer's                                         | `check-policy.mjs` route-guard gate           |
+| **Tenant**        | Four-layer isolation (§ 5.1); RLS `ENABLE` + `FORCE`; app role `NOBYPASSRLS` asserted at startup                                                                       | Generated two-tenant test per table           |
+| **Application**   | Zod validation at every boundary; parameterised SQL only (1 reviewed exception, RLS-asserted at runtime); output encoding; CSRF double-submit; strict CSP; `helmet`    | `check-policy.mjs` raw-SQL gate               |
+| **Data**          | TLS 1.3 in transit; AES-256 at rest; column-level encryption for PII/secrets; per-tenant KMS key path; `Decimal(19,4)` for money                                       | Schema policy gate                            |
+| **Files**         | Content-type sniffing, size caps, AV scan, quarantine-then-promote, signed time-limited URLs, per-tenant MinIO prefix                                                  | Storage integration tests                     |
+| **API**           | Per-tenant + per-key rate limits, quota enforcement, idempotency keys on all mutations, request signing for webhooks                                                   | k6 suite + throttler tests                    |
+| **Secrets**       | OpenBao / SOPS+age; injected at runtime; never in CI logs; gitleaks at pre-commit, pre-push, and CI **in all 15 repos**                                                | Secret-scan gate at three layers              |
+| **Supply chain**  | Pinned base-image digests; `pnpm audit` blocking on high/critical; CycloneDX SBOM per image **and per published package**; cosign signatures; Trivy scan; licence gate | CI, no `continue-on-error`                    |
+| **Audit**         | Append-only, hash-chained audit log; separate tenant and platform streams; impersonation double-logged                                                                 | Audit integrity job                           |
+| **Recovery**      | WAL archiving, RPO ≤ 5 min, RTO ≤ 1 h, monthly automated restore verification, quarterly rehearsal                                                                     | Restore-verification job pages on failure     |
 
 **Split-specific security additions** — a polyrepo widens the supply-chain surface and this must
 be priced in:
@@ -829,11 +862,11 @@ holding a duplicate `node_modules`, plus `\\wsl$` filesystem crossings that domi
 **Target: everything except the datastores runs natively on Windows; only the datastores run in
 containers.**
 
-| Component                                     | Where it runs                                                            |
-| :-------------------------------------------- | :----------------------------------------------------------------------- |
-| Node 22 LTS, pnpm, Turborepo, Next.js, NestJS | **Native Windows** — no WSL, no container                                |
-| PostgreSQL + pgvector, Redis, MinIO, Ollama   | Docker Desktop (WSL2 backend) or native Windows services                 |
-| Flutter / Tauri toolchains                    | Native Windows                                                           |
+| Component                                     | Where it runs                                            |
+| :-------------------------------------------- | :------------------------------------------------------- |
+| Node 22 LTS, pnpm, Turborepo, Next.js, NestJS | **Native Windows** — no WSL, no container                |
+| PostgreSQL + pgvector, Redis, MinIO, Ollama   | Docker Desktop (WSL2 backend) or native Windows services |
+| Flutter / Tauri toolchains                    | Native Windows                                           |
 
 ### 12.1 The multi-repo developer loop
 
@@ -850,11 +883,11 @@ unierp ws unlink         # back to published versions
 
 **`link` is the mechanism that restores the monorepo feel**: while linked, a change in
 `unierp-contracts` is visible to `unierp-api` and `unierp-web` immediately, with full compiler
-feedback, no publish step. Publishing is only needed to *release*, not to *develop*. A local
+feedback, no publish step. Publishing is only needed to _release_, not to _develop_. A local
 Verdaccio registry is available for rehearsing the publish path.
 
 Developers link only the repos they are working in — typically two or three — so the resident
-memory of a normal session goes *down* versus the current single monorepo, which is one of the
+memory of a normal session goes _down_ versus the current single monorepo, which is one of the
 split's genuine wins on this machine.
 
 ### 12.2 Windows-specific measures
@@ -891,7 +924,7 @@ The three-layer enforcement design in `ai/TRD.md § 8` is correct and stands. Wh
 
 ### 13.1 Shared, not copied
 
-**Every gate is a reusable workflow in `unierp-workspace`.** A repository declares *which* gates
+**Every gate is a reusable workflow in `unierp-workspace`.** A repository declares _which_ gates
 apply; it never contains a gate implementation. This is the direct countermeasure to the failure
 in § 1.1 — the copy-pasted Dockerfile bug fixed three separate times. A drift check fails any repo
 whose workflow file diverges from the generated template.
@@ -914,15 +947,15 @@ and is the only thing that authorises a deploy.**
 
 ### 13.3 Testing pyramid
 
-| Level                       | Owning repo            | Gate                                        |
-| :-------------------------- | :--------------------- | :------------------------------------------ |
-| Domain unit                 | `unierp-api`           | 100% on financial calculation paths         |
-| Application / integration   | `unierp-api`           | Coverage threshold, ratcheting to 80%       |
-| **Tenant isolation**        | **`unierp-data`** (generated per `tenant_id` table) | **Every table, or the build fails** |
-| **Cross-repo contract**     | **every consumer → every provider (M2)** | **Provider PR fails on consumer break** |
-| **Extension compatibility** | `unierp-workspace` (reference corpus) | **Release blocker**              |
-| E2E                         | `unierp-workspace`     | Blocking on the golden path                 |
-| Load                        | `unierp-workspace`     | Smoke blocking; full k6 nightly; RLS query planning probed explicitly |
+| Level                       | Owning repo                                         | Gate                                                                  |
+| :-------------------------- | :-------------------------------------------------- | :-------------------------------------------------------------------- |
+| Domain unit                 | `unierp-api`                                        | 100% on financial calculation paths                                   |
+| Application / integration   | `unierp-api`                                        | Coverage threshold, ratcheting to 80%                                 |
+| **Tenant isolation**        | **`unierp-data`** (generated per `tenant_id` table) | **Every table, or the build fails**                                   |
+| **Cross-repo contract**     | **every consumer → every provider (M2)**            | **Provider PR fails on consumer break**                               |
+| **Extension compatibility** | `unierp-workspace` (reference corpus)               | **Release blocker**                                                   |
+| E2E                         | `unierp-workspace`                                  | Blocking on the golden path                                           |
+| Load                        | `unierp-workspace`                                  | Smoke blocking; full k6 nightly; RLS query planning probed explicitly |
 
 ### 13.4 Release and rollback
 
@@ -948,7 +981,7 @@ manifest, not fifteen repositories.**
 1. **Nothing new is built on a foundation that cannot prove itself.** Phase 0 is the existing
    remediation programme, unshortened and unparallelised.
 2. **Never give up a guarantee before its replacement exists.** Contracts and CDC (M2) ship
-   *before* the first repository extraction, because the moment `unierp-api` and `unierp-web`
+   _before_ the first repository extraction, because the moment `unierp-api` and `unierp-web`
    are separate repos, the compiler stops seeing across them. This ordering is not negotiable —
    it is the single decision that determines whether the split succeeds.
 3. **Extract in dependency order, lowest layer first.** You cannot extract a dependency after its
@@ -956,7 +989,7 @@ manifest, not fifteen repositories.**
 4. **Every extraction preserves history** (`git filter-repo`) and is tagged at the extraction
    point. Every phase is independently revertable.
 
-### Phase 0 — Foundation restoration *(in flight — unchanged, blocking)*
+### Phase 0 — Foundation restoration _(in flight — unchanged, blocking)_
 
 R1 type-safety ratchet · R3 close 364 RLS gaps · R4 CI/CD · R5 hygiene · R7 supply chain ·
 R11 the 92 `Float` money fields · R13 the red `schema:lint` on `main`.
@@ -965,11 +998,11 @@ Exit: ratchet monotonically decreasing, RLS coverage 1,029/1,029, CI green on `m
 staging working. **Rollback: `v1.0.0`.**
 
 > **Why this blocks the split.** With 100% `@ts-nocheck`, the compiler is already blind. Splitting
-> now removes the *only* remaining mechanism (a shared tsconfig graph) that could ever restore
+> now removes the _only_ remaining mechanism (a shared tsconfig graph) that could ever restore
 > cross-boundary checking, and fragments a single ratchet baseline into fifteen. Phase 0 must at
-> minimum be *underway with a falling ratchet* before Phase 3 begins.
+> minimum be _underway with a falling ratchet_ before Phase 3 begins.
 
-### Phase 1 — Separate the control plane *(~4 weeks, in-repo)*
+### Phase 1 — Separate the control plane _(~4 weeks, in-repo)_
 
 The § 1.2 exposure is the most serious architectural defect and is fixable without touching
 business logic or repository boundaries.
@@ -985,9 +1018,9 @@ business logic or repository boundaries.
 
 Rollback: revert the console deploy; deprecated aliases still serve.
 
-### Phase 2 — Make the split survivable *(~10 weeks, still in-repo)*
+### Phase 2 — Make the split survivable _(~10 weeks, still in-repo)_
 
-**Everything here happens *before* the first extraction, because all of it is cheap inside one
+**Everything here happens _before_ the first extraction, because all of it is cheap inside one
 repo and expensive across fifteen.**
 
 1. **Stand up `packages/contracts`** and generate OpenAPI, DTOs, and clients from it. Migrate
@@ -997,16 +1030,16 @@ repo and expensive across fifteen.**
    prove the golden path against the current monorepo.
 4. **Wire the choreography bot (M3)** against the existing `packages/*` graph.
 5. **Rename the 60 `saas-deepening-*` files** into real bounded contexts. One mechanical pass.
-   *Free now; a breaking change after extraction.*
+   _Free now; a breaking change after extraction._
 6. **Collapse the 14 `ui-*` packages into one `@unerp/ui`** with subpath exports (§ 7.2).
-   *Extracting 14 packages would create 42 version-coherence problems per release.*
+   _Extracting 14 packages would create 42 version-coherence problems per release._
 7. **Split `schema.prisma`** into per-context files (R2). Zero runtime risk.
 8. Declare the Tier A/B manifest; enable `max-lines` on new and modified files only.
 
 Exit criteria — **all four mechanisms demonstrably working inside the monorepo.** If M2 cannot
 catch a deliberate breaking change here, it will not catch one across repositories.
 
-### Phase 3 — Extract, lowest layer first *(~12 weeks)*
+### Phase 3 — Extract, lowest layer first _(~12 weeks)_
 
 Each extraction: `git filter-repo` to preserve history → publish first version → switch consumers
 to the published package → delete from the monorepo → tag. One layer at a time, with the golden
@@ -1031,7 +1064,7 @@ consumers back at the workspace path — a one-line `pnpm` override change.
 boundary between backend and frontend appears). Do not proceed until CDC coverage of the
 API↔web boundary is complete and has caught at least one deliberately injected break.
 
-### Phase 4 — The extension platform *(~10 weeks; the strategic bet)*
+### Phase 4 — The extension platform _(~10 weeks; the strategic bet)_
 
 1. Publish `@unerp/extension-api` v1 — manifest schema, extension points, typings.
 2. **Build the sandbox (§ 8.3) before anything runs in it.** Non-negotiable ordering.
@@ -1047,20 +1080,20 @@ API↔web boundary is complete and has caught at least one deliberately injected
 Rollback: the satellite repos remain deployable at `v1.0.0` throughout. A vertical that fails as
 an extension goes back to its service with no data migration — the tenant data never moved.
 
-### Phase 5 — Studio and marketplace *(~12 weeks)*
+### Phase 5 — Studio and marketplace _(~12 weeks)_
 
 Promote `modules/builder` to `developer/` on the public extension API — the same API the verticals
 now use. Workflow Designer, Form Builder, Report Builder, API Builder, Job Scheduler, and the
-plugin framework become *clients of that API* with no privileged path. Marketplace listing,
+plugin framework become _clients of that API_ with no privileged path. Marketplace listing,
 review, signing, and payout in the Platform Admin Console. AI-assisted generation last, producing
 declarative artifacts only.
 
-### Phase 6 — Scale and operability *(continuous)*
+### Phase 6 — Scale and operability _(continuous)_
 
 R9 SLOs, alerts, runbooks · R10 capacity model, PgBouncer, partitioning, read replicas ·
 per-tenant cost attribution · release-pipeline telemetry · DR rehearsal cadence.
 
-### What is explicitly *not* in the programme
+### What is explicitly _not_ in the programme
 
 - No rewrite of any business module.
 - No new backend service. Repository count goes 6 → 15; **backend deployable count stays at 1**,
@@ -1071,14 +1104,14 @@ per-tenant cost attribution · release-pipeline telemetry · DR rehearsal cadenc
 ### Timeline
 
 | Phase | Weeks | Cumulative | Gate to proceed                                                     |
-| :---- | ----: | ---------: | :------------------------------------------------------------------- |
-| 0     |  8–14 |      8–14  | Ratchet falling · RLS 1,029/1,029 · CI green on `main` · CD working  |
-| 1     |     4 |     12–18  | Console live on its own origin; no provider route in the tenant app  |
-| 2     |    10 |     22–28  | **M1–M4 proven inside the monorepo**                                 |
-| 3     |    12 |     34–40  | Golden path green after each layer                                   |
-| 4     |    10 |     44–50  | Four verticals running as extensions on the public API               |
-| 5     |    12 |     56–62  | Marketplace open with sandbox enforced                               |
-| 6     |     — | continuous | —                                                                     |
+| :---- | ----: | ---------: | :------------------------------------------------------------------ |
+| 0     |  8–14 |       8–14 | Ratchet falling · RLS 1,029/1,029 · CI green on `main` · CD working |
+| 1     |     4 |      12–18 | Console live on its own origin; no provider route in the tenant app |
+| 2     |    10 |      22–28 | **M1–M4 proven inside the monorepo**                                |
+| 3     |    12 |      34–40 | Golden path green after each layer                                  |
+| 4     |    10 |      44–50 | Four verticals running as extensions on the public API              |
+| 5     |    12 |      56–62 | Marketplace open with sandbox enforced                              |
+| 6     |     — | continuous | —                                                                   |
 
 Phases 0–1 may overlap. **Phase 2 may not start before Phase 0 shows a falling ratchet, and
 Phase 3 may not start before Phase 2's exit criteria are met.** Those two gates are the whole
@@ -1088,20 +1121,20 @@ risk-management strategy.
 
 ## 15. Evaluation against the reference platforms
 
-| Axis                          | Salesforce         | ServiceNow      | Power Platform  | SAP / Oracle     | Odoo / ERPNext   | **UniERP (target)**                                    |
-| :---------------------------- | :----------------- | :-------------- | :-------------- | :--------------- | :--------------- | :----------------------------------------------------- |
-| Control / tenant plane split  | ✅ Strong          | ✅ Strong       | ✅ Strong       | ✅               | ⚠️ Weak          | ✅ **Separate repo, origin, realm, ingress** (Phase 1)  |
-| Metadata-driven UI            | ✅ Lightning       | ✅ UI Builder   | ✅ Model-driven | ⚠️ Heavy         | ✅ Views/XML     | ✅ `@unerp/framework` — **already the strongest asset** |
-| Low-code tier                 | ✅ Flow            | ✅ Flow Designer| ✅ Best-in-class| ⚠️               | ✅ Studio        | ✅ Builder → Studio (Phase 5)                          |
-| Pro-code sandbox              | ✅ Apex (governed) | ✅ Server script| ⚠️ Limited      | ✅ ABAP/CAP      | ❌ **Unsandboxed Python** | ✅ **V8 isolates + capabilities** (Phase 4)   |
-| Marketplace                   | ✅ AppExchange     | ✅ Store        | ✅ AppSource    | ✅               | ✅ Apps          | ✅ Phase 5                                              |
-| Public, versioned API         | ✅                 | ✅              | ✅              | ✅               | ⚠️ ORM-coupled   | ✅ Contract-generated, SemVer, own repo                 |
-| Multi-language SDKs           | ✅                 | ⚠️              | ✅              | ✅               | ⚠️               | ✅ Generated (TS/Py/Java/Go/Dart)                       |
-| DB-enforced tenant isolation  | ✅ Proprietary     | ✅              | ✅              | ✅               | ⚠️ App-layer     | ✅ **Postgres RLS, forced, per-table proof**            |
-| Self-hostable                 | ❌                 | ❌              | ❌              | ⚠️ Costly        | ✅               | ✅ **Fully, no proprietary runtime**                    |
-| On-premise / private AI       | ❌ Cloud only      | ❌              | ❌              | ⚠️               | ❌               | ✅ **Ollama + pgvector, local-first**                   |
-| Open source                   | ❌                 | ❌              | ❌              | ❌               | ✅               | ✅                                                      |
-| Cost of entry                 | High               | Very high       | Medium          | Very high        | Low              | Low                                                     |
+| Axis                         | Salesforce         | ServiceNow       | Power Platform   | SAP / Oracle | Odoo / ERPNext            | **UniERP (target)**                                     |
+| :--------------------------- | :----------------- | :--------------- | :--------------- | :----------- | :------------------------ | :------------------------------------------------------ |
+| Control / tenant plane split | ✅ Strong          | ✅ Strong        | ✅ Strong        | ✅           | ⚠️ Weak                   | ✅ **Separate repo, origin, realm, ingress** (Phase 1)  |
+| Metadata-driven UI           | ✅ Lightning       | ✅ UI Builder    | ✅ Model-driven  | ⚠️ Heavy     | ✅ Views/XML              | ✅ `@unerp/framework` — **already the strongest asset** |
+| Low-code tier                | ✅ Flow            | ✅ Flow Designer | ✅ Best-in-class | ⚠️           | ✅ Studio                 | ✅ Builder → Studio (Phase 5)                           |
+| Pro-code sandbox             | ✅ Apex (governed) | ✅ Server script | ⚠️ Limited       | ✅ ABAP/CAP  | ❌ **Unsandboxed Python** | ✅ **V8 isolates + capabilities** (Phase 4)             |
+| Marketplace                  | ✅ AppExchange     | ✅ Store         | ✅ AppSource     | ✅           | ✅ Apps                   | ✅ Phase 5                                              |
+| Public, versioned API        | ✅                 | ✅               | ✅               | ✅           | ⚠️ ORM-coupled            | ✅ Contract-generated, SemVer, own repo                 |
+| Multi-language SDKs          | ✅                 | ⚠️               | ✅               | ✅           | ⚠️                        | ✅ Generated (TS/Py/Java/Go/Dart)                       |
+| DB-enforced tenant isolation | ✅ Proprietary     | ✅               | ✅               | ✅           | ⚠️ App-layer              | ✅ **Postgres RLS, forced, per-table proof**            |
+| Self-hostable                | ❌                 | ❌               | ❌               | ⚠️ Costly    | ✅                        | ✅ **Fully, no proprietary runtime**                    |
+| On-premise / private AI      | ❌ Cloud only      | ❌               | ❌               | ⚠️           | ❌                        | ✅ **Ollama + pgvector, local-first**                   |
+| Open source                  | ❌                 | ❌               | ❌               | ❌           | ✅                        | ✅                                                      |
+| Cost of entry                | High               | Very high        | Medium           | Very high    | Low                       | Low                                                     |
 
 **Where the target is genuinely competitive** — consequences of decisions already made in this
 codebase:
@@ -1123,13 +1156,13 @@ codebase:
 
 **Where the gap is real and must be closed by execution, not design:**
 
-| Gap                     | Reality                                                                                     |
-| :---------------------- | :------------------------------------------------------------------------------------------ |
-| **Proof of correctness**| Competitors have decades of production ledger validation. 100% `@ts-nocheck` and 92 `Float` money fields are the opposite. **Phase 0 is the entire answer and there is no shortcut.** |
-| Ecosystem              | AppExchange has thousands of apps. Ecosystems take years and cannot be architected into existence — only *enabled*, which is what Phases 4–5 do. |
-| Localisation depth     | SAP ships statutory compliance for 100+ countries. Content and partner work, not architecture; the `localization` module is the right hook. |
-| Operational maturity   | SLOs, alerts, runbooks, rehearsed DR (Phase 6).                                             |
-| **Release engineering**| Salesforce and ServiceNow run hundreds of repos with dedicated release-engineering teams. **A fifteen-repo topology requires that function to exist.** M1–M4 are that function expressed as automation rather than headcount — but they must be built and maintained, not assumed. |
+| Gap                      | Reality                                                                                                                                                                                                                                                                            |
+| :----------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Proof of correctness** | Competitors have decades of production ledger validation. 100% `@ts-nocheck` and 92 `Float` money fields are the opposite. **Phase 0 is the entire answer and there is no shortcut.**                                                                                              |
+| Ecosystem                | AppExchange has thousands of apps. Ecosystems take years and cannot be architected into existence — only _enabled_, which is what Phases 4–5 do.                                                                                                                                   |
+| Localisation depth       | SAP ships statutory compliance for 100+ countries. Content and partner work, not architecture; the `localization` module is the right hook.                                                                                                                                        |
+| Operational maturity     | SLOs, alerts, runbooks, rehearsed DR (Phase 6).                                                                                                                                                                                                                                    |
+| **Release engineering**  | Salesforce and ServiceNow run hundreds of repos with dedicated release-engineering teams. **A fifteen-repo topology requires that function to exist.** M1–M4 are that function expressed as automation rather than headcount — but they must be built and maintained, not assumed. |
 
 **Conclusion.** The architectural decisions in this codebase — modular monolith, Postgres-only
 with RLS, transactional outbox, schema-driven UI, design tokens, local-first AI — are the
@@ -1147,42 +1180,42 @@ honesty, and structural acyclicity — and a tax on daily change velocity that M
 **ADR-006 — Control plane separated by origin and guard, not by process.** Provider-global
 operations are exposed on a separate frontend deployable (`unierp-console`), separate origin,
 separate IdP realm, restricted ingress, while their business logic remains in `unierp-api` behind
-`/api/platform/v1`. *Rationale:* the threat is a customer reaching provider operations, closed by
+`/api/platform/v1`. _Rationale:_ the threat is a customer reaching provider operations, closed by
 network + origin + identity + guard; a second process would add a distributed transaction to every
-provisioning operation and close nothing further. *Consequence:* the router boundary must be
+provisioning operation and close nothing further. _Consequence:_ the router boundary must be
 mechanically enforced so later process extraction is a deployment change.
 
 **ADR-007 — The four vertical services are re-absorbed as first-party extensions.** Supersedes the
-vertical-extraction portion of ADR-003. *Rationale:* they are 2% of the code, meet none of
+vertical-extraction portion of ADR-003. _Rationale:_ they are 2% of the code, meet none of
 ADR-003's extraction criteria, and cost more in coordination than they return. Independent
 lifecycle is better served by the extension model, which additionally forces the public extension
-API to be proven by first-party use before partners depend on it. *Consequence:* four repositories
+API to be proven by first-party use before partners depend on it. _Consequence:_ four repositories
 are archived at `v1.0.0`, not deleted; the extension API must be good enough to carry healthcare.
 
 **ADR-008 — `unierp-contracts` is the single source of API and event truth, and the root of the
 dependency graph.** It has zero dependencies by construction. OpenAPI, DTOs, clients, and event
-typings are generated; drift fails the build. *Consequence:* hand-editing generated output is a
+typings are generated; drift fails the build. _Consequence:_ hand-editing generated output is a
 build failure; adding an endpoint means editing the contract first.
 
 **ADR-009 — Tier-3 extension code runs in a capability-scoped V8 isolate.** No ambient authority,
 no `require`, no global `fetch`; data access through the tenant-scoped repository so RLS applies
-identically. *Consequence:* the sandbox is a prerequisite for the marketplace, not a follow-up.
+identically. _Consequence:_ the sandbox is a prerequisite for the marketplace, not a follow-up.
 
 **ADR-010 — Native Windows is a first-class, CI-verified development target.** No build, test, or
-verify path may require WSL or bash. *Consequence:* a `windows-latest` job is permanent in all
+verify path may require WSL or bash. _Consequence:_ a `windows-latest` job is permanent in all
 fifteen repositories, and Node/PowerShell are the only permitted scripting languages in tooling.
 
 **ADR-011 — Fifteen repositories in eight strictly ordered layers; runtime stays three
 deployables.** A repository may depend only on published artifacts of a strictly lower layer.
-*Rationale:* structural acyclicity, honest public contracts, and layer-aligned ownership are worth
-more over a twenty-year horizon than the daily convenience of a monorepo. *Consequence, accepted
-explicitly:* cross-boundary compiler feedback, atomic multi-repo change, and single-lockfile
+_Rationale:_ structural acyclicity, honest public contracts, and layer-aligned ownership are worth
+more over a twenty-year horizon than the daily convenience of a monorepo. _Consequence, accepted
+explicitly:_ cross-boundary compiler feedback, atomic multi-repo change, and single-lockfile
 coherence are given up, and must be replaced by M1–M4 before the first extraction. **This ADR is
 void if M1–M4 are not delivered — the split without the mechanisms is worse than no split, and
 § 1.1 is the measured evidence for that claim.**
 
 **ADR-012 — The release train and signed manifest are the unit of deployment and rollback.** No
-environment runs an unpinned combination of component versions. *Consequence:* rollback is one
+environment runs an unpinned combination of component versions. _Consequence:_ rollback is one
 manifest, not fifteen repositories; every migration must stay backward-compatible for one full
 train.
 
@@ -1190,26 +1223,26 @@ train.
 
 ## 17. Principal risks
 
-| Risk                                                                        | Mitigation                                                                                                       |
-| :-------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------- |
-| **The split proceeds without M1–M4** — the dominant risk in this document    | Phase 2's exit criteria are CI-checked, not judged. Phase 3 cannot begin until M2 has caught a deliberately injected break. ADR-011 is void without them. |
-| Phase 0 is deferred and the split lands on unproven foundations              | Phase 2 is gated on a falling ratchet in CI. The gate is the mitigation.                                          |
-| Cross-repo change velocity collapses; developers work around the boundaries  | M3 choreography + `unierp ws link`. Lead time from L0 commit to deployed train is measured as a production metric (§ 11). If it regresses past target, merge layers back. |
-| Version-coherence hell across fifteen repos                                  | M1 manifest is the only source of truth; the golden path (M4) is the only deploy authorisation. 14→1 UI collapse before extraction removes the worst case. |
-| Fifteen `node_modules` trees exhaust the Windows dev machine                 | Single shared pnpm content-addressed store on one NTFS volume; developers link only 2–3 repos at a time (§ 12.1). |
-| Supply-chain surface widens 15×                                             | Per-repo OIDC-federated short-lived publish tokens, package signing + provenance, scope reservation, signed manifest (§ 10). |
-| Extension API v1 published before it is right                                | Four first-party verticals migrate onto it first. Breaking changes are free until publication.                    |
-| Control-plane route leaks into the tenant plane                              | Route inventory diffed in CI; any `platform/` controller reachable from the tenant router fails the build. After Phase 3 the repo boundary makes it structurally impossible. |
-| Sandbox escape                                                               | Capability model + isolate + resource quotas + egress allowlist + per-extension kill switch. Assume escape; limit blast radius. |
-| Governance/CI files drift across fifteen repos — **already observed at six** | All generated from `unierp-workspace` templates and drift-checked. No file is ever hand-copied between repos.     |
-| RLS query planning is the first scaling wall                                 | Explicitly load-tested in Phase 6 rather than discovered in production.                                           |
+| Risk                                                                         | Mitigation                                                                                                                                                                                            |
+| :--------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **The split proceeds without M1–M4** — the dominant risk in this document    | Phase 2's exit criteria are CI-checked, not judged. Phase 3 cannot begin until M2 has caught a deliberately injected break. ADR-011 is void without them.                                             |
+| Phase 0 is deferred and the split lands on unproven foundations              | Phase 2 is gated on a falling ratchet in CI. The gate is the mitigation.                                                                                                                              |
+| Cross-repo change velocity collapses; developers work around the boundaries  | M3 choreography + `unierp ws link`. Lead time from L0 commit to deployed train is measured as a production metric (§ 11). If it regresses past target, merge layers back.                             |
+| Version-coherence hell across fifteen repos                                  | M1 manifest is the only source of truth; the golden path (M4) is the only deploy authorisation. 14→1 UI collapse before extraction removes the worst case.                                            |
+| Fifteen `node_modules` trees exhaust the Windows dev machine                 | Single shared pnpm content-addressed store on one NTFS volume; developers link only 2–3 repos at a time (§ 12.1).                                                                                     |
+| Supply-chain surface widens 15×                                              | Per-repo OIDC-federated short-lived publish tokens, package signing + provenance, scope reservation, signed manifest (§ 10).                                                                          |
+| Extension API v1 published before it is right                                | Four first-party verticals migrate onto it first. Breaking changes are free until publication.                                                                                                        |
+| Control-plane route leaks into the tenant plane                              | Route inventory diffed in CI; any `platform/` controller reachable from the tenant router fails the build. After Phase 3 the repo boundary makes it structurally impossible.                          |
+| Sandbox escape                                                               | Capability model + isolate + resource quotas + egress allowlist + per-extension kill switch. Assume escape; limit blast radius.                                                                       |
+| Governance/CI files drift across fifteen repos — **already observed at six** | All generated from `unierp-workspace` templates and drift-checked. No file is ever hand-copied between repos.                                                                                         |
+| RLS query planning is the first scaling wall                                 | Explicitly load-tested in Phase 6 rather than discovered in production.                                                                                                                               |
 | The programme outlives the attention it needs                                | Every phase is independently valuable and independently revertable. Stopping after Phase 1 still leaves the platform materially safer than `v1.0.0`; stopping after Phase 2 leaves a better monorepo. |
 
 ---
 
 ## 18. Amendment log
 
-| Date       | Change                                                                                                                                        | By          |
-| :--------- | :--------------------------------------------------------------------------------------------------------------------------------------------- | :---------- |
-| 2026-08-02 | Document established at tag `v1.0.0`. Target hybrid repository architecture, four planes, ADR-006…010.                                          | Claude Code |
+| Date       | Change                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | By          |
+| :--------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------- |
+| 2026-08-02 | Document established at tag `v1.0.0`. Target hybrid repository architecture, four planes, ADR-006…010.                                                                                                                                                                                                                                                                                                                                                                                                                                         | Claude Code |
 | 2026-08-02 | **Revision 2.** Topology changed from 4-repository consolidation to a fully split, strictly layered 15-repository architecture in 8 layers. Added § 4.5 (M1–M4: release-train manifest, consumer-driven contract tests, change choreography, golden-path CI), § 12.1 (multi-repo Windows dev loop), § 13.1–13.2 (shared gates, four-stage pipeline), rewrote § 14 (7 phases, extraction in dependency order, mechanisms-before-extraction gate), added ADR-011 and ADR-012, expanded § 10 supply-chain and § 17 risks for the widened surface. | Claude Code |
