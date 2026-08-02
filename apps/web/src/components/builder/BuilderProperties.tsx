@@ -36,12 +36,12 @@ const AccordionSection = ({
           background: isOpen ? "rgba(255,255,255,0.02)" : "transparent",
           border: "none",
           cursor: "pointer",
-          color: "#e2e8f0",
+          color: "var(--studio-200)",
           transition: "background 0.2s",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          {Icon && <Icon size={14} style={{ color: "#94a3b8" }} />}
+          {Icon && <Icon size={14} style={{ color: "var(--studio-400)" }} />}
           <span
             style={{
               fontSize: "12px",
@@ -54,9 +54,9 @@ const AccordionSection = ({
           </span>
         </div>
         {isOpen ? (
-          <ChevronDown size={14} style={{ color: "#64748b" }} />
+          <ChevronDown size={14} style={{ color: "var(--studio-500)" }} />
         ) : (
-          <ChevronRight size={14} style={{ color: "#64748b" }} />
+          <ChevronRight size={14} style={{ color: "var(--studio-500)" }} />
         )}
       </button>
       {isOpen && (
@@ -78,12 +78,12 @@ const AccordionSection = ({
 // Simple dark input wrapper helper
 const DarkInput = ({ label, children, description }: any) => (
   <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-    <label style={{ fontSize: "12px", fontWeight: "500", color: "#94a3b8" }}>
+    <label style={{ fontSize: "12px", fontWeight: "500", color: "var(--studio-400)" }}>
       {label}
     </label>
     {children}
     {description && (
-      <p style={{ fontSize: "11px", color: "#64748b", margin: 0 }}>
+      <p style={{ fontSize: "11px", color: "var(--studio-500)", margin: 0 }}>
         {description}
       </p>
     )}
@@ -126,11 +126,11 @@ export function BuilderProperties() {
         style={{
           width: "320px",
           borderLeft: "1px solid rgba(255,255,255,0.05)",
-          background: "#1e293b",
+          background: "var(--studio-800)",
           display: "flex",
           flexDirection: "column",
           flexShrink: 0,
-          color: "#e2e8f0",
+          color: "var(--studio-200)",
         }}
       >
         <div
@@ -143,7 +143,7 @@ export function BuilderProperties() {
             background: "rgba(255,255,255,0.02)",
           }}
         >
-          <Settings size={20} style={{ color: "#3b82f6" }} />
+          <Settings size={20} style={{ color: "var(--studio-accent-bright)" }} />
           <div>
             <h3
               style={{
@@ -155,7 +155,7 @@ export function BuilderProperties() {
             >
               Form Automations
             </h3>
-            <span style={{ fontSize: "11px", color: "#94a3b8" }}>
+            <span style={{ fontSize: "11px", color: "var(--studio-400)" }}>
               Global Settings
             </span>
           </div>
@@ -186,7 +186,7 @@ export function BuilderProperties() {
                     right: "8px",
                     border: "none",
                     background: "transparent",
-                    color: "#ef4444",
+                    color: "var(--studio-danger-bright)",
                     cursor: "pointer",
                   }}
                 >
@@ -286,7 +286,7 @@ export function BuilderProperties() {
                       right: "8px",
                       border: "none",
                       background: "transparent",
-                      color: "#ef4444",
+                      color: "var(--studio-danger-bright)",
                       cursor: "pointer",
                     }}
                   >
@@ -370,11 +370,11 @@ export function BuilderProperties() {
       style={{
         width: "320px",
         borderLeft: "1px solid rgba(255,255,255,0.05)",
-        background: "#1e293b",
+        background: "var(--studio-800)",
         display: "flex",
         flexDirection: "column",
         flexShrink: 0,
-        color: "#e2e8f0",
+        color: "var(--studio-200)",
       }}
     >
       <div
@@ -387,7 +387,7 @@ export function BuilderProperties() {
           background: "rgba(255,255,255,0.02)",
         }}
       >
-        <Settings size={20} style={{ color: "#10b981" }} />
+        <Settings size={20} style={{ color: "var(--studio-success)" }} />
         <div>
           <h3
             style={{
@@ -399,7 +399,7 @@ export function BuilderProperties() {
           >
             Inspector
           </h3>
-          <span style={{ fontSize: "11px", color: "#94a3b8" }}>
+          <span style={{ fontSize: "11px", color: "var(--studio-400)" }}>
             {selectedField.type} Field
           </span>
         </div>
@@ -427,7 +427,7 @@ export function BuilderProperties() {
               style={{
                 ...inputStyle,
                 fontFamily: "monospace",
-                color: "#94a3b8",
+                color: "var(--studio-400)",
               }}
               value={selectedField.name}
               onChange={(e) =>
@@ -500,7 +500,7 @@ export function BuilderProperties() {
                 onChange={(e) =>
                   updateField(selectedField.id, { required: e.target.checked })
                 }
-                style={{ accentColor: "#10b981" }}
+                style={{ accentColor: "var(--studio-success)" }}
               />
               <span style={{ fontSize: "13px" }}>Mandatory Field</span>
             </label>
@@ -518,7 +518,7 @@ export function BuilderProperties() {
                 onChange={(e) =>
                   updateField(selectedField.id, { readOnly: e.target.checked })
                 }
-                style={{ accentColor: "#10b981" }}
+                style={{ accentColor: "var(--studio-success)" }}
               />
               <span style={{ fontSize: "13px" }}>Read-Only</span>
             </label>
@@ -538,7 +538,7 @@ export function BuilderProperties() {
                     inListView: e.target.checked,
                   })
                 }
-                style={{ accentColor: "#10b981" }}
+                style={{ accentColor: "var(--studio-success)" }}
               />
               <span style={{ fontSize: "13px" }}>Show in List View</span>
             </label>
@@ -564,7 +564,7 @@ export function BuilderProperties() {
                     weight: parseInt(e.target.value),
                   })
                 }
-                style={{ width: "100%", accentColor: "#3b82f6" }}
+                style={{ width: "100%", accentColor: "var(--studio-accent-bright)" }}
               />
             </DarkInput>
           ) : (
@@ -583,7 +583,7 @@ export function BuilderProperties() {
                       columnSpan: parseInt(e.target.value),
                     })
                   }
-                  style={{ width: "100%", accentColor: "#3b82f6" }}
+                  style={{ width: "100%", accentColor: "var(--studio-accent-bright)" }}
                 />
               </DarkInput>
               {(selectedField.type === "Text Editor" ||
@@ -846,7 +846,7 @@ export function BuilderProperties() {
               <div
                 style={{
                   fontSize: "11px",
-                  color: "#10b981",
+                  color: "var(--studio-success)",
                   fontFamily: "monospace",
                   padding: "6px 8px",
                   background: "rgba(16,185,129,0.1)",

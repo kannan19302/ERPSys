@@ -58,7 +58,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity1.create")
   async createNotificationsEntity1(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity1(req.user.tenantId, body);
   }
@@ -69,7 +69,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity1(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity1(req.user.tenantId, id, body);
   }
@@ -107,7 +107,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity2.create")
   async createNotificationsEntity2(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity2(req.user.tenantId, body);
   }
@@ -118,7 +118,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity2(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity2(req.user.tenantId, id, body);
   }
@@ -156,7 +156,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity3.create")
   async createNotificationsEntity3(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity3(req.user.tenantId, body);
   }
@@ -167,7 +167,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity3(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity3(req.user.tenantId, id, body);
   }
@@ -205,7 +205,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity4.create")
   async createNotificationsEntity4(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity4(req.user.tenantId, body);
   }
@@ -216,7 +216,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity4(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity4(req.user.tenantId, id, body);
   }
@@ -254,7 +254,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity5.create")
   async createNotificationsEntity5(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity5(req.user.tenantId, body);
   }
@@ -265,7 +265,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity5(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity5(req.user.tenantId, id, body);
   }
@@ -303,7 +303,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity6.create")
   async createNotificationsEntity6(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity6(req.user.tenantId, body);
   }
@@ -314,7 +314,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity6(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity6(req.user.tenantId, id, body);
   }
@@ -352,7 +352,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity7.create")
   async createNotificationsEntity7(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity7(req.user.tenantId, body);
   }
@@ -363,7 +363,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity7(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity7(req.user.tenantId, id, body);
   }
@@ -401,7 +401,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity8.create")
   async createNotificationsEntity8(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity8(req.user.tenantId, body);
   }
@@ -412,7 +412,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity8(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity8(req.user.tenantId, id, body);
   }
@@ -450,7 +450,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity9.create")
   async createNotificationsEntity9(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity9(req.user.tenantId, body);
   }
@@ -461,7 +461,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity9(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity9(req.user.tenantId, id, body);
   }
@@ -499,7 +499,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity10.create")
   async createNotificationsEntity10(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity10(req.user.tenantId, body);
   }
@@ -510,7 +510,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity10(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity10(req.user.tenantId, id, body);
   }
@@ -548,7 +548,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity11.create")
   async createNotificationsEntity11(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity11(req.user.tenantId, body);
   }
@@ -559,7 +559,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity11(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity11(req.user.tenantId, id, body);
   }
@@ -597,7 +597,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity12.create")
   async createNotificationsEntity12(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity12(req.user.tenantId, body);
   }
@@ -608,7 +608,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity12(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity12(req.user.tenantId, id, body);
   }
@@ -646,7 +646,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity13.create")
   async createNotificationsEntity13(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity13(req.user.tenantId, body);
   }
@@ -657,7 +657,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity13(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity13(req.user.tenantId, id, body);
   }
@@ -695,7 +695,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity14.create")
   async createNotificationsEntity14(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity14(req.user.tenantId, body);
   }
@@ -706,7 +706,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity14(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity14(req.user.tenantId, id, body);
   }
@@ -744,7 +744,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity15.create")
   async createNotificationsEntity15(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity15(req.user.tenantId, body);
   }
@@ -755,7 +755,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity15(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity15(req.user.tenantId, id, body);
   }
@@ -793,7 +793,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity16.create")
   async createNotificationsEntity16(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity16(req.user.tenantId, body);
   }
@@ -804,7 +804,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity16(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity16(req.user.tenantId, id, body);
   }
@@ -842,7 +842,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity17.create")
   async createNotificationsEntity17(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity17(req.user.tenantId, body);
   }
@@ -853,7 +853,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity17(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity17(req.user.tenantId, id, body);
   }
@@ -891,7 +891,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity18.create")
   async createNotificationsEntity18(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity18(req.user.tenantId, body);
   }
@@ -902,7 +902,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity18(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity18(req.user.tenantId, id, body);
   }
@@ -940,7 +940,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity19.create")
   async createNotificationsEntity19(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity19(req.user.tenantId, body);
   }
@@ -951,7 +951,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity19(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity19(req.user.tenantId, id, body);
   }
@@ -989,7 +989,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity20.create")
   async createNotificationsEntity20(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity20(req.user.tenantId, body);
   }
@@ -1000,7 +1000,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity20(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity20(req.user.tenantId, id, body);
   }
@@ -1038,7 +1038,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity21.create")
   async createNotificationsEntity21(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity21(req.user.tenantId, body);
   }
@@ -1049,7 +1049,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity21(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity21(req.user.tenantId, id, body);
   }
@@ -1087,7 +1087,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity22.create")
   async createNotificationsEntity22(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity22(req.user.tenantId, body);
   }
@@ -1098,7 +1098,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity22(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity22(req.user.tenantId, id, body);
   }
@@ -1136,7 +1136,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity23.create")
   async createNotificationsEntity23(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity23(req.user.tenantId, body);
   }
@@ -1147,7 +1147,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity23(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity23(req.user.tenantId, id, body);
   }
@@ -1185,7 +1185,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity24.create")
   async createNotificationsEntity24(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity24(req.user.tenantId, body);
   }
@@ -1196,7 +1196,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity24(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity24(req.user.tenantId, id, body);
   }
@@ -1234,7 +1234,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity25.create")
   async createNotificationsEntity25(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity25(req.user.tenantId, body);
   }
@@ -1245,7 +1245,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity25(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity25(req.user.tenantId, id, body);
   }
@@ -1283,7 +1283,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity26.create")
   async createNotificationsEntity26(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity26(req.user.tenantId, body);
   }
@@ -1294,7 +1294,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity26(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity26(req.user.tenantId, id, body);
   }
@@ -1332,7 +1332,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity27.create")
   async createNotificationsEntity27(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity27(req.user.tenantId, body);
   }
@@ -1343,7 +1343,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity27(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity27(req.user.tenantId, id, body);
   }
@@ -1381,7 +1381,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity28.create")
   async createNotificationsEntity28(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity28(req.user.tenantId, body);
   }
@@ -1392,7 +1392,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity28(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity28(req.user.tenantId, id, body);
   }
@@ -1430,7 +1430,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity29.create")
   async createNotificationsEntity29(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity29(req.user.tenantId, body);
   }
@@ -1441,7 +1441,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity29(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity29(req.user.tenantId, id, body);
   }
@@ -1479,7 +1479,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity30.create")
   async createNotificationsEntity30(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity30(req.user.tenantId, body);
   }
@@ -1490,7 +1490,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity30(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity30(req.user.tenantId, id, body);
   }
@@ -1528,7 +1528,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity31.create")
   async createNotificationsEntity31(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity31(req.user.tenantId, body);
   }
@@ -1539,7 +1539,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity31(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity31(req.user.tenantId, id, body);
   }
@@ -1577,7 +1577,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity32.create")
   async createNotificationsEntity32(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity32(req.user.tenantId, body);
   }
@@ -1588,7 +1588,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity32(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity32(req.user.tenantId, id, body);
   }
@@ -1626,7 +1626,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity33.create")
   async createNotificationsEntity33(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity33(req.user.tenantId, body);
   }
@@ -1637,7 +1637,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity33(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity33(req.user.tenantId, id, body);
   }
@@ -1675,7 +1675,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity34.create")
   async createNotificationsEntity34(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity34(req.user.tenantId, body);
   }
@@ -1686,7 +1686,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity34(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity34(req.user.tenantId, id, body);
   }
@@ -1724,7 +1724,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity35.create")
   async createNotificationsEntity35(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity35(req.user.tenantId, body);
   }
@@ -1735,7 +1735,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity35(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity35(req.user.tenantId, id, body);
   }
@@ -1773,7 +1773,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity36.create")
   async createNotificationsEntity36(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity36(req.user.tenantId, body);
   }
@@ -1784,7 +1784,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity36(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity36(req.user.tenantId, id, body);
   }
@@ -1822,7 +1822,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity37.create")
   async createNotificationsEntity37(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity37(req.user.tenantId, body);
   }
@@ -1833,7 +1833,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity37(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity37(req.user.tenantId, id, body);
   }
@@ -1871,7 +1871,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity38.create")
   async createNotificationsEntity38(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity38(req.user.tenantId, body);
   }
@@ -1882,7 +1882,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity38(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity38(req.user.tenantId, id, body);
   }
@@ -1920,7 +1920,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity39.create")
   async createNotificationsEntity39(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity39(req.user.tenantId, body);
   }
@@ -1931,7 +1931,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity39(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity39(req.user.tenantId, id, body);
   }
@@ -1969,7 +1969,7 @@ export class NotificationsGeneratedController {
   @Permissions("notifications.notificationsEntity40.create")
   async createNotificationsEntity40(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createNotificationsEntity40(req.user.tenantId, body);
   }
@@ -1980,7 +1980,7 @@ export class NotificationsGeneratedController {
   async updateNotificationsEntity40(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateNotificationsEntity40(req.user.tenantId, id, body);
   }

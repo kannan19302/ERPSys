@@ -58,7 +58,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity1.create")
   async createSearchEntity1(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity1(req.user.tenantId, body);
   }
@@ -69,7 +69,7 @@ export class SearchGeneratedController {
   async updateSearchEntity1(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity1(req.user.tenantId, id, body);
   }
@@ -107,7 +107,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity2.create")
   async createSearchEntity2(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity2(req.user.tenantId, body);
   }
@@ -118,7 +118,7 @@ export class SearchGeneratedController {
   async updateSearchEntity2(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity2(req.user.tenantId, id, body);
   }
@@ -156,7 +156,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity3.create")
   async createSearchEntity3(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity3(req.user.tenantId, body);
   }
@@ -167,7 +167,7 @@ export class SearchGeneratedController {
   async updateSearchEntity3(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity3(req.user.tenantId, id, body);
   }
@@ -205,7 +205,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity4.create")
   async createSearchEntity4(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity4(req.user.tenantId, body);
   }
@@ -216,7 +216,7 @@ export class SearchGeneratedController {
   async updateSearchEntity4(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity4(req.user.tenantId, id, body);
   }
@@ -254,7 +254,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity5.create")
   async createSearchEntity5(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity5(req.user.tenantId, body);
   }
@@ -265,7 +265,7 @@ export class SearchGeneratedController {
   async updateSearchEntity5(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity5(req.user.tenantId, id, body);
   }
@@ -303,7 +303,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity6.create")
   async createSearchEntity6(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity6(req.user.tenantId, body);
   }
@@ -314,7 +314,7 @@ export class SearchGeneratedController {
   async updateSearchEntity6(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity6(req.user.tenantId, id, body);
   }
@@ -352,7 +352,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity7.create")
   async createSearchEntity7(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity7(req.user.tenantId, body);
   }
@@ -363,7 +363,7 @@ export class SearchGeneratedController {
   async updateSearchEntity7(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity7(req.user.tenantId, id, body);
   }
@@ -401,7 +401,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity8.create")
   async createSearchEntity8(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity8(req.user.tenantId, body);
   }
@@ -412,7 +412,7 @@ export class SearchGeneratedController {
   async updateSearchEntity8(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity8(req.user.tenantId, id, body);
   }
@@ -450,7 +450,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity9.create")
   async createSearchEntity9(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity9(req.user.tenantId, body);
   }
@@ -461,7 +461,7 @@ export class SearchGeneratedController {
   async updateSearchEntity9(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity9(req.user.tenantId, id, body);
   }
@@ -499,7 +499,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity10.create")
   async createSearchEntity10(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity10(req.user.tenantId, body);
   }
@@ -510,7 +510,7 @@ export class SearchGeneratedController {
   async updateSearchEntity10(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity10(req.user.tenantId, id, body);
   }
@@ -548,7 +548,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity11.create")
   async createSearchEntity11(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity11(req.user.tenantId, body);
   }
@@ -559,7 +559,7 @@ export class SearchGeneratedController {
   async updateSearchEntity11(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity11(req.user.tenantId, id, body);
   }
@@ -597,7 +597,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity12.create")
   async createSearchEntity12(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity12(req.user.tenantId, body);
   }
@@ -608,7 +608,7 @@ export class SearchGeneratedController {
   async updateSearchEntity12(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity12(req.user.tenantId, id, body);
   }
@@ -646,7 +646,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity13.create")
   async createSearchEntity13(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity13(req.user.tenantId, body);
   }
@@ -657,7 +657,7 @@ export class SearchGeneratedController {
   async updateSearchEntity13(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity13(req.user.tenantId, id, body);
   }
@@ -695,7 +695,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity14.create")
   async createSearchEntity14(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity14(req.user.tenantId, body);
   }
@@ -706,7 +706,7 @@ export class SearchGeneratedController {
   async updateSearchEntity14(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity14(req.user.tenantId, id, body);
   }
@@ -744,7 +744,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity15.create")
   async createSearchEntity15(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity15(req.user.tenantId, body);
   }
@@ -755,7 +755,7 @@ export class SearchGeneratedController {
   async updateSearchEntity15(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity15(req.user.tenantId, id, body);
   }
@@ -793,7 +793,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity16.create")
   async createSearchEntity16(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity16(req.user.tenantId, body);
   }
@@ -804,7 +804,7 @@ export class SearchGeneratedController {
   async updateSearchEntity16(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity16(req.user.tenantId, id, body);
   }
@@ -842,7 +842,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity17.create")
   async createSearchEntity17(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity17(req.user.tenantId, body);
   }
@@ -853,7 +853,7 @@ export class SearchGeneratedController {
   async updateSearchEntity17(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity17(req.user.tenantId, id, body);
   }
@@ -891,7 +891,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity18.create")
   async createSearchEntity18(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity18(req.user.tenantId, body);
   }
@@ -902,7 +902,7 @@ export class SearchGeneratedController {
   async updateSearchEntity18(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity18(req.user.tenantId, id, body);
   }
@@ -940,7 +940,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity19.create")
   async createSearchEntity19(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity19(req.user.tenantId, body);
   }
@@ -951,7 +951,7 @@ export class SearchGeneratedController {
   async updateSearchEntity19(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity19(req.user.tenantId, id, body);
   }
@@ -989,7 +989,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity20.create")
   async createSearchEntity20(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity20(req.user.tenantId, body);
   }
@@ -1000,7 +1000,7 @@ export class SearchGeneratedController {
   async updateSearchEntity20(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity20(req.user.tenantId, id, body);
   }
@@ -1038,7 +1038,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity21.create")
   async createSearchEntity21(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity21(req.user.tenantId, body);
   }
@@ -1049,7 +1049,7 @@ export class SearchGeneratedController {
   async updateSearchEntity21(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity21(req.user.tenantId, id, body);
   }
@@ -1087,7 +1087,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity22.create")
   async createSearchEntity22(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity22(req.user.tenantId, body);
   }
@@ -1098,7 +1098,7 @@ export class SearchGeneratedController {
   async updateSearchEntity22(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity22(req.user.tenantId, id, body);
   }
@@ -1136,7 +1136,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity23.create")
   async createSearchEntity23(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity23(req.user.tenantId, body);
   }
@@ -1147,7 +1147,7 @@ export class SearchGeneratedController {
   async updateSearchEntity23(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity23(req.user.tenantId, id, body);
   }
@@ -1185,7 +1185,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity24.create")
   async createSearchEntity24(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity24(req.user.tenantId, body);
   }
@@ -1196,7 +1196,7 @@ export class SearchGeneratedController {
   async updateSearchEntity24(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity24(req.user.tenantId, id, body);
   }
@@ -1234,7 +1234,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity25.create")
   async createSearchEntity25(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity25(req.user.tenantId, body);
   }
@@ -1245,7 +1245,7 @@ export class SearchGeneratedController {
   async updateSearchEntity25(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity25(req.user.tenantId, id, body);
   }
@@ -1283,7 +1283,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity26.create")
   async createSearchEntity26(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity26(req.user.tenantId, body);
   }
@@ -1294,7 +1294,7 @@ export class SearchGeneratedController {
   async updateSearchEntity26(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity26(req.user.tenantId, id, body);
   }
@@ -1332,7 +1332,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity27.create")
   async createSearchEntity27(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity27(req.user.tenantId, body);
   }
@@ -1343,7 +1343,7 @@ export class SearchGeneratedController {
   async updateSearchEntity27(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity27(req.user.tenantId, id, body);
   }
@@ -1381,7 +1381,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity28.create")
   async createSearchEntity28(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity28(req.user.tenantId, body);
   }
@@ -1392,7 +1392,7 @@ export class SearchGeneratedController {
   async updateSearchEntity28(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity28(req.user.tenantId, id, body);
   }
@@ -1430,7 +1430,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity29.create")
   async createSearchEntity29(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity29(req.user.tenantId, body);
   }
@@ -1441,7 +1441,7 @@ export class SearchGeneratedController {
   async updateSearchEntity29(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity29(req.user.tenantId, id, body);
   }
@@ -1479,7 +1479,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity30.create")
   async createSearchEntity30(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity30(req.user.tenantId, body);
   }
@@ -1490,7 +1490,7 @@ export class SearchGeneratedController {
   async updateSearchEntity30(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity30(req.user.tenantId, id, body);
   }
@@ -1528,7 +1528,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity31.create")
   async createSearchEntity31(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity31(req.user.tenantId, body);
   }
@@ -1539,7 +1539,7 @@ export class SearchGeneratedController {
   async updateSearchEntity31(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity31(req.user.tenantId, id, body);
   }
@@ -1577,7 +1577,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity32.create")
   async createSearchEntity32(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity32(req.user.tenantId, body);
   }
@@ -1588,7 +1588,7 @@ export class SearchGeneratedController {
   async updateSearchEntity32(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity32(req.user.tenantId, id, body);
   }
@@ -1626,7 +1626,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity33.create")
   async createSearchEntity33(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity33(req.user.tenantId, body);
   }
@@ -1637,7 +1637,7 @@ export class SearchGeneratedController {
   async updateSearchEntity33(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity33(req.user.tenantId, id, body);
   }
@@ -1675,7 +1675,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity34.create")
   async createSearchEntity34(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity34(req.user.tenantId, body);
   }
@@ -1686,7 +1686,7 @@ export class SearchGeneratedController {
   async updateSearchEntity34(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity34(req.user.tenantId, id, body);
   }
@@ -1724,7 +1724,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity35.create")
   async createSearchEntity35(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity35(req.user.tenantId, body);
   }
@@ -1735,7 +1735,7 @@ export class SearchGeneratedController {
   async updateSearchEntity35(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity35(req.user.tenantId, id, body);
   }
@@ -1773,7 +1773,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity36.create")
   async createSearchEntity36(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity36(req.user.tenantId, body);
   }
@@ -1784,7 +1784,7 @@ export class SearchGeneratedController {
   async updateSearchEntity36(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity36(req.user.tenantId, id, body);
   }
@@ -1822,7 +1822,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity37.create")
   async createSearchEntity37(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity37(req.user.tenantId, body);
   }
@@ -1833,7 +1833,7 @@ export class SearchGeneratedController {
   async updateSearchEntity37(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity37(req.user.tenantId, id, body);
   }
@@ -1871,7 +1871,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity38.create")
   async createSearchEntity38(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity38(req.user.tenantId, body);
   }
@@ -1882,7 +1882,7 @@ export class SearchGeneratedController {
   async updateSearchEntity38(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity38(req.user.tenantId, id, body);
   }
@@ -1920,7 +1920,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity39.create")
   async createSearchEntity39(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity39(req.user.tenantId, body);
   }
@@ -1931,7 +1931,7 @@ export class SearchGeneratedController {
   async updateSearchEntity39(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity39(req.user.tenantId, id, body);
   }
@@ -1969,7 +1969,7 @@ export class SearchGeneratedController {
   @Permissions("search.searchEntity40.create")
   async createSearchEntity40(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSearchEntity40(req.user.tenantId, body);
   }
@@ -1980,7 +1980,7 @@ export class SearchGeneratedController {
   async updateSearchEntity40(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSearchEntity40(req.user.tenantId, id, body);
   }

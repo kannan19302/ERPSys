@@ -250,8 +250,8 @@ export function CtaBannerBlock({
   return (
     <section
       style={section({
-        background: "var(--color-primary, #4f46e5)",
-        color: "#fff",
+        background: "var(--color-primary, var(--studio-indigo))",
+        color: "var(--studio-0)",
       })}
     >
       <div style={{ ...container(760), textAlign: "center" }}>
@@ -268,8 +268,8 @@ export function CtaBannerBlock({
           style={{
             display: "inline-block",
             padding: "14px 32px",
-            background: "#fff",
-            color: "var(--color-primary, #4f46e5)",
+            background: "var(--studio-0)",
+            color: "var(--color-primary, var(--studio-indigo))",
             borderRadius: 10,
             fontWeight: 700,
             textDecoration: "none",
@@ -306,7 +306,7 @@ export function NavbarBlock({
         borderBottom: "1px solid rgba(128,128,128,0.15)",
         position: "sticky",
         top: 0,
-        background: "var(--color-bg-elevated,#fff)",
+        background: "var(--color-bg-elevated,var(--studio-0))",
         zIndex: 50,
       }}
     >
@@ -350,8 +350,8 @@ export function NavbarBlock({
                     position: "absolute",
                     top: -8,
                     right: -12,
-                    background: "var(--color-primary,#4f46e5)",
-                    color: "#fff",
+                    background: "var(--color-primary,var(--studio-indigo))",
+                    color: "var(--studio-0)",
                     borderRadius: 999,
                     fontSize: 10,
                     padding: "1px 6px",
@@ -387,8 +387,8 @@ export function FooterBlock({
   return (
     <footer
       style={{
-        background: "#0f172a",
-        color: "#e2e8f0",
+        background: "var(--studio-900)",
+        color: "var(--studio-200)",
         padding: "56px 20px 32px",
       }}
     >
@@ -415,7 +415,7 @@ export function FooterBlock({
               key={i}
               href={l.url}
               style={{
-                color: "#cbd5e1",
+                color: "var(--studio-300)",
                 textDecoration: "none",
                 fontSize: "0.9rem",
               }}
@@ -505,7 +505,7 @@ export function ContactFormBlock({
     border: "1px solid rgba(128,128,128,0.3)",
     fontSize: "1rem",
     fontFamily: "inherit",
-    background: "var(--color-bg, #fff)",
+    background: "var(--color-bg, var(--studio-0))",
     color: "inherit",
   };
 
@@ -525,7 +525,7 @@ export function ContactFormBlock({
               padding: 40,
               background: "rgba(16,185,129,0.1)",
               borderRadius: 14,
-              color: "#059669",
+              color: "var(--studio-success-strong)",
               fontWeight: 600,
             }}
           >
@@ -572,7 +572,7 @@ export function ContactFormBlock({
               </div>
             ))}
             {state === "error" && (
-              <div style={{ color: "#dc2626", fontSize: "0.9rem" }}>
+              <div style={{ color: "var(--studio-danger)", fontSize: "0.9rem" }}>
                 Something went wrong. Please try again.
               </div>
             )}
@@ -583,8 +583,8 @@ export function ContactFormBlock({
                 padding: "14px",
                 borderRadius: 10,
                 border: "none",
-                background: "var(--color-primary,#4f46e5)",
-                color: "#fff",
+                background: "var(--color-primary,var(--studio-indigo))",
+                color: "var(--studio-0)",
                 fontWeight: 700,
                 fontSize: "1rem",
                 cursor: "pointer",
@@ -641,7 +641,7 @@ export function CartBlock({ title = "Your Cart", tenantSlug }: any) {
     border: "1px solid rgba(128,128,128,0.3)",
     fontSize: "0.95rem",
     fontFamily: "inherit",
-    background: "var(--color-bg,#fff)",
+    background: "var(--color-bg,var(--studio-0))",
     color: "inherit",
   };
 
@@ -706,7 +706,7 @@ export function CartBlock({ title = "Your Cart", tenantSlug }: any) {
                         width: 54,
                         height: 54,
                         borderRadius: 8,
-                        background: `#f1f5f9 center/cover url(${it.image})`,
+                        background: `var(--studio-100) center/cover url(${it.image})`,
                         flexShrink: 0,
                       }}
                     />
@@ -810,7 +810,7 @@ export function CartBlock({ title = "Your Cart", tenantSlug }: any) {
             style={{ ...inp, minHeight: 70, resize: "vertical" }}
           />
           {state === "error" && (
-            <div style={{ color: "#dc2626", fontSize: "0.9rem" }}>
+            <div style={{ color: "var(--studio-danger)", fontSize: "0.9rem" }}>
               Checkout failed. Try again.
             </div>
           )}
@@ -822,9 +822,9 @@ export function CartBlock({ title = "Your Cart", tenantSlug }: any) {
               borderRadius: 10,
               border: "none",
               background: cart.items.length
-                ? "var(--color-primary,#4f46e5)"
-                : "#cbd5e1",
-              color: "#fff",
+                ? "var(--color-primary,var(--studio-indigo))"
+                : "var(--studio-300)",
+              color: "var(--studio-0)",
               fontWeight: 700,
               cursor: cart.items.length ? "pointer" : "not-allowed",
             }}

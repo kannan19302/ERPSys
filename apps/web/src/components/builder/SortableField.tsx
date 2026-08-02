@@ -110,10 +110,10 @@ export function SortableField({
         className="builder-field-box"
         style={{
           padding: "var(--space-3)",
-          background: isLayoutBreak ? "#f8fafc" : "white",
+          background: isLayoutBreak ? "var(--studio-50)" : "white",
           border: isLayoutBreak
-            ? `2px dashed ${isSelected ? "#3b82f6" : "#cbd5e1"}`
-            : `2px solid ${isSelected ? "#3b82f6" : "transparent"}`,
+            ? `2px dashed ${isSelected ? "var(--studio-accent-bright)" : "var(--studio-300)"}`
+            : `2px solid ${isSelected ? "var(--studio-accent-bright)" : "transparent"}`,
           borderRadius: "var(--radius-md)",
           cursor: "pointer",
           boxShadow: isSelected

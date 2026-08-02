@@ -32,7 +32,7 @@ const WIDGET_TYPES = [
     type: "kpi",
     label: "KPI Metric",
     icon: Hash,
-    color: "#10b981",
+    color: "var(--studio-success)",
     defaultW: 3,
     defaultH: 2,
   },
@@ -40,7 +40,7 @@ const WIDGET_TYPES = [
     type: "bar",
     label: "Bar Chart",
     icon: BarChart2,
-    color: "#3b82f6",
+    color: "var(--studio-accent-bright)",
     defaultW: 6,
     defaultH: 4,
   },
@@ -48,7 +48,7 @@ const WIDGET_TYPES = [
     type: "line",
     label: "Line Chart",
     icon: TrendingUp,
-    color: "#f59e0b",
+    color: "var(--studio-warning)",
     defaultW: 6,
     defaultH: 4,
   },
@@ -56,7 +56,7 @@ const WIDGET_TYPES = [
     type: "pie",
     label: "Pie Chart",
     icon: PieChart,
-    color: "#8b5cf6",
+    color: "var(--studio-violet)",
     defaultW: 4,
     defaultH: 4,
   },
@@ -64,7 +64,7 @@ const WIDGET_TYPES = [
     type: "table",
     label: "Data Table",
     icon: TableIcon,
-    color: "#64748b",
+    color: "var(--studio-500)",
     defaultW: 12,
     defaultH: 5,
   },
@@ -269,8 +269,8 @@ export function DashboardEditorWorkspace({
         top: 0,
         left: 0,
         zIndex: 10000,
-        backgroundColor: "#f1f5f9",
-        color: "#0f172a",
+        backgroundColor: "var(--studio-100)",
+        color: "var(--studio-900)",
         overflow: "hidden",
       }}
     >
@@ -282,7 +282,7 @@ export function DashboardEditorWorkspace({
           padding: "0 var(--space-4)",
           height: "60px",
           background: "white",
-          borderBottom: "1px solid #e2e8f0",
+          borderBottom: "1px solid var(--studio-200)",
           zIndex: 10,
         }}
       >
@@ -296,7 +296,7 @@ export function DashboardEditorWorkspace({
           <button
             onClick={handleClose}
             style={{
-              background: "#f1f5f9",
+              background: "var(--studio-100)",
               border: "none",
               borderRadius: "6px",
               padding: "8px",
@@ -305,9 +305,9 @@ export function DashboardEditorWorkspace({
             }}
           >
             {embedded ? (
-              <X size={16} color="#64748b" />
+              <X size={16} color="var(--studio-500)" />
             ) : (
-              <ArrowLeft size={16} color="#64748b" />
+              <ArrowLeft size={16} color="var(--studio-500)" />
             )}
           </button>
           <div>
@@ -321,7 +321,7 @@ export function DashboardEditorWorkspace({
                 gap: "6px",
               }}
             >
-              <LayoutDashboard size={16} color="#10b981" />
+              <LayoutDashboard size={16} color="var(--studio-success)" />
               <input
                 value={dashboard?.name || ""}
                 onChange={(e) =>
@@ -332,13 +332,13 @@ export function DashboardEditorWorkspace({
                   outline: "none",
                   fontSize: 15,
                   fontWeight: 600,
-                  color: "#0f172a",
+                  color: "var(--studio-900)",
                   background: "transparent",
                   minWidth: 200,
                 }}
               />
             </h1>
-            <span style={{ fontSize: "12px", color: "#64748b" }}>
+            <span style={{ fontSize: "12px", color: "var(--studio-500)" }}>
               {dashboard?.status || "DRAFT"}
             </span>
           </div>
@@ -350,7 +350,7 @@ export function DashboardEditorWorkspace({
             style={{
               padding: "8px 16px",
               borderRadius: "6px",
-              background: "#2563eb",
+              background: "var(--studio-accent)",
               color: "white",
               border: "none",
               cursor: "pointer",
@@ -385,19 +385,19 @@ export function DashboardEditorWorkspace({
           style={{
             width: "240px",
             background: "white",
-            borderRight: "1px solid #e2e8f0",
+            borderRight: "1px solid var(--studio-200)",
             display: "flex",
             flexDirection: "column",
             flexShrink: 0,
           }}
         >
-          <div style={{ padding: "16px", borderBottom: "1px solid #e2e8f0" }}>
+          <div style={{ padding: "16px", borderBottom: "1px solid var(--studio-200)" }}>
             <span
               style={{
                 fontSize: "11px",
                 fontWeight: 600,
                 textTransform: "uppercase",
-                color: "#94a3b8",
+                color: "var(--studio-400)",
                 letterSpacing: "0.05em",
               }}
             >
@@ -423,7 +423,7 @@ export function DashboardEditorWorkspace({
                   gap: "10px",
                   padding: "12px",
                   background: "white",
-                  border: "1px solid #e2e8f0",
+                  border: "1px solid var(--studio-200)",
                   borderRadius: "8px",
                   cursor: "pointer",
                   boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
@@ -432,10 +432,10 @@ export function DashboardEditorWorkspace({
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.borderColor = wt.color;
-                  e.currentTarget.style.background = "#f8fafc";
+                  e.currentTarget.style.background = "var(--studio-50)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "#e2e8f0";
+                  e.currentTarget.style.borderColor = "var(--studio-200)";
                   e.currentTarget.style.background = "white";
                 }}
               >
@@ -444,13 +444,13 @@ export function DashboardEditorWorkspace({
                   style={{
                     fontSize: "13px",
                     fontWeight: 500,
-                    color: "#334155",
+                    color: "var(--studio-700)",
                     flex: 1,
                   }}
                 >
                   {wt.label}
                 </span>
-                <PlusCircle size={14} color="#94a3b8" />
+                <PlusCircle size={14} color="var(--studio-400)" />
               </button>
             ))}
           </div>
@@ -473,8 +473,8 @@ export function DashboardEditorWorkspace({
                 alignItems: "center",
                 justifyContent: "center",
                 height: "100%",
-                color: "#94a3b8",
-                border: "2px dashed #cbd5e1",
+                color: "var(--studio-400)",
+                border: "2px dashed var(--studio-300)",
                 borderRadius: "16px",
               }}
             >
@@ -521,8 +521,8 @@ export function DashboardEditorWorkspace({
                       key={l.i}
                       onClick={() => setSelectedWidgetId(widget.id)}
                       style={{
-                        background: "#f8fafc",
-                        border: `1px solid ${isSelected ? "#3b82f6" : "#e2e8f0"}`,
+                        background: "var(--studio-50)",
+                        border: `1px solid ${isSelected ? "var(--studio-accent-bright)" : "var(--studio-200)"}`,
                         borderRadius: "8px",
                         overflow: "hidden",
                         cursor: "grab",
@@ -536,19 +536,19 @@ export function DashboardEditorWorkspace({
                       <div
                         style={{
                           padding: "8px 12px",
-                          borderBottom: "1px solid #e2e8f0",
+                          borderBottom: "1px solid var(--studio-200)",
                           display: "flex",
                           alignItems: "center",
                           gap: "8px",
                           background: "white",
                         }}
                       >
-                        <Icon size={14} color={wt?.color || "#64748b"} />
+                        <Icon size={14} color={wt?.color || "var(--studio-500)"} />
                         <span
                           style={{
                             fontSize: "12px",
                             fontWeight: 600,
-                            color: "#475569",
+                            color: "var(--studio-600)",
                             flex: 1,
                             whiteSpace: "nowrap",
                             overflow: "hidden",
@@ -564,7 +564,7 @@ export function DashboardEditorWorkspace({
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          color: "#cbd5e1",
+                          color: "var(--studio-300)",
                         }}
                       >
                         <BarChart2 size={32} opacity={0.5} />
@@ -581,7 +581,7 @@ export function DashboardEditorWorkspace({
           style={{
             width: "300px",
             background: "white",
-            borderLeft: "1px solid #e2e8f0",
+            borderLeft: "1px solid var(--studio-200)",
             display: "flex",
             flexDirection: "column",
             flexShrink: 0,
@@ -590,13 +590,13 @@ export function DashboardEditorWorkspace({
           <div
             style={{
               padding: "16px",
-              borderBottom: "1px solid #e2e8f0",
+              borderBottom: "1px solid var(--studio-200)",
               display: "flex",
               alignItems: "center",
               gap: "8px",
             }}
           >
-            <Settings size={16} color="#64748b" />
+            <Settings size={16} color="var(--studio-500)" />
             <span style={{ fontSize: "14px", fontWeight: 600 }}>
               Widget Settings
             </span>
@@ -621,7 +621,7 @@ export function DashboardEditorWorkspace({
                     style={{
                       fontSize: "12px",
                       fontWeight: 500,
-                      color: "#475569",
+                      color: "var(--studio-600)",
                     }}
                   >
                     Widget Title
@@ -635,7 +635,7 @@ export function DashboardEditorWorkspace({
                     style={{
                       padding: "8px 12px",
                       borderRadius: "6px",
-                      border: "1px solid #cbd5e1",
+                      border: "1px solid var(--studio-300)",
                       fontSize: "13px",
                     }}
                   />
@@ -651,7 +651,7 @@ export function DashboardEditorWorkspace({
                     style={{
                       fontSize: "12px",
                       fontWeight: 500,
-                      color: "#475569",
+                      color: "var(--studio-600)",
                     }}
                   >
                     Data Source
@@ -664,7 +664,7 @@ export function DashboardEditorWorkspace({
                     style={{
                       padding: "8px 12px",
                       borderRadius: "6px",
-                      border: "1px solid #cbd5e1",
+                      border: "1px solid var(--studio-300)",
                       fontSize: "13px",
                       background: "white",
                     }}
@@ -680,7 +680,7 @@ export function DashboardEditorWorkspace({
                   style={{
                     marginTop: "24px",
                     paddingTop: "16px",
-                    borderTop: "1px dashed #cbd5e1",
+                    borderTop: "1px dashed var(--studio-300)",
                   }}
                 >
                   <button
@@ -689,9 +689,9 @@ export function DashboardEditorWorkspace({
                       padding: "8px",
                       width: "100%",
                       borderRadius: "6px",
-                      border: "1px solid #fecdd3",
-                      background: "#fff1f2",
-                      color: "#e11d48",
+                      border: "1px solid var(--studio-danger-muted)",
+                      background: "var(--studio-danger-surface-rose)",
+                      color: "var(--studio-danger-rose)",
                       cursor: "pointer",
                       display: "flex",
                       alignItems: "center",
@@ -710,7 +710,7 @@ export function DashboardEditorWorkspace({
                 style={{
                   textAlign: "center",
                   padding: "40px 0",
-                  color: "#94a3b8",
+                  color: "var(--studio-400)",
                 }}
               >
                 <BoxSelect

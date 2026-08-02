@@ -47,7 +47,7 @@ export class ApiPlatformDeepV3Controller {
   async renameApiKey(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.renameApiKey(req.user.tenantId, id, body.name);
   }
@@ -73,7 +73,7 @@ export class ApiPlatformDeepV3Controller {
   async renameWebhook(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.renameWebhook(req.user.tenantId, id, body.name);
   }

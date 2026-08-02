@@ -58,7 +58,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity1.create")
   async createPwaEntity1(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity1(req.user.tenantId, body);
   }
@@ -69,7 +69,7 @@ export class PwaGeneratedController {
   async updatePwaEntity1(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity1(req.user.tenantId, id, body);
   }
@@ -107,7 +107,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity2.create")
   async createPwaEntity2(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity2(req.user.tenantId, body);
   }
@@ -118,7 +118,7 @@ export class PwaGeneratedController {
   async updatePwaEntity2(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity2(req.user.tenantId, id, body);
   }
@@ -156,7 +156,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity3.create")
   async createPwaEntity3(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity3(req.user.tenantId, body);
   }
@@ -167,7 +167,7 @@ export class PwaGeneratedController {
   async updatePwaEntity3(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity3(req.user.tenantId, id, body);
   }
@@ -205,7 +205,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity4.create")
   async createPwaEntity4(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity4(req.user.tenantId, body);
   }
@@ -216,7 +216,7 @@ export class PwaGeneratedController {
   async updatePwaEntity4(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity4(req.user.tenantId, id, body);
   }
@@ -254,7 +254,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity5.create")
   async createPwaEntity5(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity5(req.user.tenantId, body);
   }
@@ -265,7 +265,7 @@ export class PwaGeneratedController {
   async updatePwaEntity5(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity5(req.user.tenantId, id, body);
   }
@@ -303,7 +303,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity6.create")
   async createPwaEntity6(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity6(req.user.tenantId, body);
   }
@@ -314,7 +314,7 @@ export class PwaGeneratedController {
   async updatePwaEntity6(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity6(req.user.tenantId, id, body);
   }
@@ -352,7 +352,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity7.create")
   async createPwaEntity7(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity7(req.user.tenantId, body);
   }
@@ -363,7 +363,7 @@ export class PwaGeneratedController {
   async updatePwaEntity7(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity7(req.user.tenantId, id, body);
   }
@@ -401,7 +401,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity8.create")
   async createPwaEntity8(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity8(req.user.tenantId, body);
   }
@@ -412,7 +412,7 @@ export class PwaGeneratedController {
   async updatePwaEntity8(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity8(req.user.tenantId, id, body);
   }
@@ -450,7 +450,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity9.create")
   async createPwaEntity9(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity9(req.user.tenantId, body);
   }
@@ -461,7 +461,7 @@ export class PwaGeneratedController {
   async updatePwaEntity9(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity9(req.user.tenantId, id, body);
   }
@@ -499,7 +499,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity10.create")
   async createPwaEntity10(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity10(req.user.tenantId, body);
   }
@@ -510,7 +510,7 @@ export class PwaGeneratedController {
   async updatePwaEntity10(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity10(req.user.tenantId, id, body);
   }
@@ -548,7 +548,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity11.create")
   async createPwaEntity11(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity11(req.user.tenantId, body);
   }
@@ -559,7 +559,7 @@ export class PwaGeneratedController {
   async updatePwaEntity11(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity11(req.user.tenantId, id, body);
   }
@@ -597,7 +597,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity12.create")
   async createPwaEntity12(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity12(req.user.tenantId, body);
   }
@@ -608,7 +608,7 @@ export class PwaGeneratedController {
   async updatePwaEntity12(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity12(req.user.tenantId, id, body);
   }
@@ -646,7 +646,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity13.create")
   async createPwaEntity13(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity13(req.user.tenantId, body);
   }
@@ -657,7 +657,7 @@ export class PwaGeneratedController {
   async updatePwaEntity13(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity13(req.user.tenantId, id, body);
   }
@@ -695,7 +695,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity14.create")
   async createPwaEntity14(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity14(req.user.tenantId, body);
   }
@@ -706,7 +706,7 @@ export class PwaGeneratedController {
   async updatePwaEntity14(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity14(req.user.tenantId, id, body);
   }
@@ -744,7 +744,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity15.create")
   async createPwaEntity15(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity15(req.user.tenantId, body);
   }
@@ -755,7 +755,7 @@ export class PwaGeneratedController {
   async updatePwaEntity15(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity15(req.user.tenantId, id, body);
   }
@@ -793,7 +793,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity16.create")
   async createPwaEntity16(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity16(req.user.tenantId, body);
   }
@@ -804,7 +804,7 @@ export class PwaGeneratedController {
   async updatePwaEntity16(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity16(req.user.tenantId, id, body);
   }
@@ -842,7 +842,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity17.create")
   async createPwaEntity17(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity17(req.user.tenantId, body);
   }
@@ -853,7 +853,7 @@ export class PwaGeneratedController {
   async updatePwaEntity17(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity17(req.user.tenantId, id, body);
   }
@@ -891,7 +891,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity18.create")
   async createPwaEntity18(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity18(req.user.tenantId, body);
   }
@@ -902,7 +902,7 @@ export class PwaGeneratedController {
   async updatePwaEntity18(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity18(req.user.tenantId, id, body);
   }
@@ -940,7 +940,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity19.create")
   async createPwaEntity19(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity19(req.user.tenantId, body);
   }
@@ -951,7 +951,7 @@ export class PwaGeneratedController {
   async updatePwaEntity19(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity19(req.user.tenantId, id, body);
   }
@@ -989,7 +989,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity20.create")
   async createPwaEntity20(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity20(req.user.tenantId, body);
   }
@@ -1000,7 +1000,7 @@ export class PwaGeneratedController {
   async updatePwaEntity20(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity20(req.user.tenantId, id, body);
   }
@@ -1038,7 +1038,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity21.create")
   async createPwaEntity21(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity21(req.user.tenantId, body);
   }
@@ -1049,7 +1049,7 @@ export class PwaGeneratedController {
   async updatePwaEntity21(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity21(req.user.tenantId, id, body);
   }
@@ -1087,7 +1087,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity22.create")
   async createPwaEntity22(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity22(req.user.tenantId, body);
   }
@@ -1098,7 +1098,7 @@ export class PwaGeneratedController {
   async updatePwaEntity22(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity22(req.user.tenantId, id, body);
   }
@@ -1136,7 +1136,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity23.create")
   async createPwaEntity23(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity23(req.user.tenantId, body);
   }
@@ -1147,7 +1147,7 @@ export class PwaGeneratedController {
   async updatePwaEntity23(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity23(req.user.tenantId, id, body);
   }
@@ -1185,7 +1185,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity24.create")
   async createPwaEntity24(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity24(req.user.tenantId, body);
   }
@@ -1196,7 +1196,7 @@ export class PwaGeneratedController {
   async updatePwaEntity24(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity24(req.user.tenantId, id, body);
   }
@@ -1234,7 +1234,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity25.create")
   async createPwaEntity25(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity25(req.user.tenantId, body);
   }
@@ -1245,7 +1245,7 @@ export class PwaGeneratedController {
   async updatePwaEntity25(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity25(req.user.tenantId, id, body);
   }
@@ -1283,7 +1283,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity26.create")
   async createPwaEntity26(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity26(req.user.tenantId, body);
   }
@@ -1294,7 +1294,7 @@ export class PwaGeneratedController {
   async updatePwaEntity26(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity26(req.user.tenantId, id, body);
   }
@@ -1332,7 +1332,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity27.create")
   async createPwaEntity27(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity27(req.user.tenantId, body);
   }
@@ -1343,7 +1343,7 @@ export class PwaGeneratedController {
   async updatePwaEntity27(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity27(req.user.tenantId, id, body);
   }
@@ -1381,7 +1381,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity28.create")
   async createPwaEntity28(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity28(req.user.tenantId, body);
   }
@@ -1392,7 +1392,7 @@ export class PwaGeneratedController {
   async updatePwaEntity28(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity28(req.user.tenantId, id, body);
   }
@@ -1430,7 +1430,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity29.create")
   async createPwaEntity29(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity29(req.user.tenantId, body);
   }
@@ -1441,7 +1441,7 @@ export class PwaGeneratedController {
   async updatePwaEntity29(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity29(req.user.tenantId, id, body);
   }
@@ -1479,7 +1479,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity30.create")
   async createPwaEntity30(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity30(req.user.tenantId, body);
   }
@@ -1490,7 +1490,7 @@ export class PwaGeneratedController {
   async updatePwaEntity30(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity30(req.user.tenantId, id, body);
   }
@@ -1528,7 +1528,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity31.create")
   async createPwaEntity31(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity31(req.user.tenantId, body);
   }
@@ -1539,7 +1539,7 @@ export class PwaGeneratedController {
   async updatePwaEntity31(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity31(req.user.tenantId, id, body);
   }
@@ -1577,7 +1577,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity32.create")
   async createPwaEntity32(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity32(req.user.tenantId, body);
   }
@@ -1588,7 +1588,7 @@ export class PwaGeneratedController {
   async updatePwaEntity32(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity32(req.user.tenantId, id, body);
   }
@@ -1626,7 +1626,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity33.create")
   async createPwaEntity33(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity33(req.user.tenantId, body);
   }
@@ -1637,7 +1637,7 @@ export class PwaGeneratedController {
   async updatePwaEntity33(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity33(req.user.tenantId, id, body);
   }
@@ -1675,7 +1675,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity34.create")
   async createPwaEntity34(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity34(req.user.tenantId, body);
   }
@@ -1686,7 +1686,7 @@ export class PwaGeneratedController {
   async updatePwaEntity34(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity34(req.user.tenantId, id, body);
   }
@@ -1724,7 +1724,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity35.create")
   async createPwaEntity35(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity35(req.user.tenantId, body);
   }
@@ -1735,7 +1735,7 @@ export class PwaGeneratedController {
   async updatePwaEntity35(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity35(req.user.tenantId, id, body);
   }
@@ -1773,7 +1773,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity36.create")
   async createPwaEntity36(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity36(req.user.tenantId, body);
   }
@@ -1784,7 +1784,7 @@ export class PwaGeneratedController {
   async updatePwaEntity36(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity36(req.user.tenantId, id, body);
   }
@@ -1822,7 +1822,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity37.create")
   async createPwaEntity37(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity37(req.user.tenantId, body);
   }
@@ -1833,7 +1833,7 @@ export class PwaGeneratedController {
   async updatePwaEntity37(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity37(req.user.tenantId, id, body);
   }
@@ -1871,7 +1871,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity38.create")
   async createPwaEntity38(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity38(req.user.tenantId, body);
   }
@@ -1882,7 +1882,7 @@ export class PwaGeneratedController {
   async updatePwaEntity38(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity38(req.user.tenantId, id, body);
   }
@@ -1920,7 +1920,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity39.create")
   async createPwaEntity39(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity39(req.user.tenantId, body);
   }
@@ -1931,7 +1931,7 @@ export class PwaGeneratedController {
   async updatePwaEntity39(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity39(req.user.tenantId, id, body);
   }
@@ -1969,7 +1969,7 @@ export class PwaGeneratedController {
   @Permissions("pwa.pwaEntity40.create")
   async createPwaEntity40(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPwaEntity40(req.user.tenantId, body);
   }
@@ -1980,7 +1980,7 @@ export class PwaGeneratedController {
   async updatePwaEntity40(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePwaEntity40(req.user.tenantId, id, body);
   }

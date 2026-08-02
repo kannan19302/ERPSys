@@ -58,7 +58,7 @@ export class ApiPlatformGeneratedController {
   @Permissions("api-platform.apiPlatformEntity1.create")
   async createApiPlatformEntity1(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createApiPlatformEntity1(req.user.tenantId, body);
   }
@@ -69,7 +69,7 @@ export class ApiPlatformGeneratedController {
   async updateApiPlatformEntity1(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateApiPlatformEntity1(req.user.tenantId, id, body);
   }
@@ -107,7 +107,7 @@ export class ApiPlatformGeneratedController {
   @Permissions("api-platform.apiPlatformEntity2.create")
   async createApiPlatformEntity2(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createApiPlatformEntity2(req.user.tenantId, body);
   }
@@ -118,7 +118,7 @@ export class ApiPlatformGeneratedController {
   async updateApiPlatformEntity2(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateApiPlatformEntity2(req.user.tenantId, id, body);
   }
@@ -156,7 +156,7 @@ export class ApiPlatformGeneratedController {
   @Permissions("api-platform.apiPlatformEntity3.create")
   async createApiPlatformEntity3(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createApiPlatformEntity3(req.user.tenantId, body);
   }
@@ -167,7 +167,7 @@ export class ApiPlatformGeneratedController {
   async updateApiPlatformEntity3(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateApiPlatformEntity3(req.user.tenantId, id, body);
   }
@@ -205,7 +205,7 @@ export class ApiPlatformGeneratedController {
   @Permissions("api-platform.apiPlatformEntity4.create")
   async createApiPlatformEntity4(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createApiPlatformEntity4(req.user.tenantId, body);
   }
@@ -216,7 +216,7 @@ export class ApiPlatformGeneratedController {
   async updateApiPlatformEntity4(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateApiPlatformEntity4(req.user.tenantId, id, body);
   }
@@ -254,7 +254,7 @@ export class ApiPlatformGeneratedController {
   @Permissions("api-platform.apiPlatformEntity5.create")
   async createApiPlatformEntity5(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createApiPlatformEntity5(req.user.tenantId, body);
   }
@@ -265,7 +265,7 @@ export class ApiPlatformGeneratedController {
   async updateApiPlatformEntity5(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateApiPlatformEntity5(req.user.tenantId, id, body);
   }
@@ -303,7 +303,7 @@ export class ApiPlatformGeneratedController {
   @Permissions("api-platform.apiPlatformEntity6.create")
   async createApiPlatformEntity6(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createApiPlatformEntity6(req.user.tenantId, body);
   }
@@ -314,7 +314,7 @@ export class ApiPlatformGeneratedController {
   async updateApiPlatformEntity6(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateApiPlatformEntity6(req.user.tenantId, id, body);
   }
@@ -352,7 +352,7 @@ export class ApiPlatformGeneratedController {
   @Permissions("api-platform.apiPlatformEntity7.create")
   async createApiPlatformEntity7(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createApiPlatformEntity7(req.user.tenantId, body);
   }
@@ -363,7 +363,7 @@ export class ApiPlatformGeneratedController {
   async updateApiPlatformEntity7(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateApiPlatformEntity7(req.user.tenantId, id, body);
   }
@@ -401,7 +401,7 @@ export class ApiPlatformGeneratedController {
   @Permissions("api-platform.apiPlatformEntity8.create")
   async createApiPlatformEntity8(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createApiPlatformEntity8(req.user.tenantId, body);
   }
@@ -412,7 +412,7 @@ export class ApiPlatformGeneratedController {
   async updateApiPlatformEntity8(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateApiPlatformEntity8(req.user.tenantId, id, body);
   }
@@ -450,7 +450,7 @@ export class ApiPlatformGeneratedController {
   @Permissions("api-platform.apiPlatformEntity9.create")
   async createApiPlatformEntity9(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createApiPlatformEntity9(req.user.tenantId, body);
   }
@@ -461,7 +461,7 @@ export class ApiPlatformGeneratedController {
   async updateApiPlatformEntity9(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateApiPlatformEntity9(req.user.tenantId, id, body);
   }
@@ -499,7 +499,7 @@ export class ApiPlatformGeneratedController {
   @Permissions("api-platform.apiPlatformEntity10.create")
   async createApiPlatformEntity10(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createApiPlatformEntity10(req.user.tenantId, body);
   }
@@ -510,7 +510,7 @@ export class ApiPlatformGeneratedController {
   async updateApiPlatformEntity10(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateApiPlatformEntity10(req.user.tenantId, id, body);
   }
@@ -548,7 +548,7 @@ export class ApiPlatformGeneratedController {
   @Permissions("api-platform.apiPlatformEntity11.create")
   async createApiPlatformEntity11(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createApiPlatformEntity11(req.user.tenantId, body);
   }
@@ -559,7 +559,7 @@ export class ApiPlatformGeneratedController {
   async updateApiPlatformEntity11(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateApiPlatformEntity11(req.user.tenantId, id, body);
   }
@@ -597,7 +597,7 @@ export class ApiPlatformGeneratedController {
   @Permissions("api-platform.apiPlatformEntity12.create")
   async createApiPlatformEntity12(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createApiPlatformEntity12(req.user.tenantId, body);
   }
@@ -608,7 +608,7 @@ export class ApiPlatformGeneratedController {
   async updateApiPlatformEntity12(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateApiPlatformEntity12(req.user.tenantId, id, body);
   }
@@ -646,7 +646,7 @@ export class ApiPlatformGeneratedController {
   @Permissions("api-platform.apiPlatformEntity13.create")
   async createApiPlatformEntity13(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createApiPlatformEntity13(req.user.tenantId, body);
   }
@@ -657,7 +657,7 @@ export class ApiPlatformGeneratedController {
   async updateApiPlatformEntity13(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateApiPlatformEntity13(req.user.tenantId, id, body);
   }
@@ -695,7 +695,7 @@ export class ApiPlatformGeneratedController {
   @Permissions("api-platform.apiPlatformEntity14.create")
   async createApiPlatformEntity14(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createApiPlatformEntity14(req.user.tenantId, body);
   }
@@ -706,7 +706,7 @@ export class ApiPlatformGeneratedController {
   async updateApiPlatformEntity14(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateApiPlatformEntity14(req.user.tenantId, id, body);
   }

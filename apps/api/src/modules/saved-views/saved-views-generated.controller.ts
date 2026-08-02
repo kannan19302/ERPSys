@@ -58,7 +58,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity1.create")
   async createSavedViewsEntity1(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity1(req.user.tenantId, body);
   }
@@ -69,7 +69,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity1(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity1(req.user.tenantId, id, body);
   }
@@ -107,7 +107,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity2.create")
   async createSavedViewsEntity2(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity2(req.user.tenantId, body);
   }
@@ -118,7 +118,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity2(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity2(req.user.tenantId, id, body);
   }
@@ -156,7 +156,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity3.create")
   async createSavedViewsEntity3(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity3(req.user.tenantId, body);
   }
@@ -167,7 +167,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity3(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity3(req.user.tenantId, id, body);
   }
@@ -205,7 +205,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity4.create")
   async createSavedViewsEntity4(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity4(req.user.tenantId, body);
   }
@@ -216,7 +216,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity4(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity4(req.user.tenantId, id, body);
   }
@@ -254,7 +254,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity5.create")
   async createSavedViewsEntity5(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity5(req.user.tenantId, body);
   }
@@ -265,7 +265,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity5(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity5(req.user.tenantId, id, body);
   }
@@ -303,7 +303,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity6.create")
   async createSavedViewsEntity6(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity6(req.user.tenantId, body);
   }
@@ -314,7 +314,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity6(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity6(req.user.tenantId, id, body);
   }
@@ -352,7 +352,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity7.create")
   async createSavedViewsEntity7(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity7(req.user.tenantId, body);
   }
@@ -363,7 +363,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity7(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity7(req.user.tenantId, id, body);
   }
@@ -401,7 +401,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity8.create")
   async createSavedViewsEntity8(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity8(req.user.tenantId, body);
   }
@@ -412,7 +412,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity8(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity8(req.user.tenantId, id, body);
   }
@@ -450,7 +450,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity9.create")
   async createSavedViewsEntity9(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity9(req.user.tenantId, body);
   }
@@ -461,7 +461,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity9(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity9(req.user.tenantId, id, body);
   }
@@ -499,7 +499,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity10.create")
   async createSavedViewsEntity10(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity10(req.user.tenantId, body);
   }
@@ -510,7 +510,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity10(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity10(req.user.tenantId, id, body);
   }
@@ -548,7 +548,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity11.create")
   async createSavedViewsEntity11(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity11(req.user.tenantId, body);
   }
@@ -559,7 +559,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity11(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity11(req.user.tenantId, id, body);
   }
@@ -597,7 +597,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity12.create")
   async createSavedViewsEntity12(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity12(req.user.tenantId, body);
   }
@@ -608,7 +608,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity12(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity12(req.user.tenantId, id, body);
   }
@@ -646,7 +646,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity13.create")
   async createSavedViewsEntity13(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity13(req.user.tenantId, body);
   }
@@ -657,7 +657,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity13(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity13(req.user.tenantId, id, body);
   }
@@ -695,7 +695,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity14.create")
   async createSavedViewsEntity14(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity14(req.user.tenantId, body);
   }
@@ -706,7 +706,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity14(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity14(req.user.tenantId, id, body);
   }
@@ -744,7 +744,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity15.create")
   async createSavedViewsEntity15(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity15(req.user.tenantId, body);
   }
@@ -755,7 +755,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity15(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity15(req.user.tenantId, id, body);
   }
@@ -793,7 +793,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity16.create")
   async createSavedViewsEntity16(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity16(req.user.tenantId, body);
   }
@@ -804,7 +804,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity16(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity16(req.user.tenantId, id, body);
   }
@@ -842,7 +842,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity17.create")
   async createSavedViewsEntity17(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity17(req.user.tenantId, body);
   }
@@ -853,7 +853,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity17(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity17(req.user.tenantId, id, body);
   }
@@ -891,7 +891,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity18.create")
   async createSavedViewsEntity18(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity18(req.user.tenantId, body);
   }
@@ -902,7 +902,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity18(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity18(req.user.tenantId, id, body);
   }
@@ -940,7 +940,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity19.create")
   async createSavedViewsEntity19(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity19(req.user.tenantId, body);
   }
@@ -951,7 +951,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity19(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity19(req.user.tenantId, id, body);
   }
@@ -989,7 +989,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity20.create")
   async createSavedViewsEntity20(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity20(req.user.tenantId, body);
   }
@@ -1000,7 +1000,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity20(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity20(req.user.tenantId, id, body);
   }
@@ -1038,7 +1038,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity21.create")
   async createSavedViewsEntity21(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity21(req.user.tenantId, body);
   }
@@ -1049,7 +1049,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity21(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity21(req.user.tenantId, id, body);
   }
@@ -1087,7 +1087,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity22.create")
   async createSavedViewsEntity22(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity22(req.user.tenantId, body);
   }
@@ -1098,7 +1098,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity22(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity22(req.user.tenantId, id, body);
   }
@@ -1136,7 +1136,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity23.create")
   async createSavedViewsEntity23(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity23(req.user.tenantId, body);
   }
@@ -1147,7 +1147,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity23(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity23(req.user.tenantId, id, body);
   }
@@ -1185,7 +1185,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity24.create")
   async createSavedViewsEntity24(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity24(req.user.tenantId, body);
   }
@@ -1196,7 +1196,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity24(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity24(req.user.tenantId, id, body);
   }
@@ -1234,7 +1234,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity25.create")
   async createSavedViewsEntity25(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity25(req.user.tenantId, body);
   }
@@ -1245,7 +1245,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity25(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity25(req.user.tenantId, id, body);
   }
@@ -1283,7 +1283,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity26.create")
   async createSavedViewsEntity26(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity26(req.user.tenantId, body);
   }
@@ -1294,7 +1294,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity26(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity26(req.user.tenantId, id, body);
   }
@@ -1332,7 +1332,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity27.create")
   async createSavedViewsEntity27(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity27(req.user.tenantId, body);
   }
@@ -1343,7 +1343,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity27(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity27(req.user.tenantId, id, body);
   }
@@ -1381,7 +1381,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity28.create")
   async createSavedViewsEntity28(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity28(req.user.tenantId, body);
   }
@@ -1392,7 +1392,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity28(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity28(req.user.tenantId, id, body);
   }
@@ -1430,7 +1430,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity29.create")
   async createSavedViewsEntity29(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity29(req.user.tenantId, body);
   }
@@ -1441,7 +1441,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity29(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity29(req.user.tenantId, id, body);
   }
@@ -1479,7 +1479,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity30.create")
   async createSavedViewsEntity30(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity30(req.user.tenantId, body);
   }
@@ -1490,7 +1490,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity30(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity30(req.user.tenantId, id, body);
   }
@@ -1528,7 +1528,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity31.create")
   async createSavedViewsEntity31(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity31(req.user.tenantId, body);
   }
@@ -1539,7 +1539,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity31(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity31(req.user.tenantId, id, body);
   }
@@ -1577,7 +1577,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity32.create")
   async createSavedViewsEntity32(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity32(req.user.tenantId, body);
   }
@@ -1588,7 +1588,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity32(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity32(req.user.tenantId, id, body);
   }
@@ -1626,7 +1626,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity33.create")
   async createSavedViewsEntity33(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity33(req.user.tenantId, body);
   }
@@ -1637,7 +1637,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity33(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity33(req.user.tenantId, id, body);
   }
@@ -1675,7 +1675,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity34.create")
   async createSavedViewsEntity34(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity34(req.user.tenantId, body);
   }
@@ -1686,7 +1686,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity34(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity34(req.user.tenantId, id, body);
   }
@@ -1724,7 +1724,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity35.create")
   async createSavedViewsEntity35(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity35(req.user.tenantId, body);
   }
@@ -1735,7 +1735,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity35(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity35(req.user.tenantId, id, body);
   }
@@ -1773,7 +1773,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity36.create")
   async createSavedViewsEntity36(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity36(req.user.tenantId, body);
   }
@@ -1784,7 +1784,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity36(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity36(req.user.tenantId, id, body);
   }
@@ -1822,7 +1822,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity37.create")
   async createSavedViewsEntity37(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity37(req.user.tenantId, body);
   }
@@ -1833,7 +1833,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity37(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity37(req.user.tenantId, id, body);
   }
@@ -1871,7 +1871,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity38.create")
   async createSavedViewsEntity38(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity38(req.user.tenantId, body);
   }
@@ -1882,7 +1882,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity38(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity38(req.user.tenantId, id, body);
   }
@@ -1920,7 +1920,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity39.create")
   async createSavedViewsEntity39(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity39(req.user.tenantId, body);
   }
@@ -1931,7 +1931,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity39(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity39(req.user.tenantId, id, body);
   }
@@ -1969,7 +1969,7 @@ export class SavedViewsGeneratedController {
   @Permissions("saved-views.savedViewsEntity40.create")
   async createSavedViewsEntity40(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSavedViewsEntity40(req.user.tenantId, body);
   }
@@ -1980,7 +1980,7 @@ export class SavedViewsGeneratedController {
   async updateSavedViewsEntity40(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSavedViewsEntity40(req.user.tenantId, id, body);
   }

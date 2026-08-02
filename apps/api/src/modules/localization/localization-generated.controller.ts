@@ -58,7 +58,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity1.create")
   async createLocalizationEntity1(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity1(req.user.tenantId, body);
   }
@@ -69,7 +69,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity1(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity1(req.user.tenantId, id, body);
   }
@@ -107,7 +107,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity2.create")
   async createLocalizationEntity2(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity2(req.user.tenantId, body);
   }
@@ -118,7 +118,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity2(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity2(req.user.tenantId, id, body);
   }
@@ -156,7 +156,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity3.create")
   async createLocalizationEntity3(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity3(req.user.tenantId, body);
   }
@@ -167,7 +167,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity3(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity3(req.user.tenantId, id, body);
   }
@@ -205,7 +205,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity4.create")
   async createLocalizationEntity4(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity4(req.user.tenantId, body);
   }
@@ -216,7 +216,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity4(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity4(req.user.tenantId, id, body);
   }
@@ -254,7 +254,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity5.create")
   async createLocalizationEntity5(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity5(req.user.tenantId, body);
   }
@@ -265,7 +265,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity5(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity5(req.user.tenantId, id, body);
   }
@@ -303,7 +303,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity6.create")
   async createLocalizationEntity6(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity6(req.user.tenantId, body);
   }
@@ -314,7 +314,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity6(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity6(req.user.tenantId, id, body);
   }
@@ -352,7 +352,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity7.create")
   async createLocalizationEntity7(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity7(req.user.tenantId, body);
   }
@@ -363,7 +363,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity7(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity7(req.user.tenantId, id, body);
   }
@@ -401,7 +401,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity8.create")
   async createLocalizationEntity8(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity8(req.user.tenantId, body);
   }
@@ -412,7 +412,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity8(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity8(req.user.tenantId, id, body);
   }
@@ -450,7 +450,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity9.create")
   async createLocalizationEntity9(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity9(req.user.tenantId, body);
   }
@@ -461,7 +461,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity9(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity9(req.user.tenantId, id, body);
   }
@@ -499,7 +499,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity10.create")
   async createLocalizationEntity10(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity10(req.user.tenantId, body);
   }
@@ -510,7 +510,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity10(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity10(req.user.tenantId, id, body);
   }
@@ -548,7 +548,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity11.create")
   async createLocalizationEntity11(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity11(req.user.tenantId, body);
   }
@@ -559,7 +559,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity11(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity11(req.user.tenantId, id, body);
   }
@@ -597,7 +597,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity12.create")
   async createLocalizationEntity12(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity12(req.user.tenantId, body);
   }
@@ -608,7 +608,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity12(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity12(req.user.tenantId, id, body);
   }
@@ -646,7 +646,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity13.create")
   async createLocalizationEntity13(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity13(req.user.tenantId, body);
   }
@@ -657,7 +657,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity13(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity13(req.user.tenantId, id, body);
   }
@@ -695,7 +695,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity14.create")
   async createLocalizationEntity14(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity14(req.user.tenantId, body);
   }
@@ -706,7 +706,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity14(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity14(req.user.tenantId, id, body);
   }
@@ -744,7 +744,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity15.create")
   async createLocalizationEntity15(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity15(req.user.tenantId, body);
   }
@@ -755,7 +755,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity15(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity15(req.user.tenantId, id, body);
   }
@@ -793,7 +793,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity16.create")
   async createLocalizationEntity16(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity16(req.user.tenantId, body);
   }
@@ -804,7 +804,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity16(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity16(req.user.tenantId, id, body);
   }
@@ -842,7 +842,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity17.create")
   async createLocalizationEntity17(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity17(req.user.tenantId, body);
   }
@@ -853,7 +853,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity17(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity17(req.user.tenantId, id, body);
   }
@@ -891,7 +891,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity18.create")
   async createLocalizationEntity18(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity18(req.user.tenantId, body);
   }
@@ -902,7 +902,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity18(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity18(req.user.tenantId, id, body);
   }
@@ -940,7 +940,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity19.create")
   async createLocalizationEntity19(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity19(req.user.tenantId, body);
   }
@@ -951,7 +951,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity19(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity19(req.user.tenantId, id, body);
   }
@@ -989,7 +989,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity20.create")
   async createLocalizationEntity20(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity20(req.user.tenantId, body);
   }
@@ -1000,7 +1000,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity20(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity20(req.user.tenantId, id, body);
   }
@@ -1038,7 +1038,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity21.create")
   async createLocalizationEntity21(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity21(req.user.tenantId, body);
   }
@@ -1049,7 +1049,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity21(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity21(req.user.tenantId, id, body);
   }
@@ -1087,7 +1087,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity22.create")
   async createLocalizationEntity22(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity22(req.user.tenantId, body);
   }
@@ -1098,7 +1098,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity22(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity22(req.user.tenantId, id, body);
   }
@@ -1136,7 +1136,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity23.create")
   async createLocalizationEntity23(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity23(req.user.tenantId, body);
   }
@@ -1147,7 +1147,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity23(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity23(req.user.tenantId, id, body);
   }
@@ -1185,7 +1185,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity24.create")
   async createLocalizationEntity24(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity24(req.user.tenantId, body);
   }
@@ -1196,7 +1196,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity24(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity24(req.user.tenantId, id, body);
   }
@@ -1234,7 +1234,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity25.create")
   async createLocalizationEntity25(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity25(req.user.tenantId, body);
   }
@@ -1245,7 +1245,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity25(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity25(req.user.tenantId, id, body);
   }
@@ -1283,7 +1283,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity26.create")
   async createLocalizationEntity26(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity26(req.user.tenantId, body);
   }
@@ -1294,7 +1294,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity26(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity26(req.user.tenantId, id, body);
   }
@@ -1332,7 +1332,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity27.create")
   async createLocalizationEntity27(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity27(req.user.tenantId, body);
   }
@@ -1343,7 +1343,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity27(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity27(req.user.tenantId, id, body);
   }
@@ -1381,7 +1381,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity28.create")
   async createLocalizationEntity28(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity28(req.user.tenantId, body);
   }
@@ -1392,7 +1392,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity28(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity28(req.user.tenantId, id, body);
   }
@@ -1430,7 +1430,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity29.create")
   async createLocalizationEntity29(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity29(req.user.tenantId, body);
   }
@@ -1441,7 +1441,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity29(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity29(req.user.tenantId, id, body);
   }
@@ -1479,7 +1479,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity30.create")
   async createLocalizationEntity30(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity30(req.user.tenantId, body);
   }
@@ -1490,7 +1490,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity30(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity30(req.user.tenantId, id, body);
   }
@@ -1528,7 +1528,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity31.create")
   async createLocalizationEntity31(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity31(req.user.tenantId, body);
   }
@@ -1539,7 +1539,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity31(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity31(req.user.tenantId, id, body);
   }
@@ -1577,7 +1577,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity32.create")
   async createLocalizationEntity32(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity32(req.user.tenantId, body);
   }
@@ -1588,7 +1588,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity32(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity32(req.user.tenantId, id, body);
   }
@@ -1626,7 +1626,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity33.create")
   async createLocalizationEntity33(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity33(req.user.tenantId, body);
   }
@@ -1637,7 +1637,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity33(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity33(req.user.tenantId, id, body);
   }
@@ -1675,7 +1675,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity34.create")
   async createLocalizationEntity34(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity34(req.user.tenantId, body);
   }
@@ -1686,7 +1686,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity34(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity34(req.user.tenantId, id, body);
   }
@@ -1724,7 +1724,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity35.create")
   async createLocalizationEntity35(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity35(req.user.tenantId, body);
   }
@@ -1735,7 +1735,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity35(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity35(req.user.tenantId, id, body);
   }
@@ -1773,7 +1773,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity36.create")
   async createLocalizationEntity36(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity36(req.user.tenantId, body);
   }
@@ -1784,7 +1784,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity36(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity36(req.user.tenantId, id, body);
   }
@@ -1822,7 +1822,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity37.create")
   async createLocalizationEntity37(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity37(req.user.tenantId, body);
   }
@@ -1833,7 +1833,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity37(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity37(req.user.tenantId, id, body);
   }
@@ -1871,7 +1871,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity38.create")
   async createLocalizationEntity38(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity38(req.user.tenantId, body);
   }
@@ -1882,7 +1882,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity38(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity38(req.user.tenantId, id, body);
   }
@@ -1920,7 +1920,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity39.create")
   async createLocalizationEntity39(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity39(req.user.tenantId, body);
   }
@@ -1931,7 +1931,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity39(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity39(req.user.tenantId, id, body);
   }
@@ -1969,7 +1969,7 @@ export class LocalizationGeneratedController {
   @Permissions("localization.localizationEntity40.create")
   async createLocalizationEntity40(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createLocalizationEntity40(req.user.tenantId, body);
   }
@@ -1980,7 +1980,7 @@ export class LocalizationGeneratedController {
   async updateLocalizationEntity40(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateLocalizationEntity40(req.user.tenantId, id, body);
   }

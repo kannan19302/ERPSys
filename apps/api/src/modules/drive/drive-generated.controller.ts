@@ -58,7 +58,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity1.create")
   async createDriveEntity1(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity1(req.user.tenantId, body);
   }
@@ -69,7 +69,7 @@ export class DriveGeneratedController {
   async updateDriveEntity1(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity1(req.user.tenantId, id, body);
   }
@@ -107,7 +107,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity2.create")
   async createDriveEntity2(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity2(req.user.tenantId, body);
   }
@@ -118,7 +118,7 @@ export class DriveGeneratedController {
   async updateDriveEntity2(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity2(req.user.tenantId, id, body);
   }
@@ -156,7 +156,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity3.create")
   async createDriveEntity3(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity3(req.user.tenantId, body);
   }
@@ -167,7 +167,7 @@ export class DriveGeneratedController {
   async updateDriveEntity3(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity3(req.user.tenantId, id, body);
   }
@@ -205,7 +205,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity4.create")
   async createDriveEntity4(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity4(req.user.tenantId, body);
   }
@@ -216,7 +216,7 @@ export class DriveGeneratedController {
   async updateDriveEntity4(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity4(req.user.tenantId, id, body);
   }
@@ -254,7 +254,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity5.create")
   async createDriveEntity5(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity5(req.user.tenantId, body);
   }
@@ -265,7 +265,7 @@ export class DriveGeneratedController {
   async updateDriveEntity5(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity5(req.user.tenantId, id, body);
   }
@@ -303,7 +303,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity6.create")
   async createDriveEntity6(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity6(req.user.tenantId, body);
   }
@@ -314,7 +314,7 @@ export class DriveGeneratedController {
   async updateDriveEntity6(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity6(req.user.tenantId, id, body);
   }
@@ -352,7 +352,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity7.create")
   async createDriveEntity7(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity7(req.user.tenantId, body);
   }
@@ -363,7 +363,7 @@ export class DriveGeneratedController {
   async updateDriveEntity7(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity7(req.user.tenantId, id, body);
   }
@@ -401,7 +401,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity8.create")
   async createDriveEntity8(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity8(req.user.tenantId, body);
   }
@@ -412,7 +412,7 @@ export class DriveGeneratedController {
   async updateDriveEntity8(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity8(req.user.tenantId, id, body);
   }
@@ -450,7 +450,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity9.create")
   async createDriveEntity9(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity9(req.user.tenantId, body);
   }
@@ -461,7 +461,7 @@ export class DriveGeneratedController {
   async updateDriveEntity9(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity9(req.user.tenantId, id, body);
   }
@@ -499,7 +499,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity10.create")
   async createDriveEntity10(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity10(req.user.tenantId, body);
   }
@@ -510,7 +510,7 @@ export class DriveGeneratedController {
   async updateDriveEntity10(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity10(req.user.tenantId, id, body);
   }
@@ -548,7 +548,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity11.create")
   async createDriveEntity11(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity11(req.user.tenantId, body);
   }
@@ -559,7 +559,7 @@ export class DriveGeneratedController {
   async updateDriveEntity11(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity11(req.user.tenantId, id, body);
   }
@@ -597,7 +597,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity12.create")
   async createDriveEntity12(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity12(req.user.tenantId, body);
   }
@@ -608,7 +608,7 @@ export class DriveGeneratedController {
   async updateDriveEntity12(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity12(req.user.tenantId, id, body);
   }
@@ -646,7 +646,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity13.create")
   async createDriveEntity13(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity13(req.user.tenantId, body);
   }
@@ -657,7 +657,7 @@ export class DriveGeneratedController {
   async updateDriveEntity13(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity13(req.user.tenantId, id, body);
   }
@@ -695,7 +695,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity14.create")
   async createDriveEntity14(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity14(req.user.tenantId, body);
   }
@@ -706,7 +706,7 @@ export class DriveGeneratedController {
   async updateDriveEntity14(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity14(req.user.tenantId, id, body);
   }
@@ -744,7 +744,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity15.create")
   async createDriveEntity15(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity15(req.user.tenantId, body);
   }
@@ -755,7 +755,7 @@ export class DriveGeneratedController {
   async updateDriveEntity15(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity15(req.user.tenantId, id, body);
   }
@@ -793,7 +793,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity16.create")
   async createDriveEntity16(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity16(req.user.tenantId, body);
   }
@@ -804,7 +804,7 @@ export class DriveGeneratedController {
   async updateDriveEntity16(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity16(req.user.tenantId, id, body);
   }
@@ -842,7 +842,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity17.create")
   async createDriveEntity17(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity17(req.user.tenantId, body);
   }
@@ -853,7 +853,7 @@ export class DriveGeneratedController {
   async updateDriveEntity17(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity17(req.user.tenantId, id, body);
   }
@@ -891,7 +891,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity18.create")
   async createDriveEntity18(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity18(req.user.tenantId, body);
   }
@@ -902,7 +902,7 @@ export class DriveGeneratedController {
   async updateDriveEntity18(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity18(req.user.tenantId, id, body);
   }
@@ -940,7 +940,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity19.create")
   async createDriveEntity19(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity19(req.user.tenantId, body);
   }
@@ -951,7 +951,7 @@ export class DriveGeneratedController {
   async updateDriveEntity19(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity19(req.user.tenantId, id, body);
   }
@@ -989,7 +989,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity20.create")
   async createDriveEntity20(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity20(req.user.tenantId, body);
   }
@@ -1000,7 +1000,7 @@ export class DriveGeneratedController {
   async updateDriveEntity20(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity20(req.user.tenantId, id, body);
   }
@@ -1038,7 +1038,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity21.create")
   async createDriveEntity21(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity21(req.user.tenantId, body);
   }
@@ -1049,7 +1049,7 @@ export class DriveGeneratedController {
   async updateDriveEntity21(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity21(req.user.tenantId, id, body);
   }
@@ -1087,7 +1087,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity22.create")
   async createDriveEntity22(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity22(req.user.tenantId, body);
   }
@@ -1098,7 +1098,7 @@ export class DriveGeneratedController {
   async updateDriveEntity22(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity22(req.user.tenantId, id, body);
   }
@@ -1136,7 +1136,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity23.create")
   async createDriveEntity23(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity23(req.user.tenantId, body);
   }
@@ -1147,7 +1147,7 @@ export class DriveGeneratedController {
   async updateDriveEntity23(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity23(req.user.tenantId, id, body);
   }
@@ -1185,7 +1185,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity24.create")
   async createDriveEntity24(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity24(req.user.tenantId, body);
   }
@@ -1196,7 +1196,7 @@ export class DriveGeneratedController {
   async updateDriveEntity24(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity24(req.user.tenantId, id, body);
   }
@@ -1234,7 +1234,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity25.create")
   async createDriveEntity25(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity25(req.user.tenantId, body);
   }
@@ -1245,7 +1245,7 @@ export class DriveGeneratedController {
   async updateDriveEntity25(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity25(req.user.tenantId, id, body);
   }
@@ -1283,7 +1283,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity26.create")
   async createDriveEntity26(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity26(req.user.tenantId, body);
   }
@@ -1294,7 +1294,7 @@ export class DriveGeneratedController {
   async updateDriveEntity26(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity26(req.user.tenantId, id, body);
   }
@@ -1332,7 +1332,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity27.create")
   async createDriveEntity27(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity27(req.user.tenantId, body);
   }
@@ -1343,7 +1343,7 @@ export class DriveGeneratedController {
   async updateDriveEntity27(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity27(req.user.tenantId, id, body);
   }
@@ -1381,7 +1381,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity28.create")
   async createDriveEntity28(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity28(req.user.tenantId, body);
   }
@@ -1392,7 +1392,7 @@ export class DriveGeneratedController {
   async updateDriveEntity28(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity28(req.user.tenantId, id, body);
   }
@@ -1430,7 +1430,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity29.create")
   async createDriveEntity29(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity29(req.user.tenantId, body);
   }
@@ -1441,7 +1441,7 @@ export class DriveGeneratedController {
   async updateDriveEntity29(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity29(req.user.tenantId, id, body);
   }
@@ -1479,7 +1479,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity30.create")
   async createDriveEntity30(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity30(req.user.tenantId, body);
   }
@@ -1490,7 +1490,7 @@ export class DriveGeneratedController {
   async updateDriveEntity30(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity30(req.user.tenantId, id, body);
   }
@@ -1528,7 +1528,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity31.create")
   async createDriveEntity31(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity31(req.user.tenantId, body);
   }
@@ -1539,7 +1539,7 @@ export class DriveGeneratedController {
   async updateDriveEntity31(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity31(req.user.tenantId, id, body);
   }
@@ -1577,7 +1577,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity32.create")
   async createDriveEntity32(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity32(req.user.tenantId, body);
   }
@@ -1588,7 +1588,7 @@ export class DriveGeneratedController {
   async updateDriveEntity32(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity32(req.user.tenantId, id, body);
   }
@@ -1626,7 +1626,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity33.create")
   async createDriveEntity33(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity33(req.user.tenantId, body);
   }
@@ -1637,7 +1637,7 @@ export class DriveGeneratedController {
   async updateDriveEntity33(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity33(req.user.tenantId, id, body);
   }
@@ -1675,7 +1675,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity34.create")
   async createDriveEntity34(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity34(req.user.tenantId, body);
   }
@@ -1686,7 +1686,7 @@ export class DriveGeneratedController {
   async updateDriveEntity34(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity34(req.user.tenantId, id, body);
   }
@@ -1724,7 +1724,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity35.create")
   async createDriveEntity35(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity35(req.user.tenantId, body);
   }
@@ -1735,7 +1735,7 @@ export class DriveGeneratedController {
   async updateDriveEntity35(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity35(req.user.tenantId, id, body);
   }
@@ -1773,7 +1773,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity36.create")
   async createDriveEntity36(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity36(req.user.tenantId, body);
   }
@@ -1784,7 +1784,7 @@ export class DriveGeneratedController {
   async updateDriveEntity36(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity36(req.user.tenantId, id, body);
   }
@@ -1822,7 +1822,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity37.create")
   async createDriveEntity37(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity37(req.user.tenantId, body);
   }
@@ -1833,7 +1833,7 @@ export class DriveGeneratedController {
   async updateDriveEntity37(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity37(req.user.tenantId, id, body);
   }
@@ -1871,7 +1871,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity38.create")
   async createDriveEntity38(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity38(req.user.tenantId, body);
   }
@@ -1882,7 +1882,7 @@ export class DriveGeneratedController {
   async updateDriveEntity38(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity38(req.user.tenantId, id, body);
   }
@@ -1920,7 +1920,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity39.create")
   async createDriveEntity39(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity39(req.user.tenantId, body);
   }
@@ -1931,7 +1931,7 @@ export class DriveGeneratedController {
   async updateDriveEntity39(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity39(req.user.tenantId, id, body);
   }
@@ -1969,7 +1969,7 @@ export class DriveGeneratedController {
   @Permissions("drive.driveEntity40.create")
   async createDriveEntity40(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDriveEntity40(req.user.tenantId, body);
   }
@@ -1980,7 +1980,7 @@ export class DriveGeneratedController {
   async updateDriveEntity40(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDriveEntity40(req.user.tenantId, id, body);
   }

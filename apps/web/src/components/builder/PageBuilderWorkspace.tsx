@@ -93,9 +93,9 @@ export function PageBuilderWorkspace({
       newWidget.title = "Counters";
       newWidget.config = {
         items: [
-          { label: "Total Invoices", value: "42", color: "#3b82f6" },
-          { label: "Pending Approvals", value: "7", color: "#f59e0b" },
-          { label: "Settled", value: "35", color: "#10b981" },
+          { label: "Total Invoices", value: "42", color: "var(--studio-accent-bright)" },
+          { label: "Pending Approvals", value: "7", color: "var(--studio-warning)" },
+          { label: "Settled", value: "35", color: "var(--studio-success)" },
         ],
       };
     } else if (type === "alert") {
@@ -197,42 +197,42 @@ export function PageBuilderWorkspace({
       label: "Header Block",
       desc: "App title, subtitle, and statuses",
       icon: Heading,
-      color: "#ec4899",
+      color: "var(--studio-pink)",
     },
     {
       type: "stats" as const,
       label: "Stats Counters",
       desc: "Visual numeric indicators",
       icon: Layout,
-      color: "#3b82f6",
+      color: "var(--studio-accent-bright)",
     },
     {
       type: "form" as const,
       label: "Form Widget",
       desc: "Link and embed a developer form",
       icon: FileCode2,
-      color: "#10b981",
+      color: "var(--studio-success)",
     },
     {
       type: "table" as const,
       label: "Data Table",
       desc: "Dynamic listing for a data model",
       icon: List,
-      color: "#8b5cf6",
+      color: "var(--studio-violet)",
     },
     {
       type: "chart" as const,
       label: "Dashboard Chart",
       desc: "Interactive Recharts card",
       icon: BarChart3,
-      color: "#f59e0b",
+      color: "var(--studio-warning)",
     },
     {
       type: "alert" as const,
       label: "Alert/Info Banner",
       desc: "Informational rich text banners",
       icon: Type,
-      color: "#64748b",
+      color: "var(--studio-500)",
     },
   ];
 
@@ -248,8 +248,8 @@ export function PageBuilderWorkspace({
         top: 0,
         left: 0,
         zIndex: 10000,
-        backgroundColor: "#0f172a",
-        color: "#e2e8f0",
+        backgroundColor: "var(--studio-900)",
+        color: "var(--studio-200)",
         fontFamily: "var(--font-sans)",
         overflow: "hidden",
       }}
@@ -283,7 +283,7 @@ export function PageBuilderWorkspace({
               borderRadius: "var(--radius-md)",
               padding: "var(--space-2)",
               cursor: "pointer",
-              color: "#e2e8f0",
+              color: "var(--studio-200)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -302,7 +302,7 @@ export function PageBuilderWorkspace({
             >
               Page Layout Builder
             </h1>
-            <span style={{ fontSize: "var(--text-xs)", color: "#94a3b8" }}>
+            <span style={{ fontSize: "var(--text-xs)", color: "var(--studio-400)" }}>
               Design layouts dynamically for: <strong>{pageName}</strong>
             </span>
           </div>
@@ -332,7 +332,7 @@ export function PageBuilderWorkspace({
               style={{
                 background:
                   viewport === v ? "rgba(255,255,255,0.1)" : "transparent",
-                color: viewport === v ? "white" : "#64748b",
+                color: viewport === v ? "white" : "var(--studio-500)",
                 border: "none",
                 padding: "6px 12px",
                 borderRadius: "var(--radius-md)",
@@ -366,7 +366,7 @@ export function PageBuilderWorkspace({
               background: previewMode
                 ? "rgba(59, 130, 246, 0.2)"
                 : "rgba(255,255,255,0.05)",
-              color: previewMode ? "#60a5fa" : "white",
+              color: previewMode ? "var(--studio-accent-light)" : "white",
               border:
                 "1px solid " +
                 (previewMode
@@ -389,7 +389,7 @@ export function PageBuilderWorkspace({
             style={{
               padding: "8px 18px",
               borderRadius: "var(--radius-md)",
-              background: "#2563eb",
+              background: "var(--studio-accent)",
               color: "white",
               border: "none",
               cursor: "pointer",
@@ -427,7 +427,7 @@ export function PageBuilderWorkspace({
           <aside
             style={{
               width: "280px",
-              background: "#1e293b",
+              background: "var(--studio-800)",
               borderRight: "1px solid rgba(255,255,255,0.1)",
               padding: "var(--space-4)",
               display: "flex",
@@ -443,7 +443,7 @@ export function PageBuilderWorkspace({
                 fontWeight: 700,
                 textTransform: "uppercase",
                 letterSpacing: "0.05em",
-                color: "#94a3b8",
+                color: "var(--studio-400)",
                 marginBottom: 4,
               }}
             >
@@ -499,7 +499,7 @@ export function PageBuilderWorkspace({
                     {p.label}
                   </div>
                   <div
-                    style={{ fontSize: "10px", color: "#94a3b8", marginTop: 1 }}
+                    style={{ fontSize: "10px", color: "var(--studio-400)", marginTop: 1 }}
                   >
                     {p.desc}
                   </div>
@@ -513,7 +513,7 @@ export function PageBuilderWorkspace({
         <main
           style={{
             flex: 1,
-            backgroundColor: "#0f172a",
+            backgroundColor: "var(--studio-900)",
             display: "flex",
             justifyContent: "center",
             alignItems: "flex-start",
@@ -534,13 +534,13 @@ export function PageBuilderWorkspace({
                     ? "768px"
                     : "375px",
               background: "white",
-              color: "#0f172a",
+              color: "var(--studio-900)",
               padding: "var(--space-6)",
               borderRadius:
                 viewport === "desktop" ? "var(--radius-xl)" : "24px",
               border:
                 viewport !== "desktop"
-                  ? "12px solid #1e293b"
+                  ? "12px solid var(--studio-800)"
                   : "1px solid var(--color-border)",
               boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.4)",
               minHeight: viewport === "desktop" ? "640px" : "820px",
@@ -560,7 +560,7 @@ export function PageBuilderWorkspace({
                   style={{
                     width: "60px",
                     height: "6px",
-                    background: "#cbd5e1",
+                    background: "var(--studio-300)",
                     borderRadius: "4px",
                   }}
                 />
@@ -575,9 +575,9 @@ export function PageBuilderWorkspace({
                   alignItems: "center",
                   justifyContent: "center",
                   height: "320px",
-                  border: "2px dashed #cbd5e1",
+                  border: "2px dashed var(--studio-300)",
                   borderRadius: "var(--radius-lg)",
-                  color: "#64748b",
+                  color: "var(--studio-500)",
                   textAlign: "center",
                   padding: "var(--space-6)",
                 }}
@@ -587,7 +587,7 @@ export function PageBuilderWorkspace({
                   style={{
                     fontWeight: 600,
                     fontSize: "var(--text-sm)",
-                    color: "#1e293b",
+                    color: "var(--studio-800)",
                   }}
                 >
                   Empty Page Canvas
@@ -615,10 +615,10 @@ export function PageBuilderWorkspace({
                         position: "relative",
                         border:
                           isSelected && !previewMode
-                            ? "2px solid #2563eb"
-                            : "1px solid #cbd5e1",
+                            ? "2px solid var(--studio-accent)"
+                            : "1px solid var(--studio-300)",
                         borderRadius: "var(--radius-lg)",
-                        background: "#f8fafc",
+                        background: "var(--studio-50)",
                         padding: "var(--space-4)",
                         cursor: previewMode ? "default" : "pointer",
                         transition: "all 0.15s ease",
@@ -634,7 +634,7 @@ export function PageBuilderWorkspace({
                             display: "flex",
                             gap: 4,
                             background: "white",
-                            border: "1px solid #cbd5e1",
+                            border: "1px solid var(--studio-300)",
                             borderRadius: "var(--radius-md)",
                             padding: 2,
                             boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
@@ -649,7 +649,7 @@ export function PageBuilderWorkspace({
                               border: "none",
                               background: "none",
                               cursor: index === 0 ? "not-allowed" : "pointer",
-                              color: index === 0 ? "#cbd5e1" : "#64748b",
+                              color: index === 0 ? "var(--studio-300)" : "var(--studio-500)",
                             }}
                           >
                             <ArrowUp size={12} />
@@ -667,8 +667,8 @@ export function PageBuilderWorkspace({
                                   : "pointer",
                               color:
                                 index === widgets.length - 1
-                                  ? "#cbd5e1"
-                                  : "#64748b",
+                                  ? "var(--studio-300)"
+                                  : "var(--studio-500)",
                             }}
                           >
                             <ArrowDown size={12} />
@@ -680,7 +680,7 @@ export function PageBuilderWorkspace({
                               border: "none",
                               background: "none",
                               cursor: "pointer",
-                              color: "#dc2626",
+                              color: "var(--studio-danger)",
                             }}
                           >
                             <Trash2 size={12} />
@@ -704,7 +704,7 @@ export function PageBuilderWorkspace({
                                   fontSize: "20px",
                                   fontWeight: 700,
                                   margin: 0,
-                                  color: "#0f172a",
+                                  color: "var(--studio-900)",
                                 }}
                               >
                                 {w.title}
@@ -712,7 +712,7 @@ export function PageBuilderWorkspace({
                               <p
                                 style={{
                                   fontSize: "13px",
-                                  color: "#64748b",
+                                  color: "var(--studio-500)",
                                   margin: "4px 0 0 0",
                                 }}
                               >
@@ -726,8 +726,8 @@ export function PageBuilderWorkspace({
                                   fontWeight: 600,
                                   padding: "2px 8px",
                                   borderRadius: "var(--radius-full)",
-                                  background: "#eff6ff",
-                                  color: "#2563eb",
+                                  background: "var(--studio-accent-subtle)",
+                                  color: "var(--studio-accent)",
                                 }}
                               >
                                 {w.config.badge}
@@ -743,7 +743,7 @@ export function PageBuilderWorkspace({
                             style={{
                               fontSize: "var(--text-xs)",
                               fontWeight: 600,
-                              color: "#64748b",
+                              color: "var(--studio-500)",
                               textTransform: "uppercase",
                               letterSpacing: "0.05em",
                               marginBottom: "var(--space-3)",
@@ -765,7 +765,7 @@ export function PageBuilderWorkspace({
                                   style={{
                                     padding: "var(--space-3)",
                                     background: "white",
-                                    border: "1px solid #e2e8f0",
+                                    border: "1px solid var(--studio-200)",
                                     borderRadius: "var(--radius-md)",
                                   }}
                                 >
@@ -773,7 +773,7 @@ export function PageBuilderWorkspace({
                                     style={{
                                       fontSize: "var(--text-xl)",
                                       fontWeight: 800,
-                                      color: item.color || "#0f172a",
+                                      color: item.color || "var(--studio-900)",
                                     }}
                                   >
                                     {item.value || "0"}
@@ -781,7 +781,7 @@ export function PageBuilderWorkspace({
                                   <div
                                     style={{
                                       fontSize: "11px",
-                                      color: "#64748b",
+                                      color: "var(--studio-500)",
                                       marginTop: 2,
                                     }}
                                   >
@@ -804,21 +804,21 @@ export function PageBuilderWorkspace({
                             gap: 10,
                             background:
                               w.config.type === "danger"
-                                ? "#fef2f2"
+                                ? "var(--studio-danger-surface)"
                                 : w.config.type === "warning"
-                                  ? "#fffbeb"
+                                  ? "var(--studio-warning-surface)"
                                   : w.config.type === "success"
-                                    ? "#f0fdf4"
-                                    : "#eff6ff",
+                                    ? "var(--studio-success-surface)"
+                                    : "var(--studio-accent-subtle)",
                             color:
                               w.config.type === "danger"
-                                ? "#dc2626"
+                                ? "var(--studio-danger)"
                                 : w.config.type === "warning"
-                                  ? "#d97706"
+                                  ? "var(--studio-warning-strong)"
                                   : w.config.type === "success"
-                                    ? "#16a34a"
-                                    : "#2563eb",
-                            border: `1px solid ${w.config.type === "danger" ? "#fee2e2" : w.config.type === "warning" ? "#fef3c7" : w.config.type === "success" ? "#bbf7d0" : "#bfdbfe"}`,
+                                    ? "var(--studio-success-bright)"
+                                    : "var(--studio-accent)",
+                            border: `1px solid ${w.config.type === "danger" ? "var(--studio-danger-subtle)" : w.config.type === "warning" ? "var(--studio-warning-subtle)" : w.config.type === "success" ? "var(--studio-success-muted)" : "var(--studio-accent-muted)"}`,
                           }}
                         >
                           <div style={{ fontSize: "13px", fontWeight: 500 }}>
@@ -834,7 +834,7 @@ export function PageBuilderWorkspace({
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "space-between",
-                              borderBottom: "1px solid #e2e8f0",
+                              borderBottom: "1px solid var(--studio-200)",
                               paddingBottom: 6,
                               marginBottom: "var(--space-3)",
                             }}
@@ -843,7 +843,7 @@ export function PageBuilderWorkspace({
                               style={{
                                 fontWeight: 600,
                                 fontSize: "13px",
-                                color: "#1e293b",
+                                color: "var(--studio-800)",
                               }}
                             >
                               {w.title}
@@ -851,7 +851,7 @@ export function PageBuilderWorkspace({
                             <span
                               style={{
                                 fontSize: "10px",
-                                color: "#94a3b8",
+                                color: "var(--studio-400)",
                                 textTransform: "uppercase",
                                 fontWeight: 600,
                               }}
@@ -870,7 +870,7 @@ export function PageBuilderWorkspace({
                                 style={{
                                   display: "block",
                                   fontSize: "11px",
-                                  color: "#64748b",
+                                  color: "var(--studio-500)",
                                   fontWeight: 600,
                                   marginBottom: 4,
                                 }}
@@ -883,8 +883,8 @@ export function PageBuilderWorkspace({
                                   width: "100%",
                                   padding: "var(--space-2)",
                                   borderRadius: "var(--radius-sm)",
-                                  border: "1px solid #e2e8f0",
-                                  background: "#f8fafc",
+                                  border: "1px solid var(--studio-200)",
+                                  background: "var(--studio-50)",
                                   fontSize: "var(--text-xs)",
                                 }}
                               />
@@ -893,7 +893,7 @@ export function PageBuilderWorkspace({
                             <div
                               style={{
                                 fontSize: "var(--text-xs)",
-                                color: "#dc2626",
+                                color: "var(--studio-danger)",
                                 textAlign: "center",
                                 padding: "var(--space-4) 0",
                               }}
@@ -911,7 +911,7 @@ export function PageBuilderWorkspace({
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "space-between",
-                              borderBottom: "1px solid #e2e8f0",
+                              borderBottom: "1px solid var(--studio-200)",
                               paddingBottom: 6,
                               marginBottom: "var(--space-3)",
                             }}
@@ -920,7 +920,7 @@ export function PageBuilderWorkspace({
                               style={{
                                 fontWeight: 600,
                                 fontSize: "13px",
-                                color: "#1e293b",
+                                color: "var(--studio-800)",
                               }}
                             >
                               {w.title}
@@ -928,7 +928,7 @@ export function PageBuilderWorkspace({
                             <span
                               style={{
                                 fontSize: "10px",
-                                color: "#94a3b8",
+                                color: "var(--studio-400)",
                                 textTransform: "uppercase",
                                 fontWeight: 600,
                               }}
@@ -949,8 +949,8 @@ export function PageBuilderWorkspace({
                                   gridTemplateColumns: "1fr 1fr",
                                   padding: 6,
                                   fontWeight: 600,
-                                  borderBottom: "1px solid #f1f5f9",
-                                  background: "#f1f5f9",
+                                  borderBottom: "1px solid var(--studio-100)",
+                                  background: "var(--studio-100)",
                                 }}
                               >
                                 <span>Record / Identifier</span>
@@ -963,14 +963,14 @@ export function PageBuilderWorkspace({
                                   display: "grid",
                                   gridTemplateColumns: "1fr 1fr",
                                   padding: 6,
-                                  borderBottom: "1px solid #f1f5f9",
+                                  borderBottom: "1px solid var(--studio-100)",
                                 }}
                               >
                                 <span>Item 1002</span>
                                 <span
                                   style={{
                                     textAlign: "right",
-                                    color: "#10b981",
+                                    color: "var(--studio-success)",
                                   }}
                                 >
                                   Active
@@ -987,7 +987,7 @@ export function PageBuilderWorkspace({
                                 <span
                                   style={{
                                     textAlign: "right",
-                                    color: "#f59e0b",
+                                    color: "var(--studio-warning)",
                                   }}
                                 >
                                   Pending
@@ -998,7 +998,7 @@ export function PageBuilderWorkspace({
                             <div
                               style={{
                                 fontSize: "var(--text-xs)",
-                                color: "#dc2626",
+                                color: "var(--studio-danger)",
                                 textAlign: "center",
                                 padding: "var(--space-4) 0",
                               }}
@@ -1016,7 +1016,7 @@ export function PageBuilderWorkspace({
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "space-between",
-                              borderBottom: "1px solid #e2e8f0",
+                              borderBottom: "1px solid var(--studio-200)",
                               paddingBottom: 6,
                               marginBottom: "var(--space-3)",
                             }}
@@ -1025,7 +1025,7 @@ export function PageBuilderWorkspace({
                               style={{
                                 fontWeight: 600,
                                 fontSize: "13px",
-                                color: "#1e293b",
+                                color: "var(--studio-800)",
                               }}
                             >
                               {w.title}
@@ -1033,7 +1033,7 @@ export function PageBuilderWorkspace({
                             <span
                               style={{
                                 fontSize: "10px",
-                                color: "#94a3b8",
+                                color: "var(--studio-400)",
                                 textTransform: "uppercase",
                                 fontWeight: 600,
                               }}
@@ -1055,7 +1055,7 @@ export function PageBuilderWorkspace({
                               style={{
                                 width: "15%",
                                 height: "40%",
-                                background: "#3b82f6",
+                                background: "var(--studio-accent-bright)",
                                 borderRadius: "2px",
                               }}
                             />
@@ -1063,7 +1063,7 @@ export function PageBuilderWorkspace({
                               style={{
                                 width: "15%",
                                 height: "80%",
-                                background: "#3b82f6",
+                                background: "var(--studio-accent-bright)",
                                 borderRadius: "2px",
                               }}
                             />
@@ -1071,7 +1071,7 @@ export function PageBuilderWorkspace({
                               style={{
                                 width: "15%",
                                 height: "60%",
-                                background: "#3b82f6",
+                                background: "var(--studio-accent-bright)",
                                 borderRadius: "2px",
                               }}
                             />
@@ -1079,7 +1079,7 @@ export function PageBuilderWorkspace({
                               style={{
                                 width: "15%",
                                 height: "95%",
-                                background: "#3b82f6",
+                                background: "var(--studio-accent-bright)",
                                 borderRadius: "2px",
                               }}
                             />
@@ -1099,7 +1099,7 @@ export function PageBuilderWorkspace({
           <aside
             style={{
               width: "320px",
-              background: "#1e293b",
+              background: "var(--studio-800)",
               borderLeft: "1px solid rgba(255,255,255,0.1)",
               padding: "var(--space-4)",
               overflowY: "auto",
@@ -1137,7 +1137,7 @@ export function PageBuilderWorkspace({
                       background: "none",
                       border: "none",
                       cursor: "pointer",
-                      color: "#94a3b8",
+                      color: "var(--studio-400)",
                     }}
                   >
                     <X size={15} />
@@ -1150,7 +1150,7 @@ export function PageBuilderWorkspace({
                     style={{
                       display: "block",
                       fontSize: "var(--text-xs)",
-                      color: "#94a3b8",
+                      color: "var(--studio-400)",
                       fontWeight: 600,
                       marginBottom: 4,
                     }}
@@ -1182,7 +1182,7 @@ export function PageBuilderWorkspace({
                     style={{
                       display: "block",
                       fontSize: "var(--text-xs)",
-                      color: "#94a3b8",
+                      color: "var(--studio-400)",
                       fontWeight: 600,
                       marginBottom: 4,
                     }}
@@ -1221,7 +1221,7 @@ export function PageBuilderWorkspace({
                         style={{
                           display: "block",
                           fontSize: "var(--text-xs)",
-                          color: "#94a3b8",
+                          color: "var(--studio-400)",
                           fontWeight: 600,
                           marginBottom: 4,
                         }}
@@ -1253,7 +1253,7 @@ export function PageBuilderWorkspace({
                         style={{
                           display: "block",
                           fontSize: "var(--text-xs)",
-                          color: "#94a3b8",
+                          color: "var(--studio-400)",
                           fontWeight: 600,
                           marginBottom: 4,
                         }}
@@ -1290,7 +1290,7 @@ export function PageBuilderWorkspace({
                         style={{
                           display: "block",
                           fontSize: "var(--text-xs)",
-                          color: "#94a3b8",
+                          color: "var(--studio-400)",
                           fontWeight: 600,
                           marginBottom: 4,
                         }}
@@ -1324,7 +1324,7 @@ export function PageBuilderWorkspace({
                         style={{
                           display: "block",
                           fontSize: "var(--text-xs)",
-                          color: "#94a3b8",
+                          color: "var(--studio-400)",
                           fontWeight: 600,
                           marginBottom: 4,
                         }}
@@ -1365,7 +1365,7 @@ export function PageBuilderWorkspace({
                       style={{
                         display: "block",
                         fontSize: "var(--text-xs)",
-                        color: "#94a3b8",
+                        color: "var(--studio-400)",
                         fontWeight: 600,
                         marginBottom: 4,
                       }}
@@ -1420,7 +1420,7 @@ export function PageBuilderWorkspace({
                         style={{
                           display: "block",
                           fontSize: "var(--text-xs)",
-                          color: "#94a3b8",
+                          color: "var(--studio-400)",
                           fontWeight: 600,
                           marginBottom: 4,
                         }}
@@ -1479,7 +1479,7 @@ export function PageBuilderWorkspace({
                         style={{
                           display: "block",
                           fontSize: "var(--text-xs)",
-                          color: "#94a3b8",
+                          color: "var(--studio-400)",
                           fontWeight: 600,
                           marginBottom: 4,
                         }}
@@ -1519,7 +1519,7 @@ export function PageBuilderWorkspace({
                         style={{
                           display: "block",
                           fontSize: "var(--text-xs)",
-                          color: "#94a3b8",
+                          color: "var(--studio-400)",
                           fontWeight: 600,
                           marginBottom: 4,
                         }}
@@ -1558,7 +1558,7 @@ export function PageBuilderWorkspace({
                         style={{
                           display: "block",
                           fontSize: "var(--text-xs)",
-                          color: "#94a3b8",
+                          color: "var(--studio-400)",
                           fontWeight: 600,
                           marginBottom: 4,
                         }}
@@ -1598,7 +1598,7 @@ export function PageBuilderWorkspace({
                       style={{
                         display: "block",
                         fontSize: "var(--text-xs)",
-                        color: "#94a3b8",
+                        color: "var(--studio-400)",
                         fontWeight: 600,
                         marginBottom: "var(--space-2)",
                       }}
@@ -1682,7 +1682,7 @@ export function PageBuilderWorkspace({
                           >
                             <input
                               type="color"
-                              value={item.color || "#3b82f6"}
+                              value={item.color || "var(--studio-accent-bright)"}
                               onChange={(e) => {
                                 const nextItems = [
                                   ...selectedWidget.config.items,
@@ -1716,7 +1716,7 @@ export function PageBuilderWorkspace({
                               style={{
                                 border: "none",
                                 background: "none",
-                                color: "#dc2626",
+                                color: "var(--studio-danger)",
                                 cursor: "pointer",
                                 fontSize: "10px",
                               }}
@@ -1731,7 +1731,7 @@ export function PageBuilderWorkspace({
                       onClick={() => {
                         const nextItems = [
                           ...(selectedWidget.config.items || []),
-                          { label: "New Stat", value: "10", color: "#3b82f6" },
+                          { label: "New Stat", value: "10", color: "var(--studio-accent-bright)" },
                         ];
                         handleUpdateConfig(
                           selectedWidget.id,
@@ -1764,7 +1764,7 @@ export function PageBuilderWorkspace({
                   alignItems: "center",
                   justifyContent: "center",
                   height: "200px",
-                  color: "#64748b",
+                  color: "var(--studio-500)",
                   textAlign: "center",
                 }}
               >

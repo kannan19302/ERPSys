@@ -58,7 +58,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity1.create")
   async createBlockchainEntity1(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity1(req.user.tenantId, body);
   }
@@ -69,7 +69,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity1(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity1(req.user.tenantId, id, body);
   }
@@ -107,7 +107,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity2.create")
   async createBlockchainEntity2(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity2(req.user.tenantId, body);
   }
@@ -118,7 +118,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity2(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity2(req.user.tenantId, id, body);
   }
@@ -156,7 +156,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity3.create")
   async createBlockchainEntity3(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity3(req.user.tenantId, body);
   }
@@ -167,7 +167,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity3(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity3(req.user.tenantId, id, body);
   }
@@ -205,7 +205,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity4.create")
   async createBlockchainEntity4(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity4(req.user.tenantId, body);
   }
@@ -216,7 +216,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity4(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity4(req.user.tenantId, id, body);
   }
@@ -254,7 +254,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity5.create")
   async createBlockchainEntity5(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity5(req.user.tenantId, body);
   }
@@ -265,7 +265,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity5(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity5(req.user.tenantId, id, body);
   }
@@ -303,7 +303,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity6.create")
   async createBlockchainEntity6(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity6(req.user.tenantId, body);
   }
@@ -314,7 +314,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity6(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity6(req.user.tenantId, id, body);
   }
@@ -352,7 +352,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity7.create")
   async createBlockchainEntity7(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity7(req.user.tenantId, body);
   }
@@ -363,7 +363,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity7(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity7(req.user.tenantId, id, body);
   }
@@ -401,7 +401,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity8.create")
   async createBlockchainEntity8(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity8(req.user.tenantId, body);
   }
@@ -412,7 +412,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity8(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity8(req.user.tenantId, id, body);
   }
@@ -450,7 +450,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity9.create")
   async createBlockchainEntity9(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity9(req.user.tenantId, body);
   }
@@ -461,7 +461,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity9(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity9(req.user.tenantId, id, body);
   }
@@ -499,7 +499,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity10.create")
   async createBlockchainEntity10(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity10(req.user.tenantId, body);
   }
@@ -510,7 +510,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity10(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity10(req.user.tenantId, id, body);
   }
@@ -548,7 +548,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity11.create")
   async createBlockchainEntity11(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity11(req.user.tenantId, body);
   }
@@ -559,7 +559,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity11(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity11(req.user.tenantId, id, body);
   }
@@ -597,7 +597,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity12.create")
   async createBlockchainEntity12(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity12(req.user.tenantId, body);
   }
@@ -608,7 +608,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity12(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity12(req.user.tenantId, id, body);
   }
@@ -646,7 +646,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity13.create")
   async createBlockchainEntity13(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity13(req.user.tenantId, body);
   }
@@ -657,7 +657,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity13(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity13(req.user.tenantId, id, body);
   }
@@ -695,7 +695,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity14.create")
   async createBlockchainEntity14(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity14(req.user.tenantId, body);
   }
@@ -706,7 +706,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity14(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity14(req.user.tenantId, id, body);
   }
@@ -744,7 +744,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity15.create")
   async createBlockchainEntity15(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity15(req.user.tenantId, body);
   }
@@ -755,7 +755,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity15(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity15(req.user.tenantId, id, body);
   }
@@ -793,7 +793,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity16.create")
   async createBlockchainEntity16(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity16(req.user.tenantId, body);
   }
@@ -804,7 +804,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity16(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity16(req.user.tenantId, id, body);
   }
@@ -842,7 +842,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity17.create")
   async createBlockchainEntity17(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity17(req.user.tenantId, body);
   }
@@ -853,7 +853,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity17(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity17(req.user.tenantId, id, body);
   }
@@ -891,7 +891,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity18.create")
   async createBlockchainEntity18(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity18(req.user.tenantId, body);
   }
@@ -902,7 +902,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity18(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity18(req.user.tenantId, id, body);
   }
@@ -940,7 +940,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity19.create")
   async createBlockchainEntity19(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity19(req.user.tenantId, body);
   }
@@ -951,7 +951,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity19(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity19(req.user.tenantId, id, body);
   }
@@ -989,7 +989,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity20.create")
   async createBlockchainEntity20(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity20(req.user.tenantId, body);
   }
@@ -1000,7 +1000,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity20(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity20(req.user.tenantId, id, body);
   }
@@ -1038,7 +1038,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity21.create")
   async createBlockchainEntity21(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity21(req.user.tenantId, body);
   }
@@ -1049,7 +1049,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity21(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity21(req.user.tenantId, id, body);
   }
@@ -1087,7 +1087,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity22.create")
   async createBlockchainEntity22(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity22(req.user.tenantId, body);
   }
@@ -1098,7 +1098,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity22(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity22(req.user.tenantId, id, body);
   }
@@ -1136,7 +1136,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity23.create")
   async createBlockchainEntity23(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity23(req.user.tenantId, body);
   }
@@ -1147,7 +1147,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity23(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity23(req.user.tenantId, id, body);
   }
@@ -1185,7 +1185,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity24.create")
   async createBlockchainEntity24(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity24(req.user.tenantId, body);
   }
@@ -1196,7 +1196,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity24(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity24(req.user.tenantId, id, body);
   }
@@ -1234,7 +1234,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity25.create")
   async createBlockchainEntity25(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity25(req.user.tenantId, body);
   }
@@ -1245,7 +1245,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity25(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity25(req.user.tenantId, id, body);
   }
@@ -1283,7 +1283,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity26.create")
   async createBlockchainEntity26(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity26(req.user.tenantId, body);
   }
@@ -1294,7 +1294,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity26(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity26(req.user.tenantId, id, body);
   }
@@ -1332,7 +1332,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity27.create")
   async createBlockchainEntity27(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity27(req.user.tenantId, body);
   }
@@ -1343,7 +1343,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity27(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity27(req.user.tenantId, id, body);
   }
@@ -1381,7 +1381,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity28.create")
   async createBlockchainEntity28(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity28(req.user.tenantId, body);
   }
@@ -1392,7 +1392,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity28(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity28(req.user.tenantId, id, body);
   }
@@ -1430,7 +1430,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity29.create")
   async createBlockchainEntity29(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity29(req.user.tenantId, body);
   }
@@ -1441,7 +1441,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity29(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity29(req.user.tenantId, id, body);
   }
@@ -1479,7 +1479,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity30.create")
   async createBlockchainEntity30(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity30(req.user.tenantId, body);
   }
@@ -1490,7 +1490,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity30(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity30(req.user.tenantId, id, body);
   }
@@ -1528,7 +1528,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity31.create")
   async createBlockchainEntity31(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity31(req.user.tenantId, body);
   }
@@ -1539,7 +1539,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity31(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity31(req.user.tenantId, id, body);
   }
@@ -1577,7 +1577,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity32.create")
   async createBlockchainEntity32(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity32(req.user.tenantId, body);
   }
@@ -1588,7 +1588,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity32(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity32(req.user.tenantId, id, body);
   }
@@ -1626,7 +1626,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity33.create")
   async createBlockchainEntity33(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity33(req.user.tenantId, body);
   }
@@ -1637,7 +1637,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity33(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity33(req.user.tenantId, id, body);
   }
@@ -1675,7 +1675,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity34.create")
   async createBlockchainEntity34(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity34(req.user.tenantId, body);
   }
@@ -1686,7 +1686,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity34(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity34(req.user.tenantId, id, body);
   }
@@ -1724,7 +1724,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity35.create")
   async createBlockchainEntity35(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity35(req.user.tenantId, body);
   }
@@ -1735,7 +1735,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity35(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity35(req.user.tenantId, id, body);
   }
@@ -1773,7 +1773,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity36.create")
   async createBlockchainEntity36(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity36(req.user.tenantId, body);
   }
@@ -1784,7 +1784,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity36(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity36(req.user.tenantId, id, body);
   }
@@ -1822,7 +1822,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity37.create")
   async createBlockchainEntity37(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity37(req.user.tenantId, body);
   }
@@ -1833,7 +1833,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity37(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity37(req.user.tenantId, id, body);
   }
@@ -1871,7 +1871,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity38.create")
   async createBlockchainEntity38(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity38(req.user.tenantId, body);
   }
@@ -1882,7 +1882,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity38(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity38(req.user.tenantId, id, body);
   }
@@ -1920,7 +1920,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity39.create")
   async createBlockchainEntity39(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity39(req.user.tenantId, body);
   }
@@ -1931,7 +1931,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity39(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity39(req.user.tenantId, id, body);
   }
@@ -1969,7 +1969,7 @@ export class BlockchainGeneratedController {
   @Permissions("blockchain.blockchainEntity40.create")
   async createBlockchainEntity40(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createBlockchainEntity40(req.user.tenantId, body);
   }
@@ -1980,7 +1980,7 @@ export class BlockchainGeneratedController {
   async updateBlockchainEntity40(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateBlockchainEntity40(req.user.tenantId, id, body);
   }

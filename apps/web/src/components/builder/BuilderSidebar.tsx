@@ -27,38 +27,38 @@ const FIELD_GROUPS = [
         type: "Section Break",
         label: "Section",
         icon: LayoutTemplate,
-        color: "#3b82f6",
+        color: "var(--studio-accent-bright)",
       },
       {
         type: "Column Break",
         label: "Column",
         icon: LayoutTemplate,
-        color: "#3b82f6",
+        color: "var(--studio-accent-bright)",
       },
       {
         type: "Button",
         label: "Action Button",
         icon: MousePointerClick,
-        color: "#3b82f6",
+        color: "var(--studio-accent-bright)",
       },
     ],
   },
   {
     name: "Basic Inputs",
     items: [
-      { type: "Data", label: "Short Text", icon: Type, color: "#10b981" },
-      { type: "Int", label: "Number", icon: Hash, color: "#10b981" },
+      { type: "Data", label: "Short Text", icon: Type, color: "var(--studio-success)" },
+      { type: "Int", label: "Number", icon: Hash, color: "var(--studio-success)" },
       {
         type: "Currency",
         label: "Currency",
         icon: DollarSign,
-        color: "#10b981",
+        color: "var(--studio-success)",
       },
-      { type: "Select", label: "Dropdown", icon: List, color: "#10b981" },
-      { type: "Radio", label: "Radio Group", icon: List, color: "#10b981" },
-      { type: "Check", label: "Checkbox", icon: CheckSquare, color: "#10b981" },
-      { type: "Date", label: "Date", icon: Calendar, color: "#10b981" },
-      { type: "Time", label: "Time", icon: Calendar, color: "#10b981" },
+      { type: "Select", label: "Dropdown", icon: List, color: "var(--studio-success)" },
+      { type: "Radio", label: "Radio Group", icon: List, color: "var(--studio-success)" },
+      { type: "Check", label: "Checkbox", icon: CheckSquare, color: "var(--studio-success)" },
+      { type: "Date", label: "Date", icon: Calendar, color: "var(--studio-success)" },
+      { type: "Time", label: "Time", icon: Calendar, color: "var(--studio-success)" },
     ],
   },
   {
@@ -68,20 +68,20 @@ const FIELD_GROUPS = [
         type: "Text Editor",
         label: "Rich Text",
         icon: AlignLeft,
-        color: "#8b5cf6",
+        color: "var(--studio-violet)",
       },
-      { type: "Password", label: "Password", icon: Key, color: "#8b5cf6" },
-      { type: "File", label: "File Upload", icon: Upload, color: "#8b5cf6" },
-      { type: "Image", label: "Image", icon: ImageIcon, color: "#8b5cf6" },
+      { type: "Password", label: "Password", icon: Key, color: "var(--studio-violet)" },
+      { type: "File", label: "File Upload", icon: Upload, color: "var(--studio-violet)" },
+      { type: "Image", label: "Image", icon: ImageIcon, color: "var(--studio-violet)" },
       {
         type: "Signature",
         label: "Signature",
         icon: PenTool,
-        color: "#8b5cf6",
+        color: "var(--studio-violet)",
       },
-      { type: "Link", label: "Record Link", icon: Link2, color: "#8b5cf6" },
-      { type: "Table", label: "Child Table", icon: Grid, color: "#8b5cf6" },
-      { type: "HTML", label: "Custom HTML", icon: Code, color: "#8b5cf6" },
+      { type: "Link", label: "Record Link", icon: Link2, color: "var(--studio-violet)" },
+      { type: "Table", label: "Child Table", icon: Grid, color: "var(--studio-violet)" },
+      { type: "HTML", label: "Custom HTML", icon: Code, color: "var(--studio-violet)" },
     ],
   },
 ];
@@ -117,11 +117,11 @@ export function BuilderSidebar() {
       style={{
         width: "260px",
         borderRight: "1px solid rgba(255, 255, 255, 0.05)",
-        background: "#1e293b",
+        background: "var(--studio-800)",
         display: "flex",
         flexDirection: "column",
         flexShrink: 0,
-        color: "#e2e8f0",
+        color: "var(--studio-200)",
       }}
     >
       <div
@@ -143,7 +143,7 @@ export function BuilderSidebar() {
             cursor: "pointer",
             fontSize: "13px",
             fontWeight: tab === "palette" ? "600" : "400",
-            color: tab === "palette" ? "white" : "#94a3b8",
+            color: tab === "palette" ? "white" : "var(--studio-400)",
             transition: "all 0.2s",
           }}
         >
@@ -161,7 +161,7 @@ export function BuilderSidebar() {
             cursor: "pointer",
             fontSize: "13px",
             fontWeight: tab === "tree" ? "600" : "400",
-            color: tab === "tree" ? "white" : "#94a3b8",
+            color: tab === "tree" ? "white" : "var(--studio-400)",
             transition: "all 0.2s",
           }}
         >
@@ -200,7 +200,7 @@ export function BuilderSidebar() {
                     fontWeight: "600",
                     textTransform: "uppercase",
                     letterSpacing: "0.05em",
-                    color: "#64748b",
+                    color: "var(--studio-500)",
                     paddingLeft: "4px",
                   }}
                 >
@@ -251,7 +251,7 @@ export function BuilderSidebar() {
                         style={{
                           fontSize: "11px",
                           fontWeight: "500",
-                          color: "#cbd5e1",
+                          color: "var(--studio-300)",
                         }}
                       >
                         {ft.label}

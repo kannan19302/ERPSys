@@ -58,7 +58,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity1.create")
   async createSubscriptionsEntity1(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity1(req.user.tenantId, body);
   }
@@ -69,7 +69,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity1(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity1(req.user.tenantId, id, body);
   }
@@ -107,7 +107,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity2.create")
   async createSubscriptionsEntity2(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity2(req.user.tenantId, body);
   }
@@ -118,7 +118,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity2(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity2(req.user.tenantId, id, body);
   }
@@ -156,7 +156,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity3.create")
   async createSubscriptionsEntity3(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity3(req.user.tenantId, body);
   }
@@ -167,7 +167,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity3(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity3(req.user.tenantId, id, body);
   }
@@ -205,7 +205,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity4.create")
   async createSubscriptionsEntity4(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity4(req.user.tenantId, body);
   }
@@ -216,7 +216,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity4(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity4(req.user.tenantId, id, body);
   }
@@ -254,7 +254,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity5.create")
   async createSubscriptionsEntity5(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity5(req.user.tenantId, body);
   }
@@ -265,7 +265,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity5(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity5(req.user.tenantId, id, body);
   }
@@ -303,7 +303,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity6.create")
   async createSubscriptionsEntity6(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity6(req.user.tenantId, body);
   }
@@ -314,7 +314,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity6(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity6(req.user.tenantId, id, body);
   }
@@ -352,7 +352,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity7.create")
   async createSubscriptionsEntity7(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity7(req.user.tenantId, body);
   }
@@ -363,7 +363,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity7(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity7(req.user.tenantId, id, body);
   }
@@ -401,7 +401,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity8.create")
   async createSubscriptionsEntity8(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity8(req.user.tenantId, body);
   }
@@ -412,7 +412,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity8(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity8(req.user.tenantId, id, body);
   }
@@ -450,7 +450,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity9.create")
   async createSubscriptionsEntity9(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity9(req.user.tenantId, body);
   }
@@ -461,7 +461,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity9(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity9(req.user.tenantId, id, body);
   }
@@ -499,7 +499,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity10.create")
   async createSubscriptionsEntity10(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity10(req.user.tenantId, body);
   }
@@ -510,7 +510,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity10(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity10(req.user.tenantId, id, body);
   }
@@ -548,7 +548,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity11.create")
   async createSubscriptionsEntity11(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity11(req.user.tenantId, body);
   }
@@ -559,7 +559,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity11(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity11(req.user.tenantId, id, body);
   }
@@ -597,7 +597,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity12.create")
   async createSubscriptionsEntity12(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity12(req.user.tenantId, body);
   }
@@ -608,7 +608,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity12(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity12(req.user.tenantId, id, body);
   }
@@ -646,7 +646,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity13.create")
   async createSubscriptionsEntity13(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity13(req.user.tenantId, body);
   }
@@ -657,7 +657,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity13(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity13(req.user.tenantId, id, body);
   }
@@ -695,7 +695,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity14.create")
   async createSubscriptionsEntity14(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity14(req.user.tenantId, body);
   }
@@ -706,7 +706,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity14(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity14(req.user.tenantId, id, body);
   }
@@ -744,7 +744,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity15.create")
   async createSubscriptionsEntity15(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity15(req.user.tenantId, body);
   }
@@ -755,7 +755,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity15(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity15(req.user.tenantId, id, body);
   }
@@ -793,7 +793,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity16.create")
   async createSubscriptionsEntity16(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity16(req.user.tenantId, body);
   }
@@ -804,7 +804,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity16(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity16(req.user.tenantId, id, body);
   }
@@ -842,7 +842,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity17.create")
   async createSubscriptionsEntity17(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity17(req.user.tenantId, body);
   }
@@ -853,7 +853,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity17(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity17(req.user.tenantId, id, body);
   }
@@ -891,7 +891,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity18.create")
   async createSubscriptionsEntity18(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity18(req.user.tenantId, body);
   }
@@ -902,7 +902,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity18(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity18(req.user.tenantId, id, body);
   }
@@ -940,7 +940,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity19.create")
   async createSubscriptionsEntity19(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity19(req.user.tenantId, body);
   }
@@ -951,7 +951,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity19(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity19(req.user.tenantId, id, body);
   }
@@ -989,7 +989,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity20.create")
   async createSubscriptionsEntity20(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity20(req.user.tenantId, body);
   }
@@ -1000,7 +1000,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity20(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity20(req.user.tenantId, id, body);
   }
@@ -1038,7 +1038,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity21.create")
   async createSubscriptionsEntity21(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity21(req.user.tenantId, body);
   }
@@ -1049,7 +1049,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity21(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity21(req.user.tenantId, id, body);
   }
@@ -1087,7 +1087,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity22.create")
   async createSubscriptionsEntity22(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity22(req.user.tenantId, body);
   }
@@ -1098,7 +1098,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity22(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity22(req.user.tenantId, id, body);
   }
@@ -1136,7 +1136,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity23.create")
   async createSubscriptionsEntity23(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity23(req.user.tenantId, body);
   }
@@ -1147,7 +1147,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity23(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity23(req.user.tenantId, id, body);
   }
@@ -1185,7 +1185,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity24.create")
   async createSubscriptionsEntity24(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity24(req.user.tenantId, body);
   }
@@ -1196,7 +1196,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity24(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity24(req.user.tenantId, id, body);
   }
@@ -1234,7 +1234,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity25.create")
   async createSubscriptionsEntity25(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity25(req.user.tenantId, body);
   }
@@ -1245,7 +1245,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity25(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity25(req.user.tenantId, id, body);
   }
@@ -1283,7 +1283,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity26.create")
   async createSubscriptionsEntity26(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity26(req.user.tenantId, body);
   }
@@ -1294,7 +1294,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity26(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity26(req.user.tenantId, id, body);
   }
@@ -1332,7 +1332,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity27.create")
   async createSubscriptionsEntity27(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity27(req.user.tenantId, body);
   }
@@ -1343,7 +1343,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity27(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity27(req.user.tenantId, id, body);
   }
@@ -1381,7 +1381,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity28.create")
   async createSubscriptionsEntity28(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity28(req.user.tenantId, body);
   }
@@ -1392,7 +1392,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity28(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity28(req.user.tenantId, id, body);
   }
@@ -1430,7 +1430,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity29.create")
   async createSubscriptionsEntity29(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity29(req.user.tenantId, body);
   }
@@ -1441,7 +1441,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity29(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity29(req.user.tenantId, id, body);
   }
@@ -1479,7 +1479,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity30.create")
   async createSubscriptionsEntity30(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity30(req.user.tenantId, body);
   }
@@ -1490,7 +1490,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity30(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity30(req.user.tenantId, id, body);
   }
@@ -1528,7 +1528,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity31.create")
   async createSubscriptionsEntity31(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity31(req.user.tenantId, body);
   }
@@ -1539,7 +1539,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity31(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity31(req.user.tenantId, id, body);
   }
@@ -1577,7 +1577,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity32.create")
   async createSubscriptionsEntity32(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity32(req.user.tenantId, body);
   }
@@ -1588,7 +1588,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity32(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity32(req.user.tenantId, id, body);
   }
@@ -1626,7 +1626,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity33.create")
   async createSubscriptionsEntity33(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity33(req.user.tenantId, body);
   }
@@ -1637,7 +1637,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity33(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity33(req.user.tenantId, id, body);
   }
@@ -1675,7 +1675,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity34.create")
   async createSubscriptionsEntity34(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity34(req.user.tenantId, body);
   }
@@ -1686,7 +1686,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity34(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity34(req.user.tenantId, id, body);
   }
@@ -1724,7 +1724,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity35.create")
   async createSubscriptionsEntity35(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity35(req.user.tenantId, body);
   }
@@ -1735,7 +1735,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity35(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity35(req.user.tenantId, id, body);
   }
@@ -1773,7 +1773,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity36.create")
   async createSubscriptionsEntity36(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity36(req.user.tenantId, body);
   }
@@ -1784,7 +1784,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity36(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity36(req.user.tenantId, id, body);
   }
@@ -1822,7 +1822,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity37.create")
   async createSubscriptionsEntity37(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity37(req.user.tenantId, body);
   }
@@ -1833,7 +1833,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity37(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity37(req.user.tenantId, id, body);
   }
@@ -1871,7 +1871,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity38.create")
   async createSubscriptionsEntity38(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity38(req.user.tenantId, body);
   }
@@ -1882,7 +1882,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity38(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity38(req.user.tenantId, id, body);
   }
@@ -1920,7 +1920,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity39.create")
   async createSubscriptionsEntity39(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity39(req.user.tenantId, body);
   }
@@ -1931,7 +1931,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity39(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity39(req.user.tenantId, id, body);
   }
@@ -1969,7 +1969,7 @@ export class SubscriptionsGeneratedController {
   @Permissions("subscriptions.subscriptionsEntity40.create")
   async createSubscriptionsEntity40(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createSubscriptionsEntity40(req.user.tenantId, body);
   }
@@ -1980,7 +1980,7 @@ export class SubscriptionsGeneratedController {
   async updateSubscriptionsEntity40(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateSubscriptionsEntity40(req.user.tenantId, id, body);
   }

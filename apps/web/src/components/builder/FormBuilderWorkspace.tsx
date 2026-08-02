@@ -293,8 +293,8 @@ export function FormBuilderWorkspace({
         top: 0,
         left: 0,
         zIndex: 10000,
-        backgroundColor: "#0f172a",
-        color: "#e2e8f0",
+        backgroundColor: "var(--studio-900)",
+        color: "var(--studio-200)",
         fontFamily: "var(--font-sans)",
         overflow: "hidden",
       }}
@@ -329,7 +329,7 @@ export function FormBuilderWorkspace({
               borderRadius: "var(--radius-md)",
               padding: "var(--space-2)",
               cursor: "pointer",
-              color: "#e2e8f0",
+              color: "var(--studio-200)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -348,7 +348,7 @@ export function FormBuilderWorkspace({
             >
               Form Builder
             </h1>
-            <span style={{ fontSize: "var(--text-xs)", color: "#94a3b8" }}>
+            <span style={{ fontSize: "var(--text-xs)", color: "var(--studio-400)" }}>
               {currentId === "new"
                 ? "New Form"
                 : deploySettings.title || `ID: ${currentId}`}
@@ -379,7 +379,7 @@ export function FormBuilderWorkspace({
               style={{
                 background:
                   viewport === v ? "rgba(255,255,255,0.1)" : "transparent",
-                color: viewport === v ? "white" : "#64748b",
+                color: viewport === v ? "white" : "var(--studio-500)",
                 border: "none",
                 padding: "6px 12px",
                 borderRadius: "var(--radius-md)",
@@ -433,7 +433,7 @@ export function FormBuilderWorkspace({
             style={{
               padding: "8px 16px",
               borderRadius: "var(--radius-md)",
-              background: "linear-gradient(135deg, #10b981, #3b82f6)",
+              background: "linear-gradient(135deg, var(--studio-success), var(--studio-accent-bright))",
               color: "white",
               border: "none",
               cursor: "pointer",
@@ -457,7 +457,7 @@ export function FormBuilderWorkspace({
               background: showCopilot
                 ? "rgba(59, 130, 246, 0.2)"
                 : "rgba(255,255,255,0.05)",
-              color: showCopilot ? "#60a5fa" : "white",
+              color: showCopilot ? "var(--studio-accent-light)" : "white",
               border:
                 "1px solid " +
                 (showCopilot
@@ -484,7 +484,7 @@ export function FormBuilderWorkspace({
               background: previewMode
                 ? "rgba(59, 130, 246, 0.2)"
                 : "rgba(255,255,255,0.05)",
-              color: previewMode ? "#60a5fa" : "white",
+              color: previewMode ? "var(--studio-accent-light)" : "white",
               border:
                 "1px solid " +
                 (previewMode
@@ -511,8 +511,8 @@ export function FormBuilderWorkspace({
                 padding: "8px 16px",
                 borderRadius: "var(--radius-md)",
                 background: "transparent",
-                color: "#10b981",
-                border: "1px solid #10b981",
+                color: "var(--studio-success)",
+                border: "1px solid var(--studio-success)",
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
@@ -533,7 +533,7 @@ export function FormBuilderWorkspace({
             style={{
               padding: "8px 16px",
               borderRadius: "var(--radius-md)",
-              background: "#2563eb",
+              background: "var(--studio-accent)",
               color: "white",
               border: "none",
               cursor: "pointer",
@@ -571,7 +571,7 @@ export function FormBuilderWorkspace({
           style={{
             flex: 1,
             position: "relative",
-            backgroundColor: "#0f172a",
+            backgroundColor: "var(--studio-900)",
             backgroundImage:
               "radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px)",
             backgroundSize: "24px 24px",
@@ -669,7 +669,7 @@ export function FormBuilderWorkspace({
                               ? "768px"
                               : "375px",
                         background: "white",
-                        color: "#0f172a",
+                        color: "var(--studio-900)",
                         padding: previewMode
                           ? "var(--space-8)"
                           : "var(--space-4)",
@@ -685,7 +685,7 @@ export function FormBuilderWorkspace({
                               : "812px",
                         border:
                           viewport !== "desktop"
-                            ? "12px solid #1e293b"
+                            ? "12px solid var(--studio-800)"
                             : "1px solid var(--color-border)",
                       }}
                     >
@@ -702,7 +702,7 @@ export function FormBuilderWorkspace({
                             style={{
                               width: "60px",
                               height: "6px",
-                              background: "#e2e8f0",
+                              background: "var(--studio-200)",
                               borderRadius: "4px",
                             }}
                           />
@@ -731,9 +731,9 @@ export function FormBuilderWorkspace({
                                   gridColumn: "span 12",
                                   padding: "var(--space-10)",
                                   textAlign: "center",
-                                  border: "2px dashed #cbd5e1",
+                                  border: "2px dashed var(--studio-300)",
                                   borderRadius: "var(--radius-lg)",
-                                  color: "#64748b",
+                                  color: "var(--studio-500)",
                                 }}
                               >
                                 Drag fields from the palette or use the Tree to

@@ -58,7 +58,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity1.create")
   async createServiceManagementEntity1(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity1(req.user.tenantId, body);
   }
@@ -69,7 +69,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity1(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity1(req.user.tenantId, id, body);
   }
@@ -107,7 +107,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity2.create")
   async createServiceManagementEntity2(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity2(req.user.tenantId, body);
   }
@@ -118,7 +118,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity2(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity2(req.user.tenantId, id, body);
   }
@@ -156,7 +156,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity3.create")
   async createServiceManagementEntity3(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity3(req.user.tenantId, body);
   }
@@ -167,7 +167,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity3(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity3(req.user.tenantId, id, body);
   }
@@ -205,7 +205,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity4.create")
   async createServiceManagementEntity4(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity4(req.user.tenantId, body);
   }
@@ -216,7 +216,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity4(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity4(req.user.tenantId, id, body);
   }
@@ -254,7 +254,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity5.create")
   async createServiceManagementEntity5(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity5(req.user.tenantId, body);
   }
@@ -265,7 +265,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity5(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity5(req.user.tenantId, id, body);
   }
@@ -303,7 +303,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity6.create")
   async createServiceManagementEntity6(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity6(req.user.tenantId, body);
   }
@@ -314,7 +314,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity6(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity6(req.user.tenantId, id, body);
   }
@@ -352,7 +352,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity7.create")
   async createServiceManagementEntity7(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity7(req.user.tenantId, body);
   }
@@ -363,7 +363,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity7(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity7(req.user.tenantId, id, body);
   }
@@ -401,7 +401,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity8.create")
   async createServiceManagementEntity8(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity8(req.user.tenantId, body);
   }
@@ -412,7 +412,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity8(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity8(req.user.tenantId, id, body);
   }
@@ -450,7 +450,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity9.create")
   async createServiceManagementEntity9(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity9(req.user.tenantId, body);
   }
@@ -461,7 +461,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity9(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity9(req.user.tenantId, id, body);
   }
@@ -499,7 +499,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity10.create")
   async createServiceManagementEntity10(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity10(req.user.tenantId, body);
   }
@@ -510,7 +510,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity10(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity10(
       req.user.tenantId,
@@ -552,7 +552,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity11.create")
   async createServiceManagementEntity11(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity11(req.user.tenantId, body);
   }
@@ -563,7 +563,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity11(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity11(
       req.user.tenantId,
@@ -605,7 +605,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity12.create")
   async createServiceManagementEntity12(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity12(req.user.tenantId, body);
   }
@@ -616,7 +616,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity12(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity12(
       req.user.tenantId,
@@ -658,7 +658,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity13.create")
   async createServiceManagementEntity13(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity13(req.user.tenantId, body);
   }
@@ -669,7 +669,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity13(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity13(
       req.user.tenantId,
@@ -711,7 +711,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity14.create")
   async createServiceManagementEntity14(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity14(req.user.tenantId, body);
   }
@@ -722,7 +722,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity14(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity14(
       req.user.tenantId,
@@ -764,7 +764,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity15.create")
   async createServiceManagementEntity15(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity15(req.user.tenantId, body);
   }
@@ -775,7 +775,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity15(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity15(
       req.user.tenantId,
@@ -817,7 +817,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity16.create")
   async createServiceManagementEntity16(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity16(req.user.tenantId, body);
   }
@@ -828,7 +828,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity16(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity16(
       req.user.tenantId,
@@ -870,7 +870,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity17.create")
   async createServiceManagementEntity17(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity17(req.user.tenantId, body);
   }
@@ -881,7 +881,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity17(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity17(
       req.user.tenantId,
@@ -923,7 +923,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity18.create")
   async createServiceManagementEntity18(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity18(req.user.tenantId, body);
   }
@@ -934,7 +934,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity18(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity18(
       req.user.tenantId,
@@ -976,7 +976,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity19.create")
   async createServiceManagementEntity19(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity19(req.user.tenantId, body);
   }
@@ -987,7 +987,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity19(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity19(
       req.user.tenantId,
@@ -1029,7 +1029,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity20.create")
   async createServiceManagementEntity20(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity20(req.user.tenantId, body);
   }
@@ -1040,7 +1040,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity20(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity20(
       req.user.tenantId,
@@ -1082,7 +1082,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity21.create")
   async createServiceManagementEntity21(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity21(req.user.tenantId, body);
   }
@@ -1093,7 +1093,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity21(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity21(
       req.user.tenantId,
@@ -1135,7 +1135,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity22.create")
   async createServiceManagementEntity22(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity22(req.user.tenantId, body);
   }
@@ -1146,7 +1146,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity22(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity22(
       req.user.tenantId,
@@ -1188,7 +1188,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity23.create")
   async createServiceManagementEntity23(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity23(req.user.tenantId, body);
   }
@@ -1199,7 +1199,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity23(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity23(
       req.user.tenantId,
@@ -1241,7 +1241,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity24.create")
   async createServiceManagementEntity24(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity24(req.user.tenantId, body);
   }
@@ -1252,7 +1252,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity24(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity24(
       req.user.tenantId,
@@ -1294,7 +1294,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity25.create")
   async createServiceManagementEntity25(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity25(req.user.tenantId, body);
   }
@@ -1305,7 +1305,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity25(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity25(
       req.user.tenantId,
@@ -1347,7 +1347,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity26.create")
   async createServiceManagementEntity26(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity26(req.user.tenantId, body);
   }
@@ -1358,7 +1358,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity26(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity26(
       req.user.tenantId,
@@ -1400,7 +1400,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity27.create")
   async createServiceManagementEntity27(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity27(req.user.tenantId, body);
   }
@@ -1411,7 +1411,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity27(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity27(
       req.user.tenantId,
@@ -1453,7 +1453,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity28.create")
   async createServiceManagementEntity28(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity28(req.user.tenantId, body);
   }
@@ -1464,7 +1464,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity28(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity28(
       req.user.tenantId,
@@ -1506,7 +1506,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity29.create")
   async createServiceManagementEntity29(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity29(req.user.tenantId, body);
   }
@@ -1517,7 +1517,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity29(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity29(
       req.user.tenantId,
@@ -1559,7 +1559,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity30.create")
   async createServiceManagementEntity30(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity30(req.user.tenantId, body);
   }
@@ -1570,7 +1570,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity30(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity30(
       req.user.tenantId,
@@ -1612,7 +1612,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity31.create")
   async createServiceManagementEntity31(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity31(req.user.tenantId, body);
   }
@@ -1623,7 +1623,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity31(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity31(
       req.user.tenantId,
@@ -1665,7 +1665,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity32.create")
   async createServiceManagementEntity32(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity32(req.user.tenantId, body);
   }
@@ -1676,7 +1676,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity32(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity32(
       req.user.tenantId,
@@ -1718,7 +1718,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity33.create")
   async createServiceManagementEntity33(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity33(req.user.tenantId, body);
   }
@@ -1729,7 +1729,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity33(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity33(
       req.user.tenantId,
@@ -1771,7 +1771,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity34.create")
   async createServiceManagementEntity34(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity34(req.user.tenantId, body);
   }
@@ -1782,7 +1782,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity34(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity34(
       req.user.tenantId,
@@ -1824,7 +1824,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity35.create")
   async createServiceManagementEntity35(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity35(req.user.tenantId, body);
   }
@@ -1835,7 +1835,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity35(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity35(
       req.user.tenantId,
@@ -1877,7 +1877,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity36.create")
   async createServiceManagementEntity36(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity36(req.user.tenantId, body);
   }
@@ -1888,7 +1888,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity36(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity36(
       req.user.tenantId,
@@ -1930,7 +1930,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity37.create")
   async createServiceManagementEntity37(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity37(req.user.tenantId, body);
   }
@@ -1941,7 +1941,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity37(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity37(
       req.user.tenantId,
@@ -1983,7 +1983,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity38.create")
   async createServiceManagementEntity38(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity38(req.user.tenantId, body);
   }
@@ -1994,7 +1994,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity38(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity38(
       req.user.tenantId,
@@ -2036,7 +2036,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity39.create")
   async createServiceManagementEntity39(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity39(req.user.tenantId, body);
   }
@@ -2047,7 +2047,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity39(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity39(
       req.user.tenantId,
@@ -2089,7 +2089,7 @@ export class ServiceManagementGeneratedController {
   @Permissions("service-management.serviceManagementEntity40.create")
   async createServiceManagementEntity40(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createServiceManagementEntity40(req.user.tenantId, body);
   }
@@ -2100,7 +2100,7 @@ export class ServiceManagementGeneratedController {
   async updateServiceManagementEntity40(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateServiceManagementEntity40(
       req.user.tenantId,

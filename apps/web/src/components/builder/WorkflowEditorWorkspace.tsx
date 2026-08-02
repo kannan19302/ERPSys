@@ -57,19 +57,19 @@ const NODE_TYPES = [
     type: "approval",
     label: "Approval Step",
     icon: CheckSquare,
-    color: "#10b981",
+    color: "var(--studio-success)",
   },
-  { type: "email", label: "Send Email", icon: Mail, color: "#3b82f6" },
-  { type: "notification", label: "In-App Alert", icon: Bell, color: "#f59e0b" },
-  { type: "condition", label: "Condition", icon: Split, color: "#8b5cf6" },
-  { type: "delay", label: "Wait/Delay", icon: Clock, color: "#64748b" },
-  { type: "webhook", label: "Webhook", icon: Link2, color: "#ec4899" },
+  { type: "email", label: "Send Email", icon: Mail, color: "var(--studio-accent-bright)" },
+  { type: "notification", label: "In-App Alert", icon: Bell, color: "var(--studio-warning)" },
+  { type: "condition", label: "Condition", icon: Split, color: "var(--studio-violet)" },
+  { type: "delay", label: "Wait/Delay", icon: Clock, color: "var(--studio-500)" },
+  { type: "webhook", label: "Webhook", icon: Link2, color: "var(--studio-pink)" },
 ];
 
 function CustomNode({ data, isConnectable }: any) {
   const nt = NODE_TYPES.find((n) => n.type === data.nodeType);
   const Icon = nt?.icon || BoxSelect;
-  const color = nt?.color || "#94a3b8";
+  const color = nt?.color || "var(--studio-400)";
   return (
     <div
       style={{
@@ -114,7 +114,7 @@ function CustomNode({ data, isConnectable }: any) {
         >
           {nt?.label || "Node"}
         </div>
-        <div style={{ fontSize: "13px", fontWeight: 500, color: "#1e293b" }}>
+        <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--studio-800)" }}>
           {data.label}
         </div>
       </div>
@@ -179,7 +179,7 @@ function WorkflowEditorInner({
             position: { x: 250, y: 50 },
             data: { label: "Trigger: Manual" },
             style: {
-              border: "2px solid #3b82f6",
+              border: "2px solid var(--studio-accent-bright)",
               borderRadius: "8px",
               padding: "10px",
             },
@@ -209,7 +209,7 @@ function WorkflowEditorInner({
                 position: { x: 250, y: 50 },
                 data: { label: `Trigger: ${data.trigger}` },
                 style: {
-                  border: "2px solid #3b82f6",
+                  border: "2px solid var(--studio-accent-bright)",
                   borderRadius: "8px",
                   padding: "10px",
                 },
@@ -408,8 +408,8 @@ function WorkflowEditorInner({
         top: 0,
         left: 0,
         zIndex: 10000,
-        backgroundColor: "#f8fafc",
-        color: "#0f172a",
+        backgroundColor: "var(--studio-50)",
+        color: "var(--studio-900)",
         overflow: "hidden",
       }}
     >
@@ -421,7 +421,7 @@ function WorkflowEditorInner({
           padding: "0 var(--space-4)",
           height: "60px",
           background: "white",
-          borderBottom: "1px solid #e2e8f0",
+          borderBottom: "1px solid var(--studio-200)",
           zIndex: 10,
         }}
       >
@@ -435,7 +435,7 @@ function WorkflowEditorInner({
           <button
             onClick={handleClose}
             style={{
-              background: "#f1f5f9",
+              background: "var(--studio-100)",
               border: "none",
               borderRadius: "6px",
               padding: "8px",
@@ -444,9 +444,9 @@ function WorkflowEditorInner({
             }}
           >
             {embedded ? (
-              <X size={16} color="#64748b" />
+              <X size={16} color="var(--studio-500)" />
             ) : (
-              <ArrowLeft size={16} color="#64748b" />
+              <ArrowLeft size={16} color="var(--studio-500)" />
             )}
           </button>
           <div>
@@ -460,12 +460,12 @@ function WorkflowEditorInner({
                 outline: "none",
                 fontSize: 15,
                 fontWeight: 600,
-                color: "#0f172a",
+                color: "var(--studio-900)",
                 background: "transparent",
                 minWidth: 200,
               }}
             />
-            <div style={{ fontSize: "12px", color: "#64748b" }}>
+            <div style={{ fontSize: "12px", color: "var(--studio-500)" }}>
               {workflow?.status || "DRAFT"} · {nodes.length} nodes
             </div>
           </div>
@@ -477,8 +477,8 @@ function WorkflowEditorInner({
               padding: "8px 16px",
               borderRadius: "6px",
               background: showCopilot ? "rgba(59, 130, 246, 0.1)" : "white",
-              color: showCopilot ? "#2563eb" : "#0f172a",
-              border: "1px solid #cbd5e1",
+              color: showCopilot ? "var(--studio-accent)" : "var(--studio-900)",
+              border: "1px solid var(--studio-300)",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
@@ -498,7 +498,7 @@ function WorkflowEditorInner({
               padding: "8px 16px",
               borderRadius: "6px",
               background: "white",
-              border: "1px solid #cbd5e1",
+              border: "1px solid var(--studio-300)",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
@@ -515,7 +515,7 @@ function WorkflowEditorInner({
             style={{
               padding: "8px 16px",
               borderRadius: "6px",
-              background: "#10b981",
+              background: "var(--studio-success)",
               color: "white",
               border: "none",
               cursor: "pointer",
@@ -548,7 +548,7 @@ function WorkflowEditorInner({
             style={{
               padding: "8px 16px",
               borderRadius: "6px",
-              background: "#2563eb",
+              background: "var(--studio-accent)",
               color: "white",
               border: "none",
               cursor: "pointer",
@@ -583,7 +583,7 @@ function WorkflowEditorInner({
           style={{
             width: "240px",
             background: "white",
-            borderRight: "1px solid #e2e8f0",
+            borderRight: "1px solid var(--studio-200)",
             display: "flex",
             flexDirection: "column",
             flexShrink: 0,
@@ -592,7 +592,7 @@ function WorkflowEditorInner({
           <div
             style={{
               padding: "16px 16px 8px 16px",
-              borderBottom: "1px solid #e2e8f0",
+              borderBottom: "1px solid var(--studio-200)",
             }}
           >
             <span
@@ -600,7 +600,7 @@ function WorkflowEditorInner({
                 fontSize: "11px",
                 fontWeight: 600,
                 textTransform: "uppercase",
-                color: "#94a3b8",
+                color: "var(--studio-400)",
                 letterSpacing: "0.05em",
               }}
             >
@@ -627,7 +627,7 @@ function WorkflowEditorInner({
                   gap: "10px",
                   padding: "12px",
                   background: "white",
-                  border: "1px solid #e2e8f0",
+                  border: "1px solid var(--studio-200)",
                   borderRadius: "8px",
                   cursor: "grab",
                   boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
@@ -638,7 +638,7 @@ function WorkflowEditorInner({
                   style={{
                     fontSize: "13px",
                     fontWeight: 500,
-                    color: "#334155",
+                    color: "var(--studio-700)",
                   }}
                 >
                   {nt.label}
@@ -665,9 +665,9 @@ function WorkflowEditorInner({
           >
             <Controls />
             <MiniMap
-              style={{ border: "1px solid #e2e8f0", borderRadius: "8px" }}
+              style={{ border: "1px solid var(--studio-200)", borderRadius: "8px" }}
             />
-            <Background color="#cbd5e1" gap={16} />
+            <Background color="var(--studio-300)" gap={16} />
           </ReactFlow>
         </div>
 
@@ -695,7 +695,7 @@ function WorkflowEditorInner({
           style={{
             width: "300px",
             background: "white",
-            borderLeft: "1px solid #e2e8f0",
+            borderLeft: "1px solid var(--studio-200)",
             display: "flex",
             flexDirection: "column",
             flexShrink: 0,
@@ -704,13 +704,13 @@ function WorkflowEditorInner({
           <div
             style={{
               padding: "16px",
-              borderBottom: "1px solid #e2e8f0",
+              borderBottom: "1px solid var(--studio-200)",
               display: "flex",
               alignItems: "center",
               gap: "8px",
             }}
           >
-            <Settings size={16} color="#64748b" />
+            <Settings size={16} color="var(--studio-500)" />
             <span style={{ fontSize: "14px", fontWeight: 600 }}>
               Properties
             </span>
@@ -735,7 +735,7 @@ function WorkflowEditorInner({
                     style={{
                       fontSize: "12px",
                       fontWeight: 500,
-                      color: "#475569",
+                      color: "var(--studio-600)",
                     }}
                   >
                     Node Label
@@ -747,7 +747,7 @@ function WorkflowEditorInner({
                     style={{
                       padding: "8px 12px",
                       borderRadius: "6px",
-                      border: "1px solid #cbd5e1",
+                      border: "1px solid var(--studio-300)",
                       fontSize: "13px",
                     }}
                   />
@@ -765,7 +765,7 @@ function WorkflowEditorInner({
                         style={{
                           fontSize: "12px",
                           fontWeight: 500,
-                          color: "#475569",
+                          color: "var(--studio-600)",
                         }}
                       >
                         To Email / Field
@@ -783,7 +783,7 @@ function WorkflowEditorInner({
                         style={{
                           padding: "8px 12px",
                           borderRadius: "6px",
-                          border: "1px solid #cbd5e1",
+                          border: "1px solid var(--studio-300)",
                           fontSize: "13px",
                         }}
                       />
@@ -799,7 +799,7 @@ function WorkflowEditorInner({
                         style={{
                           fontSize: "12px",
                           fontWeight: 500,
-                          color: "#475569",
+                          color: "var(--studio-600)",
                         }}
                       >
                         Subject
@@ -816,7 +816,7 @@ function WorkflowEditorInner({
                         style={{
                           padding: "8px 12px",
                           borderRadius: "6px",
-                          border: "1px solid #cbd5e1",
+                          border: "1px solid var(--studio-300)",
                           fontSize: "13px",
                         }}
                       />
@@ -835,7 +835,7 @@ function WorkflowEditorInner({
                       style={{
                         fontSize: "12px",
                         fontWeight: 500,
-                        color: "#475569",
+                        color: "var(--studio-600)",
                       }}
                     >
                       Assign To Role
@@ -853,7 +853,7 @@ function WorkflowEditorInner({
                       style={{
                         padding: "8px 12px",
                         borderRadius: "6px",
-                        border: "1px solid #cbd5e1",
+                        border: "1px solid var(--studio-300)",
                         fontSize: "13px",
                         background: "white",
                       }}
@@ -880,7 +880,7 @@ function WorkflowEditorInner({
                         style={{
                           fontSize: "12px",
                           fontWeight: 500,
-                          color: "#475569",
+                          color: "var(--studio-600)",
                         }}
                       >
                         Field
@@ -898,7 +898,7 @@ function WorkflowEditorInner({
                         style={{
                           padding: "8px 12px",
                           borderRadius: "6px",
-                          border: "1px solid #cbd5e1",
+                          border: "1px solid var(--studio-300)",
                           fontSize: "13px",
                         }}
                       />
@@ -914,7 +914,7 @@ function WorkflowEditorInner({
                         style={{
                           fontSize: "12px",
                           fontWeight: 500,
-                          color: "#475569",
+                          color: "var(--studio-600)",
                         }}
                       >
                         Operator
@@ -932,7 +932,7 @@ function WorkflowEditorInner({
                         style={{
                           padding: "8px 12px",
                           borderRadius: "6px",
-                          border: "1px solid #cbd5e1",
+                          border: "1px solid var(--studio-300)",
                           fontSize: "13px",
                           background: "white",
                         }}
@@ -954,7 +954,7 @@ function WorkflowEditorInner({
                         style={{
                           fontSize: "12px",
                           fontWeight: 500,
-                          color: "#475569",
+                          color: "var(--studio-600)",
                         }}
                       >
                         Value
@@ -972,7 +972,7 @@ function WorkflowEditorInner({
                         style={{
                           padding: "8px 12px",
                           borderRadius: "6px",
-                          border: "1px solid #cbd5e1",
+                          border: "1px solid var(--studio-300)",
                           fontSize: "13px",
                         }}
                       />
@@ -992,7 +992,7 @@ function WorkflowEditorInner({
                         style={{
                           fontSize: "12px",
                           fontWeight: 500,
-                          color: "#475569",
+                          color: "var(--studio-600)",
                         }}
                       >
                         Endpoint URL
@@ -1010,7 +1010,7 @@ function WorkflowEditorInner({
                         style={{
                           padding: "8px 12px",
                           borderRadius: "6px",
-                          border: "1px solid #cbd5e1",
+                          border: "1px solid var(--studio-300)",
                           fontSize: "13px",
                         }}
                       />
@@ -1026,7 +1026,7 @@ function WorkflowEditorInner({
                         style={{
                           fontSize: "12px",
                           fontWeight: 500,
-                          color: "#475569",
+                          color: "var(--studio-600)",
                         }}
                       >
                         Method
@@ -1044,7 +1044,7 @@ function WorkflowEditorInner({
                         style={{
                           padding: "8px 12px",
                           borderRadius: "6px",
-                          border: "1px solid #cbd5e1",
+                          border: "1px solid var(--studio-300)",
                           fontSize: "13px",
                           background: "white",
                         }}
@@ -1062,7 +1062,7 @@ function WorkflowEditorInner({
                   style={{
                     marginTop: "24px",
                     paddingTop: "16px",
-                    borderTop: "1px dashed #cbd5e1",
+                    borderTop: "1px dashed var(--studio-300)",
                   }}
                 >
                   <button
@@ -1076,9 +1076,9 @@ function WorkflowEditorInner({
                       padding: "8px",
                       width: "100%",
                       borderRadius: "6px",
-                      border: "1px solid #fecdd3",
-                      background: "#fff1f2",
-                      color: "#e11d48",
+                      border: "1px solid var(--studio-danger-muted)",
+                      background: "var(--studio-danger-surface-rose)",
+                      color: "var(--studio-danger-rose)",
                       cursor: "pointer",
                       display: "flex",
                       alignItems: "center",
@@ -1097,7 +1097,7 @@ function WorkflowEditorInner({
                 style={{
                   textAlign: "center",
                   padding: "40px 0",
-                  color: "#94a3b8",
+                  color: "var(--studio-400)",
                 }}
               >
                 <BoxSelect
@@ -1144,7 +1144,7 @@ function WorkflowEditorInner({
             <div
               style={{
                 padding: "20px",
-                borderBottom: "1px solid #e2e8f0",
+                borderBottom: "1px solid var(--studio-200)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
@@ -1156,12 +1156,12 @@ function WorkflowEditorInner({
                     margin: 0,
                     fontSize: "18px",
                     fontWeight: 600,
-                    color: "#0f172a",
+                    color: "var(--studio-900)",
                   }}
                 >
                   Execution History
                 </h3>
-                <p style={{ margin: 0, fontSize: "13px", color: "#64748b" }}>
+                <p style={{ margin: 0, fontSize: "13px", color: "var(--studio-500)" }}>
                   Recent runs for this workflow
                 </p>
               </div>
@@ -1172,7 +1172,7 @@ function WorkflowEditorInner({
                   border: "none",
                   fontSize: "20px",
                   cursor: "pointer",
-                  color: "#64748b",
+                  color: "var(--studio-500)",
                 }}
               >
                 &times;
@@ -1184,7 +1184,7 @@ function WorkflowEditorInner({
                   style={{
                     textAlign: "center",
                     padding: "40px 0",
-                    color: "#94a3b8",
+                    color: "var(--studio-400)",
                   }}
                 >
                   <Clock
@@ -1205,7 +1205,7 @@ function WorkflowEditorInner({
                     <div
                       key={exec.id}
                       style={{
-                        border: "1px solid #e2e8f0",
+                        border: "1px solid var(--studio-200)",
                         borderRadius: "8px",
                         padding: "16px",
                       }}
@@ -1222,7 +1222,7 @@ function WorkflowEditorInner({
                           style={{
                             fontSize: "12px",
                             fontWeight: "bold",
-                            color: "#475569",
+                            color: "var(--studio-600)",
                           }}
                         >
                           {exec.id}
@@ -1235,12 +1235,12 @@ function WorkflowEditorInner({
                             fontWeight: 600,
                             background:
                               exec.status === "COMPLETED"
-                                ? "#dcfce7"
-                                : "#fee2e2",
+                                ? "var(--studio-success-subtle)"
+                                : "var(--studio-danger-subtle)",
                             color:
                               exec.status === "COMPLETED"
-                                ? "#166534"
-                                : "#991b1b",
+                                ? "var(--studio-success-text)"
+                                : "var(--studio-danger-text)",
                           }}
                         >
                           {exec.status}
@@ -1252,7 +1252,7 @@ function WorkflowEditorInner({
                           alignItems: "center",
                           gap: "16px",
                           fontSize: "12px",
-                          color: "#64748b",
+                          color: "var(--studio-500)",
                         }}
                       >
                         <span>

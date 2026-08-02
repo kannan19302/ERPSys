@@ -56,8 +56,8 @@ export function PublicPageRenderer({
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        backgroundColor: "var(--color-background, #ffffff)",
-        color: "var(--color-text, #111111)",
+        backgroundColor: "var(--color-background, var(--studio-0))",
+        color: "var(--color-text, var(--studio-950))",
         fontFamily: "var(--font-body, sans-serif)",
       }}
     >

@@ -96,7 +96,7 @@ export function AiCopilotSidebar({
           gap: "var(--space-3)",
         }}
       >
-        <p style={{ fontSize: "11px", color: "#94a3b8", margin: 0 }}>
+        <p style={{ fontSize: "11px", color: "var(--studio-400)", margin: 0 }}>
           Describe a modification, new fields, or validation step rules to draft
           into your canvas layout.
         </p>
@@ -153,7 +153,7 @@ export function AiCopilotSidebar({
       <div
         style={{
           fontSize: "10px",
-          color: "#64748b",
+          color: "var(--studio-500)",
           display: "flex",
           alignItems: "center",
           gap: 4,

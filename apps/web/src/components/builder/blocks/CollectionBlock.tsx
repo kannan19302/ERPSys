@@ -188,7 +188,7 @@ export function CollectionBlock(props: CollectionBlockProps) {
             Loading {collectionSlug}…
           </div>
         ) : error ? (
-          <div style={{ textAlign: "center", padding: 40, color: "#dc2626" }}>
+          <div style={{ textAlign: "center", padding: 40, color: "var(--studio-danger)" }}>
             Could not load “{collectionSlug}”.
           </div>
         ) : shown.length === 0 ? (
@@ -222,7 +222,7 @@ export function CollectionBlock(props: CollectionBlockProps) {
                     border: "1px solid rgba(128,128,128,0.18)",
                     borderRadius: 14,
                     overflow: "hidden",
-                    background: "var(--color-bg-elevated, #fff)",
+                    background: "var(--color-bg-elevated, var(--studio-0))",
                     display: "flex",
                     flexDirection: layout === "list" ? "row" : "column",
                   }}
@@ -233,7 +233,7 @@ export function CollectionBlock(props: CollectionBlockProps) {
                         width: layout === "list" ? 200 : "100%",
                         height: layout === "list" ? "auto" : 190,
                         flexShrink: 0,
-                        background: `#f1f5f9 center/cover url(${img})`,
+                        background: `var(--studio-100) center/cover url(${img})`,
                       }}
                     />
                   )}
@@ -257,7 +257,7 @@ export function CollectionBlock(props: CollectionBlockProps) {
                           </div>
                         )}
                         {data.rating ? (
-                          <div style={{ color: "#f59e0b", marginTop: 6 }}>
+                          <div style={{ color: "var(--studio-warning)", marginTop: 6 }}>
                             {"★".repeat(Math.min(5, Number(data.rating) || 0))}
                           </div>
                         ) : null}
@@ -319,7 +319,7 @@ export function CollectionBlock(props: CollectionBlockProps) {
                               padding: "2px 8px",
                               borderRadius: 999,
                               background: "rgba(245,158,11,0.15)",
-                              color: "#b45309",
+                              color: "var(--studio-warning-text)",
                             }}
                           >
                             ★ Featured
@@ -345,8 +345,8 @@ export function CollectionBlock(props: CollectionBlockProps) {
                                 padding: "10px",
                                 borderRadius: 10,
                                 border: "none",
-                                background: "var(--color-primary,#4f46e5)",
-                                color: "#fff",
+                                background: "var(--color-primary,var(--studio-indigo))",
+                                color: "var(--studio-0)",
                                 fontWeight: 700,
                                 cursor: "pointer",
                               }}

@@ -58,7 +58,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity1.create")
   async createReportingEntity1(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity1(req.user.tenantId, body);
   }
@@ -69,7 +69,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity1(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity1(req.user.tenantId, id, body);
   }
@@ -107,7 +107,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity2.create")
   async createReportingEntity2(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity2(req.user.tenantId, body);
   }
@@ -118,7 +118,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity2(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity2(req.user.tenantId, id, body);
   }
@@ -156,7 +156,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity3.create")
   async createReportingEntity3(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity3(req.user.tenantId, body);
   }
@@ -167,7 +167,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity3(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity3(req.user.tenantId, id, body);
   }
@@ -205,7 +205,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity4.create")
   async createReportingEntity4(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity4(req.user.tenantId, body);
   }
@@ -216,7 +216,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity4(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity4(req.user.tenantId, id, body);
   }
@@ -254,7 +254,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity5.create")
   async createReportingEntity5(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity5(req.user.tenantId, body);
   }
@@ -265,7 +265,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity5(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity5(req.user.tenantId, id, body);
   }
@@ -303,7 +303,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity6.create")
   async createReportingEntity6(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity6(req.user.tenantId, body);
   }
@@ -314,7 +314,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity6(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity6(req.user.tenantId, id, body);
   }
@@ -352,7 +352,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity7.create")
   async createReportingEntity7(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity7(req.user.tenantId, body);
   }
@@ -363,7 +363,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity7(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity7(req.user.tenantId, id, body);
   }
@@ -401,7 +401,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity8.create")
   async createReportingEntity8(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity8(req.user.tenantId, body);
   }
@@ -412,7 +412,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity8(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity8(req.user.tenantId, id, body);
   }
@@ -450,7 +450,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity9.create")
   async createReportingEntity9(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity9(req.user.tenantId, body);
   }
@@ -461,7 +461,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity9(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity9(req.user.tenantId, id, body);
   }
@@ -499,7 +499,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity10.create")
   async createReportingEntity10(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity10(req.user.tenantId, body);
   }
@@ -510,7 +510,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity10(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity10(req.user.tenantId, id, body);
   }
@@ -548,7 +548,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity11.create")
   async createReportingEntity11(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity11(req.user.tenantId, body);
   }
@@ -559,7 +559,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity11(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity11(req.user.tenantId, id, body);
   }
@@ -597,7 +597,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity12.create")
   async createReportingEntity12(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity12(req.user.tenantId, body);
   }
@@ -608,7 +608,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity12(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity12(req.user.tenantId, id, body);
   }
@@ -646,7 +646,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity13.create")
   async createReportingEntity13(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity13(req.user.tenantId, body);
   }
@@ -657,7 +657,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity13(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity13(req.user.tenantId, id, body);
   }
@@ -695,7 +695,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity14.create")
   async createReportingEntity14(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity14(req.user.tenantId, body);
   }
@@ -706,7 +706,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity14(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity14(req.user.tenantId, id, body);
   }
@@ -744,7 +744,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity15.create")
   async createReportingEntity15(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity15(req.user.tenantId, body);
   }
@@ -755,7 +755,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity15(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity15(req.user.tenantId, id, body);
   }
@@ -793,7 +793,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity16.create")
   async createReportingEntity16(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity16(req.user.tenantId, body);
   }
@@ -804,7 +804,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity16(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity16(req.user.tenantId, id, body);
   }
@@ -842,7 +842,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity17.create")
   async createReportingEntity17(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity17(req.user.tenantId, body);
   }
@@ -853,7 +853,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity17(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity17(req.user.tenantId, id, body);
   }
@@ -891,7 +891,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity18.create")
   async createReportingEntity18(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity18(req.user.tenantId, body);
   }
@@ -902,7 +902,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity18(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity18(req.user.tenantId, id, body);
   }
@@ -940,7 +940,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity19.create")
   async createReportingEntity19(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity19(req.user.tenantId, body);
   }
@@ -951,7 +951,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity19(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity19(req.user.tenantId, id, body);
   }
@@ -989,7 +989,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity20.create")
   async createReportingEntity20(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity20(req.user.tenantId, body);
   }
@@ -1000,7 +1000,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity20(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity20(req.user.tenantId, id, body);
   }
@@ -1038,7 +1038,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity21.create")
   async createReportingEntity21(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity21(req.user.tenantId, body);
   }
@@ -1049,7 +1049,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity21(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity21(req.user.tenantId, id, body);
   }
@@ -1087,7 +1087,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity22.create")
   async createReportingEntity22(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity22(req.user.tenantId, body);
   }
@@ -1098,7 +1098,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity22(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity22(req.user.tenantId, id, body);
   }
@@ -1136,7 +1136,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity23.create")
   async createReportingEntity23(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity23(req.user.tenantId, body);
   }
@@ -1147,7 +1147,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity23(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity23(req.user.tenantId, id, body);
   }
@@ -1185,7 +1185,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity24.create")
   async createReportingEntity24(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity24(req.user.tenantId, body);
   }
@@ -1196,7 +1196,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity24(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity24(req.user.tenantId, id, body);
   }
@@ -1234,7 +1234,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity25.create")
   async createReportingEntity25(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity25(req.user.tenantId, body);
   }
@@ -1245,7 +1245,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity25(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity25(req.user.tenantId, id, body);
   }
@@ -1283,7 +1283,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity26.create")
   async createReportingEntity26(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity26(req.user.tenantId, body);
   }
@@ -1294,7 +1294,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity26(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity26(req.user.tenantId, id, body);
   }
@@ -1332,7 +1332,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity27.create")
   async createReportingEntity27(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity27(req.user.tenantId, body);
   }
@@ -1343,7 +1343,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity27(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity27(req.user.tenantId, id, body);
   }
@@ -1381,7 +1381,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity28.create")
   async createReportingEntity28(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity28(req.user.tenantId, body);
   }
@@ -1392,7 +1392,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity28(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity28(req.user.tenantId, id, body);
   }
@@ -1430,7 +1430,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity29.create")
   async createReportingEntity29(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity29(req.user.tenantId, body);
   }
@@ -1441,7 +1441,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity29(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity29(req.user.tenantId, id, body);
   }
@@ -1479,7 +1479,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity30.create")
   async createReportingEntity30(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity30(req.user.tenantId, body);
   }
@@ -1490,7 +1490,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity30(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity30(req.user.tenantId, id, body);
   }
@@ -1528,7 +1528,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity31.create")
   async createReportingEntity31(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity31(req.user.tenantId, body);
   }
@@ -1539,7 +1539,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity31(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity31(req.user.tenantId, id, body);
   }
@@ -1577,7 +1577,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity32.create")
   async createReportingEntity32(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity32(req.user.tenantId, body);
   }
@@ -1588,7 +1588,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity32(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity32(req.user.tenantId, id, body);
   }
@@ -1626,7 +1626,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity33.create")
   async createReportingEntity33(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity33(req.user.tenantId, body);
   }
@@ -1637,7 +1637,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity33(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity33(req.user.tenantId, id, body);
   }
@@ -1675,7 +1675,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity34.create")
   async createReportingEntity34(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity34(req.user.tenantId, body);
   }
@@ -1686,7 +1686,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity34(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity34(req.user.tenantId, id, body);
   }
@@ -1724,7 +1724,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity35.create")
   async createReportingEntity35(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity35(req.user.tenantId, body);
   }
@@ -1735,7 +1735,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity35(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity35(req.user.tenantId, id, body);
   }
@@ -1773,7 +1773,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity36.create")
   async createReportingEntity36(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity36(req.user.tenantId, body);
   }
@@ -1784,7 +1784,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity36(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity36(req.user.tenantId, id, body);
   }
@@ -1822,7 +1822,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity37.create")
   async createReportingEntity37(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity37(req.user.tenantId, body);
   }
@@ -1833,7 +1833,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity37(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity37(req.user.tenantId, id, body);
   }
@@ -1871,7 +1871,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity38.create")
   async createReportingEntity38(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity38(req.user.tenantId, body);
   }
@@ -1882,7 +1882,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity38(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity38(req.user.tenantId, id, body);
   }
@@ -1920,7 +1920,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity39.create")
   async createReportingEntity39(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity39(req.user.tenantId, body);
   }
@@ -1931,7 +1931,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity39(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity39(req.user.tenantId, id, body);
   }
@@ -1969,7 +1969,7 @@ export class ReportingGeneratedController {
   @Permissions("reporting.reportingEntity40.create")
   async createReportingEntity40(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createReportingEntity40(req.user.tenantId, body);
   }
@@ -1980,7 +1980,7 @@ export class ReportingGeneratedController {
   async updateReportingEntity40(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateReportingEntity40(req.user.tenantId, id, body);
   }
