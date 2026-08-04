@@ -14,6 +14,7 @@ vi.mock("@unerp/database", () => ({
       create: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
+      count: vi.fn(),
     },
     blockchainAuditTrail: {
       findMany: vi.fn(),

@@ -3,6 +3,9 @@ import { CommunicationSearchService } from "../services/communication-search.ser
 
 vi.mock("@unerp/database", () => ({
   prisma: {
+    helpdeskTicket: { findMany: vi.fn() },
+    channel: { findMany: vi.fn() },
+    synonymDictionary: { findMany: vi.fn(), create: vi.fn() },
     message: { findMany: vi.fn() },
     knowledgeArticle: { findMany: vi.fn(), count: vi.fn() },
     document: { findMany: vi.fn() },
@@ -12,7 +15,12 @@ vi.mock("@unerp/database", () => ({
       findFirst: vi.fn(),
       delete: vi.fn(),
     },
-    searchHistory: { create: vi.fn(), findMany: vi.fn() },
+    searchHistory: {
+      create: vi.fn(),
+      findMany: vi.fn(),
+      count: vi.fn(),
+      groupBy: vi.fn(),
+    },
     searchSynonym: { findMany: vi.fn(), create: vi.fn() },
   },
 }));

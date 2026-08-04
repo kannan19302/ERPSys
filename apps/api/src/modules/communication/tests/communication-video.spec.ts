@@ -3,6 +3,7 @@ import { CommunicationVideoService } from "../services/communication-video.servi
 
 vi.mock("@unerp/database", () => ({
   prisma: {
+    meetingAnalytics: { findUnique: vi.fn() },
     connectMeeting: {
       findMany: vi.fn(),
       findFirst: vi.fn(),
@@ -14,17 +15,20 @@ vi.mock("@unerp/database", () => ({
       create: vi.fn(),
       updateMany: vi.fn(),
       findMany: vi.fn(),
+      count: vi.fn(),
     },
     meetingRecording: {
       findMany: vi.fn(),
       findFirst: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
+      count: vi.fn(),
     },
-    meetingBreakoutRoom: {
+    breakoutRoom: {
       create: vi.fn(),
       findMany: vi.fn(),
       update: vi.fn(),
+      findFirst: vi.fn(),
     },
     meetingSummary: { create: vi.fn(), findMany: vi.fn() },
   },
@@ -108,7 +112,7 @@ describe("CommunicationVideoService", () => {
       id: "m1",
       tenantId: "t1",
     } as never);
-    vi.mocked(prisma.meetingBreakoutRoom.create).mockResolvedValue({
+    vi.mocked(prisma.breakoutRoom.create).mockResolvedValue({
       id: "br1",
       name: "Group A",
     } as never);

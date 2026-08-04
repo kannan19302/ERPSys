@@ -18,6 +18,38 @@ vi.mock("@unerp/database", () => {
   });
   return {
     prisma: {
+      webCollection: {
+        findMany: vi.fn(),
+        findFirst: vi.fn(),
+        findUnique: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        delete: vi.fn(),
+      },
+      webCollectionItem: {
+        groupBy: vi.fn(),
+        createMany: vi.fn(),
+        count: vi.fn(),
+        findMany: vi.fn(),
+        findFirst: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        delete: vi.fn(),
+      },
+      webFormSubmission: {
+        create: vi.fn(),
+        findMany: vi.fn(),
+        findFirst: vi.fn(),
+        update: vi.fn(),
+        delete: vi.fn(),
+      },
+      webOrder: {
+        create: vi.fn(),
+        findMany: vi.fn(),
+        findFirst: vi.fn(),
+        update: vi.fn(),
+        delete: vi.fn(),
+      },
       webCollection: gen(),
       webCollectionItem: gen(),
       webFormSubmission: gen(),

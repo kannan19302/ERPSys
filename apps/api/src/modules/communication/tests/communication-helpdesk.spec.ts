@@ -3,17 +3,25 @@ import { CommunicationHelpdeskService } from "../services/communication-helpdesk
 
 vi.mock("@unerp/database", () => ({
   prisma: {
+    ticketSla: { create: vi.fn(), aggregate: vi.fn() },
+    ticketComment: { create: vi.fn() },
+    customerSatisfaction: {
+      findFirst: vi.fn(),
+      update: vi.fn(),
+      create: vi.fn(),
+    },
     helpdeskTicket: {
       findMany: vi.fn(),
       findFirst: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
       count: vi.fn(),
+      groupBy: vi.fn(),
     },
     helpdeskComment: { create: vi.fn(), findMany: vi.fn() },
     helpdeskSla: { findMany: vi.fn(), create: vi.fn() },
     helpdeskEscalation: { create: vi.fn() },
-    helpdeskCannedResponse: {
+    cannedResponse: {
       findMany: vi.fn(),
       create: vi.fn(),
       findFirst: vi.fn(),
@@ -99,7 +107,7 @@ describe("CommunicationHelpdeskService", () => {
 
   it("creates a canned response", async () => {
     const { prisma } = await import("@unerp/database");
-    vi.mocked(prisma.helpdeskCannedResponse.create).mockResolvedValue({
+    vi.mocked(prisma.cannedResponse.create).mockResolvedValue({
       id: "cr1",
       title: "Greeting",
     } as never);

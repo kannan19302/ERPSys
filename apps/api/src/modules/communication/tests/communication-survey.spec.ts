@@ -10,6 +10,7 @@ vi.mock("@unerp/database", () => ({
       update: vi.fn(),
       delete: vi.fn(),
       count: vi.fn(),
+      groupBy: vi.fn(),
     },
     commSurveyQuestion: {
       create: vi.fn(),
@@ -18,7 +19,7 @@ vi.mock("@unerp/database", () => ({
       delete: vi.fn(),
       count: vi.fn(),
     },
-    commSurveyResponse: { create: vi.fn(), findMany: vi.fn() },
+    commSurveyResponse: { create: vi.fn(), findMany: vi.fn(), count: vi.fn() },
     commSurveyAnswer: { create: vi.fn() },
     commSurveyTemplate: {
       findMany: vi.fn(),

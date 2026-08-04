@@ -9,16 +9,18 @@ vi.mock("@unerp/database", () => ({
       create: vi.fn(),
       update: vi.fn(),
       count: vi.fn(),
+      aggregate: vi.fn(),
+      groupBy: vi.fn(),
     },
     voipCallAnalytics: { findMany: vi.fn(), create: vi.fn() },
-    voipVoicemail: {
+    voicemail: {
       findMany: vi.fn(),
       findFirst: vi.fn(),
       update: vi.fn(),
       count: vi.fn(),
     },
-    voipIvrMenu: { findMany: vi.fn(), create: vi.fn() },
-    voipIvrOption: { create: vi.fn() },
+    ivrMenu: { findMany: vi.fn(), create: vi.fn(), count: vi.fn() },
+    ivrOption: { create: vi.fn() },
   },
 }));
 
@@ -96,10 +98,10 @@ describe("CommunicationVoipService", () => {
 
   it("returns voicemail list", async () => {
     const { prisma } = await import("@unerp/database");
-    vi.mocked(prisma.voipVoicemail.findMany).mockResolvedValue([
+    vi.mocked(prisma.voicemail.findMany).mockResolvedValue([
       { id: "vm1", callerNumber: "+123" },
     ] as never);
-    vi.mocked(prisma.voipVoicemail.count).mockResolvedValue(1);
+    vi.mocked(prisma.voicemail.count).mockResolvedValue(1);
     const res = await svc.getVoicemail("t1", { page: 1, limit: 20 });
     expect(res.data).toHaveLength(1);
     expect(res.total).toBe(1);
@@ -107,11 +109,11 @@ describe("CommunicationVoipService", () => {
 
   it("marks voicemail as read", async () => {
     const { prisma } = await import("@unerp/database");
-    vi.mocked(prisma.voipVoicemail.findFirst).mockResolvedValue({
+    vi.mocked(prisma.voicemail.findFirst).mockResolvedValue({
       id: "vm1",
       tenantId: "t1",
     } as never);
-    vi.mocked(prisma.voipVoicemail.update).mockResolvedValue({
+    vi.mocked(prisma.voicemail.update).mockResolvedValue({
       id: "vm1",
       isRead: true,
     } as never);
@@ -121,7 +123,7 @@ describe("CommunicationVoipService", () => {
 
   it("lists IVR menus", async () => {
     const { prisma } = await import("@unerp/database");
-    vi.mocked(prisma.voipIvrMenu.findMany).mockResolvedValue([
+    vi.mocked(prisma.ivrMenu.findMany).mockResolvedValue([
       { id: "ivr1", name: "Main Menu" },
     ] as never);
     const res = await svc.getIvrMenus("t1");
@@ -130,7 +132,7 @@ describe("CommunicationVoipService", () => {
 
   it("creates an IVR menu", async () => {
     const { prisma } = await import("@unerp/database");
-    vi.mocked(prisma.voipIvrMenu.create).mockResolvedValue({
+    vi.mocked(prisma.ivrMenu.create).mockResolvedValue({
       id: "ivr1",
       name: "Sales",
     } as never);
@@ -143,7 +145,7 @@ describe("CommunicationVoipService", () => {
 
   it("creates an IVR option", async () => {
     const { prisma } = await import("@unerp/database");
-    vi.mocked(prisma.voipIvrOption.create).mockResolvedValue({
+    vi.mocked(prisma.ivrOption.create).mockResolvedValue({
       id: "opt1",
       digit: "1",
       label: "Support",
@@ -168,7 +170,7 @@ describe("CommunicationVoipService", () => {
   it("returns VoIP dashboard", async () => {
     const { prisma } = await import("@unerp/database");
     vi.mocked(prisma.voipCall.count).mockResolvedValue(5);
-    vi.mocked(prisma.voipVoicemail.count).mockResolvedValue(3);
+    vi.mocked(prisma.voicemail.count).mockResolvedValue(3);
     vi.mocked(prisma.voipCallAnalytics.findMany).mockResolvedValue([
       { avgDuration: 240 },
     ] as never);

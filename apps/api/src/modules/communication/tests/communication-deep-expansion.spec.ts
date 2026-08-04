@@ -11,7 +11,7 @@ vi.mock("@unerp/database", () => ({
     wikiPage: { create: vi.fn(), findMany: vi.fn() },
     wikiPageVersion: { create: vi.fn() },
     chatChannel: { create: vi.fn(), findMany: vi.fn() },
-    intranetPost: { create: vi.fn(), findMany: vi.fn() },
+    intranetPost: { create: vi.fn(), findMany: vi.fn(), update: vi.fn() },
     intranetComment: { create: vi.fn() },
     internalSurvey: { create: vi.fn(), findMany: vi.fn(), update: vi.fn() },
     internalSurveyAnswer: { create: vi.fn() },

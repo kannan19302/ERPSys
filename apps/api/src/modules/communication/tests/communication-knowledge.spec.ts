@@ -3,6 +3,13 @@ import { CommunicationKnowledgeService } from "../services/communication-knowled
 
 vi.mock("@unerp/database", () => ({
   prisma: {
+    knowledgeArticleRating: {
+      findUnique: vi.fn(),
+      update: vi.fn(),
+      create: vi.fn(),
+      count: vi.fn(),
+      aggregate: vi.fn(),
+    },
     knowledgeArticle: {
       findMany: vi.fn(),
       findFirst: vi.fn(),
@@ -10,13 +17,21 @@ vi.mock("@unerp/database", () => ({
       update: vi.fn(),
       delete: vi.fn(),
       count: vi.fn(),
+      findUnique: vi.fn(),
+      aggregate: vi.fn(),
     },
-    knowledgeArticleVersion: { findMany: vi.fn(), create: vi.fn() },
+    knowledgeArticleVersion: {
+      findMany: vi.fn(),
+      create: vi.fn(),
+      findFirst: vi.fn(),
+      findUnique: vi.fn(),
+    },
     knowledgeCategory: {
       findMany: vi.fn(),
       create: vi.fn(),
       findFirst: vi.fn(),
       delete: vi.fn(),
+      count: vi.fn(),
     },
     knowledgeRating: { create: vi.fn(), aggregate: vi.fn() },
   },
