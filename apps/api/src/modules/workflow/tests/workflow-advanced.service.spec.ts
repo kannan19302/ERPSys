@@ -1,4 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
+import { withTenantSession } from "../../../../test/tenant-session";
 import { WorkflowAdvancedService } from "../workflow-advanced.service";
 
 describe("WorkflowAdvancedService", () => {
@@ -8,7 +9,9 @@ describe("WorkflowAdvancedService", () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [WorkflowAdvancedService],
     }).compile();
-    service = module.get<WorkflowAdvancedService>(WorkflowAdvancedService);
+    service = withTenantSession(
+      module.get<WorkflowAdvancedService>(WorkflowAdvancedService),
+    );
   });
 
   it("should be defined", () => {
