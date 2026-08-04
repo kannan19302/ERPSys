@@ -62,9 +62,9 @@ describe("DemoDataService", () => {
     expect(mocks.vendorCreate).toHaveBeenCalledTimes(2);
     expect(mocks.productCreate).toHaveBeenCalled();
     const seededSkus = mocks.productCreate.mock.calls.map(
-      (c: any) => c[0].data.sku,
+      (call) => call[0].data.sku as string,
     );
-    expect(seededSkus.every((sku: string) => sku.startsWith("HC-"))).toBe(true);
+    expect(seededSkus.every((sku) => sku.startsWith("HC-"))).toBe(true);
     // The flag is set inside the same transaction as the inserts, so it cannot
     // read true for a seed that failed part-way.
     expect(mocks.tenantUpdate).toHaveBeenCalledWith(

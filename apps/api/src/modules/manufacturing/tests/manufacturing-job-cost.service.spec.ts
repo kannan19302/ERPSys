@@ -146,15 +146,51 @@ describe("ManufacturingJobCostService", () => {
       });
 
       expect(result.id).toBe("entry-1");
-      expect(prisma.jobCostSheet.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: { id: "s1" },
-          data: expect.objectContaining({
-            actualMaterialCost: 1000,
-            actualLaborCost: 500,
-          }),
-        }),
-      );
+
+      // The cost totals are summed as Decimal, not as JS numbers, so that money
+      // does not drift across the repeated recalculations a cost sheet gets.
+      // These used to be asserted as `actualMaterialCost: 1000`, which only
+      // matched while the service was doing float arithmetic.
+      const updateArg = vi.mocked(prisma.jobCostSheet.update).mock.calls[0][0];
+      expect(updateArg.where).toEqual({ id: "s1" });
+      expect(updateArg.data.actualMaterialCost.toString()).toBe("1000");
+      expect(updateArg.data.actualLaborCost.toString()).toBe("500");
+      expect(updateArg.data.totalActualCost.toString()).toBe("1500");
+      // (1500 - 5000) / 5000 * 100 — a percentage, so a plain number.
+      expect(updateArg.data.variancePct).toBe(-70);
+    });
+
+    it("sums cost entries without floating-point drift", async () => {
+      vi.mocked(prisma.jobCostSheet.findFirst).mockResolvedValue({
+        id: "s1",
+        tenantId,
+        totalPlannedCost: 0,
+      } as never);
+      vi.mocked(prisma.mfgCostEntry.create).mockResolvedValue({
+        id: "entry-1",
+      } as never);
+      // 0.1 + 0.2 is the canonical float failure: in binary floating point it
+      // is 0.30000000000000004, and three of them sum to 0.6000000000000001
+      // rather than 0.60. Ten thousand entries on a real job sheet compound
+      // that into a visible discrepancy against the ledger.
+      vi.mocked(prisma.mfgCostEntry.findMany).mockResolvedValue([
+        { costType: "MATERIAL", amount: "0.1" },
+        { costType: "MATERIAL", amount: "0.2" },
+        { costType: "MATERIAL", amount: "0.3" },
+      ] as never);
+      vi.mocked(prisma.jobCostSheet.update).mockResolvedValue({} as never);
+
+      await service.addCostEntry(tenantId, "s1", {
+        costType: "MATERIAL",
+        amount: 0.1,
+      });
+
+      const updateArg = vi.mocked(prisma.jobCostSheet.update).mock.calls[0][0];
+      expect(updateArg.data.actualMaterialCost.toString()).toBe("0.6");
+      expect(updateArg.data.totalActualCost.toString()).toBe("0.6");
+      // Guards against a regression to `sum + Number(...)`, which yields
+      // 0.6000000000000001 here.
+      expect(Number(updateArg.data.totalActualCost)).toBe(0.6);
     });
   });
 
@@ -252,8 +288,12 @@ describe("ManufacturingJobCostService", () => {
       expect(result.totalSheets).toBe(2);
       expect(result.openSheets).toBe(1);
       expect(result.closedSheets).toBe(1);
-      expect(result.totalPlannedCost).toBe(8000);
-      expect(result.totalActualCost).toBe(8100);
+      // Decimal totals, so compare by value rather than by identity — `toBe`
+      // against a number fails on a Decimal even when the amounts agree.
+      expect(result.totalPlannedCost.toString()).toBe("8000");
+      expect(result.totalActualCost.toString()).toBe("8100");
+      // (8100 - 8000) / 8000 * 100
+      expect(result.totalVariancePct).toBeCloseTo(1.25, 10);
     });
   });
 });

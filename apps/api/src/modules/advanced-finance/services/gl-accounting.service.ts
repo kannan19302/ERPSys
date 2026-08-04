@@ -232,8 +232,16 @@ export class GlAccountingService {
         type: account.type,
       },
       entries: ledgerEntries.reverse(),
-      totalDebits: entries.reduce((s, e) => s + Number(e.debit), 0),
-      totalCredits: entries.reduce((s, e) => s + Number(e.credit), 0),
+      // debit/credit are Decimal(19,4); summing them through Number() put the
+      // ledger's reported totals back into binary floating point.
+      totalDebits: entries.reduce(
+        (s, e) => s.add(e.debit ?? 0),
+        new Prisma.Decimal(0),
+      ),
+      totalCredits: entries.reduce(
+        (s, e) => s.add(e.credit ?? 0),
+        new Prisma.Decimal(0),
+      ),
       closingBalance: runningBalance,
       entryCount: entries.length,
     };
@@ -1103,13 +1111,22 @@ export class GlAccountingService {
 
       if (mappedEntries.length === 0) continue;
 
-      // Verify mapped journal is balanced
-      const totalDebit = mappedEntries.reduce((s, e) => s + Number(e.debit), 0);
-      const totalCredit = mappedEntries.reduce(
-        (s, e) => s + Number(e.credit),
-        0,
+      // Verify mapped journal is balanced.
+      //
+      // This summed Decimal(19,4) debits and credits through Number() and then
+      // compared them with a 0.01 tolerance — a tolerance that only existed to
+      // absorb the float error the Number() conversion introduced. Summed as
+      // Decimal the comparison is exact, so a genuinely unbalanced journal of
+      // less than a cent is now caught instead of being silently accepted.
+      const totalDebit = mappedEntries.reduce(
+        (s, e) => s.add(e.debit ?? 0),
+        new Prisma.Decimal(0),
       );
-      if (Math.abs(totalDebit - totalCredit) > 0.01) {
+      const totalCredit = mappedEntries.reduce(
+        (s, e) => s.add(e.credit ?? 0),
+        new Prisma.Decimal(0),
+      );
+      if (!totalDebit.equals(totalCredit)) {
         this.logger.warn(
           `Parallel journal for book ${destBookId} is unbalanced: ${totalDebit} vs ${totalCredit}. Skipping.`,
         );

@@ -48,6 +48,9 @@ jobs:
       - name: Policy gate
         run: node scripts/ci/check-policy.mjs
 
+      - name: Decimal arithmetic ratchet
+        run: node scripts/ci/check-decimal-arithmetic.mjs
+
       - name: docs/ai integrity
         run: |
           count=$(ls -1 docs/ai | wc -l)
