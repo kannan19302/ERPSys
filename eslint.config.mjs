@@ -11,6 +11,11 @@ export default [
       '**/dist/**',
       '**/.next/**',
       '**/coverage/**',
+      // Generated Prisma client for the IdP schema. It happens to live under
+      // src/ because that is where prisma/idp-schema.prisma points its output,
+      // but it is build output, not source: `pnpm db:generate` overwrites it
+      // wholesale, so any lint finding here is unfixable by definition.
+      'packages/database/src/idp-client/**',
     ],
   },
   {
