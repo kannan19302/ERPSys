@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi as jest } from "vitest";
 import { Test, TestingModule } from "@nestjs/testing";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { SavedViewsDeepService } from "../saved-views-deep.service";
 
 describe("SavedViewsDeepService", () => {
