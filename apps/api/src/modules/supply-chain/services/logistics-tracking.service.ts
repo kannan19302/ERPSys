@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { Shipment } from "@prisma/client";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 
