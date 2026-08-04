@@ -10,6 +10,8 @@ vi.mock("@unerp/database", () => ({
     calendarSyncLog: { findFirst: vi.fn(), findMany: vi.fn(), create: vi.fn() },
     emailTrackingEvent: { findMany: vi.fn(), create: vi.fn(), count: vi.fn() },
     autoCaptureSetting: {
+      findFirst: vi.fn(),
+      upsert: vi.fn(),
       findUnique: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
