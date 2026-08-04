@@ -1,0 +1,463 @@
+model EducationStudent {
+  id               String    @id @default(cuid())
+  tenantId         String    @map("tenant_id")
+  firstName        String    @map("first_name")
+  lastName         String    @map("last_name")
+  enrollmentNumber String    @unique @map("enrollment_number")
+  dateOfBirth      DateTime? @map("date_of_birth")
+  parentContact    String?   @map("parent_contact")
+  email            String?
+  status           String    @default("ENROLLED")
+  isActive         Boolean   @default(true) @map("is_active")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  fees         StudentFee[]
+  attendance   EducationAttendanceRecord[]
+  grades       Grade[]
+  transactions BookTransaction[]
+  enrollments  EducationEnrollment[]
+  parents      EducationStudentParent[]
+  feeInvoices  EducationFeeInvoice[]
+  examResults  EducationExamResult[]
+  libraryFines EducationLibraryFine[]
+  gradeEntries EducationGradeEntry[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([enrollmentNumber])
+  @@map("education_students")
+}
+
+model EducationCourse {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  code        String   @unique
+  credits     Int      @default(3)
+  description String?
+  status      String   @default("ACTIVE")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  timetables EducationTimetable[]
+  grades     Grade[]
+  attendance EducationAttendanceRecord[]
+  modules    EducationCourseModule[]
+  gradebooks EducationGradebook[]
+  enrollments EducationEnrollment[]
+  attendances EducationAttendance[]
+  examSchedules EducationExamSchedule[]
+
+  @@index([tenantId])
+  @@index([code])
+  @@map("education_courses")
+}
+
+model EducationFeeStructure {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  name        String
+  description String?
+  amount      Decimal
+  dueDate     DateTime? @map("due_date")
+  status      String    @default("ACTIVE")
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  studentFees StudentFee[]
+
+  @@index([tenantId])
+  @@map("education_fee_structures")
+}
+
+model StudentFee {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  studentId      String   @map("student_id")
+  feeStructureId String   @map("fee_structure_id")
+  amount         Decimal
+  paidAmount     Decimal  @default(0) @map("paid_amount")
+  status         String   @default("PENDING")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  student      EducationStudent      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  feeStructure EducationFeeStructure @relation(fields: [feeStructureId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([studentId])
+  @@index([feeStructureId])
+  @@index([tenantId, status])
+  @@map("student_fees")
+}
+
+model EducationBook {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  title     String
+  isbn      String
+  author    String?
+  quantity  Int      @default(1)
+  available Int      @default(1)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  transactions BookTransaction[]
+
+  @@index([tenantId])
+  @@index([isbn])
+  @@map("education_books")
+}
+
+model EducationAttendanceRecord {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  studentId    String   @map("student_id")
+  courseId     String   @map("course_id")
+  attendanceId String?  @map("attendance_id")
+  date      DateTime
+  status    String   @default("PRESENT")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  student    EducationStudent   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course     EducationCourse    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  attendance EducationAttendance? @relation(fields: [attendanceId], references: [id])
+
+  @@unique([tenantId, studentId, courseId, date])
+  @@index([tenantId])
+  @@index([studentId])
+  @@index([courseId])
+  @@index([date])
+  @@map("education_attendance_records")
+}
+
+model EducationTimetable {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  courseId     String   @map("course_id")
+  room         String
+  weekday      String
+  startTime    String   @map("start_time")
+  endTime      String   @map("end_time")
+  instructorId String?  @map("instructor_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  course EducationCourse @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([courseId])
+  @@index([weekday])
+  @@map("education_timetables")
+}
+
+model EducationParent {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  firstName      String   @map("first_name")
+  lastName       String   @map("last_name")
+  email          String?
+  phone          String?
+  address        String?
+  relation       String   @default("PARENT")
+  isPrimary      Boolean  @default(true) @map("is_primary")
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  students       EducationStudentParent[]
+
+  @@index([tenantId])
+  @@index([email])
+  @@map("education_parents")
+}
+
+model EducationStudentParent {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  studentId String   @map("student_id")
+  parentId  String   @map("parent_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  student EducationStudent @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  parent  EducationParent  @relation(fields: [parentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, parentId])
+  @@index([tenantId])
+  @@map("education_student_parents")
+}
+
+model EducationEnrollment {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  studentId     String    @map("student_id")
+  courseId      String    @map("course_id")
+  academicYear  String    @map("academic_year")
+  semester      String?   @default("FALL")
+  enrollmentDate DateTime @default(now()) @map("enrollment_date")
+  status        String    @default("ACTIVE") // ACTIVE, COMPLETED, DROPPED, WITHDRAWN
+  grade         String?
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  student EducationStudent @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course  EducationCourse  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, studentId, courseId, academicYear, semester])
+  @@index([tenantId])
+  @@index([studentId])
+  @@index([courseId])
+  @@map("education_enrollments")
+}
+
+model EducationCourseModule {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  courseId    String   @map("course_id")
+  title       String
+  description String?
+  sortOrder   Int      @default(0) @map("sort_order")
+  durationHrs Decimal? @map("duration_hrs")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  course EducationCourse @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([courseId])
+  @@map("education_course_modules")
+}
+
+model EducationGradebook {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  courseId    String   @map("course_id")
+  name        String
+  weight      Decimal  @default(100)
+  maxScore    Decimal  @default(100) @map("max_score")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  course EducationCourse @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  entries EducationGradeEntry[]
+
+  @@index([tenantId])
+  @@index([courseId])
+  @@map("education_gradebooks")
+}
+
+model EducationGradeEntry {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  gradebookId String   @map("gradebook_id")
+  studentId   String   @map("student_id")
+  score       Decimal
+  comment     String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  gradebook EducationGradebook @relation(fields: [gradebookId], references: [id], onDelete: Cascade)
+  student  EducationStudent   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([gradebookId, studentId])
+  @@index([tenantId])
+  @@index([gradebookId])
+  @@index([studentId])
+  @@map("education_grade_entries")
+}
+
+model EducationAttendance {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  courseId  String   @map("course_id")
+  date      DateTime
+  topic     String?
+  startTime String?  @map("start_time")
+  endTime   String?  @map("end_time")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  course  EducationCourse               @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  records EducationAttendanceRecord[]
+
+  @@unique([tenantId, courseId, date])
+  @@index([tenantId])
+  @@index([courseId])
+  @@map("education_attendances")
+}
+
+model EducationFeeInvoice {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  studentId   String    @map("student_id")
+  invoiceNumber String   @unique @map("invoice_number")
+  totalAmount Decimal
+  paidAmount  Decimal   @default(0)
+  dueDate     DateTime? @map("due_date")
+  status      String    @default("PENDING") // PENDING, PAID, PARTIAL, OVERDUE, CANCELLED
+  notes       String?
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  student EducationStudent @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  payments EducationFeePayment[]
+
+  @@index([tenantId])
+  @@index([studentId])
+  @@index([status])
+  @@map("education_fee_invoices")
+}
+
+model EducationFeePayment {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  invoiceId String   @map("invoice_id")
+  amount    Decimal
+  method    String   @default("CASH") // CASH, CHECK, BANK_TRANSFER, CARD, ONLINE
+  reference String?
+  paidBy    String?  @map("paid_by")
+  paidAt    DateTime @default(now()) @map("paid_at")
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  invoice EducationFeeInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([invoiceId])
+  @@map("education_fee_payments")
+}
+
+model EducationLibraryFine {
+  id         String    @id @default(cuid())
+  tenantId   String    @map("tenant_id")
+  studentId  String    @map("student_id")
+  transactionId String? @map("transaction_id")
+  amount     Decimal
+  reason     String?   @default("OVERDUE")
+  status     String    @default("PENDING") // PENDING, PAID, WAIVED
+  paidAt     DateTime? @map("paid_at")
+  isActive   Boolean   @default(true) @map("is_active")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  student     EducationStudent  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  transaction BookTransaction?  @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([studentId])
+  @@map("education_library_fines")
+}
+
+model EducationExamSchedule {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  courseId    String    @map("course_id")
+  title       String
+  examDate    DateTime  @map("exam_date")
+  startTime   String    @map("start_time")
+  endTime     String    @map("end_time")
+  room        String?
+  maxScore    Decimal   @default(100) @map("max_score")
+  weight      Decimal   @default(100)
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  course  EducationCourse @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  results EducationExamResult[]
+
+  @@index([tenantId])
+  @@index([courseId])
+  @@index([examDate])
+  @@map("education_exam_schedules")
+}
+
+model EducationExamResult {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  examId      String   @map("exam_id")
+  studentId   String   @map("student_id")
+  score       Decimal
+  grade       String?
+  comments    String?
+  isPassed    Boolean  @default(true) @map("is_passed")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  exam    EducationExamSchedule @relation(fields: [examId], references: [id], onDelete: Cascade)
+  student EducationStudent      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([examId, studentId])
+  @@index([tenantId])
+  @@index([examId])
+  @@index([studentId])
+  @@map("education_exam_results")
+}
+
+model EducationReportCard {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  studentId   String   @map("student_id")
+  academicYear String  @map("academic_year")
+  term        String
+  gpa         Decimal  @db.Decimal(4, 2)
+  comments    String?  @db.Text
+  publishedAt DateTime? @map("published_at")
+  gradesSummary Json   @default("[]") @map("grades_summary")
+  status      String   @default("DRAFT") // DRAFT, PUBLISHED
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, studentId])
+  @@map("education_report_cards")
+}
+
+model EducationScholarship {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  studentId   String   @map("student_id")
+  name        String
+  provider    String
+  amount      Decimal  @db.Decimal(15, 2)
+  academicYear String  @map("academic_year")
+  status      String   @default("ACTIVE") // ACTIVE, EXPIRED, SUSPENDED
+  disbursedAt DateTime? @map("disbursed_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, studentId])
+  @@map("education_scholarships")
+}
+
+model EducationAssignmentSubmission {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  assignmentId String   @map("assignment_id")
+  studentId    String   @map("student_id")
+  submissionUrl String? @map("submission_url")
+  content      String?  @db.Text
+  score        Decimal? @db.Decimal(5, 2)
+  feedback     String?  @db.Text
+  status       String   @default("SUBMITTED") // SUBMITTED, GRADED, LATE, REJECTED
+  submittedAt  DateTime @default(now()) @map("submitted_at")
+  gradedAt     DateTime? @map("graded_at")
+
+  @@index([tenantId])
+  @@index([tenantId, assignmentId])
+  @@index([tenantId, studentId])
+  @@map("education_assignment_submissions")
+}

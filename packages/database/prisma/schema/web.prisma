@@ -1,0 +1,306 @@
+model WebhookSubscription {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  name      String
+  targetUrl String   @map("target_url")
+  events    Json // array of strings e.g. ["order.created", "invoice.paid"]
+  secret    String
+  status    String   @default("ACTIVE") // ACTIVE, INACTIVE
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("webhook_subscriptions")
+}
+
+model WebhookDeliveryLog {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  subscriptionId String   @map("subscription_id")
+  event          String
+  payload        Json
+  responseStatus Int?     @map("response_status")
+  responseBody   String?  @map("response_body") @db.Text
+  attempts       Int      @default(1)
+  status         String   @default("SUCCESS") // SUCCESS, FAILED
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@map("webhook_delivery_logs")
+}
+
+model WebPage {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  name       String
+  slug       String
+  status     String   @default("DRAFT") // DRAFT, PUBLISHED, ARCHIVED
+  sections   Json     @default("[]") // Array of page sections [{id, type, content, settings}]
+  metaTitle  String?  @map("meta_title")
+  metaDesc   String?  @map("meta_desc")
+  ogImage    String?  @map("og_image")
+  visibility String   @default("PUBLIC") // PUBLIC, UNLISTED, PASSWORD_PROTECTED
+  sortOrder  Int      @default(0) @map("sort_order")
+  visits     Int      @default(0)
+  createdBy  String?  @map("created_by")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, slug])
+  @@index([tenantId])
+  @@map("web_pages")
+}
+
+model WebAsset {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  name       String
+  url        String
+  type       String   @default("IMAGE") // IMAGE, DOCUMENT, VIDEO
+  sizeBytes  Int      @default(0) @map("size_bytes")
+  uploadedBy String?  @map("uploaded_by")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("web_assets")
+}
+
+model WebTemplate {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  name         String
+  description  String?
+  thumbnail    String?
+  htmlContent  String?  @map("html_content") @db.Text
+  cssContent   String?  @map("css_content") @db.Text
+  designTokens Json     @default("{}") @map("design_tokens")
+  status       String   @default("DRAFT")
+  author       String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  settings WebSettings[]
+
+  @@index([tenantId])
+  @@map("web_templates")
+}
+
+model WebMenu {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  name      String
+  location  String   @default("HEADER") // HEADER, FOOTER, SIDEBAR
+  items     Json // Array of { label, url, order }
+  status    String   @default("ACTIVE")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("web_menus")
+}
+
+model WebSeo {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  path        String // URL path this applies to
+  title       String
+  description String?
+  keywords    String?
+  ogImage     String?  @map("og_image")
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, path])
+  @@map("web_seo")
+}
+
+model WebSettings {
+  id               String   @id @default(cuid())
+  tenantId         String   @unique @map("tenant_id")
+  activeTemplateId String?  @map("active_template_id")
+  globalCss        String?  @map("global_css") @db.Text
+  themeTokens      Json     @default("{}") @map("theme_tokens")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  template WebTemplate? @relation(fields: [activeTemplateId], references: [id])
+
+  @@map("web_settings")
+}
+
+model WebCollection {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  siteId      String?  @map("site_id") // owning site (multi-site); null = legacy/default
+  name        String // e.g. "Products", "Projects", "Team"
+  slug        String // URL-safe, used in public API + dynamic routes
+  singular    String? // e.g. "Product" (for UI labels)
+  description String?
+  icon        String? // emoji or lucide name
+  color       String?
+  kind        String   @default("GENERIC") // GENERIC | PRODUCT | POST | PORTFOLIO | TEAM | TESTIMONIAL
+  fields      Json     @default("[]") // [{ name, label, type, required, options, ... }]
+  settings    Json     @default("{}") // titleField, slugField, imageField, sort, etc.
+  status      String   @default("ACTIVE") // ACTIVE | ARCHIVED
+  createdBy   String?  @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  items WebCollectionItem[]
+
+  @@unique([tenantId, slug])
+  @@index([tenantId])
+  @@map("web_collections")
+}
+
+model WebCollectionItem {
+  id           String    @id @default(cuid())
+  tenantId     String    @map("tenant_id")
+  collectionId String    @map("collection_id")
+  slug         String // item-level slug for /:collection/:slug routes
+  data         Json      @default("{}") // the actual field values
+  status       String    @default("DRAFT") // DRAFT | PUBLISHED | ARCHIVED
+  featured     Boolean   @default(false)
+  sortOrder    Int       @default(0) @map("sort_order")
+  publishedAt  DateTime? @map("published_at")
+  createdBy    String?   @map("created_by")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  collection WebCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, slug])
+  @@index([tenantId, collectionId])
+  @@index([tenantId, status])
+  @@map("web_collection_items")
+}
+
+model WebFormSubmission {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  siteId    String?  @map("site_id") // owning site (multi-site)
+  formName  String   @map("form_name") // logical form identifier, e.g. "contact", "newsletter"
+  pageSlug  String?  @map("page_slug") // which page it came from
+  data      Json     @default("{}") // submitted field values
+  status    String   @default("NEW") // NEW | READ | SPAM | ARCHIVED
+  meta      Json     @default("{}") // ip, userAgent, referrer
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, formName])
+  @@index([tenantId, status])
+  @@map("web_form_submissions")
+}
+
+model WebOrder {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  siteId      String?  @map("site_id") // owning site (multi-site)
+  orderNumber String   @map("order_number")
+  status      String   @default("PENDING") // PENDING | PAID | FULFILLED | CANCELLED
+  customer    Json     @default("{}") // { name, email, phone, address }
+  items       Json     @default("[]") // [{ productSlug, name, price, qty, image }]
+  subtotal    Decimal  @default(0) @db.Decimal(19,4)
+  total       Decimal  @default(0) @db.Decimal(19,4)
+  currency    String   @default("USD")
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, orderNumber])
+  @@index([tenantId, status])
+  @@map("web_orders")
+}
+
+model WebSite {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  name      String
+  slug      String // unique per tenant; the migrated legacy site is "default"
+  status    String   @default("ACTIVE") // ACTIVE | ARCHIVED
+  theme     Json     @default("{}") // colors, fonts, css tokens
+  settings  Json     @default("{}") // nav, footer, favicon, analytics, etc.
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  domains  WebDomain[]
+  pages    WebSitePage[]
+  chatbots WebChatbot[]
+
+  @@unique([tenantId, slug])
+  @@index([tenantId])
+  @@map("web_sites")
+}
+
+model WebDomain {
+  id        String   @id @default(cuid())
+  siteId    String   @map("site_id")
+  host      String   @unique // e.g. "acme.com" or "acme.unerp.app"
+  verified  Boolean  @default(false)
+  isPrimary Boolean  @default(false) @map("is_primary")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  site WebSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@index([siteId])
+  @@map("web_domains")
+}
+
+model WebSitePage {
+  id        String   @id @default(cuid())
+  siteId    String   @map("site_id")
+  tenantId  String   @map("tenant_id")
+  path      String // "/" for home, "/about", "/blog/hello-world"
+  title     String
+  type      String   @default("PAGE") // PAGE | BLOG | DOCS | LANDING
+  blocks    Json     @default("[]") // block tree rendered by PublicPageRenderer
+  seo       Json     @default("{}") // { metaTitle, metaDesc, ogImage, keywords }
+  status    String   @default("DRAFT") // DRAFT | PUBLISHED
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  site WebSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@unique([siteId, path])
+  @@index([siteId, status])
+  @@index([tenantId])
+  @@map("web_site_pages")
+}
+
+model WebChatbot {
+  id        String   @id @default(cuid())
+  siteId    String   @map("site_id")
+  tenantId  String   @map("tenant_id")
+  name      String   @default("Assistant")
+  enabled   Boolean  @default(true)
+  config    Json     @default("{}") // { greeting, model, accent, persona }
+  knowledge Json     @default("{}") // { collections: string[], usePages: boolean, custom: string }
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  site WebSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@index([siteId])
+  @@map("web_chatbots")
+}
+
+model WebToLeadForm {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  orgId       String    @map("org_id")
+  name        String
+  fields      Json      @default("[]")
+  settings    Json      @default("{}")
+  embedCode   String?   @map("embed_code")
+  isActive    Boolean   @default(true) @map("is_active")
+  submissions Int       @default(0)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  @@index([tenantId])
+  @@map("web_to_lead_forms")
+}
