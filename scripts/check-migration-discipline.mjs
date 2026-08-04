@@ -14,8 +14,23 @@ if (rootPackage.scripts?.['db:deploy'] !== 'pnpm --filter @unerp/database db:dep
   failures.push('root package must expose `db:deploy` through @unerp/database');
 }
 
-if (databasePackage.scripts?.['db:deploy'] !== 'prisma migrate deploy') {
-  failures.push('database package must apply recorded migration history with `prisma migrate deploy`');
+// Check the invariant, not a literal. The platform split gave the database
+// package two schemas (main + IdP), so db:deploy is now a chain:
+//   prisma migrate deploy --schema prisma/schema && prisma migrate deploy --schema prisma/idp-schema.prisma
+// What must hold is that every step applies RECORDED history via `migrate
+// deploy`, and that `db push` never appears. An exact-string gate failed the
+// moment a second schema was added, which teaches people to edit the gate.
+const dbDeploy = databasePackage.scripts?.['db:deploy'] ?? '';
+const deploySteps = dbDeploy.split('&&').map((s) => s.trim()).filter(Boolean);
+if (
+  deploySteps.length === 0 ||
+  !deploySteps.every((step) => /^prisma\s+migrate\s+deploy\b/.test(step)) ||
+  /\bdb\s+push\b/.test(dbDeploy)
+) {
+  failures.push(
+    'database package must apply recorded migration history with `prisma migrate deploy` ' +
+      `(every && step must start with it, and no \`db push\`); got: ${dbDeploy || '(unset)'}`,
+  );
 }
 
 if (rootPackage.scripts?.['db:push'] !== 'node scripts/forbid-db-push.mjs') {
