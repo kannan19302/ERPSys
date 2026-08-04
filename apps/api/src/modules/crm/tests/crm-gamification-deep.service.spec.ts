@@ -1,40 +1,48 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { CrmGamificationDeepService } from "../crm-gamification-deep.service";
 
-vi.mock("@unerp/database", () => ({
-  prisma: {
-    organization: { findFirst: vi.fn() },
-    teamGoal: {
-      findMany: vi.fn(),
-      create: vi.fn(),
-      findFirst: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-      count: vi.fn(),
+vi.mock("@unerp/database", () => {
+  // Identity models (user, role, userSession, ...) are read through
+  // `idpPrisma`, not `prisma` — this spec predates that split and stubs
+  // them under `prisma`. Exporting the same stub object under both names
+  // keeps every `vi.mocked(prisma.user.*)` setup pointing at exactly the
+  // function the service calls.
+  const mocked = {
+    prisma: {
+      organization: { findFirst: vi.fn() },
+      teamGoal: {
+        findMany: vi.fn(),
+        create: vi.fn(),
+        findFirst: vi.fn(),
+        update: vi.fn(),
+        delete: vi.fn(),
+        count: vi.fn(),
+      },
+      salesContest: {
+        findMany: vi.fn(),
+        create: vi.fn(),
+        findFirst: vi.fn(),
+        update: vi.fn(),
+        delete: vi.fn(),
+        count: vi.fn(),
+      },
+      salesContestEntry: {
+        findMany: vi.fn(),
+        findUnique: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        count: vi.fn(),
+      },
+      opportunity: { findMany: vi.fn() },
+      user: { findMany: vi.fn() },
+      gamificationBadgeAward: { findMany: vi.fn(), count: vi.fn() },
+      gamificationBadge: { count: vi.fn() },
+      salesStreak: { findMany: vi.fn() },
+      leaderboardSnapshot: { findMany: vi.fn() },
     },
-    salesContest: {
-      findMany: vi.fn(),
-      create: vi.fn(),
-      findFirst: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-      count: vi.fn(),
-    },
-    salesContestEntry: {
-      findMany: vi.fn(),
-      findUnique: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      count: vi.fn(),
-    },
-    opportunity: { findMany: vi.fn() },
-    user: { findMany: vi.fn() },
-    gamificationBadgeAward: { findMany: vi.fn(), count: vi.fn() },
-    gamificationBadge: { count: vi.fn() },
-    salesStreak: { findMany: vi.fn() },
-    leaderboardSnapshot: { findMany: vi.fn() },
-  },
-}));
+  };
+  return { ...mocked, idpPrisma: mocked.prisma };
+});
 
 import { prisma } from "@unerp/database";
 import { idpClient as idpPrisma } from "@/common/idp-client";

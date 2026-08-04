@@ -6,8 +6,8 @@ import { PERMISSIONS_KEY } from "../../../common/decorators/permissions.decorato
 import { SaasPortalSecurityController as SecurityController } from "../../saas-portal/controllers/security.controller";
 import { AdminController } from "../admin.controller";
 import { AutomationRulesController } from "../automation-rules.controller";
-import { SuperAdminController } from "../super-admin.controller";
-import { OperationsController } from "../operations.controller";
+import { SuperAdminController } from "../../../platform/v1/super-admin.controller";
+import { OperationsController } from "../../../platform/v1/operations.controller";
 
 /**
  * QA independent verification of US-P0-1a (.ai/ADMIN_MODULE_COMPLETION_REQUIREMENTS.md).
@@ -30,14 +30,22 @@ import { OperationsController } from "../operations.controller";
  * real `@Permissions(...)` decorator on the real controller class prototypes.
  */
 
-vi.mock("@unerp/database", () => ({
-  prisma: {
-    userRole: { findMany: vi.fn() },
-  },
-  runWithTenantSession: vi.fn((_session: unknown, fn: () => unknown) =>
-    Promise.resolve(fn()),
-  ),
-}));
+vi.mock("@unerp/database", () => {
+  // Identity models (user, role, userSession, ...) are read through
+  // `idpPrisma`, not `prisma` Ã¢â‚¬â€ this spec predates that split and stubs
+  // them under `prisma`. Exporting the same stub object under both names
+  // keeps every `vi.mocked(prisma.user.*)` setup pointing at exactly the
+  // function the service calls.
+  const mocked = {
+    prisma: {
+      userRole: { findMany: vi.fn() },
+    },
+    runWithTenantSession: vi.fn((_session: unknown, fn: () => unknown) =>
+      Promise.resolve(fn()),
+    ),
+  };
+  return { ...mocked, idpPrisma: mocked.prisma };
+});
 
 import { prisma, runWithTenantSession } from "@unerp/database";
 import { idpClient as idpPrisma } from "@/common/idp-client";
@@ -54,22 +62,26 @@ function buildContext(
   } as any;
 }
 
-function roleWithPermissions(permissions: string[]) {
-  return { role: { permissions: JSON.stringify(permissions) } };
-}
-
+/**
+ * Invoke the guard as a caller holding exactly `permissions`.
+ *
+ * This used to stub `userRole.findMany` and rely on the guard loading roles
+ * from the database. RbacGuard does no such lookup — it reads the permission
+ * list off the JWT claims that JwtAuthGuard attached to `request.user`, so the
+ * stub was inert and every caller looked like it held no permissions at all.
+ * The sweep's actual subject, the real `@Permissions(...)` metadata reflected
+ * off the real controller prototypes, is unchanged; only how the caller's
+ * grants are supplied is corrected.
+ */
 async function callWithRole(
   guard: RbacGuard,
   controllerClass: any,
   handlerName: string,
   permissions: string[],
 ) {
-  (idpPrisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
-    permissions.length ? [roleWithPermissions(permissions)] : [],
-  );
   const handler = controllerClass.prototype[handlerName];
   return guard.canActivate(
-    buildContext({ userId: "u1" }, handler, controllerClass),
+    buildContext({ userId: "u1", permissions }, handler, controllerClass),
   );
 }
 
@@ -215,7 +227,7 @@ describe("Admin RBAC regression sweep (US-P0-1a, real controller metadata)", () 
       ).rejects.toThrow(ForbiddenException);
     });
 
-    it("the coarse admin.* wildcard (a role granted blanket admin module access) is the only way coarse grants still work — a bare admin.read string grants nothing on its own", async () => {
+    it("the coarse admin.* wildcard (a role granted blanket admin module access) is the only way coarse grants still work Ã¢â‚¬â€ a bare admin.read string grants nothing on its own", async () => {
       // Documents the one legitimate escape hatch: `admin.*` (module wildcard) still matches
       // fine-grained codes via hasPermission's wildcard rule, by design (super-admin-style
       // roles). This is intentionally different from the literal string `admin.read` used
@@ -249,7 +261,7 @@ describe("Admin RBAC regression sweep (US-P0-1a, real controller metadata)", () 
   describe("Backup permission boundary (P1-1 RBAC boundary): a realistic full Tenant Admin persona is rejected", () => {
     // Simulates a normal Tenant Admin role seeded with the full realistic fine-grained
     // "admin.*" operational set (every admin.<resource>.<action> code EXCEPT the new
-    // Super-Admin-only system.operations.backup) — this is the exact persona the
+    // Super-Admin-only system.operations.backup) Ã¢â‚¬â€ this is the exact persona the
     // completion requirements doc (P1-1 Cross-cutting requirements) says must be excluded
     // from the backup surface, not just an isolated single-permission role.
     const realisticTenantAdminPermissions = [

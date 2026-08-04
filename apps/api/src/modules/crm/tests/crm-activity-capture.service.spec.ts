@@ -282,7 +282,7 @@ describe("CrmActivityCaptureService", () => {
 
   describe("getAutoCaptureSettings", () => {
     it("returns existing settings", async () => {
-      (prisma.autoCaptureSetting.findUnique as any).mockResolvedValue({
+      (prisma.autoCaptureSetting.findFirst as any).mockResolvedValue({
         id: "set-1",
         captureEmails: true,
       });
@@ -291,7 +291,7 @@ describe("CrmActivityCaptureService", () => {
     });
 
     it("creates default settings if none exist", async () => {
-      (prisma.autoCaptureSetting.findUnique as any).mockResolvedValue(null);
+      (prisma.autoCaptureSetting.findFirst as any).mockResolvedValue(null);
       (prisma.autoCaptureSetting.create as any).mockResolvedValue({
         id: "set-2",
         captureEmails: true,
@@ -305,7 +305,7 @@ describe("CrmActivityCaptureService", () => {
 
   describe("updateAutoCaptureSettings", () => {
     it("throws if settings not found", async () => {
-      (prisma.autoCaptureSetting.findUnique as any).mockResolvedValue(null);
+      (prisma.autoCaptureSetting.findFirst as any).mockResolvedValue(null);
       await expect(
         service.updateAutoCaptureSettings(TENANT, USER, {
           captureEmails: false,
@@ -314,7 +314,7 @@ describe("CrmActivityCaptureService", () => {
     });
 
     it("updates settings", async () => {
-      (prisma.autoCaptureSetting.findUnique as any).mockResolvedValue({
+      (prisma.autoCaptureSetting.findFirst as any).mockResolvedValue({
         id: "set-1",
       });
       (prisma.autoCaptureSetting.update as any).mockResolvedValue({

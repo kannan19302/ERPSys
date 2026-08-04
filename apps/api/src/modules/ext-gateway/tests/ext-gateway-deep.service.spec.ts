@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ExtGatewayDeepService } from "../ext-gateway-deep.service";
 import { NotFoundException } from "@nestjs/common";
 
-const mockConnection = {
+const mockConnection = vi.hoisted(() => ({
   id: "c1",
   tenantId: "t1",
   name: "Stripe Prod",
@@ -20,8 +20,8 @@ const mockConnection = {
   metadata: {},
   createdAt: new Date(),
   updatedAt: new Date(),
-};
-const mockWebhook = {
+}));
+const mockWebhook = vi.hoisted(() => ({
   id: "w1",
   tenantId: "t1",
   connectionId: "c1",
@@ -40,8 +40,8 @@ const mockWebhook = {
   circuitBreakerResetMs: 300000,
   createdAt: new Date(),
   updatedAt: new Date(),
-};
-const mockDelivery = {
+}));
+const mockDelivery = vi.hoisted(() => ({
   id: "d1",
   tenantId: "t1",
   webhookConfigId: "w1",
@@ -53,8 +53,8 @@ const mockDelivery = {
   maxAttempts: 5,
   createdAt: new Date(),
   updatedAt: new Date(),
-};
-const mockRateLimit = {
+}));
+const mockRateLimit = vi.hoisted(() => ({
   id: "rl1",
   tenantId: "t1",
   connectionId: "c1",
@@ -65,8 +65,8 @@ const mockRateLimit = {
   isActive: true,
   createdAt: new Date(),
   updatedAt: new Date(),
-};
-const mockTemplate = {
+}));
+const mockTemplate = vi.hoisted(() => ({
   id: "t1",
   tenantId: "t1",
   name: "Stripe",
@@ -80,8 +80,8 @@ const mockTemplate = {
   isActive: true,
   createdAt: new Date(),
   updatedAt: new Date(),
-};
-const mockLog = {
+}));
+const mockLog = vi.hoisted(() => ({
   id: "l1",
   tenantId: "t1",
   connectionId: "c1",
@@ -89,56 +89,66 @@ const mockLog = {
   method: "POST",
   success: true,
   createdAt: new Date(),
-};
-
-vi.mock("@unerp/database", () => ({
-  prisma: {
-    extConnection: {
-      findMany: vi.fn().mockResolvedValue([mockConnection]),
-      findFirst: vi.fn().mockResolvedValue(mockConnection),
-      create: vi.fn().mockResolvedValue(mockConnection),
-      update: vi.fn().mockResolvedValue(mockConnection),
-      delete: vi.fn().mockResolvedValue(mockConnection),
-      count: vi.fn().mockResolvedValue(1),
-    },
-    extConnectionLog: {
-      findMany: vi.fn().mockResolvedValue([mockLog]),
-      count: vi.fn().mockResolvedValue(1),
-    },
-    extWebhookConfig: {
-      findMany: vi.fn().mockResolvedValue([mockWebhook]),
-      findFirst: vi.fn().mockResolvedValue(mockWebhook),
-      create: vi.fn().mockResolvedValue(mockWebhook),
-      update: vi.fn().mockResolvedValue(mockWebhook),
-      delete: vi.fn().mockResolvedValue(mockWebhook),
-      count: vi.fn().mockResolvedValue(1),
-    },
-    extWebhookDelivery: {
-      findMany: vi.fn().mockResolvedValue([mockDelivery]),
-      findFirst: vi.fn().mockResolvedValue(mockDelivery),
-      update: vi.fn().mockResolvedValue(mockDelivery),
-      count: vi.fn().mockResolvedValue(1),
-    },
-    extRateLimitConfig: {
-      findMany: vi.fn().mockResolvedValue([mockRateLimit]),
-      findFirst: vi.fn().mockResolvedValue(mockRateLimit),
-      create: vi.fn().mockResolvedValue(mockRateLimit),
-      update: vi.fn().mockResolvedValue(mockRateLimit),
-      delete: vi.fn().mockResolvedValue(mockRateLimit),
-    },
-    extRateLimitUsage: {
-      findFirst: vi.fn().mockResolvedValue(null),
-      upsert: vi.fn().mockResolvedValue({}),
-    },
-    extIntegrationTemplate: {
-      findMany: vi.fn().mockResolvedValue([mockTemplate]),
-      findFirst: vi.fn().mockResolvedValue(mockTemplate),
-      create: vi.fn().mockResolvedValue(mockTemplate),
-      update: vi.fn().mockResolvedValue(mockTemplate),
-      delete: vi.fn().mockResolvedValue(mockTemplate),
-    },
-  },
 }));
+
+vi.mock("@unerp/database", () => {
+  // Identity models (user, role, userSession, ...) are read through
+  // `idpPrisma`, not `prisma` — this spec predates that split and stubs
+  // them under `prisma`. Exporting the same stub object under both names
+  // keeps every `vi.mocked(prisma.user.*)` setup pointing at exactly the
+  // function the service calls.
+  const mocked = {
+    prisma: {
+      extConnection: {
+        findMany: vi.fn().mockResolvedValue([mockConnection]),
+        findFirst: vi.fn().mockResolvedValue(mockConnection),
+        create: vi.fn().mockResolvedValue(mockConnection),
+        update: vi.fn().mockResolvedValue(mockConnection),
+        delete: vi.fn().mockResolvedValue(mockConnection),
+        count: vi.fn().mockResolvedValue(1),
+      },
+      extConnectionLog: {
+        findMany: vi.fn().mockResolvedValue([mockLog]),
+        count: vi.fn().mockResolvedValue(1),
+      },
+      extWebhookConfig: {
+        findMany: vi.fn().mockResolvedValue([mockWebhook]),
+        findFirst: vi.fn().mockResolvedValue(mockWebhook),
+        create: vi.fn().mockResolvedValue(mockWebhook),
+        update: vi.fn().mockResolvedValue(mockWebhook),
+        delete: vi.fn().mockResolvedValue(mockWebhook),
+        count: vi.fn().mockResolvedValue(1),
+      },
+      extWebhookDelivery: {
+        findMany: vi.fn().mockResolvedValue([mockDelivery]),
+        findFirst: vi.fn().mockResolvedValue(mockDelivery),
+        update: vi.fn().mockResolvedValue(mockDelivery),
+        count: vi.fn().mockResolvedValue(1),
+      },
+      extRateLimitConfig: {
+        // getAnalytics counts configured rate limits.
+        count: vi.fn().mockResolvedValue(1),
+        findMany: vi.fn().mockResolvedValue([mockRateLimit]),
+        findFirst: vi.fn().mockResolvedValue(mockRateLimit),
+        create: vi.fn().mockResolvedValue(mockRateLimit),
+        update: vi.fn().mockResolvedValue(mockRateLimit),
+        delete: vi.fn().mockResolvedValue(mockRateLimit),
+      },
+      extRateLimitUsage: {
+        findFirst: vi.fn().mockResolvedValue(null),
+        upsert: vi.fn().mockResolvedValue({}),
+      },
+      extIntegrationTemplate: {
+        findMany: vi.fn().mockResolvedValue([mockTemplate]),
+        findFirst: vi.fn().mockResolvedValue(mockTemplate),
+        create: vi.fn().mockResolvedValue(mockTemplate),
+        update: vi.fn().mockResolvedValue(mockTemplate),
+        delete: vi.fn().mockResolvedValue(mockTemplate),
+      },
+    },
+  };
+  return { ...mocked, idpPrisma: mocked.prisma };
+});
 
 describe("ExtGatewayDeepService", () => {
   let service: ExtGatewayDeepService;

@@ -4,25 +4,21 @@ import { CommunicationHelpdeskService } from "../services/communication-helpdesk
 vi.mock("@unerp/database", () => ({
   prisma: {
     ticketSla: {
-      aggregate: vi
-        .fn()
-        .mockResolvedValue({
-          _avg: {},
-          _sum: {},
-          _count: 0,
-          _min: {},
-          _max: {},
-        }),
+      aggregate: vi.fn().mockResolvedValue({
+        _avg: {},
+        _sum: {},
+        _count: 0,
+        _min: {},
+        _max: {},
+      }),
       create: vi.fn(),
-      aggregate: vi
-        .fn()
-        .mockResolvedValue({
-          _avg: {},
-          _sum: {},
-          _count: 0,
-          _min: {},
-          _max: {},
-        }),
+      aggregate: vi.fn().mockResolvedValue({
+        _avg: {},
+        _sum: {},
+        _count: 0,
+        _min: {},
+        _max: {},
+      }),
     },
     ticketComment: { create: vi.fn() },
     customerSatisfaction: {
@@ -40,15 +36,13 @@ vi.mock("@unerp/database", () => ({
     },
     ticketComment: { create: vi.fn(), findMany: vi.fn().mockResolvedValue([]) },
     ticketSla: {
-      aggregate: vi
-        .fn()
-        .mockResolvedValue({
-          _avg: {},
-          _sum: {},
-          _count: 0,
-          _min: {},
-          _max: {},
-        }),
+      aggregate: vi.fn().mockResolvedValue({
+        _avg: {},
+        _sum: {},
+        _count: 0,
+        _min: {},
+        _max: {},
+      }),
       findMany: vi.fn().mockResolvedValue([]),
       create: vi.fn(),
     },

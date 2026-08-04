@@ -28,7 +28,11 @@ const MODULES = [
   "Admin",
 ];
 
-export function ERPFormsPageContent() {
+// Not exported: the App Router allows a page module to export only `default`
+// and a fixed set of route options, and a stray named export fails the build
+// ("Type '() => Element' is not assignable to type 'never'"). This component is
+// only rendered by the default export below, inside its Suspense boundary.
+function ERPFormsPageContent() {
   const client = useApiClient();
   const router = useRouter();
   const searchParams = useSearchParams();

@@ -4,7 +4,12 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { AdvancedHrService } from "../advanced-hr.service";
 
 vi.mock("@unerp/database", () => {
-  return {
+  // Identity models (user, role, userSession, ...) are read through
+  // `idpPrisma`, not `prisma` — this spec predates that split and stubs
+  // them under `prisma`. Exporting the same stub object under both names
+  // keeps every `vi.mocked(prisma.user.*)` setup pointing at exactly the
+  // function the service calls.
+  const mocked = {
     prisma: {
       salaryStructure: {
         findMany: vi.fn(),
@@ -52,6 +57,7 @@ vi.mock("@unerp/database", () => {
       $transaction: vi.fn((cb) => cb(require("@unerp/database").prisma)),
     },
   };
+  return { ...mocked, idpPrisma: mocked.prisma };
 });
 
 describe("AdvancedHrService", () => {

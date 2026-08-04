@@ -3,19 +3,27 @@ import { ExecutionContext, ForbiddenException } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { RbacGuard } from "../rbac.guard";
 
-// Mock database package — proves RbacGuard's *actual* enforcement logic,
-// not just decorator presence (the exact gap the enterprise hardening plan
-// flagged: "RBAC that is actually enforced, not decorator-presence").
-vi.mock("@unerp/database", () => ({
-  prisma: {
-    userRole: {
-      findMany: vi.fn(),
-    },
-  },
-  runWithTenantSession: vi.fn((_session: unknown, fn: () => unknown) => fn()),
-}));
+// This suite exists to prove RbacGuard's *actual* enforcement logic rather than
+// decorator presence. It previously stubbed `userRole.findMany` and asserted
+// against roles loaded from the database — but RbacGuard reads the permission
+// list off the JWT claims that JwtAuthGuard already attached to `request.user`,
+// and never touches the database at all. Those stubs were inert: every "denies"
+// case passed only because `user.permissions` was undefined, which collapses to
+// `[]` and denies everything, and every "allows" case failed for the same
+// reason. The matrix below drives the guard through the input it genuinely
+// consumes, so a regression in `hasPermission` wiring now actually fails here.
+//
+// Consequence worth knowing: because permissions ride on the token, a revoked
+// role stays effective until the token is refreshed. Session revocation is
+// handled separately, in JwtAuthGuard.
+vi.mock("@unerp/database", () => {
+  const mocked = {
+    prisma: { userRole: { findMany: vi.fn() } },
+    runWithTenantSession: vi.fn((_session: unknown, fn: () => unknown) => fn()),
+  };
+  return { ...mocked, idpPrisma: mocked.prisma };
+});
 
-import { prisma, runWithTenantSession } from "@unerp/database";
 import { idpClient as idpPrisma } from "@/common/idp-client";
 
 function buildContext(user: unknown): ExecutionContext {
@@ -34,8 +42,9 @@ function buildReflector(requiredPermissions: string[] | undefined): Reflector {
   } as unknown as Reflector;
 }
 
-function roleWithPermissions(permissions: string[]) {
-  return { role: { permissions: JSON.stringify(permissions) } };
+/** A caller carrying the given permission claims. */
+function callerWith(permissions: unknown) {
+  return { userId: "u1", permissions };
 }
 
 describe("RbacGuard — permission matrix (deny-by-default enforcement)", () => {
@@ -45,8 +54,13 @@ describe("RbacGuard — permission matrix (deny-by-default enforcement)", () => 
 
   it("allows the request through when the handler requires no permissions", async () => {
     const guard = new RbacGuard(buildReflector(undefined));
-    const result = await guard.canActivate(buildContext({ userId: "u1" }));
+    const result = await guard.canActivate(buildContext(callerWith([])));
     expect(result).toBe(true);
+  });
+
+  it("never queries the database — permissions come from the token", async () => {
+    const guard = new RbacGuard(buildReflector(["finance.invoice.read"]));
+    await guard.canActivate(buildContext(callerWith(["finance.invoice.read"])));
     expect(idpPrisma.userRole.findMany).not.toHaveBeenCalled();
   });
 
@@ -57,90 +71,84 @@ describe("RbacGuard — permission matrix (deny-by-default enforcement)", () => 
     );
   });
 
-  it("denies by default when the user has no roles at all", async () => {
-    (idpPrisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
-      [],
-    );
+  it("denies by default when the token carries no permissions at all", async () => {
     const guard = new RbacGuard(buildReflector(["finance.invoice.read"]));
     await expect(
-      guard.canActivate(buildContext({ userId: "u1" })),
+      guard.canActivate(buildContext(callerWith([]))),
     ).rejects.toThrow(ForbiddenException);
   });
 
-  it("denies when the user has roles but none grant the required permission", async () => {
-    (idpPrisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
-      [roleWithPermissions(["hr.employee.read"])],
-    );
+  it("denies when the caller has permissions but none grant the required one", async () => {
     const guard = new RbacGuard(buildReflector(["finance.invoice.create"]));
     await expect(
-      guard.canActivate(buildContext({ userId: "u1" })),
+      guard.canActivate(buildContext(callerWith(["hr.employee.read"]))),
     ).rejects.toThrow(ForbiddenException);
   });
 
-  it("allows when a role grants the exact required permission", async () => {
-    (idpPrisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
-      [roleWithPermissions(["finance.invoice.create"])],
-    );
+  it("allows when the token grants the exact required permission", async () => {
     const guard = new RbacGuard(buildReflector(["finance.invoice.create"]));
     await expect(
-      guard.canActivate(buildContext({ userId: "u1" })),
+      guard.canActivate(buildContext(callerWith(["finance.invoice.create"]))),
     ).resolves.toBe(true);
   });
 
-  it("allows via a module wildcard role", async () => {
-    (idpPrisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
-      [roleWithPermissions(["finance.*"])],
-    );
+  it("allows via a module wildcard", async () => {
     const guard = new RbacGuard(buildReflector(["finance.invoice.void"]));
     await expect(
-      guard.canActivate(buildContext({ userId: "u1" })),
+      guard.canActivate(buildContext(callerWith(["finance.*"]))),
     ).resolves.toBe(true);
   });
 
   it("requires ALL listed permissions when a handler declares more than one", async () => {
-    (idpPrisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
-      [roleWithPermissions(["finance.invoice.read"])],
-    );
     const guard = new RbacGuard(
       buildReflector(["finance.invoice.read", "finance.invoice.create"]),
     );
     await expect(
-      guard.canActivate(buildContext({ userId: "u1" })),
+      guard.canActivate(buildContext(callerWith(["finance.invoice.read"]))),
     ).rejects.toThrow(ForbiddenException);
   });
 
-  it("aggregates permissions across multiple assigned roles", async () => {
-    (idpPrisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
-      [
-        roleWithPermissions(["finance.invoice.read"]),
-        roleWithPermissions(["finance.invoice.create"]),
-      ],
-    );
+  it("aggregates permissions granted across several roles into one claim list", async () => {
     const guard = new RbacGuard(
       buildReflector(["finance.invoice.read", "finance.invoice.create"]),
     );
     await expect(
-      guard.canActivate(buildContext({ userId: "u1" })),
+      guard.canActivate(
+        buildContext(
+          callerWith(["finance.invoice.read", "finance.invoice.create"]),
+        ),
+      ),
     ).resolves.toBe(true);
   });
 
-  it("ignores a role with malformed (non-JSON) permissions instead of granting access", async () => {
-    (idpPrisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
-      [{ role: { permissions: "not-valid-json{{{" } }],
-    );
+  it("denies when the permissions claim is malformed rather than granting access", async () => {
     const guard = new RbacGuard(buildReflector(["finance.invoice.read"]));
     await expect(
-      guard.canActivate(buildContext({ userId: "u1" })),
+      guard.canActivate(buildContext(callerWith("not-an-array"))),
     ).rejects.toThrow(ForbiddenException);
   });
 
   it("does not let a same-prefix module wildcard leak into an unrelated module (regression)", async () => {
-    (idpPrisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
-      [roleWithPermissions(["finance.*"])],
-    );
     const guard = new RbacGuard(buildReflector(["financial.report.read"]));
     await expect(
-      guard.canActivate(buildContext({ userId: "u1" })),
+      guard.canActivate(buildContext(callerWith(["finance.*"]))),
+    ).rejects.toThrow(ForbiddenException);
+  });
+
+  it("only grants control-plane permissions to control-plane claims", async () => {
+    const guard = new RbacGuard(buildReflector(["system.tenant.delete"]));
+    // An explicit control-plane wildcard grants.
+    await expect(
+      guard.canActivate(buildContext(callerWith(["system.*"]))),
+    ).resolves.toBe(true);
+    // A tenant-scoped wildcard does not — and neither does the global `*`,
+    // which is deliberate: reaching the control plane requires a claim in the
+    // control-plane namespace, never a broad tenant grant.
+    await expect(
+      guard.canActivate(buildContext(callerWith(["finance.*"]))),
+    ).rejects.toThrow(ForbiddenException);
+    await expect(
+      guard.canActivate(buildContext(callerWith(["*"]))),
     ).rejects.toThrow(ForbiddenException);
   });
 });

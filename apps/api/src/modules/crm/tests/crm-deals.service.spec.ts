@@ -2,57 +2,65 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { CrmDealsService } from "../crm-deals.service";
 import { NotFoundException, BadRequestException } from "@nestjs/common";
 
-vi.mock("@unerp/database", () => ({
-  prisma: {
-    opportunity: {
-      findMany: vi.fn(),
-      findFirst: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      updateMany: vi.fn(),
-      count: vi.fn(),
+vi.mock("@unerp/database", () => {
+  // Identity models (user, role, userSession, ...) are read through
+  // `idpPrisma`, not `prisma` — this spec predates that split and stubs
+  // them under `prisma`. Exporting the same stub object under both names
+  // keeps every `vi.mocked(prisma.user.*)` setup pointing at exactly the
+  // function the service calls.
+  const mocked = {
+    prisma: {
+      opportunity: {
+        findMany: vi.fn(),
+        findFirst: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        updateMany: vi.fn(),
+        count: vi.fn(),
+      },
+      opportunityLineItem: {
+        findMany: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        delete: vi.fn(),
+      },
+      salesPipeline: {
+        findMany: vi.fn(),
+        findFirst: vi.fn(),
+        create: vi.fn(),
+      },
+      priceBook: {
+        findMany: vi.fn(),
+        findFirst: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        count: vi.fn(),
+      },
+      product: {
+        findMany: vi.fn(),
+        count: vi.fn(),
+      },
+      salesPlaybook: {
+        findFirst: vi.fn(),
+      },
+      opportunityChecklist: {
+        findMany: vi.fn(),
+      },
+      lead: {
+        findMany: vi.fn(),
+        count: vi.fn(),
+        groupBy: vi.fn(),
+      },
+      leadSource: {
+        findMany: vi.fn(),
+      },
+      user: {
+        findMany: vi.fn(),
+      },
     },
-    opportunityLineItem: {
-      findMany: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-    },
-    salesPipeline: {
-      findMany: vi.fn(),
-      findFirst: vi.fn(),
-      create: vi.fn(),
-    },
-    priceBook: {
-      findMany: vi.fn(),
-      findFirst: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      count: vi.fn(),
-    },
-    product: {
-      findMany: vi.fn(),
-      count: vi.fn(),
-    },
-    salesPlaybook: {
-      findFirst: vi.fn(),
-    },
-    opportunityChecklist: {
-      findMany: vi.fn(),
-    },
-    lead: {
-      findMany: vi.fn(),
-      count: vi.fn(),
-      groupBy: vi.fn(),
-    },
-    leadSource: {
-      findMany: vi.fn(),
-    },
-    user: {
-      findMany: vi.fn(),
-    },
-  },
-}));
+  };
+  return { ...mocked, idpPrisma: mocked.prisma };
+});
 
 import { prisma } from "@unerp/database";
 import { idpClient as idpPrisma } from "@/common/idp-client";

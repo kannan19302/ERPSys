@@ -953,8 +953,13 @@ export class CommunicationService {
         ? []
         : (m.attachments as unknown as AttachmentDto[]),
       meetingId: m.meetingId ?? undefined,
-      ts: m.createdAt as any,
-      editedTs: m.editedAt ? (m.editedAt as any) : undefined,
+      // `ts`/`editedTs` are epoch milliseconds by contract — the web client
+      // types them `number` and feeds them straight to `formatTime(ts: number)`.
+      // These were `m.createdAt as any`, i.e. a Date forced into a number slot,
+      // which crosses JSON as an ISO string and breaks every consumer that does
+      // arithmetic or comparison on it. The cast was the only thing hiding it.
+      ts: m.createdAt.getTime(),
+      editedTs: m.editedAt ? m.editedAt.getTime() : undefined,
       deleted: !!m.deletedAt,
       reactions: m.deletedAt ? [] : this.groupReactions(m.reactions ?? []),
     };
@@ -1255,11 +1260,15 @@ export class CommunicationService {
         clearAt: dto.clearAt ? new Date(dto.clearAt) : null,
       },
     });
+    // Same blanket `"" as any` edit as the upsert above, missed when that was
+    // repaired: the row was written correctly but every connected client was
+    // told the user's presence was blank. Broadcast what was actually
+    // persisted, so the socket update and the stored row cannot disagree.
     this.notificationsGateway.broadcastPresenceUpdate(tenantId, {
       userId,
-      presence: "" as any,
-      statusText: "" as any,
-      statusEmoji: "" as any,
+      presence: updated.presence,
+      statusText: updated.statusText,
+      statusEmoji: updated.statusEmoji,
       timestamp: new Date().toISOString(),
     });
     return updated;
@@ -1639,15 +1648,21 @@ export class CommunicationService {
     for (const memberId of memberUserIds) {
       const readAt = readMap.get(memberId);
       const user = userMap.get(memberId);
+      // The comparison used to read `((readAt >= message.createdAt) as any) - 1000`,
+      // which subtracts from a boolean: `true - 1000` and `false - 1000` are
+      // both non-zero, so the guard was always truthy and every member with any
+      // read record was reported as having seen the message. The intent was a
+      // 1s tolerance on the read timestamp, applied to the times themselves.
+      const seenToleranceMs = 1000;
       if (
         readAt &&
         user &&
-        (((readAt as any) >= message.createdAt) as any) - 1000
+        readAt.getTime() >= message.createdAt.getTime() - seenToleranceMs
       ) {
         seenBy.push({
           userId: memberId,
           name: `${user.firstName} ${user.lastName}`.trim(),
-          avatar: "" as any,
+          avatar: user.avatar,
           seenAt: readAt,
         });
       }

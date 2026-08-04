@@ -3,37 +3,45 @@ import { ApiPlatformService } from "../api-platform.service";
 import { prisma } from "@unerp/database";
 import { idpClient as idpPrisma } from "@/common/idp-client";
 
-vi.mock("@unerp/database", () => ({
-  prisma: {
-    apiKey: {
-      findMany: vi.fn(),
-      findFirst: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
+vi.mock("@unerp/database", () => {
+  // Identity models (user, role, userSession, ...) are read through
+  // `idpPrisma`, not `prisma` — this spec predates that split and stubs
+  // them under `prisma`. Exporting the same stub object under both names
+  // keeps every `vi.mocked(prisma.user.*)` setup pointing at exactly the
+  // function the service calls.
+  const mocked = {
+    prisma: {
+      apiKey: {
+        findMany: vi.fn(),
+        findFirst: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+      },
+      apiKeyScope: { create: vi.fn(), deleteMany: vi.fn() },
+      webhookSubscription: {
+        findMany: vi.fn(),
+        findFirst: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        delete: vi.fn(),
+      },
+      webhookDeliveryLog: {
+        findMany: vi.fn(),
+        findFirst: vi.fn(),
+        update: vi.fn(),
+      },
+      apiUsageMetric: { findMany: vi.fn(), create: vi.fn(), groupBy: vi.fn() },
+      endpointRegistry: {
+        findMany: vi.fn(),
+        findFirst: vi.fn(),
+        findUnique: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+      },
     },
-    apiKeyScope: { create: vi.fn(), deleteMany: vi.fn() },
-    webhookSubscription: {
-      findMany: vi.fn(),
-      findFirst: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-    },
-    webhookDeliveryLog: {
-      findMany: vi.fn(),
-      findFirst: vi.fn(),
-      update: vi.fn(),
-    },
-    apiUsageMetric: { findMany: vi.fn(), create: vi.fn() },
-    endpointRegistry: {
-      findMany: vi.fn(),
-      findFirst: vi.fn(),
-      findUnique: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-    },
-  },
-}));
+  };
+  return { ...mocked, idpPrisma: mocked.prisma };
+});
 
 describe("ApiPlatformService", () => {
   let service: ApiPlatformService;
@@ -53,6 +61,12 @@ describe("ApiPlatformService", () => {
       },
     ];
     (idpPrisma.apiKey.findMany as any).mockResolvedValue(mockKeys);
+    // ApiKey has no `apiUsageMetrics` relation, so getApiKeys groups the usage
+    // metrics separately and merges the count in by apiKeyId. Stubbing the
+    // groupBy is what makes the merge actually exercised rather than skipped.
+    (prisma.apiUsageMetric.groupBy as any).mockResolvedValue([
+      { apiKeyId: "1", _count: 5 },
+    ]);
     const result = await service.getApiKeys("t1");
     expect(result).toEqual(mockKeys);
   });

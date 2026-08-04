@@ -1,32 +1,40 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-vi.mock("@unerp/database", () => ({
-  prisma: {
-    userProfile: {
-      findUnique: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      count: vi.fn(),
-      findMany: vi.fn(),
+vi.mock("@unerp/database", () => {
+  // Identity models (user, role, userSession, ...) are read through
+  // `idpPrisma`, not `prisma` — this spec predates that split and stubs
+  // them under `prisma`. Exporting the same stub object under both names
+  // keeps every `vi.mocked(prisma.user.*)` setup pointing at exactly the
+  // function the service calls.
+  const mocked = {
+    prisma: {
+      userProfile: {
+        findUnique: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        count: vi.fn(),
+        findMany: vi.fn(),
+      },
+      user: {
+        findFirst: vi.fn(),
+        findUnique: vi.fn(),
+        findMany: vi.fn(),
+      },
+      department: {
+        findUnique: vi.fn(),
+        findFirst: vi.fn(),
+      },
+      userPresence: {
+        findUnique: vi.fn(),
+        findMany: vi.fn(),
+      },
+      loginHistory: {
+        findMany: vi.fn(),
+      },
     },
-    user: {
-      findFirst: vi.fn(),
-      findUnique: vi.fn(),
-      findMany: vi.fn(),
-    },
-    department: {
-      findUnique: vi.fn(),
-      findFirst: vi.fn(),
-    },
-    userPresence: {
-      findUnique: vi.fn(),
-      findMany: vi.fn(),
-    },
-    loginHistory: {
-      findMany: vi.fn(),
-    },
-  },
-}));
+  };
+  return { ...mocked, idpPrisma: mocked.prisma };
+});
 
 import { prisma } from "@unerp/database";
 import { idpClient as idpPrisma } from "@/common/idp-client";

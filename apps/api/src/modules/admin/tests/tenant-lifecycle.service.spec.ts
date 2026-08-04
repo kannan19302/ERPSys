@@ -1,7 +1,7 @@
 import { prisma } from "@unerp/database";
 import { idpClient as idpPrisma } from "@/common/idp-client";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { TenantLifecycleService } from "../tenant-lifecycle/tenant-lifecycle.service";
+import { TenantLifecycleService } from "../../../platform/v1/tenant-lifecycle.service";
 import {
   NotFoundException,
   BadRequestException,
@@ -35,7 +35,12 @@ vi.mock("@unerp/database", () => {
     },
   };
 
-  return {
+  // Identity models (user, role, userSession, ...) are read through
+  // `idpPrisma`, not `prisma` â€” this spec predates that split and stubs
+  // them under `prisma`. Exporting the same stub object under both names
+  // keeps every `vi.mocked(prisma.user.*)` setup pointing at exactly the
+  // function the service calls.
+  const mocked = {
     prisma: {
       tenant: {
         findUnique: vi.fn(),
@@ -74,6 +79,7 @@ vi.mock("@unerp/database", () => {
       },
     },
   };
+  return { ...mocked, idpPrisma: mocked.prisma };
 });
 
 describe("TenantLifecycleService", () => {

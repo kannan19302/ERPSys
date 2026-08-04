@@ -11,14 +11,22 @@ import { InvoiceOverdueNotificationService } from "../invoice-overdue-notificati
  * them, tenant-scoped, without leaking across tenants or notifying unrelated roles.
  */
 
-vi.mock("@unerp/database", () => ({
-  prisma: {
-    invoice: { findFirst: vi.fn() },
-    dunningLevel: { findFirst: vi.fn() },
-    role: { findMany: vi.fn() },
-    userRole: { findMany: vi.fn() },
-  },
-}));
+vi.mock("@unerp/database", () => {
+  // Identity models (user, role, userSession, ...) are read through
+  // `idpPrisma`, not `prisma` — this spec predates that split and stubs
+  // them under `prisma`. Exporting the same stub object under both names
+  // keeps every `vi.mocked(prisma.user.*)` setup pointing at exactly the
+  // function the service calls.
+  const mocked = {
+    prisma: {
+      invoice: { findFirst: vi.fn() },
+      dunningLevel: { findFirst: vi.fn() },
+      role: { findMany: vi.fn() },
+      userRole: { findMany: vi.fn() },
+    },
+  };
+  return { ...mocked, idpPrisma: mocked.prisma };
+});
 
 describe("InvoiceOverdueNotificationService — finance.invoice.overdue consumer", () => {
   let service: InvoiceOverdueNotificationService;

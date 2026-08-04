@@ -11,14 +11,22 @@ import { PipelineRiskNotificationService } from "../pipeline-risk-notification.s
  * to CRM-permissioned tenant users on unassigned deals, and stays tenant-scoped.
  */
 
-vi.mock("@unerp/database", () => ({
-  prisma: {
-    opportunity: { findFirst: vi.fn() },
-    user: { findFirst: vi.fn() },
-    role: { findMany: vi.fn() },
-    userRole: { findMany: vi.fn() },
-  },
-}));
+vi.mock("@unerp/database", () => {
+  // Identity models (user, role, userSession, ...) are read through
+  // `idpPrisma`, not `prisma` — this spec predates that split and stubs
+  // them under `prisma`. Exporting the same stub object under both names
+  // keeps every `vi.mocked(prisma.user.*)` setup pointing at exactly the
+  // function the service calls.
+  const mocked = {
+    prisma: {
+      opportunity: { findFirst: vi.fn() },
+      user: { findFirst: vi.fn() },
+      role: { findMany: vi.fn() },
+      userRole: { findMany: vi.fn() },
+    },
+  };
+  return { ...mocked, idpPrisma: mocked.prisma };
+});
 
 describe("PipelineRiskNotificationService — pipeline.deal.at_risk consumer", () => {
   let service: PipelineRiskNotificationService;

@@ -4,13 +4,22 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NotificationDeliveryService } from "../notification-delivery.service";
 
 vi.mock("@unerp/database", () => {
-  return {
+  // Identity models (user, role, userSession, ...) are read through
+  // `idpPrisma`, not `prisma` — this spec predates that split and stubs
+  // them under `prisma`. Exporting the same stub object under both names
+  // keeps every `vi.mocked(prisma.user.*)` setup pointing at exactly the
+  // function the service calls.
+  const mocked = {
     prisma: {
       notification: { create: vi.fn() },
       userPresence: { findFirst: vi.fn() },
       user: { findFirst: vi.fn() },
+      // Push delivery looks up the user's registered devices; without this the
+      // service hit `undefined.findMany` and the whole delivery path threw.
+      pushDeviceToken: { findMany: vi.fn().mockResolvedValue([]) },
     },
   };
+  return { ...mocked, idpPrisma: mocked.prisma };
 });
 
 describe("NotificationDeliveryService — DND notification suppression (US-B6)", () => {

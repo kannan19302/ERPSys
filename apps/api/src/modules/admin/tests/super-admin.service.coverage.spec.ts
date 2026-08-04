@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { SuperAdminService } from "../super-admin.service";
+import { SuperAdminService } from "../../../platform/v1/super-admin.service";
 
 vi.mock("@prisma/client", () => ({
   Prisma: {

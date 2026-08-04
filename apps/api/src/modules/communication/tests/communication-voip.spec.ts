@@ -9,15 +9,13 @@ vi.mock("@unerp/database", () => ({
       create: vi.fn(),
       update: vi.fn(),
       count: vi.fn().mockResolvedValue(0),
-      aggregate: vi
-        .fn()
-        .mockResolvedValue({
-          _avg: {},
-          _sum: {},
-          _count: 0,
-          _min: {},
-          _max: {},
-        }),
+      aggregate: vi.fn().mockResolvedValue({
+        _avg: {},
+        _sum: {},
+        _count: 0,
+        _min: {},
+        _max: {},
+      }),
       groupBy: vi.fn().mockResolvedValue([]),
     },
     voipCallAnalytics: {

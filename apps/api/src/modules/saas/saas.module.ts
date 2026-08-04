@@ -53,6 +53,7 @@ import { FeatureFlagsController } from "./feature-flags.controller";
 import { AnalyticsExtController } from "./analytics-ext.controller";
 import { IntegrationsController } from "./integrations.controller";
 import { OnboardingController } from "./onboarding.controller";
+import { DemoDataService } from "./demo-data.service";
 import { ContractsController } from "./contracts.controller";
 import { PaymentsExtController } from "./payments-ext.controller";
 import { ProfileController } from "./profile.controller";
@@ -137,6 +138,7 @@ import { PlatformCredentialsModule } from "../../common/platform-credentials/pla
   ],
   providers: [
     SaasService,
+    DemoDataService,
     SaasExpansionService,
     BillingService,
     StorageMeteringService,

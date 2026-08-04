@@ -1,4 +1,4 @@
-import { prisma, idpPrisma } from "@unerp/database";
+import * as database from "@unerp/database";
 
 /**
  * The API's view of identity data.
@@ -24,27 +24,65 @@ import { prisma, idpPrisma } from "@unerp/database";
  *
  * Consumers keep their existing import shape:
  *   import { idpClient as idpPrisma } from "@/common/idp-client";
+ *
+ * Delegates are resolved on access rather than bound at module load. Binding
+ * eagerly coupled every importer to both clients being constructed at import
+ * time, which broke collection in the 33 suites that mock `@unerp/database`
+ * with a partial factory: the named import alone was enough to fail, whether or
+ * not the suite touched identity at all. Resolving lazily means a suite only
+ * needs `idpPrisma` in its mock if it actually reads identity data — and an
+ * absent delegate still surfaces loudly at the call site instead of silently.
  */
-export const idpClient = {
-  // ── Identity: owned by the IdP schema ────────────────────────────────
-  user: idpPrisma.user,
-  userProfile: idpPrisma.userProfile,
-  userIdentity: idpPrisma.userIdentity,
-  role: idpPrisma.role,
-  userRole: idpPrisma.userRole,
-  userGroup: idpPrisma.userGroup,
-  userGroupMember: idpPrisma.userGroupMember,
-  userSession: idpPrisma.userSession,
-  apiKey: idpPrisma.apiKey,
-  authApiToken: idpPrisma.authApiToken,
-  pushSubscription: idpPrisma.pushSubscription,
-  passwordResetToken: idpPrisma.passwordResetToken,
-  emailVerificationToken: idpPrisma.emailVerificationToken,
-  mfaPushChallenge: idpPrisma.mfaPushChallenge,
+const identityDelegates = [
+  "user",
+  "userProfile",
+  "userIdentity",
+  "role",
+  "userRole",
+  "userGroup",
+  "userGroupMember",
+  "userSession",
+  "apiKey",
+  "authApiToken",
+  "pushSubscription",
+  "passwordResetToken",
+  "emailVerificationToken",
+  "mfaPushChallenge",
+] as const;
 
-  // ── Presence: owned by the main schema (core.prisma) ─────────────────
-  userPresence: prisma.userPresence,
-  userStatusSchedule: prisma.userStatusSchedule,
-} as const;
+// Presence is declared in the MAIN schema (core.prisma) because it is a
+// communication concern, not an identity one, so it routes to `prisma`.
+const presenceDelegates = ["userPresence", "userStatusSchedule"] as const;
 
-export type IdpClient = typeof idpClient;
+type IdentityDelegate = (typeof identityDelegates)[number];
+type PresenceDelegate = (typeof presenceDelegates)[number];
+
+export type IdpClient = Pick<typeof database.idpPrisma, IdentityDelegate> &
+  Pick<typeof database.prisma, PresenceDelegate>;
+
+function defineDelegates(
+  target: Record<string, unknown>,
+  names: readonly string[],
+  source: () => Record<string, unknown>,
+) {
+  for (const name of names) {
+    Object.defineProperty(target, name, {
+      enumerable: true,
+      get: () => source()[name],
+    });
+  }
+}
+
+const client: Record<string, unknown> = {};
+defineDelegates(
+  client,
+  identityDelegates,
+  () => database.idpPrisma as unknown as Record<string, unknown>,
+);
+defineDelegates(
+  client,
+  presenceDelegates,
+  () => database.prisma as unknown as Record<string, unknown>,
+);
+
+export const idpClient = client as IdpClient;

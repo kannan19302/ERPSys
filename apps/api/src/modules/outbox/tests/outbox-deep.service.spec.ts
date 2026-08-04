@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { OutboxDeepService } from "../outbox-deep.service";
 import { NotFoundException } from "@nestjs/common";
 
-const mockDlq = {
+const mockDlq = vi.hoisted(() => ({
   id: "dlq1",
   tenantId: "t1",
   outboxEventId: "evt1",
@@ -16,8 +16,8 @@ const mockDlq = {
   maxRequeues: 3,
   createdAt: new Date(),
   updatedAt: new Date(),
-};
-const mockDeadLetter = {
+}));
+const mockDeadLetter = vi.hoisted(() => ({
   id: "dlm1",
   tenantId: "t1",
   outboxDeliveryId: "del1",
@@ -26,8 +26,8 @@ const mockDeadLetter = {
   payload: {},
   deadLetterAt: new Date(),
   createdAt: new Date(),
-};
-const mockRetryLog = {
+}));
+const mockRetryLog = vi.hoisted(() => ({
   id: "rl1",
   tenantId: "t1",
   outboxDeliveryId: "del1",
@@ -35,8 +35,8 @@ const mockRetryLog = {
   status: "FAILED",
   durationMs: 100,
   createdAt: new Date(),
-};
-const mockDispatcher = {
+}));
+const mockDispatcher = vi.hoisted(() => ({
   id: "ds1",
   tenantId: "t1",
   dispatcherName: "default-dispatcher",
@@ -47,41 +47,51 @@ const mockDispatcher = {
   version: 1,
   createdAt: new Date(),
   updatedAt: new Date(),
-};
-
-vi.mock("@unerp/database", () => ({
-  prisma: {
-    outboxDLQ: {
-      findMany: vi.fn().mockResolvedValue([mockDlq]),
-      findFirst: vi.fn().mockResolvedValue(mockDlq),
-      update: vi.fn().mockResolvedValue(mockDlq),
-      count: vi.fn().mockResolvedValue(1),
-    },
-    outboxDeadLetterMessage: {
-      findMany: vi.fn().mockResolvedValue([mockDeadLetter]),
-      findFirst: vi.fn().mockResolvedValue(mockDeadLetter),
-      update: vi.fn().mockResolvedValue(mockDeadLetter),
-      count: vi.fn().mockResolvedValue(1),
-    },
-    outboxRetryLog: {
-      findMany: vi.fn().mockResolvedValue([mockRetryLog]),
-      count: vi.fn().mockResolvedValue(1),
-      aggregate: vi.fn().mockResolvedValue({ _avg: { durationMs: 150 } }),
-    },
-    outboxDispatcherState: {
-      findMany: vi.fn().mockResolvedValue([mockDispatcher]),
-      findFirst: vi.fn().mockResolvedValue(mockDispatcher),
-      create: vi.fn().mockResolvedValue(mockDispatcher),
-      update: vi.fn().mockResolvedValue(mockDispatcher),
-    },
-    outboxDelivery: {
-      count: vi.fn().mockResolvedValue(10),
-      update: vi.fn().mockResolvedValue({}),
-      findMany: vi.fn().mockResolvedValue([]),
-    },
-    outboxEvent: { count: vi.fn().mockResolvedValue(5) },
-  },
 }));
+
+vi.mock("@unerp/database", () => {
+  // Identity models (user, role, userSession, ...) are read through
+  // `idpPrisma`, not `prisma` — this spec predates that split and stubs
+  // them under `prisma`. Exporting the same stub object under both names
+  // keeps every `vi.mocked(prisma.user.*)` setup pointing at exactly the
+  // function the service calls.
+  const mocked = {
+    prisma: {
+      outboxDLQ: {
+        findMany: vi.fn().mockResolvedValue([mockDlq]),
+        findFirst: vi.fn().mockResolvedValue(mockDlq),
+        update: vi.fn().mockResolvedValue(mockDlq),
+        count: vi.fn().mockResolvedValue(1),
+      },
+      outboxDeadLetterMessage: {
+        findMany: vi.fn().mockResolvedValue([mockDeadLetter]),
+        findFirst: vi.fn().mockResolvedValue(mockDeadLetter),
+        update: vi.fn().mockResolvedValue(mockDeadLetter),
+        count: vi.fn().mockResolvedValue(1),
+      },
+      outboxRetryLog: {
+        findMany: vi.fn().mockResolvedValue([mockRetryLog]),
+        count: vi.fn().mockResolvedValue(1),
+        aggregate: vi.fn().mockResolvedValue({ _avg: { durationMs: 150 } }),
+      },
+      outboxDispatcherState: {
+        // getAnalytics counts active dispatchers.
+        count: vi.fn().mockResolvedValue(1),
+        findMany: vi.fn().mockResolvedValue([mockDispatcher]),
+        findFirst: vi.fn().mockResolvedValue(mockDispatcher),
+        create: vi.fn().mockResolvedValue(mockDispatcher),
+        update: vi.fn().mockResolvedValue(mockDispatcher),
+      },
+      outboxDelivery: {
+        count: vi.fn().mockResolvedValue(10),
+        update: vi.fn().mockResolvedValue({}),
+        findMany: vi.fn().mockResolvedValue([]),
+      },
+      outboxEvent: { count: vi.fn().mockResolvedValue(5) },
+    },
+  };
+  return { ...mocked, idpPrisma: mocked.prisma };
+});
 
 describe("OutboxDeepService", () => {
   let service: OutboxDeepService;

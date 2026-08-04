@@ -4,7 +4,12 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { CommunicationService } from "../communication.service";
 
 vi.mock("@unerp/database", () => {
-  return {
+  // Identity models (user, role, userSession, ...) are read through
+  // `idpPrisma`, not `prisma` — this spec predates that split and stubs
+  // them under `prisma`. Exporting the same stub object under both names
+  // keeps every `vi.mocked(prisma.user.*)` setup pointing at exactly the
+  // function the service calls.
+  const mocked = {
     prisma: {
       channel: { findFirst: vi.fn(), update: vi.fn() },
       message: { create: vi.fn(), findFirst: vi.fn() },
@@ -17,6 +22,7 @@ vi.mock("@unerp/database", () => {
       employee: { findMany: vi.fn() },
     },
   };
+  return { ...mocked, idpPrisma: mocked.prisma };
 });
 
 describe("CommunicationService — real file attachments (US-A1/US-A2)", () => {

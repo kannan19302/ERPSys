@@ -1,13 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { CrmConversionAnalyticsService } from "../crm-conversion-analytics.service";
 
-vi.mock("@unerp/database", () => ({
-  prisma: {
-    lead: { count: vi.fn(), findMany: vi.fn() },
-    opportunity: { count: vi.fn() },
-    user: { findMany: vi.fn() },
-  },
-}));
+vi.mock("@unerp/database", () => {
+  // Identity models (user, role, userSession, ...) are read through
+  // `idpPrisma`, not `prisma` — this spec predates that split and stubs
+  // them under `prisma`. Exporting the same stub object under both names
+  // keeps every `vi.mocked(prisma.user.*)` setup pointing at exactly the
+  // function the service calls.
+  const mocked = {
+    prisma: {
+      lead: { count: vi.fn(), findMany: vi.fn() },
+      opportunity: { count: vi.fn() },
+      user: { findMany: vi.fn() },
+    },
+  };
+  return { ...mocked, idpPrisma: mocked.prisma };
+});
 
 import { prisma } from "@unerp/database";
 import { idpClient as idpPrisma } from "@/common/idp-client";

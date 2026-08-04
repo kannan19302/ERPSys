@@ -1,6 +1,17 @@
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+  // tsconfig.json declares `"@/*": ["./src/*"]`, but vitest does not read
+  // tsconfig paths — so every spec that imported through the `@/` alias failed
+  // at collection with "Failed to load url @/common/idp-client", reporting zero
+  // tests rather than a failure. Mirroring the alias here is what makes those
+  // suites run at all; it must stay in step with tsconfig.
+  resolve: {
+    alias: {
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
+    },
+  },
   test: {
     // Part of the suite is written Jest-style and relies on `describe`/`it`/
     // `expect` being global rather than imported from 'vitest'. Without this

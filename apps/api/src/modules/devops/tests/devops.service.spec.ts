@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { DevopsService } from "../devops.service";
 import { NotFoundException } from "@nestjs/common";
 
-const mockDeployment = {
+const mockDeployment = vi.hoisted(() => ({
   id: "d1",
   tenantId: "t1",
   name: "Deploy v1",
@@ -14,8 +14,8 @@ const mockDeployment = {
   deployedBy: "user@test.com",
   createdAt: new Date(),
   updatedAt: new Date(),
-};
-const mockEnvironment = {
+}));
+const mockEnvironment = vi.hoisted(() => ({
   id: "e1",
   tenantId: "t1",
   name: "Production",
@@ -24,8 +24,8 @@ const mockEnvironment = {
   status: "ACTIVE",
   createdAt: new Date(),
   updatedAt: new Date(),
-};
-const mockRelease = {
+}));
+const mockRelease = vi.hoisted(() => ({
   id: "r1",
   tenantId: "t1",
   name: "v1.0.0",
@@ -34,8 +34,8 @@ const mockRelease = {
   status: "DRAFT",
   createdAt: new Date(),
   updatedAt: new Date(),
-};
-const mockConfig = {
+}));
+const mockConfig = vi.hoisted(() => ({
   id: "c1",
   tenantId: "t1",
   environmentId: "e1",
@@ -46,60 +46,70 @@ const mockConfig = {
   version: 1,
   createdAt: new Date(),
   updatedAt: new Date(),
-};
-
-vi.mock("@unerp/database", () => ({
-  prisma: {
-    deployment: {
-      findMany: vi.fn().mockResolvedValue([mockDeployment]),
-      findFirst: vi.fn().mockResolvedValue(mockDeployment),
-      create: vi.fn().mockResolvedValue(mockDeployment),
-      update: vi
-        .fn()
-        .mockResolvedValue({ ...mockDeployment, status: "ROLLED_BACK" }),
-      delete: vi.fn().mockResolvedValue(mockDeployment),
-      count: vi.fn().mockResolvedValue(1),
-    },
-    deploymentStage: {
-      findMany: vi.fn().mockResolvedValue([]),
-      findFirst: vi
-        .fn()
-        .mockResolvedValue({ id: "s1", deployment: mockDeployment }),
-      update: vi.fn().mockResolvedValue({}),
-    },
-    environment: {
-      findMany: vi.fn().mockResolvedValue([mockEnvironment]),
-      findFirst: vi.fn().mockResolvedValue(mockEnvironment),
-      create: vi.fn().mockResolvedValue(mockEnvironment),
-      update: vi.fn().mockResolvedValue(mockEnvironment),
-      delete: vi.fn().mockResolvedValue(mockEnvironment),
-    },
-    environmentConfig: {
-      findMany: vi.fn().mockResolvedValue([mockConfig]),
-      findFirst: vi.fn().mockResolvedValue(null),
-      create: vi.fn().mockResolvedValue(mockConfig),
-      update: vi.fn().mockResolvedValue(mockConfig),
-      delete: vi.fn().mockResolvedValue(mockConfig),
-    },
-    release: {
-      findMany: vi.fn().mockResolvedValue([mockRelease]),
-      findFirst: vi.fn().mockResolvedValue(mockRelease),
-      create: vi.fn().mockResolvedValue(mockRelease),
-      update: vi.fn().mockResolvedValue({ ...mockRelease, status: "APPROVED" }),
-      delete: vi.fn().mockResolvedValue(mockRelease),
-      count: vi.fn().mockResolvedValue(1),
-    },
-    buildLog: {
-      findMany: vi.fn().mockResolvedValue([]),
-      create: vi.fn().mockResolvedValue({}),
-      count: vi.fn().mockResolvedValue(0),
-    },
-    deploymentAnalytics: {
-      findMany: vi.fn().mockResolvedValue([]),
-      upsert: vi.fn().mockResolvedValue({}),
-    },
-  },
 }));
+
+vi.mock("@unerp/database", () => {
+  // Identity models (user, role, userSession, ...) are read through
+  // `idpPrisma`, not `prisma` — this spec predates that split and stubs
+  // them under `prisma`. Exporting the same stub object under both names
+  // keeps every `vi.mocked(prisma.user.*)` setup pointing at exactly the
+  // function the service calls.
+  const mocked = {
+    prisma: {
+      deployment: {
+        findMany: vi.fn().mockResolvedValue([mockDeployment]),
+        findFirst: vi.fn().mockResolvedValue(mockDeployment),
+        create: vi.fn().mockResolvedValue(mockDeployment),
+        update: vi
+          .fn()
+          .mockResolvedValue({ ...mockDeployment, status: "ROLLED_BACK" }),
+        delete: vi.fn().mockResolvedValue(mockDeployment),
+        count: vi.fn().mockResolvedValue(1),
+      },
+      deploymentStage: {
+        findMany: vi.fn().mockResolvedValue([]),
+        findFirst: vi
+          .fn()
+          .mockResolvedValue({ id: "s1", deployment: mockDeployment }),
+        update: vi.fn().mockResolvedValue({}),
+      },
+      environment: {
+        findMany: vi.fn().mockResolvedValue([mockEnvironment]),
+        findFirst: vi.fn().mockResolvedValue(mockEnvironment),
+        create: vi.fn().mockResolvedValue(mockEnvironment),
+        update: vi.fn().mockResolvedValue(mockEnvironment),
+        delete: vi.fn().mockResolvedValue(mockEnvironment),
+      },
+      environmentConfig: {
+        findMany: vi.fn().mockResolvedValue([mockConfig]),
+        findFirst: vi.fn().mockResolvedValue(null),
+        create: vi.fn().mockResolvedValue(mockConfig),
+        update: vi.fn().mockResolvedValue(mockConfig),
+        delete: vi.fn().mockResolvedValue(mockConfig),
+      },
+      release: {
+        findMany: vi.fn().mockResolvedValue([mockRelease]),
+        findFirst: vi.fn().mockResolvedValue(mockRelease),
+        create: vi.fn().mockResolvedValue(mockRelease),
+        update: vi
+          .fn()
+          .mockResolvedValue({ ...mockRelease, status: "APPROVED" }),
+        delete: vi.fn().mockResolvedValue(mockRelease),
+        count: vi.fn().mockResolvedValue(1),
+      },
+      buildLog: {
+        findMany: vi.fn().mockResolvedValue([]),
+        create: vi.fn().mockResolvedValue({}),
+        count: vi.fn().mockResolvedValue(0),
+      },
+      deploymentAnalytics: {
+        findMany: vi.fn().mockResolvedValue([]),
+        upsert: vi.fn().mockResolvedValue({}),
+      },
+    },
+  };
+  return { ...mocked, idpPrisma: mocked.prisma };
+});
 
 describe("DevopsService", () => {
   let service: DevopsService;

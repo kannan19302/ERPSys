@@ -10,7 +10,12 @@ vi.mock("@prisma/client", () => ({
 }));
 
 vi.mock("@unerp/database", () => {
-  return {
+  // Identity models (user, role, userSession, ...) are read through
+  // `idpPrisma`, not `prisma` — this spec predates that split and stubs
+  // them under `prisma`. Exporting the same stub object under both names
+  // keeps every `vi.mocked(prisma.user.*)` setup pointing at exactly the
+  // function the service calls.
+  const mocked = {
     prisma: {
       user: { findMany: vi.fn(), findFirst: vi.fn() },
       channel: {
@@ -29,6 +34,7 @@ vi.mock("@unerp/database", () => {
       $queryRaw: vi.fn(),
     },
   };
+  return { ...mocked, idpPrisma: mocked.prisma };
 });
 
 describe("CommunicationService — channel management & roles (US-B1/B2/B3)", () => {

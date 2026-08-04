@@ -56,15 +56,16 @@ describe("DocumentsDeepService", () => {
   });
 
   describe("renderTemplate variable substitution", () => {
-    it("should replace {{variables}} in content", async () => {
-      const tenantId = "tenant-1";
-      const tpl = await (service as any).renderTemplate(
-        tenantId,
-        "nonexistent",
-        { name: "John" },
-      );
-      // This would throw NotFoundException since the template doesn't exist in DB
-      // We test the substitution logic separately
+    it("rejects rendering a template that does not exist", async () => {
+      // This used to call renderTemplate and simply let the NotFoundException
+      // escape, with a comment noting it "would throw" — so the test failed for
+      // the very reason it documented. The substitution logic itself is covered
+      // by the test below; this one pins the not-found behaviour.
+      await expect(
+        (service as any).renderTemplate("tenant-1", "nonexistent", {
+          name: "John",
+        }),
+      ).rejects.toThrow("Document template not found");
     });
 
     it("should replace multiple instances of the same variable", () => {

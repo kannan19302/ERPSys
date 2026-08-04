@@ -8,15 +8,13 @@ vi.mock("@unerp/database", () => ({
       update: vi.fn(),
       create: vi.fn(),
       count: vi.fn().mockResolvedValue(0),
-      aggregate: vi
-        .fn()
-        .mockResolvedValue({
-          _avg: {},
-          _sum: {},
-          _count: 0,
-          _min: {},
-          _max: {},
-        }),
+      aggregate: vi.fn().mockResolvedValue({
+        _avg: {},
+        _sum: {},
+        _count: 0,
+        _min: {},
+        _max: {},
+      }),
     },
     knowledgeArticle: {
       findMany: vi.fn().mockResolvedValue([]),
@@ -26,15 +24,13 @@ vi.mock("@unerp/database", () => ({
       delete: vi.fn(),
       count: vi.fn().mockResolvedValue(0),
       findUnique: vi.fn().mockResolvedValue(null),
-      aggregate: vi
-        .fn()
-        .mockResolvedValue({
-          _avg: {},
-          _sum: {},
-          _count: 0,
-          _min: {},
-          _max: {},
-        }),
+      aggregate: vi.fn().mockResolvedValue({
+        _avg: {},
+        _sum: {},
+        _count: 0,
+        _min: {},
+        _max: {},
+      }),
     },
     knowledgeArticleVersion: {
       findMany: vi.fn().mockResolvedValue([]),
