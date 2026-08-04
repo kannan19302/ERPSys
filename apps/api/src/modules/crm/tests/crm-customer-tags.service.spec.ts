@@ -22,6 +22,7 @@ vi.mock("@unerp/database", () => ({
 }));
 
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 const TENANT_A = "tenant-a";
 const TENANT_B = "tenant-b";

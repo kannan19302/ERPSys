@@ -10,6 +10,7 @@ vi.mock("@unerp/database", () => ({
 }));
 
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 const TENANT = "tenant-1";
 
@@ -135,7 +136,7 @@ describe("CrmConversionAnalyticsService", () => {
           opportunities: [],
         },
       ]);
-      (prisma.user.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
+      (idpPrisma.user.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
         { id: "u1", firstName: "Ana", lastName: "Lee" },
         { id: "u2", firstName: "Bo", lastName: "Kim" },
       ]);

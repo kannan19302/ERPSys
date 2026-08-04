@@ -37,6 +37,7 @@ vi.mock("@unerp/database", () => ({
 }));
 
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 const TENANT = "tenant-1";
 const emit = vi.fn();
@@ -194,7 +195,7 @@ describe("CrmGamificationDeepService", () => {
         { userId: "u1", score: 100 },
         { userId: "u2", score: 50 },
       ]);
-      (prisma.user.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
+      (idpPrisma.user.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
         { id: "u1", firstName: "Ann", lastName: "A" },
         { id: "u2", firstName: "Bob", lastName: "B" },
       ]);
@@ -258,7 +259,7 @@ describe("CrmGamificationDeepService", () => {
         { assignedToId: "u1", amount: 50000 },
         { assignedToId: "u2", amount: 25000 },
       ]);
-      (prisma.user.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
+      (idpPrisma.user.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
         { id: "u1", firstName: "Ann", lastName: "A" },
         { id: "u2", firstName: "Bob", lastName: "B" },
       ]);

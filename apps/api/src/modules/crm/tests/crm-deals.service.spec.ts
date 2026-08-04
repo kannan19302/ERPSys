@@ -55,6 +55,7 @@ vi.mock("@unerp/database", () => ({
 }));
 
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 const TENANT = "tenant-1";
 
@@ -380,7 +381,7 @@ describe("CrmDealsService", () => {
           actualCloseDate: new Date("2026-01-06"),
         },
       ]);
-      (prisma.user.findMany as any).mockResolvedValue([
+      (idpPrisma.user.findMany as any).mockResolvedValue([
         { id: "user-1", firstName: "Ada", lastName: "Lovelace" },
       ]);
 
@@ -424,7 +425,7 @@ describe("CrmDealsService", () => {
         { assignedToId: "user-1", amount: 10000, probability: 50 },
         { assignedToId: "user-1", amount: 20000, probability: 25 },
       ]);
-      (prisma.user.findMany as any).mockResolvedValue([
+      (idpPrisma.user.findMany as any).mockResolvedValue([
         { id: "user-1", firstName: "Ada", lastName: "Lovelace" },
       ]);
 

@@ -11,6 +11,7 @@ vi.mock("@unerp/database", () => ({
 }));
 
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 const TENANT = "tenant-1";
 const ORG = "org-1";
@@ -82,12 +83,12 @@ describe("CrmRevenueIntelligenceService — deal-risk digest", () => {
     ).mockImplementation(({ data }: never) =>
       Promise.resolve({ id: "run-1", ...data }),
     );
-    (prisma.role.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
+    (idpPrisma.role.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
       { id: "role-manager", permissions: ["crm.opportunity.update"] },
     ]);
-    (prisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
-      { userId: "manager-1" },
-    ]);
+    (idpPrisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
+      [{ userId: "manager-1" }],
+    );
 
     const result = await service.generateAndSendDigests(TENANT, ORG, 24);
 
@@ -145,7 +146,7 @@ describe("CrmRevenueIntelligenceService — deal-risk digest", () => {
     ).mockImplementation(({ data }: never) =>
       Promise.resolve({ id: "run-2", ...data }),
     );
-    (prisma.role.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+    (idpPrisma.role.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
 
     const result = await service.generateAndSendDigests(TENANT, ORG, 24);
 

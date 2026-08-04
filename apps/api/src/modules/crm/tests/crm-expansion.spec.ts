@@ -133,6 +133,7 @@ vi.mock("@unerp/database", () => ({
 }));
 
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { CrmForecastingService } from "../crm-forecasting.service";
 import { CrmAccountManagementService } from "../crm-account-management.service";
 import { CrmCampaignManagementService } from "../crm-campaign-management.service";
@@ -347,7 +348,7 @@ describe("CRM Expansion Services", () => {
           assignedToId: "user-1",
         },
       ]);
-      (prisma.user.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
+      (idpPrisma.user.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
         { id: "user-1", firstName: "John", lastName: "Doe" },
       ]);
 

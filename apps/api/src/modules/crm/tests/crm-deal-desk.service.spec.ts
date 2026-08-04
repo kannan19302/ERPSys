@@ -30,6 +30,7 @@ vi.mock("@unerp/database", () => ({
 }));
 
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 const TENANT = "tenant-1";
 const ORG = "org-1";
@@ -402,7 +403,9 @@ describe("CrmDealDeskService", () => {
 
   describe("getDiscountApprovalMatrix", () => {
     it("returns role-based discount thresholds", async () => {
-      (prisma.user.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+      (idpPrisma.user.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
+        [],
+      );
 
       const result = await service.getDiscountApprovalMatrix(TENANT);
 
