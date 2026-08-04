@@ -4,7 +4,7 @@
   "counts": {
     "rawSql": 1,
     "floatMoney": 29,
-    "unguardedEndpoints": 385,
+    "unguardedEndpoints": 284,
     "hardcodedColors": 984,
     "hardcodedSpacing": 3215
   }
