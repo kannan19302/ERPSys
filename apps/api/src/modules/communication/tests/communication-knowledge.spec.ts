@@ -4,36 +4,51 @@ import { CommunicationKnowledgeService } from "../services/communication-knowled
 vi.mock("@unerp/database", () => ({
   prisma: {
     knowledgeArticleRating: {
-      findUnique: vi.fn(),
+      findUnique: vi.fn().mockResolvedValue(null),
       update: vi.fn(),
       create: vi.fn(),
-      count: vi.fn(),
-      aggregate: vi.fn(),
+      count: vi.fn().mockResolvedValue(0),
+      aggregate: vi
+        .fn()
+        .mockResolvedValue({
+          _avg: {},
+          _sum: {},
+          _count: 0,
+          _min: {},
+          _max: {},
+        }),
     },
     knowledgeArticle: {
-      findMany: vi.fn(),
-      findFirst: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
+      findFirst: vi.fn().mockResolvedValue(null),
       create: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
-      count: vi.fn(),
-      findUnique: vi.fn(),
-      aggregate: vi.fn(),
+      count: vi.fn().mockResolvedValue(0),
+      findUnique: vi.fn().mockResolvedValue(null),
+      aggregate: vi
+        .fn()
+        .mockResolvedValue({
+          _avg: {},
+          _sum: {},
+          _count: 0,
+          _min: {},
+          _max: {},
+        }),
     },
     knowledgeArticleVersion: {
-      findMany: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
       create: vi.fn(),
-      findFirst: vi.fn(),
-      findUnique: vi.fn(),
+      findFirst: vi.fn().mockResolvedValue(null),
+      findUnique: vi.fn().mockResolvedValue(null),
     },
     knowledgeCategory: {
-      findMany: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
       create: vi.fn(),
-      findFirst: vi.fn(),
+      findFirst: vi.fn().mockResolvedValue(null),
       delete: vi.fn(),
-      count: vi.fn(),
+      count: vi.fn().mockResolvedValue(0),
     },
-    knowledgeRating: { create: vi.fn(), aggregate: vi.fn() },
   },
 }));
 
@@ -62,7 +77,7 @@ describe("CommunicationKnowledgeService", () => {
       null as never,
     );
     await expect(svc.getArticle("t1", "bad")).rejects.toThrow(
-      "Article not found",
+      "Knowledge article not found",
     );
   });
 
@@ -136,20 +151,18 @@ describe("CommunicationKnowledgeService", () => {
       id: "a1",
       tenantId: "t1",
     } as never);
-    vi.mocked(prisma.knowledgeRating.create).mockResolvedValue({
-      score: 5,
+    vi.mocked(prisma.knowledgeArticleRating.create).mockResolvedValue({
+      rating: 5,
     } as never);
-    vi.mocked(prisma.knowledgeRating.aggregate).mockResolvedValue({
-      _avg: { score: 4.5 },
+    vi.mocked(prisma.knowledgeArticleRating.aggregate).mockResolvedValue({
+      _avg: { rating: 4.5 },
     } as never);
     vi.mocked(prisma.knowledgeArticle.update).mockResolvedValue({} as never);
-    const res = await svc.rateArticle("t1", "a1", "u1", { score: 5 });
-    expect(res.score).toBe(5);
-    expect(prisma.knowledgeArticle.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({ avgRating: 4.5 }),
-      }),
-    );
+    const res = await svc.rateArticle("t1", "a1", "u1", { rating: 5 });
+    expect(res.rating).toBe(5);
+    // KnowledgeArticle has no `avgRating` column — the average is derived from
+    // the `ratings` relation on read, so nothing is written back to the article.
+    expect(prisma.knowledgeArticle.update).not.toHaveBeenCalled();
   });
 
   it("creates a category", async () => {
@@ -169,6 +182,7 @@ describe("CommunicationKnowledgeService", () => {
     vi.mocked(prisma.knowledgeArticle.findMany).mockResolvedValue([] as never);
     const res = await svc.getKnowledgeDashboard("t1");
     expect(res.totalArticles).toBe(10);
-    expect(res.totalCategories).toBe(3);
+    // The service returns `categoryCount`; `totalCategories` never existed.
+    expect(res.categoryCount).toBe(3);
   });
 });

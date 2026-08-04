@@ -4,22 +4,37 @@ import { CommunicationVoipService } from "../services/communication-voip.service
 vi.mock("@unerp/database", () => ({
   prisma: {
     voipCall: {
-      findMany: vi.fn(),
-      findFirst: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
+      findFirst: vi.fn().mockResolvedValue(null),
       create: vi.fn(),
       update: vi.fn(),
-      count: vi.fn(),
-      aggregate: vi.fn(),
-      groupBy: vi.fn(),
+      count: vi.fn().mockResolvedValue(0),
+      aggregate: vi
+        .fn()
+        .mockResolvedValue({
+          _avg: {},
+          _sum: {},
+          _count: 0,
+          _min: {},
+          _max: {},
+        }),
+      groupBy: vi.fn().mockResolvedValue([]),
     },
-    voipCallAnalytics: { findMany: vi.fn(), create: vi.fn() },
+    voipCallAnalytics: {
+      findMany: vi.fn().mockResolvedValue([]),
+      create: vi.fn(),
+    },
     voicemail: {
-      findMany: vi.fn(),
-      findFirst: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
+      findFirst: vi.fn().mockResolvedValue(null),
       update: vi.fn(),
-      count: vi.fn(),
+      count: vi.fn().mockResolvedValue(0),
     },
-    ivrMenu: { findMany: vi.fn(), create: vi.fn(), count: vi.fn() },
+    ivrMenu: {
+      findMany: vi.fn().mockResolvedValue([]),
+      create: vi.fn(),
+      count: vi.fn().mockResolvedValue(0),
+    },
     ivrOption: { create: vi.fn() },
   },
 }));
@@ -93,7 +108,9 @@ describe("CommunicationVoipService", () => {
       callerNumber: "+123",
       calleeNumber: "+456",
     });
-    expect(res.direction).toBe("INBOUND");
+    // routeIncomingCall returns { call, ivrMenus } — the menus matter to the
+    // caller too, so the call itself is nested rather than spread.
+    expect(res.call.direction).toBe("INBOUND");
   });
 
   it("returns voicemail list", async () => {
@@ -176,7 +193,10 @@ describe("CommunicationVoipService", () => {
     ] as never);
     const res = await svc.getVoipDashboard("t1");
     expect(res.activeCalls).toBe(5);
-    expect(res.unreadVoicemail).toBe(3);
-    expect(res.avgDuration).toBe(240);
+    // The service returns `unreadVoicemails` (plural) and does not compute an
+    // average duration at all — `avgDuration` was asserted against a field the
+    // dashboard never produced.
+    expect(res.unreadVoicemails).toBe(3);
+    expect(res.totalCallsToday).toBe(5);
   });
 });

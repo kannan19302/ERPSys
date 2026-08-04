@@ -3,30 +3,62 @@ import { CommunicationHelpdeskService } from "../services/communication-helpdesk
 
 vi.mock("@unerp/database", () => ({
   prisma: {
-    ticketSla: { create: vi.fn(), aggregate: vi.fn() },
+    ticketSla: {
+      aggregate: vi
+        .fn()
+        .mockResolvedValue({
+          _avg: {},
+          _sum: {},
+          _count: 0,
+          _min: {},
+          _max: {},
+        }),
+      create: vi.fn(),
+      aggregate: vi
+        .fn()
+        .mockResolvedValue({
+          _avg: {},
+          _sum: {},
+          _count: 0,
+          _min: {},
+          _max: {},
+        }),
+    },
     ticketComment: { create: vi.fn() },
     customerSatisfaction: {
-      findFirst: vi.fn(),
+      findFirst: vi.fn().mockResolvedValue(null),
       update: vi.fn(),
       create: vi.fn(),
     },
     helpdeskTicket: {
-      findMany: vi.fn(),
-      findFirst: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
+      findFirst: vi.fn().mockResolvedValue(null),
       create: vi.fn(),
       update: vi.fn(),
-      count: vi.fn(),
-      groupBy: vi.fn(),
+      count: vi.fn().mockResolvedValue(0),
+      groupBy: vi.fn().mockResolvedValue([]),
     },
-    helpdeskComment: { create: vi.fn(), findMany: vi.fn() },
-    helpdeskSla: { findMany: vi.fn(), create: vi.fn() },
+    ticketComment: { create: vi.fn(), findMany: vi.fn().mockResolvedValue([]) },
+    ticketSla: {
+      aggregate: vi
+        .fn()
+        .mockResolvedValue({
+          _avg: {},
+          _sum: {},
+          _count: 0,
+          _min: {},
+          _max: {},
+        }),
+      findMany: vi.fn().mockResolvedValue([]),
+      create: vi.fn(),
+    },
     helpdeskEscalation: { create: vi.fn() },
     cannedResponse: {
-      findMany: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
       create: vi.fn(),
-      findFirst: vi.fn(),
+      findFirst: vi.fn().mockResolvedValue(null),
     },
-    helpdeskSatisfaction: { create: vi.fn() },
+    customerSatisfaction: { create: vi.fn() },
   },
 }));
 
@@ -63,13 +95,13 @@ describe("CommunicationHelpdeskService", () => {
       id: "t1",
       subject: "Bug",
     } as never);
-    vi.mocked(prisma.helpdeskSla.create).mockResolvedValue({} as never);
+    vi.mocked(prisma.ticketSla.create).mockResolvedValue({} as never);
     const res = await svc.createTicket("t1", "u1", {
       subject: "Bug",
       description: "Crash",
       priority: "HIGH",
     });
-    expect(prisma.helpdeskSla.create).toHaveBeenCalled();
+    expect(prisma.ticketSla.create).toHaveBeenCalled();
     expect(res.subject).toBe("Bug");
   });
 
@@ -79,7 +111,7 @@ describe("CommunicationHelpdeskService", () => {
       id: "t1",
       tenantId: "t1",
     } as never);
-    vi.mocked(prisma.helpdeskComment.create).mockResolvedValue({
+    vi.mocked(prisma.ticketComment.create).mockResolvedValue({
       id: "c1",
       content: "Fixed",
     } as never);
@@ -123,6 +155,7 @@ describe("CommunicationHelpdeskService", () => {
     vi.mocked(prisma.helpdeskTicket.count).mockResolvedValue(5);
     vi.mocked(prisma.helpdeskTicket.findMany).mockResolvedValue([] as never);
     const res = await svc.getHelpdeskDashboard("t1");
-    expect(res.open).toBe(5);
+    // The dashboard returns `openCount`, not `open`.
+    expect(res.openCount).toBe(5);
   });
 });

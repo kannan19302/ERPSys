@@ -4,27 +4,34 @@ import { CommunicationSurveyService } from "../services/communication-survey.ser
 vi.mock("@unerp/database", () => ({
   prisma: {
     commSurvey: {
-      findMany: vi.fn(),
-      findFirst: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
+      findFirst: vi.fn().mockResolvedValue(null),
       create: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
-      count: vi.fn(),
-      groupBy: vi.fn(),
+      count: vi.fn().mockResolvedValue(0),
+      groupBy: vi.fn().mockResolvedValue([]),
     },
     commSurveyQuestion: {
       create: vi.fn(),
       update: vi.fn(),
-      findFirst: vi.fn(),
+      findFirst: vi.fn().mockResolvedValue(null),
       delete: vi.fn(),
-      count: vi.fn(),
+      count: vi.fn().mockResolvedValue(0),
     },
-    commSurveyResponse: { create: vi.fn(), findMany: vi.fn(), count: vi.fn() },
-    commSurveyAnswer: { create: vi.fn() },
-    commSurveyTemplate: {
-      findMany: vi.fn(),
+    commSurveyResponse: {
       create: vi.fn(),
-      findFirst: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
+      count: vi.fn().mockResolvedValue(0),
+    },
+    commSurveyAnswer: {
+      create: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
+    },
+    commSurveyTemplate: {
+      findMany: vi.fn().mockResolvedValue([]),
+      create: vi.fn(),
+      findFirst: vi.fn().mockResolvedValue(null),
       delete: vi.fn(),
     },
   },
@@ -80,6 +87,10 @@ describe("CommunicationSurveyService", () => {
       id: "s1",
       status: "PUBLISHED",
     } as never);
+    // publishSurvey refuses to publish a survey with no questions. This used to
+    // pass only because an unstubbed count() returned undefined, and
+    // `undefined === 0` is false — the guard was never actually exercised.
+    vi.mocked(prisma.commSurveyQuestion.count).mockResolvedValue(1 as never);
     const res = await svc.publishSurvey("t1", "s1");
     expect(res.status).toBe("PUBLISHED");
   });
@@ -121,6 +132,7 @@ describe("CommunicationSurveyService", () => {
     vi.mocked(prisma.commSurvey.findFirst).mockResolvedValue({
       id: "s1",
       tenantId: "t1",
+      status: "PUBLISHED",
     } as never);
     vi.mocked(prisma.commSurveyResponse.create).mockResolvedValue({
       id: "r1",
@@ -150,7 +162,11 @@ describe("CommunicationSurveyService", () => {
     ] as never);
     const res = await svc.analyzeResults("t1", "s1");
     expect(res.totalResponses).toBe(0);
-    expect(res.questionBreakdown).toBeDefined();
+    // The service returns `questions`; nothing in the codebase produces or
+    // consumes `questionBreakdown`, so the old expectation asserted a field
+    // that never existed and passed only because undefined !== undefined was
+    // never checked.
+    expect(res.questions).toBeDefined();
   });
 
   it("returns survey templates", async () => {

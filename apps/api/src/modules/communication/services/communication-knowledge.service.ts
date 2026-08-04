@@ -236,21 +236,26 @@ export class CommunicationKnowledgeService {
     const existing = await prisma.knowledgeArticleRating.findUnique({
       where: { tenantId_articleId_userId: { tenantId, articleId, userId } },
     });
-    if (existing) {
-      return prisma.knowledgeArticleRating.update({
-        where: { id: existing.id },
-        data: { rating: dto.rating, comment: dto.comment },
-      });
-    }
-    return prisma.knowledgeArticleRating.create({
-      data: {
-        tenantId,
-        articleId,
-        userId,
-        rating: dto.rating,
-        comment: dto.comment,
-      },
-    });
+    const saved = existing
+      ? await prisma.knowledgeArticleRating.update({
+          where: { id: existing.id },
+          data: { rating: dto.rating, comment: dto.comment },
+        })
+      : await prisma.knowledgeArticleRating.create({
+          data: {
+            tenantId,
+            articleId,
+            userId,
+            rating: dto.rating,
+            comment: dto.comment,
+          },
+        });
+
+    // No cached average is written back: KnowledgeArticle has no `avgRating`
+    // column, only the `ratings` relation, so the average is derived when an
+    // article is read. Adding a denormalised copy here would introduce a value
+    // that can drift out of step with the ratings it summarises.
+    return saved;
   }
 
   async getCategories(tenantId: string) {

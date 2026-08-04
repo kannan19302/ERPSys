@@ -3,34 +3,37 @@ import { CommunicationVideoService } from "../services/communication-video.servi
 
 vi.mock("@unerp/database", () => ({
   prisma: {
-    meetingAnalytics: { findUnique: vi.fn() },
+    meetingAnalytics: { findUnique: vi.fn().mockResolvedValue(null) },
     connectMeeting: {
-      findMany: vi.fn(),
-      findFirst: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
+      findFirst: vi.fn().mockResolvedValue(null),
       create: vi.fn(),
       update: vi.fn(),
-      count: vi.fn(),
+      count: vi.fn().mockResolvedValue(0),
     },
     meetingParticipant: {
       create: vi.fn(),
       updateMany: vi.fn(),
-      findMany: vi.fn(),
-      count: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
+      count: vi.fn().mockResolvedValue(0),
     },
     meetingRecording: {
-      findMany: vi.fn(),
-      findFirst: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
+      findFirst: vi.fn().mockResolvedValue(null),
       create: vi.fn(),
       update: vi.fn(),
-      count: vi.fn(),
+      count: vi.fn().mockResolvedValue(0),
     },
     breakoutRoom: {
       create: vi.fn(),
-      findMany: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
       update: vi.fn(),
-      findFirst: vi.fn(),
+      findFirst: vi.fn().mockResolvedValue(null),
     },
-    meetingSummary: { create: vi.fn(), findMany: vi.fn() },
+    meetingSummary: {
+      create: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
+    },
   },
 }));
 
@@ -124,15 +127,14 @@ describe("CommunicationVideoService", () => {
 
   it("returns meeting analytics", async () => {
     const { prisma } = await import("@unerp/database");
-    vi.mocked(prisma.connectMeeting.findFirst).mockResolvedValue({
-      id: "m1",
+    // getMeetingAnalytics reads the precomputed meetingAnalytics row; it does
+    // not derive figures from connectMeeting/meetingParticipant, so mocking
+    // those left findUnique returning null and the service threw.
+    vi.mocked(prisma.meetingAnalytics.findUnique).mockResolvedValue({
+      meetingId: "m1",
       tenantId: "t1",
-      startedAt: new Date(),
-      endedAt: new Date(),
+      totalParticipants: 1,
     } as never);
-    vi.mocked(prisma.meetingParticipant.findMany).mockResolvedValue([
-      { userId: "u1" },
-    ] as never);
     const res = await svc.getMeetingAnalytics("t1", "m1");
     expect(res.totalParticipants).toBe(1);
   });
