@@ -1,0 +1,115 @@
+.s1 {
+  display: flex;
+  gap: var(--space-4);
+}
+.s2 {
+  overflow: hidden;
+}
+.s3 {
+  align-items: center;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+.s4 {
+  flex: 1;
+  min-width: 180px;
+  position: relative;
+}
+.s5 {
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  padding: 6px 6px 6px 30px;
+  width: 100%;
+}
+.s6 {
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding: 4px 10px;
+  text-transform: capitalize;
+}
+.s7 {
+  font-family: monospace;
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+.s8 {
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+}
+.s9 {
+  align-self: flex-start;
+  flex: 1;
+  padding: var(--space-5);
+}
+.s10 {
+  font-family: monospace;
+  font-weight: 700;
+  margin: 0;
+}
+.s11 {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+.s12 {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+.s13 {
+  color: var(--color-text);
+  font-size: var(--text-sm);
+}
+.s14 {
+  color: var(--color-text-muted);
+  text-transform: capitalize;
+}
+.s15 {
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  font-size: var(--text-sm);
+  justify-content: space-between;
+  padding: 4px 0;
+}
+.s16 {
+  display: flex;
+  font-weight: 800;
+  justify-content: space-between;
+  padding-top: 8px;
+}
+.s17 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.s18 {
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding: 4px 10px;
+}
+.s19 {
+  color: var(--color-danger);
+  font-size: var(--text-xs);
+}
+.s20 {
+  color: var(--color-text-muted);
+  left: 10px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}

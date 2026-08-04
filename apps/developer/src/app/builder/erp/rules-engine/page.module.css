@@ -1,0 +1,13 @@
+.s1 {
+  padding: var(--space-1) var(--space-2);
+}
+.s2 {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-danger);
+  padding: var(--space-1) var(--space-2);
+}
+.s3 {
+  color: var(--color-text-secondary);
+  padding: var(--space-6);
+}

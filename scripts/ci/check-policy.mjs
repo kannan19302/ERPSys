@@ -56,6 +56,29 @@ const read = (f) => {
 
 const HARD = [
   {
+    id: 'suppression-injector',
+    label: 'Committed tool that injects @ts-nocheck across the tree',
+    why:
+      'ARCHITECTURE_REVIEW F1 traces 3,241 suppressed files to exactly such a script. R5 ' +
+      'deleted the root copy; copies then reappeared under apps/api, apps/idp and apps/web ' +
+      'and re-suppressed four core services. A committed tool whose only purpose is to ' +
+      'defeat the type checker will be run again.',
+    scan() {
+      const hits = [];
+      for (const f of [...files('apps', ['.js', '.mjs', '.cjs', '.ts']), ...files('scripts', ['.js', '.mjs', '.cjs'])]) {
+        const rel = relative(ROOT, f);
+        // The gate and its own documentation are allowed to name the pattern.
+        if (rel.includes(`ci${'/'}check-policy`) || rel.includes(`ci\\check-policy`)) continue;
+        const src = read(f);
+        // A file that WRITES `@ts-nocheck` into other files, rather than merely mentioning it.
+        if (/writeFileSync\([^)]*@ts-nocheck|['"`]\/\/ @ts-nocheck\\n['"`]\s*\+/.test(src)) {
+          hits.push(`${rel}  writes "@ts-nocheck" into source files`);
+        }
+      }
+      return hits;
+    },
+  },
+  {
     id: 'control-plane-seeded-to-tenant',
     label: 'Control-plane permission granted by a seeded tenant role',
     why:

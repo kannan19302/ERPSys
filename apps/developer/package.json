@@ -1,0 +1,25 @@
+{
+  "name": "@unerp/developer",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3004",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "15.3.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "@unerp/ui": "workspace:*",
+    "@unerp/sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/react": "^19.0.0",
+    "@types/node": "^22.0.0",
+    "@unerp/config": "workspace:*"
+  }
+}
