@@ -1,9 +1,23 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException, Optional } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 import { idpClient as idpPrisma } from "@/common/idp-client";
 
 @Injectable()
 export class FieldServiceOperationsService {
+  private readonly prisma: typeof prisma;
+
+  /**
+   * Injectable so this service can be unit-tested. It previously used the
+   * module-level `prisma` import directly, so the mock its spec passes to the
+   * constructor was discarded and every test hit the real database — failing on
+   * RLS, since a unit test establishes no tenant session.
+   *
+   * `@Optional()` leaves the parameter undefined under Nest DI in production,
+   * so the real client is used and runtime behaviour is unchanged.
+   */
+  constructor(@Optional() client?: typeof prisma) {
+    this.prisma = client ?? prisma;
+  }
   // ── WARRANTIES ──
   async getWarranties(
     tenantId: string,
@@ -13,7 +27,7 @@ export class FieldServiceOperationsService {
     if (query.assetId) where.assetId = query.assetId;
     if (query.status) where.status = query.status;
 
-    return prisma.fieldServiceWarranty.findMany({
+    return this.prisma.fieldServiceWarranty.findMany({
       where,
       orderBy: { endDate: "asc" },
     });
@@ -21,7 +35,7 @@ export class FieldServiceOperationsService {
 
   async createWarranty(tenantId: string, data: any) {
     const warrantyNo = `WRN-${Date.now().toString().slice(-6)}`;
-    return prisma.fieldServiceWarranty.create({
+    return this.prisma.fieldServiceWarranty.create({
       data: {
         tenantId,
         assetId: data.assetId,
@@ -44,14 +58,14 @@ export class FieldServiceOperationsService {
     if (query.workOrderId) where.workOrderId = query.workOrderId;
     if (query.techId) where.techId = query.techId;
 
-    return prisma.fieldServiceWorkOrderExpense.findMany({
+    return this.prisma.fieldServiceWorkOrderExpense.findMany({
       where,
       orderBy: { createdAt: "desc" },
     });
   }
 
   async createWorkOrderExpense(tenantId: string, data: any) {
-    return prisma.fieldServiceWorkOrderExpense.create({
+    return this.prisma.fieldServiceWorkOrderExpense.create({
       data: {
         tenantId,
         workOrderId: data.workOrderId,
@@ -72,14 +86,14 @@ export class FieldServiceOperationsService {
     const where: any = { tenantId };
     if (query.workOrderId) where.workOrderId = query.workOrderId;
 
-    return prisma.fieldServiceInspectionChecklist.findMany({
+    return this.prisma.fieldServiceInspectionChecklist.findMany({
       where,
       orderBy: { createdAt: "desc" },
     });
   }
 
   async createInspectionChecklist(tenantId: string, data: any) {
-    return prisma.fieldServiceInspectionChecklist.create({
+    return this.prisma.fieldServiceInspectionChecklist.create({
       data: {
         tenantId,
         workOrderId: data.workOrderId,

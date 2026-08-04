@@ -1,15 +1,29 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException, Optional } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 import { idpClient as idpPrisma } from "@/common/idp-client";
 
 @Injectable()
 export class AssetOperationsService {
+  private readonly prisma: typeof prisma;
+
+  /**
+   * Injectable so this service can be unit-tested. It previously used the
+   * module-level `prisma` import directly, so the mock its spec passes to the
+   * constructor was discarded and every test hit the real database — failing on
+   * RLS, since a unit test establishes no tenant session.
+   *
+   * `@Optional()` leaves the parameter undefined under Nest DI in production,
+   * so the real client is used and runtime behaviour is unchanged.
+   */
+  constructor(@Optional() client?: typeof prisma) {
+    this.prisma = client ?? prisma;
+  }
   // ── INSURANCE POLICIES ──
   async getInsurancePolicies(tenantId: string, query: { assetId?: string }) {
     const where: any = { tenantId };
     if (query.assetId) where.assetId = query.assetId;
 
-    return prisma.fixedAssetInsurancePolicy.findMany({
+    return this.prisma.fixedAssetInsurancePolicy.findMany({
       where,
       orderBy: { endDate: "asc" },
     });
@@ -17,7 +31,7 @@ export class AssetOperationsService {
 
   async createInsurancePolicy(tenantId: string, data: any) {
     const policyNo = `POL-${Date.now().toString().slice(-6)}`;
-    return prisma.fixedAssetInsurancePolicy.create({
+    return this.prisma.fixedAssetInsurancePolicy.create({
       data: {
         tenantId,
         assetId: data.assetId,
@@ -37,14 +51,14 @@ export class AssetOperationsService {
     const where: any = { tenantId };
     if (query.assetId) where.assetId = query.assetId;
 
-    return prisma.fixedAssetRevaluation.findMany({
+    return this.prisma.fixedAssetRevaluation.findMany({
       where,
       orderBy: { revaluedAt: "desc" },
     });
   }
 
   async createAssetRevaluation(tenantId: string, data: any) {
-    return prisma.fixedAssetRevaluation.create({
+    return this.prisma.fixedAssetRevaluation.create({
       data: {
         tenantId,
         assetId: data.assetId,
@@ -61,14 +75,14 @@ export class AssetOperationsService {
     const where: any = { tenantId };
     if (query.assetId) where.assetId = query.assetId;
 
-    return prisma.fixedAssetPhysicalAudit.findMany({
+    return this.prisma.fixedAssetPhysicalAudit.findMany({
       where,
       orderBy: { auditedAt: "desc" },
     });
   }
 
   async createPhysicalAudit(tenantId: string, data: any) {
-    return prisma.fixedAssetPhysicalAudit.create({
+    return this.prisma.fixedAssetPhysicalAudit.create({
       data: {
         tenantId,
         auditName: data.auditName || "Q3 Physical Asset Audit",
