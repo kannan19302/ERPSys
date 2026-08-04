@@ -4,6 +4,7 @@ import {
   ConflictException,
 } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { Prisma } from "@prisma/client";
 
 @Injectable()

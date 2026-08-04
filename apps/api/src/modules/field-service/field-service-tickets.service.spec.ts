@@ -1,6 +1,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { FieldServiceTicketsService } from "./field-service-tickets.service";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 describe("FieldServiceTicketsService", () => {
   let svc: FieldServiceTicketsService;

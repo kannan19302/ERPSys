@@ -30,6 +30,7 @@ vi.mock("@unerp/database", () => ({
 }));
 
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 const mockEvents = { emit: vi.fn() };
 const makeSvc = () => new LeaseAccountingService(mockEvents as any);

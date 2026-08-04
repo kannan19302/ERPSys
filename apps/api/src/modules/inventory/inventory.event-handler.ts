@@ -1,6 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { OnEvent, EventEmitter2 } from "@nestjs/event-emitter";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { Prisma } from "@prisma/client";
 
 @Injectable()
