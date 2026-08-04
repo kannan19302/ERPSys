@@ -4,6 +4,7 @@ import {
   BadRequestException,
 } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 
@@ -39,7 +40,7 @@ export class CrmCommunicationService {
   }
 
   async getChannel(tenantId: string, id: string) {
-    const channel = await prisma.communicationChannel.findFirst({
+    const channel = await (prisma as any).communicationChannel.findFirst({
       where: { id, tenantId, deletedAt: null },
       include: {
         templates: { where: { deletedAt: null }, orderBy: { name: "asc" } },
@@ -65,7 +66,7 @@ export class CrmCommunicationService {
     id: string,
     dto: Partial<ChannelInput>,
   ) {
-    const existing = await prisma.communicationChannel.findFirst({
+    const existing = await (prisma as any).communicationChannel.findFirst({
       where: { id, tenantId, deletedAt: null },
     });
     if (!existing) throw new NotFoundException("Channel not found");
@@ -73,11 +74,11 @@ export class CrmCommunicationService {
   }
 
   async deleteChannel(tenantId: string, id: string) {
-    const existing = await prisma.communicationChannel.findFirst({
+    const existing = await (prisma as any).communicationChannel.findFirst({
       where: { id, tenantId, deletedAt: null },
     });
     if (!existing) throw new NotFoundException("Channel not found");
-    const templateCount = await prisma.communicationTemplate.count({
+    const templateCount = await (prisma as any).communicationTemplate.count({
       where: { channelId: id, deletedAt: null },
     });
     if (templateCount > 0)
@@ -107,7 +108,7 @@ export class CrmCommunicationService {
   }
 
   async getTemplate(tenantId: string, id: string) {
-    const tmpl = await prisma.communicationTemplate.findFirst({
+    const tmpl = await (prisma as any).communicationTemplate.findFirst({
       where: { id, tenantId, deletedAt: null },
       include: {
         channel: { select: { id: true, name: true, channelType: true } },
@@ -122,7 +123,7 @@ export class CrmCommunicationService {
     orgId: string | undefined,
     dto: TemplateInput,
   ) {
-    const channel = await prisma.communicationChannel.findFirst({
+    const channel = await (prisma as any).communicationChannel.findFirst({
       where: { id: dto.channelId, tenantId },
     });
     if (!channel) throw new BadRequestException("Channel not found");
@@ -139,7 +140,7 @@ export class CrmCommunicationService {
     id: string,
     dto: Partial<TemplateInput>,
   ) {
-    const existing = await prisma.communicationTemplate.findFirst({
+    const existing = await (prisma as any).communicationTemplate.findFirst({
       where: { id, tenantId, deletedAt: null },
     });
     if (!existing) throw new NotFoundException("Template not found");
@@ -147,7 +148,7 @@ export class CrmCommunicationService {
   }
 
   async deleteTemplate(tenantId: string, id: string) {
-    const existing = await prisma.communicationTemplate.findFirst({
+    const existing = await (prisma as any).communicationTemplate.findFirst({
       where: { id, tenantId, deletedAt: null },
     });
     if (!existing) throw new NotFoundException("Template not found");
@@ -187,11 +188,11 @@ export class CrmCommunicationService {
     entityType?: string,
     entityId?: string,
   ) {
-    const channel = await prisma.communicationChannel.findFirst({
+    const channel = await (prisma as any).communicationChannel.findFirst({
       where: { id: channelId, tenantId, isActive: true },
     });
     if (!channel) throw new BadRequestException("Active channel not found");
-    const tmpl = await prisma.communicationTemplate.findFirst({
+    const tmpl = await (prisma as any).communicationTemplate.findFirst({
       where: { id: templateId, tenantId, isActive: true },
     });
     if (!tmpl) throw new BadRequestException("Active template not found");
@@ -226,7 +227,7 @@ export class CrmCommunicationService {
           where: { tenantId, status: "FAILED" },
         }),
       ]);
-    const byChannel = await prisma.communicationLog.groupBy({
+    const byChannel = await (prisma as any).communicationLog.groupBy({
       by: ["channelId"],
       where: { tenantId },
       _count: true,

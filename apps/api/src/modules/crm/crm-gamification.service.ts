@@ -4,6 +4,7 @@ import {
   BadRequestException,
 } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
@@ -181,7 +182,7 @@ export class CrmGamificationService {
       orderBy: { rank: "asc" },
     });
     const userIds = rows.map((r) => r.userId);
-    const users = await prisma.user.findMany({
+    const users = await idpPrisma.user.findMany({
       where: { id: { in: userIds } },
       select: { id: true, firstName: true, lastName: true },
     });
@@ -354,7 +355,7 @@ export class CrmGamificationService {
       orderBy: { currentStreak: "desc" },
     });
     const userIds = Array.from(new Set(rows.map((r) => r.userId)));
-    const users = await prisma.user.findMany({
+    const users = await idpPrisma.user.findMany({
       where: { id: { in: userIds } },
       select: { id: true, firstName: true, lastName: true },
     });

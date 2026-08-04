@@ -4,6 +4,7 @@ import {
   BadRequestException,
 } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { Prisma } from "@prisma/client";
 import {
   CreateOpportunityInput,
@@ -942,7 +943,7 @@ export class CrmDealsService {
       select: { assignedToId: true, amount: true, probability: true },
     });
     const userIds = [...new Set(opps.map((o) => o.assignedToId!))];
-    const users = await prisma.user.findMany({
+    const users = await idpPrisma.user.findMany({
       where: { tenantId, id: { in: userIds } },
       select: { id: true, firstName: true, lastName: true },
     });
@@ -1002,7 +1003,7 @@ export class CrmDealsService {
       byRep[rep].totalDays += days / 86400000;
     }
     const userIds = Object.keys(byRep);
-    const users = await prisma.user.findMany({
+    const users = await idpPrisma.user.findMany({
       where: { tenantId, id: { in: userIds } },
       select: { id: true, firstName: true, lastName: true },
     });

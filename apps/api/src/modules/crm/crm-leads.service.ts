@@ -5,6 +5,7 @@ import {
   Inject,
 } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { Prisma } from "@prisma/client";
 import { CreateLeadInput, UpdateLeadInput } from "@unerp/shared";
 import { CrmLeadScoringService } from "./crm-lead-scoring.service";

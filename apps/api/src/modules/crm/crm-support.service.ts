@@ -4,6 +4,7 @@ import {
   BadRequestException,
 } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 /**
  * CRM Support Expansion service.
@@ -100,7 +101,7 @@ export class CrmSupportService {
     });
     if (!ticket) throw new NotFoundException("Case not found");
 
-    const agents = await prisma.user.findMany({
+    const agents = await idpPrisma.user.findMany({
       where: { tenantId },
       select: { id: true, firstName: true, lastName: true },
       take: 10,
@@ -415,7 +416,7 @@ export class CrmSupportService {
     // Enrich agent names
     const agentIds = Array.from(agentMap.keys());
     if (agentIds.length > 0) {
-      const users = await prisma.user.findMany({
+      const users = await idpPrisma.user.findMany({
         where: { id: { in: agentIds } },
         select: { id: true, firstName: true, lastName: true },
       });
@@ -493,11 +494,11 @@ export class CrmSupportService {
     }>
   > {
     const agents = agentId
-      ? await prisma.user.findMany({
+      ? await idpPrisma.user.findMany({
           where: { id: agentId, tenantId },
           select: { id: true, firstName: true, lastName: true },
         })
-      : await prisma.user.findMany({
+      : await idpPrisma.user.findMany({
           where: { tenantId },
           select: { id: true, firstName: true, lastName: true },
           take: 20,

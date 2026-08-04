@@ -5,6 +5,7 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { hashPassword, comparePassword, signToken } from "@unerp/auth";
 import { randomBytes } from "crypto";
 import { z } from "zod";
