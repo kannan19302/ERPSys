@@ -39,6 +39,52 @@ async function ensureTenant(tenantId: string): Promise<void> {
       update: {},
     });
   });
+
+  // Start each run from a clean slate for this tenant.
+  //
+  // These specs create fixed-name rows ("Default", "urgent", …) and never clean
+  // up, so the second run of the suite hits "Unique constraint failed" on data
+  // the first run left behind — a test that passes once and then fails forever
+  // until someone drops the database by hand.
+  //
+  // Deleting is safe and narrow: it only ever touches rows belonging to a
+  // tenant the harness itself created for a test, identified by id.
+  // The loop runs here rather than in a DO block: a DO block takes no bind
+  // parameters, so the tenant id would have to be interpolated into SQL text.
+  const tables = await prisma.$queryRaw<Array<{ relname: string }>>`
+    SELECT c.relname
+    FROM pg_class c
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public'
+      AND c.relkind = 'r'
+      AND c.relname <> 'tenants'
+      AND EXISTS (
+        SELECT 1 FROM information_schema.columns col
+        WHERE col.table_schema = 'public'
+          AND col.table_name = c.relname
+          AND col.column_name = 'tenant_id'
+      )`;
+
+  // The GUC has to be set explicitly here. `runWithTenantSession` works through
+  // the Prisma client extension, which applies to model operations — raw SQL
+  // goes straight to the connection, so without this the DELETEs are silently
+  // filtered out by RLS and remove nothing at all. Set transaction-locally, the
+  // same way TenantInterceptor does it, so it cannot leak to a pooled
+  // connection afterwards.
+  await prisma.$transaction(async (tx) => {
+    await tx.$executeRawUnsafe(
+      `SELECT set_config('app.current_tenant_id', $1, true)`,
+      tenantId,
+    );
+    for (const { relname } of tables) {
+      // Identifier comes from pg_class, never from user input; the value is
+      // still bound rather than interpolated.
+      await tx.$executeRawUnsafe(
+        `DELETE FROM public."${relname}" WHERE tenant_id = $1`,
+        tenantId,
+      );
+    }
+  });
 }
 
 export function withTenantSession<T extends object>(service: T): T {

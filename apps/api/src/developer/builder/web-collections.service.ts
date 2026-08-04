@@ -501,7 +501,11 @@ export class WebCollectionsService {
       total: orders.length,
       pending: orders.filter((o) => o.status === "PENDING").length,
       fulfilled: orders.filter((o) => o.status === "FULFILLED").length,
-      revenue,
+      // Summed as Decimal above so cents cannot drift, then converted here:
+      // this is a dashboard tile returned alongside three plain counts, and a
+      // Decimal instance would serialise as an object rather than a number.
+      // The precision that matters is in the accumulation, not the display.
+      revenue: revenue.toNumber(),
     };
   }
 
