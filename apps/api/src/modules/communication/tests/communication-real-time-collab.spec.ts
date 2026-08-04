@@ -11,12 +11,12 @@ vi.mock("@unerp/database", () => ({
       count: vi.fn(),
     },
     collabDocumentVersion: { create: vi.fn(), findMany: vi.fn() },
-    collabWhiteboard: {
+    whiteboard: {
       findMany: vi.fn(),
       findFirst: vi.fn(),
       create: vi.fn(),
     },
-    collabWhiteboardElement: {
+    whiteboardElement: {
       create: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
@@ -124,7 +124,7 @@ describe("CommunicationRealTimeCollabService", () => {
 
   it("lists whiteboards", async () => {
     const { prisma } = await import("@unerp/database");
-    vi.mocked(prisma.collabWhiteboard.findMany).mockResolvedValue([
+    vi.mocked(prisma.whiteboard.findMany).mockResolvedValue([
       { id: "w1", title: "Board" },
     ] as never);
     const res = await svc.getWhiteboards("t1", "u1");
@@ -133,7 +133,7 @@ describe("CommunicationRealTimeCollabService", () => {
 
   it("creates a whiteboard", async () => {
     const { prisma } = await import("@unerp/database");
-    vi.mocked(prisma.collabWhiteboard.create).mockResolvedValue({
+    vi.mocked(prisma.whiteboard.create).mockResolvedValue({
       id: "w1",
       title: "Brainstorm",
     } as never);
@@ -143,11 +143,11 @@ describe("CommunicationRealTimeCollabService", () => {
 
   it("adds a whiteboard element", async () => {
     const { prisma } = await import("@unerp/database");
-    vi.mocked(prisma.collabWhiteboard.findFirst).mockResolvedValue({
+    vi.mocked(prisma.whiteboard.findFirst).mockResolvedValue({
       id: "w1",
       tenantId: "t1",
     } as never);
-    vi.mocked(prisma.collabWhiteboardElement.create).mockResolvedValue({
+    vi.mocked(prisma.whiteboardElement.create).mockResolvedValue({
       id: "e1",
       type: "TEXT",
     } as never);
@@ -158,36 +158,32 @@ describe("CommunicationRealTimeCollabService", () => {
     expect(res.type).toBe("TEXT");
   });
 
-  it("starts a co-browse session", async () => {
-    const { prisma } = await import("@unerp/database");
-    vi.mocked(prisma.collabCoBrowseSession.create).mockResolvedValue({
-      id: "cb1",
-      hostId: "u1",
-      sessionId: "sess1",
-    } as never);
-    vi.mocked(prisma.collabCoBrowseSession.findFirst).mockResolvedValue(
-      null as never,
-    );
-    const res = await svc.collaborateCoBrowse("t1", "u1", "sess1");
-    expect(res.hostId).toBe("u1");
-  });
+  // Co-browsing is NOT implemented. `collaborateCoBrowse` returns a static
+  // literal and touches no database; there is no `CollabCoBrowseSession` model
+  // in the schema at all.
+  //
+  // The two tests that used to sit here mocked `prisma.collabCoBrowseSession`
+  // and asserted that participants were appended on join. They could never have
+  // passed — they described a feature that was never built, against a model
+  // that does not exist. Tests that assert fiction are worse than absent tests:
+  // they read as coverage.
+  //
+  // These assert the real contract instead, so the gap is visible rather than
+  // disguised. Replace them with behavioural tests when the feature is built.
+  describe("co-browse (not implemented)", () => {
+    it("echoes the session descriptor without persisting anything", async () => {
+      const { prisma } = await import("@unerp/database");
+      const res = await svc.collaborateCoBrowse("t1", "u1", "sess1");
 
-  it("joins an existing co-browse session", async () => {
-    const { prisma } = await import("@unerp/database");
-    vi.mocked(prisma.collabCoBrowseSession.findFirst).mockResolvedValue({
-      id: "cb1",
-      hostId: "host1",
-      sessionId: "sess1",
-      participants: ["host1"],
-    } as never);
-    vi.mocked(prisma.collabCoBrowseSession.update).mockResolvedValue(
-      {} as never,
-    );
-    const res = await svc.collaborateCoBrowse("t1", "u1", "sess1");
-    expect(prisma.collabCoBrowseSession.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({ participants: ["host1", "u1"] }),
-      }),
-    );
+      expect(res).toEqual({
+        message: "Co-browsing session active",
+        tenantId: "t1",
+        userId: "u1",
+        sessionId: "sess1",
+      });
+      // Nothing is written: no session is created, joined or recorded.
+      expect(prisma.collabDocument.create).not.toHaveBeenCalled();
+      expect(prisma.whiteboard.create).not.toHaveBeenCalled();
+    });
   });
 });
