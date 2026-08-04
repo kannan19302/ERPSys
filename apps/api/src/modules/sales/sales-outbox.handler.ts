@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { Prisma } from "@prisma/client";
 import { SalesService, CreateOnlineOrderInput } from "./sales.service";
 import type { OutboxEventPayload } from "../outbox/outbox-handler.registry";
