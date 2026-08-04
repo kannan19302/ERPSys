@@ -8,6 +8,24 @@ import { idpClient as idpPrisma } from "@/common/idp-client";
 
 const db = prisma as any;
 
+/** A configured outbound channel (email, SMS, WhatsApp, …). */
+interface CommunicationChannel {
+  id: string;
+  tenantId: string;
+  [key: string]: unknown;
+}
+
+/** One outbound communication, used for analytics and unread counts. */
+interface CommunicationLog {
+  id: string;
+  tenantId: string;
+  channel: string;
+  recipientId: string | null;
+  readAt: Date | null;
+  sentAt: Date;
+  [key: string]: unknown;
+}
+
 @Injectable()
 export class CrmCommunicationDeepService {
   private posts: any[] = [];
@@ -16,8 +34,8 @@ export class CrmCommunicationDeepService {
   // restart and none of it is protected by row-level security, so the tenant
   // filtering below is the only isolation it has. It needs real persistence
   // before it can carry anything a customer depends on.
-  private channels: any[] = [];
-  private logs: any[] = [];
+  private channels: CommunicationChannel[] = [];
+  private logs: CommunicationLog[] = [];
   private preferences = new Map<string, any>();
 
   async createPost(tenantId = "tenant-1", dto: any = {}) {
