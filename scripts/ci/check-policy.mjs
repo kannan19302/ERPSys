@@ -178,6 +178,76 @@ const HARD = [
     },
   },
   {
+    id: "permissions-without-guard",
+    label: "@Permissions declared on a controller with no guard to enforce it",
+    why:
+      "@Permissions only writes route metadata. Without RbacGuard nothing reads it, and " +
+      "without JwtAuthGuard there is no request.user for it to read — so the route is " +
+      "reachable unauthenticated while looking protected in both source and Swagger. " +
+      "@ApiBearerAuth() documents a requirement it does not enforce. This was real: 348 " +
+      "routes across four controllers, including all of advanced-finance/expansion and " +
+      "subscription management.",
+    scan() {
+      const hits = [];
+      for (const f of files("apps/api/src", [".controller.ts"])) {
+        const rel = relative(ROOT, f).replace(/\\/g, "/");
+        if (rel.includes("/tests/") || rel.includes(".spec.")) continue;
+        const src = read(f);
+        if (!src || !src.includes("@Permissions(")) continue;
+        // Must match the DECORATOR, not the identifier: an `import { UseGuards }`
+        // left behind after the decorator is deleted would otherwise satisfy a
+        // bare substring check and the gate would pass on the exact regression
+        // it exists to catch. (It did, the first time this was written.)
+        if (/@UseGuards\(/.test(src)) continue;
+        const count = (src.match(/@Permissions\(/g) ?? []).length;
+        hits.push(
+          `${rel}  ${count} @Permissions decorator(s) but no @UseGuards — nothing enforces them`,
+        );
+      }
+      return hits;
+    },
+  },
+  {
+    id: "tenant-from-client-header",
+    label: "Tenant identity taken from a client-supplied header",
+    why:
+      "A tenant read from `x-tenant-id` is whatever the caller claims to be, so it is not " +
+      "an identity at all — it is a parameter for choosing whose data to touch. Five " +
+      "controllers did this across 101 unauthenticated routes reaching real services " +
+      "(letters of credit, production orders, project financials). Tenant comes from the " +
+      "authenticated session: use @CurrentTenant.",
+    scan() {
+      const hits = [];
+      for (const f of [
+        ...files("apps/api/src", [".ts"]),
+        ...files("apps/idp/src", [".ts"]),
+      ]) {
+        const rel = relative(ROOT, f).replace(/\\/g, "/");
+        if (rel.includes("/tests/") || rel.includes(".spec.")) continue;
+        const src = read(f);
+        if (!src) continue;
+        // The middleware that legitimately reads the header to populate
+        // request.tenantId for internal calls is the one allowed exception.
+        if (rel.includes("common/middleware/")) continue;
+        // Skip comments. Explaining what the code used to do names the very
+        // pattern being banned, and a naive scan flags the explanation as a
+        // fresh violation — which is exactly what happened when this rule was
+        // first written, on the same commit that removed the real ones.
+        src.split(/\r?\n/).forEach((line, i) => {
+          const t = line.trim();
+          if (t.startsWith("//") || t.startsWith("*") || t.startsWith("/*"))
+            return;
+          if (/Headers\(\s*["'`]x-tenant-id["'`]\s*\)/.test(line)) {
+            hits.push(
+              `${rel}:${i + 1}  takes the tenant from the x-tenant-id header`,
+            );
+          }
+        });
+      }
+      return hits;
+    },
+  },
+  {
     id: "cross-tenant-tenant-scoped-permission",
     label: "@SkipTenantScope() handler guarded by a tenant-scoped permission",
     why:

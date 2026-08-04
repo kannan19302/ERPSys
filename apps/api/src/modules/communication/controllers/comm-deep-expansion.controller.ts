@@ -1,9 +1,30 @@
-import { Controller, Get, Post, Body, Param, Headers } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Headers,
+  UseGuards,
+} from "@nestjs/common";
 import { CommDeepExpansionService } from "../services/comm-deep-expansion.service";
+import { JwtAuthGuard } from "../../../common/guards/jwt-auth.guard";
+import { RbacGuard } from "../../../common/guards/rbac.guard";
+import { CurrentTenant } from "../../../common/decorators/current-tenant.decorator";
 
-const TenantId = () => Headers("x-tenant-id");
+// `TenantId` used to be `Headers("x-tenant-id")` — the tenant was whatever the
+// caller claimed. It is now the session's tenant; the parameter sites below are
+// unchanged because the alias is what moved.
+const TenantId = CurrentTenant;
 
 @Controller("communication/deep-expansion")
+// These routes were reachable with no authentication at all, and took the
+// tenant from a client-supplied `x-tenant-id` header — so any anonymous caller
+// could read or write any tenant's data by naming it. The services behind them
+// are real (letters of credit, production orders, project financials), not
+// stubs. JwtAuthGuard now establishes the caller and `TenantId` resolves from
+// the authenticated session instead of the request header.
+@UseGuards(JwtAuthGuard, RbacGuard)
 export class CommDeepExpansionController {
   constructor(private readonly commService: CommDeepExpansionService) {}
 
