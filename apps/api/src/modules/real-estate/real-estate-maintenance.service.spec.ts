@@ -4,6 +4,7 @@ import { NotFoundException } from "@nestjs/common";
 
 const { db } = vi.hoisted(() => {
   const mockDb: Record<string, Record<string, ReturnType<typeof vi.fn>>> = {
+    realEstateProperty: { findMany: vi.fn().mockResolvedValue([]) },
     realEstateMaintenanceRequest: {
       findMany: vi.fn().mockResolvedValue([]),
       findFirst: vi.fn().mockResolvedValue(null),
