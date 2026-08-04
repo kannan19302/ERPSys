@@ -13,7 +13,79 @@
       "default": "./dist/index.js"
     },
     "./styles": "./src/styles/globals.css",
-    "./tokens": "./src/tokens/design-tokens.css"
+    "./tokens": "./src/tokens/design-tokens.css",
+    "./charts": {
+      "types": "./charts.d.ts",
+      "import": "./charts.js",
+      "require": "./charts.cjs",
+      "default": "./charts.js"
+    },
+    "./components": {
+      "types": "./components.d.ts",
+      "import": "./components.js",
+      "require": "./components.cjs",
+      "default": "./components.js"
+    },
+    "./layout": {
+      "types": "./layout.d.ts",
+      "import": "./layout.js",
+      "require": "./layout.cjs",
+      "default": "./layout.js"
+    },
+    "./data-grid": {
+      "types": "./data-grid.d.ts",
+      "import": "./data-grid.js",
+      "require": "./data-grid.cjs",
+      "default": "./data-grid.js"
+    },
+    "./dashboard": {
+      "types": "./dashboard.d.ts",
+      "import": "./dashboard.js",
+      "require": "./dashboard.cjs",
+      "default": "./dashboard.js"
+    },
+    "./notifications": {
+      "types": "./notifications.d.ts",
+      "import": "./notifications.js",
+      "require": "./notifications.cjs",
+      "default": "./notifications.js"
+    },
+    "./hooks": {
+      "types": "./hooks.d.ts",
+      "import": "./hooks.js",
+      "require": "./hooks.cjs",
+      "default": "./hooks.js"
+    },
+    "./icons": {
+      "types": "./icons.d.ts",
+      "import": "./icons.js",
+      "require": "./icons.cjs",
+      "default": "./icons.js"
+    },
+    "./theme": {
+      "types": "./theme.d.ts",
+      "import": "./theme.js",
+      "require": "./theme.cjs",
+      "default": "./theme.js"
+    },
+    "./utils": {
+      "types": "./utils.d.ts",
+      "import": "./utils.js",
+      "require": "./utils.cjs",
+      "default": "./utils.js"
+    },
+    "./form-engine": {
+      "types": "./form-engine.d.ts",
+      "import": "./form-engine.js",
+      "require": "./form-engine.cjs",
+      "default": "./form-engine.js"
+    },
+    "./workflow": {
+      "types": "./workflow.d.ts",
+      "import": "./workflow.js",
+      "require": "./workflow.cjs",
+      "default": "./workflow.js"
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
@@ -44,5 +116,8 @@
     "@unerp/config": "workspace:*",
     "rimraf": "^6.0.0",
     "typescript": "^5.7.0"
-  }
+  },
+  "sideEffects": [
+    "**/*.css"
+  ]
 }
