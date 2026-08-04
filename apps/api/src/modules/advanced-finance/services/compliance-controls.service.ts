@@ -211,9 +211,7 @@ export class ComplianceControlsService {
       where: { tenantId },
       include: {
         roles: {
-          include: {
-            /* role */
-          },
+          include: { role: true },
         },
       },
     });

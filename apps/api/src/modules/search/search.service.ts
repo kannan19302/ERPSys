@@ -23,9 +23,7 @@ export class SearchService {
   private async resolvePermissions(userId: string): Promise<string[]> {
     const userRoles = await idpPrisma.userRole.findMany({
       where: { userId },
-      include: {
-        /* role */
-      },
+      include: { role: true },
     });
     const permissions: string[] = [];
     for (const ur of userRoles) {

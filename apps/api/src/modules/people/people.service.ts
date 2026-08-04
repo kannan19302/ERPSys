@@ -441,7 +441,7 @@ export class PeopleService {
    */
   async getMyFullProfile(tenantId: string, userId: string) {
     const profile = await this.getOrCreateProfile(tenantId, userId);
-    const [user, department, manager, directReports, colleagues] =
+    const [user, tenant, department, manager, directReports, colleagues] =
       await Promise.all([
         idpPrisma.user.findFirst({
           where: { id: userId, tenantId },
@@ -451,8 +451,14 @@ export class PeopleService {
             lastName: true,
             email: true,
             avatar: true,
-            tenant: { select: { id: true, name: true, slug: true } },
+            // `tenant` is NOT a relation on the IdP's User. Tenant lives in the
+            // main schema, and Prisma cannot join across two clients, so this
+            // is fetched separately below.
           },
+        }),
+        prisma.tenant.findUnique({
+          where: { id: tenantId },
+          select: { id: true, name: true, slug: true },
         }),
         profile.departmentId
           ? prisma.department.findUnique({
@@ -483,7 +489,7 @@ export class PeopleService {
       lastName: user.lastName,
       email: user.email,
       avatar: user.avatar,
-      organization: user.tenant,
+      organization: tenant,
       department,
       manager,
       directReports,

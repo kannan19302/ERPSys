@@ -4,7 +4,13 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    // Matches apps/web, which sets both to false. This app is the builder UI
+    // relocated from apps/web/src/components/builder, so holding the same files
+    // to a stricter setting at their new path would report ~170 "errors" in
+    // code that compiled yesterday and that nobody has changed.
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]

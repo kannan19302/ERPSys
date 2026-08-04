@@ -248,9 +248,7 @@ export class SaasPortalSecurityService {
       where: { id: targetUserId, tenantId },
       include: {
         roles: {
-          include: {
-            /* role */
-          },
+          include: { role: true },
         },
       },
     });
@@ -468,9 +466,7 @@ export class SaasPortalSecurityService {
   ): Promise<string[]> {
     const userRoles = await idpPrisma.userRole.findMany({
       where: { userId },
-      include: {
-        /* role */
-      },
+      include: { role: true },
     });
     const perms: string[] = [];
     for (const ur of userRoles) {

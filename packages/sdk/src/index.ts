@@ -19,15 +19,40 @@ import type {
  * hand-written at all (PLATFORM_ARCHITECTURE § 7.3 — the SDK is generated,
  * never authored).
  */
+/** A CMS page. `blocks` is the stored section list; extra fields pass through. */
+export interface PublicPage {
+  id?: string;
+  slug?: string;
+  title?: string;
+  blocks?: unknown[];
+  sections?: unknown[];
+  [key: string]: unknown;
+}
+
+/** Site-level presentation config: theme tokens and arbitrary settings. */
+export interface PublicSite {
+  id?: string;
+  name?: string;
+  theme?: Record<string, unknown> | null;
+  settings?: Record<string, unknown> | null;
+  [key: string]: unknown;
+}
+
+export interface PublicChatbot {
+  name: string;
+  config?: Record<string, unknown> | null;
+  [key: string]: unknown;
+}
+
 export interface PublicPageData {
-  page: unknown;
-  settings: unknown;
+  page: PublicPage;
+  settings: Record<string, unknown>;
 }
 
 export interface PublicSiteData {
-  site: unknown;
-  page: unknown;
-  chatbot: unknown;
+  site: PublicSite;
+  page: PublicPage;
+  chatbot: PublicChatbot | null;
 }
 
 export interface SdkConfig {

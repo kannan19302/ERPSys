@@ -768,9 +768,11 @@ export class CommunicationService {
     if (!membership)
       throw new ForbiddenException("You are not a member of this channel.");
 
-    const members = await (prisma as any).channelMember.findMany({
+    // `role` had been dropped from this select while the mapping below still
+    // read `m.role`, so every member came back with an undefined role.
+    const members = await prisma.channelMember.findMany({
       where: { tenantId, channelId },
-      select: { userId: true /* role */ },
+      select: { userId: true, role: true },
     });
     return members.map((m) => ({
       userId: m.userId,

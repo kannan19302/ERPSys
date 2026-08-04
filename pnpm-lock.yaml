@@ -249,6 +249,12 @@ importers:
 
   apps/console:
     dependencies:
+      '@unerp/framework':
+        specifier: workspace:*
+        version: link:../../packages/framework
+      '@unerp/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       next:
         specifier: 15.3.4
         version: 15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -270,6 +276,43 @@ importers:
         version: 19.2.3(@types/react@19.2.17)
       typescript:
         specifier: ^5.0.0
+        version: 5.9.3
+
+  apps/developer:
+    dependencies:
+      '@unerp/framework':
+        specifier: workspace:*
+        version: link:../../packages/framework
+      '@unerp/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+      '@unerp/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@unerp/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      next:
+        specifier: 15.3.4
+        version: 15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      react:
+        specifier: ^19.0.0
+        version: 19.2.7
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.7(react@19.2.7)
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.20
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.17
+      '@unerp/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      typescript:
+        specifier: ^5.7.0
         version: 5.9.3
 
   apps/extensions/education:
