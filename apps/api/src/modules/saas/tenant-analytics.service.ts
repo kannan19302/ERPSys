@@ -1,3 +1,4 @@
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { Injectable } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 
@@ -79,7 +80,7 @@ export class TenantAnalyticsService {
           subscription: {
             include: { plan: { select: { id: true, name: true } } },
           },
-          _count: { select: { users: true } },
+          _count: { select: {} },
         },
       }),
       prisma.tenant.count({ where: where as any }),
@@ -104,7 +105,7 @@ export class TenantAnalyticsService {
       }),
       prisma.usageRecord.findMany({ where: { tenantId } }),
       prisma.saaSInvoice.count({ where: { tenantId } }),
-      prisma.user.count({ where: { tenantId } }),
+      idpPrisma.user.count({ where: { tenantId } }),
       prisma.paymentMethod.findMany({ where: { tenantId } }),
     ]);
 

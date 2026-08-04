@@ -1,3 +1,4 @@
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { Controller, Get, Post, UseGuards, Query } from "@nestjs/common";
 import { z } from "zod";
 import { ZodBody } from "../../common/decorators/zod-body.decorator";
@@ -183,13 +184,13 @@ export class AnalyticsExtController {
     const monthAgo = new Date(today.getTime() - 30 * 86400000);
 
     const [daily, weekly, monthly] = await Promise.all([
-      this.tenantAnalyticsService.db.user.count({
+      idpPrisma.user.count({
         where: { lastLoginAt: { gte: today } },
       }),
-      this.tenantAnalyticsService.db.user.count({
+      idpPrisma.user.count({
         where: { lastLoginAt: { gte: weekAgo } },
       }),
-      this.tenantAnalyticsService.db.user.count({
+      idpPrisma.user.count({
         where: { lastLoginAt: { gte: monthAgo } },
       }),
     ]);
@@ -214,11 +215,11 @@ export class AnalyticsExtController {
   @Permissions("saas.analytics.read")
   @Get("users/retention")
   async getUserRetention() {
-    const totalUsers = await this.tenantAnalyticsService.db.user.count();
-    const activeUsers = await this.tenantAnalyticsService.db.user.count({
+    const totalUsers = await idpPrisma.user.count();
+    const activeUsers = await idpPrisma.user.count({
       where: { lastLoginAt: { gte: new Date(Date.now() - 30 * 86400000) } },
     });
-    const retainedUsers = await this.tenantAnalyticsService.db.user.count({
+    const retainedUsers = await idpPrisma.user.count({
       where: { lastLoginAt: { gte: new Date(Date.now() - 90 * 86400000) } },
     });
     return {
@@ -236,7 +237,7 @@ export class AnalyticsExtController {
   @Permissions("saas.analytics.read")
   @Get("users/cohorts")
   async getUserCohorts() {
-    const users = await this.tenantAnalyticsService.db.user.findMany({
+    const users = await idpPrisma.user.findMany({
       select: { createdAt: true, lastLoginAt: true },
       orderBy: { createdAt: "asc" },
     });

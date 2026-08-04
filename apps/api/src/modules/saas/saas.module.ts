@@ -62,30 +62,21 @@ import { SaasGateway } from "./saas.gateway";
 import { RealtimeEmitterService } from "./realtime-emitter.service";
 import { SaasExpansionController } from "./saas-expansion.controller";
 import { SaasExpansionService } from "./saas-expansion.service";
-import { SaasMeteringEngineDeepService } from "./saas-metering-engine-deep.service";
-import { SaasMeteringEngineDeepController } from "./saas-metering-engine-deep.controller";
-import { SaasClusterRoutingDeepService } from "./saas-cluster-routing-deep.service";
-import { SaasClusterRoutingDeepController } from "./saas-cluster-routing-deep.controller";
-import { SaasWhiteLabelDeepService } from "./saas-white-label-deep.service";
-import { SaasWhiteLabelDeepController } from "./saas-white-label-deep.controller";
-import { SaasResellerChannelDeepService } from "./saas-reseller-channel-deep.service";
-import { SaasResellerChannelDeepController } from "./saas-reseller-channel-deep.controller";
-import { SaasQuotaGuardDeepService } from "./saas-quota-guard-deep.service";
-import { SaasQuotaGuardDeepController } from "./saas-quota-guard-deep.controller";
-import { SaasOnboardingFlowDeepService } from "./saas-onboarding-flow-deep.service";
-import { SaasOnboardingFlowDeepController } from "./saas-onboarding-flow-deep.controller";
-import { SaasTenantMigrationDeepService } from "./saas-tenant-migration-deep.service";
-import { SaasTenantMigrationDeepController } from "./saas-tenant-migration-deep.controller";
-import { SaasFeatureFlagsMeteringDeepService } from "./saas-feature-flags-metering-deep.service";
-import { SaasFeatureFlagsMeteringDeepController } from "./saas-feature-flags-metering-deep.controller";
-import { SaasRevenueChurnHealthDeepService } from "./saas-revenue-churn-health-deep.service";
-import { SaasRevenueChurnHealthDeepController } from "./saas-revenue-churn-health-deep.controller";
-import { SaasIntegrationsComplianceDeepService } from "./saas-integrations-compliance-deep.service";
-import { SaasIntegrationsComplianceDeepController } from "./saas-integrations-compliance-deep.controller";
-import { SaasMarketplaceLifecycleDeepService } from "./saas-marketplace-lifecycle-deep.service";
-import { SaasMarketplaceLifecycleDeepController } from "./saas-marketplace-lifecycle-deep.controller";
-import { SaasEnterpriseScaleMasterService } from "./saas-enterprise-scale-master.service";
-import { SaasEnterpriseScaleMasterController } from "./saas-enterprise-scale-master.controller";
+import { SaasMeteringEngineDeepService } from "./metering-engine.service";
+import { SaasMeteringEngineDeepController } from "./metering-engine.controller";
+
+import { SaasQuotaGuardDeepService } from "./quota-guard.service";
+import { SaasQuotaGuardDeepController } from "./quota-guard.controller";
+import { SaasOnboardingFlowDeepService } from "./onboarding-flow.service";
+import { SaasOnboardingFlowDeepController } from "./onboarding-flow.controller";
+
+import { SaasRevenueChurnHealthDeepService } from "./revenue-churn-health.service";
+import { SaasRevenueChurnHealthDeepController } from "./revenue-churn-health.controller";
+import { SaasIntegrationsComplianceDeepService } from "./integrations-compliance.service";
+import { SaasIntegrationsComplianceDeepController } from "./integrations-compliance.controller";
+import { SaasMarketplaceLifecycleDeepService } from "./marketplace-lifecycle.service";
+import { SaasMarketplaceLifecycleDeepController } from "./marketplace-lifecycle.controller";
+
 import { PlatformCredentialsModule } from "../../common/platform-credentials/platform-credentials.module";
 
 @Module({
@@ -136,17 +127,13 @@ import { PlatformCredentialsModule } from "../../common/platform-credentials/pla
     HealthController,
     SaasExpansionController,
     SaasMeteringEngineDeepController,
-    SaasClusterRoutingDeepController,
-    SaasWhiteLabelDeepController,
-    SaasResellerChannelDeepController,
+
     SaasQuotaGuardDeepController,
     SaasOnboardingFlowDeepController,
-    SaasTenantMigrationDeepController,
-    SaasFeatureFlagsMeteringDeepController,
+
     SaasRevenueChurnHealthDeepController,
     SaasIntegrationsComplianceDeepController,
     SaasMarketplaceLifecycleDeepController,
-    SaasEnterpriseScaleMasterController,
   ],
   providers: [
     SaasService,
@@ -169,17 +156,13 @@ import { PlatformCredentialsModule } from "../../common/platform-credentials/pla
     SaasGateway,
     RealtimeEmitterService,
     SaasMeteringEngineDeepService,
-    SaasClusterRoutingDeepService,
-    SaasWhiteLabelDeepService,
-    SaasResellerChannelDeepService,
+
     SaasQuotaGuardDeepService,
     SaasOnboardingFlowDeepService,
-    SaasTenantMigrationDeepService,
-    SaasFeatureFlagsMeteringDeepService,
+
     SaasRevenueChurnHealthDeepService,
     SaasIntegrationsComplianceDeepService,
     SaasMarketplaceLifecycleDeepService,
-    SaasEnterpriseScaleMasterService,
   ],
   exports: [
     SaasService,
@@ -202,17 +185,13 @@ import { PlatformCredentialsModule } from "../../common/platform-credentials/pla
     SaasGateway,
     RealtimeEmitterService,
     SaasMeteringEngineDeepService,
-    SaasClusterRoutingDeepService,
-    SaasWhiteLabelDeepService,
-    SaasResellerChannelDeepService,
+
     SaasQuotaGuardDeepService,
     SaasOnboardingFlowDeepService,
-    SaasTenantMigrationDeepService,
-    SaasFeatureFlagsMeteringDeepService,
+
     SaasRevenueChurnHealthDeepService,
     SaasIntegrationsComplianceDeepService,
     SaasMarketplaceLifecycleDeepService,
-    SaasEnterpriseScaleMasterService,
   ],
 })
 export class SaasModule {}

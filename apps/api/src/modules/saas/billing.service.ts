@@ -7,6 +7,7 @@ import {
 } from "@nestjs/common";
 import * as crypto from "node:crypto";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { StorageMeteringService } from "./storage-metering.service";
 import { PlatformCredentialsService } from "../../common/platform-credentials/platform-credentials.service";
 import Stripe from "stripe";
@@ -270,7 +271,7 @@ export class BillingService {
       include: { plan: true },
     });
 
-    const userCount = await prisma.user.count({ where: { tenantId } });
+    const userCount = await idpPrisma.user.count({ where: { tenantId } });
 
     // Real per-app storage data if available; fall back to UsageRecord.
     let storageCurrent =
