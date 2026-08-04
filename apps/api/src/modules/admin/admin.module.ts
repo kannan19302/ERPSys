@@ -1,16 +1,14 @@
 import { Module } from "@nestjs/common";
 import { AdminController } from "./admin.controller";
 import { AdminService } from "./admin.service";
-import { SuperAdminController } from "./super-admin.controller";
-import { SuperAdminService } from "./super-admin.service";
+
 import { ActivityFeedController } from "./activity-feed.controller";
 import { ActivityFeedService } from "./activity-feed.service";
 import { ImportExportController } from "./import-export.controller";
 import { ImportExportService } from "./import-export.service";
 import { AnnouncementsController } from "./announcements.controller";
 import { AnnouncementsService } from "./announcements.service";
-import { OperationsController } from "./operations.controller";
-import { OperationsService } from "./operations.service";
+
 import { PlatformController } from "./platform.controller";
 import { PlatformService } from "./platform.service";
 import { CustomFieldsController } from "./custom-fields.controller";
@@ -30,19 +28,18 @@ import { SubscriptionController } from "./subscription.controller";
 import { SubscriptionService } from "./subscription.service";
 import { ErrorReportsController } from "./error-reports.controller";
 import { ErrorReportsService } from "./error-reports.service";
-import { TenantLifecycleController } from "./tenant-lifecycle/tenant-lifecycle.controller";
-import { TenantLifecycleService } from "./tenant-lifecycle/tenant-lifecycle.service";
+
 import { PlatformCredentialsModule } from "../../common/platform-credentials/platform-credentials.module";
 
 @Module({
   imports: [PlatformCredentialsModule],
   controllers: [
     AdminController,
-    SuperAdminController,
+
     ActivityFeedController,
     ImportExportController,
     AnnouncementsController,
-    OperationsController,
+
     PlatformController,
     CustomFieldsController,
     AutomationRulesController,
@@ -52,15 +49,14 @@ import { PlatformCredentialsModule } from "../../common/platform-credentials/pla
     DataQualityController,
     SubscriptionController,
     ErrorReportsController,
-    TenantLifecycleController,
   ],
   providers: [
     AdminService,
-    SuperAdminService,
+
     ActivityFeedService,
     ImportExportService,
     AnnouncementsService,
-    OperationsService,
+
     PlatformService,
     CustomFieldsService,
     AutomationRulesService,
@@ -71,15 +67,14 @@ import { PlatformCredentialsModule } from "../../common/platform-credentials/pla
     DataQualityService,
     SubscriptionService,
     ErrorReportsService,
-    TenantLifecycleService,
   ],
   exports: [
     AdminService,
-    SuperAdminService,
+
     ActivityFeedService,
     ImportExportService,
     AnnouncementsService,
-    OperationsService,
+
     PlatformService,
     CustomFieldsService,
     AutomationRulesService,
@@ -89,7 +84,6 @@ import { PlatformCredentialsModule } from "../../common/platform-credentials/pla
     DataQualityService,
     SubscriptionService,
     ErrorReportsService,
-    TenantLifecycleService,
   ],
 })
 export class AdminModule {}

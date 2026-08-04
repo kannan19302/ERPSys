@@ -3,6 +3,7 @@ import { TaxJurisdictionLookupService } from "../services/tax-jurisdiction-looku
 import { TaxFilingCalendarService } from "../services/tax-filing-calendar.service";
 import { RecurringJournalSchedulerService } from "../services/recurring-journal-scheduler.service";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { BadRequestException, NotFoundException } from "@nestjs/common";
 
 vi.mock("@unerp/database", () => {

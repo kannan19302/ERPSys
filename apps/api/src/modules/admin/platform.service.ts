@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 @Injectable()
 export class PlatformService {
@@ -433,7 +434,7 @@ export class PlatformService {
    * Tenant Usage Analytics.
    */
   async getUsageAnalytics(tenantId: string) {
-    const usersCount = await prisma.user.count({ where: { tenantId } });
+    const usersCount = await idpPrisma.user.count({ where: { tenantId } });
     const invoicesCount = await prisma.invoice.count({ where: { tenantId } });
     const productsCount = await prisma.product.count({ where: { tenantId } });
 

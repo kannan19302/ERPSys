@@ -1,3 +1,5 @@
+import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { AdminService } from "../admin.service";
 
@@ -80,9 +82,9 @@ describe("AdminService", () => {
         },
       ];
 
-      vi.mocked(prisma.user.findMany).mockResolvedValue(
+      vi.mocked(idpPrisma.user.findMany).mockResolvedValue(
         mockUsers as unknown as Awaited<
-          ReturnType<typeof prisma.user.findMany>
+          ReturnType<typeof idpPrisma.user.findMany>
         >,
       );
 

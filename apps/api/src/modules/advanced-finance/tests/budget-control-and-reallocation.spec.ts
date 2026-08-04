@@ -3,6 +3,7 @@ import { BudgetControlService } from "../services/budget-control.service";
 import { BudgetReallocationService } from "../services/budget-reallocation.service";
 import { BudgetingService } from "../services/budgeting.service";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { Prisma } from "@prisma/client";
 import { NotFoundException, BadRequestException } from "@nestjs/common";
 

@@ -1,3 +1,5 @@
+import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { AdvancedHrService } from "../advanced-hr.service";
 
@@ -108,7 +110,7 @@ describe("AdvancedHrService", () => {
     vi.mocked(prisma.employee.findMany).mockResolvedValue(
       mockEmployees as never,
     );
-    vi.mocked(prisma.user.findMany).mockResolvedValue(mockUsers as never);
+    vi.mocked(idpPrisma.user.findMany).mockResolvedValue(mockUsers as never);
 
     const res = await service.getAppraisals("tenant-123");
     expect(res).toBeDefined();

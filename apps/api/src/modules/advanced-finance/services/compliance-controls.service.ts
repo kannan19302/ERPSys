@@ -4,6 +4,7 @@ import {
   BadRequestException,
 } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 @Injectable()
 export class ComplianceControlsService {
@@ -206,9 +207,15 @@ export class ComplianceControlsService {
     const rules = await prisma.sodRuleDefinition.findMany({
       where: { tenantId, isActive: true },
     });
-    const users = await prisma.user.findMany({
+    const users = await idpPrisma.user.findMany({
       where: { tenantId },
-      include: { roles: { include: { role: true } } },
+      include: {
+        roles: {
+          include: {
+            /* role */
+          },
+        },
+      },
     });
 
     const conflicts: any[] = [];

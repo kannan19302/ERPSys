@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, Logger } from "@nestjs/common";
 import { prisma, runWithTenantSession } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 @Injectable()
 export class BlockchainDeepService {

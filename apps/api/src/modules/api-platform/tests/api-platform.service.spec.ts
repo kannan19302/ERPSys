@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ApiPlatformService } from "../api-platform.service";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 vi.mock("@unerp/database", () => ({
   prisma: {
@@ -51,7 +52,7 @@ describe("ApiPlatformService", () => {
         tenantId: "t1",
       },
     ];
-    (prisma.apiKey.findMany as any).mockResolvedValue(mockKeys);
+    (idpPrisma.apiKey.findMany as any).mockResolvedValue(mockKeys);
     const result = await service.getApiKeys("t1");
     expect(result).toEqual(mockKeys);
   });
@@ -65,19 +66,19 @@ describe("ApiPlatformService", () => {
       status: "ACTIVE",
       rateLimit: 60,
     };
-    (prisma.apiKey.create as any).mockResolvedValue(mockKey);
+    (idpPrisma.apiKey.create as any).mockResolvedValue(mockKey);
     const result = await service.createApiKey("t1", { name: "Test" });
     expect(result.name).toBe("Test");
     expect(result.key).toBeDefined();
   });
 
   it("should revoke API key", async () => {
-    (prisma.apiKey.findFirst as any).mockResolvedValue({
+    (idpPrisma.apiKey.findFirst as any).mockResolvedValue({
       id: "1",
       tenantId: "t1",
     });
     const mockUpdated = { id: "1", status: "REVOKED" };
-    (prisma.apiKey.update as any).mockResolvedValue(mockUpdated);
+    (idpPrisma.apiKey.update as any).mockResolvedValue(mockUpdated);
     const result = await service.revokeApiKey("t1", "1");
     expect(result.status).toBe("REVOKED");
   });

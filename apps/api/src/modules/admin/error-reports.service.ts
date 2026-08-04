@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { prisma, runWithTenantSession } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { ErrorReportInput } from "./error-reports.schemas";
 
 @Injectable()

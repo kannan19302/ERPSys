@@ -5,6 +5,7 @@ import {
   Logger,
 } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { Prisma } from "@prisma/client";
 import { BudgetControlService } from "./budget-control.service";
 

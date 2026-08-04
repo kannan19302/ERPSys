@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Form1099Service } from "../services/form-1099.service";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { NotFoundException, BadRequestException } from "@nestjs/common";
 
 vi.mock("@prisma/client", () => {

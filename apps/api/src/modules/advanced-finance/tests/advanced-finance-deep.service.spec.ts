@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { TaxEngineDeepService } from "../services/tax-engine-deep.service";
 import { TreasuryDeepService } from "../services/treasury-deep.service";
 import { ApIntelligenceService } from "../services/ap-intelligence.service";

@@ -1,3 +1,5 @@
+import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { CommunicationAdminService } from "../communication-admin.service";
 import { CommunicationBotsService } from "../communication-bots.service";
@@ -193,7 +195,7 @@ describe("CommunicationEnterpriseService", () => {
   it("returns message analytics", async () => {
     const { prisma } = await import("@unerp/database");
     vi.mocked(prisma.message.count).mockResolvedValue(100);
-    vi.mocked(prisma.user.findMany).mockResolvedValue([] as never);
+    vi.mocked(idpPrisma.user.findMany).mockResolvedValue([] as never);
     vi.mocked(prisma.channel.findMany).mockResolvedValue([] as never);
     const res = await svc.getMessageAnalytics("t1", "MONTHLY");
     expect(res.totalMessages).toBe(100);

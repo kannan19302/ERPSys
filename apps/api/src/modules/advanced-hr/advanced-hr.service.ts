@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { Prisma } from "@prisma/client";
 import * as crypto from "crypto";
 
@@ -1066,7 +1067,7 @@ export class AdvancedHrService {
         where: { tenantId, id: { in: employeeIds } },
         select: { id: true, firstName: true, lastName: true },
       }),
-      prisma.user.findMany({
+      idpPrisma.user.findMany({
         where: { tenantId, id: { in: reviewerIds } },
         select: { id: true, firstName: true, lastName: true },
       }),
@@ -2135,7 +2136,7 @@ export class AdvancedHrService {
     });
     if (!employee) {
       // Fallback: search by email to link them
-      const user = await prisma.user.findUnique({ where: { id: userId } });
+      const user = await idpPrisma.user.findUnique({ where: { id: userId } });
       if (user) {
         const linkedEmp = await prisma.employee.findFirst({
           where: { tenantId, email: user.email },

@@ -1,3 +1,5 @@
+import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { CommunicationService } from "../communication.service";
 
@@ -166,8 +168,8 @@ describe("CommunicationService — WebSocket gateway wiring (US-A3/US-A4/US-A5)"
       createdAt,
       reactions: [],
     } as never);
-    vi.mocked(prisma.user.findFirst).mockResolvedValue(null as never);
-    vi.mocked(prisma.user.findMany).mockResolvedValue([] as never);
+    vi.mocked(idpPrisma.user.findFirst).mockResolvedValue(null as never);
+    vi.mocked(idpPrisma.user.findMany).mockResolvedValue([] as never);
 
     const result = await svc.createMessage("t1", "c1", "u1", {
       content: "hello team",
@@ -202,7 +204,7 @@ describe("CommunicationService — WebSocket gateway wiring (US-A3/US-A4/US-A5)"
 
   it("broadcasts a presence update via the gateway when setPresence is called", async () => {
     const { prisma } = await import("@unerp/database");
-    vi.mocked(prisma.userPresence.upsert).mockResolvedValue({
+    vi.mocked(idpPrisma.userPresence.upsert).mockResolvedValue({
       tenantId: "t1",
       userId: "u1",
       presence: "DND",
@@ -279,7 +281,7 @@ describe("CommunicationService — getMessageReadReceipts (US-B4)", () => {
       { userId: "u2" },
       { userId: "u3" },
     ] as never);
-    vi.mocked(prisma.user.findMany).mockResolvedValue([
+    vi.mocked(idpPrisma.user.findMany).mockResolvedValue([
       { id: "u2", firstName: "Jane", lastName: "Doe", avatar: null },
       { id: "u3", firstName: "Bob", lastName: "Smith", avatar: null },
     ] as never);

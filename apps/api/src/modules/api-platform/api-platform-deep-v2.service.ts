@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { randomUUID } from "node:crypto";
 
 interface CorsConfigRecord {
@@ -36,32 +37,32 @@ export class ApiPlatformDeepV2Service {
   private healthChecks: HealthCheckRecord[] = [];
 
   async rotateApiKey(tenantId: string, id: string) {
-    const key = await prisma.apiKey.findFirst({ where: { id, tenantId } });
+    const key = await idpPrisma.apiKey.findFirst({ where: { id, tenantId } });
     if (!key) throw new NotFoundException("API key not found");
-    return prisma.apiKey.update({
+    return idpPrisma.apiKey.update({
       where: { id },
       data: { hashedKey: "rotated-" + Date.now() },
     });
   }
   async getApiKeyStats(tenantId: string) {
     const [active, total, expired] = await Promise.all([
-      prisma.apiKey.count({ where: { tenantId, status: "ACTIVE" } }),
-      prisma.apiKey.count({ where: { tenantId } }),
-      prisma.apiKey.count({
+      idpPrisma.apiKey.count({ where: { tenantId, status: "ACTIVE" } }),
+      idpPrisma.apiKey.count({ where: { tenantId } }),
+      idpPrisma.apiKey.count({
         where: { tenantId, expiresAt: { lte: new Date() } },
       }),
     ]);
     return { active, total, expired };
   }
   async revokeApiKey(tenantId: string, id: string) {
-    await prisma.apiKey.updateMany({
+    await idpPrisma.apiKey.updateMany({
       where: { id, tenantId },
       data: { status: "REVOKED" },
     });
     return { revoked: true };
   }
   async bulkRevokeApiKeys(tenantId: string, ids: string[]) {
-    await prisma.apiKey.updateMany({
+    await idpPrisma.apiKey.updateMany({
       where: { id: { in: ids }, tenantId },
       data: { status: "REVOKED" },
     });
@@ -341,7 +342,7 @@ export class ApiPlatformDeepV2Service {
   }
   async getUsageSummary(tenantId: string) {
     const [apiKeys, webhooks, endpoints] = await Promise.all([
-      prisma.apiKey.count({ where: { tenantId } }),
+      idpPrisma.apiKey.count({ where: { tenantId } }),
       prisma.webhookSubscription.count({ where: { tenantId } }),
       prisma.apiUsageMetric.count({ where: { tenantId } }),
     ]);

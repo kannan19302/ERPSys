@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 @Injectable()
 export class SubscriptionService {
@@ -9,7 +10,7 @@ export class SubscriptionService {
       include: { plan: true },
     });
 
-    const userCount = await prisma.user.count({
+    const userCount = await idpPrisma.user.count({
       where: { tenantId, status: "ACTIVE" },
     });
 

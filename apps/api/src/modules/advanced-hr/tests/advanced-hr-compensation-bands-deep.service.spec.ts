@@ -8,6 +8,7 @@ vi.mock("@unerp/database", () => ({
 }));
 
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { AdvancedHrCompensationBandsDeepService } from "../advanced-hr-compensation-bands-deep.service";
 
 describe("AdvancedHrCompensationBandsDeepService", () => {

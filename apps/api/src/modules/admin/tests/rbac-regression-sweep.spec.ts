@@ -39,7 +39,8 @@ vi.mock("@unerp/database", () => ({
   ),
 }));
 
-import { prisma } from "@unerp/database";
+import { prisma, runWithTenantSession } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 function buildContext(
   user: unknown,
@@ -63,7 +64,7 @@ async function callWithRole(
   handlerName: string,
   permissions: string[],
 ) {
-  (prisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
+  (idpPrisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
     permissions.length ? [roleWithPermissions(permissions)] : [],
   );
   const handler = controllerClass.prototype[handlerName];

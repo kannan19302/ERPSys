@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { Prisma } from "@prisma/client";
 import { GlAccountingService } from "./gl-accounting.service";
 import { CardSpendLimitService } from "./card-spend-limit.service";

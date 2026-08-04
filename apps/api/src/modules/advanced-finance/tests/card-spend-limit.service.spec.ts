@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { CardSpendLimitService } from "../services/card-spend-limit.service";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { NotFoundException, BadRequestException } from "@nestjs/common";
 
 vi.mock("@prisma/client", () => {

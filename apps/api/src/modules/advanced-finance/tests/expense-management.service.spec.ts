@@ -3,6 +3,7 @@ import { ExpenseManagementService } from "../services/expense-management.service
 import { GlAccountingService } from "../services/gl-accounting.service";
 import { CardSpendLimitService } from "../services/card-spend-limit.service";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { BadRequestException, NotFoundException } from "@nestjs/common";
 
 vi.mock("@prisma/client", () => {

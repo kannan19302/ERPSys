@@ -14,6 +14,7 @@ vi.mock("@unerp/database", () => ({
 }));
 
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { AnalyticsFunnelConversionDeepService } from "../analytics-funnel-conversion-deep.service";
 
 describe("AnalyticsFunnelConversionDeepService", () => {
