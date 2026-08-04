@@ -13,5 +13,7 @@
     "**/dist": true,
     "**/.next": true,
     "**/.turbo": true
-  }
+  },
+  "git.autoRepositoryDetection": "all",
+  "git.repositoryScanMaxDepth": 2
 }

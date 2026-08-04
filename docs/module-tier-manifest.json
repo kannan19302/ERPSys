@@ -1,0 +1,69 @@
+{
+  "$schema": "https://unierp.io/schemas/module-tier-manifest.json",
+  "description": "Module Tier Manifest — see PLATFORM_ARCHITECTURE.md § 6.2. Tier A requires full Clean Architecture. Tier B requires controller/service/dto/tests.",
+  "tiers": {
+    "A": {
+      "description": "Full four-layer Clean Architecture. max-lines: 400 controller / 800 service. Domain layer has zero framework imports. 100% coverage on calculation paths.",
+      "modules": [
+        "finance",
+        "advanced-finance",
+        "fixed-assets",
+        "hr",
+        "advanced-hr",
+        "hr-advanced",
+        "people",
+        "inventory",
+        "supply-chain",
+        "procurement",
+        "sales",
+        "crm",
+        "pos",
+        "ecommerce",
+        "manufacturing"
+      ]
+    },
+    "B": {
+      "description": "Controller / service / dto / tests. max-lines enforced. Promote to Tier A when module exceeds 15 KLoc or acquires money.",
+      "modules": [
+        "admin",
+        "ai",
+        "analytics",
+        "api-platform",
+        "blockchain",
+        "builder",
+        "communication",
+        "connect",
+        "devops",
+        "documents",
+        "drive",
+        "education",
+        "ext-gateway",
+        "field-service",
+        "healthcare",
+        "localization",
+        "notifications",
+        "onboarding",
+        "outbox",
+        "projects",
+        "pwa",
+        "real-estate",
+        "reporting",
+        "saas",
+        "saas-portal",
+        "saved-views",
+        "search",
+        "service-management",
+        "settings",
+        "storage",
+        "subscriptions",
+        "workflow"
+      ]
+    }
+  },
+  "max_lines": {
+    "controller_tier_a": 400,
+    "service_tier_a": 800,
+    "controller_tier_b": 600,
+    "service_tier_b": 1200
+  }
+}

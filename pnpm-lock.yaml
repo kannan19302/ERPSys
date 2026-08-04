@@ -128,6 +128,12 @@ importers:
       '@unerp/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@unerp/extension-api':
+        specifier: workspace:*
+        version: link:../../packages/extension-api
+      '@unerp/sandbox':
+        specifier: workspace:*
+        version: link:../../packages/sandbox
       '@unerp/service-kit':
         specifier: workspace:*
         version: link:../../packages/service-kit
@@ -197,7 +203,237 @@ importers:
     devDependencies:
       '@nestjs/cli':
         specifier: ^11.0.0
-        version: 11.0.23(@types/node@22.19.20)(esbuild@0.27.7)(postcss@8.5.15)(prettier@3.8.4)
+        version: 11.0.23(@types/node@22.19.20)(postcss@8.5.15)(prettier@3.8.4)
+      '@nestjs/testing':
+        specifier: ^11.0.0
+        version: 11.1.26(@nestjs/common@11.1.26(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.26)(@nestjs/platform-express@11.1.26)
+      '@types/cookie-parser':
+        specifier: ^1.4.10
+        version: 1.4.10(@types/express@5.0.6)
+      '@types/express':
+        specifier: ^5.0.0
+        version: 5.0.6
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.20
+      '@types/nodemailer':
+        specifier: ^8.0.1
+        version: 8.0.1
+      '@types/pdfkit':
+        specifier: ^0.17.6
+        version: 0.17.6
+      '@types/qrcode':
+        specifier: ^1.5.6
+        version: 1.5.6
+      '@types/web-push':
+        specifier: ^3.6.4
+        version: 3.6.4
+      '@unerp/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@vitest/coverage-v8':
+        specifier: ^2.1.9
+        version: 2.1.9(vitest@2.1.9(@types/node@22.19.20)(jsdom@25.0.1)(terser@5.48.0))
+      dependency-cruiser:
+        specifier: ^18.0.0
+        version: 18.0.0
+      rimraf:
+        specifier: ^6.0.0
+        version: 6.1.3
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.0
+        version: 2.1.9(@types/node@22.19.20)(jsdom@25.0.1)(terser@5.48.0)
+
+  apps/console:
+    dependencies:
+      next:
+        specifier: 15.3.4
+        version: 15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      react:
+        specifier: ^19.0.0
+        version: 19.2.7
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.7(react@19.2.7)
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.43
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.17
+      '@types/react-dom':
+        specifier: ^19.0.0
+        version: 19.2.3(@types/react@19.2.17)
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.3
+
+  apps/extensions/education:
+    dependencies:
+      '@unerp/extension-api':
+        specifier: workspace:*
+        version: link:../../../packages/extension-api
+
+  apps/extensions/field-service:
+    dependencies:
+      '@unerp/extension-api':
+        specifier: workspace:*
+        version: link:../../../packages/extension-api
+
+  apps/extensions/healthcare:
+    dependencies:
+      '@unerp/extension-api':
+        specifier: workspace:*
+        version: link:../../../packages/extension-api
+
+  apps/extensions/real-estate:
+    dependencies:
+      '@unerp/extension-api':
+        specifier: workspace:*
+        version: link:../../../packages/extension-api
+
+  apps/idp:
+    dependencies:
+      '@aws-sdk/client-s3':
+        specifier: ^3.600.0
+        version: 3.1073.0
+      '@nestjs/bullmq':
+        specifier: ^11.0.4
+        version: 11.0.4(@nestjs/common@11.1.26(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.26)(bullmq@5.79.1)
+      '@nestjs/common':
+        specifier: ^11.0.0
+        version: 11.1.26(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/core':
+        specifier: ^11.0.0
+        version: 11.1.26(@nestjs/common@11.1.26(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.26)(@nestjs/websockets@11.1.27)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/event-emitter':
+        specifier: ^3.0.0
+        version: 3.1.0(@nestjs/common@11.1.26(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.26)
+      '@nestjs/platform-express':
+        specifier: ^11.0.0
+        version: 11.1.26(@nestjs/common@11.1.26(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.26)
+      '@nestjs/platform-socket.io':
+        specifier: ^11.1.27
+        version: 11.1.27(@nestjs/common@11.1.26(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/websockets@11.1.27)(rxjs@7.8.2)
+      '@nestjs/swagger':
+        specifier: ^11.4.4
+        version: 11.4.4(@nestjs/common@11.1.26(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.26)(reflect-metadata@0.2.2)
+      '@nestjs/throttler':
+        specifier: ^6.0.0
+        version: 6.5.0(@nestjs/common@11.1.26(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.26)(reflect-metadata@0.2.2)
+      '@nestjs/websockets':
+        specifier: ^11.1.27
+        version: 11.1.27(@nestjs/common@11.1.26(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.26)(@nestjs/platform-socket.io@11.1.27)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@opentelemetry/auto-instrumentations-node':
+        specifier: ^0.77.0
+        version: 0.77.0(@opentelemetry/api@1.9.1)(@opentelemetry/core@2.8.0(@opentelemetry/api@1.9.1))
+      '@opentelemetry/exporter-trace-otlp-http':
+        specifier: ^0.219.0
+        version: 0.219.0(@opentelemetry/api@1.9.1)
+      '@opentelemetry/resources':
+        specifier: ^2.8.0
+        version: 2.8.0(@opentelemetry/api@1.9.1)
+      '@opentelemetry/sdk-node':
+        specifier: ^0.219.0
+        version: 0.219.0(@opentelemetry/api@1.9.1)
+      '@opentelemetry/semantic-conventions':
+        specifier: ^1.41.1
+        version: 1.41.1
+      '@prisma/client':
+        specifier: ^6.2.0
+        version: 6.19.3(prisma@6.19.3(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
+      '@sentry/nestjs':
+        specifier: ^10.61.0
+        version: 10.61.0(@nestjs/common@11.1.26(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.26)(@opentelemetry/core@2.8.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.219.0(@opentelemetry/api@1.9.1))
+      '@sentry/node':
+        specifier: ^10.61.0
+        version: 10.61.0(@opentelemetry/core@2.8.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.219.0(@opentelemetry/api@1.9.1))
+      '@types/multer':
+        specifier: ^1.4.11
+        version: 1.4.13
+      '@unerp/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@unerp/blockchain':
+        specifier: workspace:*
+        version: link:../../packages/blockchain
+      '@unerp/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@unerp/service-kit':
+        specifier: workspace:*
+        version: link:../../packages/service-kit
+      '@unerp/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      bullmq:
+        specifier: ^5.79.1
+        version: 5.79.1
+      cookie-parser:
+        specifier: ^1.4.7
+        version: 1.4.7
+      exceljs:
+        specifier: ^4.4.0
+        version: 4.4.0
+      express:
+        specifier: ^4.21.2
+        version: 4.22.2
+      helmet:
+        specifier: ^8.0.0
+        version: 8.2.0
+      ioredis:
+        specifier: ^5.10.1
+        version: 5.10.1
+      nodemailer:
+        specifier: ^9.0.3
+        version: 9.0.3
+      otplib:
+        specifier: ^12.0.1
+        version: 12.0.1
+      pdfkit:
+        specifier: ^0.19.1
+        version: 0.19.1
+      pino:
+        specifier: ^10.3.1
+        version: 10.3.1
+      pino-http:
+        specifier: ^11.0.0
+        version: 11.0.0
+      prom-client:
+        specifier: ^15.1.3
+        version: 15.1.3
+      qrcode:
+        specifier: ^1.5.4
+        version: 1.5.4
+      reflect-metadata:
+        specifier: ^0.2.0
+        version: 0.2.2
+      rxjs:
+        specifier: ^7.8.0
+        version: 7.8.2
+      socket.io:
+        specifier: ^4.8.3
+        version: 4.8.3
+      stripe:
+        specifier: ^22.3.2
+        version: 22.3.2(@types/node@22.19.20)
+      web-push:
+        specifier: ^3.6.7
+        version: 3.6.7
+      xlsx:
+        specifier: ^0.18.5
+        version: 0.18.5
+      zod:
+        specifier: ^3.24.0
+        version: 3.25.76
+    devDependencies:
+      '@nestjs/cli':
+        specifier: ^11.0.0
+        version: 11.0.23(@types/node@22.19.20)(postcss@8.5.15)(prettier@3.8.4)
       '@nestjs/testing':
         specifier: ^11.0.0
         version: 11.1.26(@nestjs/common@11.1.26(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.26)(@nestjs/platform-express@11.1.26)
@@ -261,57 +497,18 @@ importers:
       '@unerp/auth':
         specifier: workspace:*
         version: link:../../packages/auth
-      '@unerp/database':
-        specifier: workspace:*
-        version: link:../../packages/database
       '@unerp/framework':
         specifier: workspace:*
         version: link:../../packages/framework
+      '@unerp/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
       '@unerp/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@unerp/ui':
         specifier: workspace:*
         version: link:../../packages/ui
-      '@unerp/ui-charts':
-        specifier: workspace:*
-        version: link:../../packages/ui-charts
-      '@unerp/ui-components':
-        specifier: workspace:*
-        version: link:../../packages/ui-components
-      '@unerp/ui-dashboard':
-        specifier: workspace:*
-        version: link:../../packages/ui-dashboard
-      '@unerp/ui-data-grid':
-        specifier: workspace:*
-        version: link:../../packages/ui-data-grid
-      '@unerp/ui-form-engine':
-        specifier: workspace:*
-        version: link:../../packages/ui-form-engine
-      '@unerp/ui-hooks':
-        specifier: workspace:*
-        version: link:../../packages/ui-hooks
-      '@unerp/ui-icons':
-        specifier: workspace:*
-        version: link:../../packages/ui-icons
-      '@unerp/ui-layout':
-        specifier: workspace:*
-        version: link:../../packages/ui-layout
-      '@unerp/ui-notifications':
-        specifier: workspace:*
-        version: link:../../packages/ui-notifications
-      '@unerp/ui-theme':
-        specifier: workspace:*
-        version: link:../../packages/ui-theme
-      '@unerp/ui-tokens':
-        specifier: workspace:*
-        version: link:../../packages/ui-tokens
-      '@unerp/ui-utils':
-        specifier: workspace:*
-        version: link:../../packages/ui-utils
-      '@unerp/ui-workflow':
-        specifier: workspace:*
-        version: link:../../packages/ui-workflow
       '@xyflow/react':
         specifier: ^12.11.0
         version: 12.11.0(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(immer@11.1.8)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -438,6 +635,12 @@ importers:
 
   packages/config: {}
 
+  packages/contracts:
+    devDependencies:
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
   packages/corporate-site-template:
     dependencies:
       lucide-react:
@@ -478,6 +681,12 @@ importers:
         specifier: ^2.1.0
         version: 2.1.9(@types/node@22.19.20)(jsdom@25.0.1)(terser@5.48.0)
 
+  packages/extension-api:
+    dependencies:
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
+
   packages/framework:
     dependencies:
       '@tanstack/react-query':
@@ -511,6 +720,32 @@ importers:
       vitest:
         specifier: ^2.1.0
         version: 2.1.9(@types/node@22.19.20)(jsdom@25.0.1)(terser@5.48.0)
+
+  packages/kernel:
+    dependencies:
+      '@unerp/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+    devDependencies:
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
+  packages/sandbox:
+    dependencies:
+      '@unerp/extension-api':
+        specifier: workspace:*
+        version: link:../extension-api
+
+  packages/sdk:
+    dependencies:
+      '@unerp/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+    devDependencies:
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
 
   packages/service-kit:
     devDependencies:
@@ -2571,16 +2806,31 @@ packages:
       '@nestjs/platform-socket.io':
         optional: true
 
+  '@next/env@15.3.4':
+    resolution: {integrity: sha512-ZkdYzBseS6UjYzz6ylVKPOK+//zLWvD6Ta+vpoye8cW11AjiQjGYVibF0xuvT4L0iJfAPfZLFidaEzAOywyOAQ==}
+
   '@next/env@15.5.19':
     resolution: {integrity: sha512-sWWluFvcv5v3Fxznmf2ZfjyoVQt/64oCnYqS90inQWGzMPK1VjvekPiz3OPHKmFT30EnHrjlbyaHLt3M0vWabw==}
 
   '@next/eslint-plugin-next@15.5.20':
     resolution: {integrity: sha512-MZUgFpVd9rGSZpb8bNceUWvkAZe6aQw/6h2SSqHQuYzKfaiEUEVPIO6mXqaBmiBEBSN1f1sOc1uV8GCM90oegg==}
 
+  '@next/swc-darwin-arm64@15.3.4':
+    resolution: {integrity: sha512-z0qIYTONmPRbwHWvpyrFXJd5F9YWLCsw3Sjrzj2ZvMYy9NPQMPZ1NjOJh4ojr4oQzcGYwgJKfidzehaNa1BpEg==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [darwin]
+
   '@next/swc-darwin-arm64@15.5.19':
     resolution: {integrity: sha512-jx9wWlTKueHKPvVOndyr7WuaevWCkuYqsQ8gC0TMPKAVWG3MhcdMrjfo9tvIZNXd0QOUYXXvAcZ325y8Uq7uzg==}
     engines: {node: '>= 10'}
     cpu: [arm64]
+    os: [darwin]
+
+  '@next/swc-darwin-x64@15.3.4':
+    resolution: {integrity: sha512-Z0FYJM8lritw5Wq+vpHYuCIzIlEMjewG2aRkc3Hi2rcbULknYL/xqfpBL23jQnCSrDUGAo/AEv0Z+s2bff9Zkw==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
     os: [darwin]
 
   '@next/swc-darwin-x64@15.5.19':
@@ -2589,8 +2839,20 @@ packages:
     cpu: [x64]
     os: [darwin]
 
+  '@next/swc-linux-arm64-gnu@15.3.4':
+    resolution: {integrity: sha512-l8ZQOCCg7adwmsnFm8m5q9eIPAHdaB2F3cxhufYtVo84pymwKuWfpYTKcUiFcutJdp9xGHC+F1Uq3xnFU1B/7g==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+
   '@next/swc-linux-arm64-gnu@15.5.19':
     resolution: {integrity: sha512-WeH+nelQyyMeE2f8FxBRZNrGipya5zHZV2vjzfCOAYyiI6am+NbnWAAldOBFQBB2w0DjJcsvrKqoFT2b7+5YoA==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@next/swc-linux-arm64-musl@15.3.4':
+    resolution: {integrity: sha512-wFyZ7X470YJQtpKot4xCY3gpdn8lE9nTlldG07/kJYexCUpX1piX+MBfZdvulo+t1yADFVEuzFfVHfklfEx8kw==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
@@ -2601,8 +2863,20 @@ packages:
     cpu: [arm64]
     os: [linux]
 
+  '@next/swc-linux-x64-gnu@15.3.4':
+    resolution: {integrity: sha512-gEbH9rv9o7I12qPyvZNVTyP/PWKqOp8clvnoYZQiX800KkqsaJZuOXkWgMa7ANCCh/oEN2ZQheh3yH8/kWPSEg==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+
   '@next/swc-linux-x64-gnu@15.5.19':
     resolution: {integrity: sha512-LTxRmMgqqMv05Had879W00Fm53quiJd3Zuz8h1JSNJ3nGSlbZ/7Tjs1tKyScgN3Au3t3MyPsjPlq60fMmSHLsg==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+
+  '@next/swc-linux-x64-musl@15.3.4':
+    resolution: {integrity: sha512-Cf8sr0ufuC/nu/yQ76AnarbSAXcwG/wj+1xFPNbyNo8ltA6kw5d5YqO8kQuwVIxk13SBdtgXrNyom3ZosHAy4A==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
@@ -2613,10 +2887,22 @@ packages:
     cpu: [x64]
     os: [linux]
 
+  '@next/swc-win32-arm64-msvc@15.3.4':
+    resolution: {integrity: sha512-ay5+qADDN3rwRbRpEhTOreOn1OyJIXS60tg9WMYTWCy3fB6rGoyjLVxc4dR9PYjEdR2iDYsaF5h03NA+XuYPQQ==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [win32]
+
   '@next/swc-win32-arm64-msvc@15.5.19':
     resolution: {integrity: sha512-6UNt2dFuCHOe446sm/Kp69nUe8/wIhnh9bm6Xcqw4qEWCOppLMOvhTBVgvM7invVUNr4SPpP6NOQsACtn2IN9Q==}
     engines: {node: '>= 10'}
     cpu: [arm64]
+    os: [win32]
+
+  '@next/swc-win32-x64-msvc@15.3.4':
+    resolution: {integrity: sha512-4kDt31Bc9DGyYs41FTL1/kNpDeHyha2TC0j5sRRoKCyrhNcfZ/nRQkAUlF27mETwm8QyHqIjHJitfcza2Iykfg==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
     os: [win32]
 
   '@next/swc-win32-x64-msvc@15.5.19':
@@ -3669,6 +3955,9 @@ packages:
     peerDependencies:
       storybook: ^8.2.0 || ^8.3.0-0 || ^8.4.0-0 || ^8.5.0-0 || ^8.6.0-0
 
+  '@swc/counter@0.1.3':
+    resolution: {integrity: sha512-e2BR4lsJkkRlKZ/qCHPw9ZaSxc0MVUd7gtbtaB7aMvHeJVYe8sOB8DBZkP2DtISHGSku9sCK6T6cnY0CtXrOCQ==}
+
   '@swc/helpers@0.5.15':
     resolution: {integrity: sha512-JQ5TuMi45Owi4/BIMAJBoSQoOJu12oOk/gADqlcUL9JEdHB8vyjUSsxqeNXnmXHjYKMi2WcYtezGEEhqUI/E2g==}
 
@@ -3877,6 +4166,9 @@ packages:
 
   '@types/node@14.18.63':
     resolution: {integrity: sha512-fAtCfv4jJg+ExtXhvCkCqUKZ+4ok/JQk01qDKhL5BDDoS3AxKXhV5/MAVUZyQnSEd2GT92fkgZl0pz0Q0AzcIQ==}
+
+  '@types/node@20.19.43':
+    resolution: {integrity: sha512-6oYBAi5ikg4Pl+kGsoYtawUMBT2zZMCvPNF7pVLnHZfd1zf38DRiWn/gT01RYCdUqkv7Fhr+C9ot4/tb+2sVvA==}
 
   '@types/node@22.19.20':
     resolution: {integrity: sha512-6tELRwSDYWW9EdZhbeZmYGZ1/7Djkt+Ah3/ScEYT9cDord7UJzasR/4D3VONg9tQI5CDp+/CZC1AXj2pCFOvpw==}
@@ -6254,6 +6546,28 @@ packages:
 
   neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
+
+  next@15.3.4:
+    resolution: {integrity: sha512-mHKd50C+mCjam/gcnwqL1T1vPx/XQNFlXqFIVdgQdVAFY9iIQtY0IfaVflEYzKiqjeA7B0cYYMaCrmAYFjs4rA==}
+    engines: {node: ^18.18.0 || ^19.8.0 || >= 20.0.0}
+    deprecated: This version has a security vulnerability. Please upgrade to a patched version. See https://nextjs.org/blog/CVE-2025-66478 for more details.
+    hasBin: true
+    peerDependencies:
+      '@opentelemetry/api': ^1.1.0
+      '@playwright/test': ^1.41.2
+      babel-plugin-react-compiler: '*'
+      react: ^18.2.0 || 19.0.0-rc-de68d2f4-20241204 || ^19.0.0
+      react-dom: ^18.2.0 || 19.0.0-rc-de68d2f4-20241204 || ^19.0.0
+      sass: ^1.3.0
+    peerDependenciesMeta:
+      '@opentelemetry/api':
+        optional: true
+      '@playwright/test':
+        optional: true
+      babel-plugin-react-compiler:
+        optional: true
+      sass:
+        optional: true
 
   next@15.5.19:
     resolution: {integrity: sha512-xNOW6tYshGX1/Oi3F8uuk4gpDeWsSUE/1Z0G5uUMekIxaQ0xc03UXd9II0VQHYMWviMeA0OHpJFAKsHf8bTYVg==}
@@ -9325,7 +9639,7 @@ snapshots:
       bullmq: 5.79.1
       tslib: 2.8.1
 
-  '@nestjs/cli@11.0.23(@types/node@22.19.20)(esbuild@0.27.7)(postcss@8.5.15)(prettier@3.8.4)':
+  '@nestjs/cli@11.0.23(@types/node@22.19.20)(postcss@8.5.15)(prettier@3.8.4)':
     dependencies:
       '@angular-devkit/core': 19.2.27(chokidar@4.0.3)
       '@angular-devkit/schematics': 19.2.27(chokidar@4.0.3)
@@ -9336,14 +9650,14 @@ snapshots:
       chokidar: 4.0.3
       cli-table3: 0.6.5
       commander: 4.1.1
-      fork-ts-checker-webpack-plugin: 9.1.0(typescript@5.9.3)(webpack@5.106.2(esbuild@0.27.7)(postcss@8.5.15))
+      fork-ts-checker-webpack-plugin: 9.1.0(typescript@5.9.3)(webpack@5.106.2(postcss@8.5.15))
       glob: 13.0.6
       node-emoji: 1.11.0
       ora: 5.4.1
       tsconfig-paths: 4.2.0
       tsconfig-paths-webpack-plugin: 4.2.0
       typescript: 5.9.3
-      webpack: 5.106.2(esbuild@0.27.7)(postcss@8.5.15)
+      webpack: 5.106.2(postcss@8.5.15)
       webpack-node-externals: 3.0.0
     transitivePeerDependencies:
       - '@minify-html/node'
@@ -9473,31 +9787,57 @@ snapshots:
     optionalDependencies:
       '@nestjs/platform-socket.io': 11.1.27(@nestjs/common@11.1.26(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/websockets@11.1.27)(rxjs@7.8.2)
 
+  '@next/env@15.3.4': {}
+
   '@next/env@15.5.19': {}
 
   '@next/eslint-plugin-next@15.5.20':
     dependencies:
       fast-glob: 3.3.1
 
+  '@next/swc-darwin-arm64@15.3.4':
+    optional: true
+
   '@next/swc-darwin-arm64@15.5.19':
+    optional: true
+
+  '@next/swc-darwin-x64@15.3.4':
     optional: true
 
   '@next/swc-darwin-x64@15.5.19':
     optional: true
 
+  '@next/swc-linux-arm64-gnu@15.3.4':
+    optional: true
+
   '@next/swc-linux-arm64-gnu@15.5.19':
+    optional: true
+
+  '@next/swc-linux-arm64-musl@15.3.4':
     optional: true
 
   '@next/swc-linux-arm64-musl@15.5.19':
     optional: true
 
+  '@next/swc-linux-x64-gnu@15.3.4':
+    optional: true
+
   '@next/swc-linux-x64-gnu@15.5.19':
+    optional: true
+
+  '@next/swc-linux-x64-musl@15.3.4':
     optional: true
 
   '@next/swc-linux-x64-musl@15.5.19':
     optional: true
 
+  '@next/swc-win32-arm64-msvc@15.3.4':
+    optional: true
+
   '@next/swc-win32-arm64-msvc@15.5.19':
+    optional: true
+
+  '@next/swc-win32-x64-msvc@15.3.4':
     optional: true
 
   '@next/swc-win32-x64-msvc@15.5.19':
@@ -10784,6 +11124,8 @@ snapshots:
     dependencies:
       storybook: 8.6.18(prettier@3.8.4)
 
+  '@swc/counter@0.1.3': {}
+
   '@swc/helpers@0.5.15':
     dependencies:
       tslib: 2.8.1
@@ -11012,6 +11354,10 @@ snapshots:
   '@types/node@12.20.55': {}
 
   '@types/node@14.18.63': {}
+
+  '@types/node@20.19.43':
+    dependencies:
+      undici-types: 6.21.0
 
   '@types/node@22.19.20':
     dependencies:
@@ -12736,7 +13082,7 @@ snapshots:
       cross-spawn: 7.0.6
       signal-exit: 4.1.0
 
-  fork-ts-checker-webpack-plugin@9.1.0(typescript@5.9.3)(webpack@5.106.2(esbuild@0.27.7)(postcss@8.5.15)):
+  fork-ts-checker-webpack-plugin@9.1.0(typescript@5.9.3)(webpack@5.106.2(postcss@8.5.15)):
     dependencies:
       '@babel/code-frame': 7.29.7
       chalk: 4.1.2
@@ -12751,7 +13097,7 @@ snapshots:
       semver: 7.8.5
       tapable: 2.3.3
       typescript: 5.9.3
-      webpack: 5.106.2(esbuild@0.27.7)(postcss@8.5.15)
+      webpack: 5.106.2(postcss@8.5.15)
 
   form-data@4.0.6:
     dependencies:
@@ -13623,6 +13969,33 @@ snapshots:
   negotiator@1.0.0: {}
 
   neo-async@2.6.2: {}
+
+  next@15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
+    dependencies:
+      '@next/env': 15.3.4
+      '@swc/counter': 0.1.3
+      '@swc/helpers': 0.5.15
+      busboy: 1.6.0
+      caniuse-lite: 1.0.30001797
+      postcss: 8.4.31
+      react: 19.2.7
+      react-dom: 19.2.7(react@19.2.7)
+      styled-jsx: 5.1.6(react@19.2.7)
+    optionalDependencies:
+      '@next/swc-darwin-arm64': 15.3.4
+      '@next/swc-darwin-x64': 15.3.4
+      '@next/swc-linux-arm64-gnu': 15.3.4
+      '@next/swc-linux-arm64-musl': 15.3.4
+      '@next/swc-linux-x64-gnu': 15.3.4
+      '@next/swc-linux-x64-musl': 15.3.4
+      '@next/swc-win32-arm64-msvc': 15.3.4
+      '@next/swc-win32-x64-msvc': 15.3.4
+      '@opentelemetry/api': 1.9.1
+      '@playwright/test': 1.61.1
+      sharp: 0.34.5
+    transitivePeerDependencies:
+      - '@babel/core'
+      - babel-plugin-macros
 
   next@15.5.19(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
     dependencies:
@@ -14764,15 +15137,14 @@ snapshots:
 
   term-size@2.2.1: {}
 
-  terser-webpack-plugin@5.6.1(esbuild@0.27.7)(postcss@8.5.15)(webpack@5.106.2(esbuild@0.27.7)(postcss@8.5.15)):
+  terser-webpack-plugin@5.6.1(postcss@8.5.15)(webpack@5.106.2(postcss@8.5.15)):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       jest-worker: 27.5.1
       schema-utils: 4.3.3
       terser: 5.48.0
-      webpack: 5.106.2(esbuild@0.27.7)(postcss@8.5.15)
+      webpack: 5.106.2(postcss@8.5.15)
     optionalDependencies:
-      esbuild: 0.27.7
       postcss: 8.5.15
 
   terser@5.48.0:
@@ -15148,7 +15520,7 @@ snapshots:
 
   webpack-virtual-modules@0.6.2: {}
 
-  webpack@5.106.2(esbuild@0.27.7)(postcss@8.5.15):
+  webpack@5.106.2(postcss@8.5.15):
     dependencies:
       '@types/eslint-scope': 3.7.7
       '@types/estree': 1.0.9
@@ -15171,7 +15543,7 @@ snapshots:
       neo-async: 2.6.2
       schema-utils: 4.3.3
       tapable: 2.3.3
-      terser-webpack-plugin: 5.6.1(esbuild@0.27.7)(postcss@8.5.15)(webpack@5.106.2(esbuild@0.27.7)(postcss@8.5.15))
+      terser-webpack-plugin: 5.6.1(postcss@8.5.15)(webpack@5.106.2(postcss@8.5.15))
       watchpack: 2.5.1
       webpack-sources: 3.5.0
     transitivePeerDependencies:
