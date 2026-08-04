@@ -11,6 +11,7 @@ vi.mock("@unerp/database", () => ({
 }));
 
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { ServiceRegistryService } from "../service-registry.service";
 
 const SECRET = "test-secret";
