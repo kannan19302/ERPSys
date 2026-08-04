@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyToken } from "@unerp/auth";
 import { prisma, runWithTenantSession } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { moduleSlugForSegment } from "../module-tiers";
 
 /**

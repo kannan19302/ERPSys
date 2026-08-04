@@ -7,6 +7,7 @@ import {
 import { Reflector } from "@nestjs/core";
 import { Observable, from, switchMap } from "rxjs";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { ChangeHistoryService } from "../services/change-history.service";
 import {
   TRACK_CHANGES_KEY,

@@ -6,6 +6,7 @@ import {
 } from "@nestjs/common";
 import { Observable, tap } from "rxjs";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { pinoLogger } from "../services/logger.service";
 
 const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);

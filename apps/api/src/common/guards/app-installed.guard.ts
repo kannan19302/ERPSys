@@ -8,6 +8,7 @@ import {
 import { Observable, from } from "rxjs";
 import { switchMap } from "rxjs/operators";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { moduleSlugForSegment, isKernelSlug } from "../app-slug-map";
 
 /**

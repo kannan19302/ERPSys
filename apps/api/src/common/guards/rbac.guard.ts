@@ -31,32 +31,8 @@ export class RbacGuard implements CanActivate {
       throw new ForbiddenException("User session not found");
     }
 
-    // Retrieve the user's role assignments and associated roles. This guard
-    // runs before the TenantInterceptor establishes request-scoped tenant
-    // context, so Role (RLS-protected, Track C / #21) would otherwise be
-    // invisible under the unerp_api runtime role. The JWT's tenantId was
-    // already signature-verified by JwtAuthGuard, so it's safe to scope here.
-    const userRoles = await runWithTenantSession(
-      { tenantId: user.tenantId, userId: user.userId ?? user.sub ?? "" },
-      () =>
-        prisma.userRole.findMany({
-          where: { userId: user.userId },
-          include: { role: true },
-        }),
-    );
-
-    // Extract and parse permission strings from roles
-    const userPermissions: string[] = [];
-    for (const ur of userRoles) {
-      try {
-        const perms = JSON.parse(ur.role.permissions as string);
-        if (Array.isArray(perms)) {
-          userPermissions.push(...perms);
-        }
-      } catch {
-        // Skip malformed role permissions
-      }
-    }
+    // Extract permissions from the decoded JWT claims, which were injected by JwtAuthGuard.
+    const userPermissions: string[] = (user as any).permissions || [];
 
     // Verify if the user possesses the permissions required by the endpoint
     const isAuthorized = requiredPermissions.every((required) =>

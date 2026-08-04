@@ -8,6 +8,7 @@ import {
 import { Reflector } from "@nestjs/core";
 import { Observable, from } from "rxjs";
 import { prisma, runWithTenantSession } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { SKIP_TENANT_SCOPE_KEY } from "../decorators/skip-tenant-scope.decorator";
 
 @Injectable()

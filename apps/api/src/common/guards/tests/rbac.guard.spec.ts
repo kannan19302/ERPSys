@@ -15,7 +15,8 @@ vi.mock("@unerp/database", () => ({
   runWithTenantSession: vi.fn((_session: unknown, fn: () => unknown) => fn()),
 }));
 
-import { prisma } from "@unerp/database";
+import { prisma, runWithTenantSession } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 function buildContext(user: unknown): ExecutionContext {
   return {
@@ -46,7 +47,7 @@ describe("RbacGuard — permission matrix (deny-by-default enforcement)", () => 
     const guard = new RbacGuard(buildReflector(undefined));
     const result = await guard.canActivate(buildContext({ userId: "u1" }));
     expect(result).toBe(true);
-    expect(prisma.userRole.findMany).not.toHaveBeenCalled();
+    expect(idpPrisma.userRole.findMany).not.toHaveBeenCalled();
   });
 
   it("throws if there is no authenticated user on the request", async () => {
@@ -57,7 +58,7 @@ describe("RbacGuard — permission matrix (deny-by-default enforcement)", () => 
   });
 
   it("denies by default when the user has no roles at all", async () => {
-    (prisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
+    (idpPrisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
       [],
     );
     const guard = new RbacGuard(buildReflector(["finance.invoice.read"]));
@@ -67,9 +68,9 @@ describe("RbacGuard — permission matrix (deny-by-default enforcement)", () => 
   });
 
   it("denies when the user has roles but none grant the required permission", async () => {
-    (prisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
-      roleWithPermissions(["hr.employee.read"]),
-    ]);
+    (idpPrisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
+      [roleWithPermissions(["hr.employee.read"])],
+    );
     const guard = new RbacGuard(buildReflector(["finance.invoice.create"]));
     await expect(
       guard.canActivate(buildContext({ userId: "u1" })),
@@ -77,9 +78,9 @@ describe("RbacGuard — permission matrix (deny-by-default enforcement)", () => 
   });
 
   it("allows when a role grants the exact required permission", async () => {
-    (prisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
-      roleWithPermissions(["finance.invoice.create"]),
-    ]);
+    (idpPrisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
+      [roleWithPermissions(["finance.invoice.create"])],
+    );
     const guard = new RbacGuard(buildReflector(["finance.invoice.create"]));
     await expect(
       guard.canActivate(buildContext({ userId: "u1" })),
@@ -87,9 +88,9 @@ describe("RbacGuard — permission matrix (deny-by-default enforcement)", () => 
   });
 
   it("allows via a module wildcard role", async () => {
-    (prisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
-      roleWithPermissions(["finance.*"]),
-    ]);
+    (idpPrisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
+      [roleWithPermissions(["finance.*"])],
+    );
     const guard = new RbacGuard(buildReflector(["finance.invoice.void"]));
     await expect(
       guard.canActivate(buildContext({ userId: "u1" })),
@@ -97,9 +98,9 @@ describe("RbacGuard — permission matrix (deny-by-default enforcement)", () => 
   });
 
   it("requires ALL listed permissions when a handler declares more than one", async () => {
-    (prisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
-      roleWithPermissions(["finance.invoice.read"]),
-    ]);
+    (idpPrisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
+      [roleWithPermissions(["finance.invoice.read"])],
+    );
     const guard = new RbacGuard(
       buildReflector(["finance.invoice.read", "finance.invoice.create"]),
     );
@@ -109,10 +110,12 @@ describe("RbacGuard — permission matrix (deny-by-default enforcement)", () => 
   });
 
   it("aggregates permissions across multiple assigned roles", async () => {
-    (prisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
-      roleWithPermissions(["finance.invoice.read"]),
-      roleWithPermissions(["finance.invoice.create"]),
-    ]);
+    (idpPrisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
+      [
+        roleWithPermissions(["finance.invoice.read"]),
+        roleWithPermissions(["finance.invoice.create"]),
+      ],
+    );
     const guard = new RbacGuard(
       buildReflector(["finance.invoice.read", "finance.invoice.create"]),
     );
@@ -122,9 +125,9 @@ describe("RbacGuard — permission matrix (deny-by-default enforcement)", () => 
   });
 
   it("ignores a role with malformed (non-JSON) permissions instead of granting access", async () => {
-    (prisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
-      { role: { permissions: "not-valid-json{{{" } },
-    ]);
+    (idpPrisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
+      [{ role: { permissions: "not-valid-json{{{" } }],
+    );
     const guard = new RbacGuard(buildReflector(["finance.invoice.read"]));
     await expect(
       guard.canActivate(buildContext({ userId: "u1" })),
@@ -132,9 +135,9 @@ describe("RbacGuard — permission matrix (deny-by-default enforcement)", () => 
   });
 
   it("does not let a same-prefix module wildcard leak into an unrelated module (regression)", async () => {
-    (prisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
-      roleWithPermissions(["finance.*"]),
-    ]);
+    (idpPrisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
+      [roleWithPermissions(["finance.*"])],
+    );
     const guard = new RbacGuard(buildReflector(["financial.report.read"]));
     await expect(
       guard.canActivate(buildContext({ userId: "u1" })),

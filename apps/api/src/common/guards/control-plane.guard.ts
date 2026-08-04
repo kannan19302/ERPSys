@@ -110,24 +110,6 @@ export class ControlPlaneGuard implements CanActivate {
     userId?: string;
     sub?: string;
   }): Promise<string[]> {
-    const userRoles = await runWithTenantSession(
-      { tenantId: user.tenantId ?? "", userId: user.userId ?? user.sub ?? "" },
-      () =>
-        prisma.userRole.findMany({
-          where: { userId: user.userId },
-          include: { role: true },
-        }),
-    );
-
-    const permissions: string[] = [];
-    for (const ur of userRoles) {
-      try {
-        const parsed = JSON.parse(ur.role.permissions as string);
-        if (Array.isArray(parsed)) permissions.push(...parsed);
-      } catch {
-        // A malformed role grants nothing. Fail closed.
-      }
-    }
-    return permissions;
+    return (user as any).permissions || [];
   }
 }

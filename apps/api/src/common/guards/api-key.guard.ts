@@ -6,6 +6,7 @@ import {
 } from "@nestjs/common";
 import type { Request } from "express";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { hashApiKey } from "../auth/api-key.util";
 
 const API_KEY_HEADER = "x-api-key";
@@ -27,7 +28,7 @@ export class ApiKeyGuard implements CanActivate {
       throw new UnauthorizedException("Missing API key");
     }
 
-    const key = await prisma.apiKey.findUnique({
+    const key = await idpPrisma.apiKey.findUnique({
       where: { hashedKey: hashApiKey(raw) },
     });
 
