@@ -60,7 +60,9 @@
     "stripe": "^22.3.2",
     "web-push": "^3.6.7",
     "xlsx": "^0.18.5",
-    "zod": "^3.24.0"
+    "zod": "^3.24.0",
+    "@unerp/sandbox": "workspace:*",
+    "@unerp/extension-api": "workspace:*"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.0",
