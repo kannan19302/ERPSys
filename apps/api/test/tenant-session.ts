@@ -47,6 +47,13 @@ export function withTenantSession<T extends object>(service: T): T {
       const value = Reflect.get(target, prop, receiver);
       if (typeof value !== "function") return value;
 
+      // Only wrap genuinely async methods. Seeding the tenant row requires an
+      // await, so wrapping a synchronous helper would turn its return value into
+      // a Promise and break specs that compare it directly. Synchronous methods
+      // are pure helpers here — they do not write, so they need no session.
+      if (value.constructor?.name !== "AsyncFunction")
+        return value.bind(target);
+
       return async (...args: unknown[]) => {
         const tenantId = typeof args[0] === "string" ? args[0] : undefined;
         if (!tenantId) return value.apply(target, args);
