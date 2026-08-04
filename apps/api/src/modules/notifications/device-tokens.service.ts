@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 /**
  * Push notification device tokens for Flutter mobile/desktop clients

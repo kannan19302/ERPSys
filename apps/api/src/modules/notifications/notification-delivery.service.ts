@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { OnEvent } from "@nestjs/event-emitter";
 
 interface NotificationPayload {
@@ -18,7 +19,7 @@ export class NotificationDeliveryService {
     const channel = payload.channel || "IN_APP";
 
     // US-B6: Check user presence status and suppress email/push if status is DND
-    const presence = await prisma.userPresence.findFirst({
+    const presence = await idpPrisma.userPresence.findFirst({
       where: { tenantId: payload.tenantId, userId: payload.userId },
     });
     const isDnd = presence?.presence === "DND";
@@ -61,7 +62,7 @@ export class NotificationDeliveryService {
   }
 
   private async deliverEmail(payload: NotificationPayload) {
-    const user = await prisma.user.findFirst({
+    const user = await idpPrisma.user.findFirst({
       where: { id: payload.userId, tenantId: payload.tenantId },
     });
     if (!user?.email) return;

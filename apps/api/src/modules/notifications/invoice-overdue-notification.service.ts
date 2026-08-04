@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { EventEmitter2, OnEvent } from "@nestjs/event-emitter";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 interface InvoiceOverdueEvent {
   tenantId: string;
@@ -76,7 +77,7 @@ export class InvoiceOverdueNotificationService {
 
   /** Users in the tenant holding an AR/finance invoice-management permission. */
   private async resolveFinanceTeam(tenantId: string): Promise<string[]> {
-    const roles = await prisma.role.findMany({
+    const roles = await idpPrisma.role.findMany({
       where: { tenantId },
       select: { id: true, permissions: true },
     });
@@ -95,7 +96,7 @@ export class InvoiceOverdueNotificationService {
       .map((role) => role.id);
     if (financeRoleIds.length === 0) return [];
 
-    const userRoles = await prisma.userRole.findMany({
+    const userRoles = await idpPrisma.userRole.findMany({
       where: {
         roleId: { in: financeRoleIds },
         user: { tenantId, deletedAt: null, status: "ACTIVE" },

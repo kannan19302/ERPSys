@@ -5,6 +5,7 @@ import {
   ConflictException,
 } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { BundleStoreService } from "./bundle-store.service";
 import { validateManifest, AppManifest } from "./manifest";
 import { resolveUniqueSlug } from "../../common/utils/slug.util";

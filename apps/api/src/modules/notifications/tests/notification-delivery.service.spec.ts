@@ -1,3 +1,5 @@
+import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NotificationDeliveryService } from "../notification-delivery.service";
 
@@ -21,10 +23,10 @@ describe("NotificationDeliveryService — DND notification suppression (US-B6)",
 
   it("delivers both inApp and Email when user presence is active/non-DND", async () => {
     const { prisma } = await import("@unerp/database");
-    vi.mocked(prisma.userPresence.findFirst).mockResolvedValue({
+    vi.mocked(idpPrisma.userPresence.findFirst).mockResolvedValue({
       presence: "ACTIVE",
     } as never);
-    vi.mocked(prisma.user.findFirst).mockResolvedValue({
+    vi.mocked(idpPrisma.user.findFirst).mockResolvedValue({
       email: "bob@example.com",
     } as never);
     vi.mocked(prisma.notification.create).mockResolvedValue({} as never);
@@ -45,7 +47,7 @@ describe("NotificationDeliveryService — DND notification suppression (US-B6)",
 
   it("suppresses Email delivery when user presence is DND, but keeps inApp", async () => {
     const { prisma } = await import("@unerp/database");
-    vi.mocked(prisma.userPresence.findFirst).mockResolvedValue({
+    vi.mocked(idpPrisma.userPresence.findFirst).mockResolvedValue({
       presence: "DND",
     } as never);
     vi.mocked(prisma.notification.create).mockResolvedValue({} as never);

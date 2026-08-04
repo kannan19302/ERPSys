@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { AppManifest } from "./manifest";
 
 export interface ModuleMapEntry {

@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { EventEmitter2, OnEvent } from "@nestjs/event-emitter";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 interface PipelineDealAtRiskEvent {
   tenantId: string;
@@ -77,7 +78,7 @@ export class PipelineRiskNotificationService {
     assignedToId: string | null,
   ): Promise<string[]> {
     if (assignedToId) {
-      const user = await prisma.user.findFirst({
+      const user = await idpPrisma.user.findFirst({
         where: {
           id: assignedToId,
           tenantId,
@@ -89,7 +90,7 @@ export class PipelineRiskNotificationService {
       if (user) return [user.id];
     }
 
-    const roles = await prisma.role.findMany({
+    const roles = await idpPrisma.role.findMany({
       where: { tenantId },
       select: { id: true, permissions: true },
     });
@@ -108,7 +109,7 @@ export class PipelineRiskNotificationService {
       .map((role) => role.id);
     if (crmRoleIds.length === 0) return [];
 
-    const userRoles = await prisma.userRole.findMany({
+    const userRoles = await idpPrisma.userRole.findMany({
       where: {
         roleId: { in: crmRoleIds },
         user: { tenantId, deletedAt: null, status: "ACTIVE" },
