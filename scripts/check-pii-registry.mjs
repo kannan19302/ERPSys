@@ -7,9 +7,11 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readSchema } from './lib/read-schema.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const schema = readFileSync(path.join(root, 'packages', 'database', 'prisma', 'schema.prisma'), 'utf8');
+// Multi-file schema since R2 — see scripts/lib/read-schema.mjs.
+const schema = readSchema(root);
 const registry = JSON.parse(readFileSync(path.join(root, 'scripts', 'pii-registry.json'), 'utf8'));
 
 const PII_FIELD = /^(email|phone|mobile|firstName|lastName|fullName|dateOfBirth|dob|ssn|taxId|passport|nationalId|iban|bankAccount|salary|address(Line)?\d?|street|city|zip|postalCode)$/i;

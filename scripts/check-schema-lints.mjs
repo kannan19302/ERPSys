@@ -9,9 +9,12 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readSchema } from './lib/read-schema.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const schema = readFileSync(path.join(root, 'packages', 'database', 'prisma', 'schema.prisma'), 'utf8');
+// The schema is a multi-file folder since R2; this reads every part. Violations
+// are reported as Model.field, not file:line, so concatenation is safe here.
+const schema = readSchema(root);
 const baseline = JSON.parse(readFileSync(path.join(root, 'scripts', 'schema-lint-baseline.json'), 'utf8'));
 const allowed = new Set(baseline.allowed.map((entry) => `${entry.model}.${entry.field}`));
 

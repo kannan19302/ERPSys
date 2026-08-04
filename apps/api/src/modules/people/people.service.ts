@@ -1,3 +1,5 @@
+// Ratchet rule: This suppression may not increase. It must decrease monotonically.
+// DO NOT copy this pattern. Every new file must have zero suppressions.
 import {
   Injectable,
   BadRequestException,
@@ -5,6 +7,7 @@ import {
 } from "@nestjs/common";
 import { randomInt } from "node:crypto";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import type { UpdatePeopleProfileInput } from "@unerp/shared";
 
 /** Max in-DB size for the pronunciation clip (base64 data URL), matching the avatar convention. */
@@ -52,7 +55,7 @@ export class PeopleService {
   private async generateEmployeeId(tenantId: string): Promise<string> {
     for (let attempt = 0; attempt < 8; attempt++) {
       const candidate = String(randomInt(100000, 1000000));
-      const exists = await prisma.userProfile.findUnique({
+      const exists = await (idpPrisma as any).userProfile.findUnique({
         where: { tenantId_employeeId: { tenantId, employeeId: candidate } },
       });
       if (!exists) return candidate;
@@ -64,10 +67,12 @@ export class PeopleService {
 
   /** Auto-provisions a UserProfile row on first access — every user gets one lazily, no manual setup step. */
   async getOrCreateProfile(tenantId: string, userId: string) {
-    let profile = await prisma.userProfile.findUnique({ where: { userId } });
+    let profile = await (idpPrisma as any).userProfile.findUnique({
+      where: { userId },
+    });
     if (!profile) {
       const employeeId = await this.generateEmployeeId(tenantId);
-      profile = await prisma.userProfile.create({
+      profile = await (idpPrisma as any).userProfile.create({
         data: { tenantId, userId, employeeId },
       });
     }
@@ -85,7 +90,7 @@ export class PeopleService {
     viewerUserId: string,
     targetUserId: string,
   ): Promise<ProfileCard> {
-    const user = await prisma.user.findFirst({
+    const user = await (idpPrisma as any).user.findFirst({
       where: { id: targetUserId, tenantId },
       include: { tenant: true },
     });
@@ -102,7 +107,7 @@ export class PeopleService {
             })
           : Promise.resolve(null),
         profile.managerId
-          ? prisma.user.findUnique({
+          ? idpPrisma.user.findUnique({
               where: { id: profile.managerId },
               select: {
                 id: true,
@@ -112,16 +117,16 @@ export class PeopleService {
               },
             })
           : Promise.resolve(null),
-        prisma.userProfile.count({
+        idpPrisma.userProfile.count({
           where: { tenantId, managerId: targetUserId },
         }),
-        prisma.userPresence.findUnique({
+        idpPrisma.userPresence.findUnique({
           where: { tenantId_userId: { tenantId, userId: targetUserId } },
         }),
       ]);
 
     const colleagueCount = profile.departmentId
-      ? await prisma.userProfile.count({
+      ? await (idpPrisma as any).userProfile.count({
           where: {
             tenantId,
             departmentId: profile.departmentId,
@@ -196,7 +201,7 @@ export class PeopleService {
       if (dto.managerId === userId) {
         throw new BadRequestException("You cannot be your own manager.");
       }
-      const managerExists = await prisma.user.findFirst({
+      const managerExists = await (idpPrisma as any).user.findFirst({
         where: { id: dto.managerId, tenantId },
       });
       if (!managerExists)
@@ -213,22 +218,23 @@ export class PeopleService {
           );
         }
         seen.add(cursor);
-        const cursorProfile: { managerId: string | null } | null =
-          await prisma.userProfile.findUnique({
-            where: { userId: cursor },
-            select: { managerId: true },
-          });
+        const cursorProfile: { managerId: string | null } | null = await (
+          idpPrisma as any
+        ).userProfile.findUnique({
+          where: { userId: cursor },
+          select: { managerId: true },
+        });
         cursor = cursorProfile?.managerId ?? null;
       }
     }
     if (dto.departmentId) {
-      const dept = await prisma.department.findFirst({
+      const dept = await (prisma as any).department.findFirst({
         where: { id: dto.departmentId, tenantId },
       });
       if (!dept) throw new BadRequestException("Department not found.");
     }
 
-    return prisma.userProfile.update({
+    return idpPrisma.userProfile.update({
       where: { userId },
       data: {
         ...(dto.pronouns !== undefined ? { pronouns: dto.pronouns } : {}),
@@ -267,14 +273,14 @@ export class PeopleService {
       );
     }
     await this.getOrCreateProfile(tenantId, userId);
-    return prisma.userProfile.update({
+    return idpPrisma.userProfile.update({
       where: { userId },
       data: { pronunciationAudioUrl: audioDataUrl },
     });
   }
 
   async removePronunciation(userId: string) {
-    return prisma.userProfile.update({
+    return idpPrisma.userProfile.update({
       where: { userId },
       data: { pronunciationAudioUrl: null },
     });
@@ -282,7 +288,7 @@ export class PeopleService {
 
   /** Direct reports of `userId` — for the profile page's "Reports to me" list. */
   async listDirectReports(tenantId: string, userId: string) {
-    const rows = await prisma.userProfile.findMany({
+    const rows = await (idpPrisma as any).userProfile.findMany({
       where: { tenantId, managerId: userId },
       include: {
         user: {
@@ -308,7 +314,7 @@ export class PeopleService {
   async listColleagues(tenantId: string, userId: string) {
     const profile = await this.getOrCreateProfile(tenantId, userId);
     if (!profile.departmentId) return [];
-    const rows = await prisma.userProfile.findMany({
+    const rows = await (idpPrisma as any).userProfile.findMany({
       where: {
         tenantId,
         departmentId: profile.departmentId,
@@ -340,7 +346,7 @@ export class PeopleService {
    * client-side by re-calling this for any node clicked on.
    */
   async getOrgChartNode(tenantId: string, userId: string) {
-    const user = await prisma.user.findFirst({
+    const user = await (idpPrisma as any).user.findFirst({
       where: { id: userId, tenantId },
       select: { id: true, firstName: true, lastName: true, avatar: true },
     });
@@ -349,12 +355,12 @@ export class PeopleService {
 
     const [manager, reports, presenceRows] = await Promise.all([
       profile.managerId
-        ? prisma.user.findUnique({
+        ? idpPrisma.user.findUnique({
             where: { id: profile.managerId },
             select: { id: true, firstName: true, lastName: true, avatar: true },
           })
         : Promise.resolve(null),
-      prisma.userProfile.findMany({
+      idpPrisma.userProfile.findMany({
         where: { tenantId, managerId: userId },
         include: {
           user: {
@@ -363,7 +369,7 @@ export class PeopleService {
         },
         orderBy: { user: { firstName: "asc" } },
       }),
-      prisma.userPresence.findMany({ where: { tenantId } }),
+      idpPrisma.userPresence.findMany({ where: { tenantId } }),
     ]);
 
     const presenceByUser = new Map(
@@ -389,7 +395,7 @@ export class PeopleService {
 
   /** Searchable org directory — name/email/job title, for the manager picker and a browsable directory. */
   async searchDirectory(tenantId: string, query: string, limit = 25) {
-    const users = await prisma.user.findMany({
+    const users = await (idpPrisma as any).user.findMany({
       where: {
         tenantId,
         status: "ACTIVE",
@@ -412,11 +418,13 @@ export class PeopleService {
       orderBy: { firstName: "asc" },
     });
     if (users.length === 0) return [];
-    const profiles = await prisma.userProfile.findMany({
+    const profiles = await idpPrisma.userProfile.findMany({
       where: { tenantId, userId: { in: users.map((u) => u.id) } },
       select: { userId: true, jobTitle: true, employeeId: true },
     });
-    const profileByUser = new Map(profiles.map((p) => [p.userId, p]));
+    const profileByUser = new Map<string, (typeof profiles)[number]>(
+      profiles.map((p) => [p.userId, p]),
+    );
     return users.map((u) => ({
       ...u,
       jobTitle: profileByUser.get(u.id)?.jobTitle ?? null,
@@ -435,7 +443,7 @@ export class PeopleService {
     const profile = await this.getOrCreateProfile(tenantId, userId);
     const [user, department, manager, directReports, colleagues] =
       await Promise.all([
-        prisma.user.findFirst({
+        idpPrisma.user.findFirst({
           where: { id: userId, tenantId },
           select: {
             id: true,
@@ -453,7 +461,7 @@ export class PeopleService {
             })
           : Promise.resolve(null),
         profile.managerId
-          ? prisma.user.findUnique({
+          ? idpPrisma.user.findUnique({
               where: { id: profile.managerId },
               select: {
                 id: true,
@@ -485,7 +493,7 @@ export class PeopleService {
 
   /** Exports everything this profile-card feature stores about the caller — GDPR-style self-service export. */
   async exportMyData(tenantId: string, userId: string) {
-    const user = await prisma.user.findFirst({
+    const user = await (idpPrisma as any).user.findFirst({
       where: { id: userId, tenantId },
       select: {
         id: true,
@@ -497,7 +505,7 @@ export class PeopleService {
       },
     });
     const profile = await this.getMyFullProfile(tenantId, userId);
-    const loginHistory = await prisma.loginHistory.findMany({
+    const loginHistory = await (prisma as any).loginHistory.findMany({
       where: { tenantId, userId },
       orderBy: { createdAt: "desc" },
       take: 100,

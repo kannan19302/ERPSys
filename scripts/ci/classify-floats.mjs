@@ -21,9 +21,9 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readSchema, schemaFiles } from '../lib/read-schema.mjs';
 
 const ROOT = join(fileURLToPath(new URL('.', import.meta.url)), '..', '..');
-const SCHEMA_PATH = join(ROOT, 'packages', 'database', 'prisma', 'schema.prisma');
 const BASELINE_PATH = join(ROOT, 'scripts', 'schema-lint-baseline.json');
 const APPLY = process.argv.includes('--apply');
 
@@ -135,20 +135,25 @@ if (!APPLY) {
   process.exit(0);
 }
 
-// ── 1. Convert MONEY fields in schema.prisma: Float -> Decimal @db.Decimal(19,4) ──────────
-let schema = readFileSync(SCHEMA_PATH, 'utf8');
+// ── 1. Convert MONEY fields: Float -> Decimal @db.Decimal(19,4) ──────────────────────────
+// The schema is a multi-file folder since R2, so each model is located in whichever
+// file declares it and only the files actually touched are rewritten.
+const parts = new Map(schemaFiles(ROOT).map((f) => [f, readFileSync(f, 'utf8')]));
+const dirty = new Set();
 let converted = 0;
 const notFound = [];
 
 for (const entry of money) {
   const [model, field] = entry.split('.');
-  // Locate the model block, then the field line within it.
   const modelRe = new RegExp(`(model\\s+${model}\\s*\\{)([\\s\\S]*?)(\\n\\})`, 'm');
-  const m = schema.match(modelRe);
-  if (!m) {
+
+  const target = [...parts.entries()].find(([, text]) => modelRe.test(text));
+  if (!target) {
     notFound.push(entry + ' (model not found)');
     continue;
   }
+  const [file, text] = target;
+  const m = text.match(modelRe);
   const body = m[2];
   const fieldRe = new RegExp(`(\\n\\s*${field}\\s+)Float(\\??)((?:\\s+@[^\\n]*)?)`, 'm');
   const fieldMatch = body.match(fieldRe);
@@ -163,12 +168,15 @@ for (const entry of money) {
   rest = rest.replace(/@default\((-?\d+(?:\.\d+)?)\)/, (_, n) => `@default(${n})`);
   const replacement = `${fieldMatch[1]}Decimal${optional} @db.Decimal(19,4)${rest}`;
   const newBody = body.replace(fieldRe, replacement);
-  schema = schema.replace(modelRe, `$1${newBody}$3`);
+  parts.set(file, text.replace(modelRe, `$1${newBody}$3`));
+  dirty.add(file);
   converted++;
 }
 
-writeFileSync(SCHEMA_PATH, schema);
-console.log(`\n✅ Converted ${converted}/${money.length} money fields to Decimal(19,4) in schema.prisma`);
+for (const file of dirty) writeFileSync(file, parts.get(file));
+console.log(
+  `\n✅ Converted ${converted}/${money.length} money fields to Decimal(19,4) across ${dirty.size} schema file(s)`,
+);
 if (notFound.length) {
   console.log(`⚠ ${notFound.length} could not be located automatically — fix by hand:`);
   for (const f of notFound) console.log(`   ${f}`);

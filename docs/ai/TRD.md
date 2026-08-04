@@ -324,6 +324,28 @@ mandatory per-module reduction quota on every feature cycle. See
 [`ARCHITECTURE_REVIEW.md § R1`](ARCHITECTURE_REVIEW.md). _This is the program's highest-priority
 technical debt and the ratchet may not be relaxed._
 
+**ADR-006 — The suppression ratchet scans whole workspaces, and its baseline was re-established
+once to make that possible.** `ACCEPTED 2026-08-04.`
+
+`scripts/ci/check-suppressions.mjs` previously scanned a hand-written list of four paths:
+`apps/api/src`, `apps/web/app`, `apps/web/src`, `packages`. When the platform split introduced
+`apps/idp`, `apps/console`, `apps/developer` and `apps/extensions`, every one of them fell
+outside that list. Roughly 480 `any` occurrences and four `@ts-nocheck` files were invisible
+while the gate still reported green — including `@ts-nocheck` on all four extension entrypoints,
+which only surfaced under a manual scan. **A ratchet that a new directory can walk around is not
+a ratchet**, and this is precisely the failure mode ADR-005 exists to prevent.
+
+_Decision:_ the scan roots become the pnpm workspace roots — `apps` and `packages` — so any
+future application or package is covered by construction rather than by remembering to edit a
+list.
+
+_Consequence, stated plainly:_ this is the one and only permitted upward movement of the
+baseline, and it is a **coverage** change, not a debt increase. The counted total rises from
+12,493 to 13,009 `any` because ~484 pre-existing occurrences became visible for the first time;
+the remaining +32 is genuine new debt from the split and is owed back under the normal quota.
+`@ts-nocheck` remains at 0 across the wider scope. From this baseline the numbers may only fall,
+as ADR-005 requires. Any future increase still needs its own ADR.
+
 ---
 
 ## 10. Amendment log

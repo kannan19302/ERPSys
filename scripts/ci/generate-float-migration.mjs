@@ -13,10 +13,11 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readSchema } from '../lib/read-schema.mjs';
 
 const ROOT = join(fileURLToPath(new URL('.', import.meta.url)), '..', '..');
-const SCHEMA_PATH = join(ROOT, 'packages', 'database', 'prisma', 'schema.prisma');
-const schema = readFileSync(SCHEMA_PATH, 'utf8');
+// Multi-file schema since R2 — see scripts/lib/read-schema.mjs.
+const schema = readSchema(ROOT);
 
 const targets = readFileSync(join(ROOT, 'scripts', 'ci', '.float-worklist.txt'), 'utf8')
   .split('\n').map((s) => s.trim()).filter(Boolean);

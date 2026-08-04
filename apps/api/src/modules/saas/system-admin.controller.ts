@@ -1,3 +1,5 @@
+// Ratchet rule: This suppression may not increase. It must decrease monotonically.
+// DO NOT copy this pattern. Every new file must have zero suppressions.
 import {
   Controller,
   Get,
@@ -9,6 +11,7 @@ import {
 } from "@nestjs/common";
 import { z } from "zod";
 import { ZodBody } from "../../common/decorators/zod-body.decorator";
+import { idpClient } from "../../common/idp-client";
 import { Request } from "express";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { RbacGuard } from "../../common/guards/rbac.guard";
@@ -103,9 +106,9 @@ export class SystemAdminController {
     const tenantCount = await this.tenantAnalyticsService.db.tenant
       .count()
       .catch(() => 0);
-    const userCount = await this.tenantAnalyticsService.db.user
-      .count()
-      .catch(() => 0);
+    // `User` moved to the IdP schema in the platform split, so it is no longer
+    // a delegate on the main client. Count it through the IdP client.
+    const userCount = await idpClient.user.count().catch(() => 0);
     return {
       tenants: tenantCount,
       users: userCount,

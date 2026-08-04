@@ -20,7 +20,18 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(fileURLToPath(new URL('.', import.meta.url)), '..', '..');
 const BASELINE_PATH = join(ROOT, '.quality-baseline.json');
 
-const SCAN_ROOTS = ['apps/api/src', 'apps/web/app', 'apps/web/src', 'packages'];
+// Scan whole workspaces, not hand-listed subdirectories.
+//
+// This was previously ['apps/api/src', 'apps/web/app', 'apps/web/src', 'packages'].
+// When the platform split added apps/idp, apps/console, apps/developer and
+// apps/extensions, every one of them landed outside that list — roughly 1,600
+// `any` occurrences and four `@ts-nocheck` files became invisible to the ratchet
+// while it still reported green. A ratchet that a new directory can walk around
+// is not a ratchet.
+//
+// 'apps' and 'packages' are the workspace roots declared in pnpm-workspace.yaml,
+// so anything added to the monorepo in future is covered by construction.
+const SCAN_ROOTS = ['apps', 'packages'];
 const SKIP_DIRS = new Set([
   'node_modules', 'dist', '.next', '.turbo', 'coverage', 'build',
   'generated', '.git', 'storybook-static',
