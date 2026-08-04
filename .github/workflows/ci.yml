@@ -197,6 +197,12 @@ jobs:
       - name: Schema lint
         run: pnpm schema:lint
 
+      # BLOCKING. Like check-rls-verify.mjs before it (ARCHITECTURE_REVIEW § F5),
+      # this control existed but was wired into nothing. Its first real run found
+      # 21 undeclared PII models, including HealthcarePatient and EducationStudent.
+      - name: PII registry
+        run: node scripts/check-pii-registry.mjs
+
       # BLOCKING. This script existed but was never wired into CI — ARCHITECTURE_REVIEW § F5.
       # A table carrying tenant_id without an RLS policy now fails the build.
       - name: RLS / tenant-isolation verification

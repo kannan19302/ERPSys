@@ -52,6 +52,16 @@ const GATES = [
     cmd: ['node', ['scripts/ci/check-policy.mjs']],
   },
   {
+    name: 'PII registry',
+    why: 'Every model carrying personal data must declare an erasure treatment. Track H.1.',
+    // check-pii-registry.mjs existed but was wired into nothing — the same
+    // failure as check-rls-verify.mjs in ARCHITECTURE_REVIEW F5, where a control
+    // written to catch a real problem never ran. It found 21 undeclared models
+    // the first time it was executed, including HealthcarePatient and
+    // EducationStudent.
+    cmd: ['node', ['scripts/check-pii-registry.mjs']],
+  },
+  {
     name: 'Architecture boundaries',
     why: 'No cross-module imports, no dependency cycles.',
     cmd: ['pnpm', ['architecture:check']],

@@ -35,13 +35,38 @@ export function schemaFiles(root) {
 }
 
 /**
+ * The IdP schema, which lives outside the main schema folder.
+ *
+ * The platform split moved User, UserProfile, UserIdentity, Role, UserRole,
+ * UserSession and the token models into their own schema. Any control that
+ * reasons about the data model as a whole — the PII registry above all, since
+ * those are the most PII-dense models in the system — has to read it too, or it
+ * silently stops covering identity.
+ */
+export function idpSchemaFile(root) {
+  const candidates = [
+    join(root, "packages", "database", "prisma", "idp-schema.prisma"),
+    join(root, "packages", "database", "src", "idp-client", "schema.prisma"),
+  ];
+  return candidates.find((p) => existsSync(p)) ?? null;
+}
+
+/**
  * The whole schema as one string.
+ *
+ * `options.includeIdp` also folds in the IdP schema. Off by default because the
+ * Float/money and migration checks are about the main datamodel; on for controls
+ * that must see every model.
  *
  * Callers that report `file:line` should use `schemaFiles()` and read each file
  * themselves — concatenated line numbers would point at nothing.
  */
-export function readSchema(root) {
+export function readSchema(root, options = {}) {
   const files = schemaFiles(root);
+  if (options.includeIdp) {
+    const idp = idpSchemaFile(root);
+    if (idp) files.push(idp);
+  }
   if (files.length === 0) {
     throw new Error(
       "No Prisma schema found. Looked for packages/database/prisma/schema/*.prisma " +

@@ -144,7 +144,14 @@ export type PrismaClientType = typeof prisma;
 export { PrismaClient };
 export type { Prisma } from "@prisma/client";
 export * from "@prisma/client";
-export { getTenantSession, runWithTenantSession } from "./tenant-context.js";
+export {
+  getTenantSession,
+  runWithTenantSession,
+  // Exported for test harnesses, which need to seed a tenant session for a whole
+  // file via `enterWith` rather than wrapping every call in runWithTenantSession.
+  // Application code must use runWithTenantSession; the TenantInterceptor does.
+  tenantLocalStorage,
+} from "./tenant-context.js";
 export { applyTenantScope, MODELS_WITHOUT_TENANT } from "./tenant-scope.js";
 export {
   applySoftDeleteScope,
