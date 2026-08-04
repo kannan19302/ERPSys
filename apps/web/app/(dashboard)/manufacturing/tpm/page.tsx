@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { PageHeader, Card, Button, Badge, KPICard, Spinner } from "@unerp/ui";
-import { SubTabBar, type SubTab } from "@unerp/ui-layout";
+import { SubTabBar, type SubTab } from "@unerp/ui/layout";
 import {
   Activity,
   ClipboardCheck,

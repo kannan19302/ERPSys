@@ -14,7 +14,7 @@ import {
   FileDown,
   Settings,
 } from "lucide-react";
-import type { ModuleTab } from "@unerp/ui-layout";
+import type { ModuleTab } from "@unerp/ui/layout";
 
 export {
   ModuleTabLayout as AnalyticsTabLayout,
@@ -22,7 +22,7 @@ export {
   type ModuleTabLayoutProps as AnalyticsTabLayoutProps,
   SubTabBar,
   type SubTab,
-} from "@unerp/ui-layout";
+} from "@unerp/ui/layout";
 
 export const ANALYTICS_TABS: ModuleTab[] = [
   {

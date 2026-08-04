@@ -1,13 +1,13 @@
 "use client";
 import { GitBranch, PlayCircle, CheckSquare, BarChart3 } from "lucide-react";
-import type { ModuleTab } from "@unerp/ui-layout";
+import type { ModuleTab } from "@unerp/ui/layout";
 export {
   ModuleTabLayout as WorkflowTabLayout,
   type ModuleTab as WorkflowTab,
   type ModuleTabLayoutProps as WorkflowTabLayoutProps,
   SubTabBar,
   type SubTab,
-} from "@unerp/ui-layout";
+} from "@unerp/ui/layout";
 
 export const WORKFLOW_TABS: ModuleTab[] = [
   {

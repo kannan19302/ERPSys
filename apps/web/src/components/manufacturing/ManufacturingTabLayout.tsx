@@ -17,7 +17,7 @@ import {
   LineChart,
   BarChart3,
 } from "lucide-react";
-import type { ModuleTab } from "@unerp/ui-layout";
+import type { ModuleTab } from "@unerp/ui/layout";
 
 export {
   ModuleTabLayout as ManufacturingTabLayout,
@@ -25,7 +25,7 @@ export {
   type ModuleTabLayoutProps as ManufacturingTabLayoutProps,
   SubTabBar,
   type SubTab,
-} from "@unerp/ui-layout";
+} from "@unerp/ui/layout";
 
 export const MANUFACTURING_TABS: ModuleTab[] = [
   {

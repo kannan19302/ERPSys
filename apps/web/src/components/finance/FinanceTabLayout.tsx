@@ -2,7 +2,7 @@
 
 /**
  * Backward-compatible re-export. The canonical implementation now lives in
- * @unerp/ui-layout as ModuleTabLayout.
+ * @unerp/ui/layout as ModuleTabLayout.
  *
  * On first load this wrapper migrates old localStorage keys so existing
  * users' pinned tabs and custom orders carry over.
@@ -14,7 +14,7 @@ export {
   ModuleTabLayout as FinanceTabLayout,
   type ModuleTab as FinanceTab,
   type ModuleTabLayoutProps as FinanceTabLayoutProps,
-} from "@unerp/ui-layout";
+} from "@unerp/ui/layout";
 
 import {
   BarChart3,
@@ -28,7 +28,7 @@ import {
   FileText,
   Activity,
 } from "lucide-react";
-import type { ModuleTab } from "@unerp/ui-layout";
+import type { ModuleTab } from "@unerp/ui/layout";
 
 export const FINANCE_TABS: ModuleTab[] = [
   {

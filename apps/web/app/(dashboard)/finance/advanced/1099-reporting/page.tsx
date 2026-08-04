@@ -12,7 +12,7 @@ import {
   Play,
 } from "lucide-react";
 import { Card, Button, Badge, DataTable, type Column } from "@unerp/ui";
-import { SubTabBar, type SubTab } from "@unerp/ui-layout";
+import { SubTabBar, type SubTab } from "@unerp/ui/layout";
 import { apiGet, apiPost, apiPatch } from "@/lib/api";
 
 interface VendorRow {

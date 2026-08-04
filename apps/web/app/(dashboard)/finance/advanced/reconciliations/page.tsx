@@ -17,7 +17,7 @@ import {
 } from "@unerp/ui";
 import { GitCompare, Link2, Unlink, FileText } from "lucide-react";
 import { RouteGuard, useApiClient } from "@unerp/framework";
-import { SubTabBar, type SubTab } from "@unerp/ui-layout";
+import { SubTabBar, type SubTab } from "@unerp/ui/layout";
 
 interface BankAccount {
   id: string;

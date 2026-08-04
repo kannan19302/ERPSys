@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Thin re-export wrapper around @unerp/ui-layout's ModuleTabLayout, following
+ * Thin re-export wrapper around @unerp/ui/layout's ModuleTabLayout, following
  * the Finance/CRM convention (see FinanceTabLayout.tsx). Renders the three
  * Studio pillars (App Studio / Web Studio / Manage) as Level-1 module tabs on
  * the Studio home page. Each pillar's own pages then nest Level-2 SubTabBar
@@ -9,13 +9,13 @@
  */
 
 import { Wrench, Cpu, Globe, Server } from "lucide-react";
-import type { ModuleTab } from "@unerp/ui-layout";
+import type { ModuleTab } from "@unerp/ui/layout";
 
 export {
   ModuleTabLayout as BuilderTabLayout,
   type ModuleTab as BuilderTab,
   type ModuleTabLayoutProps as BuilderTabLayoutProps,
-} from "@unerp/ui-layout";
+} from "@unerp/ui/layout";
 
 export const BUILDER_TABS: ModuleTab[] = [
   {

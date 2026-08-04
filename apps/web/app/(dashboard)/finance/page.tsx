@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Card, Modal, PageHeader, Button, Spinner, useToast } from "@unerp/ui";
 import { ListView, FormView, RouteGuard, useApiClient } from "@unerp/framework";
-import { DashboardChart } from "@unerp/ui-charts";
+import { DashboardChart } from "@unerp/ui/charts";
 import { invoiceResource } from "@/modules/finance";
 import { MultiPageDashboard } from "@/components/dashboard/MultiPageDashboard";
 import {

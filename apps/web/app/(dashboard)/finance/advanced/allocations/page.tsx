@@ -22,7 +22,7 @@ import {
   ListPageTemplate,
   type ListColumn,
 } from "@unerp/ui";
-import { SubTabBar, type SubTab } from "@unerp/ui-layout";
+import { SubTabBar, type SubTab } from "@unerp/ui/layout";
 import { apiGet, apiPost, apiPatch, apiDelete } from "@/lib/api";
 
 interface Account {

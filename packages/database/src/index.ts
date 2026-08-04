@@ -2,10 +2,11 @@
 // Database Package — Prisma Client Export
 // ─────────────────────────────────────────────────
 
-import { PrismaClient } from '@prisma/client';
-import { getTenantSession } from './tenant-context.js';
-import { applyTenantScope, MODELS_WITHOUT_TENANT } from './tenant-scope.js';
-import { applySoftDeleteScope } from './soft-delete.js';
+import { PrismaClient } from "@prisma/client";
+import { PrismaClient as IdpPrismaClient } from "./idp-client/index.js";
+import { getTenantSession } from "./tenant-context.js";
+import { applyTenantScope, MODELS_WITHOUT_TENANT } from "./tenant-scope.js";
+import { applySoftDeleteScope } from "./soft-delete.js";
 
 // Prevent multiple Prisma Client instances in development
 const globalForPrisma = globalThis as unknown as {
@@ -14,13 +15,13 @@ const globalForPrisma = globalThis as unknown as {
 
 const basePrisma = new PrismaClient({
   log:
-    process.env.NODE_ENV === 'development'
-      ? ['query', 'error', 'warn']
-      : ['error'],
+    process.env.NODE_ENV === "development"
+      ? ["query", "error", "warn"]
+      : ["error"],
 });
 
 function getModelPropertyName(modelName: string): string {
-  if (!modelName) return '';
+  if (!modelName) return "";
   return modelName.charAt(0).toLowerCase() + modelName.slice(1);
 }
 
@@ -58,7 +59,12 @@ export const prisma = basePrisma.$extends({
         // (e.g. UserRole -> Role). Skipping the GUC here would silently
         // return null/empty relations under the unerp_api runtime role.
         if (!MODELS_WITHOUT_TENANT.has(model)) {
-          scopedArgs = applyTenantScope(model, operation, scopedArgs, session.tenantId);
+          scopedArgs = applyTenantScope(
+            model,
+            operation,
+            scopedArgs,
+            session.tenantId,
+          );
         }
 
         // Track C (#21): database-enforced RLS on ALL tenant-scoped tables.
@@ -66,7 +72,12 @@ export const prisma = basePrisma.$extends({
         // function current_tenant_id() returns the correct value for this
         // query's transaction. Uses $executeRaw (parameterized) to avoid
         // SQL injection in the tenant ID value.
-        const execute = async (client: { $executeRaw: (strings: TemplateStringsArray, ...values: unknown[]) => Promise<unknown> }) => {
+        const execute = async (client: {
+          $executeRaw: (
+            strings: TemplateStringsArray,
+            ...values: unknown[]
+          ) => Promise<unknown>;
+        }) => {
           await client.$executeRaw`SELECT set_config('app.current_tenant_id', ${session.tenantId}, true)`;
         };
 
@@ -76,8 +87,24 @@ export const prisma = basePrisma.$extends({
             | undefined
         )?.transaction;
 
-        if (transaction?.kind === 'itx' && typeof (basePrisma as unknown as { _createItxClient: (tx: unknown) => unknown })._createItxClient === 'function') {
-          const itxClient = (basePrisma as unknown as { _createItxClient: (tx: unknown) => { $executeRaw: (strings: TemplateStringsArray, ...values: unknown[]) => Promise<unknown> } })._createItxClient(transaction);
+        if (
+          transaction?.kind === "itx" &&
+          typeof (
+            basePrisma as unknown as {
+              _createItxClient: (tx: unknown) => unknown;
+            }
+          )._createItxClient === "function"
+        ) {
+          const itxClient = (
+            basePrisma as unknown as {
+              _createItxClient: (tx: unknown) => {
+                $executeRaw: (
+                  strings: TemplateStringsArray,
+                  ...values: unknown[]
+                ) => Promise<unknown>;
+              };
+            }
+          )._createItxClient(transaction);
           await execute(itxClient);
           return query(scopedArgs);
         }
@@ -85,13 +112,22 @@ export const prisma = basePrisma.$extends({
         return basePrisma.$transaction(async (tx) => {
           await execute(tx);
           const modelProp = getModelPropertyName(model);
-          const txModel = (tx as unknown as Record<string, Record<string, (args: unknown) => Promise<unknown>>>)[modelProp];
+          const txModel = (
+            tx as unknown as Record<
+              string,
+              Record<string, (args: unknown) => Promise<unknown>>
+            >
+          )[modelProp];
           if (!txModel) {
-            throw new Error(`Model ${modelProp} not found on transaction client`);
+            throw new Error(
+              `Model ${modelProp} not found on transaction client`,
+            );
           }
           const queryFn = txModel[operation];
           if (!queryFn) {
-            throw new Error(`Operation ${operation} not found on model ${modelProp}`);
+            throw new Error(
+              `Operation ${operation} not found on model ${modelProp}`,
+            );
           }
           return queryFn(scopedArgs);
         });
@@ -100,30 +136,36 @@ export const prisma = basePrisma.$extends({
   },
 }) as unknown as PrismaClient;
 
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
 }
 
 export type PrismaClientType = typeof prisma;
 export { PrismaClient };
-export type { Prisma } from '@prisma/client';
-export * from '@prisma/client';
-export { getTenantSession, runWithTenantSession } from './tenant-context.js';
-export { applyTenantScope, MODELS_WITHOUT_TENANT } from './tenant-scope.js';
-export { applySoftDeleteScope, SOFT_DELETE_ENABLED_MODELS } from './soft-delete.js';
-export { encryptField, decryptField, isEncrypted } from './encryption.js';
+export type { Prisma } from "@prisma/client";
+export * from "@prisma/client";
+export { getTenantSession, runWithTenantSession } from "./tenant-context.js";
+export { applyTenantScope, MODELS_WITHOUT_TENANT } from "./tenant-scope.js";
+export {
+  applySoftDeleteScope,
+  SOFT_DELETE_ENABLED_MODELS,
+} from "./soft-delete.js";
+export { encryptField, decryptField, isEncrypted } from "./encryption.js";
 export {
   StaleWriteError,
   RecordNotFoundForUpdateError,
   updateWithVersionGuard,
   type VersionedDelegate,
   type VersionGuardTarget,
-} from './optimistic-locking.js';
+} from "./optimistic-locking.js";
 
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, OnModuleInit, OnModuleDestroy } from "@nestjs/common";
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+export class PrismaService
+  extends PrismaClient
+  implements OnModuleInit, OnModuleDestroy
+{
   async onModuleInit() {
     await this.$connect();
   }
@@ -133,3 +175,20 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   }
 }
 
+export { IdpPrismaClient };
+@Injectable()
+export class IdpPrismaService
+  extends IdpPrismaClient
+  implements OnModuleInit, OnModuleDestroy
+{
+  async onModuleInit() {
+    await this.$connect();
+  }
+  async onModuleDestroy() {
+    await this.$disconnect();
+  }
+}
+export const idpPrisma = new IdpPrismaClient();
+
+export { Prisma as IdpPrismaTypes } from "./idp-client/index.js";
+export * as IdpModels from "./idp-client/index.js";

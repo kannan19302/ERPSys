@@ -1,13 +1,13 @@
 "use client";
 import { KeyRound, Webhook, BarChart3 } from "lucide-react";
-import type { ModuleTab } from "@unerp/ui-layout";
+import type { ModuleTab } from "@unerp/ui/layout";
 export {
   ModuleTabLayout as ApiPlatformTabLayout,
   type ModuleTab as ApiPlatformTab,
   type ModuleTabLayoutProps as ApiPlatformTabLayoutProps,
   SubTabBar,
   type SubTab,
-} from "@unerp/ui-layout";
+} from "@unerp/ui/layout";
 
 export const API_PLATFORM_TABS: ModuleTab[] = [
   {

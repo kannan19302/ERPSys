@@ -1,9 +1,13 @@
 import React from "react";
 import { PublicPageRenderer } from "@/components/builder/PublicPageRenderer";
-import { prisma } from "@unerp/database";
+import { UniERPClient } from "@unerp/sdk";
 import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
+
+const sdk = new UniERPClient({
+  baseUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000",
+});
 
 /**
  * Loads the published page + theme settings for the system tenant. Returns
@@ -13,38 +17,9 @@ export const dynamic = "force-dynamic";
  */
 async function loadPublicPage(slug: string) {
   try {
-    const systemTenant = await prisma.tenant.findUnique({
-      where: { slug: "system" },
-    });
-    if (!systemTenant) return null;
-
-    const page = await prisma.webPage.findFirst({
-      where: { tenantId: systemTenant.id, slug },
-    });
-    if (!page || page.status !== "PUBLISHED") return null;
-
-    const settings = await prisma.webSettings.findFirst({
-      where: { tenantId: systemTenant.id },
-    });
-
-    if (settings && settings.activeTemplateId) {
-      const tmpl = await prisma.webTemplate.findUnique({
-        where: { id: settings.activeTemplateId },
-      });
-      if (
-        tmpl &&
-        tmpl.designTokens &&
-        (!settings.themeTokens ||
-          Object.keys(settings.themeTokens).length === 0)
-      ) {
-        settings.themeTokens =
-          typeof tmpl.designTokens === "string"
-            ? JSON.parse(tmpl.designTokens)
-            : tmpl.designTokens;
-      }
-    }
-
-    return { page, settings };
+    const res = await sdk.public.getPage(slug);
+    if (!res.success || !res.data) return null;
+    return res.data;
   } catch (err) {
     console.error(
       "[public-page] lookup failed, serving 404 for slug",

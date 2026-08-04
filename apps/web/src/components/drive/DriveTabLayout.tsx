@@ -11,7 +11,7 @@ import {
   Database,
   Image,
 } from "lucide-react";
-import type { ModuleTab } from "@unerp/ui-layout";
+import type { ModuleTab } from "@unerp/ui/layout";
 
 export {
   ModuleTabLayout as DriveTabLayout,
@@ -19,7 +19,7 @@ export {
   type ModuleTabLayoutProps as DriveTabLayoutProps,
   SubTabBar,
   type SubTab,
-} from "@unerp/ui-layout";
+} from "@unerp/ui/layout";
 
 export const DRIVE_TABS: ModuleTab[] = [
   {

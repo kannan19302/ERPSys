@@ -11,7 +11,7 @@ import {
   Spinner,
   StatusBadge,
 } from "@unerp/ui";
-import { SubTabBar, type SubTab } from "@unerp/ui-layout";
+import { SubTabBar, type SubTab } from "@unerp/ui/layout";
 import { Target, BarChart3 } from "lucide-react";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 

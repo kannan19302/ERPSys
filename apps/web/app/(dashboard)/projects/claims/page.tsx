@@ -17,7 +17,7 @@ import {
   StatCardRow,
   useToast,
 } from "@unerp/ui";
-import { SubTabBar, type SubTab } from "@unerp/ui-layout";
+import { SubTabBar, type SubTab } from "@unerp/ui/layout";
 import { useApiClient } from "@unerp/framework";
 
 const SUB_TABS: SubTab[] = [

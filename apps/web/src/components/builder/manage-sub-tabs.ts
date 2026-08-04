@@ -14,7 +14,7 @@ import {
   Palette,
   Repeat,
 } from "lucide-react";
-import type { SubTab } from "@unerp/ui-layout";
+import type { SubTab } from "@unerp/ui/layout";
 
 /**
  * Level-2 SubTabBar entries for the Manage & Governance hub

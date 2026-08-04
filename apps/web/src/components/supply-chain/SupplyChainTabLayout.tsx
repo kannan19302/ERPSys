@@ -15,7 +15,7 @@ import {
   Users,
   Cpu,
 } from "lucide-react";
-import type { ModuleTab } from "@unerp/ui-layout";
+import type { ModuleTab } from "@unerp/ui/layout";
 
 export {
   ModuleTabLayout as SupplyChainTabLayout,
@@ -23,7 +23,7 @@ export {
   type ModuleTabLayoutProps as SupplyChainTabLayoutProps,
   SubTabBar,
   type SubTab,
-} from "@unerp/ui-layout";
+} from "@unerp/ui/layout";
 
 export const SUPPLY_CHAIN_TABS: ModuleTab[] = [
   {
