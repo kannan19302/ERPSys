@@ -15,6 +15,7 @@ vi.mock("@unerp/database", () => ({
 }));
 
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { SaasPortalFeedbackRoadmapService } from "../saas-portal-feedback-roadmap.service";
 
 describe("SaasPortalFeedbackRoadmapService", () => {

@@ -4,6 +4,7 @@ import {
   Injectable,
 } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 // Roles allowed to create a delegation on someone else's behalf. The Role
 // model has no numeric hierarchy/level field (checked packages/database/prisma/schema.prisma),
@@ -35,7 +36,7 @@ export class SaasPortalDelegationService {
       userIds.add(d.delegateId);
     }
 
-    const users = await prisma.user.findMany({
+    const users = await idpPrisma.user.findMany({
       where: { id: { in: Array.from(userIds) } },
       select: { id: true, firstName: true, lastName: true, email: true },
     });
@@ -76,11 +77,11 @@ export class SaasPortalDelegationService {
     // Both parties must belong to the calling tenant (blocks cross-tenant
     // delegation creation via a spoofed delegatorId/delegateId).
     const [delegator, delegate] = await Promise.all([
-      prisma.user.findFirst({
+      idpPrisma.user.findFirst({
         where: { id: data.delegatorId, tenantId },
         select: { id: true },
       }),
-      prisma.user.findFirst({
+      idpPrisma.user.findFirst({
         where: { id: data.delegateId, tenantId },
         select: { id: true },
       }),
