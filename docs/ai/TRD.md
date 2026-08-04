@@ -346,6 +346,21 @@ the remaining +32 is genuine new debt from the split and is owed back under the 
 `@ts-nocheck` remains at 0 across the wider scope. From this baseline the numbers may only fall,
 as ADR-005 requires. Any future increase still needs its own ADR.
 
+**Amendment, 2026-08-04 — the builder UI is duplicated, and the count reflects that.**
+The platform split moved the builder _pages_ into `apps/developer` but left the components,
+stores and hooks they import in `apps/web`, so `apps/developer` did not compile at all. The
+25 component files were copied across to make it build. That duplication is counted twice by the
+ratchet — a further +54 `any` for code that already existed — and is folded into this baseline
+rather than hidden.
+
+It is temporary debt with a known resolution, recorded so it is not mistaken for new code: the
+authoring surfaces (`PageBuilderWorkspace`, `BuilderSidebar`, `BuilderProperties`, the editor
+workspaces) belong to `apps/developer`, while the runtime renderers (`PublicPageRenderer`,
+`DynamicFormRenderer`, `blocks/*`) are consumed by six `apps/web` pages — published tenant sites,
+public forms and custom module routes — and must be **extracted into a shared package**, not
+copied. Until that extraction, edits must be made in both places. Deleting either copy today
+breaks a build.
+
 ---
 
 ## 10. Amendment log
