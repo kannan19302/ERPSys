@@ -48,6 +48,18 @@ export default [
     },
   },
   {
+    // Seed and provisioning scripts are CLIs whose entire interface is stdout:
+    // an operator runs one and reads what it did. Telling them what was
+    // provisioned is the point, not a debug leftover. Exempting the directory
+    // is better than a file-level `eslint-disable` in each script — the
+    // suppression ratchet counts those, so the per-file form makes adding a
+    // legitimate script look like new debt.
+    files: ['packages/database/prisma/**/*.ts'],
+    rules: {
+      'no-console': 'off',
+    },
+  },
+  {
     // Long-standing exemption for the backend tree. `apps/idp` and
     // `apps/developer` are added because they are overwhelmingly `apps/api/src`
     // code relocated by the platform split — auth/SSO services into the IdP,
