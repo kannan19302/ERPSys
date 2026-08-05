@@ -15,7 +15,7 @@
     "react-dom": "^19.0.0",
     "@unerp/ui": "^1.0.5",
     "@unerp/framework": "^0.1.2",
-    "@unerp/shared": "^1.0.2",
+    "@unerp/shared": "^1.0.3",
     "@unerp/sdk": "^1.0.2"
   },
   "devDependencies": {

@@ -128,22 +128,22 @@ importers:
         version: 1.0.2(prisma@6.19.3(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
       '@unerp/blockchain':
         specifier: ^1.0.2
-        version: 1.0.2(@unerp/shared@1.0.2)
+        version: 1.0.2(@unerp/shared@1.0.3)
       '@unerp/database':
         specifier: ^1.0.4
         version: 1.0.4(prisma@6.19.3(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
       '@unerp/extension-api':
+        specifier: ^1.0.5
+        version: 1.0.5
+      '@unerp/sandbox':
         specifier: ^1.0.3
         version: 1.0.3
-      '@unerp/sandbox':
-        specifier: ^1.0.2
-        version: 1.0.2
       '@unerp/service-kit':
         specifier: ^0.2.2
         version: 0.2.2
       '@unerp/shared':
-        specifier: ^1.0.2
-        version: 1.0.2
+        specifier: ^1.0.3
+        version: 1.0.3
       bullmq:
         specifier: ^5.79.1
         version: 5.79.1
@@ -291,8 +291,8 @@ importers:
         specifier: ^1.0.2
         version: 1.0.2
       '@unerp/shared':
-        specifier: ^1.0.2
-        version: 1.0.2
+        specifier: ^1.0.3
+        version: 1.0.3
       '@unerp/ui':
         specifier: ^1.0.5
         version: 1.0.5(@types/react@19.2.17)(next@15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)
@@ -322,26 +322,26 @@ importers:
   apps/extensions/education:
     dependencies:
       '@unerp/extension-api':
-        specifier: ^1.0.3
-        version: 1.0.3
+        specifier: ^1.0.5
+        version: 1.0.5
 
   apps/extensions/field-service:
     dependencies:
       '@unerp/extension-api':
-        specifier: ^1.0.3
-        version: 1.0.3
+        specifier: ^1.0.5
+        version: 1.0.5
 
   apps/extensions/healthcare:
     dependencies:
       '@unerp/extension-api':
-        specifier: ^1.0.3
-        version: 1.0.3
+        specifier: ^1.0.5
+        version: 1.0.5
 
   apps/extensions/real-estate:
     dependencies:
       '@unerp/extension-api':
-        specifier: ^1.0.3
-        version: 1.0.3
+        specifier: ^1.0.5
+        version: 1.0.5
 
   apps/idp:
     dependencies:
@@ -407,7 +407,7 @@ importers:
         version: 1.0.2(prisma@6.19.3(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
       '@unerp/blockchain':
         specifier: ^1.0.2
-        version: 1.0.2(@unerp/shared@1.0.2)
+        version: 1.0.2(@unerp/shared@1.0.3)
       '@unerp/database':
         specifier: ^1.0.4
         version: 1.0.4(prisma@6.19.3(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
@@ -415,8 +415,8 @@ importers:
         specifier: ^0.2.2
         version: 0.2.2
       '@unerp/shared':
-        specifier: ^1.0.2
-        version: 1.0.2
+        specifier: ^1.0.3
+        version: 1.0.3
       bullmq:
         specifier: ^5.79.1
         version: 5.79.1
@@ -551,8 +551,8 @@ importers:
         specifier: ^1.0.2
         version: 1.0.2
       '@unerp/shared':
-        specifier: ^1.0.2
-        version: 1.0.2
+        specifier: ^1.0.3
+        version: 1.0.3
       '@unerp/ui':
         specifier: ^1.0.5
         version: 1.0.5(@types/react@19.2.17)(next@15.5.19(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)(redux@5.0.1)
@@ -3246,8 +3246,8 @@ packages:
   '@unerp/database@1.0.4':
     resolution: {integrity: sha512-151zNYrh1V3Kbbt1EFF0+Wx1akVTiNxjiOeqxwVHo5Ien8i9OYf/pTYgcRhY0rm5Ks2WHzbc7Uhz7hu6pK9J7A==}
 
-  '@unerp/extension-api@1.0.3':
-    resolution: {integrity: sha512-vZi0oeQTNuaYrM9XPC5oKlunpC2+DuHYsQUnPMsHKMBDL6Ug9KWYGtWYtg62IdPoAeEdlz2mBTF6/jrJdNdbYQ==}
+  '@unerp/extension-api@1.0.5':
+    resolution: {integrity: sha512-VNL+i5RQNuFLBVYQjkWVlU3Zz7PJpUEpEexV3R2/pz/H1OpJbakr6e1HlvOz0dswuy68ITbCR6SCejtw95u8IQ==}
 
   '@unerp/framework@0.1.2':
     resolution: {integrity: sha512-OZ8ukab5Tk1naXTAsH/ZFXsDFCSI5nLmm0Xs+hOiWMHzxNTbqNJRU3CDPQx0cpApTXFGQQL3T1aXwvNA/JJFhg==}
@@ -3255,8 +3255,8 @@ packages:
       react: ^19.0.0
       react-dom: ^19.0.0
 
-  '@unerp/sandbox@1.0.2':
-    resolution: {integrity: sha512-lN/jVUxgbkO5BFzo9wkcmJW80KxwoiU1eeZ1w2m44gFsapnB9+HI45QlGvCuTs1WNFgSp/xLb3zpFc5owVFGxA==}
+  '@unerp/sandbox@1.0.3':
+    resolution: {integrity: sha512-0BnHfYmqoVblhNXnw4Ukx040QO08KbZPNSlYGdcP43vvufqpiT3pGja2DGCgVDqSbpPBqyRZRGav3myqZIUhmg==}
 
   '@unerp/sdk@1.0.2':
     resolution: {integrity: sha512-kS8i6WgfkzojAS2V2Fw4vNZYVY39xgsSJsc3W0FVZAbzbxtq5QJ5ra7HJAGwUQrU/rAhdFfI7zpuWXDnzReqfw==}
@@ -3264,8 +3264,8 @@ packages:
   '@unerp/service-kit@0.2.2':
     resolution: {integrity: sha512-bfNyHdVc7PhB+7DE+7RxMOLj6IEv4ZxHXo99fUFIk0eZD8yKwDlF7XEvkzKTbKERc3zB7ey794+ttEP83p1ZHQ==}
 
-  '@unerp/shared@1.0.2':
-    resolution: {integrity: sha512-+fExMhuaO5ZSHLpKV3Dw43tB7fCelniPtEFfQpnNMvACY+D/rORpCNI+xop7uKSI3NO4Yko9Uwy3BzLTJtJIdA==}
+  '@unerp/shared@1.0.3':
+    resolution: {integrity: sha512-KhtbT7BNPPmXZmWl89GG6Wx2mT8vbJtiE83oN1C6oErxLJ7RVwacYlm1jmWFMkCgvYgRNW+fql2pNinopfQjkA==}
 
   '@unerp/ui@1.0.5':
     resolution: {integrity: sha512-WnQjjQNc0dExzeytZG48QpzKVX0GMIIWwW/+fM/MDWAHfoXYhYsEoGX2e0RjbcWSi1fxsgFCiQJLxv+nFQaBmg==}
@@ -9799,18 +9799,18 @@ snapshots:
   '@unerp/auth@1.0.2(prisma@6.19.3(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)':
     dependencies:
       '@unerp/database': 1.0.4(prisma@6.19.3(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
-      '@unerp/shared': 1.0.2
+      '@unerp/shared': 1.0.3
       bcryptjs: 2.4.3
       jsonwebtoken: 9.0.3
     transitivePeerDependencies:
       - prisma
       - typescript
 
-  '@unerp/blockchain@1.0.2(@unerp/shared@1.0.2)':
+  '@unerp/blockchain@1.0.2(@unerp/shared@1.0.3)':
     dependencies:
       '@grpc/grpc-js': 1.14.4
       '@hyperledger/fabric-gateway': 1.11.0
-      '@unerp/shared': 1.0.2
+      '@unerp/shared': 1.0.3
       crypto: 1.0.1
 
   '@unerp/config@1.0.1': {}
@@ -9824,7 +9824,7 @@ snapshots:
       - prisma
       - typescript
 
-  '@unerp/extension-api@1.0.3':
+  '@unerp/extension-api@1.0.5':
     dependencies:
       zod: 3.25.76
 
@@ -9854,9 +9854,9 @@ snapshots:
       - react-is
       - redux
 
-  '@unerp/sandbox@1.0.2':
+  '@unerp/sandbox@1.0.3':
     dependencies:
-      '@unerp/extension-api': 1.0.3
+      '@unerp/extension-api': 1.0.5
       isolated-vm: 7.0.0
 
   '@unerp/sdk@1.0.2':
@@ -9865,7 +9865,7 @@ snapshots:
 
   '@unerp/service-kit@0.2.2': {}
 
-  '@unerp/shared@1.0.2':
+  '@unerp/shared@1.0.3':
     dependencies:
       zod: 3.25.76
 

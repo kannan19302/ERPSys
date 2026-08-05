@@ -60,38 +60,53 @@ else
 fi
 
 # ─────────────────────────────────────────────────
-# Step 2: Generate Prisma client
+# Step 2: Generate the Prisma client
 # ─────────────────────────────────────────────────
+# The database package is the published @unerp/database now, not a workspace
+# member, so `pnpm --filter @unerp/database` matches nothing and printed
+# "No projects matched the filters in /app" — a no-op that looked like a step.
+# Generate from the installed package instead.
 echo "==> [2/5] Generating Prisma client..."
-pnpm --filter @unerp/database exec prisma generate
-echo "  [OK] Prisma client generated."
+DB_PKG=/app/node_modules/@unerp/database
+if [ -d "$DB_PKG/prisma" ]; then
+  # TWO clients, not one. @unerp/database's entrypoint imports
+  # './idp-client/index.js', which is produced by generating the separate IdP
+  # schema — § 5.2 gives each plane its own identity realm, so the IdP has its
+  # own datasource. Generating only the main schema compiled cleanly and then
+  # crashed at runtime with `Cannot find module './idp-client/index.js'`, which
+  # is the worst kind of failure: invisible to the type checker.
+  (cd "$DB_PKG" && npx prisma generate --schema prisma/schema)
+  if [ -f "$DB_PKG/prisma/idp-schema.prisma" ]; then
+    (cd "$DB_PKG" && npx prisma generate --schema prisma/idp-schema.prisma)
+    # The generator writes to src/idp-client, but dist/index.js requires
+    # './idp-client/index.js' relative to ITSELF. In the monorepo a build script
+    # (copy-generated-client.mjs) bridged that gap; the published package has no
+    # build step, so the copy happens here or the API dies at import time with
+    # `Cannot find module './idp-client/index.js'` — after compiling cleanly.
+    if [ -d "$DB_PKG/src/idp-client" ] && [ -d "$DB_PKG/dist" ]; then
+      rm -rf "$DB_PKG/dist/idp-client"
+      cp -r "$DB_PKG/src/idp-client" "$DB_PKG/dist/idp-client"
+    fi
+  fi
+  echo "  [OK] Prisma clients generated from @unerp/database (main + IdP)."
+else
+  echo "  [FAIL] @unerp/database is not installed, or ships no prisma/ directory."
+  echo "         The package must include prisma/ in its files allowlist."
+  exit 1
+fi
 
 # ─────────────────────────────────────────────────
-# Step 3: Build shared packages (needed by API + Web)
+# Step 3: Shared packages
 # ─────────────────────────────────────────────────
-echo "==> [3/5] Building shared workspace packages..."
-pnpm --filter @unerp/database build
-pnpm --filter @unerp/shared build
-pnpm --filter @unerp/auth build
-# Build all UI sub-packages (they now have dist/ as their entry point)
-pnpm --filter @unerp/ui-tokens build 2>/dev/null || true
-pnpm --filter @unerp/ui-theme build 2>/dev/null || true
-pnpm --filter @unerp/ui-utils build 2>/dev/null || true
-pnpm --filter @unerp/ui-hooks build 2>/dev/null || true
-pnpm --filter @unerp/ui-icons build 2>/dev/null || true
-pnpm --filter @unerp/ui-components build 2>/dev/null || true
-pnpm --filter @unerp/ui-layout build 2>/dev/null || true
-pnpm --filter @unerp/ui-charts build 2>/dev/null || true
-pnpm --filter @unerp/ui-data-grid build 2>/dev/null || true
-pnpm --filter @unerp/ui-dashboard build 2>/dev/null || true
-pnpm --filter @unerp/ui-notifications build 2>/dev/null || true
-pnpm --filter @unerp/ui-form-engine build 2>/dev/null || true
-pnpm --filter @unerp/ui-workflow build 2>/dev/null || true
-# Build UI facade (depends on all ui-* above)
-pnpm --filter @unerp/ui build 2>/dev/null || true
-# Build frontend framework (depends on @unerp/ui)
-pnpm --filter @unerp/framework build 2>/dev/null || true
-echo "  [OK] Shared packages built."
+# Nothing to build. Every @unerp/* package arrives from the registry already
+# built — that is the point of publishing them.
+#
+# This step used to build @unerp/ui-tokens, ui-theme, ui-components and ten more
+# siblings. Those were collapsed into a single @unerp/ui with subpath exports,
+# so every one of those filters had been matching nothing — silently, because
+# each ended in `2>/dev/null || true`. A build step that cannot fail is a build
+# step that is not running.
+echo "==> [3/5] Shared packages come prebuilt from the registry — nothing to build."
 
 # Signal the web container it can start compiling now.
 touch "$READY_MARKER"

@@ -24,7 +24,7 @@
     "@types/papaparse": "^5.5.2",
     "@unerp/auth": "^1.0.2",
     "@unerp/framework": "^0.1.2",
-    "@unerp/shared": "^1.0.2",
+    "@unerp/shared": "^1.0.3",
     "@unerp/ui": "^1.0.5",
     "@xyflow/react": "^12.11.0",
     "lucide-react": "^0.460.0",
