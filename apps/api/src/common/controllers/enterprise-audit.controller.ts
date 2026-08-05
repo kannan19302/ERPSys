@@ -9,6 +9,7 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { Response } from "express";
+import { JwtAuthGuard } from "../guards/jwt-auth.guard";
 import { TenantGuard } from "../guards/tenant.guard";
 import { RbacGuard } from "../guards/rbac.guard";
 import { Permissions } from "../decorators/permissions.decorator";
@@ -20,7 +21,7 @@ interface AuthenticatedRequest {
 }
 
 @Controller("audit")
-@UseGuards(TenantGuard, RbacGuard)
+@UseGuards(JwtAuthGuard, TenantGuard, RbacGuard)
 export class EnterpriseAuditController {
   constructor(
     private readonly enterpriseAuditService: EnterpriseAuditService,

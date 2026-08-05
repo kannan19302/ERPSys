@@ -64,7 +64,11 @@ export class AdminService {
       where: { tenantId },
       include: {
         roles: {
-          include: {},
+          // `include: {}` was empty, so the related Role was never loaded and
+          // the mapping below threw on `r.role.id` — GET /admin/users returned
+          // 500 for every tenant. The `as unknown as Array<any>` cast is why the
+          // compiler could not see it.
+          include: { role: true },
         },
       },
     })) as unknown as Array<any>;

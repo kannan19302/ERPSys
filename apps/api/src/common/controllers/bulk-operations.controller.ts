@@ -8,6 +8,7 @@ import {
   UseGuards,
   Req,
 } from "@nestjs/common";
+import { JwtAuthGuard } from "../guards/jwt-auth.guard";
 import { TenantGuard } from "../guards/tenant.guard";
 import { RbacGuard } from "../guards/rbac.guard";
 import { Permissions } from "../decorators/permissions.decorator";
@@ -19,7 +20,7 @@ interface AuthenticatedRequest {
 }
 
 @Controller("bulk")
-@UseGuards(TenantGuard, RbacGuard)
+@UseGuards(JwtAuthGuard, TenantGuard, RbacGuard)
 export class BulkOperationsController {
   constructor(private readonly bulkOperationsService: BulkOperationsService) {}
 

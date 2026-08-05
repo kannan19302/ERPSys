@@ -1,11 +1,12 @@
 import { Controller, Get, Param, Query, UseGuards, Req } from "@nestjs/common";
+import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { TenantGuard } from "../../common/guards/tenant.guard";
 import { RbacGuard } from "../../common/guards/rbac.guard";
 import { Permissions } from "../../common/decorators/permissions.decorator";
 import { CrmEnterpriseService } from "./crm-enterprise.service";
 
 @Controller("crm/enterprise")
-@UseGuards(TenantGuard, RbacGuard)
+@UseGuards(JwtAuthGuard, TenantGuard, RbacGuard)
 export class CrmEnterpriseController {
   constructor(private readonly service: CrmEnterpriseService) {}
 
