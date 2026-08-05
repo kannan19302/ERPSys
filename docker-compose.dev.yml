@@ -149,6 +149,18 @@ services:
       - NODE_ENV=development
       - NODE_OPTIONS=--max-old-space-size=8192
 
+      # ── Package registry ──
+      # The repo's .npmrc points @unerp/* at http://localhost:4873, which is
+      # correct on the host and unreachable in here: inside a container
+      # `localhost` is the container. A user-level ~/.npmrc does NOT fix it —
+      # npm's precedence puts project config above user config, so the bind-
+      # mounted /app/.npmrc wins. Env config sits ABOVE project config, which is
+      # why the override belongs here rather than in a file.
+      #
+      # host.docker.internal resolves from the container but not from the host,
+      # so no single URL serves both; the container gets the service name.
+      - npm_config_@unerp:registry=http://unerp-registry:4873
+
       # ── Database ──
       - DATABASE_URL=postgresql://unerp_api:unerp_api_password@postgres:5432/unerp_dev?schema=public
       - DATABASE_OWNER_URL=postgresql://unerp:unerp_password@postgres:5432/unerp_dev?schema=public

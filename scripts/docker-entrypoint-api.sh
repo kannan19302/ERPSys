@@ -50,26 +50,9 @@ for link in "${WORKSPACE_LINKS[@]}"; do
   fi
 done
 
-# The repo's .npmrc points @unerp/* at http://localhost:4873, which is correct on
-# the host and wrong in here: inside a container `localhost` is the container, so
-# the install failed with ECONNREFUSED against a registry it could never reach.
-# The registry is a compose service, so address it by service name. Written to
-# $HOME rather than the bind-mounted /app/.npmrc so the container never edits the
-# developer's working tree.
-UNERP_REGISTRY="${UNERP_REGISTRY:-http://unerp-registry:4873}"
-if [ -n "$UNERP_REGISTRY" ]; then
-  echo "==> Pointing @unerp/* at $UNERP_REGISTRY (container-local .npmrc)"
-  {
-    echo "@unerp:registry=$UNERP_REGISTRY"
-    echo "${UNERP_REGISTRY#http://}:_authToken=\"local-anonymous\""
-    echo "node-linker=hoisted"
-    echo "shamefully-hoist=true"
-  } > "$HOME/.npmrc"
-fi
-
 if [ ! -d "/app/node_modules/.pnpm" ] || [ "$CURRENT_CHECKSUM" != "$CACHED_CHECKSUM" ] || [ "$WORKSPACE_LINKS_READY" != true ]; then
   echo "==> [1/5] Installing dependencies (lockfile, first boot, or workspace links changed)..."
-  pnpm install --no-frozen-lockfile --registry https://registry.npmjs.org/
+  pnpm install --no-frozen-lockfile
   echo "$CURRENT_CHECKSUM" > "$CHECKSUM_FILE"
   echo "  [OK] Dependencies installed."
 else

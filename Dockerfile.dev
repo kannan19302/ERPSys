@@ -8,6 +8,16 @@ FROM node:22-alpine
 # Install tini for proper signal handling (graceful shutdown of dev servers)
 RUN apk add --no-cache tini bash
 
+# Toolchain for native modules.
+#
+# `isolated-vm` — the V8 isolate the extension sandbox runs on (ADR-009) — is a
+# native addon and compiles from source. Without these the api container died at
+# boot with `Failed in 648ms at /app/node_modules/isolated-vm` followed by
+# ELIFECYCLE, which reads as a dependency problem and is actually a missing
+# compiler. Alpine needs libc++ headers as well as g++ because isolated-vm links
+# against the C++ standard library.
+RUN apk add --no-cache python3 make g++ libc6-compat libstdc++
+
 # Enable corepack (ships with Node 22) and activate pnpm
 RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
 
