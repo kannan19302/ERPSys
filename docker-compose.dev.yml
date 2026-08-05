@@ -46,6 +46,19 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    # The default max_connections of 100 is not enough for the test suite: Prisma
+    # sizes its pool per client, vitest runs several forks, and each app has its
+    # own client. The symptom is "Can't reach database server" on a different
+    # handful of specs every run, which reads as flaky tests and is actually the
+    # server refusing new connections. PgBouncer in transaction mode (§ 11, and
+    # the `pooling` profile below) is the real answer at scale; this raises the
+    # ceiling so a developer machine is not the constraint.
+    command:
+      - postgres
+      - -c
+      - max_connections=300
+      - -c
+      - shared_buffers=256MB
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U unerp -d unerp_dev"]
       interval: 5s

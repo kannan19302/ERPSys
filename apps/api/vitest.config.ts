@@ -57,7 +57,15 @@ export default defineConfig({
       forks: {
         execArgv: ["--max-old-space-size=2048"],
         minForks: 1,
-        maxForks: process.env.CI ? 2 : 4,
+        // 2 locally as well as in CI. This machine also runs a Kubernetes
+        // cluster and the package registry through the same Docker Desktop
+        // networking stack, and at 4 forks the failure was connection
+        // ESTABLISHMENT timing out — "Can't reach database server" after ~5s —
+        // rather than pool exhaustion: Postgres itself sat idle at 6
+        // connections and 0% CPU while specs failed. Fewer concurrent
+        // connection attempts is the fix; raising max_connections was not,
+        // because the ceiling was never what was being hit.
+        maxForks: 2,
       },
     },
     exclude: process.env.CI

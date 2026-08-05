@@ -6,15 +6,55 @@
 
 [![CI](https://github.com/kannan19302/ERPSys/actions/workflows/ci.yml/badge.svg)](https://github.com/kannan19302/ERPSys/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/kannan19302/ERPSys/actions/workflows/codeql.yml/badge.svg)](https://github.com/kannan19302/ERPSys/actions/workflows/codeql.yml)
-[![Security Scan](https://github.com/kannan19302/ERPSys/actions/workflows/security-scan.yml/badge.svg)](https://github.com/kannan19302/ERPSys/actions/workflows/security-scan.yml)
+[![CD](https://github.com/kannan19302/ERPSys/actions/workflows/cd.yml/badge.svg)](https://github.com/kannan19302/ERPSys/actions/workflows/cd.yml)
 [![License: Proprietary](https://img.shields.io/badge/license-proprietary-lightgrey.svg)](LICENSE)
 [![Conventional Commits](https://img.shields.io/badge/commits-conventional-fe5196.svg)](https://www.conventionalcommits.org)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-[Vision](#vision) · [Features](#features) · [Architecture](#architecture) · [Install](#installation) ·
+[Repositories](#platform-repositories) · [Vision](#vision) · [Features](#features) · [Architecture](#architecture) · [Install](#installation) ·
 [Dev Setup](#development-setup) · [Deployment](#deployment-guide) · [Roadmap](#roadmap) · [Contributing](#contribution-guide)
 
 </div>
+
+---
+
+## Platform Repositories
+
+**You are in the home repository.** UniERP is moving from a single monorepo to a layered
+set of repositories (target design: [`docs/PLATFORM_ARCHITECTURE.md`](docs/PLATFORM_ARCHITECTURE.md) § 4).
+This table is the navigation hub, and it distinguishes what is **published** from what is
+**still in-repo** — so nothing here links to a repository that does not exist yet.
+
+### Published today
+
+| Repository                                                                          | Role                                                |
+| :---------------------------------------------------------------------------------- | :-------------------------------------------------- |
+| **[ERPSys](https://github.com/kannan19302/ERPSys)** ← _you are here_                | The platform monorepo — API, web, console, packages |
+| [unierp-corporate-website](https://github.com/kannan19302/unierp-corporate-website) | Marketing site (plane 0)                            |
+| [unierp-app-healthcare](https://github.com/kannan19302/unierp-app-healthcare)       | Healthcare industry extension                       |
+| [unierp-app-education](https://github.com/kannan19302/unierp-app-education)         | Education industry extension                        |
+| [unierp-app-realestate](https://github.com/kannan19302/unierp-app-realestate)       | Real estate industry extension                      |
+| [unierp-app-fieldservice](https://github.com/kannan19302/unierp-app-fieldservice)   | Field service industry extension                    |
+
+### Where the code lives inside this repo
+
+Until the split in § 14 Phase 3 completes, every component below is a directory here, not a
+separate repository. Extraction is tracked in
+[`docs/PLATFORM_ARCHITECTURE.md § 18`](docs/PLATFORM_ARCHITECTURE.md).
+
+| Layer | Component     | Path in this repo        | Purpose                                  |
+| :---- | :------------ | :----------------------- | :--------------------------------------- |
+| L0    | contracts     | `packages/contracts`     | HTTP / event / entity schemas — the root |
+| L1    | kernel        | `packages/kernel`        | Tenancy, policy, audit, outbox           |
+| L1    | design system | `packages/ui`            | `@unerp/ui` + subpath exports            |
+| L1    | sdk           | `packages/sdk`           | Generated public clients                 |
+| L2    | data          | `packages/database`      | Prisma schema, migrations, RLS           |
+| L2    | framework     | `packages/framework`     | Schema-driven page runtime               |
+| L2    | extension-api | `packages/extension-api` | Public extension contract                |
+| L3    | api           | `apps/api`               | The modular monolith (one deployable)    |
+| L4    | web           | `apps/web`               | Tenant portal + application layer        |
+| L4    | console       | `apps/console`           | Platform admin console (control plane)   |
+| L5    | mobile        | `apps/mobile`            | Flutter client                           |
 
 ---
 
@@ -89,7 +129,8 @@ flowchart LR
 ```
 
 Full detail: [Wiki § Architecture](../../wiki/Architecture) and
-[.ai/ARCHITECTURE_FOUNDATION.md](.ai/ARCHITECTURE_FOUNDATION.md) (binding governance).
+[docs/PLATFORM_ARCHITECTURE.md](docs/PLATFORM_ARCHITECTURE.md) (target architecture) and
+[docs/ai/ARCHITECTURE_REVIEW.md](docs/ai/ARCHITECTURE_REVIEW.md) (honest current state).
 
 ## Technology Stack
 
@@ -353,7 +394,7 @@ See open [Issues](../../issues) and [Milestones](../../milestones) for granular,
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for branching, commit conventions, local verification
 steps, and the PR checklist. Please also read [AGENTS.md](AGENTS.md) and
-[.ai/ARCHITECTURE_FOUNDATION.md](.ai/ARCHITECTURE_FOUNDATION.md) before proposing changes —
+[docs/ai/README.md](docs/ai/README.md) before proposing changes —
 they're binding, not optional. This project follows a [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## AI-Agent Development
