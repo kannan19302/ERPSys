@@ -25,7 +25,7 @@ export function TenantStarterHome({ settings }: TenantStarterHomeProps) {
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        background: "#f8fafc",
+        background: "var(--color-bg-sunken)",
       }}
     >
       <TenantHeader settings={settings} />
@@ -35,7 +35,7 @@ export function TenantStarterHome({ settings }: TenantStarterHomeProps) {
         <section
           style={{
             background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
-            color: "#ffffff",
+            color: "var(--color-text-inverse)",
             padding: "6rem 1.5rem 5rem",
             textAlign: "center",
             position: "relative",
@@ -90,16 +90,17 @@ export function TenantStarterHome({ settings }: TenantStarterHomeProps) {
                 letterSpacing: "-0.03em",
                 lineHeight: 1.15,
                 margin: "0 0 1.5rem 0",
-                color: "#ffffff",
+                color: "var(--color-text-inverse)",
               }}
             >
-              Welcome to <span style={{ color: "#60a5fa" }}>{siteName}</span>
+              Welcome to{" "}
+              <span style={{ color: "var(--color-primary)" }}>{siteName}</span>
             </h1>
 
             <p
               style={{
                 fontSize: "1.25rem",
-                color: "#94a3b8",
+                color: "var(--color-text-tertiary)",
                 maxWidth: "680px",
                 margin: "0 auto 2.5rem",
                 lineHeight: 1.6,
@@ -126,8 +127,8 @@ export function TenantStarterHome({ settings }: TenantStarterHomeProps) {
                   gap: "0.6rem",
                   padding: "0.875rem 1.75rem",
                   borderRadius: "10px",
-                  background: "#2563eb",
-                  color: "#ffffff",
+                  background: "var(--color-primary-hover)",
+                  color: "var(--color-text-inverse)",
                   fontWeight: 600,
                   fontSize: "1rem",
                   textDecoration: "none",
@@ -149,7 +150,7 @@ export function TenantStarterHome({ settings }: TenantStarterHomeProps) {
                   padding: "0.875rem 1.75rem",
                   borderRadius: "10px",
                   background: "rgba(255, 255, 255, 0.1)",
-                  color: "#ffffff",
+                  color: "var(--color-text-inverse)",
                   fontWeight: 600,
                   fontSize: "1rem",
                   textDecoration: "none",
@@ -177,7 +178,7 @@ export function TenantStarterHome({ settings }: TenantStarterHomeProps) {
               style={{
                 fontSize: "2rem",
                 fontWeight: 700,
-                color: "#0f172a",
+                color: "var(--color-text)",
                 margin: "0 0 0.75rem 0",
               }}
             >
@@ -185,7 +186,7 @@ export function TenantStarterHome({ settings }: TenantStarterHomeProps) {
             </h2>
             <p
               style={{
-                color: "#64748b",
+                color: "var(--color-text-secondary)",
                 fontSize: "1.05rem",
                 maxWidth: "600px",
                 margin: "0 auto",
@@ -205,7 +206,7 @@ export function TenantStarterHome({ settings }: TenantStarterHomeProps) {
           >
             <div
               style={{
-                background: "#ffffff",
+                background: "var(--color-text-inverse)",
                 borderRadius: "16px",
                 padding: "2rem",
                 border: "1px solid #e2e8f0",
@@ -217,8 +218,8 @@ export function TenantStarterHome({ settings }: TenantStarterHomeProps) {
                   width: "48px",
                   height: "48px",
                   borderRadius: "12px",
-                  background: "#eff6ff",
-                  color: "#2563eb",
+                  background: "var(--color-info-light)",
+                  color: "var(--color-primary-hover)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -231,7 +232,7 @@ export function TenantStarterHome({ settings }: TenantStarterHomeProps) {
                 style={{
                   fontSize: "1.25rem",
                   fontWeight: 700,
-                  color: "#0f172a",
+                  color: "var(--color-text)",
                   margin: "0 0 0.5rem 0",
                 }}
               >
@@ -239,7 +240,7 @@ export function TenantStarterHome({ settings }: TenantStarterHomeProps) {
               </h3>
               <p
                 style={{
-                  color: "#64748b",
+                  color: "var(--color-text-secondary)",
                   fontSize: "0.95rem",
                   lineHeight: 1.6,
                   margin: "0 0 1.25rem 0",
@@ -251,7 +252,7 @@ export function TenantStarterHome({ settings }: TenantStarterHomeProps) {
               <Link
                 href="/shop"
                 style={{
-                  color: "#2563eb",
+                  color: "var(--color-primary-hover)",
                   fontWeight: 600,
                   textDecoration: "none",
                   fontSize: "0.9rem",
@@ -266,7 +267,7 @@ export function TenantStarterHome({ settings }: TenantStarterHomeProps) {
 
             <div
               style={{
-                background: "#ffffff",
+                background: "var(--color-text-inverse)",
                 borderRadius: "16px",
                 padding: "2rem",
                 border: "1px solid #e2e8f0",
@@ -278,8 +279,8 @@ export function TenantStarterHome({ settings }: TenantStarterHomeProps) {
                   width: "48px",
                   height: "48px",
                   borderRadius: "12px",
-                  background: "#f0fdf4",
-                  color: "#16a34a",
+                  background: "var(--color-success-light)",
+                  color: "var(--color-success-hover)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -292,7 +293,7 @@ export function TenantStarterHome({ settings }: TenantStarterHomeProps) {
                 style={{
                   fontSize: "1.25rem",
                   fontWeight: 700,
-                  color: "#0f172a",
+                  color: "var(--color-text)",
                   margin: "0 0 0.5rem 0",
                 }}
               >
@@ -300,7 +301,7 @@ export function TenantStarterHome({ settings }: TenantStarterHomeProps) {
               </h3>
               <p
                 style={{
-                  color: "#64748b",
+                  color: "var(--color-text-secondary)",
                   fontSize: "0.95rem",
                   lineHeight: 1.6,
                   margin: "0 0 1.25rem 0",
@@ -312,7 +313,7 @@ export function TenantStarterHome({ settings }: TenantStarterHomeProps) {
               <Link
                 href="/blog"
                 style={{
-                  color: "#16a34a",
+                  color: "var(--color-success-hover)",
                   fontWeight: 600,
                   textDecoration: "none",
                   fontSize: "0.9rem",
@@ -327,7 +328,7 @@ export function TenantStarterHome({ settings }: TenantStarterHomeProps) {
 
             <div
               style={{
-                background: "#ffffff",
+                background: "var(--color-text-inverse)",
                 borderRadius: "16px",
                 padding: "2rem",
                 border: "1px solid #e2e8f0",
@@ -353,7 +354,7 @@ export function TenantStarterHome({ settings }: TenantStarterHomeProps) {
                 style={{
                   fontSize: "1.25rem",
                   fontWeight: 700,
-                  color: "#0f172a",
+                  color: "var(--color-text)",
                   margin: "0 0 0.5rem 0",
                 }}
               >
@@ -361,7 +362,7 @@ export function TenantStarterHome({ settings }: TenantStarterHomeProps) {
               </h3>
               <p
                 style={{
-                  color: "#64748b",
+                  color: "var(--color-text-secondary)",
                   fontSize: "0.95rem",
                   lineHeight: 1.6,
                   margin: "0 0 1.25rem 0",

@@ -130,9 +130,8 @@
   z-index: 1000;
   padding: var(--space-3) var(--space-5);
   border-radius: var(--radius-md);
-  color: #fff;
+  color: var(--color-text-inverse);
   font-weight: var(--weight-semibold);
   font-size: var(--text-sm);
   box-shadow: var(--shadow-lg);
 }
-

@@ -49,7 +49,7 @@
 }
 .s9 {
   align-items: center;
-  background-color: #e5e7eb;
+  background-color: var(--color-border);
   display: flex;
   height: 120px;
   justify-content: center;

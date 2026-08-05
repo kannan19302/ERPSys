@@ -15,7 +15,7 @@
   padding: var(--space-5);
 }
 .s3 {
-  color: #d97706;
+  color: var(--color-warning-hover);
 }
 .s4 {
   color: var(--color-text-secondary);

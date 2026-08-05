@@ -59,14 +59,14 @@ const PRESENCE_LABELS: Record<PresenceStatus, string> = {
 };
 
 const PRESENCE_COLORS: Record<PresenceStatus, string> = {
-  ACTIVE: "#10b981",
-  IN_MEETING: "#10b981",
-  FOCUSING: "#10b981",
-  AWAY: "#f59e0b",
-  BRB: "#f59e0b",
-  DND: "#ef4444",
-  OOO: "#94a3b8",
-  INACTIVE: "#94a3b8",
+  ACTIVE: "var(--chart-9)",
+  IN_MEETING: "var(--chart-9)",
+  FOCUSING: "var(--chart-9)",
+  AWAY: "var(--chart-3)",
+  BRB: "var(--chart-3)",
+  DND: "var(--chart-4)",
+  OOO: "var(--color-text-tertiary)",
+  INACTIVE: "var(--color-text-tertiary)",
 };
 
 interface PushDevice {
@@ -658,7 +658,9 @@ export default function ProfilePage() {
                     <span
                       className={styles.sidebarPresenceDot}
                       style={{
-                        backgroundColor: PRESENCE_COLORS[presence] ?? "#94a3b8",
+                        backgroundColor:
+                          PRESENCE_COLORS[presence] ??
+                          "var(--color-text-tertiary)",
                       }}
                       title={PRESENCE_LABELS[presence]}
                     />
@@ -706,7 +708,8 @@ export default function ProfilePage() {
                           className={styles.sidebarPresenceDot}
                           style={{
                             backgroundColor:
-                              PRESENCE_COLORS[memberPresence] ?? "#94a3b8",
+                              PRESENCE_COLORS[memberPresence] ??
+                              "var(--color-text-tertiary)",
                           }}
                           title={PRESENCE_LABELS[memberPresence]}
                         />
@@ -1245,8 +1248,8 @@ export default function ProfilePage() {
                                         : "rgba(239, 68, 68, 0.1)",
                                     color:
                                       h.status === "SUCCESS"
-                                        ? "#10b981"
-                                        : "#ef4444",
+                                        ? "var(--chart-9)"
+                                        : "var(--chart-4)",
                                     padding: "2px 8px",
                                     borderRadius: "4px",
                                     fontSize: "11px",

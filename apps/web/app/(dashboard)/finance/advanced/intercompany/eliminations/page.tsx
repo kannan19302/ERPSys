@@ -305,14 +305,14 @@ export default function IntercompanyEliminationsPage() {
                 label: "Total Netting Volume (Eliminated)",
                 value: fmt(stats.totalNettedVolume),
                 icon: <Scale size={20} />,
-                color: "#22c55e",
+                color: "var(--chart-2)",
                 bg: "rgba(34,197,94,0.08)",
               },
               {
                 label: "Pending Netting Volume",
                 value: fmt(stats.pendingNettingVolume),
                 icon: <Loader2 size={20} />,
-                color: "#f59e0b",
+                color: "var(--chart-3)",
                 bg: "rgba(245,158,11,0.08)",
               },
               {
@@ -410,7 +410,10 @@ export default function IntercompanyEliminationsPage() {
                             v === "ELIMINATED"
                               ? "rgba(34,197,94,0.1)"
                               : "rgba(245,158,11,0.1)",
-                          color: v === "ELIMINATED" ? "#22c55e" : "#f59e0b",
+                          color:
+                            v === "ELIMINATED"
+                              ? "var(--chart-2)"
+                              : "var(--chart-3)",
                         }}
                         className={styles.s8}
                       >
@@ -734,7 +737,7 @@ export default function IntercompanyEliminationsPage() {
                             background: v
                               ? "rgba(34,197,94,0.1)"
                               : "rgba(239,68,68,0.1)",
-                            color: v ? "#22c55e" : "#ef4444",
+                            color: v ? "var(--chart-2)" : "var(--chart-4)",
                           }}
                           className={styles.s8}
                         >
@@ -878,7 +881,10 @@ export default function IntercompanyEliminationsPage() {
                               v === "POSTED"
                                 ? "rgba(34,197,94,0.1)"
                                 : "rgba(245,158,11,0.1)",
-                            color: v === "POSTED" ? "#22c55e" : "#f59e0b",
+                            color:
+                              v === "POSTED"
+                                ? "var(--chart-2)"
+                                : "var(--chart-3)",
                           }}
                           className={styles.s8}
                         >

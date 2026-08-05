@@ -68,7 +68,7 @@
 
 .mpd-tab-btn.active .mpd-tab-num {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-text-inverse);
 }
 
 .mpd-counter-badge {
@@ -131,7 +131,7 @@
 
 .mpd-side-arrow:hover:not(:disabled) {
   background: var(--color-primary);
-  color: #ffffff;
+  color: var(--color-text-inverse);
   border-color: var(--color-primary);
   box-shadow: 0 4px 14px
     color-mix(in srgb, var(--color-primary) 35%, transparent);

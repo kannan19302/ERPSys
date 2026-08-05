@@ -175,7 +175,11 @@ export default function RoutesTab() {
           config={{
             xAxisKey: "stop",
             series: [
-              { dataKey: "order", name: "Stop Order", color: "#6366f1" },
+              {
+                dataKey: "order",
+                name: "Stop Order",
+                color: "var(--chart-10)",
+              },
             ],
           }}
           defaultChartType="bar"

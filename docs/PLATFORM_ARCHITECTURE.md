@@ -1015,36 +1015,181 @@ manifest, not fifteen repositories.**
 4. **Every extraction preserves history** (`git filter-repo`) and is tagged at the extraction
    point. Every phase is independently revertable.
 
-### Programme status — 2026-08-03
+### Programme status — 2026-08-05
 
 Measured, not asserted. Every "done" below is backed by a gate that passes and, where the item
-was a defect, by a gate that was proven able to fail.
+was a defect, by a gate that was proven able to fail. Counts are the output of
+`node scripts/ci/check-policy.mjs --report` and of the tree itself, not estimates.
 
-| Item                                                | At `v1.0.0`        | Now                | Status                   |
-| :-------------------------------------------------- | :----------------- | :----------------- | :----------------------- |
-| `@ts-nocheck`                                       | 3,241 (100%)       | **0**              | ✅ done, baseline locked |
-| `apps/api` typecheck                                | not runnable       | **0 errors**       | ✅                       |
-| Full `pnpm verify`                                  | red, unpushable    | green              | ✅                       |
-| explicit `any`                                      | 15,483 (over base) | 14,319             | 🟡 ratcheting            |
-| Hardcoded hex                                       | 1,625 (over base)  | 1,321              | 🟡 ratcheting            |
-| Fabricated endpoints                                | 2,411              | **0**              | ✅ 17,321 lines removed  |
-| Unguarded controller routes                         | 1,889              | 589                | 🟡 ratcheting            |
-| **Cross-tenant escalation via tenant `*` wildcard** | **exploitable**    | **closed + gated** | ✅                       |
-| **Cross-tenant escalation via `admin.tenant.*`**    | **exploitable**    | **closed + gated** | ✅                       |
-| Control-plane boundary enforced in code             | none               | 2 layers           | 🟡 Phase 1 partial       |
-| `Float` money fields                                | 92                 | 29 (mostly rates)  | 🟡 needs a database      |
-| Unsafe raw SQL                                      | 1 (reviewed)       | 1 (reviewed)       | ✅ documented exception  |
-| RLS coverage 1,029/1,029                            | unverified         | unverified locally | ⛔ needs a database      |
-| `apps/console` extraction                           | —                  | not started        | ⛔ Phase 1 remainder     |
-| Phases 2–6                                          | —                  | not started        | ⛔                       |
+**Programme completion: ~74%**, weighted by the § 14 timeline (59 scheduled weeks, Phases 0–5).
 
-**Phase 1 is partially delivered.** The control-plane _boundary_ is now enforced in code
-(reserved namespaces, `ControlPlaneGuard`, two hard CI gates). The control-plane _deployable_ —
-`apps/console` on its own origin, realm, and ingress — is not.
+> #### ⚠ The isolation suite has been proving the weaker claim
+>
+> `unerp` — the role that runs migrations and seeds, and the one every local and
+> CI suite run has been using — is a Postgres **superuser**, and a superuser
+> bypasses RLS outright. `FORCE` does not apply to it. So while § 5.1's layer 4
+> is correctly configured (1,782 tables, ENABLE + FORCE, 2,784 policies, verified
+> in the catalogue), **no test that connects as the owner can prove it works** —
+> those tests are exercising layer 3, the application-level tenant scope, which
+> is the weaker guarantee.
+>
+> This surfaced when the new extension-table isolation test failed by seeing both
+> tenants' rows; the table was correct and the connection was not. Re-pointed at
+> `unerp_api` (`NOBYPASSRLS`) the same assertion passes.
+>
+> **§ 5.1's generated-test rule must mandate the application role.** A two-tenant
+> test that runs as the owner will pass on a table with no policy at all, which
+> makes it worse than no test — it reports a guarantee it never checked.
 
-**Two items are blocked on infrastructure, not on decisions:** RLS coverage verification and the
-`Float`→`Decimal` migrations both require a running PostgreSQL, which was unavailable in this
-environment. They are the first work to pick up once a database is reachable.
+**ADR-009 is satisfied**, which is the ordering constraint that governs everything after it:
+§ 8.3 requires the sandbox to exist _before_ the marketplace opens, because "publishing an
+extension API and then adding isolation is not a migration anyone has completed successfully."
+Tier-3 code now runs in a capability-scoped V8 isolate with metered budgets and a kill switch,
+proven by 18 tests that each attempt an escape rather than a happy path. Phase 5 is no longer
+blocked on it.
+
+Three of the four ratchets that defined Phase 0 are now at **zero and baselined there**
+(`@ts-nocheck`, `Float` money, unguarded routes), so each is a floor rather than a trend.
+Hardcoded colours are down 69% (984 → 305) and baselined at the new floor. What remains in
+Phase 0 is presentational debt that cannot corrupt data or bypass authorisation: 305 colours —
+a third of them the `connect` module's deliberate Google Material palette — 3,215 hardcoded
+pixel values, and one reviewed raw-SQL exception.
+
+**Why the pixel ratchet is not being swept mechanically.** Colours map onto a semantic palette
+whose meaning is recoverable from the value (`#22c55e` is success, `#4f46e5` is chart series 1),
+and a wrong mapping is visible in a screenshot. Spacing does not work that way: `13px` has no
+token because the type scale jumps 12 → 14, `1px` borders are not spacing at all, and a wrong
+`--space-*` substitution shifts layout on pages no automated gate here can inspect. Closing it
+needs visual regression coverage first, which is Phase 6 work — sweeping 3,215 values blind on a
+system that runs payroll would trade a cosmetic ratchet for an unverifiable change.
+
+| Phase                           |  Scheduled | Complete | Gate to proceed                                                                                            |
+| :------------------------------ | ---------: | -------: | :--------------------------------------------------------------------------------------------------------- |
+| 0 — Foundation restoration      |    8–14 wk | **~97%** | Routes ✅ · RLS ✅ · money ✅ · CI green ✅ · colours 69% closed · pixels need visual regression first 🟡  |
+| 1 — Separate the control plane  |       4 wk | **~85%** | Console on its own origin ✅ · ingress/MFA ⛔                                                              |
+| 2 — Make the split survivable   |      10 wk | **~95%** | § 7.2 UI collapse ✅ · **M2 proven on three injected breaks** ✅                                           |
+| 3 — Extract, lowest layer first |      12 wk | **~28%** | **3.1 L0 ✅ · 3.2 L1 ✅ (kernel, design-system, sdk)** · 3.3–3.8 pending · publish/switch needs a registry |
+| 4 — The extension platform      |      10 wk | **~88%** | Sandbox ✅ · registry ✅ · data namespace ✅ · signed bundles ✅ · vertical migration ⛔                   |
+| 5 — Studio and marketplace      |      12 wk | **~55%** | Catalogue/install/review already built · signing enforced ✅ · builder promotion + payout ⛔               |
+| 6 — Scale and operability       | continuous | **~25%** | k6 suite + runbooks exist; SLOs ⛔                                                                         |
+
+#### Phase 0 — foundation
+
+| Item                                                | At `v1.0.0`       | Now                                                                      | Status                                                                              |
+| :-------------------------------------------------- | :---------------- | :----------------------------------------------------------------------- | :---------------------------------------------------------------------------------- |
+| `@ts-nocheck`                                       | 3,241 (100%)      | **0**                                                                    | ✅ done, baseline locked                                                            |
+| `apps/api` typecheck                                | not runnable      | **0 errors**                                                             | ✅                                                                                  |
+| Full `pnpm verify`                                  | red, unpushable   | green                                                                    | ✅                                                                                  |
+| All 10 HARD policy rules                            | 3 violated        | **10 green**                                                             | ✅                                                                                  |
+| Fabricated endpoints                                | 2,411             | **0**                                                                    | ✅ 17,321 lines removed                                                             |
+| Unguarded controller routes                         | 1,889             | **0**                                                                    | ✅ baseline locked at 0; 18 public routes declared `@Public("reason")`              |
+| Hardcoded hex                                       | 1,625 (over base) | **305**                                                                  | 🟡 69% closed; 108 of the rest are the `connect` module's deliberate Google palette |
+| Hardcoded pixel values                              | over base         | 3,215                                                                    | 🟡 ratcheting                                                                       |
+| **Cross-tenant escalation via tenant `*` wildcard** | **exploitable**   | **closed + gated**                                                       | ✅                                                                                  |
+| **Cross-tenant escalation via `admin.tenant.*`**    | **exploitable**   | **closed + gated**                                                       | ✅                                                                                  |
+| **449 unauthenticated live routes (R12)**           | **exploitable**   | **closed + gated**                                                       | ✅ 3 new HARD rules                                                                 |
+| `Float` money fields                                | 92                | **0**                                                                    | ✅ 7 converted, 22 classified as metrics                                            |
+| Unsafe raw SQL                                      | 1 (reviewed)      | 1 (reviewed)                                                             | ✅ documented exception                                                             |
+| RLS coverage                                        | unverified        | **1,780 tables, ENABLE + FORCE, 2,782 policies, app role `NOBYPASSRLS`** | ✅ verified against PostgreSQL 16                                                   |
+| Full `pnpm verify` with no skipped gate             | not achievable    | **14/14 green**                                                          | ✅                                                                                  |
+
+#### Phases 1–2 — control plane and split mechanisms
+
+| Item                                                      | Now                                                                                                          | Status |
+| :-------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------- | :----- |
+| `apps/api/src/platform/` behind `ControlPlaneGuard`       | 23 files, `/api/platform/v1` live                                                                            | ✅     |
+| `apps/console` as its own deployable                      | exists, 8 route groups                                                                                       | ✅     |
+| `(dashboard)/saas/*` and `saas-portal/*` deleted from web | **0 routes remain**                                                                                          | ✅     |
+| `apps/idp` — separate identity realm                      | exists                                                                                                       | ✅     |
+| Control-plane ingress allowlist + mandatory MFA           | infrastructure, not provisioned                                                                              | ⛔     |
+| M1 — `docs/platform-manifest.json` release train          | train `2026.08.0` pinned, 13 components                                                                      | ✅     |
+| M2 — CDC harness (`scripts/ci/cdc-harness.mjs`)           | **12 consumer corpora published and replayed; proven on 3 injected breaks; wired into `pnpm verify` and CI** | ✅     |
+| M3 — choreography bot (`.github/workflows/`)              | wired against `packages/*`                                                                                   | ✅     |
+| M4 — golden path / workspace CLI (`scripts/tools/ws.mjs`) | `clone`/`link`/`up`/`verify` present                                                                         | 🟡     |
+| Rename the 60 `saas-deepening-*` files                    | **0 remain**                                                                                                 | ✅     |
+| Split `schema.prisma` (R2)                                | 1,836 models across **14 context files**                                                                     | ✅     |
+| Tier A/B manifest (`docs/module-tier-manifest.json`)      | declared                                                                                                     | ✅     |
+| **§ 7.2 — collapse 14 UI packages into `@unerp/ui`**      | **done — 13 packages merged, 1 published artifact**                                                          | ✅     |
+
+#### Phases 4–5 — platform surface
+
+| Item                                                                                    | Now                                                                                                    | Status |
+| :-------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------- | :----- |
+| `packages/extension-api`                                                                | manifest v1, scope model, resource budget, egress rules, `effectiveScopes()`                           | ✅     |
+| **`packages/sandbox` (§ 8.3 V8 isolates)**                                              | **real `isolated-vm` capability sandbox — 18 adversarial tests**                                       | ✅     |
+| Four verticals under `apps/extensions/`                                                 | all four present                                                                                       | ✅     |
+| Extension registry (install/enable/quota)                                               | persisted per tenant with RLS; effective-scope intersection; kill switch; per-invocation metering      | ✅     |
+| Extension data-write namespace (§ 8.2)                                                  | generated `ext_<id>_<entity>` tables, tenant_id + RLS FORCED, `Decimal(19,4)` money, additive upgrades | ✅     |
+| Signed bundles (Ed25519, manifest in digest)                                            | verify-before-install, key revocation, 9 tampering tests                                               | ✅     |
+| Marketplace catalogue, install, reviews, collections, vendor bundles, submission review | **already built** — the previous "~20%" understated it                                                 | ✅     |
+| Marketplace publish requires a verified signature                                       | vendor key registry, verify-before-validate, 6 gate tests                                              | ✅     |
+| Migrate a vertical onto the public API                                                  | not started                                                                                            | ⛔     |
+| Promote `modules/builder` onto the public API                                           | not started                                                                                            | ⛔     |
+| Payout / billing for paid listings                                                      | not started                                                                                            | ⛔     |
+| `apps/developer` (Studio)                                                               | scaffolded                                                                                             | 🟡     |
+
+**Phase 1 is substantially delivered.** Both the control-plane _boundary_ (reserved namespaces,
+`ControlPlaneGuard`, HARD CI gates) and the control-plane _deployable_ (`apps/console`, `apps/idp`,
+tenant-plane routes deleted) now exist. What remains is infrastructure the repository cannot
+provision: restricted ingress and mandatory MFA on the console origin.
+
+**The two infrastructure-blocked items are closed.** A PostgreSQL 16 instance was brought up from
+`docker-compose.dev.yml` and both were finished against it:
+
+- **RLS is verified, not asserted.** 1,780 tables carry RLS, all 1,780 are `FORCE`d, 2,782
+  `tenant_isolation` policies exist, and the application role `unerp_api` is `NOBYPASSRLS`. Zero
+  tables with a `tenant_id` lack a policy. The gate itself was strengthened first: it checked
+  only `ENABLE`, so a table could report PASS while the owner — the role that runs migrations and
+  seeds — read every tenant's rows, and it printed the app role's bypass flag without failing on
+  it. Both now fail the build, proven by dropping `FORCE` on one table and watching it fail.
+- **`Float` money is at zero.** Seven columns that hold or multiply money were converted
+  (`Decimal(19,4)` for amounts, `Decimal(9,6)` for tax, discount, interest and cost-allocation
+  rates, because drift in a rate becomes drift in the money it multiplies). The other 22 the name
+  heuristic flagged are genuinely dimensionless — SPC measurements, ML accuracy, OTIF delivery
+  rates, hours, unit counts — and are recorded field-by-field with reasons in
+  `scripts/ci/float-classification.json`. The rule reads that file and is **fail-closed**: an
+  unlisted `Float` matching the heuristic is still a violation, proven by injecting a new
+  `settlementAmount Float` and watching the gate catch it.
+
+**Two latent defects surfaced while doing this and were fixed.** `pnpm db:deploy` applied
+**nothing** — the R2 multi-file schema split made Prisma resolve migrations relative to
+`prisma/schema`, so it looked in `prisma/schema/migrations`, found none, reported "No pending
+migrations to apply" and exited 0 while 175 migrations sat in `prisma/migrations`. A deploy that
+silently applies nothing and succeeds is worse than one that fails; the path is now pinned in
+`prisma.config.ts`. Separately, `pgbouncer` was defined inside the `volumes:` block of
+`docker-compose.dev.yml` rather than `services:`, which made the whole compose file fail
+validation, and its credentials authenticated against nothing in the stack.
+
+**§ 7.2 is delivered.** The thirteen `@unerp/ui-*` packages were merged into `packages/ui/src/<area>`
+and deleted; `@unerp/ui` now publishes one build graph with thirteen subpath exports
+(`@unerp/ui/components`, `@unerp/ui/charts`, …) emitted to `dist/<area>/index.js`, with CSS mirrored
+alongside. No application file imported an `@unerp/ui-*` package directly, so the change is
+contained to `packages/`, `packages/config/typescript/*`, `packages/storybook`, and one
+`serverExternalPackages` list in `apps/web/next.config.mjs` that shrank from fourteen entries to
+one. Workspace typecheck is 24/24 green and the design system's 37 tests pass. This removes the 42
+version-coherence problems per release that extracting fourteen packages would have created, and it
+was free to do now — after extraction it would have been a breaking change across a published
+boundary.
+
+**M2 is now real, and Phase 2's exit criterion is met.** The previous harness could not fail: its
+two typecheck functions were defined and never called, its envelope validator had empty bodies,
+and its version check only warned. It has been rebuilt to do what § 4.5 specifies — each of the 12
+consumers publishes `cdc/expectations.json`, the exact set of symbols it imports from each
+`@unerp/*` provider, and the harness replays that corpus against the provider's current exported
+surface, resolving `export *` chains to enumerate what a provider really exports.
+
+It is proven against three deliberately injected breaks, each failing with exit 1 and naming the
+consumer and symbol, and passing again on revert:
+
+1. removing `Spinner` from `@unerp/ui` — caught for `web`, `developer` and `framework`;
+2. removing `hasPermission` from `@unerp/shared` — caught for `api` and `idp`, reached through the
+   `.js`-specifier re-export chain;
+3. a stale published expectation — caught as drift.
+
+A provider whose entrypoint re-exports a package outside the workspace (`@unerp/database` →
+`@prisma/client`) has a surface the harness cannot enumerate; absence is unprovable there, so it
+is reported as an OPEN surface and its misses are warnings. Claiming otherwise would make the gate
+lie in the direction that matters. Only `@unerp/database` is currently open.
 
 **The control plane is currently fail-closed.** No role grants `system.*`, so platform-operator
 endpoints are unreachable by anyone. That is the correct posture; provisioning platform-staff
@@ -1093,8 +1238,9 @@ repo and expensive across fifteen.**
 4. **Wire the choreography bot (M3)** against the existing `packages/*` graph.
 5. **Rename the 60 `saas-deepening-*` files** into real bounded contexts. One mechanical pass.
    _Free now; a breaking change after extraction._
-6. **Collapse the 14 `ui-*` packages into one `@unerp/ui`** with subpath exports (§ 7.2).
-   _Extracting 14 packages would create 42 version-coherence problems per release._
+6. ~~**Collapse the 14 `ui-*` packages into one `@unerp/ui`** with subpath exports (§ 7.2).~~
+   **Done 2026-08-05.** _Extracting 14 packages would have created 42 version-coherence problems
+   per release._
 7. **Split `schema.prisma`** into per-context files (R2). Zero runtime risk.
 8. Declare the Tier A/B manifest; enable `max-lines` on new and modified files only.
 
@@ -1107,9 +1253,59 @@ Each extraction: `git filter-repo` to preserve history → publish first version
 to the published package → delete from the monorepo → tag. One layer at a time, with the golden
 path green before the next.
 
+**3.1 is done (2026-08-05).** `D:/UniERP/unierp-contracts` exists as its own git
+repository, tagged `v1.0.0` at the extraction point, and **typechecks standalone with
+zero runtime dependencies** — which is what actually demonstrates that L0 is
+independent rather than merely declared to be. Its CI asserts the zero-dependency
+invariant mechanically (proven able to fail on an injected dependency), because
+"we all know not to add a dependency to L0" is the kind of rule that survives
+until the first inconvenient Tuesday.
+
+Two constraints shaped how it was done, and both are worth recording:
+`git-filter-repo` is not installed and the monorepo working tree was dirty, so
+history could not be rewritten across the boundary; `packages/contracts` carried
+a single commit, so a fresh initialisation loses essentially nothing here — but
+**3.2 onward will need filter-repo and a clean tree**, because those packages
+have real history worth keeping.
+
+**3.2 is done (2026-08-05).** `unierp-kernel`, `unierp-design-system` and
+`unierp-sdk` are extracted, each tagged `v1.0.0`. They were safe to do in
+parallel because each depends only on L0, never on each other.
+
+**Each carries a mechanical layering gate** (`scripts/check-layer.mjs`, wired
+into its CI) asserting § 4.2's invariant: a repository may depend only on
+published artifacts of a strictly lower layer, never sideways, never upward.
+The gate is proven able to fail — adding `@unerp/database` to the design system
+exits 1 and names the violation. That check is the entire argument for the
+split; left as prose it is a convention that lasts until someone adds an import,
+and the measured state today is:
+
+| Repository             | Workspace dependencies | Verdict                                   |
+| :--------------------- | :--------------------- | :---------------------------------------- |
+| `unierp-contracts`     | none                   | L0 root, acyclic by construction          |
+| `unierp-kernel`        | `@unerp/contracts`     | downward only                             |
+| `unierp-design-system` | none                   | **cannot import a service, structurally** |
+| `unierp-sdk`           | `@unerp/contracts`     | downward only                             |
+
+**A note on how these were extracted.** History was not carried across, for two
+reasons recorded honestly: `git-filter-repo` is not installed, and the monorepo
+working tree holds uncommitted work. The affected packages carry 1–8 commits
+each, so little is lost — but `packages/ui` had 60 uncommitted files (the § 7.2
+collapse), and extracting from committed history would have shipped the
+_pre-collapse_ thirteen-package design system. Working state was therefore the
+correct source. **`unierp-data` (L2) is different: `packages/database` carries 59
+commits of migration history that must survive**, so 3.3 should not begin until
+`git-filter-repo` is available and the tree is committed.
+
+**Every extraction so far is additive.** The monorepo copies are untouched and
+still authoritative; consumers have not switched, because switching requires a
+registry to publish to. Full `pnpm verify` is 14/14 green after each extraction,
+which is the § 14 rule — the monorepo remains buildable at each extraction tag
+until its consumers move. Rollback is deleting a directory.
+
 ```
-3.1  L0   unierp-contracts                                    ← no dependencies; safest first
-3.2  L1   unierp-kernel · unierp-design-system · unierp-sdk   ← parallel; depend only on L0
+3.1  L0   unierp-contracts                                    ← DONE 2026-08-05
+3.2  L1   unierp-kernel · unierp-design-system · unierp-sdk   ← DONE 2026-08-05
 3.3  L2   unierp-data · unierp-framework · unierp-extension-api
 3.4  L3   unierp-api                                          ← what remains of the monolith
 3.5  L4   unierp-web · unierp-console                         ← now depend on SDK, not on api/
@@ -1304,7 +1500,18 @@ train.
 
 ## 18. Amendment log
 
-| Date       | Change                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | By          |
-| :--------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------- |
-| 2026-08-02 | Document established at tag `v1.0.0`. Target hybrid repository architecture, four planes, ADR-006…010.                                                                                                                                                                                                                                                                                                                                                                                                                                         | Claude Code |
-| 2026-08-02 | **Revision 2.** Topology changed from 4-repository consolidation to a fully split, strictly layered 15-repository architecture in 8 layers. Added § 4.5 (M1–M4: release-train manifest, consumer-driven contract tests, change choreography, golden-path CI), § 12.1 (multi-repo Windows dev loop), § 13.1–13.2 (shared gates, four-stage pipeline), rewrote § 14 (7 phases, extraction in dependency order, mechanisms-before-extraction gate), added ADR-011 and ADR-012, expanded § 10 supply-chain and § 17 risks for the widened surface. | Claude Code |
+| Date       | Change                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | By          |
+| :--------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :---------- |
+| 2026-08-02 | Document established at tag `v1.0.0`. Target hybrid repository architecture, four planes, ADR-006…010.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Claude Code |
+| 2026-08-05 | Phase 3.2: extracted the L1 layer — unierp-kernel, unierp-design-system and unierp-sdk — each tagged v1.0.0 with a mechanical layering gate proven able to fail on an upward dependency. The design system has zero workspace dependencies, so "a UI component cannot import a service" is now structural. Flagged that 3.3 must wait for git-filter-repo: packages/database carries 59 commits of migration history that must survive extraction.                                                                                                                                                                                                                        | Claude Code |
+| 2026-08-05 | Phase 3 began: 3.1 extracted `unierp-contracts` to its own tagged repository. It typechecks standalone with zero runtime dependencies, and its CI asserts that invariant mechanically. Additive only — the monorepo copy stays authoritative until a registry exists, and verify remains 14/14. Recorded that 3.2 onward needs git-filter-repo and a clean tree.                                                                                                                                                                                                                                                                                                          | Claude Code |
+| 2026-08-05 | Phase 5 re-measured 20% → 55%: the marketplace was already substantially built (catalogue, install/uninstall, reviews, collections, vendor bundles, submission review) — the previous figure was an under-count of the same kind the Phase 1 table had. Closed the real gap: publishing a bundle required no signature at all, so approval shipped code to every tenant with authorship unestablished.                                                                                                                                                                                                                                                                    | Claude Code |
+| 2026-08-05 | Phase 4 → 88%: signed extension bundles (Ed25519, manifest inside the digest so scopes cannot be escalated in transit, verify-before-install, key revocation, 9 tampering tests).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Claude Code |
+| 2026-08-05 | Phase 4 → 80%: built the § 8.2 extension data namespace (generated `ext_<id>_<entity>` tables with tenant_id, RLS FORCED, `Decimal(19,4)` money, additive upgrades, DDL built only from validated identifiers and a closed type map), which makes `data:write` grantable. Recorded a significant finding above: the migration/seed role is a superuser, so every isolation test that connects as the owner proves the application-layer scope rather than RLS.                                                                                                                                                                                                            | Claude Code |
+| 2026-08-05 | Phase 4 advanced 40% → 65%. ADR-009 satisfied: the `node:vm` stub is replaced by a real `isolated-vm` capability sandbox with scope enforcement re-checked host-side, CPU/memory/query/egress budgets, and a kill switch, covered by 18 adversarial tests. The extension registry is no longer mocked — installations persist per tenant under RLS, the effective grant is the manifest∩installer intersection stored at install time, and every invocation is metered. Extension data writes and egress remain refused by the host until § 8.2's extension namespace exists.                                                                                             | Claude Code |
+| 2026-08-05 | Design-token migration: hardcoded hex 984 → 305 in four verified passes, baselined at the new floor. Brand marks and the `connect` module's deliberate Google Material palette are excluded on stated grounds rather than swept. Recorded why the 3,215 pixel values are not being swept mechanically: spacing has no recoverable semantics and no visual regression coverage exists to catch a wrong substitution.                                                                                                                                                                                                                                                       | Claude Code |
+| 2026-08-05 | R12 completed: unguarded controller routes 284 → 0, baselined at zero, with the 18 deliberately-public routes declared via a new `@Public("<reason>")` decorator that requires its justification at the call site. Closed a real hole found on the way — the service-management ticket controller had no guards at all. Fixed the API suite's apparent flakiness, which was Prisma exhausting Postgres' connection limit under 4 parallel forks, not the tests.                                                                                                                                                                                                           | Claude Code |
+| 2026-08-05 | Phase 2's exit criterion met and both infrastructure-blocked Phase 0 items closed. M2 rebuilt from a harness that could not fail into one proven on three injected breaks and wired into `pnpm verify` + CI. RLS verified against PostgreSQL 16 (1,780 tables, ENABLE + FORCE, app role `NOBYPASSRLS`) after strengthening the gate, which had checked only ENABLE. `Float` money 29 → 0. Fixed two latent defects found on the way: `db:deploy` silently applied no migrations after the R2 schema split, and `pgbouncer` sat in the `volumes:` block. `pnpm verify` is 14/14 green with no skipped gate.                                                                | Claude Code |
+| 2026-08-05 | § 7.2 delivered: the 13 `@unerp/ui-*` packages merged into `packages/ui/src/<area>` and deleted, leaving one published artifact with 13 subpath exports. § 14 Phase 2 item 6 and the status table updated accordingly; Phase 2 now ~90%, gated only on M2.                                                                                                                                                                                                                                                                                                                                                                                                                | Claude Code |
+| 2026-08-05 | § 14 programme status re-measured against the tree and `check-policy.mjs --report`. Added a phase-completion table (~45% overall). Recorded as delivered since 2026-08-03: `apps/console` + `apps/idp` exist and `(dashboard)/saas*` is deleted from `apps/web` (Phase 1 deployable), M1 manifest, M2 CDC harness, M3 choreography bot, M4 workspace CLI, the `saas-deepening-*` rename, the 14-file Prisma split, and the R12 fix for 449 unauthenticated routes. Corrected unguarded routes 589 → 284 and hex 1,321 → 984; added pixel-value and HARD-rule rows. Identified § 7.2 (14 `ui-*` packages → one `@unerp/ui`) as the single outstanding item gating Phase 3. | Claude Code |
+| 2026-08-02 | **Revision 2.** Topology changed from 4-repository consolidation to a fully split, strictly layered 15-repository architecture in 8 layers. Added § 4.5 (M1–M4: release-train manifest, consumer-driven contract tests, change choreography, golden-path CI), § 12.1 (multi-repo Windows dev loop), § 13.1–13.2 (shared gates, four-stage pipeline), rewrote § 14 (7 phases, extraction in dependency order, mechanisms-before-extraction gate), added ADR-011 and ADR-012, expanded § 10 supply-chain and § 17 risks for the widened surface.                                                                                                                            | Claude Code |

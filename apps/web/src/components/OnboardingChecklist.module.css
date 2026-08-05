@@ -2,8 +2,8 @@
    saas/portal/page.tsx local implementations. See apps/web/src/components/OnboardingChecklist.tsx */
 
 .widget {
-  background: var(--color-bg-surface, #ffffff);
-  border: 1px solid var(--color-border, #e2e8f0);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-xl, 12px);
   padding: 1.25rem 1.5rem;
   margin-bottom: 1.5rem;
@@ -36,7 +36,7 @@
 }
 .badge {
   background: rgba(245, 158, 11, 0.08);
-  color: var(--color-warning-text, #b45309);
+  color: var(--color-warning-text);
   padding: 0.15rem 0.6rem;
   border-radius: var(--radius-full, 9999px);
   font-size: 0.75rem;
@@ -59,7 +59,7 @@
 .syncIndicator {
   display: inline-flex;
   align-items: center;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
 }
 .syncIndicator svg {
   animation: onboardingSyncSpin 0.9s linear infinite;
@@ -79,11 +79,11 @@
   display: flex;
   align-items: center;
   cursor: pointer;
-  color: var(--color-text-secondary, #64748b);
+  color: var(--color-text-secondary);
 }
 .progressBg {
   height: 6px;
-  background: var(--color-border-light, #f1f5f9);
+  background: var(--color-border-light);
   border-radius: var(--radius-full, 3px);
   width: 100%;
   overflow: hidden;
@@ -91,12 +91,16 @@
 }
 .progressBar {
   height: 100%;
-  background: linear-gradient(90deg, var(--color-warning, #f59e0b), #fbbf24);
+  background: linear-gradient(
+    90deg,
+    var(--color-warning),
+    var(--color-warning)
+  );
   transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .progressText {
   font-size: 0.75rem;
-  color: var(--color-text-secondary, #64748b);
+  color: var(--color-text-secondary);
   white-space: nowrap;
 }
 .fullProgressRow {
@@ -127,15 +131,15 @@
   font-weight: 500;
   text-decoration: none;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid var(--color-border-light, #f1f5f9);
+  border: 1px solid var(--color-border-light);
   background: none;
   cursor: pointer;
   text-align: left;
   width: 100%;
 }
 .itemActive {
-  background: var(--color-bg-subtle, #f8fafc);
-  color: var(--color-text-secondary, #64748b);
+  background: var(--color-bg-subtle);
+  color: var(--color-text-secondary);
 }
 .itemActive:hover {
   border-color: var(--color-border);
@@ -144,7 +148,7 @@
 }
 .itemCompleted {
   background: rgba(16, 185, 129, 0.03);
-  color: var(--color-success, #10b981);
+  color: var(--color-success);
   border-color: rgba(16, 185, 129, 0.15);
 }
 .itemCompleted:hover {
@@ -165,14 +169,14 @@
   gap: 0.75rem;
   padding: var(--space-3, 0.75rem) var(--space-4, 1rem);
   border-radius: var(--radius-md, 8px);
-  border: 1px solid var(--color-border-light, #f1f5f9);
+  border: 1px solid var(--color-border-light);
   background: none;
   cursor: pointer;
   text-align: left;
   text-decoration: none;
   width: 100%;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  color: var(--color-text-secondary, #64748b);
+  color: var(--color-text-secondary);
 }
 .fullItem:hover {
   border-color: var(--color-border);
@@ -181,7 +185,7 @@
 }
 .fullItemDone {
   background: rgba(16, 185, 129, 0.03);
-  color: var(--color-success, #10b981);
+  color: var(--color-success);
   border-color: rgba(16, 185, 129, 0.15);
 }
 .fullItemDone:hover {
@@ -200,7 +204,7 @@
 .fullItemHint {
   display: block;
   font-size: var(--text-xs, 0.75rem);
-  color: var(--color-text-tertiary, #94a3b8);
+  color: var(--color-text-tertiary);
   margin-top: 2px;
 }
 
@@ -226,7 +230,7 @@
   padding: var(--space-2, 0.5rem);
   border-radius: var(--radius-md, 6px);
   background: rgba(14, 165, 233, 0.15);
-  color: #0ea5e9;
+  color: var(--color-info);
   display: flex;
   align-items: center;
 }
@@ -236,14 +240,14 @@
 }
 .demoBoxDesc {
   font-size: var(--text-xs, 0.75rem);
-  color: var(--color-text-secondary, #64748b);
+  color: var(--color-text-secondary);
   margin-top: 2px;
 }
 .demoBoxBtn {
   white-space: nowrap;
 }
 .demoError {
-  color: var(--color-danger, #ef4444);
+  color: var(--color-danger);
   font-size: var(--text-xs, 0.75rem);
   margin-top: calc(-1 * var(--space-3, 0.75rem));
   margin-bottom: var(--space-5, 1.25rem);
@@ -294,7 +298,7 @@
   border-radius: var(--radius-md, 8px);
   background: rgba(16, 185, 129, 0.08);
   border: 1px solid rgba(16, 185, 129, 0.2);
-  color: var(--color-success, #10b981);
+  color: var(--color-success);
   font-size: 0.8125rem;
   font-weight: 600;
 }

@@ -27,6 +27,7 @@ import {
   PortalConfirmPaymentInput,
 } from "./customer-portal.service";
 import { CrmPortalDocumentsService } from "./crm-portal-documents.service";
+import { Permissions } from "../../common/decorators/permissions.decorator";
 
 interface PortalRequest extends Request {
   user: {
@@ -55,6 +56,7 @@ export class CustomerPortalController {
   ) {}
 
   @ApiOperation({ summary: "Customer portal login" })
+  @Permissions("crm.crm.login")
   @Post("auth/login")
   async login(@ZodBody(portalLoginSchema) dto: PortalLoginInput) {
     return this.svc.login(dto);
@@ -62,6 +64,7 @@ export class CustomerPortalController {
 
   @ApiOperation({ summary: "Portal dashboard summary" })
   @UseGuards(CustomerPortalAuthGuard)
+  @Permissions("crm.dashboard-summary.read")
   @Get("dashboard")
   async dashboard(@Req() req: PortalRequest) {
     return this.svc.getDashboardSummary(req.user.tenantId, req.user.customerId);
@@ -69,6 +72,7 @@ export class CustomerPortalController {
 
   @ApiOperation({ summary: "List my quotations" })
   @UseGuards(CustomerPortalAuthGuard)
+  @Permissions("crm.my-quotation.read")
   @Get("quotations")
   async quotations(@Req() req: PortalRequest) {
     return this.svc.getMyQuotations(req.user.tenantId, req.user.customerId);
@@ -76,6 +80,7 @@ export class CustomerPortalController {
 
   @ApiOperation({ summary: "Get one of my quotations" })
   @UseGuards(CustomerPortalAuthGuard)
+  @Permissions("crm.my-quotation-detail.read")
   @Get("quotations/:id")
   async quotationDetail(@Req() req: PortalRequest, @Param("id") id: string) {
     return this.svc.getMyQuotationDetail(
@@ -87,6 +92,7 @@ export class CustomerPortalController {
 
   @ApiOperation({ summary: "Accept one of my quotations" })
   @UseGuards(CustomerPortalAuthGuard)
+  @Permissions("crm.quotation.accept")
   @Post("quotations/:id/accept")
   async acceptQuotation(@Req() req: PortalRequest, @Param("id") id: string) {
     return this.svc.acceptQuotation(req.user.tenantId, req.user.customerId, id);
@@ -94,6 +100,7 @@ export class CustomerPortalController {
 
   @ApiOperation({ summary: "Reject one of my quotations" })
   @UseGuards(CustomerPortalAuthGuard)
+  @Permissions("crm.quotation.reject")
   @Post("quotations/:id/reject")
   async rejectQuotation(
     @Req() req: PortalRequest,
@@ -110,6 +117,7 @@ export class CustomerPortalController {
 
   @ApiOperation({ summary: "List my sales orders" })
   @UseGuards(CustomerPortalAuthGuard)
+  @Permissions("crm.my-order.read")
   @Get("orders")
   async orders(@Req() req: PortalRequest) {
     return this.svc.getMyOrders(req.user.tenantId, req.user.customerId);
@@ -117,6 +125,7 @@ export class CustomerPortalController {
 
   @ApiOperation({ summary: "Get one of my sales orders" })
   @UseGuards(CustomerPortalAuthGuard)
+  @Permissions("crm.my-order-detail.read")
   @Get("orders/:id")
   async orderDetail(@Req() req: PortalRequest, @Param("id") id: string) {
     return this.svc.getMyOrderDetail(
@@ -128,6 +137,7 @@ export class CustomerPortalController {
 
   @ApiOperation({ summary: "List my invoices" })
   @UseGuards(CustomerPortalAuthGuard)
+  @Permissions("crm.my-invoice.read")
   @Get("invoices")
   async invoices(@Req() req: PortalRequest) {
     return this.svc.getMyInvoices(req.user.tenantId, req.user.customerId);
@@ -135,6 +145,7 @@ export class CustomerPortalController {
 
   @ApiOperation({ summary: "Get one of my invoices" })
   @UseGuards(CustomerPortalAuthGuard)
+  @Permissions("crm.my-invoice-detail.read")
   @Get("invoices/:id")
   async invoiceDetail(@Req() req: PortalRequest, @Param("id") id: string) {
     return this.svc.getMyInvoiceDetail(
@@ -146,6 +157,7 @@ export class CustomerPortalController {
 
   @ApiOperation({ summary: "Download a PDF of one of my quotations" })
   @UseGuards(CustomerPortalAuthGuard)
+  @Permissions("crm.pdf.quotation")
   @Get("quotations/:id/pdf")
   async quotationPdf(
     @Req() req: PortalRequest,
@@ -162,6 +174,7 @@ export class CustomerPortalController {
 
   @ApiOperation({ summary: "Download a PDF of one of my invoices" })
   @UseGuards(CustomerPortalAuthGuard)
+  @Permissions("crm.pdf.invoice")
   @Get("invoices/:id/pdf")
   async invoicePdf(
     @Req() req: PortalRequest,
@@ -178,6 +191,7 @@ export class CustomerPortalController {
 
   @ApiOperation({ summary: "List my invoice payment intents" })
   @UseGuards(CustomerPortalAuthGuard)
+  @Permissions("crm.my-payment-intent.read")
   @Get("payments")
   async myPayments(@Req() req: PortalRequest) {
     return this.svc.listMyPaymentIntents(
@@ -190,6 +204,7 @@ export class CustomerPortalController {
     summary: "Initiate an online payment for one of my invoices",
   })
   @UseGuards(CustomerPortalAuthGuard)
+  @Permissions("crm.invoice-payment.initiate")
   @Post("invoices/:id/pay")
   async initiatePayment(
     @Req() req: PortalRequest,
@@ -207,6 +222,7 @@ export class CustomerPortalController {
 
   @ApiOperation({ summary: "Confirm an initiated invoice payment" })
   @UseGuards(CustomerPortalAuthGuard)
+  @Permissions("crm.invoice-payment.confirm")
   @Post("payments/:intentId/confirm")
   async confirmPayment(
     @Req() req: PortalRequest,
@@ -223,6 +239,7 @@ export class CustomerPortalController {
 
   @ApiOperation({ summary: "List my support cases" })
   @UseGuards(CustomerPortalAuthGuard)
+  @Permissions("crm.my-cas.read")
   @Get("cases")
   async cases(@Req() req: PortalRequest) {
     return this.svc.getMyCases(req.user.tenantId, req.user.customerId);
@@ -230,6 +247,7 @@ export class CustomerPortalController {
 
   @ApiOperation({ summary: "Get one of my support cases with public comments" })
   @UseGuards(CustomerPortalAuthGuard)
+  @Permissions("crm.my-case-detail.read")
   @Get("cases/:id")
   async caseDetail(@Req() req: PortalRequest, @Param("id") id: string) {
     return this.svc.getMyCaseDetail(req.user.tenantId, req.user.customerId, id);
@@ -237,6 +255,7 @@ export class CustomerPortalController {
 
   @ApiOperation({ summary: "Submit a new support case" })
   @UseGuards(CustomerPortalAuthGuard)
+  @Permissions("crm.case.create")
   @Post("cases")
   async createCase(
     @Req() req: PortalRequest,
@@ -252,6 +271,7 @@ export class CustomerPortalController {
 
   @ApiOperation({ summary: "Add a comment to one of my support cases" })
   @UseGuards(CustomerPortalAuthGuard)
+  @Permissions("crm.case-comment.create")
   @Post("cases/:id/comments")
   async addComment(
     @Req() req: PortalRequest,

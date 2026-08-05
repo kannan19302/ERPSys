@@ -176,7 +176,11 @@ export default function RealEstateDashboard() {
             config={{
               xAxisKey: "name",
               series: [
-                { dataKey: "rate", name: "Occupancy %", color: "#22c55e" },
+                {
+                  dataKey: "rate",
+                  name: "Occupancy %",
+                  color: "var(--chart-2)",
+                },
               ],
             }}
             defaultChartType="area"
@@ -190,8 +194,16 @@ export default function RealEstateDashboard() {
             config={{
               xAxisKey: "name",
               series: [
-                { dataKey: "collected", name: "Collected", color: "#22c55e" },
-                { dataKey: "pending", name: "Pending", color: "#f59e0b" },
+                {
+                  dataKey: "collected",
+                  name: "Collected",
+                  color: "var(--chart-2)",
+                },
+                {
+                  dataKey: "pending",
+                  name: "Pending",
+                  color: "var(--chart-3)",
+                },
               ],
             }}
             defaultChartType="bar"

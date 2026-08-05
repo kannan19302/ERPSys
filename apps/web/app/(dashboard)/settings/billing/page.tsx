@@ -66,7 +66,9 @@ export default function SaasPortalBillingPage() {
         }}
       >
         <Card style={{ padding: "20px" }}>
-          <span style={{ fontSize: "13px", color: "#64748b" }}>
+          <span
+            style={{ fontSize: "13px", color: "var(--color-text-secondary)" }}
+          >
             Account Company
           </span>
           <div
@@ -76,14 +78,16 @@ export default function SaasPortalBillingPage() {
           </div>
         </Card>
         <Card style={{ padding: "20px" }}>
-          <span style={{ fontSize: "13px", color: "#64748b" }}>
+          <span
+            style={{ fontSize: "13px", color: "var(--color-text-secondary)" }}
+          >
             Saved Payment Cards
           </span>
           <div
             style={{
               fontSize: "28px",
               fontWeight: "bold",
-              color: "#3b82f6",
+              color: "var(--color-primary)",
               marginTop: "4px",
             }}
           >
@@ -102,7 +106,7 @@ export default function SaasPortalBillingPage() {
             Saved Payment Methods
           </h3>
           {paymentMethods.length === 0 ? (
-            <p style={{ color: "#64748b" }}>
+            <p style={{ color: "var(--color-text-secondary)" }}>
               No saved credit cards or payment methods.
             </p>
           ) : (
@@ -128,12 +132,17 @@ export default function SaasPortalBillingPage() {
                       gap: "12px",
                     }}
                   >
-                    <CreditCard size={24} color="#3b82f6" />
+                    <CreditCard size={24} color="var(--color-primary)" />
                     <div>
                       <div style={{ fontWeight: 600 }}>
                         {pm.brand} •••• {pm.last4}
                       </div>
-                      <div style={{ fontSize: "12px", color: "#64748b" }}>
+                      <div
+                        style={{
+                          fontSize: "12px",
+                          color: "var(--color-text-secondary)",
+                        }}
+                      >
                         Expires {pm.expMonth}/{pm.expYear}
                       </div>
                     </div>

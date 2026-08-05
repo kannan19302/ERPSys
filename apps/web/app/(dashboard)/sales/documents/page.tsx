@@ -71,7 +71,9 @@ export default function SalesDocumentsPage() {
             Document Templates
           </h3>
           {templates.length === 0 ? (
-            <p style={{ fontSize: "14px", color: "#64748b" }}>
+            <p
+              style={{ fontSize: "14px", color: "var(--color-text-secondary)" }}
+            >
               No proposal templates configured.
             </p>
           ) : (
@@ -90,7 +92,12 @@ export default function SalesDocumentsPage() {
                   <div style={{ fontWeight: 600, fontSize: "14px" }}>
                     {tmpl.name}
                   </div>
-                  <div style={{ fontSize: "12px", color: "#64748b" }}>
+                  <div
+                    style={{
+                      fontSize: "12px",
+                      color: "var(--color-text-secondary)",
+                    }}
+                  >
                     {tmpl.category}
                   </div>
                 </div>
@@ -109,7 +116,7 @@ export default function SalesDocumentsPage() {
             <p
               style={{
                 fontSize: "14px",
-                color: "#64748b",
+                color: "var(--color-text-secondary)",
                 textAlign: "center",
                 padding: "32px 0",
               }}
@@ -149,7 +156,12 @@ export default function SalesDocumentsPage() {
                         {g.status}
                       </Badge>
                     </td>
-                    <td style={{ padding: "10px 12px", color: "#64748b" }}>
+                    <td
+                      style={{
+                        padding: "10px 12px",
+                        color: "var(--color-text-secondary)",
+                      }}
+                    >
                       {new Date(g.createdAt).toLocaleDateString()}
                     </td>
                   </tr>

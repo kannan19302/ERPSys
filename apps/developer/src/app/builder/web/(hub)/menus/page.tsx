@@ -330,7 +330,10 @@ function WebMenusPageContent() {
                       <span
                         key={item}
                         style={{
-                          color: i === 0 ? "var(--color-primary)" : "#4b5563",
+                          color:
+                            i === 0
+                              ? "var(--color-primary)"
+                              : "var(--color-text-secondary)",
                           fontWeight: i === 0 ? "600" : "400",
                         }}
                         className={styles.s39}

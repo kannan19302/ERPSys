@@ -50,6 +50,9 @@ export const MODELS_WITHOUT_TENANT = new Set([
   "EliminationRunDetail",
   "BlockchainSyncCheckpoint",
   "AiModel",
+  // A vendor signing key is platform-global: the same key verifies a bundle for
+  // every tenant that installs it, so it has no tenant_id to filter on.
+  "AppVendorSigningKey",
 ]);
 
 const READ_OPS = new Set([

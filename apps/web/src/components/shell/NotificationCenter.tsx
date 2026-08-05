@@ -158,7 +158,7 @@ export function NotificationCenter({ iconBtnStyle }: { iconBtnStyle: string }) {
               height: 15,
               fontSize: 9,
               fontWeight: 700,
-              color: "#fff",
+              color: "var(--color-text-inverse)",
               padding: "0 3px",
             }}
           >

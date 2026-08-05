@@ -105,24 +105,24 @@ export default function DashboardLayout({
   useEffect(() => {
     const updateFavicon = (path: string) => {
       const root = path.split("/")[1] || "";
-      let color = "#6366f1";
+      let color = "var(--chart-10)";
       let svgInner = "";
 
       switch (root) {
         case "finance":
-          color = "#10b981";
+          color = "var(--chart-9)";
           svgInner = `<path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`;
           break;
         case "hr":
-          color = "#f59e0b";
+          color = "var(--chart-3)";
           svgInner = `<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke="${color}" stroke-width="2" fill="none"/><circle cx="9" cy="7" r="4" stroke="${color}" stroke-width="2" fill="none"/><path d="M22 21v-2a4 4 0 0 0-3-3.87" stroke="${color}" stroke-width="2" fill="none"/><circle cx="19" cy="4" r="3" stroke="${color}" stroke-width="2" fill="none"/>`;
           break;
         case "crm":
-          color = "#3b82f6";
+          color = "var(--color-primary)";
           svgInner = `<circle cx="12" cy="12" r="10" stroke="${color}" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="6" stroke="${color}" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="2" fill="${color}"/>`;
           break;
         case "inventory":
-          color = "#d97706";
+          color = "var(--color-warning-hover)";
           svgInner = `<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" stroke="${color}" stroke-width="2" fill="none"/><path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12" stroke="${color}" stroke-width="2" fill="none"/>`;
           break;
         case "procurement":
@@ -130,23 +130,23 @@ export default function DashboardLayout({
           svgInner = `<circle cx="8" cy="21" r="1" fill="${color}"/><circle cx="19" cy="21" r="1" fill="${color}"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" stroke="${color}" stroke-width="2" fill="none"/>`;
           break;
         case "sales":
-          color = "#ef4444";
+          color = "var(--chart-4)";
           svgInner = `<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" stroke="${color}" stroke-width="2" fill="none"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1" stroke="${color}" stroke-width="2" fill="none"/><path d="M9 14h6M9 18h6" stroke="${color}" stroke-width="2"/>`;
           break;
         case "supply-chain":
-          color = "#8b5cf6";
+          color = "var(--chart-5)";
           svgInner = `<rect x="1" y="3" width="15" height="13" fill="none" stroke="${color}" stroke-width="2"/><polygon points="16 8 20 8 23 11 23 16 16 16" fill="none" stroke="${color}" stroke-width="2"/><circle cx="5.5" cy="18.5" r="2.5" fill="${color}"/><circle cx="18.5" cy="18.5" r="2.5" fill="${color}"/>`;
           break;
         case "projects":
-          color = "#ec4899";
+          color = "var(--chart-8)";
           svgInner = `<rect x="2" y="7" width="20" height="14" rx="2" ry="2" stroke="${color}" stroke-width="2" fill="none"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" stroke="${color}" stroke-width="2" fill="none"/>`;
           break;
         case "manufacturing":
-          color = "#4b5563";
+          color = "var(--color-text-secondary)";
           svgInner = `<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94L14.7 6.3z" stroke="${color}" stroke-width="2" fill="none"/>`;
           break;
         case "connect":
-          color = "#10b981";
+          color = "var(--chart-9)";
           svgInner = `<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="${color}" stroke-width="2" fill="none"/>`;
           break;
         case "pos":
@@ -158,7 +158,7 @@ export default function DashboardLayout({
           svgInner = `<rect x="4" y="4" width="14" height="14" rx="2" ry="2" stroke="${color}" stroke-width="2" fill="none"/><path d="M9 9h6v6H9zM9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 15h3M1 9h3M1 15h3" stroke="${color}" stroke-width="2" stroke-linecap="round"/>`;
           break;
         default:
-          color = "#6366f1";
+          color = "var(--chart-10)";
           svgInner = `<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="${color}" stroke-width="2" fill="none"/><polyline points="9 22 9 12 15 12 15 22" stroke="${color}" stroke-width="2" fill="none"/>`;
       }
 
@@ -291,14 +291,14 @@ export default function DashboardLayout({
     undefined,
   );
   const PRESENCE_COLORS: Record<string, string> = {
-    ACTIVE: "#10b981",
-    IN_MEETING: "#10b981",
-    FOCUSING: "#10b981",
-    AWAY: "#f59e0b",
-    BRB: "#f59e0b",
-    DND: "#ef4444",
-    OOO: "#94a3b8",
-    INACTIVE: "#94a3b8",
+    ACTIVE: "var(--chart-9)",
+    IN_MEETING: "var(--chart-9)",
+    FOCUSING: "var(--chart-9)",
+    AWAY: "var(--chart-3)",
+    BRB: "var(--chart-3)",
+    DND: "var(--chart-4)",
+    OOO: "var(--color-text-tertiary)",
+    INACTIVE: "var(--color-text-tertiary)",
   };
   const [currentTenant, setCurrentTenant] = useState<{
     id?: string;

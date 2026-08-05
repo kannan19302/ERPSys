@@ -93,7 +93,11 @@ export default function EducationReportsPage() {
           config={{
             xAxisKey: "name",
             series: [
-              { dataKey: "students", name: "Students", color: "#6366f1" },
+              {
+                dataKey: "students",
+                name: "Students",
+                color: "var(--chart-10)",
+              },
             ],
           }}
           defaultChartType="area"
@@ -108,8 +112,16 @@ export default function EducationReportsPage() {
           config={{
             xAxisKey: "name",
             series: [
-              { dataKey: "collected", name: "Collected", color: "#22c55e" },
-              { dataKey: "outstanding", name: "Outstanding", color: "#ef4444" },
+              {
+                dataKey: "collected",
+                name: "Collected",
+                color: "var(--chart-2)",
+              },
+              {
+                dataKey: "outstanding",
+                name: "Outstanding",
+                color: "var(--chart-4)",
+              },
             ],
           }}
           defaultChartType="bar"
@@ -125,7 +137,9 @@ export default function EducationReportsPage() {
           data={GRADE_DISTRIBUTION}
           config={{
             xAxisKey: "name",
-            series: [{ dataKey: "count", name: "Students", color: "#f59e0b" }],
+            series: [
+              { dataKey: "count", name: "Students", color: "var(--chart-3)" },
+            ],
           }}
           defaultChartType="bar"
           allowedChartTypes={["bar", "pie", "donut"]}
@@ -139,7 +153,11 @@ export default function EducationReportsPage() {
           config={{
             xAxisKey: "name",
             series: [
-              { dataKey: "enrolled", name: "Enrolled", color: "#8b5cf6" },
+              {
+                dataKey: "enrolled",
+                name: "Enrolled",
+                color: "var(--chart-5)",
+              },
             ],
           }}
           defaultChartType="bar"

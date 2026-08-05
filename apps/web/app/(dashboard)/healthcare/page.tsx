@@ -179,7 +179,11 @@ export default function HealthcareDashboard() {
             config={{
               xAxisKey: "name",
               series: [
-                { dataKey: "count", name: "Appointments", color: "#6366f1" },
+                {
+                  dataKey: "count",
+                  name: "Appointments",
+                  color: "var(--chart-10)",
+                },
               ],
             }}
             defaultChartType="bar"
@@ -193,7 +197,7 @@ export default function HealthcareDashboard() {
             config={{
               xAxisKey: "name",
               series: [
-                { dataKey: "count", name: "Patients", color: "#22c55e" },
+                { dataKey: "count", name: "Patients", color: "var(--chart-2)" },
               ],
             }}
             defaultChartType="bar"

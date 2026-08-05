@@ -281,7 +281,7 @@ export default function EcommerceConfigPage() {
                       setConfig((c) => ({ ...c, primaryColor: e.target.value }))
                     }
                     hint="e.g. #2563eb"
-                    placeholder="#2563eb"
+                    placeholder="var(--color-primary-hover)"
                   />
                 </div>
               </div>

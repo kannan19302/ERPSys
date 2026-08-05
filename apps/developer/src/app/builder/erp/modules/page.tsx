@@ -222,7 +222,7 @@ function ERPModulesPageContent() {
                 setSelectedModule(mod.id === selectedModule ? null : mod.id)
               }
               style={{
-                border: `2px solid ${selectedModule === mod.id ? "#d97706" : "var(--color-border)"}`,
+                border: `2px solid ${selectedModule === mod.id ? "var(--color-warning-hover)" : "var(--color-border)"}`,
                 background:
                   selectedModule === mod.id ? "rgba(217,119,6,0.05)" : "",
               }}
@@ -324,7 +324,7 @@ function ERPModulesPageContent() {
                           : "var(--weight-normal)",
                       color:
                         activeSection === tab.id
-                          ? "#d97706"
+                          ? "var(--color-warning-hover)"
                           : "var(--color-text-secondary)",
                       borderBottom:
                         activeSection === tab.id

@@ -97,13 +97,13 @@ export default function WebBuilderPage() {
               label: "Media Assets",
               value: stats.assets.toString(),
               icon: Image,
-              color: "#059669",
+              color: "var(--color-success-hover)",
             },
             {
               label: "Templates",
               value: stats.templates.toString(),
               icon: Code2,
-              color: "#d97706",
+              color: "var(--color-warning-hover)",
             },
           ].map((stat) => (
             <div key={stat.label} className={`ui-card ${styles.s3}`}>
@@ -211,7 +211,10 @@ export default function WebBuilderPage() {
           </div>
           <div className={`ui-card ${styles.s3}`}>
             <div style={{ background: "#05966920" }} className={styles.s4}>
-              <Image size={20} style={{ color: "#059669" }} />
+              <Image
+                size={20}
+                style={{ color: "var(--color-success-hover)" }}
+              />
             </div>
             <div>
               <p className={styles.s5}>{stats.assets}</p>
@@ -220,7 +223,10 @@ export default function WebBuilderPage() {
           </div>
           <div className={`ui-card ${styles.s3}`}>
             <div style={{ background: "#d9770620" }} className={styles.s4}>
-              <Code2 size={20} style={{ color: "#d97706" }} />
+              <Code2
+                size={20}
+                style={{ color: "var(--color-warning-hover)" }}
+              />
             </div>
             <div>
               <p className={styles.s5}>{stats.templates}</p>
@@ -237,7 +243,7 @@ export default function WebBuilderPage() {
               title: "CMS Collections",
               description:
                 "Model dynamic content — products, projects, team, blog",
-              color: "#6366f1",
+              color: "var(--chart-10)",
               href: "/builder/web/collections",
               count: "Dynamic content",
             },
@@ -254,7 +260,7 @@ export default function WebBuilderPage() {
               id: "orders",
               title: "Orders",
               description: "Storefront orders, revenue and fulfillment",
-              color: "#10b981",
+              color: "var(--chart-9)",
               href: "/builder/web/orders",
               count: "E-commerce",
             },
@@ -278,7 +284,7 @@ export default function WebBuilderPage() {
               id: "assets",
               title: "Asset Manager",
               description: "Upload and organize images, videos, documents",
-              color: "#059669",
+              color: "var(--color-success-hover)",
               href: "/builder/web/assets",
               count: `${stats.assets} files`,
             },
@@ -286,7 +292,7 @@ export default function WebBuilderPage() {
               id: "templates",
               title: "Templates",
               description: "Manage reusable page and email templates",
-              color: "#d97706",
+              color: "var(--color-warning-hover)",
               href: "/builder/web/templates",
               count: `${stats.templates} templates`,
             },

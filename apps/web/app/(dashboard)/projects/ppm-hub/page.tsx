@@ -172,25 +172,25 @@ export default function PpmEnterpriseHub() {
             title="Total Portfolio Capital"
             value="$7.70 M"
             change={18.5}
-            icon={<DollarSign color="#10B981" />}
+            icon={<DollarSign color="var(--chart-9)" />}
           />
           <KPICard
             title="Portfolio CPI Performance"
             value="1.08 (On Budget)"
             change={4.2}
-            icon={<TrendingUp color="#3B82F6" />}
+            icon={<TrendingUp color="var(--color-primary)" />}
           />
           <KPICard
             title="Portfolio SPI Schedule"
             value="1.04 (Ahead)"
             change={4.0}
-            icon={<Clock color="#8B5CF6" />}
+            icon={<Clock color="var(--chart-5)" />}
           />
           <KPICard
             title="Active RAID Risks"
             value="14 Identified"
             change={-2.1}
-            icon={<AlertCircle color="#F59E0B" />}
+            icon={<AlertCircle color="var(--chart-3)" />}
           />
         </div>
 

@@ -143,13 +143,13 @@ export default function JourneyTimelinePage() {
   const getTouchpointColor = (type: string) => {
     switch (type.toLowerCase()) {
       case "email":
-        return "#3b82f6";
+        return "var(--color-primary)";
       case "call":
-        return "#10b981";
+        return "var(--chart-9)";
       case "web":
-        return "#ec4899";
+        return "var(--chart-8)";
       default:
-        return "#94a3b8";
+        return "var(--color-text-tertiary)";
     }
   };
 

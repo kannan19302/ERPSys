@@ -107,7 +107,11 @@ export default function SaasPortalSupportPage() {
         </h3>
         {tickets.length === 0 ? (
           <p
-            style={{ color: "#64748b", textAlign: "center", padding: "32px 0" }}
+            style={{
+              color: "var(--color-text-secondary)",
+              textAlign: "center",
+              padding: "32px 0",
+            }}
           >
             No active support tickets found.
           </p>

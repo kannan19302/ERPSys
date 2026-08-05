@@ -98,7 +98,11 @@ export default function AdvancedHrSuccessionPage() {
         </h3>
         {plans.length === 0 ? (
           <p
-            style={{ color: "#64748b", textAlign: "center", padding: "32px 0" }}
+            style={{
+              color: "var(--color-text-secondary)",
+              textAlign: "center",
+              padding: "32px 0",
+            }}
           >
             No succession plans defined.
           </p>

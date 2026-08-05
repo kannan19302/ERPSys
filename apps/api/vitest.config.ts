@@ -25,6 +25,23 @@ export default defineConfig({
     setupFiles: ["./test/jest-compat.setup.ts"],
     env: {
       NEXTAUTH_SECRET: "test_secret_for_vitest_unit_runs",
+      // Prisma sizes its connection pool at (cores * 2 + 1) per client. On a
+      // 16-core host that is 33 connections, and the fork pool below runs up to
+      // 4 workers, so the suite asked Postgres for ~132 connections against a
+      // default max_connections of 100. The overflow surfaced as
+      // "PrismaClientInitializationError: Can't reach database server" on a
+      // different handful of specs every run — which reads like flakiness in the
+      // tests and is actually the runner exhausting the server. Bounding the
+      // per-worker pool keeps the whole suite under ~20 connections regardless
+      // of how many cores the host or CI runner has.
+      ...(process.env.DATABASE_URL &&
+      !process.env.DATABASE_URL.includes("connection_limit")
+        ? {
+            DATABASE_URL: `${process.env.DATABASE_URL}${
+              process.env.DATABASE_URL.includes("?") ? "&" : "?"
+            }connection_limit=5&pool_timeout=20`,
+          }
+        : {}),
     },
     testTimeout: 10000,
     hookTimeout: 10000,

@@ -91,7 +91,7 @@ export default function ReportingDrilldownPage() {
           <label
             style={{
               fontSize: "13px",
-              color: "#64748b",
+              color: "var(--color-text-secondary)",
               display: "block",
               marginBottom: "6px",
             }}
@@ -149,7 +149,7 @@ export default function ReportingDrilldownPage() {
                   <td
                     style={{
                       padding: "12px",
-                      color: "#10b981",
+                      color: "var(--chart-9)",
                       fontWeight: "bold",
                     }}
                   >
@@ -177,9 +177,9 @@ export default function ReportingDrilldownPage() {
               borderBottom: "1px solid #f1f5f9",
             }}
           >
-            <Globe size={16} color="#3b82f6" />
+            <Globe size={16} color="var(--color-primary)" />
             <span style={{ fontWeight: 600 }}>{p.sourceDimension}</span>
-            <span style={{ color: "#64748b" }}>→</span>
+            <span style={{ color: "var(--color-text-secondary)" }}>→</span>
             <span>{p.targetDimension}</span>
             <Badge variant="info">Level {p.drilldownLevel}</Badge>
           </div>

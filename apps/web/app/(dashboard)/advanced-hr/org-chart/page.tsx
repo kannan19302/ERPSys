@@ -73,7 +73,7 @@ export default function AdvancedHrOrgChartPage() {
           {nodes.length === 0 ? (
             <p
               style={{
-                color: "#64748b",
+                color: "var(--color-text-secondary)",
                 textAlign: "center",
                 padding: "32px 0",
               }}
@@ -135,7 +135,7 @@ export default function AdvancedHrOrgChartPage() {
           {deptCounts.length === 0 ? (
             <p
               style={{
-                color: "#64748b",
+                color: "var(--color-text-secondary)",
                 textAlign: "center",
                 padding: "20px 0",
               }}
@@ -157,10 +157,12 @@ export default function AdvancedHrOrgChartPage() {
                 <div
                   style={{ display: "flex", alignItems: "center", gap: "8px" }}
                 >
-                  <Building2 size={14} color="#8b5cf6" />
+                  <Building2 size={14} color="var(--chart-5)" />
                   <span style={{ fontWeight: 600 }}>{d.department}</span>
                 </div>
-                <span style={{ fontWeight: 700, color: "#3b82f6" }}>
+                <span
+                  style={{ fontWeight: 700, color: "var(--color-primary)" }}
+                >
                   {d.totalHeadcount}
                 </span>
               </div>

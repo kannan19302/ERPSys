@@ -85,11 +85,7 @@ export function TenantHeader({ settings, menus }: TenantHeaderProps) {
           width: 36px;
           height: 36px;
           border-radius: 8px;
-          background: linear-gradient(
-            135deg,
-            var(--color-primary, #3b82f6),
-            #1d4ed8
-          );
+          background: linear-gradient(135deg, var(--color-primary), #1d4ed8);
           color: #ffffff;
           display: flex;
           align-items: center;
@@ -110,7 +106,7 @@ export function TenantHeader({ settings, menus }: TenantHeaderProps) {
           transition: color 0.15s ease;
         }
         .nav-link:hover {
-          color: var(--color-primary, #2563eb);
+          color: var(--color-primary);
         }
         .actions-group {
           display: flex;

@@ -209,7 +209,9 @@ export default function CustomizeAppPage() {
                 background: active
                   ? "var(--color-primary)"
                   : "var(--color-bg-elevated)",
-                color: active ? "#fff" : "var(--color-text)",
+                color: active
+                  ? "var(--color-text-inverse)"
+                  : "var(--color-text)",
               }}
               className={styles.s3}
             >
@@ -374,5 +376,6 @@ const btn = (variant: string) => ({
   fontWeight: "var(--weight-medium)",
   border: variant === "ghost" ? "1px solid var(--color-border)" : "none",
   background: variant === "primary" ? "var(--color-primary)" : "transparent",
-  color: variant === "primary" ? "#fff" : "var(--color-text)",
+  color:
+    variant === "primary" ? "var(--color-text-inverse)" : "var(--color-text)",
 });

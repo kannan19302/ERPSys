@@ -137,20 +137,25 @@ export default function SalesVelocityPage() {
             <div className="ui-grid-3" style={{ gap: "1rem" }}>
               <div
                 style={{
-                  background: "#f0fdf4",
+                  background: "var(--color-success-light)",
                   padding: "1rem",
                   borderRadius: 8,
                   textAlign: "center",
                 }}
               >
-                <div style={{ fontSize: "0.8rem", color: "#666" }}>
+                <div
+                  style={{
+                    fontSize: "0.8rem",
+                    color: "var(--color-text-secondary)",
+                  }}
+                >
                   Sales Velocity
                 </div>
                 <div
                   style={{
                     fontSize: "1.5rem",
                     fontWeight: 700,
-                    color: "#10b981",
+                    color: "var(--chart-9)",
                   }}
                 >
                   ${metrics.metrics?.salesVelocity?.toLocaleString()}
@@ -158,20 +163,25 @@ export default function SalesVelocityPage() {
               </div>
               <div
                 style={{
-                  background: "#eff6ff",
+                  background: "var(--color-info-light)",
                   padding: "1rem",
                   borderRadius: 8,
                   textAlign: "center",
                 }}
               >
-                <div style={{ fontSize: "0.8rem", color: "#666" }}>
+                <div
+                  style={{
+                    fontSize: "0.8rem",
+                    color: "var(--color-text-secondary)",
+                  }}
+                >
                   Deals Closed
                 </div>
                 <div
                   style={{
                     fontSize: "1.5rem",
                     fontWeight: 700,
-                    color: "#3b82f6",
+                    color: "var(--color-primary)",
                   }}
                 >
                   {metrics.metrics?.dealCount}
@@ -188,14 +198,19 @@ export default function SalesVelocityPage() {
                   textAlign: "center",
                 }}
               >
-                <div style={{ fontSize: "0.8rem", color: "#666" }}>
+                <div
+                  style={{
+                    fontSize: "0.8rem",
+                    color: "var(--color-text-secondary)",
+                  }}
+                >
                   Avg Deal Size
                 </div>
                 <div
                   style={{
                     fontSize: "1.5rem",
                     fontWeight: 700,
-                    color: "#f59e0b",
+                    color: "var(--chart-3)",
                   }}
                 >
                   ${metrics.metrics?.avgDealSize?.toLocaleString()}

@@ -140,19 +140,19 @@ export default function InvoiceAnalyticsPage() {
                   label: "Total Collected",
                   value: fmt(data.totalCollected),
                   icon: <CheckCircle2 size={20} />,
-                  color: "#22c55e",
+                  color: "var(--chart-2)",
                 },
                 {
                   label: "Collection Rate",
                   value: `${collectedRatio.toFixed(1)}%`,
                   icon: <TrendingUp size={20} />,
-                  color: "#f59e0b",
+                  color: "var(--chart-3)",
                 },
                 {
                   label: "Avg Days to Pay",
                   value: `${data.avgDaysToPay} days`,
                   icon: <Clock size={20} />,
-                  color: "#3b82f6",
+                  color: "var(--color-primary)",
                 },
               ]}
             />
@@ -206,10 +206,10 @@ export default function InvoiceAnalyticsPage() {
                             style={{
                               color:
                                 rate > 80
-                                  ? "#22c55e"
+                                  ? "var(--chart-2)"
                                   : rate > 50
-                                    ? "#f59e0b"
-                                    : "#ef4444",
+                                    ? "var(--chart-3)"
+                                    : "var(--chart-4)",
                             }}
                             className={styles.s7}
                           >
@@ -306,10 +306,10 @@ export default function InvoiceAnalyticsPage() {
                   const isPaid = stat.status === "PAID";
                   const isOverdue = stat.status === "OVERDUE";
                   const color = isPaid
-                    ? "#22c55e"
+                    ? "var(--chart-2)"
                     : isOverdue
-                      ? "#ef4444"
-                      : "#f59e0b";
+                      ? "var(--chart-4)"
+                      : "var(--chart-3)";
                   const bg = isPaid
                     ? "rgba(34,197,94,0.08)"
                     : isOverdue

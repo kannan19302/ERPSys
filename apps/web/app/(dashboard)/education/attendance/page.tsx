@@ -181,8 +181,8 @@ export default function AttendancePage() {
         config={{
           xAxisKey: "name",
           series: [
-            { dataKey: "present", name: "Present", color: "#22c55e" },
-            { dataKey: "absent", name: "Absent", color: "#ef4444" },
+            { dataKey: "present", name: "Present", color: "var(--chart-2)" },
+            { dataKey: "absent", name: "Absent", color: "var(--chart-4)" },
           ],
         }}
         defaultChartType="bar"

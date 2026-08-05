@@ -57,7 +57,12 @@ const STRUCTURED_DATA_TYPES = [
 ];
 
 function ScoreBadge({ score }: { score: number }) {
-  const color = score >= 90 ? "#059669" : score >= 70 ? "#d97706" : "#dc2626";
+  const color =
+    score >= 90
+      ? "var(--color-success-hover)"
+      : score >= 70
+        ? "var(--color-warning-hover)"
+        : "var(--color-danger-hover)";
   return (
     <div
       style={{ border: `3px solid ${color}`, background: `${color}10` }}
@@ -144,7 +149,7 @@ function WebSEOPageContent() {
           {
             label: "Site SEO Score",
             value: "80",
-            color: "#d97706",
+            color: "var(--color-warning-hover)",
             sub: "Avg across all pages",
           },
           {
@@ -162,7 +167,7 @@ function WebSEOPageContent() {
           {
             label: "Sitemap Status",
             value: "Active",
-            color: "#059669",
+            color: "var(--color-success-hover)",
             sub: "Last submitted 1 day ago",
           },
         ].map((stat) => (
@@ -202,7 +207,7 @@ function WebSEOPageContent() {
                 onClick={() => setSelectedPage(page.id)}
                 className={`ui-card ${styles.s10}`}
                 style={{
-                  border: `2px solid ${displayPageId === page.id ? "#059669" : "var(--color-border)"}`,
+                  border: `2px solid ${displayPageId === page.id ? "var(--color-success-hover)" : "var(--color-border)"}`,
                   background:
                     displayPageId === page.id ? "rgba(5,150,105,0.04)" : "",
                 }}
@@ -293,7 +298,7 @@ function WebSEOPageContent() {
                         style={{
                           color:
                             (currentPage.title?.length || 0) < 60
-                              ? "#059669"
+                              ? "var(--color-success-hover)"
                               : "var(--color-danger)",
                         }}
                         className={styles.s24}
@@ -314,7 +319,7 @@ function WebSEOPageContent() {
                       <span
                         style={{
                           color: currentPage.description
-                            ? "#059669"
+                            ? "var(--color-success-hover)"
                             : "var(--color-danger)",
                         }}
                         className={styles.s24}
@@ -428,7 +433,7 @@ function WebSEOPageContent() {
               description:
                 "XML sitemap auto-generated and submitted to Google Search Console",
               action: "Submit Now",
-              actionColor: "#059669",
+              actionColor: "var(--color-success-hover)",
             },
             {
               title: "Robots.txt",
@@ -452,14 +457,14 @@ function WebSEOPageContent() {
               status: "Active",
               description: "SSL certificate valid — expires in 87 days",
               action: "View Cert",
-              actionColor: "#059669",
+              actionColor: "var(--color-success-hover)",
             },
             {
               title: "CDN Cache",
               status: "Cloudflare",
               description: "Cache invalidation on publish is enabled",
               action: "Purge Cache",
-              actionColor: "#d97706",
+              actionColor: "var(--color-warning-hover)",
             },
           ].map((item) => (
             <div key={item.title} className="ui-card p-4">

@@ -123,10 +123,10 @@ export default function DataQualityPage() {
 
   const badgeColor = (type: string) => {
     const colors: Record<string, string> = {
-      Customer: "#3b82f6",
-      Vendor: "#8b5cf6",
-      Product: "#f59e0b",
-      Employee: "#10b981",
+      Customer: "var(--color-primary)",
+      Vendor: "var(--chart-5)",
+      Product: "var(--chart-3)",
+      Employee: "var(--chart-9)",
     };
     return colors[type] || "var(--color-text-secondary)";
   };
@@ -147,19 +147,19 @@ export default function DataQualityPage() {
               label: "Pending",
               value: stats.pending,
               icon: <AlertTriangle size={18} />,
-              color: "#f59e0b",
+              color: "var(--chart-3)",
             },
             {
               label: "Merged",
               value: stats.merged,
               icon: <Merge size={18} />,
-              color: "#10b981",
+              color: "var(--chart-9)",
             },
             {
               label: "Dismissed",
               value: stats.dismissed,
               icon: <X size={18} />,
-              color: "#6b7280",
+              color: "var(--color-text-secondary)",
             },
           ].map((s) => (
             <div key={s.label} className={styles.s5}>

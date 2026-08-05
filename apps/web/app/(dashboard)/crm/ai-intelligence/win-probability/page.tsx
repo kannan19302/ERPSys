@@ -89,15 +89,15 @@ export default function WinProbabilityPage() {
                 fontWeight: 700,
                 color:
                   result.probability >= 70
-                    ? "#10b981"
+                    ? "var(--chart-9)"
                     : result.probability >= 40
-                      ? "#f59e0b"
-                      : "#ef4444",
+                      ? "var(--chart-3)"
+                      : "var(--chart-4)",
               }}
             >
               {result.probability}%
             </div>
-            <p style={{ color: "#666", marginTop: 4 }}>
+            <p style={{ color: "var(--color-text-secondary)", marginTop: 4 }}>
               Deal: {result.opportunityName} | Stage: {result.stage}
             </p>
             <div
@@ -112,7 +112,7 @@ export default function WinProbabilityPage() {
                 <div
                   key={k}
                   style={{
-                    background: "#f9fafb",
+                    background: "var(--color-bg-sunken)",
                     padding: "0.5rem",
                     borderRadius: 6,
                   }}
@@ -172,7 +172,7 @@ export default function WinProbabilityPage() {
                 <p
                   style={{
                     fontSize: "0.85rem",
-                    color: "#666",
+                    color: "var(--color-text-secondary)",
                     margin: "0.25rem 0 0",
                   }}
                 >
@@ -218,7 +218,7 @@ export default function WinProbabilityPage() {
                 style={{ padding: "0.5rem 0", borderBottom: "1px solid #eee" }}
               >
                 {r.error ? (
-                  <span style={{ color: "#ef4444" }}>
+                  <span style={{ color: "var(--chart-4)" }}>
                     {r.opportunityId}: {r.error}
                   </span>
                 ) : (

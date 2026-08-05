@@ -24,7 +24,7 @@
   width: 36px;
 }
 .s5 {
-  color: #d97706;
+  color: var(--color-warning-hover);
 }
 .s6 {
   color: var(--color-text);
@@ -130,7 +130,7 @@
   font-weight: var(--weight-medium);
 }
 .s22 {
-  color: #059669;
+  color: var(--color-success-hover);
 }
 .s23 {
   background: none;
@@ -183,7 +183,7 @@
 .s30 {
   background: rgba(217, 119, 6, 0.1);
   border-radius: var(--radius-full);
-  color: #d97706;
+  color: var(--color-warning-hover);
   font-size: 10px;
   font-weight: var(--weight-semibold);
   padding: 2px 8px;

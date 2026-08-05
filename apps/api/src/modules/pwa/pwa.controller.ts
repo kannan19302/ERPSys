@@ -38,6 +38,7 @@ export class PwaController {
   constructor(private readonly pwaService: PwaService) {}
 
   // Public endpoints (no auth - served to browsers)
+  @Permissions("pwa.manifest-json.read")
   @Get("pwa/manifest.json")
   @ApiOperation({ summary: "Get PWA manifest JSON (public)" })
   async getManifestJson(@Req() req: AuthReq, @Res() res: Response) {
@@ -47,6 +48,7 @@ export class PwaController {
     res.json(manifest);
   }
 
+  @Permissions("pwa.service-worker-script.read")
   @Get("pwa/sw.js")
   @ApiOperation({ summary: "Get service worker script (public)" })
   async getServiceWorkerScript(@Req() req: AuthReq, @Res() res: Response) {
@@ -57,6 +59,7 @@ export class PwaController {
     res.send(script);
   }
 
+  @Permissions("pwa.cache-rule-json.read")
   @Get("pwa/cache-rules.json")
   @ApiOperation({ summary: "Get cache rules JSON (public)" })
   async getCacheRulesJson(@Req() req: AuthReq, @Res() res: Response) {

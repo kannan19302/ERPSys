@@ -105,10 +105,12 @@ export default function CustomerSuccessPage() {
               alignItems: "center",
             }}
           >
-            <span style={{ fontSize: "14px", color: "#64748b" }}>
+            <span
+              style={{ fontSize: "14px", color: "var(--color-text-secondary)" }}
+            >
               Total Active Plans
             </span>
-            <Users size={20} color="#3b82f6" />
+            <Users size={20} color="var(--color-primary)" />
           </div>
           <div
             style={{ fontSize: "28px", fontWeight: "bold", marginTop: "8px" }}
@@ -124,16 +126,18 @@ export default function CustomerSuccessPage() {
               alignItems: "center",
             }}
           >
-            <span style={{ fontSize: "14px", color: "#64748b" }}>
+            <span
+              style={{ fontSize: "14px", color: "var(--color-text-secondary)" }}
+            >
               At-Risk Accounts
             </span>
-            <AlertTriangle size={20} color="#ef4444" />
+            <AlertTriangle size={20} color="var(--chart-4)" />
           </div>
           <div
             style={{
               fontSize: "28px",
               fontWeight: "bold",
-              color: "#ef4444",
+              color: "var(--chart-4)",
               marginTop: "8px",
             }}
           >
@@ -148,16 +152,18 @@ export default function CustomerSuccessPage() {
               alignItems: "center",
             }}
           >
-            <span style={{ fontSize: "14px", color: "#64748b" }}>
+            <span
+              style={{ fontSize: "14px", color: "var(--color-text-secondary)" }}
+            >
               Avg Health Score
             </span>
-            <ShieldCheck size={20} color="#10b981" />
+            <ShieldCheck size={20} color="var(--chart-9)" />
           </div>
           <div
             style={{
               fontSize: "28px",
               fontWeight: "bold",
-              color: "#10b981",
+              color: "var(--chart-9)",
               marginTop: "8px",
             }}
           >
@@ -172,10 +178,12 @@ export default function CustomerSuccessPage() {
               alignItems: "center",
             }}
           >
-            <span style={{ fontSize: "14px", color: "#64748b" }}>
+            <span
+              style={{ fontSize: "14px", color: "var(--color-text-secondary)" }}
+            >
               Total Portfolio ARR
             </span>
-            <TrendingUp size={20} color="#8b5cf6" />
+            <TrendingUp size={20} color="var(--chart-5)" />
           </div>
           <div
             style={{ fontSize: "28px", fontWeight: "bold", marginTop: "8px" }}
@@ -191,7 +199,11 @@ export default function CustomerSuccessPage() {
         </h3>
         {plans.length === 0 ? (
           <p
-            style={{ color: "#64748b", textAlign: "center", padding: "32px 0" }}
+            style={{
+              color: "var(--color-text-secondary)",
+              textAlign: "center",
+              padding: "32px 0",
+            }}
           >
             No active customer success plans. Click "+ New CS Plan" to create
             one.
@@ -216,7 +228,12 @@ export default function CustomerSuccessPage() {
                   <td style={{ padding: "12px 16px", fontWeight: 500 }}>
                     {p.name}
                   </td>
-                  <td style={{ padding: "12px 16px", color: "#64748b" }}>
+                  <td
+                    style={{
+                      padding: "12px 16px",
+                      color: "var(--color-text-secondary)",
+                    }}
+                  >
                     {p.customerId}
                   </td>
                   <td style={{ padding: "12px 16px" }}>
@@ -270,7 +287,7 @@ export default function CustomerSuccessPage() {
         >
           <div
             style={{
-              backgroundColor: "#fff",
+              backgroundColor: "var(--color-text-inverse)",
               borderRadius: "8px",
               padding: "24px",
               width: "480px",
@@ -288,7 +305,7 @@ export default function CustomerSuccessPage() {
                   style={{
                     fontSize: "13px",
                     fontWeight: 500,
-                    color: "#475569",
+                    color: "var(--color-text-secondary)",
                   }}
                 >
                   Customer ID *
@@ -314,7 +331,7 @@ export default function CustomerSuccessPage() {
                   style={{
                     fontSize: "13px",
                     fontWeight: 500,
-                    color: "#475569",
+                    color: "var(--color-text-secondary)",
                   }}
                 >
                   Plan Name *
@@ -340,7 +357,7 @@ export default function CustomerSuccessPage() {
                   style={{
                     fontSize: "13px",
                     fontWeight: 500,
-                    color: "#475569",
+                    color: "var(--color-text-secondary)",
                   }}
                 >
                   ARR ($)

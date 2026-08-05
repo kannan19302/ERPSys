@@ -181,25 +181,25 @@ export default function ManufacturingIndustryHub() {
             title="Plant OEE (Overall Efficiency)"
             value="89.4%"
             change={3.8}
-            icon={<Cpu color="#10B981" />}
+            icon={<Cpu color="var(--chart-9)" />}
           />
           <KPICard
             title="SPC Cpk Capability"
             value="1.67 (Six Sigma)"
             change={1.2}
-            icon={<Activity color="#3B82F6" />}
+            icon={<Activity color="var(--color-primary)" />}
           />
           <KPICard
             title="First Pass Yield (FPY)"
             value="99.2%"
             change={0.5}
-            icon={<ShieldCheck color="#8B5CF6" />}
+            icon={<ShieldCheck color="var(--chart-5)" />}
           />
           <KPICard
             title="MTBF Machine Reliability"
             value="482 Hours"
             change={2.4}
-            icon={<Wrench color="#F59E0B" />}
+            icon={<Wrench color="var(--chart-3)" />}
           />
         </div>
 

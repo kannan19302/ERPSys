@@ -322,21 +322,21 @@ export default function FinanceDashboardPage() {
       href: "/finance/banking",
       icon: Wallet,
       desc: "Bank Accounts & Liquidity",
-      color: "#6366f1",
+      color: "var(--chart-10)",
     },
     {
       title: "Tax & Compliance",
       href: "/finance/tax",
       icon: Calculator,
       desc: "Tax Rules & Return Filings",
-      color: "#ec4899",
+      color: "var(--chart-8)",
     },
     {
       title: "Budget & FP&A",
       href: "/finance/budget-planning",
       icon: PieChart,
       desc: "Budgets & Forecasting",
-      color: "#8b5cf6",
+      color: "var(--chart-5)",
     },
     {
       title: "Fixed Assets",
@@ -350,7 +350,7 @@ export default function FinanceDashboardPage() {
       href: "/finance/reports",
       icon: BarChart3,
       desc: "P&L, Balance Sheet, Cash Flow",
-      color: "#f59e0b",
+      color: "var(--chart-3)",
     },
   ];
 
@@ -372,7 +372,7 @@ export default function FinanceDashboardPage() {
           value={fmt(kpis.netCashBalance)}
           sub={`Across ${kpis.bankAccounts || "—"} bank accounts`}
           icon={Wallet}
-          color="#6366f1"
+          color="var(--chart-10)"
           trend="neutral"
         />
         <KpiCard
@@ -565,7 +565,7 @@ export default function FinanceDashboardPage() {
               {
                 dataKey: "invoices",
                 name: "Invoice Count",
-                color: "#8b5cf6",
+                color: "var(--chart-5)",
                 type: "line",
               },
             ],
@@ -678,7 +678,7 @@ export default function FinanceDashboardPage() {
                 value:
                   kpis.netCashBalance > 0 ? fmt(kpis.netCashBalance) : "N/A",
                 pct: Math.min(100, (kpis.netCashBalance / 10_000_000) * 100),
-                color: "#6366f1",
+                color: "var(--chart-10)",
               },
               {
                 label: "Overdue Invoice Exposure",

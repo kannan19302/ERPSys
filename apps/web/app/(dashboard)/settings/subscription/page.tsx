@@ -84,9 +84,14 @@ export default function SaasPortalSubscriptionPage() {
           <div
             style={{ fontSize: "32px", fontWeight: "bold", margin: "12px 0" }}
           >
-            $49<span style={{ fontSize: "14px", color: "#64748b" }}>/mo</span>
+            $49
+            <span
+              style={{ fontSize: "14px", color: "var(--color-text-secondary)" }}
+            >
+              /mo
+            </span>
           </div>
-          <p style={{ color: "#64748b", fontSize: "14px" }}>
+          <p style={{ color: "var(--color-text-secondary)", fontSize: "14px" }}>
             Essential ERP tools for small teams.
           </p>
           <Button
@@ -102,7 +107,7 @@ export default function SaasPortalSubscriptionPage() {
           style={{
             padding: "24px",
             border: "2px solid #3b82f6",
-            backgroundColor: "#eff6ff",
+            backgroundColor: "var(--color-info-light)",
           }}
         >
           <div style={{ marginBottom: "8px" }}>
@@ -112,9 +117,14 @@ export default function SaasPortalSubscriptionPage() {
           <div
             style={{ fontSize: "32px", fontWeight: "bold", margin: "12px 0" }}
           >
-            $199<span style={{ fontSize: "14px", color: "#64748b" }}>/mo</span>
+            $199
+            <span
+              style={{ fontSize: "14px", color: "var(--color-text-secondary)" }}
+            >
+              /mo
+            </span>
           </div>
-          <p style={{ color: "#64748b", fontSize: "14px" }}>
+          <p style={{ color: "var(--color-text-secondary)", fontSize: "14px" }}>
             Advanced automation & custom workflows.
           </p>
           <Button
@@ -130,9 +140,14 @@ export default function SaasPortalSubscriptionPage() {
           <div
             style={{ fontSize: "32px", fontWeight: "bold", margin: "12px 0" }}
           >
-            $499<span style={{ fontSize: "14px", color: "#64748b" }}>/mo</span>
+            $499
+            <span
+              style={{ fontSize: "14px", color: "var(--color-text-secondary)" }}
+            >
+              /mo
+            </span>
           </div>
-          <p style={{ color: "#64748b", fontSize: "14px" }}>
+          <p style={{ color: "var(--color-text-secondary)", fontSize: "14px" }}>
             Dedicated DB isolation, white-label, SLA.
           </p>
           <Button
@@ -151,7 +166,11 @@ export default function SaasPortalSubscriptionPage() {
         </h3>
         {upgrades.length === 0 ? (
           <p
-            style={{ color: "#64748b", textAlign: "center", padding: "24px 0" }}
+            style={{
+              color: "var(--color-text-secondary)",
+              textAlign: "center",
+              padding: "24px 0",
+            }}
           >
             No previous plan upgrades recorded.
           </p>
@@ -179,7 +198,7 @@ export default function SaasPortalSubscriptionPage() {
                     style={{
                       padding: "12px",
                       fontWeight: 600,
-                      color: "#3b82f6",
+                      color: "var(--color-primary)",
                     }}
                   >
                     {u.toTier}

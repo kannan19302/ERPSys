@@ -60,7 +60,11 @@ export default function SaasPortalAuditTrailPage() {
         </h3>
         {logs.length === 0 ? (
           <p
-            style={{ color: "#64748b", textAlign: "center", padding: "32px 0" }}
+            style={{
+              color: "var(--color-text-secondary)",
+              textAlign: "center",
+              padding: "32px 0",
+            }}
           >
             No administrative audit events recorded.
           </p>
@@ -84,7 +88,7 @@ export default function SaasPortalAuditTrailPage() {
                     style={{
                       padding: "12px",
                       fontSize: "12px",
-                      color: "#64748b",
+                      color: "var(--color-text-secondary)",
                     }}
                   >
                     {new Date(log.timestamp).toLocaleString()}
@@ -99,7 +103,7 @@ export default function SaasPortalAuditTrailPage() {
                   <td
                     style={{
                       padding: "12px",
-                      color: "#64748b",
+                      color: "var(--color-text-secondary)",
                       fontSize: "13px",
                     }}
                   >

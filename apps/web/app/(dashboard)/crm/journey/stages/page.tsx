@@ -31,7 +31,7 @@ export default function JourneyStagesPage() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    color: "#3b82f6",
+    color: "var(--color-primary)",
     icon: "",
     sortOrder: 0,
   });
@@ -67,7 +67,7 @@ export default function JourneyStagesPage() {
     setFormData({
       name: "",
       description: "",
-      color: "#3b82f6",
+      color: "var(--color-primary)",
       icon: "",
       sortOrder: 0,
     });
@@ -105,7 +105,7 @@ export default function JourneyStagesPage() {
                 setFormData({
                   name: "",
                   description: "",
-                  color: "#3b82f6",
+                  color: "var(--color-primary)",
                   icon: "",
                   sortOrder: stages.length,
                 });

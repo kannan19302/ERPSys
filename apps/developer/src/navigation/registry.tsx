@@ -732,7 +732,7 @@ export const switcherFolders: SwitcherFolder[] = [
   {
     id: "developer",
     name: "Developer",
-    color: "#334155",
+    color: "var(--color-border-strong)",
     appIds: ["app-store", "builder"],
   },
 ];

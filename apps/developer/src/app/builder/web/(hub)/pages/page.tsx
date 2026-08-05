@@ -329,7 +329,7 @@ function WebBuilderPagesPageContent() {
             {
               type: "SYNC_THEME",
               payload: {
-                colors: { primary: "#3B82F6" },
+                colors: { primary: "var(--color-primary)" },
                 fonts: { heading: "Inter, sans-serif" },
               },
             },

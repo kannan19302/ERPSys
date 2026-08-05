@@ -6,7 +6,7 @@
 }
 .s2 {
   align-items: center;
-  background: #f0fdf4;
+  background: var(--color-success-light);
   border: 1px solid #bbf7d0;
   color: var(--color-success);
   display: flex;

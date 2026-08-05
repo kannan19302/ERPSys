@@ -2,24 +2,13 @@
   "name": "@unerp/storybook",
   "version": "0.1.0",
   "private": true,
-  "description": "UniERP Design System — Storybook workshop for all @unerp/ui-* packages",
+  "description": "UniERP Design System — Storybook workshop for @unerp/ui",
   "scripts": {
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
   "dependencies": {
     "@unerp/ui": "workspace:*",
-    "@unerp/ui-charts": "workspace:*",
-    "@unerp/ui-components": "workspace:*",
-    "@unerp/ui-dashboard": "workspace:*",
-    "@unerp/ui-data-grid": "workspace:*",
-    "@unerp/ui-hooks": "workspace:*",
-    "@unerp/ui-icons": "workspace:*",
-    "@unerp/ui-layout": "workspace:*",
-    "@unerp/ui-notifications": "workspace:*",
-    "@unerp/ui-theme": "workspace:*",
-    "@unerp/ui-tokens": "workspace:*",
-    "@unerp/ui-utils": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

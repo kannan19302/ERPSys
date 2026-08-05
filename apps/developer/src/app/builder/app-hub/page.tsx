@@ -178,25 +178,25 @@ export default function LowCodeBuilderHub() {
             title="Custom Data Entities"
             value="32 Models"
             change={6.0}
-            icon={<Database color="#10B981" />}
+            icon={<Database color="var(--chart-9)" />}
           />
           <KPICard
             title="Business Rules Executed"
             value="142,800 / Day"
             change={10.0}
-            icon={<Zap color="#3B82F6" />}
+            icon={<Zap color="var(--color-primary)" />}
           />
           <KPICard
             title="AI Chatbot Assistant"
             value="98.5% Accuracy"
             change={1.2}
-            icon={<Bot color="#8B5CF6" />}
+            icon={<Bot color="var(--chart-5)" />}
           />
           <KPICard
             title="Integration Connectors"
             value="24 Active APIs"
             change={5.0}
-            icon={<Code color="#F59E0B" />}
+            icon={<Code color="var(--chart-3)" />}
           />
         </div>
 

@@ -146,7 +146,7 @@ function EntryField({
           <div className={styles.s4}>
             <input
               type="color"
-              value={value || "#000000"}
+              value={value || "var(--color-text)"}
               onChange={(e) => onChange(e.target.value)}
               className={styles.s5}
             />
@@ -154,7 +154,7 @@ function EntryField({
               value={value || ""}
               onChange={(e) => onChange(e.target.value)}
               style={base}
-              placeholder="#000000"
+              placeholder="var(--color-text)"
             />
           </div>
         </div>
@@ -358,10 +358,13 @@ function EntryEditor({
                   background:
                     status === s
                       ? s === "PUBLISHED"
-                        ? "#16a34a"
+                        ? "var(--color-success-hover)"
                         : "var(--color-text-secondary)"
                       : "transparent",
-                  color: status === s ? "#fff" : "var(--color-text-secondary)",
+                  color:
+                    status === s
+                      ? "var(--color-text-inverse)"
+                      : "var(--color-text-secondary)",
                 }}
                 className={styles.s19}
               >
@@ -372,10 +375,12 @@ function EntryEditor({
           <button
             onClick={() => setFeatured(!featured)}
             title="Featured"
-            style={{ color: featured ? "#f59e0b" : "var(--color-text-muted)" }}
+            style={{
+              color: featured ? "var(--chart-3)" : "var(--color-text-muted)",
+            }}
             className={styles.s20}
           >
-            <Star size={16} fill={featured ? "#f59e0b" : "none"} />
+            <Star size={16} fill={featured ? "var(--chart-3)" : "none"} />
           </button>
           <div className="flex-1" />
           <button onClick={handleSave} disabled={saving} className={styles.s21}>
@@ -803,7 +808,11 @@ export default function WebCollectionsPage() {
                   width: "70px",
                   render: (v) =>
                     v ? (
-                      <Star size={14} fill="#f59e0b" className={styles.s57} />
+                      <Star
+                        size={14}
+                        fill="var(--chart-3)"
+                        className={styles.s57}
+                      />
                     ) : (
                       <span className="ui-text-tertiary">—</span>
                     ),
@@ -941,7 +950,7 @@ export default function WebCollectionsPage() {
               <div className="ui-flex-between ui-items-start">
                 <div className="ui-hstack-3">
                   <div
-                    style={{ background: `${c.color || "#6366f1"}18` }}
+                    style={{ background: `${c.color || "var(--chart-10)"}18` }}
                     className={styles.s69}
                   >
                     {c.icon || "📦"}

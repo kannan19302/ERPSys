@@ -63,14 +63,16 @@ export default function AnalyticsRealtimePage() {
         }}
       >
         <Card style={{ padding: "20px" }}>
-          <span style={{ fontSize: "13px", color: "#64748b" }}>
+          <span
+            style={{ fontSize: "13px", color: "var(--color-text-secondary)" }}
+          >
             Active Users Right Now
           </span>
           <div
             style={{
               fontSize: "32px",
               fontWeight: "bold",
-              color: "#10b981",
+              color: "var(--chart-9)",
               marginTop: "4px",
             }}
           >
@@ -78,14 +80,16 @@ export default function AnalyticsRealtimePage() {
           </div>
         </Card>
         <Card style={{ padding: "20px" }}>
-          <span style={{ fontSize: "13px", color: "#64748b" }}>
+          <span
+            style={{ fontSize: "13px", color: "var(--color-text-secondary)" }}
+          >
             Requests / Second
           </span>
           <div
             style={{
               fontSize: "32px",
               fontWeight: "bold",
-              color: "#3b82f6",
+              color: "var(--color-primary)",
               marginTop: "4px",
             }}
           >
@@ -93,14 +97,16 @@ export default function AnalyticsRealtimePage() {
           </div>
         </Card>
         <Card style={{ padding: "20px" }}>
-          <span style={{ fontSize: "13px", color: "#64748b" }}>
+          <span
+            style={{ fontSize: "13px", color: "var(--color-text-secondary)" }}
+          >
             p99 API Latency
           </span>
           <div
             style={{
               fontSize: "32px",
               fontWeight: "bold",
-              color: "#8b5cf6",
+              color: "var(--chart-5)",
               marginTop: "4px",
             }}
           >
@@ -116,7 +122,11 @@ export default function AnalyticsRealtimePage() {
         {!liveMetrics?.activeSessions ||
         liveMetrics.activeSessions.length === 0 ? (
           <p
-            style={{ color: "#64748b", textAlign: "center", padding: "32px 0" }}
+            style={{
+              color: "var(--color-text-secondary)",
+              textAlign: "center",
+              padding: "32px 0",
+            }}
           >
             No active user sessions.
           </p>
@@ -144,7 +154,8 @@ export default function AnalyticsRealtimePage() {
                       gap: "8px",
                     }}
                   >
-                    <Globe size={16} color="#3b82f6" /> {s.location}
+                    <Globe size={16} color="var(--color-primary)" />{" "}
+                    {s.location}
                   </td>
                   <td style={{ padding: "12px" }}>
                     <code>{s.activePage}</code>
@@ -152,7 +163,7 @@ export default function AnalyticsRealtimePage() {
                   <td
                     style={{
                       padding: "12px",
-                      color: "#64748b",
+                      color: "var(--color-text-secondary)",
                       fontSize: "13px",
                     }}
                   >

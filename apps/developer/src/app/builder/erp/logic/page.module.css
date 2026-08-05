@@ -226,11 +226,11 @@
 .s40 {
   background: rgba(5, 150, 105, 0.06);
   border-radius: var(--radius-md);
-  border: 2px solid #059669;
+  border: 2px solid var(--color-success-hover);
   padding: var(--space-3);
 }
 .s41 {
-  color: #059669;
+  color: var(--color-success-hover);
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
   letter-spacing: 0.05em;
@@ -254,7 +254,7 @@
   width: 28px;
 }
 .s44 {
-  color: #059669;
+  color: var(--color-success-hover);
 }
 .s45 {
   flex: 1;
@@ -297,7 +297,7 @@
   transition: all var(--duration-fast);
 }
 .s51 {
-  color: #059669;
+  color: var(--color-success-hover);
   flex-shrink: 0;
 }
 .s52 {

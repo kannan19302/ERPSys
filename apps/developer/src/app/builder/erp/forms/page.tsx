@@ -258,13 +258,13 @@ function ERPFormsPageContent() {
             label: "Published",
             value: stats.published.toString(),
             icon: CheckCircle,
-            color: "#059669",
+            color: "var(--color-success-hover)",
           },
           {
             label: "Drafts",
             value: stats.draft.toString(),
             icon: Edit3,
-            color: "#d97706",
+            color: "var(--color-warning-hover)",
           },
           {
             label: "Total Submissions",

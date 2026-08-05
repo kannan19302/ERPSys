@@ -171,8 +171,16 @@ export default function FieldServiceDashboard() {
             config={{
               xAxisKey: "name",
               series: [
-                { dataKey: "completed", name: "Completed", color: "#22c55e" },
-                { dataKey: "pending", name: "Pending", color: "#f59e0b" },
+                {
+                  dataKey: "completed",
+                  name: "Completed",
+                  color: "var(--chart-2)",
+                },
+                {
+                  dataKey: "pending",
+                  name: "Pending",
+                  color: "var(--chart-3)",
+                },
               ],
             }}
             defaultChartType="bar"
@@ -185,7 +193,9 @@ export default function FieldServiceDashboard() {
             data={priorityBreakdown}
             config={{
               xAxisKey: "name",
-              series: [{ dataKey: "count", name: "Tickets", color: "#6366f1" }],
+              series: [
+                { dataKey: "count", name: "Tickets", color: "var(--chart-10)" },
+              ],
             }}
             defaultChartType="bar"
             allowedChartTypes={["bar", "pie", "donut"]}

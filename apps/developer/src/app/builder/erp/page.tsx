@@ -85,14 +85,14 @@ const ICON_OPTIONS = [
   "📐",
 ];
 const COLOR_OPTIONS = [
-  "#3b82f6",
-  "#8b5cf6",
-  "#10b981",
-  "#f59e0b",
-  "#ef4444",
-  "#ec4899",
-  "#06b6d4",
-  "#6366f1",
+  "var(--color-primary)",
+  "var(--chart-5)",
+  "var(--chart-9)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-8)",
+  "var(--chart-6)",
+  "var(--chart-10)",
   "#14b8a6",
   "#f97316",
 ];
@@ -111,7 +111,7 @@ function CreateAppModal({
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
   const [icon, setIcon] = useState("📦");
-  const [color, setColor] = useState("#3b82f6");
+  const [color, setColor] = useState("var(--color-primary)");
   const [scope, setScope] = useState("ORGANIZATION");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -331,10 +331,22 @@ function AppCard({
 
   const getStatusColor = () => {
     if (app.status === "ACTIVE")
-      return { bg: "#dcfce7", text: "#16a34a", label: "Published" };
+      return {
+        bg: "var(--color-success-light)",
+        text: "var(--color-success-hover)",
+        label: "Published",
+      };
     if (app.status === "ARCHIVED")
-      return { bg: "#fee2e2", text: "#dc2626", label: "Archived" };
-    return { bg: "#fef3c7", text: "#d97706", label: "Draft" };
+      return {
+        bg: "var(--color-danger-light)",
+        text: "var(--color-danger-hover)",
+        label: "Archived",
+      };
+    return {
+      bg: "var(--color-warning-light)",
+      text: "var(--color-warning-hover)",
+      label: "Draft",
+    };
   };
 
   const getScopeInfo = () => {
@@ -366,7 +378,7 @@ function AppCard({
         <div className={styles.s22}>
           <div className="ui-hstack-3">
             <div
-              style={{ background: `${app.color || "#3b82f6"}15` }}
+              style={{ background: `${app.color || "var(--color-primary)"}15` }}
               className={styles.s23}
             >
               {app.icon || "📦"}
@@ -428,16 +440,16 @@ function AppCard({
                 style={{
                   background:
                     testScore >= 80
-                      ? "#dcfce7"
+                      ? "var(--color-success-light)"
                       : testScore >= 50
-                        ? "#fef3c7"
-                        : "#fee2e2",
+                        ? "var(--color-warning-light)"
+                        : "var(--color-danger-light)",
                   color:
                     testScore >= 80
-                      ? "#16a34a"
+                      ? "var(--color-success-hover)"
                       : testScore >= 50
-                        ? "#d97706"
-                        : "#dc2626",
+                        ? "var(--color-warning-hover)"
+                        : "var(--color-danger-hover)",
                 }}
                 className={styles.s34}
               >
@@ -547,25 +559,25 @@ function ERPBuilderPageContent() {
             label: "Total Apps",
             value: stats.total,
             icon: Package,
-            color: "#3b82f6",
+            color: "var(--color-primary)",
           },
           {
             label: "Published",
             value: stats.published,
             icon: CheckCircle,
-            color: "#10b981",
+            color: "var(--chart-9)",
           },
           {
             label: "In Development",
             value: stats.draft,
             icon: FileText,
-            color: "#f59e0b",
+            color: "var(--chart-3)",
           },
           {
             label: "Tested",
             value: stats.tested,
             icon: Activity,
-            color: "#8b5cf6",
+            color: "var(--chart-5)",
           },
         ].map((stat, i) => (
           <div key={i} className={styles.s38}>
@@ -608,8 +620,16 @@ function ERPBuilderPageContent() {
                     x2="0"
                     y2="1"
                   >
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                    <stop
+                      offset="5%"
+                      stopColor="var(--color-primary)"
+                      stopOpacity={0.2}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor="var(--color-primary)"
+                      stopOpacity={0}
+                    />
                   </linearGradient>
                 </defs>
                 <CartesianGrid
@@ -637,7 +657,7 @@ function ERPBuilderPageContent() {
                   type="monotone"
                   dataKey="builds"
                   name="App Version Builds"
-                  stroke="#3b82f6"
+                  stroke="var(--color-primary)"
                   fillOpacity={1}
                   fill="url(#colorBuildsErp)"
                   strokeWidth={2}

@@ -49,10 +49,10 @@ function WebSettingsPageContent() {
     globalCss: "",
     themeTokens: {
       colors: {
-        primary: "#3B82F6",
-        accent: "#10B981",
-        background: "#ffffff",
-        text: "#111827",
+        primary: "var(--color-primary)",
+        accent: "var(--chart-9)",
+        background: "var(--color-text-inverse)",
+        text: "var(--color-text)",
       },
       fonts: { heading: "Inter, sans-serif", body: "Inter, sans-serif" },
     },
@@ -219,13 +219,13 @@ function WebSettingsPageContent() {
                           <div className="ui-hstack-2">
                             <span className={styles.s16}>
                               {formData.themeTokens?.colors?.[color.key] ||
-                                "#000000"}
+                                "var(--color-text)"}
                             </span>
                             <input
                               type="color"
                               value={
                                 formData.themeTokens?.colors?.[color.key] ||
-                                "#000000"
+                                "var(--color-text)"
                               }
                               onChange={(e) =>
                                 handleColorChange(color.key, e.target.value)

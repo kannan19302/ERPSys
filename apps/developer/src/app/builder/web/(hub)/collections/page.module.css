@@ -89,9 +89,9 @@
   padding: var(--space-5);
 }
 .s15 {
-  background: #fef2f2;
+  background: var(--color-danger-light);
   border-radius: var(--radius-md);
-  color: #dc2626;
+  color: var(--color-danger-hover);
   font-size: var(--text-sm);
   padding: var(--space-3);
 }
@@ -197,9 +197,9 @@
   padding: var(--space-5) var(--space-6);
 }
 .s30 {
-  background: #fef2f2;
+  background: var(--color-danger-light);
   border-radius: var(--radius-md);
-  color: #dc2626;
+  color: var(--color-danger-hover);
   font-size: var(--text-sm);
   margin-bottom: var(--space-4);
   padding: var(--space-3);

@@ -127,8 +127,12 @@ export default function DemandForecastPage() {
           config={{
             xAxisKey: "name",
             series: [
-              { dataKey: "Actual", name: "Actual", color: "#22c55e" },
-              { dataKey: "Predicted", name: "Forecast", color: "#6366f1" },
+              { dataKey: "Actual", name: "Actual", color: "var(--chart-2)" },
+              {
+                dataKey: "Predicted",
+                name: "Forecast",
+                color: "var(--chart-10)",
+              },
             ],
           }}
           defaultChartType="line"
@@ -143,7 +147,11 @@ export default function DemandForecastPage() {
           config={{
             xAxisKey: "name",
             series: [
-              { dataKey: "units", name: "Predicted Units", color: "#6366f1" },
+              {
+                dataKey: "units",
+                name: "Predicted Units",
+                color: "var(--chart-10)",
+              },
             ],
           }}
           defaultChartType="bar"

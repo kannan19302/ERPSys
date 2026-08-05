@@ -1,11 +1,11 @@
 {
   "$comment": "Policy ratchet baseline. These numbers may only go DOWN. See docs/ai/ARCHITECTURE_REVIEW.md.",
-  "updatedAt": "2026-08-04",
+  "updatedAt": "2026-08-05",
   "counts": {
     "rawSql": 1,
-    "floatMoney": 29,
-    "unguardedEndpoints": 284,
-    "hardcodedColors": 984,
+    "floatMoney": 0,
+    "unguardedEndpoints": 0,
+    "hardcodedColors": 305,
     "hardcodedSpacing": 3215
   }
 }

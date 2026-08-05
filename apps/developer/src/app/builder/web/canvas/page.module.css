@@ -1,6 +1,6 @@
 .s1 {
-  background-color: var(--color-background, #ffffff);
-  color: var(--color-text, #111111);
+  background-color: var(--color-background);
+  color: var(--color-text);
   font-family: var(--font-body, sans-serif);
   min-height: 100vh;
 }
@@ -18,7 +18,7 @@
   transition: outline 0.2s;
 }
 .s4 {
-  background: var(--color-primary, #3b82f6);
+  background: var(--color-primary);
   border-bottom-left-radius: 4px;
   color: white;
   font-size: 12px;

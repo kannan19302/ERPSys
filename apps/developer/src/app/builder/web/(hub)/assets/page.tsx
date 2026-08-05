@@ -41,9 +41,9 @@ const TYPE_ICONS: Record<
 const TYPE_COLORS: Record<string, string> = {
   IMAGE: "var(--color-primary)",
   VIDEO: "#7c3aed",
-  AUDIO: "#059669",
-  DOCUMENT: "#d97706",
-  ARCHIVE: "#dc2626",
+  AUDIO: "var(--color-success-hover)",
+  DOCUMENT: "var(--color-warning-hover)",
+  ARCHIVE: "var(--color-danger-hover)",
 };
 
 const FOLDERS = ["All Files"];

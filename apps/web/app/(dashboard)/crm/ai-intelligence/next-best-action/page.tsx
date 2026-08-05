@@ -130,14 +130,21 @@ export default function NextBestActionPage() {
               >
                 {action.priority.toUpperCase()} PRIORITY
               </Badge>
-              <span style={{ fontSize: "0.85rem", color: "#666" }}>
+              <span
+                style={{
+                  fontSize: "0.85rem",
+                  color: "var(--color-text-secondary)",
+                }}
+              >
                 Stage: {action.currentStage}
               </span>
             </div>
             <p style={{ fontSize: "1.1rem", fontWeight: 600 }}>
               {action.recommendedAction}
             </p>
-            <p style={{ color: "#666" }}>{action.reasoning}</p>
+            <p style={{ color: "var(--color-text-secondary)" }}>
+              {action.reasoning}
+            </p>
             <div style={{ marginTop: "0.75rem" }}>
               <h4 style={{ fontSize: "0.9rem", marginBottom: "0.5rem" }}>
                 Stage-Specific Actions:
@@ -171,7 +178,7 @@ export default function NextBestActionPage() {
                 style={{
                   padding: "0.75rem",
                   marginBottom: "0.5rem",
-                  background: "#f9fafb",
+                  background: "var(--color-bg-sunken)",
                   borderRadius: 6,
                 }}
               >
@@ -198,7 +205,13 @@ export default function NextBestActionPage() {
                 <p style={{ margin: "0.25rem 0", fontSize: "0.9rem" }}>
                   {a.recommendedAction}
                 </p>
-                <p style={{ fontSize: "0.8rem", color: "#666", margin: 0 }}>
+                <p
+                  style={{
+                    fontSize: "0.8rem",
+                    color: "var(--color-text-secondary)",
+                    margin: 0,
+                  }}
+                >
                   {a.reasoning}
                 </p>
               </div>

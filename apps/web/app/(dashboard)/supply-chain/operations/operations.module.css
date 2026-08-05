@@ -213,8 +213,8 @@
 }
 
 .starIcon {
-  color: #f59e0b;
-  fill: #f59e0b;
+  color: var(--color-warning);
+  fill: var(--color-warning);
 }
 
 /* Routes Tab */

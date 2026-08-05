@@ -47,12 +47,12 @@ function relativeTime(iso: string): string {
 }
 
 const ENTITY_COLORS: Record<string, string> = {
-  Customer: "#3b82f6",
-  Product: "#8b5cf6",
-  Employee: "#10b981",
-  Invoice: "#f59e0b",
-  Order: "#ef4444",
-  Vendor: "#6366f1",
+  Customer: "var(--color-primary)",
+  Product: "var(--chart-5)",
+  Employee: "var(--chart-9)",
+  Invoice: "var(--chart-3)",
+  Order: "var(--chart-4)",
+  Vendor: "var(--chart-10)",
 };
 
 function badgeColor(type: string) {
@@ -165,7 +165,10 @@ export default function RecycleBinTab() {
         <div
           className={styles.s1}
           style={{
-            background: toast.type === "success" ? "#059669" : "#dc2626",
+            background:
+              toast.type === "success"
+                ? "var(--color-success-hover)"
+                : "var(--color-danger-hover)",
           }}
         >
           {toast.type === "success" ? (
@@ -181,7 +184,7 @@ export default function RecycleBinTab() {
         <div className={styles.s2}>
           <div className={styles.s3}>
             <div className="ui-hstack-2 mb-4">
-              <AlertTriangle size={20} color="#dc2626" />
+              <AlertTriangle size={20} color="var(--color-danger-hover)" />
               <span className={styles.s4}>
                 {confirmModal.type === "purge"
                   ? "Empty Recycle Bin"

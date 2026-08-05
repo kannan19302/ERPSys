@@ -193,25 +193,25 @@ export default function SupplyChainControlHub() {
             title="Total LC Trade Exposure"
             value="$2,500,000"
             change={14.2}
-            icon={<DollarSign color="#10B981" />}
+            icon={<DollarSign color="var(--chart-9)" />}
           />
           <KPICard
             title="S&OP Plan Consensus"
             value="98.4%"
             change={2.1}
-            icon={<BarChart2 color="#3B82F6" />}
+            icon={<BarChart2 color="var(--color-primary)" />}
           />
           <KPICard
             title="Cold Chain Telemetry"
             value="0.02% Excursions"
             change={-4.5}
-            icon={<Thermometer color="#06B6D4" />}
+            icon={<Thermometer color="var(--chart-6)" />}
           />
           <KPICard
             title="SCEM Risk Rating"
             value="Low Risk (12.4)"
             change={0.5}
-            icon={<Shield color="#8B5CF6" />}
+            icon={<Shield color="var(--chart-5)" />}
           />
         </div>
 

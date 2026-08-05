@@ -759,25 +759,25 @@ function OverviewSection({
           label: "Installs",
           value: stats.installCount ?? 0,
           icon: Eye,
-          color: "#3b82f6",
+          color: "var(--color-primary)",
         },
         {
           label: "Releases",
           value: stats.releaseCount ?? 0,
           icon: Tag,
-          color: "#8b5cf6",
+          color: "var(--chart-5)",
         },
         {
           label: "Automation Runs",
           value: stats.automationRuns ?? 0,
           icon: Zap,
-          color: "#f59e0b",
+          color: "var(--chart-3)",
         },
         {
           label: "Test Score",
           value: stats.testScore != null ? `${stats.testScore}%` : "—",
           icon: ShieldCheck,
-          color: "#10b981",
+          color: "var(--chart-9)",
         },
       ]
     : [];
@@ -842,7 +842,12 @@ function OverviewSection({
           <div className="flex-1">
             <div className={styles.s26}>Status</div>
             <div
-              style={{ color: app.status === "ACTIVE" ? "#16a34a" : "#d97706" }}
+              style={{
+                color:
+                  app.status === "ACTIVE"
+                    ? "var(--color-success-hover)"
+                    : "var(--color-warning-hover)",
+              }}
               className={styles.s63}
             >
               {app.status}
@@ -1032,10 +1037,10 @@ function PagesSection({
   };
 
   const typeColors: Record<string, string> = {
-    form: "#3b82f6",
-    list: "#10b981",
-    dashboard: "#8b5cf6",
-    custom: "#ec4899",
+    form: "var(--color-primary)",
+    list: "var(--chart-9)",
+    dashboard: "var(--chart-5)",
+    custom: "var(--chart-8)",
   };
 
   return (
@@ -1060,12 +1065,16 @@ function PagesSection({
             <div key={p.id} className={styles.s67}>
               <div className="ui-hstack-3">
                 <div
-                  style={{ background: `${typeColors[p.type] || "#3b82f6"}15` }}
+                  style={{
+                    background: `${typeColors[p.type] || "var(--color-primary)"}15`,
+                  }}
                   className={styles.s69}
                 >
                   <Layers
                     size={18}
-                    style={{ color: typeColors[p.type] || "#3b82f6" }}
+                    style={{
+                      color: typeColors[p.type] || "var(--color-primary)",
+                    }}
                   />
                 </div>
                 <div>
@@ -1074,8 +1083,8 @@ function PagesSection({
                     <span className="font-mono">/{p.slug}</span>
                     <span
                       style={{
-                        background: `${typeColors[p.type] || "#3b82f6"}15`,
-                        color: typeColors[p.type] || "#3b82f6",
+                        background: `${typeColors[p.type] || "var(--color-primary)"}15`,
+                        color: typeColors[p.type] || "var(--color-primary)",
                       }}
                       className={styles.s71}
                     >
@@ -1288,9 +1297,21 @@ function TestEngineSection({
     string,
     { icon: React.ComponentType<any>; color: string; bg: string }
   > = {
-    error: { icon: XCircle, color: "#dc2626", bg: "#fef2f2" },
-    warning: { icon: AlertTriangle, color: "#d97706", bg: "#fffbeb" },
-    info: { icon: Info, color: "#3b82f6", bg: "#eff6ff" },
+    error: {
+      icon: XCircle,
+      color: "var(--color-danger-hover)",
+      bg: "var(--color-danger-light)",
+    },
+    warning: {
+      icon: AlertTriangle,
+      color: "var(--color-warning-hover)",
+      bg: "#fffbeb",
+    },
+    info: {
+      icon: Info,
+      color: "var(--color-primary)",
+      bg: "var(--color-info-light)",
+    },
   };
 
   return (
@@ -1303,8 +1324,10 @@ function TestEngineSection({
             onClick={runTests}
             disabled={running}
             style={{
-              background: running ? "var(--color-bg-subtle)" : "#10b981",
-              color: running ? "var(--color-text-muted)" : "#fff",
+              background: running ? "var(--color-bg-subtle)" : "var(--chart-9)",
+              color: running
+                ? "var(--color-text-muted)"
+                : "var(--color-text-inverse)",
               cursor: running ? "wait" : "pointer",
             }}
             className={styles.s79}
@@ -1331,11 +1354,11 @@ function TestEngineSection({
                 style={{
                   background:
                     results.score >= 80
-                      ? "#dcfce7"
+                      ? "var(--color-success-light)"
                       : results.score >= 50
-                        ? "#fef3c7"
-                        : "#fee2e2",
-                  border: `4px solid ${results.score >= 80 ? "#16a34a" : results.score >= 50 ? "#d97706" : "#dc2626"}`,
+                        ? "var(--color-warning-light)"
+                        : "var(--color-danger-light)",
+                  border: `4px solid ${results.score >= 80 ? "var(--color-success-hover)" : results.score >= 50 ? "var(--color-warning-hover)" : "var(--color-danger-hover)"}`,
                 }}
                 className={styles.s82}
               >
@@ -1343,10 +1366,10 @@ function TestEngineSection({
                   style={{
                     color:
                       results.score >= 80
-                        ? "#16a34a"
+                        ? "var(--color-success-hover)"
                         : results.score >= 50
-                          ? "#d97706"
-                          : "#dc2626",
+                          ? "var(--color-warning-hover)"
+                          : "var(--color-danger-hover)",
                   }}
                   className={styles.s83}
                 >
@@ -1395,10 +1418,10 @@ function TestEngineSection({
                       height: `${Math.max(6, h.score)}%`,
                       background:
                         h.score >= 80
-                          ? "#16a34a"
+                          ? "var(--color-success-hover)"
                           : h.score >= 50
-                            ? "#d97706"
-                            : "#dc2626",
+                            ? "var(--color-warning-hover)"
+                            : "var(--color-danger-hover)",
                       opacity: 0.5 + (0.5 * (i + 1)) / results.history.length,
                     }}
                     className={styles.s91}
@@ -1549,7 +1572,7 @@ function PreviewSection({ app }: { app: AppModule }) {
         <div className={styles.s102}>
           <div className={styles.s103}>
             <div
-              style={{ background: `${app.color || "#3b82f6"}15` }}
+              style={{ background: `${app.color || "var(--color-primary)"}15` }}
               className={styles.s104}
             >
               {app.icon || "📦"}
@@ -1866,7 +1889,11 @@ function PublishSection({
       <div className={styles.s80}>
         <div className={styles.s128}>
           <div
-            style={{ background: isPublished ? "#dcfce7" : "#fef3c7" }}
+            style={{
+              background: isPublished
+                ? "var(--color-success-light)"
+                : "var(--color-warning-light)",
+            }}
             className={styles.s129}
           >
             {isPublished ? (
@@ -1905,7 +1932,11 @@ function PublishSection({
             {checks.map((check, i) => (
               <div
                 key={i}
-                style={{ background: check.pass ? "#f0fdf4" : "#fefce8" }}
+                style={{
+                  background: check.pass
+                    ? "var(--color-success-light)"
+                    : "#fefce8",
+                }}
                 className={styles.s133}
               >
                 {check.pass ? (
@@ -1914,7 +1945,11 @@ function PublishSection({
                   <AlertTriangle size={16} className={styles.s131} />
                 )}
                 <span
-                  style={{ color: check.pass ? "#16a34a" : "#92400e" }}
+                  style={{
+                    color: check.pass
+                      ? "var(--color-success-hover)"
+                      : "#92400e",
+                  }}
                   className={styles.s63}
                 >
                   {check.label}
@@ -2058,9 +2093,11 @@ function PublishSection({
             disabled={publishing || !allChecksPassed}
             style={{
               background: allChecksPassed
-                ? "#10b981"
+                ? "var(--chart-9)"
                 : "var(--color-bg-subtle)",
-              color: allChecksPassed ? "#fff" : "var(--color-text-muted)",
+              color: allChecksPassed
+                ? "var(--color-text-inverse)"
+                : "var(--color-text-muted)",
               cursor: allChecksPassed ? "pointer" : "not-allowed",
             }}
             className={styles.s140}
@@ -2384,7 +2421,9 @@ export default function AppStudioPage() {
             </button>
             <div className="ui-hstack-3">
               <div
-                style={{ background: `${app.color || "#3b82f6"}15` }}
+                style={{
+                  background: `${app.color || "var(--color-primary)"}15`,
+                }}
                 className={styles.s159}
               >
                 {app.icon || "📦"}
@@ -2424,7 +2463,9 @@ export default function AppStudioPage() {
                         background: isActive
                           ? "var(--color-primary)"
                           : "var(--color-border)",
-                        color: isActive ? "#fff" : "var(--color-text-muted)",
+                        color: isActive
+                          ? "var(--color-text-inverse)"
+                          : "var(--color-text-muted)",
                       }}
                       className={styles.s145}
                     >

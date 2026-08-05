@@ -1031,11 +1031,11 @@ function RuntimeChartWidget({
   const { chartType = "bar" } = widget.config || {};
   const fallbackData = [
     { label: "Mon", value: 40, color: "var(--color-primary)" },
-    { label: "Tue", value: 75, color: "#10b981" },
-    { label: "Wed", value: 50, color: "#f59e0b" },
-    { label: "Thu", value: 90, color: "#8b5cf6" },
-    { label: "Fri", value: 65, color: "#ec4899" },
-    { label: "Sat", value: 30, color: "#3b82f6" },
+    { label: "Tue", value: 75, color: "var(--chart-9)" },
+    { label: "Wed", value: 50, color: "var(--chart-3)" },
+    { label: "Thu", value: 90, color: "var(--chart-5)" },
+    { label: "Fri", value: 65, color: "var(--chart-8)" },
+    { label: "Sat", value: 30, color: "var(--color-primary)" },
     { label: "Sun", value: 45, color: "#14b8a6" },
   ];
 

@@ -26,7 +26,7 @@
     #7c3aed 55%,
     #a78bfa 100%
   );
-  color: #fff;
+  color: var(--color-text-inverse);
   overflow: hidden;
 }
 
@@ -76,7 +76,7 @@
   font-size: 22px;
   font-weight: var(--weight-bold);
   margin: 0;
-  color: #fff;
+  color: var(--color-text-inverse);
 }
 
 .pronounceBtn,
@@ -90,7 +90,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: var(--color-text-inverse);
   cursor: pointer;
   transition: background var(--duration-fast);
 }
@@ -101,7 +101,7 @@
 }
 
 .recordBtnActive {
-  background: #ef4444;
+  background: var(--color-danger);
   animation: recordPulse 1s ease-in-out infinite;
 }
 
@@ -150,7 +150,7 @@
   background: rgba(255, 255, 255, 0.18);
   padding: 3px 10px;
   border-radius: var(--radius-full);
-  color: #fff;
+  color: var(--color-text-inverse);
 }
 
 .employeeIdBadge {
@@ -182,7 +182,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-1-5, 6px);
-  background: #fff;
+  background: var(--color-bg-elevated);
   color: var(--color-primary);
   border: none;
   border-radius: var(--radius-lg);
@@ -202,7 +202,7 @@
 .heroRoleRow .fieldValueBtn {
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.3);
-  color: #fff;
+  color: var(--color-text-inverse);
 }
 .heroMetaRow .fieldEmpty,
 .heroRoleRow .fieldEmpty {
@@ -403,7 +403,7 @@
 .dayChipActive {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: #fff;
+  color: var(--color-text-inverse);
 }
 
 /* ── Manager picker ───────────────────────────────────────────── */

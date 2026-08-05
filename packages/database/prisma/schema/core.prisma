@@ -9807,6 +9807,27 @@ model MarketplaceApp {
   @@map("marketplace_apps")
 }
 
+model AppVendorSigningKey {
+  id            String   @id @default(cuid())
+  vendorId      String   @map("vendor_id")
+  /// Key identifier carried in a bundle signature.
+  keyId         String   @unique @map("key_id")
+  /// SPKI DER public key, base64. Only ever a PUBLIC key — the platform never
+  /// holds a vendor private key and never signs on their behalf.
+  publicKey     String   @map("public_key") @db.Text
+  algorithm     String   @default("ed25519")
+  /// Revocation is a state, not a delete: already-published bundles signed with
+  /// this key must stay identifiable so they can be delisted.
+  revoked       Boolean  @default(false)
+  revokedReason String?  @map("revoked_reason")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  vendor AppVendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@index([vendorId])
+  @@map("app_vendor_signing_keys")
+}
+
 model AppVendor {
   id            String   @id @default(cuid())
   name          String
@@ -9823,6 +9844,7 @@ model AppVendor {
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   packages AppPackage[]
+  signingKeys AppVendorSigningKey[]
 
   @@map("app_vendors")
 }
@@ -9863,6 +9885,11 @@ model AppBundle {
   checksum    String?
   sizeBytes   Int       @default(0) @map("size_bytes")
   changelog   String?   @db.Text
+  /// Ed25519 signature over the canonical bundle digest (manifest + file list).
+  /// PLATFORM_ARCHITECTURE § 8.2 — an extension is a *signed* bundle. Nullable
+  /// only because bundles predate signing; publication requires it.
+  signature   Json?
+  signingKeyId String?  @map("signing_key_id")
   status      String    @default("DRAFT") // DRAFT | IN_REVIEW | PUBLISHED | REJECTED | ROLLED_BACK
   reviewNotes String?   @map("review_notes") @db.Text
   reviewedBy  String?   @map("reviewed_by")
@@ -24721,7 +24748,7 @@ model LogisticsProviderPerformance {
   onTimeRate  Float?   @map("on_time_rate")
   inFullRate  Float?   @map("in_full_rate")
   damageRate  Float?   @map("damage_rate")
-  costVariance Float?  @map("cost_variance")
+  costVariance Decimal? @db.Decimal(19, 4) @map("cost_variance")
   responseTime Float?  @map("response_time")
   claimsRate  Float?   @map("claims_rate")
   overallScore Float?  @map("overall_score")
@@ -24940,8 +24967,8 @@ model HsCodeClassification {
   hsCode      String   @map("hs_code")
   description String?  @db.Text
   country     String?
-  tariffRate  Float?   @map("tariff_rate")
-  vatRate     Float?   @map("vat_rate")
+  tariffRate  Decimal? @db.Decimal(9, 6) @map("tariff_rate")
+  vatRate     Decimal? @db.Decimal(9, 6) @map("vat_rate")
   restrictions Json?
   classifiedBy String? @map("classified_by")
   classifiedAt DateTime? @map("classified_at")
@@ -25181,7 +25208,7 @@ model DynamicDiscountRequest {
   originalAmount  Decimal @db.Decimal(19,4)    @map("original_amount")
   dueDate         DateTime @map("due_date")
   paymentDate     DateTime @map("payment_date")
-  discountRate    Float    @map("discount_rate")
+  discountRate    Decimal  @db.Decimal(9, 6) @map("discount_rate")
   discountAmount  Decimal @db.Decimal(19,4)    @map("discount_amount")
   netAmount       Decimal @db.Decimal(19,4)    @map("net_amount")
   status          String   @default("OFFERED")
@@ -25201,7 +25228,7 @@ model ScmFinancingFacility {
   creditLimit     Decimal @db.Decimal(19,4)    @map("credit_limit")
   availableLimit  Decimal @db.Decimal(19,4)    @map("available_limit")
   currency        String   @default("USD")
-  interestRate    Float?   @map("interest_rate")
+  interestRate    Decimal? @db.Decimal(9, 6) @map("interest_rate")
   maturityDays    Int?     @map("maturity_days")
   status          String   @default("ACTIVE")
   startDate       DateTime? @map("start_date")
@@ -25537,7 +25564,7 @@ model CoProduct {
   productType String   @default("CO_PRODUCT") @map("product_type")
   quantity    Float
   unit        String
-  valueFactor Float?   @map("value_factor")
+  valueFactor Decimal? @db.Decimal(9, 6) @map("value_factor")
   formula     ProductionFormula @relation(fields: [formulaId], references: [id])
   @@index([tenantId, formulaId])
   @@map("co_products")

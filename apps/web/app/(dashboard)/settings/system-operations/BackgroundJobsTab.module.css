@@ -6,7 +6,7 @@
 
 .s2 {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-text-inverse);
   border: none;
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-md);
@@ -67,4 +67,3 @@
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
 }
-

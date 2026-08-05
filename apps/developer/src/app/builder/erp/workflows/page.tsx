@@ -84,16 +84,16 @@ export default function WorkflowsPage() {
 
   const triggerBadge = (trigger: string) => {
     const colors: Record<string, string> = {
-      SUBMIT: "#3b82f6",
-      CREATE: "#10b981",
-      UPDATE: "#f59e0b",
-      MANUAL: "#8b5cf6",
+      SUBMIT: "var(--color-primary)",
+      CREATE: "var(--chart-9)",
+      UPDATE: "var(--chart-3)",
+      MANUAL: "var(--chart-5)",
     };
     return (
       <span
         style={{
-          background: `${colors[trigger] || "#64748b"}20`,
-          color: colors[trigger] || "#64748b",
+          background: `${colors[trigger] || "var(--color-text-secondary)"}20`,
+          color: colors[trigger] || "var(--color-text-secondary)",
         }}
         className={styles.s1}
       >
@@ -142,7 +142,7 @@ export default function WorkflowsPage() {
               .filter((w) => w.status === "ACTIVE")
               .length.toString(),
             icon: Play,
-            color: "#10b981",
+            color: "var(--chart-9)",
           },
           {
             label: "Paused",
@@ -150,7 +150,7 @@ export default function WorkflowsPage() {
               .filter((w) => w.status === "PAUSED")
               .length.toString(),
             icon: Pause,
-            color: "#f59e0b",
+            color: "var(--chart-3)",
           },
           {
             label: "Drafts",
@@ -158,7 +158,7 @@ export default function WorkflowsPage() {
               .filter((w) => w.status === "DRAFT")
               .length.toString(),
             icon: Edit3,
-            color: "#64748b",
+            color: "var(--color-text-secondary)",
           },
         ].map((stat) => (
           <div key={stat.label} className={`ui-card ${styles.s2}`}>
@@ -220,7 +220,10 @@ export default function WorkflowsPage() {
                 <button
                   onClick={() => handleToggleStatus(wf)}
                   style={{
-                    color: wf.status === "ACTIVE" ? "#10b981" : "#94a3b8",
+                    color:
+                      wf.status === "ACTIVE"
+                        ? "var(--chart-9)"
+                        : "var(--color-text-tertiary)",
                   }}
                   className={styles.s16}
                 >

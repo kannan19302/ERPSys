@@ -145,7 +145,7 @@
 }
 
 .searchKbdLight {
-  background: #fff;
+  background: var(--color-bg-elevated);
 }
 
 .searchKbdDark {
@@ -250,7 +250,7 @@
   width: 9px;
   height: 9px;
   border-radius: var(--radius-full);
-  background: #10b981;
+  background: var(--color-success);
 }
 
 .statusDotLight {

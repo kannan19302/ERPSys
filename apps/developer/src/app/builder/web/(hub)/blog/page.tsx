@@ -33,9 +33,9 @@ const CATEGORIES = [
 const CATEGORY_COLORS: Record<string, string> = {
   Product: "var(--color-primary)",
   Insights: "#7c3aed",
-  Guide: "#059669",
-  "Case Study": "#d97706",
-  Tutorial: "#dc2626",
+  Guide: "var(--color-success-hover)",
+  "Case Study": "var(--color-warning-hover)",
+  Tutorial: "var(--color-danger-hover)",
 };
 
 export default function WebBlogPage() {
@@ -192,9 +192,13 @@ export default function WebBlogPage() {
               (a, b) => a + (b.views || 0),
               0,
             ).toLocaleString(),
-            color: "#059669",
+            color: "var(--color-success-hover)",
           },
-          { label: "Avg Read Time", value: "8 min", color: "#d97706" },
+          {
+            label: "Avg Read Time",
+            value: "8 min",
+            color: "var(--color-warning-hover)",
+          },
           {
             label: "Drafts",
             value: POSTS_DB.filter(

@@ -115,7 +115,11 @@ export default function ReportingExportsPage() {
         </h3>
         {exportsList.length === 0 ? (
           <p
-            style={{ color: "#64748b", textAlign: "center", padding: "32px 0" }}
+            style={{
+              color: "var(--color-text-secondary)",
+              textAlign: "center",
+              padding: "32px 0",
+            }}
           >
             No report exports generated.
           </p>

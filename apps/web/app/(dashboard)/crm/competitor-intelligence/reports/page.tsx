@@ -258,7 +258,9 @@ export default function CompetitorReportsPage() {
                       {r.reportType?.replace(/_/g, " ")}
                     </Badge>
                     {!r.isRead && (
-                      <span style={{ fontSize: "0.75rem", color: "#ef4444" }}>
+                      <span
+                        style={{ fontSize: "0.75rem", color: "var(--chart-4)" }}
+                      >
                         NEW
                       </span>
                     )}
@@ -266,7 +268,7 @@ export default function CompetitorReportsPage() {
                   <p
                     style={{
                       fontSize: "0.85rem",
-                      color: "#666",
+                      color: "var(--color-text-secondary)",
                       margin: "0.25rem 0 0",
                     }}
                   >
@@ -313,7 +315,9 @@ export default function CompetitorReportsPage() {
             </div>
           ))}
           {!loading && reports.length === 0 && (
-            <p style={{ color: "#666" }}>No reports found.</p>
+            <p style={{ color: "var(--color-text-secondary)" }}>
+              No reports found.
+            </p>
           )}
         </div>
       </Card>

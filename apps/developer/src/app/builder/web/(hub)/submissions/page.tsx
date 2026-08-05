@@ -15,10 +15,10 @@ import {
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
-  NEW: { label: "New", color: "#3b82f6" },
-  READ: { label: "Read", color: "#6b7280" },
+  NEW: { label: "New", color: "var(--color-primary)" },
+  READ: { label: "Read", color: "var(--color-text-secondary)" },
   ARCHIVED: { label: "Archived", color: "#9ca3af" },
-  SPAM: { label: "Spam", color: "#dc2626" },
+  SPAM: { label: "Spam", color: "var(--color-danger-hover)" },
 };
 
 export default function WebSubmissionsPage() {

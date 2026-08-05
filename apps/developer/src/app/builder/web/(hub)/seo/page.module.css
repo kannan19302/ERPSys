@@ -131,7 +131,7 @@
   margin: 0;
 }
 .s22 {
-  color: #dc2626;
+  color: var(--color-danger-hover);
 }
 .s23 {
   align-items: center;
@@ -147,7 +147,7 @@
 }
 .s26 {
   align-items: center;
-  color: #059669;
+  color: var(--color-success-hover);
   display: flex;
   font-size: 10px;
   gap: 3px;
@@ -257,7 +257,7 @@
   width: 32px;
 }
 .s45 {
-  color: #059669;
+  color: var(--color-success-hover);
 }
 .s46 {
   color: var(--color-text-secondary);
@@ -284,7 +284,7 @@
   padding: var(--space-4);
 }
 .s50 {
-  color: #059669;
+  color: var(--color-success-hover);
   transform: rotate(-90deg);
 }
 .s51 {

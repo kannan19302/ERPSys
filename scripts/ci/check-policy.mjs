@@ -418,15 +418,40 @@ const RATCHET = [
     why: "Floating point silently corrupts financial totals. Use Decimal(19,4). ARCHITECTURE_REVIEW § F11 / R11.",
     scan() {
       const hits = [];
+      // The heuristic is a name match, so it also catches dimensionless metrics
+      // whose names contain "rate", "total" or "value" — an OTIF delivery rate
+      // is not money. Those are excluded only by an individually reasoned entry
+      // in float-classification.json, which is fail-closed: a Float column that
+      // matches the heuristic and is NOT listed is still a violation, so a new
+      // money column cannot slip through by being unclassified.
+      let classified = new Set();
+      try {
+        const doc = JSON.parse(
+          read(join(ROOT, "scripts/ci/float-classification.json")),
+        );
+        classified = new Set((doc.metrics ?? []).map((m) => m.field));
+      } catch {
+        // No classification file: every match stays a violation.
+      }
+
       for (const f of files("packages/database/prisma", [".prisma"])) {
+        let model = "";
         read(f)
           .split("\n")
           .forEach((line, i) => {
+            const modelStart = /^\s*model\s+(\w+)\s*\{/.exec(line);
+            if (modelStart) {
+              model = modelStart[1];
+              return;
+            }
             const money =
               /(amount|price|cost|total|balance|salary|rate|subtotal|tax|discount|fee|value)/i;
-            if (/\bFloat\b/.test(line) && money.test(line)) {
-              hits.push(`${relative(ROOT, f)}:${i + 1}  ${line.trim()}`);
-            }
+            if (!/\bFloat\b/.test(line) || !money.test(line)) return;
+
+            const field = /^\s*(\w+)\s/.exec(line)?.[1];
+            if (field && classified.has(`${model}.${field}`)) return;
+
+            hits.push(`${relative(ROOT, f)}:${i + 1}  ${line.trim()}`);
           });
       }
       return hits;

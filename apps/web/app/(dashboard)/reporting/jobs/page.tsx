@@ -124,7 +124,11 @@ export default function ReportingJobsPage() {
         </h3>
         {jobs.length === 0 ? (
           <p
-            style={{ color: "#64748b", textAlign: "center", padding: "32px 0" }}
+            style={{
+              color: "var(--color-text-secondary)",
+              textAlign: "center",
+              padding: "32px 0",
+            }}
           >
             No scheduled report jobs.
           </p>
@@ -156,7 +160,7 @@ export default function ReportingJobsPage() {
                   <td
                     style={{
                       padding: "12px",
-                      color: "#64748b",
+                      color: "var(--color-text-secondary)",
                       fontSize: "13px",
                     }}
                   >

@@ -97,7 +97,11 @@ export default function AdvancedPricingPage() {
           >
             <div>
               <label
-                style={{ fontSize: "13px", fontWeight: 500, color: "#475569" }}
+                style={{
+                  fontSize: "13px",
+                  fontWeight: 500,
+                  color: "var(--color-text-secondary)",
+                }}
               >
                 Order Quantity
               </label>
@@ -118,7 +122,11 @@ export default function AdvancedPricingPage() {
             </div>
             <div>
               <label
-                style={{ fontSize: "13px", fontWeight: 500, color: "#475569" }}
+                style={{
+                  fontSize: "13px",
+                  fontWeight: 500,
+                  color: "var(--color-text-secondary)",
+                }}
               >
                 Base Unit Price ($)
               </label>
@@ -150,14 +158,19 @@ export default function AdvancedPricingPage() {
               style={{
                 marginTop: "20px",
                 padding: "16px",
-                backgroundColor: "#f8fafc",
+                backgroundColor: "var(--color-bg-sunken)",
                 borderRadius: "8px",
                 border: "1px solid #e2e8f0",
               }}
             >
-              <div style={{ fontSize: "14px", color: "#64748b" }}>
+              <div
+                style={{
+                  fontSize: "14px",
+                  color: "var(--color-text-secondary)",
+                }}
+              >
                 Applied Volume Discount:{" "}
-                <strong style={{ color: "#10b981" }}>
+                <strong style={{ color: "var(--chart-9)" }}>
                   {calcResult.appliedDiscountPct}% OFF
                 </strong>
               </div>
@@ -171,7 +184,11 @@ export default function AdvancedPricingPage() {
                 Unit Price: ${calcResult.unitPrice.toFixed(2)}
               </div>
               <div
-                style={{ fontSize: "14px", color: "#475569", marginTop: "2px" }}
+                style={{
+                  fontSize: "14px",
+                  color: "var(--color-text-secondary)",
+                  marginTop: "2px",
+                }}
               >
                 Total Amount: ${calcResult.totalPrice.toFixed(2)} (Saved $
                 {calcResult.savingsAmount.toFixed(2)})

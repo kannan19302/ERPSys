@@ -82,7 +82,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        check: [lint, typecheck, architecture, format]
+        check: [lint, typecheck, architecture, contracts, format]
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -104,6 +104,14 @@ jobs:
       - name: Architecture boundaries
         if: matrix.check == 'architecture'
         run: pnpm architecture:check
+
+      # M2 — PLATFORM_ARCHITECTURE.md § 4.5. Replays every consumer's published
+      # expectation against its provider's current exported surface. Redundant
+      # with the compiler today, and the only thing standing in for it once
+      # Phase 3 puts a published package boundary between them.
+      - name: Consumer contracts (M2)
+        if: matrix.check == 'contracts'
+        run: pnpm check:cdc
 
       - name: Format
         if: matrix.check == 'format'

@@ -9,12 +9,12 @@ import { PageHeader, ConfirmDialog } from "@unerp/ui";
 import { Code2, PlusCircle, Edit3, Trash2, Eye, Copy } from "lucide-react";
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Finance: "#059669",
-  Procurement: "#d97706",
+  Finance: "var(--color-success-hover)",
+  Procurement: "var(--color-warning-hover)",
   HR: "var(--color-primary)",
   Sales: "#7c3aed",
   Communication: "#0891b2",
-  Auth: "#dc2626",
+  Auth: "var(--color-danger-hover)",
 };
 
 function WebTemplatesPageContent() {
@@ -102,13 +102,13 @@ function WebTemplatesPageContent() {
               {/* Preview */}
               <div
                 style={{
-                  background: `${CATEGORY_COLORS[category] || "#d97706"}10`,
+                  background: `${CATEGORY_COLORS[category] || "var(--color-warning-hover)"}10`,
                 }}
                 className={styles.s7}
               >
                 <div
                   style={{
-                    background: `${CATEGORY_COLORS[category] || "#d97706"}40`,
+                    background: `${CATEGORY_COLORS[category] || "var(--color-warning-hover)"}40`,
                   }}
                   className={styles.s8}
                 />
@@ -122,8 +122,10 @@ function WebTemplatesPageContent() {
                   <div className={styles.s14}>
                     <span
                       style={{
-                        background: `${CATEGORY_COLORS[category] || "#d97706"}20`,
-                        color: CATEGORY_COLORS[category] || "#d97706",
+                        background: `${CATEGORY_COLORS[category] || "var(--color-warning-hover)"}20`,
+                        color:
+                          CATEGORY_COLORS[category] ||
+                          "var(--color-warning-hover)",
                       }}
                       className={styles.s15}
                     >

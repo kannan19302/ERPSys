@@ -50,42 +50,42 @@ const FEATURES = [
     icon: CreditCard,
     title: "Finance & Accounting",
     desc: "Double-entry bookkeeping, multi-currency, automated reconciliation, and real-time P&L reports.",
-    color: "#6366f1",
+    color: "var(--chart-10)",
     bg: "rgba(99,102,241,0.1)",
   },
   {
     icon: Users,
     title: "Human Resources",
     desc: "Payroll, leave management, performance reviews, attendance tracking, and org charts.",
-    color: "#10b981",
+    color: "var(--chart-9)",
     bg: "rgba(16,185,129,0.1)",
   },
   {
     icon: Users,
     title: "CRM & Sales",
     desc: "Contact management, deal pipelines, quotations, sales orders, and revenue analytics.",
-    color: "#f59e0b",
+    color: "var(--chart-3)",
     bg: "rgba(245,158,11,0.1)",
   },
   {
     icon: Package,
     title: "Inventory & Warehouse",
     desc: "Multi-warehouse, serial/batch tracking, reorder automation, and barcode scanning.",
-    color: "#0ea5e9",
+    color: "var(--color-info)",
     bg: "rgba(14,165,233,0.1)",
   },
   {
     icon: Hammer,
     title: "Manufacturing (MRP)",
     desc: "Bill of materials, work orders, production planning, quality control, and scrap tracking.",
-    color: "#f43f5e",
+    color: "var(--color-danger)",
     bg: "rgba(244,63,94,0.1)",
   },
   {
     icon: Activity,
     title: "Analytics & BI",
     desc: "Custom dashboards, KPI widgets, pivot tables, scheduled reports, and data drill-downs.",
-    color: "#8b5cf6",
+    color: "var(--chart-5)",
     bg: "rgba(139,92,246,0.1)",
   },
 ];
@@ -215,7 +215,7 @@ const TESTIMONIALS = [
     name: "Sarah Chen",
     role: "COO, Nexus Manufacturing",
     avatar: "SC",
-    color: "#6366f1",
+    color: "var(--chart-10)",
   },
   {
     quote:
@@ -223,7 +223,7 @@ const TESTIMONIALS = [
     name: "Michael Torres",
     role: "VP Operations, Apex Solutions",
     avatar: "MT",
-    color: "#10b981",
+    color: "var(--chart-9)",
   },
   {
     quote:
@@ -231,7 +231,7 @@ const TESTIMONIALS = [
     name: "Priya Kapoor",
     role: "CTO, EduBridge Academy",
     avatar: "PK",
-    color: "#f59e0b",
+    color: "var(--chart-3)",
   },
 ];
 
@@ -428,7 +428,7 @@ export default function LandingPage() {
             label: "Patient Admissions",
             value: "1,280",
             change: "+12.4%",
-            color: "#10b981",
+            color: "var(--chart-9)",
           },
           {
             label: "Available Beds",
@@ -440,13 +440,13 @@ export default function LandingPage() {
             label: "Prescriptions Filled",
             value: "894",
             change: "+15.1%",
-            color: "#f59e0b",
+            color: "var(--chart-3)",
           },
           {
             label: "Satisfaction Rate",
             value: "98.2%",
             change: "+1.5%",
-            color: "#0ea5e9",
+            color: "var(--color-info)",
           },
         ];
       case "education":
@@ -455,7 +455,7 @@ export default function LandingPage() {
             label: "Students Enrolled",
             value: "8,560",
             change: "+8.3%",
-            color: "#f59e0b",
+            color: "var(--chart-3)",
           },
           {
             label: "Classes Scheduled",
@@ -467,13 +467,13 @@ export default function LandingPage() {
             label: "Fee Collections",
             value: "$890K",
             change: "+12.4%",
-            color: "#10b981",
+            color: "var(--chart-9)",
           },
           {
             label: "Attendance Rate",
             value: "95.4%",
             change: "+0.5%",
-            color: "#0ea5e9",
+            color: "var(--color-info)",
           },
         ];
       case "realestate":
@@ -482,25 +482,25 @@ export default function LandingPage() {
             label: "Properties Managed",
             value: "1,247",
             change: "+2.1%",
-            color: "#0ea5e9",
+            color: "var(--color-info)",
           },
           {
             label: "Active Leases",
             value: "3,891",
             change: "+10.2%",
-            color: "#10b981",
+            color: "var(--chart-9)",
           },
           {
             label: "Maintenance Requests",
             value: "112",
             change: "-12.5%",
-            color: "#f43f5e",
+            color: "var(--color-danger)",
           },
           {
             label: "Net Operating Income",
             value: "$4.5M",
             change: "+8.5%",
-            color: "#f59e0b",
+            color: "var(--chart-3)",
           },
         ];
       case "fieldservice":
@@ -509,7 +509,7 @@ export default function LandingPage() {
             label: "Tickets Opened",
             value: "5,120",
             change: "+14.2%",
-            color: "#f43f5e",
+            color: "var(--color-danger)",
           },
           {
             label: "Technicians Active",
@@ -521,13 +521,13 @@ export default function LandingPage() {
             label: "Average Resolution",
             value: "1.8h",
             change: "-15.4%",
-            color: "#10b981",
+            color: "var(--chart-9)",
           },
           {
             label: "SLA Compliance",
             value: "98.2%",
             change: "+0.8%",
-            color: "#0ea5e9",
+            color: "var(--color-info)",
           },
         ];
       default:
@@ -1355,14 +1355,30 @@ export default function LandingPage() {
             <div className={`landing-preview-industry-selector ${styles.s6}`}>
               <span className={styles.s7}>Select Industry Sandbox:</span>
               {[
-                { id: "general", label: "General ERP", color: "#6366f1" },
-                { id: "healthcare", label: "Healthcare", color: "#10b981" },
-                { id: "education", label: "Education", color: "#f59e0b" },
-                { id: "realestate", label: "Real Estate", color: "#0ea5e9" },
+                {
+                  id: "general",
+                  label: "General ERP",
+                  color: "var(--chart-10)",
+                },
+                {
+                  id: "healthcare",
+                  label: "Healthcare",
+                  color: "var(--chart-9)",
+                },
+                {
+                  id: "education",
+                  label: "Education",
+                  color: "var(--chart-3)",
+                },
+                {
+                  id: "realestate",
+                  label: "Real Estate",
+                  color: "var(--color-info)",
+                },
                 {
                   id: "fieldservice",
                   label: "Field Service",
-                  color: "#f43f5e",
+                  color: "var(--color-danger)",
                 },
               ].map((ind) => (
                 <button
@@ -2032,7 +2048,7 @@ export default function LandingPage() {
               >
                 <div className="landing-testimonial-stars">
                   {[...Array(5)].map((_, j) => (
-                    <Star key={j} size={16} fill="#f59e0b" />
+                    <Star key={j} size={16} fill="var(--chart-3)" />
                   ))}
                 </div>
                 <p className="landing-testimonial-quote">

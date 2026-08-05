@@ -20,7 +20,7 @@ describe("DocumentsAdvancedService", () => {
 
   describe("Tags", () => {
     it("should return empty tags list for new tenant", async () => {
-      const tags = await service.getTags("tenant-new");
+      const tags = await service.getTags("tenant-new-documents");
       expect(Array.isArray(tags)).toBe(true);
     });
 

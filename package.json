@@ -63,7 +63,9 @@
     "check:licenses": "node scripts/ci/check-licenses.mjs",
     "check:migrations": "node scripts/ci/check-migration-safety.mjs",
     "check:rls": "node scripts/check-rls-verify.mjs",
-    "debt:report": "node scripts/ci/check-suppressions.mjs --report && node scripts/ci/check-policy.mjs"
+    "debt:report": "node scripts/ci/check-suppressions.mjs --report && node scripts/ci/check-policy.mjs",
+    "check:cdc": "node scripts/ci/cdc-harness.mjs",
+    "check:cdc:record": "node scripts/ci/cdc-harness.mjs --record"
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.0",
@@ -96,5 +98,8 @@
   "engines": {
     "node": ">=22.0.0",
     "pnpm": ">=9.0.0"
+  },
+  "dependencies": {
+    "isolated-vm": "^7.0.0"
   }
 }

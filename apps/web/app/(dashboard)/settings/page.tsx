@@ -249,7 +249,7 @@ export default function AdminDashboardPage() {
       href: "/settings/approval-operations",
       icon: CheckCircle,
       desc: "Active approvals & analytics",
-      color: "#8b5cf6",
+      color: "var(--chart-5)",
     },
     {
       title: "Workflow Builder",
@@ -263,14 +263,14 @@ export default function AdminDashboardPage() {
       href: "/settings/branding-communication",
       icon: Bell,
       desc: "Login page, SMTP, announcements",
-      color: "#ec4899",
+      color: "var(--chart-8)",
     },
     {
       title: "System Operations",
       href: "/settings/system-operations",
       icon: Server,
       desc: "Health, jobs, error logs",
-      color: "#06b6d4",
+      color: "var(--chart-6)",
     },
     {
       title: "General & Branding",
@@ -284,7 +284,7 @@ export default function AdminDashboardPage() {
       href: "/settings/api-platform",
       icon: Zap,
       desc: "Keys, webhooks, OAuth",
-      color: "#d946ef",
+      color: "var(--chart-7)",
     },
     {
       title: "Import / Export",
@@ -312,7 +312,7 @@ export default function AdminDashboardPage() {
       href: "/ai/settings",
       icon: Bot,
       desc: "Kill switch, model info & engine control",
-      color: "#6366f1",
+      color: "var(--chart-10)",
     },
   ];
 

@@ -106,7 +106,7 @@ export default function DashboardsPage() {
             label: "Total Dashboards",
             value: dashboards.length.toString(),
             icon: BarChart3,
-            color: "#059669",
+            color: "var(--color-success-hover)",
           },
           {
             label: "Published",
@@ -114,7 +114,7 @@ export default function DashboardsPage() {
               .filter((d) => d.status === "PUBLISHED")
               .length.toString(),
             icon: Play,
-            color: "#10b981",
+            color: "var(--chart-9)",
           },
           {
             label: "Drafts",
@@ -122,7 +122,7 @@ export default function DashboardsPage() {
               .filter((d) => d.status === "DRAFT")
               .length.toString(),
             icon: Edit3,
-            color: "#f59e0b",
+            color: "var(--chart-3)",
           },
           {
             label: "Total Widgets",
@@ -133,7 +133,7 @@ export default function DashboardsPage() {
               )
               .toString(),
             icon: Layout,
-            color: "#8b5cf6",
+            color: "var(--chart-5)",
           },
         ].map((stat) => (
           <div key={stat.label} className={`ui-card ${styles.s1}`}>

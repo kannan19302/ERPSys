@@ -53,7 +53,7 @@
   width: 10px;
   height: 10px;
   border-radius: var(--radius-full);
-  background: #10b981;
+  background: var(--color-success);
   border: 2px solid var(--color-bg-elevated);
 }
 
@@ -128,7 +128,7 @@
   height: 56px;
   border-radius: var(--radius-full);
   background: linear-gradient(135deg, var(--color-primary), #7c3aed);
-  color: #fff;
+  color: var(--color-text-inverse);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -151,7 +151,7 @@
   width: 14px;
   height: 14px;
   border-radius: var(--radius-full);
-  background: #10b981;
+  background: var(--color-success);
   border: 3px solid var(--color-bg-elevated);
 }
 

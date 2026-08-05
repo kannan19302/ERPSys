@@ -129,11 +129,14 @@ export default function DataImportPage() {
         color: "var(--color-success)",
       },
       FAILED: { bg: "var(--color-danger-light)", color: "var(--color-danger)" },
-      IMPORTING: { bg: "#3b82f620", color: "#3b82f6" },
-      VALIDATING: { bg: "#f59e0b20", color: "#f59e0b" },
-      PENDING: { bg: "#64748b20", color: "#64748b" },
+      IMPORTING: { bg: "#3b82f620", color: "var(--color-primary)" },
+      VALIDATING: { bg: "#f59e0b20", color: "var(--chart-3)" },
+      PENDING: { bg: "#64748b20", color: "var(--color-text-secondary)" },
     };
-    const c = colors[status] || { bg: "#64748b20", color: "#64748b" };
+    const c = colors[status] || {
+      bg: "#64748b20",
+      color: "var(--color-text-secondary)",
+    };
     return (
       <span style={{ background: c.bg, color: c.color }} className={styles.s1}>
         {status}
@@ -443,28 +446,28 @@ export default function DataImportPage() {
           {
             label: "Total Imports",
             value: imports.length.toString(),
-            color: "#059669",
+            color: "var(--color-success-hover)",
           },
           {
             label: "Completed",
             value: imports
               .filter((i) => i.status === "COMPLETED")
               .length.toString(),
-            color: "#10b981",
+            color: "var(--chart-9)",
           },
           {
             label: "Failed",
             value: imports
               .filter((i) => i.status === "FAILED")
               .length.toString(),
-            color: "#ef4444",
+            color: "var(--chart-4)",
           },
           {
             label: "Total Rows",
             value: imports
               .reduce((a, i) => a + i.totalRows, 0)
               .toLocaleString(),
-            color: "#3b82f6",
+            color: "var(--color-primary)",
           },
         ]}
       />

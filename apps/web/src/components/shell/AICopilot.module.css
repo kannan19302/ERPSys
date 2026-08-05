@@ -10,7 +10,7 @@
   height: 50px;
   border-radius: var(--radius-full);
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-text-inverse);
   border: none;
   box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35);
   cursor: pointer;
@@ -31,7 +31,7 @@
   width: 360px;
   height: 460px;
   backdrop-filter: blur(16px);
-  WebkitBackdropFilter: blur(16px);
+  webkitbackdropfilter: blur(16px);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
@@ -94,7 +94,7 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #10b981;
+  background: var(--color-success);
   border: 1.5px solid var(--color-bg-elevated);
 }
 
@@ -175,7 +175,7 @@
 
 .bubbleTextUser {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-text-inverse);
   border-bottom-right-radius: 0;
 }
 
@@ -214,7 +214,7 @@
 }
 
 .chatInputLight {
-  background: #fff;
+  background: var(--color-bg-elevated);
 }
 
 .chatInputDark {
@@ -226,7 +226,7 @@
   height: 30px;
   border-radius: var(--radius-md);
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-text-inverse);
   border: none;
   cursor: pointer;
   display: flex;
@@ -271,6 +271,13 @@
 }
 
 @keyframes chatDot {
-  0%, 100% { transform: translateY(0); opacity: 0.4; }
-  50% { transform: translateY(-4px); opacity: 1; }
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
 }

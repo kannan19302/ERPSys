@@ -23,7 +23,7 @@
   display: flex;
 }
 .s4 {
-  color: #d97706;
+  color: var(--color-warning-hover);
 }
 .s5 {
   color: var(--color-text);

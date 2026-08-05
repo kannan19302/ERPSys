@@ -266,7 +266,10 @@ export default function CrmPage() {
                         activePage === p.id
                           ? "var(--color-primary)"
                           : "transparent",
-                      color: activePage === p.id ? "#fff" : "inherit",
+                      color:
+                        activePage === p.id
+                          ? "var(--color-text-inverse)"
+                          : "inherit",
                       border: "1px solid var(--color-border)",
                       padding: "var(--space-1) var(--space-3)",
                       borderRadius: "var(--radius-md)",
@@ -305,7 +308,7 @@ export default function CrmPage() {
                   top: "50%",
                   transform: "translateY(-50%)",
                   background: "var(--color-warning)",
-                  color: "#000",
+                  color: "var(--color-text)",
                   width: 36,
                   height: 36,
                   borderRadius: "50%",
@@ -328,7 +331,7 @@ export default function CrmPage() {
                   top: "50%",
                   transform: "translateY(-50%)",
                   background: "var(--color-warning)",
-                  color: "#000",
+                  color: "var(--color-text)",
                   width: 36,
                   height: 36,
                   borderRadius: "50%",

@@ -80,25 +80,25 @@ export default function AdvancedHrWorkforceAnalyticsPage() {
             label: "Total Headcount",
             value: snapshots[0]?.headcount ?? "—",
             icon: <Users size={20} />,
-            color: "#3b82f6",
+            color: "var(--color-primary)",
           },
           {
             label: "Attrition Rate",
             value: snapshots[0] ? `${snapshots[0].attritionRate}%` : "—",
             icon: <TrendingDown size={20} />,
-            color: "#ef4444",
+            color: "var(--chart-4)",
           },
           {
             label: "Avg Tenure (Yrs)",
             value: snapshots[0]?.avgTenureYears ?? "—",
             icon: <Clock size={20} />,
-            color: "#f59e0b",
+            color: "var(--chart-3)",
           },
           {
             label: "Engagement Score",
             value: snapshots[0] ? `${snapshots[0].engagementScore}/100` : "—",
             icon: <Star size={20} />,
-            color: "#10b981",
+            color: "var(--chart-9)",
           },
         ].map((kpi, i) => (
           <Card
@@ -122,7 +122,13 @@ export default function AdvancedHrWorkforceAnalyticsPage() {
               {kpi.icon}
             </div>
             <div>
-              <p style={{ fontSize: "13px", color: "#64748b", margin: 0 }}>
+              <p
+                style={{
+                  fontSize: "13px",
+                  color: "var(--color-text-secondary)",
+                  margin: 0,
+                }}
+              >
                 {kpi.label}
               </p>
               <h3 style={{ fontSize: "24px", fontWeight: 700, margin: 0 }}>
@@ -147,7 +153,11 @@ export default function AdvancedHrWorkforceAnalyticsPage() {
         </h3>
         {snapshots.length === 0 ? (
           <p
-            style={{ color: "#64748b", textAlign: "center", padding: "32px 0" }}
+            style={{
+              color: "var(--color-text-secondary)",
+              textAlign: "center",
+              padding: "32px 0",
+            }}
           >
             No snapshots. Click Generate to capture current state.
           </p>
@@ -171,7 +181,7 @@ export default function AdvancedHrWorkforceAnalyticsPage() {
                     {s.reportingPeriod}
                   </td>
                   <td style={{ padding: "12px" }}>{s.headcount}</td>
-                  <td style={{ padding: "12px", color: "#ef4444" }}>
+                  <td style={{ padding: "12px", color: "var(--chart-4)" }}>
                     {s.attritionRate}%
                   </td>
                   <td style={{ padding: "12px" }}>{s.avgTenureYears} yrs</td>

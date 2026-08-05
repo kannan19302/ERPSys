@@ -179,7 +179,8 @@ export default function SyncMonitorTab() {
     borderRadius: "var(--radius-md)",
     border: "1px solid var(--color-border)",
     background: filterTab === tab ? "var(--color-primary)" : "var(--color-bg)",
-    color: filterTab === tab ? "#fff" : "var(--color-text)",
+    color:
+      filterTab === tab ? "var(--color-text-inverse)" : "var(--color-text)",
     cursor: "pointer",
     fontSize: "var(--text-sm)",
     fontWeight: "var(--weight-medium)",

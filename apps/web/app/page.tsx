@@ -35,7 +35,7 @@ export default function HomePage() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#f8fafc",
+          background: "var(--color-bg-sunken)",
         }}
       >
         <Spinner size="lg" />

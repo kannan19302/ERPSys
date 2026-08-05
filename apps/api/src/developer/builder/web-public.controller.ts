@@ -18,6 +18,7 @@ import { ZodValidationPipe } from "../../common/pipes/zod-validation.pipe";
 import { WebCollectionsService } from "./web-collections.service";
 import { WebStudioService } from "./web-studio.service";
 import { ApiTags, ApiOperation } from "@nestjs/swagger";
+import { Public } from "../../common/decorators/public.decorator";
 
 /**
  * Public (unauthenticated) endpoints consumed by the live customer-facing
@@ -40,6 +41,9 @@ export class WebPublicController {
   // ── Multi-site serving (resolved by request Host) ──
 
   @ApiOperation({ summary: "Resolve site + nav by host" })
+  @Public(
+    "Published tenant website: serves a tenant's own public site, pages, collections, forms and checkout to anonymous visitors. Tenant is resolved from the requested host, never from the caller.",
+  )
   @Get("site")
   async getSiteByHost(
     @Headers("host") host?: string,
@@ -49,6 +53,9 @@ export class WebPublicController {
   }
 
   @ApiOperation({ summary: "Get a published site page by path" })
+  @Public(
+    "Published tenant website: serves a tenant's own public site, pages, collections, forms and checkout to anonymous visitors. Tenant is resolved from the requested host, never from the caller.",
+  )
   @Get("page")
   async getSitePage(
     @Query("path") path: string,
@@ -70,6 +77,9 @@ export class WebPublicController {
   }
 
   @ApiOperation({ summary: "Chat with the site assistant" })
+  @Public(
+    "Published tenant website: serves a tenant's own public site, pages, collections, forms and checkout to anonymous visitors. Tenant is resolved from the requested host, never from the caller.",
+  )
   @Post("chat")
   async chat(
     @Body()
@@ -88,6 +98,9 @@ export class WebPublicController {
   }
 
   @ApiOperation({ summary: "Get collection items" })
+  @Public(
+    "Published tenant website: serves a tenant's own public site, pages, collections, forms and checkout to anonymous visitors. Tenant is resolved from the requested host, never from the caller.",
+  )
   @Get("collections/:slug")
   async getCollectionItems(
     @Param("slug") slug: string,
@@ -98,6 +111,9 @@ export class WebPublicController {
   }
 
   @ApiOperation({ summary: "Get collection item" })
+  @Public(
+    "Published tenant website: serves a tenant's own public site, pages, collections, forms and checkout to anonymous visitors. Tenant is resolved from the requested host, never from the caller.",
+  )
   @Get("collections/:slug/:itemSlug")
   async getCollectionItem(
     @Param("slug") slug: string,
@@ -109,6 +125,9 @@ export class WebPublicController {
   }
 
   @ApiOperation({ summary: "Submit form" })
+  @Public(
+    "Published tenant website: serves a tenant's own public site, pages, collections, forms and checkout to anonymous visitors. Tenant is resolved from the requested host, never from the caller.",
+  )
   @Post("forms/submit")
   async submitForm(
     @Body(new ZodValidationPipe(createWebFormSubmissionSchema))
@@ -121,6 +140,9 @@ export class WebPublicController {
   }
 
   @ApiOperation({ summary: "Checkout" })
+  @Public(
+    "Published tenant website: serves a tenant's own public site, pages, collections, forms and checkout to anonymous visitors. Tenant is resolved from the requested host, never from the caller.",
+  )
   @Post("checkout")
   async checkout(
     @Body(new ZodValidationPipe(webCheckoutSchema)) dto: WebCheckoutInput,

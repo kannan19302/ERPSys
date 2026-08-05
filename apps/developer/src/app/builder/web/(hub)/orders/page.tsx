@@ -20,10 +20,19 @@ import {
 import { RouteGuard, useApiClient } from "@unerp/framework";
 
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
-  PENDING: { bg: "#fef3c7", text: "#d97706" },
-  PAID: { bg: "#dbeafe", text: "#2563eb" },
-  FULFILLED: { bg: "#dcfce7", text: "#16a34a" },
-  CANCELLED: { bg: "#fee2e2", text: "#dc2626" },
+  PENDING: {
+    bg: "var(--color-warning-light)",
+    text: "var(--color-warning-hover)",
+  },
+  PAID: { bg: "#dbeafe", text: "var(--color-primary-hover)" },
+  FULFILLED: {
+    bg: "var(--color-success-light)",
+    text: "var(--color-success-hover)",
+  },
+  CANCELLED: {
+    bg: "var(--color-danger-light)",
+    text: "var(--color-danger-hover)",
+  },
 };
 const STATUSES = ["PENDING", "PAID", "FULFILLED", "CANCELLED"];
 
@@ -86,20 +95,25 @@ export default function WebOrdersPage() {
       label: "Total Orders",
       value: stats.total,
       icon: ShoppingCart,
-      color: "#3b82f6",
+      color: "var(--color-primary)",
     },
     {
       label: "Revenue",
       value: `$${(stats.revenue || 0).toLocaleString()}`,
       icon: DollarSign,
-      color: "#10b981",
+      color: "var(--chart-9)",
     },
-    { label: "Pending", value: stats.pending, icon: Clock, color: "#f59e0b" },
+    {
+      label: "Pending",
+      value: stats.pending,
+      icon: Clock,
+      color: "var(--chart-3)",
+    },
     {
       label: "Fulfilled",
       value: stats.fulfilled,
       icon: Package,
-      color: "#8b5cf6",
+      color: "var(--chart-5)",
     },
   ];
 

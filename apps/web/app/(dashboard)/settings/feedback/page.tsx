@@ -137,7 +137,11 @@ export default function SaasPortalFeedbackPage() {
         </h3>
         {requests.length === 0 ? (
           <p
-            style={{ color: "#64748b", textAlign: "center", padding: "32px 0" }}
+            style={{
+              color: "var(--color-text-secondary)",
+              textAlign: "center",
+              padding: "32px 0",
+            }}
           >
             No public feature requests submitted yet.
           </p>
@@ -164,7 +168,7 @@ export default function SaasPortalFeedbackPage() {
                   <p
                     style={{
                       fontSize: "14px",
-                      color: "#64748b",
+                      color: "var(--color-text-secondary)",
                       margin: "4px 0 0 0",
                     }}
                   >

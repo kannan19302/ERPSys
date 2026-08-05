@@ -1,0 +1,64 @@
+// ─────────────────────────────────────────────────
+// Extension platform — PLATFORM_ARCHITECTURE.md § 8.
+// One installation of one extension into one tenant.
+// ─────────────────────────────────────────────────
+
+model TenantExtensionInstallation {
+  id          String @id @default(cuid())
+  tenantId    String @map("tenant_id")
+
+  /// Extension identity, from the signed bundle's manifest.
+  extensionId String @map("extension_id")
+  version     String
+  publisher   String
+
+  /// LIFECYCLE: INSTALLED | ENABLED | DISABLED | UNINSTALLED
+  /// Kept as a string rather than an enum so an extension lifecycle can gain a
+  /// state without a migration that locks the whole table.
+  status      String @default("INSTALLED")
+
+  /// The EFFECTIVE grant: the manifest's requested scopes intersected with the
+  /// installing admin's own permissions (§ 5.2). Stored resolved, not
+  /// recomputed at call time, so a later change to the installer's role cannot
+  /// silently widen what already-installed code may do — a re-grant is an
+  /// explicit action.
+  grantedScopes String[] @map("granted_scopes")
+
+  /// Hosts the tenant admin approved for outbound HTTP. Declared-but-unapproved
+  /// is denied (§ 8.3).
+  approvedHosts String[] @map("approved_hosts")
+
+  /// Resource budget for this installation, shape per ResourceBudgetSchema.
+  budget      Json?
+
+  /// Platform kill switch. When true the sandbox refuses to run this extension
+  /// for this tenant regardless of status.
+  killed      Boolean @default(false)
+  killedReason String? @map("killed_reason")
+
+  installedByUserId String?  @map("installed_by_user_id")
+  installedAt DateTime @default(now()) @map("installed_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, extensionId])
+  @@index([tenantId, status])
+  @@map("tenant_extension_installations")
+}
+
+/// Per-invocation resource accounting, so quota breaches and cost attribution
+/// are measured rather than asserted (§ 8.3, § 11 per-tenant telemetry).
+model ExtensionInvocationUsage {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  extensionId  String   @map("extension_id")
+  hook         String
+  cpuMs        Decimal  @db.Decimal(12, 3) @map("cpu_ms")
+  queries      Int      @default(0)
+  httpCalls    Int      @default(0) @map("http_calls")
+  failed       Boolean  @default(false)
+  errorKind    String?  @map("error_kind")
+  occurredAt   DateTime @default(now()) @map("occurred_at")
+
+  @@index([tenantId, extensionId, occurredAt])
+  @@map("extension_invocation_usage")
+}

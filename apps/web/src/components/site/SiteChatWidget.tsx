@@ -16,7 +16,7 @@ export function SiteChatWidget({ name, host, config }: Props) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const accent = config.accent || "#6366f1";
+  const accent = config.accent || "var(--chart-10)";
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -73,7 +73,7 @@ export function SiteChatWidget({ name, host, config }: Props) {
           height: 56,
           borderRadius: "50%",
           background: accent,
-          color: "#fff",
+          color: "var(--color-text-inverse)",
           border: "none",
           cursor: "pointer",
           fontSize: 24,
@@ -103,14 +103,14 @@ export function SiteChatWidget({ name, host, config }: Props) {
         display: "flex",
         flexDirection: "column",
         zIndex: 9999,
-        background: "#fff",
+        background: "var(--color-text-inverse)",
         fontFamily: "system-ui, sans-serif",
       }}
     >
       <div
         style={{
           background: accent,
-          color: "#fff",
+          color: "var(--color-text-inverse)",
           padding: "14px 18px",
           display: "flex",
           justifyContent: "space-between",
@@ -123,7 +123,7 @@ export function SiteChatWidget({ name, host, config }: Props) {
           style={{
             background: "none",
             border: "none",
-            color: "#fff",
+            color: "var(--color-text-inverse)",
             fontSize: 20,
             cursor: "pointer",
           }}
@@ -146,7 +146,7 @@ export function SiteChatWidget({ name, host, config }: Props) {
         {messages.length === 0 && (
           <div
             style={{
-              color: "#888",
+              color: "var(--color-text-tertiary)",
               fontSize: 14,
               textAlign: "center",
               marginTop: 40,
@@ -160,8 +160,9 @@ export function SiteChatWidget({ name, host, config }: Props) {
             key={i}
             style={{
               alignSelf: m.role === "user" ? "flex-end" : "flex-start",
-              background: m.role === "user" ? accent : "#f3f4f6",
-              color: m.role === "user" ? "#fff" : "#1f2937",
+              background: m.role === "user" ? accent : "var(--color-bg-hover)",
+              color:
+                m.role === "user" ? "var(--color-text-inverse)" : "#1f2937",
               padding: "8px 14px",
               borderRadius: 12,
               maxWidth: "80%",
@@ -173,7 +174,11 @@ export function SiteChatWidget({ name, host, config }: Props) {
             {m.content}
           </div>
         ))}
-        {loading && <div style={{ color: "#888", fontSize: 13 }}>Typing…</div>}
+        {loading && (
+          <div style={{ color: "var(--color-text-tertiary)", fontSize: 13 }}>
+            Typing…
+          </div>
+        )}
         <div ref={bottomRef} />
       </div>
       <form
@@ -201,7 +206,7 @@ export function SiteChatWidget({ name, host, config }: Props) {
           style={{
             padding: "12px 18px",
             background: accent,
-            color: "#fff",
+            color: "var(--color-text-inverse)",
             border: "none",
             cursor: "pointer",
             fontWeight: 600,

@@ -89,7 +89,7 @@ const PILLARS = [
     title: "Marketplace",
     subtitle: "Apps & vendors",
     desc: "Browse and install apps from the store, or publish your own through the developer portal.",
-    color: "#059669",
+    color: "var(--color-success-hover)",
     href: "/apps/store",
   },
   {
@@ -97,7 +97,7 @@ const PILLARS = [
     title: "Manage",
     subtitle: "Governance & ops",
     desc: "Releases, environments, run logs and access control across everything you build.",
-    color: "#d97706",
+    color: "var(--color-warning-hover)",
     href: "/builder/manage",
   },
 ];
@@ -125,7 +125,7 @@ const QUICK_ACTIONS = [
     id: "dashboard",
     label: "New Dashboard",
     href: "/builder/erp/dashboards/new",
-    color: "#059669",
+    color: "var(--color-success-hover)",
   },
   {
     id: "site",
@@ -143,13 +143,13 @@ const QUICK_ACTIONS = [
     id: "asset",
     label: "Upload Asset",
     href: "/builder/web/assets?new=1",
-    color: "#d97706",
+    color: "var(--color-warning-hover)",
   },
   {
     id: "template",
     label: "New Template",
     href: "/builder/web/templates?new=1",
-    color: "#d97706",
+    color: "var(--color-warning-hover)",
   },
 ];
 
@@ -313,14 +313,14 @@ function StudioHomeContent() {
           title="Web Content Items"
           value={totalWebContent}
           icon={<Globe size={18} />}
-          color="#059669"
+          color="var(--color-success-hover)"
           onClick={() => router.push("/builder/web")}
         />
         <KPICard
           title="Recent Activity"
           value={recentItems.length}
           icon={<Activity size={18} />}
-          color="#d97706"
+          color="var(--color-warning-hover)"
         />
       </div>
 
@@ -363,8 +363,16 @@ function StudioHomeContent() {
                       />
                     </linearGradient>
                     <linearGradient id="colorWeb" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#059669" stopOpacity={0.2} />
-                      <stop offset="95%" stopColor="#059669" stopOpacity={0} />
+                      <stop
+                        offset="5%"
+                        stopColor="var(--color-success-hover)"
+                        stopOpacity={0.2}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor="var(--color-success-hover)"
+                        stopOpacity={0}
+                      />
                     </linearGradient>
                   </defs>
                   <CartesianGrid
@@ -401,7 +409,7 @@ function StudioHomeContent() {
                     type="monotone"
                     dataKey="webContent"
                     name="Web CMS & Site Pages"
-                    stroke="#059669"
+                    stroke="var(--color-success-hover)"
                     fillOpacity={1}
                     fill="url(#colorWeb)"
                     strokeWidth={2}
@@ -430,14 +438,18 @@ function StudioHomeContent() {
                     {
                       name: "Flows",
                       count: stats.erp.workflows,
-                      fill: "#059669",
+                      fill: "var(--color-success-hover)",
                     },
                     {
                       name: "KPIs",
                       count: stats.erp.dashboards,
-                      fill: "#d97706",
+                      fill: "var(--color-warning-hover)",
                     },
-                    { name: "Web", count: stats.web.pages, fill: "#2563eb" },
+                    {
+                      name: "Web",
+                      count: stats.web.pages,
+                      fill: "var(--color-primary-hover)",
+                    },
                   ]}
                   margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
                 >
@@ -465,9 +477,9 @@ function StudioHomeContent() {
                     {[
                       { fill: "var(--color-primary)" },
                       { fill: "#7c3aed" },
-                      { fill: "#059669" },
-                      { fill: "#d97706" },
-                      { fill: "#2563eb" },
+                      { fill: "var(--color-success-hover)" },
+                      { fill: "var(--color-warning-hover)" },
+                      { fill: "var(--color-primary-hover)" },
                     ].map((item, index) => (
                       <Cell key={`cell-${index}`} fill={item.fill} />
                     ))}

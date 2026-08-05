@@ -12,17 +12,20 @@ import {
 import { CrossDockService } from "./cross-dock.service";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { CrossDockStatus, CrossDockType, DockDoorStatus } from "@prisma/client";
+import { Permissions } from "../../common/decorators/permissions.decorator";
+import { RbacGuard } from "../../common/guards/rbac.guard";
 
 interface AuthRequest {
   user: { tenantId: string; userId: string };
 }
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RbacGuard)
 @Controller("inventory/cross-dock")
 export class CrossDockController {
   constructor(private readonly svc: CrossDockService) {}
 
   // Stations
+  @Permissions("inventory.station.create")
   @Post("stations")
   createStation(
     @Request() req: AuthRequest,
@@ -40,6 +43,7 @@ export class CrossDockController {
     return this.svc.createStation(req.user.tenantId, body);
   }
 
+  @Permissions("inventory.station-status.update")
   @Patch("stations/:id/status")
   updateStationStatus(
     @Request() req: AuthRequest,
@@ -49,6 +53,7 @@ export class CrossDockController {
     return this.svc.updateStationStatus(req.user.tenantId, id, status);
   }
 
+  @Permissions("inventory.station.read")
   @Get("stations")
   listStations(
     @Request() req: AuthRequest,
@@ -58,6 +63,7 @@ export class CrossDockController {
   }
 
   // Orders
+  @Permissions("inventory.order.create")
   @Post("orders")
   createOrder(
     @Request() req: AuthRequest,
@@ -87,6 +93,7 @@ export class CrossDockController {
     });
   }
 
+  @Permissions("inventory.good.receive")
   @Patch("orders/:id/receive")
   receiveGoods(
     @Request() req: AuthRequest,
@@ -101,6 +108,7 @@ export class CrossDockController {
     );
   }
 
+  @Permissions("inventory.order.stage")
   @Patch("orders/:id/stage")
   stageOrder(
     @Request() req: AuthRequest,
@@ -115,6 +123,7 @@ export class CrossDockController {
     );
   }
 
+  @Permissions("inventory.order.dispatch")
   @Patch("orders/:id/dispatch")
   dispatchOrder(
     @Request() req: AuthRequest,
@@ -129,6 +138,7 @@ export class CrossDockController {
     );
   }
 
+  @Permissions("inventory.order.cancel")
   @Patch("orders/:id/cancel")
   cancelOrder(
     @Request() req: AuthRequest,
@@ -138,6 +148,7 @@ export class CrossDockController {
     return this.svc.cancelOrder(req.user.tenantId, req.user.userId, id, reason);
   }
 
+  @Permissions("inventory.order.read")
   @Get("orders")
   listOrders(
     @Request() req: AuthRequest,
@@ -147,16 +158,19 @@ export class CrossDockController {
     return this.svc.listOrders(req.user.tenantId, status, warehouseId);
   }
 
+  @Permissions("inventory.order.read")
   @Get("orders/:id")
   getOrder(@Request() req: AuthRequest, @Param("id") id: string) {
     return this.svc.getOrder(req.user.tenantId, id);
   }
 
+  @Permissions("inventory.event.read")
   @Get("orders/:id/events")
   getEvents(@Request() req: AuthRequest, @Param("id") id: string) {
     return this.svc.getEvents(req.user.tenantId, id);
   }
 
+  @Permissions("inventory.dashboard.read")
   @Get("dashboard")
   getDashboard(@Request() req: AuthRequest) {
     return this.svc.getDashboard(req.user.tenantId);

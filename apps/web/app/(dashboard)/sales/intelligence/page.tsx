@@ -78,7 +78,9 @@ export default function SalesIntelligencePage() {
         }}
       >
         <Card style={{ padding: "20px" }}>
-          <span style={{ fontSize: "13px", color: "#64748b" }}>
+          <span
+            style={{ fontSize: "13px", color: "var(--color-text-secondary)" }}
+          >
             Pending Signals
           </span>
           <div
@@ -88,14 +90,20 @@ export default function SalesIntelligencePage() {
           </div>
         </Card>
         <Card style={{ padding: "20px", borderLeft: "4px solid #ef4444" }}>
-          <span style={{ fontSize: "13px", color: "#ef4444", fontWeight: 600 }}>
+          <span
+            style={{
+              fontSize: "13px",
+              color: "var(--chart-4)",
+              fontWeight: 600,
+            }}
+          >
             Critical Alerts
           </span>
           <div
             style={{
               fontSize: "28px",
               fontWeight: "bold",
-              color: "#ef4444",
+              color: "var(--chart-4)",
               marginTop: "4px",
             }}
           >
@@ -103,14 +111,20 @@ export default function SalesIntelligencePage() {
           </div>
         </Card>
         <Card style={{ padding: "20px", borderLeft: "4px solid #f59e0b" }}>
-          <span style={{ fontSize: "13px", color: "#f59e0b", fontWeight: 600 }}>
+          <span
+            style={{
+              fontSize: "13px",
+              color: "var(--chart-3)",
+              fontWeight: 600,
+            }}
+          >
             High Priority
           </span>
           <div
             style={{
               fontSize: "28px",
               fontWeight: "bold",
-              color: "#f59e0b",
+              color: "var(--chart-3)",
               marginTop: "4px",
             }}
           >
@@ -118,7 +132,9 @@ export default function SalesIntelligencePage() {
           </div>
         </Card>
         <Card style={{ padding: "20px" }}>
-          <span style={{ fontSize: "13px", color: "#64748b" }}>
+          <span
+            style={{ fontSize: "13px", color: "var(--color-text-secondary)" }}
+          >
             Medium / Low
           </span>
           <div
@@ -135,7 +151,11 @@ export default function SalesIntelligencePage() {
         </h3>
         {signals.length === 0 ? (
           <p
-            style={{ color: "#64748b", textAlign: "center", padding: "32px 0" }}
+            style={{
+              color: "var(--color-text-secondary)",
+              textAlign: "center",
+              padding: "32px 0",
+            }}
           >
             No un-actioned intelligence signals detected.
           </p>
@@ -153,7 +173,9 @@ export default function SalesIntelligencePage() {
                   padding: "16px",
                   borderRadius: "8px",
                   border: "1px solid #e2e8f0",
-                  backgroundColor: sig.isActioned ? "#f8fafc" : "#fff",
+                  backgroundColor: sig.isActioned
+                    ? "var(--color-bg-sunken)"
+                    : "var(--color-text-inverse)",
                 }}
               >
                 <div>
@@ -177,14 +199,19 @@ export default function SalesIntelligencePage() {
                     <span
                       style={{
                         fontSize: "12px",
-                        color: "#64748b",
+                        color: "var(--color-text-secondary)",
                         textTransform: "uppercase",
                         fontWeight: 600,
                       }}
                     >
                       {sig.signalType}
                     </span>
-                    <span style={{ fontSize: "12px", color: "#94a3b8" }}>
+                    <span
+                      style={{
+                        fontSize: "12px",
+                        color: "var(--color-text-tertiary)",
+                      }}
+                    >
                       via {sig.source}
                     </span>
                   </div>
@@ -192,7 +219,7 @@ export default function SalesIntelligencePage() {
                     style={{
                       fontSize: "15px",
                       fontWeight: 600,
-                      color: "#1e293b",
+                      color: "var(--color-bg-elevated)",
                     }}
                   >
                     {sig.headline}

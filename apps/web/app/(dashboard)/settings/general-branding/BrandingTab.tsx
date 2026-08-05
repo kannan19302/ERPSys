@@ -18,7 +18,7 @@ const MAX_LOGO_BYTES = 300 * 1024;
 export default function BrandingTab() {
   const client = useApiClient();
   const [loading, setLoading] = useState(true);
-  const [primaryColor, setPrimaryColor] = useState("#6366f1");
+  const [primaryColor, setPrimaryColor] = useState("var(--chart-10)");
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "error">(
     "saved",
@@ -34,7 +34,7 @@ export default function BrandingTab() {
       const data = await client.get<{
         tenant?: { settings?: { primaryColor?: string; logoUrl?: string } };
       }>("/admin/settings");
-      setPrimaryColor(data.tenant?.settings?.primaryColor || "#6366f1");
+      setPrimaryColor(data.tenant?.settings?.primaryColor || "var(--chart-10)");
       setLogoUrl(data.tenant?.settings?.logoUrl || null);
     } catch {
       /* not loaded */

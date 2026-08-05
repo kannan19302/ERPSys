@@ -1,3 +1,11 @@
-.s1 { color: #ea580c; }
-.s2 { display: flex; gap: 4px; }
-.s3 { color: #dc2626; font-weight: 500; }
+.s1 {
+  color: #ea580c;
+}
+.s2 {
+  display: flex;
+  gap: 4px;
+}
+.s3 {
+  color: var(--color-danger-hover);
+  font-weight: 500;
+}

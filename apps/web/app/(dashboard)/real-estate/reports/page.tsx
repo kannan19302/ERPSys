@@ -69,7 +69,7 @@ export default function RealEstateReportsPage() {
           config={{
             xAxisKey: "name",
             series: [
-              { dataKey: "rate", name: "Occupancy %", color: "#22c55e" },
+              { dataKey: "rate", name: "Occupancy %", color: "var(--chart-2)" },
             ],
           }}
           defaultChartType="line"
@@ -83,8 +83,12 @@ export default function RealEstateReportsPage() {
           config={{
             xAxisKey: "name",
             series: [
-              { dataKey: "collected", name: "Collected", color: "#22c55e" },
-              { dataKey: "overdue", name: "Overdue", color: "#ef4444" },
+              {
+                dataKey: "collected",
+                name: "Collected",
+                color: "var(--chart-2)",
+              },
+              { dataKey: "overdue", name: "Overdue", color: "var(--chart-4)" },
             ],
           }}
           defaultChartType="bar"
@@ -98,7 +102,9 @@ export default function RealEstateReportsPage() {
         data={MAINTENANCE_COST}
         config={{
           xAxisKey: "name",
-          series: [{ dataKey: "cost", name: "Cost ($)", color: "#f59e0b" }],
+          series: [
+            { dataKey: "cost", name: "Cost ($)", color: "var(--chart-3)" },
+          ],
         }}
         defaultChartType="bar"
         allowedChartTypes={["bar", "pie"]}

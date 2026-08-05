@@ -10,6 +10,7 @@ import { Queue } from "bullmq";
 import { ApiTags, ApiOperation } from "@nestjs/swagger";
 import { prisma } from "@unerp/database";
 import { idpClient as idpPrisma } from "@/common/idp-client";
+import { Public } from "./common/decorators/public.decorator";
 
 type CheckStatus = "up" | "down";
 
@@ -30,6 +31,9 @@ class ServiceUnavailableException extends HttpException {
 export class HealthController {
   constructor(@InjectQueue("email") private readonly redisProbeQueue: Queue) {}
 
+  @Public(
+    "Liveness and readiness probes. Exposes no tenant data and must answer before auth is reachable.",
+  )
   @Get("health")
   @ApiOperation({ summary: "Liveness probe — process is up" })
   check() {
@@ -41,6 +45,9 @@ export class HealthController {
     };
   }
 
+  @Public(
+    "Liveness and readiness probes. Exposes no tenant data and must answer before auth is reachable.",
+  )
   @Get("ready")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Readiness probe — dependencies are reachable" })

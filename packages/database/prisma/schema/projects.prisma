@@ -999,7 +999,7 @@ model ProductionAnalyticsSnapshot {
   downtimeHours   Float?   @map("downtime_hours")
   energyConsumption Float? @map("energy_consumption")
   laborProductivity Float? @map("labor_productivity")
-  costPerUnit     Float?   @map("cost_per_unit")
+  costPerUnit     Decimal? @db.Decimal(19, 4) @map("cost_per_unit")
   snapshotDate    DateTime @default(now()) @map("snapshot_date")
   @@index([tenantId])
   @@map("production_analytics_snapshots")

@@ -46,9 +46,9 @@ const fmt = (n: number) =>
   );
 
 const RISK_COLORS: Record<string, { bg: string; color: string }> = {
-  LOW: { bg: "rgba(34,197,94,0.1)", color: "#16a34a" },
-  MEDIUM: { bg: "rgba(245,158,11,0.1)", color: "#d97706" },
-  HIGH: { bg: "rgba(239,68,68,0.1)", color: "#dc2626" },
+  LOW: { bg: "rgba(34,197,94,0.1)", color: "var(--color-success-hover)" },
+  MEDIUM: { bg: "rgba(245,158,11,0.1)", color: "var(--color-warning-hover)" },
+  HIGH: { bg: "rgba(239,68,68,0.1)", color: "var(--color-danger-hover)" },
   CRITICAL: { bg: "rgba(127,29,29,0.12)", color: "#7f1d1d" },
 };
 
@@ -217,21 +217,21 @@ export default function CreditRiskPage() {
               label: "Customers on Hold",
               value: onHold,
               icon: <Lock size={20} />,
-              color: "#ef4444",
+              color: "var(--chart-4)",
               bg: "rgba(239,68,68,0.08)",
             },
             {
               label: "High / Critical Risk",
               value: highRisk,
               icon: <TrendingUp size={20} />,
-              color: "#f59e0b",
+              color: "var(--chart-3)",
               bg: "rgba(245,158,11,0.08)",
             },
             {
               label: "Total Customers",
               value: list.length,
               icon: <Users size={20} />,
-              color: "#3b82f6",
+              color: "var(--color-primary)",
               bg: "rgba(59,130,246,0.08)",
             },
           ].map((kpi) => (
@@ -311,12 +311,12 @@ export default function CreditRiskPage() {
                       const util = v as number | null;
                       const utilColor =
                         util === null
-                          ? "#6b7280"
+                          ? "var(--color-text-secondary)"
                           : util > 90
-                            ? "#ef4444"
+                            ? "var(--chart-4)"
                             : util > 70
-                              ? "#f59e0b"
-                              : "#22c55e";
+                              ? "var(--chart-3)"
+                              : "var(--chart-2)";
                       return util !== null ? (
                         <span
                           style={{ color: utilColor }}
@@ -364,7 +364,9 @@ export default function CreditRiskPage() {
                           handleToggleHold(String(v), Boolean(row.creditHold));
                         }}
                         style={{
-                          color: row.creditHold ? "#22c55e" : "#ef4444",
+                          color: row.creditHold
+                            ? "var(--chart-2)"
+                            : "var(--chart-4)",
                         }}
                         className={styles.s15}
                         title={row.creditHold ? "Release Hold" : "Place Hold"}
@@ -431,7 +433,7 @@ export default function CreditRiskPage() {
                         {
                           label: "Credit Used",
                           value: fmt(summary.creditUsed),
-                          color: "#ef4444",
+                          color: "var(--chart-4)",
                         },
                         {
                           label: "Credit Available",
@@ -439,13 +441,15 @@ export default function CreditRiskPage() {
                             summary.creditAvailable !== null
                               ? fmt(summary.creditAvailable)
                               : "N/A",
-                          color: "#22c55e",
+                          color: "var(--chart-2)",
                         },
                         {
                           label: "Total Overdue",
                           value: fmt(summary.totalOverdue),
                           color:
-                            summary.totalOverdue > 0 ? "#ef4444" : undefined,
+                            summary.totalOverdue > 0
+                              ? "var(--chart-4)"
+                              : undefined,
                         },
                         {
                           label: "Payment Terms",

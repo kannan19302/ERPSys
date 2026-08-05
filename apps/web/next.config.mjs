@@ -21,9 +21,9 @@ const nextConfig = {
   //   2. Have NO CSS module imports (safe for edge runtime / middleware)
   //
   // @unerp/ui and @unerp/framework CANNOT be here because their dist/index.js
-  // re-exports @unerp/ui-components which requires CSS module .css files.
-  // The Next.js edge runtime (middleware) cannot handle CSS modules, causing
-  // the middleware compilation to hang indefinitely.
+  // pulls in the design system's component layer, which requires CSS module
+  // .css files. The Next.js edge runtime (middleware) cannot handle CSS
+  // modules, causing the middleware compilation to hang indefinitely.
   //
   // Instead, @unerp/ui and @unerp/framework are treated as server externals:
   // Next.js will use their pre-built dist/index.js without bundling.
@@ -34,20 +34,9 @@ const nextConfig = {
   // Tell Next.js to NOT bundle these workspace packages on the server/edge:
   // use their pre-built dist/ files directly via require().
   serverExternalPackages: [
+    // One entry, not fourteen: the design system is a single package with
+    // subpath exports (PLATFORM_ARCHITECTURE.md § 7.2).
     '@unerp/ui',
-    '@unerp/ui-tokens',
-    '@unerp/ui-theme',
-    '@unerp/ui-components',
-    '@unerp/ui-layout',
-    '@unerp/ui-charts',
-    '@unerp/ui-data-grid',
-    '@unerp/ui-dashboard',
-    '@unerp/ui-notifications',
-    '@unerp/ui-hooks',
-    '@unerp/ui-utils',
-    '@unerp/ui-icons',
-    '@unerp/ui-form-engine',
-    '@unerp/ui-workflow',
     '@unerp/framework',
   ],
   experimental: {

@@ -116,7 +116,7 @@ export default function ReportingTemplatesPage() {
               textAlign: "center",
             }}
           >
-            <p style={{ color: "#64748b" }}>
+            <p style={{ color: "var(--color-text-secondary)" }}>
               No custom report templates available.
             </p>
           </Card>
@@ -134,7 +134,7 @@ export default function ReportingTemplatesPage() {
                 <div
                   style={{ display: "flex", alignItems: "center", gap: "8px" }}
                 >
-                  <FileText size={18} color="#3b82f6" />
+                  <FileText size={18} color="var(--color-primary)" />
                   <h4 style={{ fontSize: "15px", fontWeight: 600 }}>
                     {t.title}
                   </h4>
@@ -144,7 +144,7 @@ export default function ReportingTemplatesPage() {
               <p
                 style={{
                   fontSize: "12px",
-                  color: "#64748b",
+                  color: "var(--color-text-secondary)",
                   margin: "8px 0 16px 0",
                 }}
               >

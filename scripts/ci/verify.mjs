@@ -82,6 +82,20 @@ const GATES = [
     cmd: ["pnpm", ["architecture:check"]],
   },
   {
+    name: "Consumer contracts (M2)",
+    why: "A consumer must not expect a symbol its provider no longer exports. PLATFORM_ARCHITECTURE § 4.5.",
+    // The compiler currently sees across every package boundary here, so this
+    // gate looks redundant — and stops being redundant the moment Phase 3
+    // extracts the first repository, because `unierp-web` will then compile
+    // against a published `@unerp/ui` and a deleted export becomes a staging
+    // runtime error instead of a build failure. § 14 forbids extracting
+    // anything until this has caught a deliberately injected break; it has
+    // caught three (a removed `@unerp/ui` export, a removed `@unerp/shared`
+    // export reached through the .js re-export chain, and a stale published
+    // expectation).
+    cmd: ["node", ["scripts/ci/cdc-harness.mjs"]],
+  },
+  {
     name: "Migration discipline",
     why: "No hand-edited migrations, no db:push, no schema drift.",
     cmd: ["pnpm", ["migration:discipline"]],

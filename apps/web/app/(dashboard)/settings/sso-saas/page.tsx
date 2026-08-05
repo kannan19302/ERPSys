@@ -63,7 +63,9 @@ export default function SaasPortalSsoPage() {
         }}
       >
         <Card style={{ padding: "20px" }}>
-          <span style={{ fontSize: "13px", color: "#64748b" }}>
+          <span
+            style={{ fontSize: "13px", color: "var(--color-text-secondary)" }}
+          >
             Configured Identity Providers
           </span>
           <div
@@ -73,14 +75,16 @@ export default function SaasPortalSsoPage() {
           </div>
         </Card>
         <Card style={{ padding: "20px" }}>
-          <span style={{ fontSize: "13px", color: "#64748b" }}>
+          <span
+            style={{ fontSize: "13px", color: "var(--color-text-secondary)" }}
+          >
             Enforce Mandatory SSO
           </span>
           <div
             style={{
               fontSize: "24px",
               fontWeight: "bold",
-              color: "#10b981",
+              color: "var(--chart-9)",
               marginTop: "4px",
             }}
           >
@@ -95,7 +99,11 @@ export default function SaasPortalSsoPage() {
         </h3>
         {ssoConfigs.length === 0 ? (
           <p
-            style={{ color: "#64748b", textAlign: "center", padding: "32px 0" }}
+            style={{
+              color: "var(--color-text-secondary)",
+              textAlign: "center",
+              padding: "32px 0",
+            }}
           >
             No SSO configurations active.
           </p>
@@ -125,13 +133,13 @@ export default function SaasPortalSsoPage() {
                       gap: "8px",
                     }}
                   >
-                    <KeyRound size={18} color="#3b82f6" /> {cfg.provider}{" "}
-                    Integration
+                    <KeyRound size={18} color="var(--color-primary)" />{" "}
+                    {cfg.provider} Integration
                   </div>
                   <div
                     style={{
                       fontSize: "12px",
-                      color: "#64748b",
+                      color: "var(--color-text-secondary)",
                       marginTop: "4px",
                     }}
                   >

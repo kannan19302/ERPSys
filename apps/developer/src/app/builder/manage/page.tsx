@@ -53,7 +53,7 @@ const SECTIONS = [
     href: "/builder/manage/logs",
     title: "Run Logs",
     desc: "Unified execution logs for workflows, automation rules, form submissions and sites.",
-    color: "#059669",
+    color: "var(--color-success-hover)",
     status: "Available",
   },
   {
@@ -61,7 +61,7 @@ const SECTIONS = [
     href: "/builder/manage/access",
     title: "Access Control",
     desc: "Control who can edit and publish each app, form, workflow and site.",
-    color: "#d97706",
+    color: "var(--color-warning-hover)",
     status: "Available",
   },
   {
@@ -69,7 +69,7 @@ const SECTIONS = [
     href: "/builder/manage/components",
     title: "Component Library",
     desc: "Browse templates, workflows, schemas and components across all apps.",
-    color: "#2563eb",
+    color: "var(--color-primary-hover)",
     status: "Available",
   },
   {
@@ -77,7 +77,7 @@ const SECTIONS = [
     href: "/builder/manage/connectors",
     title: "Connectors",
     desc: "Manage reusable API connectors and third-party data integrations.",
-    color: "#06b6d4",
+    color: "var(--chart-6)",
     status: "Available",
   },
   {
@@ -85,7 +85,7 @@ const SECTIONS = [
     href: "/builder/manage/marketplace",
     title: "Marketplace Store",
     desc: "Browse community plugins, layouts, templates, and integration extensions.",
-    color: "#f43f5e",
+    color: "var(--color-danger)",
     status: "Available",
   },
   {
@@ -93,7 +93,7 @@ const SECTIONS = [
     href: "/builder/manage/query-builder",
     title: "Query Builder",
     desc: "Build database queries, computed columns and virtual fields.",
-    color: "#10b981",
+    color: "var(--chart-9)",
     status: "Available",
   },
   {
@@ -101,7 +101,7 @@ const SECTIONS = [
     href: "/builder/manage/widgets",
     title: "Widget SDK",
     desc: "Configure custom layout widgets, embeds, and variant inspectors.",
-    color: "#6366f1",
+    color: "var(--chart-10)",
     status: "Available",
   },
   {
@@ -109,7 +109,7 @@ const SECTIONS = [
     href: "/builder/manage/git",
     title: "Git Control",
     desc: "Visual source control commits, change requests and collaboration annotations.",
-    color: "#ec4899",
+    color: "var(--chart-8)",
     status: "Available",
   },
   {
@@ -117,7 +117,7 @@ const SECTIONS = [
     href: "/builder/manage/mobile-export",
     title: "Export & Mobile",
     desc: "Setup animation timelines, offline features and native Android/iOS shells.",
-    color: "#f59e0b",
+    color: "var(--chart-3)",
     status: "Available",
   },
 ];
@@ -249,9 +249,21 @@ export default function ManageHubPage() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={[
-                    { name: "Info", count: 1240, fill: "#059669" },
-                    { name: "Warn", count: 85, fill: "#d97706" },
-                    { name: "Error", count: 12, fill: "#dc2626" },
+                    {
+                      name: "Info",
+                      count: 1240,
+                      fill: "var(--color-success-hover)",
+                    },
+                    {
+                      name: "Warn",
+                      count: 85,
+                      fill: "var(--color-warning-hover)",
+                    },
+                    {
+                      name: "Error",
+                      count: 12,
+                      fill: "var(--color-danger-hover)",
+                    },
                   ]}
                   margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
                 >
@@ -277,9 +289,9 @@ export default function ManageHubPage() {
                   />
                   <Bar dataKey="count" radius={[4, 4, 0, 0]}>
                     {[
-                      { fill: "#059669" },
-                      { fill: "#d97706" },
-                      { fill: "#dc2626" },
+                      { fill: "var(--color-success-hover)" },
+                      { fill: "var(--color-warning-hover)" },
+                      { fill: "var(--color-danger-hover)" },
                     ].map((item, index) => (
                       <Cell key={`cell-${index}`} fill={item.fill} />
                     ))}

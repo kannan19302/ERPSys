@@ -291,7 +291,12 @@ export default function ScenarioComparisonPage() {
                     header: "Variance",
                     render: (v) => (
                       <span
-                        style={{ color: Number(v) < 0 ? "#dc2626" : "#16a34a" }}
+                        style={{
+                          color:
+                            Number(v) < 0
+                              ? "var(--color-danger-hover)"
+                              : "var(--color-success-hover)",
+                        }}
                         className={styles.s3}
                       >
                         $
@@ -310,7 +315,12 @@ export default function ScenarioComparisonPage() {
                       );
                       return (
                         <span
-                          style={{ color: va < 0 ? "#dc2626" : "#16a34a" }}
+                          style={{
+                            color:
+                              va < 0
+                                ? "var(--color-danger-hover)"
+                                : "var(--color-success-hover)",
+                          }}
                           className={styles.s3}
                         >
                           {v ? `${v}%` : "—"}

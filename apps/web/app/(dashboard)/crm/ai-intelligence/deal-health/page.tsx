@@ -28,7 +28,7 @@ export default function DealHealthPage() {
   }, [oppId]);
 
   const getColor = (s: number) =>
-    s >= 70 ? "#10b981" : s >= 40 ? "#f59e0b" : "#ef4444";
+    s >= 70 ? "var(--chart-9)" : s >= 40 ? "var(--chart-3)" : "var(--chart-4)";
   const getLabel = (s: number) =>
     s >= 70 ? "Healthy" : s >= 40 ? "Needs Attention" : "At Risk";
 
@@ -80,7 +80,7 @@ export default function DealHealthPage() {
                   cy="60"
                   r="54"
                   fill="none"
-                  stroke="#eee"
+                  stroke="var(--color-border)"
                   strokeWidth="10"
                 />
                 <circle
@@ -112,7 +112,12 @@ export default function DealHealthPage() {
                 >
                   {score}
                 </div>
-                <div style={{ fontSize: "0.75rem", color: "#666" }}>
+                <div
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "var(--color-text-secondary)",
+                  }}
+                >
                   out of 100
                 </div>
               </div>
@@ -166,7 +171,7 @@ export default function DealHealthPage() {
                 <p
                   style={{
                     fontSize: "0.85rem",
-                    color: "#666",
+                    color: "var(--color-text-secondary)",
                     margin: "0.25rem 0 0",
                   }}
                 >

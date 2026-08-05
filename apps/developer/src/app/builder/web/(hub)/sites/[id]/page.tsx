@@ -153,7 +153,7 @@ export default function SiteDetailPage({
         ? "1px solid var(--color-primary)"
         : "1px solid var(--color-border)",
     background: t === tab ? "var(--color-primary)" : "var(--color-bg-elevated)",
-    color: t === tab ? "#fff" : "var(--color-text)",
+    color: t === tab ? "var(--color-text-inverse)" : "var(--color-text)",
   });
 
   return (
@@ -231,7 +231,7 @@ export default function SiteDetailPage({
                       ...ghostBtn,
                       color:
                         p.status === "PUBLISHED"
-                          ? "var(--color-success, #047857)"
+                          ? "var(--color-success)"
                           : "var(--color-text-secondary)",
                     }}
                   >
@@ -328,7 +328,7 @@ export default function SiteDetailPage({
           />
           <label style={label}>Accent colour</label>
           <input
-            value={chatbot.config?.accent || "#6366f1"}
+            value={chatbot.config?.accent || "var(--chart-10)"}
             onChange={(e) =>
               setChatbot({
                 ...chatbot,
@@ -414,7 +414,7 @@ const primaryBtn: React.CSSProperties = {
   padding: "var(--space-2) var(--space-3)",
   borderRadius: "var(--radius-md)",
   background: "var(--color-primary)",
-  color: "#fff",
+  color: "var(--color-text-inverse)",
   border: "none",
   cursor: "pointer",
   fontSize: "var(--text-sm)",
