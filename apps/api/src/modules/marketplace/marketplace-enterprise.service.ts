@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@unerp/database";
 import { idpClient as idpPrisma } from "@/common/idp-client";
 
@@ -136,18 +137,49 @@ export class MarketplaceEnterpriseService {
     periodStart?: string,
     periodEnd?: string,
   ) {
-    const apps = await this.p.marketplaceApp.findMany();
-    const packages = await this.p.marketplacePackage.findMany();
-    const totalRevenue = apps.length * 1000;
-    const refundRate = 2.5;
-    const commissionRate = 0.3;
+    // These figures were fabricated: `totalRevenue = apps.length * 1000`
+    // invented £1,000 of revenue per listing, and commission and developer
+    // payouts were then derived from that invention in binary floating point.
+    // A number that looks like money and is not money is worse than an empty
+    // response, because it gets quoted.
+    //
+    // They now come from the earnings ledger (`marketplace_earnings`), summed
+    // as Decimal, and a period with no recorded earnings honestly reports zero.
+    const where =
+      periodStart || periodEnd
+        ? {
+            earnedAt: {
+              ...(periodStart ? { gte: new Date(periodStart) } : {}),
+              ...(periodEnd ? { lte: new Date(periodEnd) } : {}),
+            },
+          }
+        : {};
+
+    const earnings = await this.p.marketplaceEarning.findMany({ where });
+
+    const zero = new Prisma.Decimal(0);
+    const totalRevenue = earnings.reduce(
+      (acc: Prisma.Decimal, e: { grossAmount: Prisma.Decimal }) =>
+        acc.plus(new Prisma.Decimal(e.grossAmount)),
+      zero,
+    );
+    const platformCommission = earnings.reduce(
+      (acc: Prisma.Decimal, e: { commissionAmount: Prisma.Decimal }) =>
+        acc.plus(new Prisma.Decimal(e.commissionAmount)),
+      zero,
+    );
+    const developerPayouts = earnings.reduce(
+      (acc: Prisma.Decimal, e: { netAmount: Prisma.Decimal }) =>
+        acc.plus(new Prisma.Decimal(e.netAmount)),
+      zero,
+    );
+
     return {
-      totalRevenue,
-      platformCommission: totalRevenue * commissionRate,
-      developerPayouts: totalRevenue * 0.7,
-      refundRate,
-      refundAmount: totalRevenue * (refundRate / 100),
-      monthlyRecurringRevenue: totalRevenue / 12,
+      totalRevenue: totalRevenue.toFixed(4),
+      platformCommission: platformCommission.toFixed(4),
+      developerPayouts: developerPayouts.toFixed(4),
+      earningCount: earnings.length,
+      currency: earnings[0]?.currency ?? "USD",
       periodStart: periodStart || "all",
       periodEnd: periodEnd || "all",
     };
