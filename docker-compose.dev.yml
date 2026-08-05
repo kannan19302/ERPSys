@@ -259,6 +259,8 @@ services:
       - NODE_OPTIONS=--max-old-space-size=4096
       # Increase Next.js dev server timeouts for large monorepo cold starts
       - NEXT_PRIVATE_SKIP_SIZE_LIMIT_CHECK=1
+      # Same reason as api: localhost:4873 is the container, not the host.
+      - npm_config_@unerp:registry=http://unerp-registry:4873
 
       # ── Talks to the api container over the compose network ──
       - API_URL=http://api:3001
@@ -301,6 +303,100 @@ services:
   # ──────────────────────────────────────────────
   # Mobile — Flutter app built for web and served statically (manual UI testing)
   # ──────────────────────────────────────────────
+  # ──────────────────────────────────────────────
+  # Console — the Platform Admin Console (control plane)
+  #
+  # § 3.1: a separate frontend deployable on a separate origin, so a customer's
+  # browser never receives control-plane JavaScript and never holds a
+  # control-plane cookie. It had no service here at all, which meant the control
+  # plane could not be started from the dev stack — the one plane whose blast
+  # radius is every tenant at once.
+  # ──────────────────────────────────────────────
+  console:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: unerp-console
+    restart: unless-stopped
+    working_dir: /app/apps/console
+    stdin_open: true
+    tty: true
+    command: sh -c "until [ -d /app/node_modules/.pnpm ]; do echo 'waiting for api to install deps...'; sleep 10; done; pnpm dev"
+    environment:
+      - NODE_ENV=development
+      - NODE_OPTIONS=--max-old-space-size=4096
+      - PORT=3002
+      - API_URL=http://api:3001
+      - NEXT_PUBLIC_API_URL=http://localhost:3001
+      - npm_config_@unerp:registry=http://unerp-registry:4873
+    ports:
+      - "3002:3002"
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+    depends_on:
+      api:
+        condition: service_started
+
+  # ──────────────────────────────────────────────
+  # Developer platform — Studio, builders, extension authoring
+  # ──────────────────────────────────────────────
+  developer:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: unerp-developer
+    restart: unless-stopped
+    working_dir: /app/apps/developer
+    stdin_open: true
+    tty: true
+    command: sh -c "until [ -d /app/node_modules/.pnpm ]; do echo 'waiting for api to install deps...'; sleep 10; done; pnpm dev"
+    environment:
+      - NODE_ENV=development
+      - NODE_OPTIONS=--max-old-space-size=4096
+      - PORT=3004
+      - API_URL=http://api:3001
+      - NEXT_PUBLIC_API_URL=http://localhost:3001
+      - npm_config_@unerp:registry=http://unerp-registry:4873
+    ports:
+      - "3004:3004"
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+    depends_on:
+      api:
+        condition: service_started
+
+  # ──────────────────────────────────────────────
+  # IdP — identity provider. § 5.2 requires separate realms per plane, so this
+  # is its own service rather than a module of the API.
+  # ──────────────────────────────────────────────
+  idp:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: unerp-idp
+    restart: unless-stopped
+    working_dir: /app/apps/idp
+    stdin_open: true
+    tty: true
+    command: sh -c "until [ -d /app/node_modules/.pnpm ]; do echo 'waiting for api to install deps...'; sleep 10; done; pnpm start:dev"
+    environment:
+      - NODE_ENV=development
+      - NODE_OPTIONS=--max-old-space-size=4096
+      - PORT=3005
+      - DATABASE_URL=postgresql://unerp_api:unerp_api_password@postgres:5432/unerp_dev?schema=public
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-your-super-secret-key-change-in-production}
+      - npm_config_@unerp:registry=http://unerp-registry:4873
+    ports:
+      - "3005:3005"
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   mobile:
     build:
       context: .
