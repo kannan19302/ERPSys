@@ -468,6 +468,24 @@ const RATCHET = [
     },
   },
   {
+    id: "tenantGuardWithoutAuth",
+    hard: true,
+    label: "TenantGuard applied without JwtAuthGuard to populate request.user",
+    why: "TenantGuard reads request.user, which only JwtAuthGuard sets. Alone it authenticates nobody and every route 401s regardless of the caller — nine controllers shipped in that state, including enterprise audit, import and export.",
+    scan() {
+      const hits = [];
+      for (const f of files("apps/api/src", [".controller.ts"])) {
+        const text = read(f);
+        if (!/@UseGuards\([^)]*TenantGuard/.test(text)) continue;
+        if (/JwtAuthGuard/.test(text)) continue;
+        hits.push(
+          `${relative(ROOT, f)}  TenantGuard without JwtAuthGuard — request.user is never populated`,
+        );
+      }
+      return hits;
+    },
+  },
+  {
     id: "unguardedEndpoints",
     label: "Controller route without @Permissions",
     why: "An unguarded endpoint is a shipped security defect (BACKEND_SCHEMA § 6.3).",
