@@ -23,7 +23,7 @@ const diff = spawnSync(
     '--shadow-database-url', shadowDatabaseUrl,
     '--script',
   ],
-  { cwd: path.join(root, 'packages', 'database'), encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 },
+  { cwd: path.join(root, 'node_modules', '@unerp', 'database'), encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 },
 );
 
 if (diff.error || diff.status !== 0) {

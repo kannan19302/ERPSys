@@ -17,7 +17,7 @@ import { join } from "node:path";
 
 /** Absolute path to the schema folder, or null when the legacy layout is in use. */
 export function schemaDir(root) {
-  const dir = join(root, "packages", "database", "prisma", "schema");
+  const dir = join(root, PKG, "prisma", "schema");
   return existsSync(dir) && statSync(dir).isDirectory() ? dir : null;
 }
 
@@ -30,7 +30,7 @@ export function schemaFiles(root) {
       .sort()
       .map((f) => join(dir, f));
   }
-  const legacy = join(root, "packages", "database", "prisma", "schema.prisma");
+  const legacy = join(root, PKG, "prisma", "schema.prisma");
   return existsSync(legacy) ? [legacy] : [];
 }
 
@@ -45,8 +45,8 @@ export function schemaFiles(root) {
  */
 export function idpSchemaFile(root) {
   const candidates = [
-    join(root, "packages", "database", "prisma", "idp-schema.prisma"),
-    join(root, "packages", "database", "src", "idp-client", "schema.prisma"),
+    join(root, PKG, "prisma", "idp-schema.prisma"),
+    join(root, PKG, "src", "idp-client", "schema.prisma"),
   ];
   return candidates.find((p) => existsSync(p)) ?? null;
 }
@@ -61,6 +61,18 @@ export function idpSchemaFile(root) {
  * Callers that report `file:line` should use `schemaFiles()` and read each file
  * themselves — concatenated line numbers would point at nothing.
  */
+// Where the database package lives.
+//
+// Before the § 14 Phase 3 split this was the workspace path `packages/database`.
+// It is now the installed `@unerp/database`, because that is the copy the
+// running code is typed against — and every schema-reading gate routes through
+// this module, so pointing it here fixes all of them at once rather than each
+// gate carrying its own stale path.
+//
+// Overridable so a repository that still vendors the package (or unierp-data
+// itself, once these gates move there per § 4.6) can point it back.
+const PKG = process.env.UNERP_DB_PKG ?? "node_modules/@unerp/database";
+
 export function readSchema(root, options = {}) {
   const files = schemaFiles(root);
   if (options.includeIdp) {
@@ -69,8 +81,8 @@ export function readSchema(root, options = {}) {
   }
   if (files.length === 0) {
     throw new Error(
-      "No Prisma schema found. Looked for packages/database/prisma/schema/*.prisma " +
-        "and packages/database/prisma/schema.prisma.",
+      `No Prisma schema found. Looked under ${PKG}/prisma/. ` +
+        "Set UNERP_DB_PKG if the database package lives elsewhere.",
     );
   }
   return files.map((f) => readFileSync(f, "utf8")).join("\n");

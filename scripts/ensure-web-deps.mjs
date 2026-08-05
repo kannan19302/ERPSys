@@ -17,7 +17,7 @@ const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const deps = [
   { name: '@unerp/shared', dir: 'packages/shared' },
   { name: '@unerp/auth', dir: 'packages/auth' },
-  { name: '@unerp/database', dir: 'packages/database', prisma: true },
+  { name: '@unerp/database', dir: 'node_modules/@unerp/database', prisma: true },
 ];
 
 const run = (cmd) => execSync(cmd, { cwd: rootDir, stdio: 'inherit' });

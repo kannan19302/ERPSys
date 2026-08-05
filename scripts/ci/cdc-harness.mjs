@@ -60,17 +60,31 @@ const AS_JSON = process.argv.includes('--json');
  * `entry` is the source entrypoint; `subpaths` maps a subpath export to its own
  * entrypoint, because a consumer may import `@unerp/ui/charts` directly.
  */
+// Providers now resolve to the INSTALLED package rather than workspace source.
+//
+// This is what M2 was always for. Before the § 14 Phase 3 split the harness read
+// provider source, which was a reasonable proxy because source and artifact were
+// the same tree. They are no longer: a consumer resolves the published
+// `dist/index.d.ts`, so that is the surface whose absence of a symbol actually
+// breaks a build. Reading source here would have replayed expectations against a
+// surface nobody consumes — and would have missed exactly the drift that
+// publishing without `dist/` produced earlier in this migration.
+const DIST = (name) => ({
+  dir: `node_modules/${name}`,
+  entry: 'dist/index.d.ts',
+});
+
 const PROVIDERS = {
-  '@unerp/contracts': { dir: 'packages/contracts', entry: 'src/index.ts' },
-  '@unerp/kernel': { dir: 'packages/kernel', entry: 'src/index.ts' },
-  '@unerp/sdk': { dir: 'packages/sdk', entry: 'src/index.ts' },
-  '@unerp/extension-api': { dir: 'packages/extension-api', entry: 'src/index.ts' },
-  '@unerp/sandbox': { dir: 'packages/sandbox', entry: 'src/index.ts' },
-  '@unerp/framework': { dir: 'packages/framework', entry: 'src/index.ts' },
-  '@unerp/database': { dir: 'packages/database', entry: 'src/index.ts' },
-  '@unerp/shared': { dir: 'packages/shared', entry: 'src/index.ts' },
-  '@unerp/auth': { dir: 'packages/auth', entry: 'src/index.ts' },
-  '@unerp/ui': { dir: 'packages/ui', entry: 'src/index.ts', subpathRoot: 'src' },
+  '@unerp/contracts': DIST('@unerp/contracts'),
+  '@unerp/kernel': DIST('@unerp/kernel'),
+  '@unerp/sdk': DIST('@unerp/sdk'),
+  '@unerp/extension-api': DIST('@unerp/extension-api'),
+  '@unerp/sandbox': DIST('@unerp/sandbox'),
+  '@unerp/framework': DIST('@unerp/framework'),
+  '@unerp/database': DIST('@unerp/database'),
+  '@unerp/shared': DIST('@unerp/shared'),
+  '@unerp/auth': DIST('@unerp/auth'),
+  '@unerp/ui': { ...DIST('@unerp/ui'), subpathRoot: 'dist' },
 };
 
 /** Consumers: anything that compiles against a provider's published artifact. */
@@ -107,13 +121,29 @@ function resolveRelative(fromFile, spec) {
   // this mapping silently reports a closed provider as an open one, which turns
   // a hard gate into a warning — so it is handled explicitly.
   const jsAsTs = base.replace(/\.jsx?$/, (m) => (m === '.jsx' ? '.tsx' : '.ts'));
+  // …and the same specifier inside a published `dist` resolves to a DECLARATION
+  // file, not a source file. Omitting `.d.ts` here made the harness unable to
+  // follow re-exports through a published package, so it under-reported every
+  // provider surface and raised false violations against symbols that were
+  // present all along — a gate that cries wolf gets muted, which costs as much
+  // as one that stays silent.
+  const jsAsDts = base.replace(/\.jsx?$/, '.d.ts');
+  // ORDER MATTERS. Inside a published `dist` the emitted `.js` sits beside its
+  // `.d.ts`, so trying the bare specifier first resolved `./validators/index.js`
+  // to the JavaScript — which carries no type exports at all. The harness then
+  // saw an almost-empty surface and reported 243 false violations against
+  // symbols that were published correctly. Declarations are tried first because
+  // they are what a consumer's compiler reads.
   for (const candidate of [
-    base,
+    jsAsDts,
+    `${base}.d.ts`,
+    path.join(base, 'index.d.ts'),
+    jsAsTs,
     `${base}.ts`,
     `${base}.tsx`,
-    jsAsTs,
     path.join(base, 'index.ts'),
     path.join(base, 'index.tsx'),
+    base,
   ]) {
     if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) return candidate;
   }

@@ -4,7 +4,16 @@ import { fileURLToPath } from 'node:url';
 
 const repositoryRoot = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const rootPackage = JSON.parse(readFileSync(resolve(repositoryRoot, 'package.json'), 'utf8'));
-const databasePackage = JSON.parse(readFileSync(resolve(repositoryRoot, 'packages/database/package.json'), 'utf8'));
+// The database package is the published @unerp/database after the § 14 Phase 3
+// split. This gate asserts that migrations are applied through recorded history
+// (`prisma migrate deploy`) and never `db push`, so it must read the manifest of
+// the package whose scripts actually run — the installed one.
+const databasePackage = JSON.parse(
+  readFileSync(
+    resolve(repositoryRoot, 'node_modules/@unerp/database/package.json'),
+    'utf8',
+  ),
+);
 const entrypoint = readFileSync(resolve(repositoryRoot, 'scripts/docker-entrypoint.sh'), 'utf8');
 const ciWorkflow = readFileSync(resolve(repositoryRoot, '.github/workflows/ci.yml'), 'utf8');
 

@@ -1,7 +1,0 @@
-/* ─────────────────────────────────────────────────
-   Compatibility entry — '@unerp/ui/tokens' resolves here.
-   The tokens themselves live in ./index.css, which moved into this
-   package when the 13 @unerp/ui-* packages were collapsed
-   (PLATFORM_ARCHITECTURE.md § 7.2).
-   ───────────────────────────────────────────────── */
-@import "./index.css";

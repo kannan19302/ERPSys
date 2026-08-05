@@ -41,7 +41,19 @@ const BASELINE = path.join(
   "ci",
   "decimal-arithmetic-baseline.json",
 );
-const SCHEMA_DIR = path.join(ROOT, "packages", "database", "prisma", "schema");
+// The schema moved to the published @unerp/database in the § 14 Phase 3 split,
+// so the gate reads the installed artifact — the copy the running code is
+// actually typed against. It fell over with ENOENT the moment packages/ was
+// deleted, which is the right way for a gate to notice its target has moved:
+// loudly, rather than by scanning an empty set and reporting zero violations.
+const SCHEMA_DIR = path.join(
+  ROOT,
+  "node_modules",
+  "@unerp",
+  "database",
+  "prisma",
+  "schema",
+);
 const SCAN_ROOTS = [path.join(ROOT, "apps"), path.join(ROOT, "packages")];
 
 function decimalFieldNames() {
