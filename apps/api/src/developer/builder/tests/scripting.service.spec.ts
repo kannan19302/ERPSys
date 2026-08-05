@@ -10,21 +10,33 @@ describe("BuilderScriptingService", () => {
       expect(result.valid).toBe(true);
     });
 
-    it("rejects script with process reference", async () => {
-      const result = await service.validateScript("process.exit(1)");
-      expect(result.valid).toBe(false);
-      expect(result.error).toContain("process");
+    // These three previously asserted that validateScript rejected any script
+    // *containing* the substrings "process", "require" or "eval". That denylist
+    // has been removed because it never constrained anything: it is defeated by
+    // `this["constr"+"uctor"]`, which contains none of those strings. Asserting
+    // it here made the suite vouch for a guarantee that did not exist.
+    //
+    // The real boundary is the V8 isolate the script now runs in, which has no
+    // such bindings to reference. What validateScript reports is syntax.
+    it("accepts a syntactically valid script, whatever identifiers it names", async () => {
+      const result = await service.validateScript(
+        "const processed = 1; return processed;",
+      );
+      expect(result.valid).toBe(true);
     });
 
-    it("rejects script with require", async () => {
-      const result = await service.validateScript('const fs = require("fs")');
+    it("rejects a script that does not parse", async () => {
+      const result = await service.validateScript("return (;");
       expect(result.valid).toBe(false);
-      expect(result.error).toContain("require");
     });
 
-    it("rejects script with eval", async () => {
-      const result = await service.validateScript('eval("1+1")');
-      expect(result.valid).toBe(false);
+    it("leaves a reference to `process` unresolvable rather than unmentionable", async () => {
+      const result = await service.executeScript(
+        "test-tenant",
+        "return typeof process;",
+      );
+      expect(result.success).toBe(true);
+      expect(result.output).toBe("undefined");
     });
   });
 
@@ -38,10 +50,13 @@ describe("BuilderScriptingService", () => {
       expect(result.output).toBe(5);
     });
 
-    it("provides console.log access", async () => {
+    it("provides a captured log capability", async () => {
+      // `console` is not injected: the isolate receives an explicit `unierp.log`
+      // capability instead, so logging is a granted operation rather than an
+      // ambient global. TRD § 3 bans console.* platform-wide in any case.
       const result = await service.executeScript(
         "test-tenant",
-        'console.log("hello"); return 42;',
+        'unierp.log("hello"); return 42;',
       );
       expect(result.success).toBe(true);
       expect(result.output).toBe(42);
@@ -71,10 +86,17 @@ describe("BuilderScriptingService", () => {
       await expect(service.executeScript("test-tenant", "")).rejects.toThrow();
     });
 
-    it("rejects blocked globals", async () => {
-      await expect(
-        service.executeScript("test-tenant", "process.exit()"),
-      ).rejects.toThrow("blocked");
+    it("cannot reach the host process", async () => {
+      // Previously this threw "blocked" from a substring check before the script
+      // ran. Now the script runs, and fails because there is no `process` in the
+      // isolate to exit — the difference between forbidding a word and removing
+      // the capability.
+      const result = await service.executeScript(
+        "test-tenant",
+        "process.exit()",
+      );
+      expect(result.success).toBe(false);
+      expect(String(result.error)).toMatch(/not defined/i);
     });
   });
 

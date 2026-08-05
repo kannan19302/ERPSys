@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException } from "@nestjs/common";
 import { prisma } from "@unerp/database";
 import { idpClient as idpPrisma } from "@/common/idp-client";
-import vm from "vm";
+import { SandboxRunner, type HostCapabilities } from "@unerp/sandbox";
 
 export interface ScriptResult {
   success: boolean;
@@ -11,23 +11,37 @@ export interface ScriptResult {
   error?: string;
 }
 
-const BLOCKED_GLOBALS = [
-  "process",
-  "require",
-  "eval",
-  "Function",
-  "__dirname",
-  "__filename",
-  "module",
-  "exports",
-  "globalThis",
-  "global",
-];
-
 const MAX_EXECUTION_MS = 3000;
 
+/**
+ * Studio scripting — § 14 Phase 5: the builder becomes a *client* of the public
+ * extension API, "with no privileged path".
+ *
+ * This previously ran tenant-authored scripts through `node:vm`, guarded by a
+ * denylist of blocked substrings (`script.includes("process")`). Both halves
+ * were ineffective:
+ *
+ *   - `node:vm` is not an isolation boundary; Node's own documentation says so.
+ *     A `vm.createContext` sandbox shares a heap with the host and is escapable
+ *     in one expression.
+ *   - A substring denylist is defeated by construction rather than reference:
+ *     `this["constr"+"uctor"]["constr"+"uctor"]("return pro"+"cess")()` contains
+ *     none of the blocked strings. Denylisting text cannot constrain a language
+ *     that can build any identifier at runtime.
+ *
+ * That mattered more here than in the extension sandbox it mirrors, because
+ * this path is *live*: a Studio user writes a form hook or validation rule and
+ * it executes inside the API process.
+ *
+ * It now runs on the same `SandboxRunner` as third-party extensions — a V8
+ * isolate with its own heap, no `process`, no `require`, no ambient authority,
+ * and a hard CPU and memory budget. First-party Studio code gets no privileged
+ * shortcut, which is the property § 14 Phase 5 asks for.
+ */
 @Injectable()
 export class BuilderScriptingService {
+  private readonly sandbox = new SandboxRunner();
+
   async executeScript(
     tenantId: string,
     script: string,
@@ -43,72 +57,59 @@ export class BuilderScriptingService {
       );
     }
 
-    for (const blocked of BLOCKED_GLOBALS) {
-      if (script.includes(blocked)) {
-        throw new BadRequestException(
-          `Script contains blocked reference: ${blocked}`,
-        );
-      }
-    }
-
     const logs: string[] = [];
-    const sandbox: Record<string, unknown> = {
-      console: {
-        log: (...args: unknown[]) => logs.push(args.map(String).join(" ")),
-        warn: (...args: unknown[]) =>
-          logs.push(`[WARN] ${args.map(String).join(" ")}`),
-        error: (...args: unknown[]) =>
-          logs.push(`[ERROR] ${args.map(String).join(" ")}`),
+    const host: HostCapabilities = {
+      log: (level, _meta, args) => {
+        // The bridge always passes (message, meta) and meta is null when the
+        // caller omitted it — rendering that as the string "null" would put a
+        // word in the author's log line that they did not write.
+        const line = args
+          .filter((a) => a !== null && a !== undefined)
+          .map((a) => (typeof a === "string" ? a : JSON.stringify(a)))
+          .join(" ");
+        logs.push(level === "error" ? `[ERROR] ${line}` : line);
       },
-      JSON,
-      Math,
-      Date,
-      Array,
-      Object,
-      String,
-      Number,
-      Boolean,
-      parseInt,
-      parseFloat,
-      isNaN,
-      isFinite,
-      undefined,
-      null: null,
-      NaN,
-      Infinity,
-      // Inject the record context
-      record: context.record || {},
-      tenant: { id: tenantId },
-      params: context.params || {},
-      result: undefined,
     };
 
-    const vmContext = vm.createContext(sandbox);
+    // The script body is wrapped as a hook so the isolate contract is the same
+    // one extensions use. `record`, `tenant` and `params` arrive as arguments
+    // rather than as injected globals — a value passed in cannot be a handle
+    // reached out through.
+    const wrapped =
+      `const hooks = { main: function (record, tenant, params) {\n` +
+      `${script}\n` +
+      `} };`;
+
     const start = Date.now();
-
     try {
-      const compiled = new vm.Script(`(function() { ${script} })()`, {
-        filename: "builder-script.js",
-      });
-
-      const output = compiled.runInContext(vmContext, {
-        timeout: MAX_EXECUTION_MS,
-      });
-      const durationMs = Date.now() - start;
+      const { result } = await this.sandbox.run(
+        wrapped,
+        {
+          extensionId: `studio-script:${tenantId}`,
+          tenantId,
+          scopes: ["log:write"],
+          budget: { timeoutMs: MAX_EXECUTION_MS, memoryMb: 32 },
+        },
+        host,
+        {
+          hook: "main",
+          args: [context.record ?? {}, { id: tenantId }, context.params ?? {}],
+        },
+      );
 
       return {
         success: true,
-        output: output ?? sandbox.result,
+        output: result,
         logs,
-        durationMs,
+        durationMs: Date.now() - start,
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
       return {
         success: false,
         output: null,
         logs,
         durationMs: Date.now() - start,
-        error: err.message || "Script execution failed",
+        error: err instanceof Error ? err.message : "Script execution failed",
       };
     }
   }
@@ -156,16 +157,31 @@ export class BuilderScriptingService {
     script: string,
   ): Promise<{ valid: boolean; error?: string }> {
     try {
-      new vm.Script(script, { filename: "validation.js" });
-
-      for (const blocked of BLOCKED_GLOBALS) {
-        if (script.includes(blocked)) {
-          return {
-            valid: false,
-            error: `Contains blocked reference: ${blocked}`,
-          };
-        }
-      }
+      // Syntax check only, and honest about being only that.
+      //
+      // This used to also apply the substring denylist and report a script as
+      // "valid: false — contains blocked reference". That gave authors a false
+      // model of what constrains them: the denylist never constrained anything
+      // (it is defeated by string concatenation), and the real constraint is
+      // the isolate, which has no `process` or `require` to reference in the
+      // first place. Reporting a fake rule as the boundary teaches people to
+      // code around the wrong thing.
+      //
+      // Compiling in an isolate rather than node:vm keeps even the syntax check
+      // off the host heap.
+      const probe = new SandboxRunner();
+      await probe.run(
+        `const hooks = { main: function () { return true; } };\n` +
+          `void (function () {\n${script}\n});`,
+        {
+          extensionId: "studio-script-validation",
+          tenantId: "validation",
+          scopes: [],
+          budget: { timeoutMs: 1000, memoryMb: 16 },
+        },
+        { log: () => {} },
+        { hook: "main" },
+      );
 
       return { valid: true };
     } catch (err: any) {
