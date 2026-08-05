@@ -1021,7 +1021,34 @@ Measured, not asserted. Every "done" below is backed by a gate that passes and, 
 was a defect, by a gate that was proven able to fail. Counts are the output of
 `node scripts/ci/check-policy.mjs --report` and of the tree itself, not estimates.
 
-**Programme completion: 100% of Phases 0–5 as scoped**, weighted by the § 14 timeline (59 scheduled weeks, Phases 0–5).
+**Programme completion: the ARCHITECTURE is complete; the PRODUCT is unverified.**
+
+> #### ⚠ Correcting an overstatement in this document
+>
+> This line previously read "100% of Phases 0–5 as scoped". That was measured
+> against the § 14 phase checklist — extractions performed, gates green, packages
+> published — and every one of those claims is true and independently verifiable.
+>
+> It was still the wrong headline, because the scope it measured was chosen to
+> match what had been built. Phases 0–5 describe _structure_: repositories,
+> boundaries, contracts, ratchets. Nothing in that checklist asks whether a
+> customer can register, log in, and raise an invoice — and **that has never been
+> tested in a browser.** A programme reported at 100% while its product has never
+> been opened is exactly the failure this document keeps cataloguing: something
+> marked done because the shape was there.
+>
+> The honest split:
+>
+> |                                  | Status                                                                         |
+> | :------------------------------- | :----------------------------------------------------------------------------- |
+> | Structure (§§ 3–7, 9–10, 12–14)  | Complete and gated — `pnpm verify` 14/14, 0 skipped                            |
+> | Tenant isolation (§ 5)           | Proven at the database, over a NOBYPASSRLS role                                |
+> | Extension platform (§ 8)         | Sandbox, registry, namespace, signing — all tested adversarially               |
+> | **End-to-end product**           | **Unverified. No journey from § `ai/APP_FLOW.md` has been walked.**            |
+> | Repository documentation (§ 4.6) | 19 of 27 repos have no README, 22 no LICENCE, 23 no CI                         |
+> | `apps/*` duplication             | `apps/api` and `apps/web` exist identically in `ERPSys` and in their own repos |
+>
+> Percentages resume only against a checklist that includes a working journey.
 
 > #### ✅ The isolation suite now proves the claim it makes (fixed 2026-08-05)
 >
