@@ -91,9 +91,7 @@
         "Tabs",
         "TextField",
         "Textarea",
-        "ThemeProvider",
         "ThemeSetting",
-        "ToastProvider",
         "Tooltip",
         "TrustBarBlock",
         "ViewMode",
@@ -102,7 +100,7 @@
         "useToast"
       ],
       "namespaceImports": 0,
-      "consumingFiles": 761
+      "consumingFiles": 760
     },
     "@unerp/ui/charts": {
       "symbols": [
@@ -121,6 +119,20 @@
       ],
       "namespaceImports": 0,
       "consumingFiles": 95
+    },
+    "@unerp/ui/notifications": {
+      "symbols": [
+        "ToastProvider"
+      ],
+      "namespaceImports": 0,
+      "consumingFiles": 1
+    },
+    "@unerp/ui/theme": {
+      "symbols": [
+        "ThemeProvider"
+      ],
+      "namespaceImports": 0,
+      "consumingFiles": 1
     }
   }
 }

@@ -257,8 +257,8 @@ importers:
         specifier: ^0.1.3
         version: 0.1.3(@types/react@19.2.17)(next@15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)
       '@unerp/ui':
-        specifier: ^1.0.8
-        version: 1.0.8(@types/react@19.2.17)(next@15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)
+        specifier: ^1.0.10
+        version: 1.0.10(@types/react@19.2.17)(next@15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)
       next:
         specifier: 15.3.4
         version: 15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -294,8 +294,8 @@ importers:
         specifier: ^1.0.4
         version: 1.0.4
       '@unerp/ui':
-        specifier: ^1.0.8
-        version: 1.0.8(@types/react@19.2.17)(next@15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)
+        specifier: ^1.0.10
+        version: 1.0.10(@types/react@19.2.17)(next@15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)
       next:
         specifier: 15.3.4
         version: 15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -554,8 +554,8 @@ importers:
         specifier: ^1.0.4
         version: 1.0.4
       '@unerp/ui':
-        specifier: ^1.0.8
-        version: 1.0.8(@types/react@19.2.17)(next@15.5.19(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)(redux@5.0.1)
+        specifier: ^1.0.10
+        version: 1.0.10(@types/react@19.2.17)(next@15.5.19(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)(redux@5.0.1)
       '@xyflow/react':
         specifier: ^12.11.0
         version: 12.11.0(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(immer@11.1.8)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -3267,8 +3267,8 @@ packages:
   '@unerp/shared@1.0.4':
     resolution: {integrity: sha512-KHSipkOGJgy3OZaWj5K6Mdu2OruE/A4Yw/PoSPsMUVPOXRzAHzGbJVzr+neHWyfQxXPkQQl/WhQjfylQO1FiAA==}
 
-  '@unerp/ui@1.0.8':
-    resolution: {integrity: sha512-nxjxi5v3lqWx8Yg8qm7suA87ML1BhhcC6FtUUmV/xcIeCtbsoNMtTHPDL0yjrlcEiyKKBMZXLllMllPYg+xyNQ==}
+  '@unerp/ui@1.0.10':
+    resolution: {integrity: sha512-gjApLL2C2ZY6/fwpI0wkb4xXxuH0YChHj1pF7tAHZzs6dXyJZOpceX2DoHdbdAcHXxY2Uix0T5DRhulvYausfw==}
     peerDependencies:
       next: '>=14.0.0'
       react: ^19.0.0
@@ -9832,7 +9832,7 @@ snapshots:
   '@unerp/framework@0.1.3(@types/react@19.2.17)(next@15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)':
     dependencies:
       '@tanstack/react-query': 5.101.1(react@19.2.7)
-      '@unerp/ui': 1.0.8(@types/react@19.2.17)(next@15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)
+      '@unerp/ui': 1.0.10(@types/react@19.2.17)(next@15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)
       react: 19.2.7
       react-dom: 19.2.7(react@19.2.7)
       zod: 3.25.76
@@ -9845,7 +9845,7 @@ snapshots:
   '@unerp/framework@0.1.3(@types/react@19.2.17)(next@15.5.19(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)(redux@5.0.1)':
     dependencies:
       '@tanstack/react-query': 5.101.1(react@19.2.7)
-      '@unerp/ui': 1.0.8(@types/react@19.2.17)(next@15.5.19(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)(redux@5.0.1)
+      '@unerp/ui': 1.0.10(@types/react@19.2.17)(next@15.5.19(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)(redux@5.0.1)
       react: 19.2.7
       react-dom: 19.2.7(react@19.2.7)
       zod: 3.25.76
@@ -9870,7 +9870,7 @@ snapshots:
     dependencies:
       zod: 3.25.76
 
-  '@unerp/ui@1.0.8(@types/react@19.2.17)(next@15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)':
+  '@unerp/ui@1.0.10(@types/react@19.2.17)(next@15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)':
     dependencies:
       '@radix-ui/react-slot': 1.2.5(@types/react@19.2.17)(react@19.2.7)
       lucide-react: 0.460.0(react@19.2.7)
@@ -9884,7 +9884,7 @@ snapshots:
       - react-is
       - redux
 
-  '@unerp/ui@1.0.8(@types/react@19.2.17)(next@15.5.19(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)(redux@5.0.1)':
+  '@unerp/ui@1.0.10(@types/react@19.2.17)(next@15.5.19(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)(redux@5.0.1)':
     dependencies:
       '@radix-ui/react-slot': 1.2.5(@types/react@19.2.17)(react@19.2.7)
       lucide-react: 0.460.0(react@19.2.7)

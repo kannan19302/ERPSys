@@ -7,13 +7,12 @@ const nextConfig = {
   // separate IdP realm and mandatory MFA per § 3.1 and Phase 1.
   reactStrictMode: true,
 
-  // @unerp/ui ships CSS modules beside its compiled components, and Next refuses
-  // to process CSS modules originating in node_modules. Without this the console
-  // fails with `Module not found: Can't resolve './badge.module.css'` the moment
-  // it renders anything from the design system — which its current landing route
-  // does not, so the defect was latent rather than absent.
-  serverExternalPackages: ['@unerp/ui', '@unerp/framework'],
-  transpilePackages: ['@unerp/shared'],
+  // Transpiled, not externalised. A server-external package resolves its own
+  // copy of React, so prerendering hit
+  // `TypeError: Cannot read properties of null (reading 'useContext')` — two
+  // React instances, one of which has no current dispatcher. Letting webpack own
+  // the design system keeps a single React and processes its CSS.
+  transpilePackages: ['@unerp/shared', '@unerp/ui', '@unerp/framework'],
 
   experimental: {
     optimizePackageImports: ['lucide-react'],
