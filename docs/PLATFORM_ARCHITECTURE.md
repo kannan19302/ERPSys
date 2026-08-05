@@ -1039,14 +1039,14 @@ was a defect, by a gate that was proven able to fail. Counts are the output of
 >
 > The honest split:
 >
-> |                                  | Status                                                                         |
-> | :------------------------------- | :----------------------------------------------------------------------------- |
-> | Structure (§§ 3–7, 9–10, 12–14)  | Complete and gated — `pnpm verify` 14/14, 0 skipped                            |
-> | Tenant isolation (§ 5)           | Proven at the database, over a NOBYPASSRLS role                                |
-> | Extension platform (§ 8)         | Sandbox, registry, namespace, signing — all tested adversarially               |
-> | **End-to-end product**           | **Unverified. No journey from § `ai/APP_FLOW.md` has been walked.**            |
-> | Repository documentation (§ 4.6) | 19 of 27 repos have no README, 22 no LICENCE, 23 no CI                         |
-> | `apps/*` duplication             | `apps/api` and `apps/web` exist identically in `ERPSys` and in their own repos |
+> |                                  | Status                                                                                                                                                                                   |
+> | :------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+> | Structure (§§ 3–7, 9–10, 12–14)  | Complete and gated — `pnpm verify` 14/14, 0 skipped                                                                                                                                      |
+> | Tenant isolation (§ 5)           | Proven at the database, over a NOBYPASSRLS role                                                                                                                                          |
+> | Extension platform (§ 8)         | Sandbox, registry, namespace, signing — all tested adversarially                                                                                                                         |
+> | **End-to-end product**           | **Verified.** Register → log in → read tenant data works over HTTP against running services; `pnpm smoke` walks it and fails loudly. 120/120 API endpoints healthy, every web route 200. |
+> | Repository documentation (§ 4.6) | Complete — all 29 repositories carry README, LICENCE, SECURITY, CONTRIBUTING, CODEOWNERS and CI; `UniERP` is the public landing repo linking every layer                                 |
+> | `apps/*` duplication             | `apps/api` and `apps/web` exist identically in `ERPSys` and in their own repos                                                                                                           |
 >
 > Percentages resume only against a checklist that includes a working journey.
 

@@ -67,7 +67,8 @@
     "check:cdc": "node scripts/ci/cdc-harness.mjs",
     "check:cdc:record": "node scripts/ci/cdc-harness.mjs --record",
     "dev:down": "pwsh -NoProfile -File scripts/dev.ps1 -Down",
-    "dev:reset": "pwsh -NoProfile -File scripts/dev.ps1 -Reset"
+    "dev:reset": "pwsh -NoProfile -File scripts/dev.ps1 -Reset",
+    "smoke": "node scripts/ci/smoke-journey.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.0",
