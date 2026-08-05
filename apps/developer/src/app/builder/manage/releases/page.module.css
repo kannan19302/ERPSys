@@ -134,7 +134,7 @@
 }
 .s24 {
   background: white;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
   padding: var(--space-2);
 }

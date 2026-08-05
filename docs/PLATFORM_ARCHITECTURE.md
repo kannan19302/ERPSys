@@ -1021,7 +1021,7 @@ Measured, not asserted. Every "done" below is backed by a gate that passes and, 
 was a defect, by a gate that was proven able to fail. Counts are the output of
 `node scripts/ci/check-policy.mjs --report` and of the tree itself, not estimates.
 
-**Programme completion: ~98%**, weighted by the § 14 timeline (59 scheduled weeks, Phases 0–5).
+**Programme completion: ~99%**, weighted by the § 14 timeline (59 scheduled weeks, Phases 0–5).
 
 > #### ✅ The isolation suite now proves the claim it makes (fixed 2026-08-05)
 >

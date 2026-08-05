@@ -12,7 +12,7 @@
 .s3 {
   color: var(--color-text-secondary);
   display: block;
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: 500;
   margin-bottom: var(--space-1);
 }

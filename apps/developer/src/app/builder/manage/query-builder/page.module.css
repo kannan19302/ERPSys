@@ -16,7 +16,7 @@
 }
 .s4 {
   font-family: monospace;
-  font-size: 12px;
+  font-size: var(--text-xs);
   min-height: 120px;
   width: 100%;
 }

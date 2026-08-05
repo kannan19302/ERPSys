@@ -311,7 +311,7 @@
 }
 .logoErrorText {
   color: var(--color-danger);
-  font-size: 12px;
+  font-size: var(--text-xs);
   margin-top: var(--space-1);
 }
 

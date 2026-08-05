@@ -125,7 +125,7 @@
 .p26 {
   padding: var(--space-3) var(--space-4);
   color: var(--color-text-secondary);
-  font-size: 12px;
+  font-size: var(--text-xs);
 }
 .p27 {
   background: none;

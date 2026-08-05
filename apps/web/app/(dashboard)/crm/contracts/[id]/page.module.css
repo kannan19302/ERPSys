@@ -134,7 +134,7 @@
   border-radius: 50%;
   border: 2px solid var(--color-border);
   display: flex;
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: bold;
   height: 24px;
   justify-content: center;

@@ -19,9 +19,9 @@
 }
 .s4 {
   background: var(--color-primary);
-  border-bottom-left-radius: 4px;
+  border-bottom-left-radius: var(--radius-sm);
   color: white;
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: bold;
   padding: var(--space-1) var(--space-2);
   position: absolute;

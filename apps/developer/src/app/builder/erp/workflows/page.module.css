@@ -1,5 +1,5 @@
 .s1 {
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
   font-size: 10px;
   font-weight: 600;
   padding: 2px 8px;
@@ -92,7 +92,7 @@
 }
 .s18 {
   background: #3b82f620;
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
   color: var(--color-primary);
   font-size: 10px;
   font-weight: 600;

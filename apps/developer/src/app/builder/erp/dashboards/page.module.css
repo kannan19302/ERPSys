@@ -80,7 +80,7 @@
   margin-bottom: var(--space-3);
 }
 .s16 {
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
   font-size: 10px;
   font-weight: 600;
   padding: 2px 8px;
@@ -88,7 +88,7 @@
 .s17 {
   align-items: center;
   background: #3b82f620;
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
   color: var(--color-primary);
   display: flex;
   font-size: 10px;

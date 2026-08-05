@@ -94,7 +94,7 @@
 
 .s16 {
   margin: 0;
-  font-size: 16px;
+  font-size: var(--text-base);
   font-weight: var(--weight-bold);
 }
 
@@ -145,7 +145,7 @@
 
 .s24 {
   margin: 0;
-  font-size: 16px;
+  font-size: var(--text-base);
   font-weight: var(--weight-bold);
 }
 
@@ -213,7 +213,7 @@
 
 .s37 {
   padding: var(--space-3);
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--color-text-secondary);
 }
 
@@ -245,7 +245,7 @@
 
 .s42 {
   margin: 0;
-  font-size: 16px;
+  font-size: var(--text-base);
   font-weight: var(--weight-bold);
 }
 
@@ -350,7 +350,7 @@
 
 .s63 {
   margin: 0;
-  font-size: 18px;
+  font-size: var(--text-lg);
   font-weight: var(--weight-bold);
 }
 
@@ -459,7 +459,7 @@
 .s79 {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: var(--text-xs);
 }
 
 .s80 {

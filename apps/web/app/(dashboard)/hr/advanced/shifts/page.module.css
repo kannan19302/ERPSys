@@ -65,7 +65,7 @@
   border: none;
   background: transparent;
   outline: none;
-  font-size: 12px;
+  font-size: var(--text-xs);
   width: 100%;
   color: var(--color-text);
 }

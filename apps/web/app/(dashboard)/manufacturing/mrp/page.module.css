@@ -83,7 +83,7 @@
   gap: var(--space-1);
   overflow-x: auto;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   padding: var(--space-3);
 }
 .p16 {
@@ -107,7 +107,7 @@
 .p19 {
   margin-top: 2px;
   background: var(--color-bg-hover);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: 2px;
 }
 .p20 {

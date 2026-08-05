@@ -76,7 +76,7 @@
 }
 .s12 {
   background: var(--color-bg-sunken);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: var(--text-xs);
   padding: var(--space-3);
 }

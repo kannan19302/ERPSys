@@ -331,7 +331,7 @@
   padding: 0;
 }
 .s48 {
-  font-size: 24px;
+  font-size: var(--text-2xl);
 }
 .s49 {
   color: var(--color-text);
@@ -438,7 +438,7 @@
   align-items: center;
   border-radius: var(--radius-lg);
   display: flex;
-  font-size: 20px;
+  font-size: var(--text-xl);
   height: 42px;
   justify-content: center;
   width: 42px;

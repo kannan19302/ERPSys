@@ -138,7 +138,7 @@
   justify-content: space-between;
 }
 .s29 {
-  font-size: 20px;
+  font-size: var(--text-xl);
   font-weight: 700;
 }
 .s30 {
@@ -163,7 +163,7 @@
   padding: var(--space-4);
 }
 .s34 {
-  font-size: 24px;
+  font-size: var(--text-2xl);
   font-weight: 800;
 }
 .s35 {

@@ -98,7 +98,7 @@
   gap: var(--space-1);
   border: none;
   padding: 6px 12px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: var(--text-xs);
   font-weight: bold;
@@ -109,7 +109,7 @@
   gap: var(--space-1);
   border: none;
   padding: 6px 12px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: var(--text-xs);
   font-weight: bold;

@@ -82,7 +82,7 @@
 
 .style10 {
   font-family: monospace;
-  font-size: 12px;
+  font-size: var(--text-xs);
 }
 
 .style11 {

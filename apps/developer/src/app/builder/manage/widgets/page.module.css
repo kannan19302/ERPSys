@@ -19,7 +19,7 @@
   background: var(--color-bg-subtle);
   border-radius: var(--radius-md);
   font-family: monospace;
-  font-size: 12px;
+  font-size: var(--text-xs);
   margin: 0;
   overflow-x: auto;
   padding: var(--space-3);

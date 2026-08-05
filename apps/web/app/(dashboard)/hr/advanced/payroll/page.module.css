@@ -88,14 +88,14 @@
 
 .s16 {
   margin: 0 0 var(--space-2);
-  font-size: 12px;
+  font-size: var(--text-xs);
 }
 
 .s17 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 12px;
+  font-size: var(--text-xs);
   background: var(--color-bg-sunken);
   padding: 6px 12px;
   border-radius: var(--radius-sm);

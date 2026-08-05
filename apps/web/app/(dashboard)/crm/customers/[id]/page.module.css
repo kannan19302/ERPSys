@@ -301,7 +301,7 @@
   align-items: center;
   border-radius: 50%;
   display: flex;
-  font-size: 18px;
+  font-size: var(--text-lg);
   font-weight: bold;
   height: 56px;
   justify-content: center;

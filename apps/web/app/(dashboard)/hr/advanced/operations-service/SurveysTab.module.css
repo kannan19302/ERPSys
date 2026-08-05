@@ -26,7 +26,7 @@
 }
 
 .s5 {
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--color-text-secondary);
 }
 

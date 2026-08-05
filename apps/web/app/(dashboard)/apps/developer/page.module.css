@@ -51,7 +51,7 @@
 }
 .appMeta {
   color: var(--color-text-tertiary);
-  font-size: 12px;
+  font-size: var(--text-xs);
 }
 .bundleList {
   display: flex;
@@ -61,7 +61,7 @@
 .bundleRow {
   align-items: center;
   background: var(--color-bg);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   display: flex;
   font-size: 13px;
   gap: 10px;
@@ -81,7 +81,7 @@
   padding: var(--space-4);
 }
 .reviewChangelog {
-  font-size: 12px;
+  font-size: var(--text-xs);
   margin-top: var(--space-1);
 }
 .reviewActions {

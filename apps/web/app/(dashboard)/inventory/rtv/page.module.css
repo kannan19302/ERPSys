@@ -1,6 +1,6 @@
 .s1 {
   font-family: monospace;
-  font-size: 12px;
+  font-size: var(--text-xs);
 }
 .s2 {
   display: flex;

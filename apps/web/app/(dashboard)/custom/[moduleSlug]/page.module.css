@@ -61,7 +61,7 @@
 }
 .s14 {
   color: var(--color-text-secondary);
-  font-size: 12px;
+  font-size: var(--text-xs);
 }
 .s15 {
   display: flex;
