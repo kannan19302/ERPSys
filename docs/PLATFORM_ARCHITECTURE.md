@@ -1349,12 +1349,37 @@ this ("a local Verdaccio registry is available for rehearsing the publish path")
 repositories**: `@unerp/contracts`, `@unerp/kernel`, `@unerp/ui`, `@unerp/sdk`,
 `@unerp/extension-api`, `@unerp/framework`, `@unerp/database`.
 
-Then the step that actually proves the architecture: `unierp-kernel` was
-switched from `"@unerp/contracts": "workspace:*"` to `"^1.0.0"`, installed from
-the registry, and **typechecks standalone against the published artifact** with
-its layering gate green. Until that point the extracted repositories were
-directories with tags — the dependency still resolved through a workspace path,
-so nothing had shown a consumer can compile across a real package boundary.
+**A correction to an earlier claim in this section.** It previously recorded that
+`unierp-kernel` "typechecks standalone against the published artifact", offered
+as proof the boundary works. It was not proof: `unierp-kernel` names
+`@unerp/contracts` only in a comment and never imports it, so that typecheck
+passed without ever resolving the package. It demonstrated that the install
+succeeded, nothing more — the same vacuous-pass shape as the RLS suite and the
+CDC harness, and this one was self-inflicted.
+
+The real proof is `unierp-framework` → `@unerp/ui`, which genuinely imports:
+after the fixes below it **compiles with zero errors against `@unerp/ui@1.0.3`
+resolved from the registry**.
+
+#### Publishing the packages proved they were not installable
+
+Three defects, each of which shipped a package a consumer could not use, and
+none visible until something actually tried to consume one:
+
+1. **`dist/` was never in the tarball.** `.gitignore` lists it, and with no
+   `files` field and no `.npmignore`, npm falls back to `.gitignore` — so every
+   package published without the directory its `main` and `types` point at.
+   Fixed with an explicit `files` allowlist.
+2. **`workspace:` specifiers survived publication.** `pnpm publish` rewrites
+   them to real versions; `npm publish` does not, and a consumer outside the
+   workspace cannot resolve `workspace:*`.
+3. **`tsconfig` extended a path outside the repository** (`../config/typescript/
+base.json`), so four extracted repos could not typecheck standalone — which
+   means they had not really been extracted, only copied.
+
+This is the argument for § 14's ordering restated as evidence: extraction is not
+finished when a directory exists and a tag is written. It is finished when a
+consumer can install the artifact and compile against it.
 
 Publishing also surfaced a contradiction worth recording: three of the extracted
 packages carried `private: true`, a monorepo-only marker meaning "never publish
