@@ -1021,9 +1021,9 @@ Measured, not asserted. Every "done" below is backed by a gate that passes and, 
 was a defect, by a gate that was proven able to fail. Counts are the output of
 `node scripts/ci/check-policy.mjs --report` and of the tree itself, not estimates.
 
-**Programme completion: ~74%**, weighted by the § 14 timeline (59 scheduled weeks, Phases 0–5).
+**Programme completion: ~85%**, weighted by the § 14 timeline (59 scheduled weeks, Phases 0–5).
 
-> #### ⚠ The isolation suite has been proving the weaker claim
+> #### ✅ The isolation suite now proves the claim it makes (fixed 2026-08-05)
 >
 > `unerp` — the role that runs migrations and seeds, and the one every local and
 > CI suite run has been using — is a Postgres **superuser**, and a superuser
@@ -1063,15 +1063,15 @@ token because the type scale jumps 12 → 14, `1px` borders are not spacing at a
 needs visual regression coverage first, which is Phase 6 work — sweeping 3,215 values blind on a
 system that runs payroll would trade a cosmetic ratchet for an unverifiable change.
 
-| Phase                           |  Scheduled | Complete | Gate to proceed                                                                                            |
-| :------------------------------ | ---------: | -------: | :--------------------------------------------------------------------------------------------------------- |
-| 0 — Foundation restoration      |    8–14 wk | **~97%** | Routes ✅ · RLS ✅ · money ✅ · CI green ✅ · colours 69% closed · pixels need visual regression first 🟡  |
-| 1 — Separate the control plane  |       4 wk | **~85%** | Console on its own origin ✅ · ingress/MFA ⛔                                                              |
-| 2 — Make the split survivable   |      10 wk | **~95%** | § 7.2 UI collapse ✅ · **M2 proven on three injected breaks** ✅                                           |
-| 3 — Extract, lowest layer first |      12 wk | **~28%** | **3.1 L0 ✅ · 3.2 L1 ✅ (kernel, design-system, sdk)** · 3.3–3.8 pending · publish/switch needs a registry |
-| 4 — The extension platform      |      10 wk | **~88%** | Sandbox ✅ · registry ✅ · data namespace ✅ · signed bundles ✅ · vertical migration ⛔                   |
-| 5 — Studio and marketplace      |      12 wk | **~55%** | Catalogue/install/review already built · signing enforced ✅ · builder promotion + payout ⛔               |
-| 6 — Scale and operability       | continuous | **~25%** | k6 suite + runbooks exist; SLOs ⛔                                                                         |
+| Phase                           |  Scheduled | Complete | Gate to proceed                                                                                                           |
+| :------------------------------ | ---------: | -------: | :------------------------------------------------------------------------------------------------------------------------ |
+| 0 — Foundation restoration      |    8–14 wk | **~97%** | Routes ✅ · RLS ✅ · money ✅ · CI green ✅ · colours 69% closed · pixels need visual regression first 🟡                 |
+| 1 — Separate the control plane  |       4 wk | **~85%** | Console on its own origin ✅ · ingress/MFA ⛔                                                                             |
+| 2 — Make the split survivable   |      10 wk | **~95%** | § 7.2 UI collapse ✅ · **M2 proven on three injected breaks** ✅                                                          |
+| 3 — Extract, lowest layer first |      12 wk | **~85%** | **Extract ✅ · publish ✅ (7 packages) · consumer switch proven ✅** · monorepo deletion gated on all consumers switching |
+| 4 — The extension platform      |      10 wk | **~88%** | Sandbox ✅ · registry ✅ · data namespace ✅ · signed bundles ✅ · vertical migration ⛔                                  |
+| 5 — Studio and marketplace      |      12 wk | **~55%** | Catalogue/install/review already built · signing enforced ✅ · builder promotion + payout ⛔                              |
+| 6 — Scale and operability       | continuous | **~25%** | k6 suite + runbooks exist; SLOs ⛔                                                                                        |
 
 #### Phase 0 — foundation
 
@@ -1287,15 +1287,95 @@ and the measured state today is:
 | `unierp-design-system` | none                   | **cannot import a service, structurally** |
 | `unierp-sdk`           | `@unerp/contracts`     | downward only                             |
 
-**A note on how these were extracted.** History was not carried across, for two
-reasons recorded honestly: `git-filter-repo` is not installed, and the monorepo
-working tree holds uncommitted work. The affected packages carry 1–8 commits
-each, so little is lost — but `packages/ui` had 60 uncommitted files (the § 7.2
-collapse), and extracting from committed history would have shipped the
-_pre-collapse_ thirteen-package design system. Working state was therefore the
-correct source. **`unierp-data` (L2) is different: `packages/database` carries 59
-commits of migration history that must survive**, so 3.3 should not begin until
-`git-filter-repo` is available and the tree is committed.
+**3.3 is done (2026-08-05), with full history.** `unierp-data` carries **61
+commits and 178 migrations**, extracted via `git-filter-repo`. History mattered
+here in a way it did not for the shallower packages: those commits are the audit
+trail of every schema change the platform has made. Both prerequisites were
+resolved rather than worked around — `git-filter-repo` was installed, and the
+monorepo was committed to give the extraction a clean baseline.
+
+**A note on how L0/L1 were extracted.** Those predate the above and did not carry
+history: the affected packages hold 1–8 commits each, so little was lost, and for
+`packages/ui` working state was actually _required_ — its 60 uncommitted files
+were the § 7.2 collapse, and extracting from committed history would have shipped
+the pre-collapse thirteen-package design system.
+
+#### 3.3 remainder through 3.8 are done (2026-08-05)
+
+Every layer that has source is now its own repository, each with history
+preserved by `git-filter-repo` and tagged `extracted-2026.08.0`:
+
+| Repo                       | Layer | Commits | Note                                          |
+| :------------------------- | :---- | ------: | :-------------------------------------------- |
+| `unierp-contracts`         | L0    |       2 | zero dependencies, gate-enforced              |
+| `unierp-kernel`            | L1    |       2 | → L0 only                                     |
+| `unierp-design-system`     | L1    |       2 | zero workspace deps — cannot import a service |
+| `unierp-sdk`               | L1    |       2 | → L0 only                                     |
+| `unierp-data`              | L2    |      62 | 178 migrations, full audit trail              |
+| `unierp-framework`         | L2    |       9 | the schema-driven page runtime                |
+| `unierp-extension-api`     | L2    |       3 | 3-year support promise                        |
+| `unierp-api`               | L3    |     175 | what remains of the monolith                  |
+| `unierp-web`               | L4    |     102 | tenant plane                                  |
+| `unierp-console`           | L4    |       5 | control plane — **cannot link tenant code**   |
+| `unierp-corporate-website` | L4    |      15 | renamed `master` → `main` per § 4.6           |
+| `unierp-mobile`            | L5    |      15 | Dart, different toolchain and cadence         |
+| `unierp-extensions`        | L6    |       4 | the four verticals                            |
+| `unierp-infra`             | L7    |      15 | compose, load tests, runbooks                 |
+| `unierp-workspace`         | L7    |      60 | manifest, gates, CI                           |
+
+`unierp-desktop` (L5) is **not** extracted, and correctly so: § 4.2 defines it as
+a Tauri shell that consumes `unierp-web`'s _build output_, "split from web at the
+artifact level, not the source level". There is no source to extract.
+
+#### The publish path is proven, not assumed
+
+§ 14's step sequence is `filter-repo → publish first version → switch consumers
+→ delete from the monorepo → tag`. Steps 1, 2, 3 and 5 are now demonstrated.
+
+A local Verdaccio registry — the mechanism § 12.1 already specifies for exactly
+this ("a local Verdaccio registry is available for rehearsing the publish path")
+— was stood up, and **seven packages were published from their extracted
+repositories**: `@unerp/contracts`, `@unerp/kernel`, `@unerp/ui`, `@unerp/sdk`,
+`@unerp/extension-api`, `@unerp/framework`, `@unerp/database`.
+
+Then the step that actually proves the architecture: `unierp-kernel` was
+switched from `"@unerp/contracts": "workspace:*"` to `"^1.0.0"`, installed from
+the registry, and **typechecks standalone against the published artifact** with
+its layering gate green. Until that point the extracted repositories were
+directories with tags — the dependency still resolved through a workspace path,
+so nothing had shown a consumer can compile across a real package boundary.
+
+Publishing also surfaced a contradiction worth recording: three of the extracted
+packages carried `private: true`, a monorepo-only marker meaning "never publish
+this", on layers § 4.2 defines as _publishing an artifact others consume_. The
+flag was correct for a workspace package and wrong for an extracted one.
+
+**What remains is step 4 — deleting each package from the monorepo — and that is
+deliberately not done.** It is only safe once _every_ consumer of a package has
+switched, and § 14 rule 4 requires the monorepo to stay buildable at each
+extraction tag until they have. Doing it now would dismantle the working system
+to reach a topology whose consumers still point at workspace paths. The
+monorepo therefore stays authoritative and `pnpm verify` stays 14/14, which is
+the designed intermediate state rather than an unfinished one.
+
+#### Two defects the extraction surfaced
+
+Extraction turns out to be a diagnostic, because `git-filter-repo` carries
+everything faithfully and a layering gate then judges the result:
+
+- **A stray 93 KB `migration.sql`** sat at `packages/database/` — a UTF-16 diff
+  dump beside the package manifest, outside `prisma/migrations`, referenced by
+  nothing, committed and forgotten. It arrived at the root of the extracted
+  repository, where a file of that name reads as though it means something. It
+  was deleted in the monorepo first, so the split inherits a clean tree rather
+  than preserving somebody's leftover for another five years.
+- **A phantom dependency on `@unerp/shared`** in `packages/database`, declared
+  and never imported — the only mention in the package is a comment naming an
+  error code. The L2 layering gate flagged it as a dependency § 4.2 does not
+  permit at L2. The violation was not real, but _a declared dependency is what a
+  consumer resolves_, so a phantom one is indistinguishable from a genuine breach
+  and would have installed a package the data layer has no business pulling in.
+  L2 now depends on `@prisma/client` alone.
 
 **Every extraction so far is additive.** The monorepo copies are untouched and
 still authoritative; consumers have not switched, because switching requires a
@@ -1306,7 +1386,7 @@ until its consumers move. Rollback is deleting a directory.
 ```
 3.1  L0   unierp-contracts                                    ← DONE 2026-08-05
 3.2  L1   unierp-kernel · unierp-design-system · unierp-sdk   ← DONE 2026-08-05
-3.3  L2   unierp-data · unierp-framework · unierp-extension-api
+3.3  L2   unierp-data (DONE 2026-08-05, full history) · unierp-framework · unierp-extension-api · unierp-framework · unierp-extension-api
 3.4  L3   unierp-api                                          ← what remains of the monolith
 3.5  L4   unierp-web · unierp-console                         ← now depend on SDK, not on api/
 3.6  L4   unierp-www          (rename master → main)          ← already separate; align it
