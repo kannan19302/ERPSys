@@ -119,7 +119,7 @@
 .s20 {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-half);
 }
 .s21 {
   color: var(--color-text-secondary);

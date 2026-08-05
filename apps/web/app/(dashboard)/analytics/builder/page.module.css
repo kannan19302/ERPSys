@@ -152,7 +152,7 @@
   color: var(--color-text-tertiary);
   display: flex;
   font-size: var(--text-xs);
-  gap: 6px;
+  gap: var(--space-1-5);
   height: 90px;
   justify-content: center;
 }

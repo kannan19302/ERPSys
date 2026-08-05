@@ -37,7 +37,7 @@
   border-radius: var(--radius-full);
   font-size: 10px;
   font-weight: var(--weight-semibold);
-  padding: 2px 8px;
+  padding: var(--space-half) var(--space-2);
 }
 .s8 {
   padding: var(--space-1) var(--space-2);

@@ -56,7 +56,7 @@
 .bundleList {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-1-5);
 }
 .bundleRow {
   align-items: center;
@@ -64,8 +64,8 @@
   border-radius: var(--radius-md);
   display: flex;
   font-size: 13px;
-  gap: 10px;
-  padding: 6px 10px;
+  gap: var(--space-2-5);
+  padding: var(--space-1-5) var(--space-2-5);
 }
 .reviewNotes {
   color: var(--color-danger);

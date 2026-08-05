@@ -153,7 +153,7 @@
 .deviceRowInfo {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-half);
   min-width: 0;
 }
 .deviceRowLabel {

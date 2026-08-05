@@ -2,8 +2,8 @@
   align-items: center;
   display: inline-flex;
   font-size: 11px;
-  gap: 6px;
-  padding: 4px 10px;
+  gap: var(--space-1-5);
+  padding: var(--space-1) var(--space-2-5);
 }
 .s2 {
   align-items: center;
@@ -11,8 +11,8 @@
   color: var(--color-primary);
   display: inline-flex;
   font-size: 11px;
-  gap: 6px;
-  padding: 4px 10px;
+  gap: var(--space-1-5);
+  padding: var(--space-1) var(--space-2-5);
 }
 .s3 {
   color: var(--color-text-secondary);

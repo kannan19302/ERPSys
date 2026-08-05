@@ -95,7 +95,7 @@
   padding-bottom: var(--space-2);
 }
 .s16 {
-  padding: 2px 4px;
+  padding: var(--space-half) var(--space-1);
   width: 90px;
 }
 .s17 {

@@ -444,7 +444,7 @@
   accent-color: var(--color-primary);
   cursor: pointer;
   height: 16px;
-  margin-top: 2px;
+  margin-top: var(--space-half);
   width: 16px;
 }
 .termsLabel {
@@ -510,7 +510,7 @@
 .provisioningDesc {
   color: var(--color-text-tertiary);
   font-size: 11px;
-  margin: 2px 0 0;
+  margin: var(--space-half) 0 0;
 }
 .seedingConsole {
   background: #0a0b10;
@@ -631,7 +631,7 @@
 .pickerTitle {
   font-size: var(--text-md);
   font-weight: 700;
-  margin: 0 0 2px;
+  margin: 0 0 var(--space-half);
 }
 .pickerSubtitle {
   color: var(--color-text-tertiary);

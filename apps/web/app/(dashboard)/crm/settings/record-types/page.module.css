@@ -87,7 +87,7 @@
 
 .style13 {
   display: inline-block;
-  margin-top: 2px;
+  margin-top: var(--space-half);
 }
 
 .style14 {

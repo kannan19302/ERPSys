@@ -469,41 +469,41 @@
 }
 
 .s81 {
-  padding: 10px;
+  padding: var(--space-2-5);
 }
 
 .s82 {
-  padding: 10px;
+  padding: var(--space-2-5);
   text-align: right;
 }
 
 .s83 {
-  padding: 10px;
+  padding: var(--space-2-5);
   text-align: right;
 }
 
 .s84 {
-  padding: 10px;
+  padding: var(--space-2-5);
   text-align: right;
 }
 
 .s85 {
-  padding: 10px;
+  padding: var(--space-2-5);
   text-align: right;
 }
 
 .s86 {
-  padding: 10px;
+  padding: var(--space-2-5);
   font-weight: bold;
 }
 
 .s87 {
-  padding: 10px;
+  padding: var(--space-2-5);
   text-align: right;
 }
 
 .s88 {
-  padding: 10px;
+  padding: var(--space-2-5);
   text-align: right;
   color: var(--color-primary);
 }

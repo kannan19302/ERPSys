@@ -48,7 +48,7 @@
   color: var(--color-text-tertiary);
   font-size: 10px;
   font-weight: var(--weight-normal);
-  margin-top: 2px;
+  margin-top: var(--space-half);
   text-transform: none;
 }
 .s8 {

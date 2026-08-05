@@ -169,11 +169,11 @@
 .s21 {
   font-size: var(--text-xs);
   color: var(--color-text-tertiary);
-  margin-top: 2px;
+  margin-top: var(--space-half);
 }
 
 .s22 {
-  padding: 2px 8px;
+  padding: var(--space-half) var(--space-2);
   border-radius: var(--radius-full);
   font-size: var(--text-xs);
   font-weight: var(--weight-medium);
@@ -207,7 +207,7 @@
 }
 
 .s28 {
-  padding: 2px 8px;
+  padding: var(--space-half) var(--space-2);
   border-radius: var(--radius-full);
   font-size: var(--text-xs);
   font-weight: var(--weight-medium);

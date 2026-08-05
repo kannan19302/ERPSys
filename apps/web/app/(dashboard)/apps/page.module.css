@@ -5,7 +5,7 @@
   gap: var(--space-1);
   grid-template-columns: 1fr 1fr;
   height: 72px;
-  padding: 10px;
+  padding: var(--space-2-5);
   transition: all 0.15s ease;
   width: 72px;
   background: color-mix(in srgb, var(--tile-color) 9%, transparent);

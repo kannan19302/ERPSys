@@ -19,7 +19,7 @@
   font-size: var(--text-sm);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-1-5);
 }
 .p4 {
   display: grid;
@@ -39,7 +39,7 @@
   font-size: var(--text-3xl);
   font-weight: var(--weight-bold);
   color: var(--color-success);
-  margin-top: 2px;
+  margin-top: var(--space-half);
 }
 .p7 {
   background: var(--color-bg-elevated);
@@ -53,7 +53,7 @@
 .p8 {
   font-size: var(--text-2xl);
   font-weight: var(--weight-bold);
-  margin-top: 2px;
+  margin-top: var(--space-half);
 }
 .p9 {
   background: var(--color-bg-elevated);
@@ -67,7 +67,7 @@
 .p10 {
   font-size: var(--text-2xl);
   font-weight: var(--weight-bold);
-  margin-top: 2px;
+  margin-top: var(--space-half);
 }
 .p11 {
   background: var(--color-bg-elevated);
@@ -81,7 +81,7 @@
 .p12 {
   font-size: var(--text-2xl);
   font-weight: var(--weight-bold);
-  margin-top: 2px;
+  margin-top: var(--space-half);
 }
 .p13 {
   display: grid;
@@ -102,7 +102,7 @@
   font-weight: var(--weight-bold);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-1-5);
 }
 .p16 {
   display: flex;
@@ -151,7 +151,7 @@
 .p22 {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-1-5);
 }
 .p23 {
   font-size: var(--text-xs);
@@ -163,7 +163,7 @@
   justify-content: space-between;
   font-size: var(--text-xs);
   background: var(--color-bg-hover);
-  padding: 6px 12px;
+  padding: var(--space-1-5) var(--space-3);
   border-radius: var(--radius-md);
 }
 .p25 {
@@ -185,7 +185,7 @@
 .p28 {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-1-5);
 }
 .p29 {
   display: flex;
@@ -240,7 +240,7 @@
 .p37 {
   font-size: var(--text-xs);
   font-weight: semibold;
-  margin-top: 2px;
+  margin-top: var(--space-half);
 }
 .p38 {
   font-size: 9px;
@@ -278,7 +278,7 @@
 .s2 {
   font-size: var(--text-xs);
   font-weight: semibold;
-  margin-top: 2px;
+  margin-top: var(--space-half);
 }
 .s3 {
   border-radius: 3px;

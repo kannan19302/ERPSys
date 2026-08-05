@@ -31,7 +31,7 @@
 .s8 {
   border-radius: var(--radius-md);
   max-width: 80%;
-  padding: 10px;
+  padding: var(--space-2-5);
 }
 .s9 {
   font-size: var(--text-xs);

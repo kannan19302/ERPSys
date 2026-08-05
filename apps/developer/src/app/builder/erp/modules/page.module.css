@@ -49,7 +49,7 @@
   font-size: 10px;
   font-weight: var(--weight-semibold);
   margin-left: var(--space-2);
-  padding: 2px 8px;
+  padding: var(--space-half) var(--space-2);
 }
 .s10 {
   color: var(--color-text-secondary);
@@ -137,14 +137,14 @@
   border: none;
   color: var(--color-text-secondary);
   cursor: pointer;
-  padding: 2px;
+  padding: var(--space-half);
 }
 .s24 {
   background: none;
   border: none;
   color: var(--color-danger);
   cursor: pointer;
-  padding: 2px;
+  padding: var(--space-half);
 }
 .s25 {
   align-self: flex-start;
@@ -186,7 +186,7 @@
   color: var(--color-warning-hover);
   font-size: 10px;
   font-weight: var(--weight-semibold);
-  padding: 2px 8px;
+  padding: var(--space-half) var(--space-2);
 }
 .s31 {
   align-self: flex-start;

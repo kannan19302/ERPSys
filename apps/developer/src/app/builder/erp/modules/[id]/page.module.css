@@ -137,7 +137,7 @@
 }
 .s21 {
   border-radius: var(--radius-md);
-  padding: 2px;
+  padding: var(--space-half);
 }
 .s22 {
   color: var(--color-text-secondary);

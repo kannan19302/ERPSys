@@ -158,7 +158,7 @@
 .heroInfo {
   min-width: 0;
   flex: 1;
-  padding-top: 2px;
+  padding-top: var(--space-half);
 }
 
 .nameRow {
@@ -185,7 +185,7 @@
   border: none;
   cursor: pointer;
   color: var(--color-primary);
-  padding: 2px;
+  padding: var(--space-half);
   display: flex;
   border-radius: var(--radius-md);
 }
@@ -210,7 +210,7 @@
 .roleRow {
   font-size: var(--text-xs);
   color: var(--color-text-secondary);
-  margin-top: 2px;
+  margin-top: var(--space-half);
   display: flex;
   gap: var(--space-1);
   flex-wrap: wrap;
@@ -310,7 +310,7 @@
   border-top: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-half);
 }
 
 .footerBtn {

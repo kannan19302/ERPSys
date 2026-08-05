@@ -35,7 +35,7 @@
   margin: 0px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-1-5);
 }
 
 .s7 {
@@ -61,7 +61,7 @@
 
 .s10 {
   font-size: 11px;
-  padding: 2px 4px;
+  padding: var(--space-half) var(--space-1);
   max-width: 100px;
   display: inline-block;
 }

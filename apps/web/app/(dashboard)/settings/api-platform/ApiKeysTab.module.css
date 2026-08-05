@@ -14,7 +14,7 @@
   border: none;
   color: var(--color-text-tertiary);
   cursor: pointer;
-  padding: 2px;
+  padding: var(--space-half);
 }
 .s3 {
   display: flex;

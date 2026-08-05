@@ -80,7 +80,7 @@
   margin-top: var(--space-6);
 }
 .s16 {
-  margin-left: 6px;
+  margin-left: var(--space-1-5);
 }
 .s17 {
   color: var(--color-text-tertiary);

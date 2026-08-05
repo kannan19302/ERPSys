@@ -52,7 +52,7 @@
   font-size: 10px;
   font-weight: var(--weight-semibold);
   margin-left: auto;
-  padding: 2px 8px;
+  padding: var(--space-half) var(--space-2);
 }
 .colDesc {
   color: var(--color-text-secondary);
@@ -97,6 +97,6 @@
   color: var(--color-primary);
   display: flex;
   font-size: var(--text-sm);
-  gap: 2px;
+  gap: var(--space-half);
   margin-left: auto;
 }

@@ -65,7 +65,7 @@
   font-size: var(--text-xs, 0.75rem);
   color: var(--color-muted);
   background: var(--color-bg-secondary);
-  padding: 4px 10px;
+  padding: var(--space-1) var(--space-2-5);
   border-radius: var(--radius-full, 999px);
   border: 1px solid var(--color-border);
 }
@@ -73,7 +73,7 @@
 .rearrangeBtn {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-1-5);
   font-size: var(--text-xs, 0.75rem);
   font-weight: 600;
   color: var(--color-primary);
@@ -127,7 +127,7 @@
   color: var(--color-muted);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  padding: 4px 10px;
+  padding: var(--space-1) var(--space-2-5);
   border-radius: var(--radius-sm, 6px);
   cursor: pointer;
   transition: all 0.15s ease;
@@ -167,7 +167,7 @@
 .dragHandle {
   display: flex;
   align-items: center;
-  padding-left: 6px;
+  padding-left: var(--space-1-5);
   color: var(--color-muted);
 }
 
@@ -182,7 +182,7 @@
 .tabScroll {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: var(--space-half);
   overflow-x: auto;
   flex: 1;
   scrollbar-width: none;
@@ -232,7 +232,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  padding: 2px;
+  padding: var(--space-half);
   opacity: 0;
   transition: opacity 0.15s ease;
   color: var(--color-muted);
@@ -330,13 +330,13 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--color-muted);
-  padding: 6px 10px 4px;
+  padding: var(--space-1-5) var(--space-2-5) var(--space-1);
 }
 .advancedItem {
   display: flex;
   align-items: center;
   gap: var(--space-2, 0.5rem);
-  padding: 8px 10px;
+  padding: var(--space-2) var(--space-2-5);
   font-size: var(--text-sm, 0.8125rem);
   font-weight: 500;
   color: var(--color-text);
@@ -359,7 +359,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  padding: 2px;
+  padding: var(--space-half);
   opacity: 0;
   transition: opacity 0.15s ease;
   color: var(--color-muted);
@@ -387,7 +387,7 @@
     gap: 0;
   }
   .tab {
-    padding: 8px 10px;
+    padding: var(--space-2) var(--space-2-5);
     font-size: var(--text-xs, 0.75rem);
   }
   .advancedDropdown {

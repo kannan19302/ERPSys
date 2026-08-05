@@ -52,7 +52,7 @@
   align-items: center;
   display: flex;
   font-size: var(--text-sm);
-  gap: 6px;
+  gap: var(--space-1-5);
   margin: 0;
 }
 .s4 {

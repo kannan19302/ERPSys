@@ -28,7 +28,7 @@
 .s5 {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-half);
 }
 
 .s6 {
@@ -73,7 +73,7 @@
 .s12 {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-half);
 }
 
 .s13 {
@@ -94,7 +94,7 @@
 
 .dyn1 {
   display: inline-block;
-  padding: 2px 8px;
+  padding: var(--space-half) var(--space-2);
   border-radius: var(--radius-sm);
   font-size: 10px;
   font-weight: bold;

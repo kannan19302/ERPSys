@@ -24,7 +24,7 @@
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
   height: 36px;
-  padding: 2px;
+  padding: var(--space-half);
   width: 44px;
 }
 .s6 {
@@ -110,7 +110,7 @@
   background: var(--color-bg-subtle);
   border-radius: var(--radius-md);
   display: flex;
-  gap: 6px;
+  gap: var(--space-1-5);
   padding: var(--space-1);
 }
 .s19 {
@@ -126,7 +126,7 @@
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
   cursor: pointer;
-  padding: 6px;
+  padding: var(--space-1-5);
 }
 .s21 {
   background: var(--color-primary);
@@ -188,7 +188,7 @@
   display: flex;
   font-size: var(--text-sm);
   font-weight: 600;
-  gap: 6px;
+  gap: var(--space-1-5);
   padding: var(--space-2) var(--space-4);
 }
 .s29 {
@@ -226,7 +226,7 @@
 .s34 {
   color: var(--color-text-muted);
   font-size: var(--text-xs);
-  margin: 2px 0 6px;
+  margin: var(--space-half) 0 var(--space-1-5);
 }
 .s35 {
   color: var(--color-text-muted);
@@ -278,7 +278,7 @@
   border: 1px solid var(--color-border);
   color: var(--color-text);
   font-size: var(--text-sm);
-  padding: 6px;
+  padding: var(--space-1-5);
 }
 .s42 {
   background: var(--color-bg);
@@ -287,7 +287,7 @@
   color: var(--color-text);
   font-family: monospace;
   font-size: var(--text-sm);
-  padding: 6px;
+  padding: var(--space-1-5);
 }
 .s43 {
   background: var(--color-bg);
@@ -295,7 +295,7 @@
   border: 1px solid var(--color-border);
   color: var(--color-text);
   font-size: var(--text-xs);
-  padding: 6px;
+  padding: var(--space-1-5);
 }
 .s44 {
   align-items: center;
@@ -326,8 +326,8 @@
   cursor: pointer;
   display: flex;
   font-size: var(--text-xs);
-  gap: 6px;
-  margin-bottom: 6px;
+  gap: var(--space-1-5);
+  margin-bottom: var(--space-1-5);
   padding: 0;
 }
 .s48 {
@@ -345,7 +345,7 @@
   color: var(--color-text-secondary);
   font-size: 10px;
   font-weight: 700;
-  padding: 2px 8px;
+  padding: var(--space-half) var(--space-2);
 }
 .s51 {
   color: var(--color-text-secondary);
@@ -396,7 +396,7 @@
 }
 .s59 {
   display: flex;
-  gap: 6px;
+  gap: var(--space-1-5);
 }
 .s60 {
   padding: var(--space-1) var(--space-2);

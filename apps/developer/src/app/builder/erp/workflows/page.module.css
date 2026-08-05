@@ -2,7 +2,7 @@
   border-radius: var(--radius-xl);
   font-size: 10px;
   font-weight: 600;
-  padding: 2px 8px;
+  padding: var(--space-half) var(--space-2);
 }
 .s2 {
   align-items: center;
@@ -96,7 +96,7 @@
   color: var(--color-primary);
   font-size: 10px;
   font-weight: 600;
-  padding: 2px 8px;
+  padding: var(--space-half) var(--space-2);
 }
 .s19 {
   align-items: center;

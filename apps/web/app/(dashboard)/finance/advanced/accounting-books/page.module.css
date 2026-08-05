@@ -260,7 +260,7 @@
 
 .s35 {
   display: inline;
-  margin-right: 2px;
+  margin-right: var(--space-half);
 }
 
 .s36 {

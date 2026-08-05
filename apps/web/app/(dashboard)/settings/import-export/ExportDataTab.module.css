@@ -32,5 +32,5 @@
   cursor: pointer;
   font-size: var(--text-sm);
   font-weight: 500;
-  padding: 10px 20px;
+  padding: var(--space-2-5) var(--space-5);
 }

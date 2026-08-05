@@ -31,7 +31,7 @@
 .s7 {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--space-1-5);
 }
 .s8 {
   align-items: center;

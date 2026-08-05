@@ -149,7 +149,7 @@
 .s31 {
   display: inline-block;
   font-size: 11px;
-  padding: 2px 10px;
+  padding: var(--space-half) var(--space-2-5);
 }
 .s32 {
   color: var(--color-text-secondary);
@@ -192,7 +192,7 @@
 }
 .s39 {
   font-size: var(--text-xs);
-  padding: 2px 8px;
+  padding: var(--space-half) var(--space-2);
 }
 .s40 {
   padding-block: var(--space-6);
@@ -253,7 +253,7 @@
 .s51 {
   min-height: auto;
   min-width: auto;
-  padding: 2px 6px;
+  padding: var(--space-half) var(--space-1-5);
 }
 .s52 {
   color: var(--color-text-secondary);

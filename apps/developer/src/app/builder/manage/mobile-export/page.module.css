@@ -4,14 +4,14 @@
 }
 .s2 {
   font-size: 11px;
-  padding: 4px 10px;
+  padding: var(--space-1) var(--space-2-5);
 }
 .s3 {
   align-items: center;
   display: inline-flex;
   font-size: 11px;
   gap: var(--space-1);
-  padding: 4px 10px;
+  padding: var(--space-1) var(--space-2-5);
   text-decoration: none;
 }
 .s4 {
@@ -24,7 +24,7 @@
   display: flex;
   font-size: var(--text-sm);
   font-weight: 700;
-  gap: 6px;
+  gap: var(--space-1-5);
   margin: 0 0 var(--space-4) 0;
 }
 .s6 {

@@ -17,7 +17,7 @@
   cursor: pointer;
   display: flex;
   font-size: var(--text-sm);
-  gap: 6px;
+  gap: var(--space-1-5);
   padding: var(--space-2) var(--space-4);
 }
 .s4 {

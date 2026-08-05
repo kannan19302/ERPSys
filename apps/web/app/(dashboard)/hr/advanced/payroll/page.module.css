@@ -97,7 +97,7 @@
   align-items: center;
   font-size: var(--text-xs);
   background: var(--color-bg-sunken);
-  padding: 6px 12px;
+  padding: var(--space-1-5) var(--space-3);
   border-radius: var(--radius-sm);
 }
 

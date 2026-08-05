@@ -46,7 +46,7 @@
 .s9 {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
+  padding: var(--space-half) var(--space-2);
 }
 
 .s10 {

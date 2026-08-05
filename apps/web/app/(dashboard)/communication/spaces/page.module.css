@@ -10,7 +10,7 @@
   width: 32px;
 }
 .s2 {
-  margin-left: 6px;
+  margin-left: var(--space-1-5);
 }
 .s3 {
   padding: var(--space-3) var(--space-4);

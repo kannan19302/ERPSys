@@ -35,7 +35,7 @@
 .p6 {
   display: flex;
   background: var(--color-bg-sunken);
-  padding: 2px;
+  padding: var(--space-half);
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
 }
@@ -55,13 +55,13 @@
 }
 .p10 {
   font-size: var(--text-xs);
-  padding: 2px 6px;
+  padding: var(--space-half) var(--space-1-5);
   border-radius: var(--radius-sm);
   background: var(--color-bg-sunken);
   font-weight: var(--weight-semibold);
 }
 .p11 {
-  padding: 2px 6px;
+  padding: var(--space-half) var(--space-1-5);
   border-radius: var(--radius-sm);
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);

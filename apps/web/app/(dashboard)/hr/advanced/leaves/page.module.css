@@ -40,7 +40,7 @@
   width: fit-content;
   gap: var(--space-1);
   border-radius: var(--radius-md);
-  padding: 2px;
+  padding: var(--space-half);
   background: var(--color-bg-sunken);
 }
 .filterButton {

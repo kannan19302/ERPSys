@@ -89,7 +89,7 @@
   display: flex;
   font-size: var(--font-size-xs);
   gap: var(--space-1);
-  padding: 2px 8px;
+  padding: var(--space-half) var(--space-2);
 }
 .s8 {
   color: var(--color-text-secondary);
@@ -136,7 +136,7 @@
   display: flex;
   font-size: var(--font-size-xs);
   gap: var(--space-1);
-  padding: 4px 10px;
+  padding: var(--space-1) var(--space-2-5);
 }
 .s14 {
   color: var(--color-text-secondary);

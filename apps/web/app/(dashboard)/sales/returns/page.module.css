@@ -297,7 +297,7 @@
 }
 .p49 {
   width: 100%;
-  padding: 2px 4px;
+  padding: var(--space-half) var(--space-1);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   text-align: right;

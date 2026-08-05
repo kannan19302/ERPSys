@@ -205,7 +205,7 @@
   display: block;
   font-size: var(--text-xs, 0.75rem);
   color: var(--color-text-tertiary);
-  margin-top: 2px;
+  margin-top: var(--space-half);
 }
 
 /* Demo data callout */
@@ -241,7 +241,7 @@
 .demoBoxDesc {
   font-size: var(--text-xs, 0.75rem);
   color: var(--color-text-secondary);
-  margin-top: 2px;
+  margin-top: var(--space-half);
 }
 .demoBoxBtn {
   white-space: nowrap;

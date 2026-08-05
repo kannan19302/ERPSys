@@ -39,21 +39,21 @@
 }
 
 .s5 {
-  padding: 2px 8px;
+  padding: var(--space-half) var(--space-2);
   border-radius: var(--radius-sm);
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
 }
 
 .s6 {
-  padding: 2px 8px;
+  padding: var(--space-half) var(--space-2);
   border-radius: var(--radius-sm);
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
 }
 
 .s7 {
-  padding: 2px 8px;
+  padding: var(--space-half) var(--space-2);
   border-radius: var(--radius-sm);
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
@@ -62,7 +62,7 @@
 }
 
 .s8 {
-  padding: 2px 8px;
+  padding: var(--space-half) var(--space-2);
   border-radius: var(--radius-sm);
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);

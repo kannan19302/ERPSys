@@ -173,5 +173,5 @@
 .mpd-page-subtitle {
   font-size: var(--text-xs);
   color: var(--color-text-tertiary);
-  margin: 2px 0 0;
+  margin: var(--space-half) 0 0;
 }

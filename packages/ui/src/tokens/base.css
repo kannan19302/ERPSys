@@ -35,6 +35,16 @@
   --space-1\.5: 0.375rem; /* 6px */
   --space-2: 0.5rem; /* 8px */
   --space-2\.5: 0.625rem; /* 10px */
+
+  /* Unescaped aliases for the half-step tokens.
+     `--space-0\.5` needs a backslash-escaped dot every time it is referenced,
+     which is a footgun through CSS Modules and PostCSS and gets silently
+     dropped when someone writes `var(--space-0.5)`. These aliases hold the same
+     values under names that need no escaping; the escaped originals stay so
+     nothing that already uses them breaks. */
+  --space-half: 0.125rem; /* 2px  — alias of --space-0\.5 */
+  --space-1-5: 0.375rem; /* 6px  — alias of --space-1\.5 */
+  --space-2-5: 0.625rem; /* 10px — alias of --space-2\.5 */
   --space-3: 0.75rem; /* 12px */
   --space-4: 1rem; /* 16px */
   --space-5: 1.25rem; /* 20px */
