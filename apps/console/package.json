@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@unerp/ui": "^1.0.5",
+    "@unerp/ui": "^1.0.6",
     "@unerp/framework": "^0.1.2",
     "next": "15.3.4",
     "react": "^19.0.0",

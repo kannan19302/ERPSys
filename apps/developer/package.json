@@ -13,7 +13,7 @@
     "next": "15.3.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "@unerp/ui": "^1.0.5",
+    "@unerp/ui": "^1.0.6",
     "@unerp/framework": "^0.1.2",
     "@unerp/shared": "^1.0.3",
     "@unerp/sdk": "^1.0.2"

@@ -26,8 +26,24 @@
 #     locally (`docker compose -f docker-compose.dev.yml up -d mobile`, then
 #     open http://localhost:8090)
 #
-# Optional (use --profile ai):
-#   - ollama   (port 11434) — Local LLM inference
+# Daily development — start only what you need:
+#
+#   docker compose -f docker-compose.dev.yml up -d
+#       postgres, redis, minio, api, web. This is the everyday loop.
+#
+#   docker compose -f docker-compose.dev.yml --profile console up -d console
+#   docker compose -f docker-compose.dev.yml --profile developer up -d developer
+#   docker compose -f docker-compose.dev.yml --profile idp up -d idp
+#       Add a plane only when you are working on it.
+#
+#   docker compose -f docker-compose.dev.yml --profile full up -d
+#       Everything. Needs ~10 GB of Docker memory: each Next.js dev server holds
+#       a full module graph, and running five at once wedged the Docker engine
+#       twice during bring-up. If the engine returns 500s, this is why.
+#
+# Optional extras:
+#   --profile ai       ollama   (port 11434) — local LLM inference
+#   --profile pooling  pgbouncer (port 6432) — transaction pooling, § 11
 # ============================================================
 
 services:
@@ -318,16 +334,20 @@ services:
       dockerfile: Dockerfile.dev
     container_name: unerp-console
     restart: unless-stopped
+    profiles: ["console", "full"]
     working_dir: /app/apps/console
     stdin_open: true
     tty: true
-    command: sh -c "until [ -d /app/node_modules/.pnpm ]; do echo 'waiting for api to install deps...'; sleep 10; done; pnpm dev"
+    command: sh -c "until [ -d /app/node_modules/.pnpm ]; do echo 'waiting for api to install deps...'; sleep 10; done; npx next dev -p 3002"
     environment:
       - NODE_ENV=development
       - NODE_OPTIONS=--max-old-space-size=4096
       - PORT=3002
       - API_URL=http://api:3001
       - NEXT_PUBLIC_API_URL=http://localhost:3001
+      - WATCHPACK_POLLING=1000
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_INTERVAL=1000
       - npm_config_@unerp:registry=http://unerp-registry:4873
     ports:
       - "3002:3002"
@@ -347,16 +367,20 @@ services:
       dockerfile: Dockerfile.dev
     container_name: unerp-developer
     restart: unless-stopped
+    profiles: ["developer", "full"]
     working_dir: /app/apps/developer
     stdin_open: true
     tty: true
-    command: sh -c "until [ -d /app/node_modules/.pnpm ]; do echo 'waiting for api to install deps...'; sleep 10; done; pnpm dev"
+    command: sh -c "until [ -d /app/node_modules/.pnpm ]; do echo 'waiting for api to install deps...'; sleep 10; done; npx next dev -p 3004"
     environment:
       - NODE_ENV=development
       - NODE_OPTIONS=--max-old-space-size=4096
       - PORT=3004
       - API_URL=http://api:3001
       - NEXT_PUBLIC_API_URL=http://localhost:3001
+      - WATCHPACK_POLLING=1000
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_INTERVAL=1000
       - npm_config_@unerp:registry=http://unerp-registry:4873
     ports:
       - "3004:3004"
@@ -377,16 +401,31 @@ services:
       dockerfile: Dockerfile.dev
     container_name: unerp-idp
     restart: unless-stopped
+    profiles: ["idp", "full"]
     working_dir: /app/apps/idp
     stdin_open: true
     tty: true
-    command: sh -c "until [ -d /app/node_modules/.pnpm ]; do echo 'waiting for api to install deps...'; sleep 10; done; pnpm start:dev"
+    command: sh -c "until [ -d /app/node_modules/.pnpm ]; do echo 'waiting for api to install deps...'; sleep 10; done; pnpm dev"
     environment:
       - NODE_ENV=development
       - NODE_OPTIONS=--max-old-space-size=4096
       - PORT=3005
       - DATABASE_URL=postgresql://unerp_api:unerp_api_password@postgres:5432/unerp_dev?schema=public
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-your-super-secret-key-change-in-production}
+      # The IdP validates against the same env schema as the API, so it needs the
+      # same required variables — it failed startup on PII_ENCRYPTION_KEY alone.
+      - PII_ENCRYPTION_KEY=${PII_ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
+      - REDIS_URL=redis://redis:6379
+      - API_PORT=3005
+      - NEXT_PUBLIC_APP_URL=http://localhost:3000
+      - NEXTAUTH_URL=http://localhost:3000
+      # Polling instead of inotify: the bind-mounted tree is large enough that
+      # native watches exhaust the container's limit and Watchpack dies with
+      # `ENOMEM: not enough memory, scandir`, which reads as a RAM problem and is
+      # actually a watch-descriptor problem.
+      - WATCHPACK_POLLING=1000
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_INTERVAL=1000
       - npm_config_@unerp:registry=http://unerp-registry:4873
     ports:
       - "3005:3005"
