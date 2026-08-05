@@ -1,16 +1,16 @@
 .s1 {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: var(--space-1);
 }
 .s2 {
   display: flex;
-  gap: 4px;
+  gap: var(--space-1);
 }
 .s3 {
   align-items: center;
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
 }
 .s4 {
   background: var(--color-border);

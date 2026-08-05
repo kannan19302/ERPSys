@@ -61,7 +61,7 @@
 .pinBadge {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   font-size: var(--text-xs, 0.75rem);
   color: var(--color-muted);
   background: var(--color-bg-secondary);
@@ -113,7 +113,7 @@
 .editBannerText {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   color: var(--color-primary);
   font-weight: 500;
 }
@@ -150,7 +150,7 @@
   border: 1px dashed var(--color-primary);
   border-radius: var(--radius-sm, 6px);
   background: var(--color-bg-secondary);
-  margin-right: 4px;
+  margin-right: var(--space-1);
   cursor: grab;
 }
 

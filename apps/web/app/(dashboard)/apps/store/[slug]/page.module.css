@@ -23,11 +23,11 @@
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   font-size: var(--text-sm);
   color: var(--color-text-link);
   font-weight: var(--weight-medium);
-  padding: 4px 0;
+  padding: var(--space-1) 0;
   font-family: var(--font-sans);
 }
 
@@ -272,7 +272,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .ratingBarRow {
@@ -319,7 +319,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 }
 
 .reviewName {
@@ -353,13 +353,13 @@
 .helpfulBtn {
   background: none;
   border: 1px solid var(--color-border);
-  padding: 4px 12px;
+  padding: var(--space-1) var(--space-3);
   font-size: var(--text-xs);
   color: var(--color-text-secondary);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   margin-top: 6px;
   font-family: var(--font-sans);
   transition: border-color var(--duration-fast);
@@ -397,7 +397,7 @@
   font-size: var(--text-xs);
   color: var(--color-text);
   line-height: 1.5;
-  margin-top: 4px;
+  margin-top: var(--space-1);
   white-space: pre-line;
   font-family: var(--font-sans);
 }

@@ -131,7 +131,7 @@
 .recError {
   color: #fecaca;
   font-size: var(--text-xs);
-  margin: 4px 0 0;
+  margin: var(--space-1) 0 0;
 }
 
 .heroMetaRow {
@@ -269,7 +269,7 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--color-text-tertiary);
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 }
 
 .fieldReadonly {
@@ -278,7 +278,7 @@
   padding: 6px 0;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .fieldHint {
@@ -314,7 +314,7 @@
 .fieldPencil {
   color: var(--color-text-tertiary);
   flex-shrink: 0;
-  margin-left: 8px;
+  margin-left: var(--space-2);
 }
 
 .fieldEditRow {
@@ -343,7 +343,7 @@
 
 .fieldEditActions {
   display: flex;
-  gap: 4px;
+  gap: var(--space-1);
   flex-shrink: 0;
 }
 
@@ -370,7 +370,7 @@
 .hoursRow {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .timeInput {
@@ -384,7 +384,7 @@
 
 .daysRow {
   display: flex;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .dayChip,
@@ -415,7 +415,7 @@
 .managerChip {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   background: var(--color-bg-sunken);
   border-radius: var(--radius-lg);
   padding: 6px 10px;
@@ -453,7 +453,7 @@
 .managerResultRow {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   width: 100%;
   background: transparent;
   border: none;
@@ -478,7 +478,7 @@
 .personRow {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   font-size: var(--text-sm);
   color: var(--color-text);
 }
@@ -545,7 +545,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   background: var(--color-bg-sunken);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);

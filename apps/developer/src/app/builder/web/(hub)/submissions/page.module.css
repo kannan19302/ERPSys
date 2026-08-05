@@ -72,7 +72,7 @@
 .s13 {
   align-items: center;
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
 }
 .s14 {
   color: var(--color-text);

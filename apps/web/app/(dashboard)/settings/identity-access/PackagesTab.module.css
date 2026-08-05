@@ -33,7 +33,7 @@
   background: none;
   cursor: pointer;
   color: var(--color-text-tertiary);
-  padding: 4px;
+  padding: var(--space-1);
 }
 
 .s6 {
@@ -41,7 +41,7 @@
   background: none;
   cursor: pointer;
   color: var(--color-text-tertiary);
-  padding: 4px;
+  padding: var(--space-1);
 }
 
 .s7 {
@@ -91,4 +91,3 @@
 .s13 {
   accent-color: var(--color-primary);
 }
-

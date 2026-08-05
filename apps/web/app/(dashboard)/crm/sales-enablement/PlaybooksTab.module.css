@@ -162,11 +162,57 @@
   flex-direction: column;
   gap: var(--spacing-4);
 }
-.s1 { display: grid; gap: var(--spacing-3); grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
-.s2 { color: var(--color-text-secondary); font-size: var(--font-size-sm); line-height: 1.5; margin: 0; }
-.s3 { align-items: center; background: var(--color-bg-secondary); border-radius: var(--radius-md); color: var(--color-text-secondary); display: flex; font-size: var(--font-size-sm); gap: var(--spacing-2); padding: var(--spacing-2) var(--spacing-3); }
-.s4 { color: var(--color-text-secondary); display: flex; font-size: var(--font-size-sm); gap: var(--spacing-4); }
-.s5 { align-items: center; border-top: 1px solid var(--color-border); display: flex; justify-content: space-between; margin-top: var(--spacing-1); padding-top: var(--spacing-3); }
-.s6 { align-items: center; color: var(--color-text-secondary); display: flex; font-size: var(--font-size-xs); gap: 4px; }
-.s7 { align-items: center; display: flex; font-size: var(--font-size-xs); gap: 4px; }
-.s8 { height: 48px; margin-bottom: var(--spacing-3); opacity: 0.4; width: 48px; }
+.s1 {
+  display: grid;
+  gap: var(--spacing-3);
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+.s2 {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  margin: 0;
+}
+.s3 {
+  align-items: center;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  display: flex;
+  font-size: var(--font-size-sm);
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-3);
+}
+.s4 {
+  color: var(--color-text-secondary);
+  display: flex;
+  font-size: var(--font-size-sm);
+  gap: var(--spacing-4);
+}
+.s5 {
+  align-items: center;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--spacing-1);
+  padding-top: var(--spacing-3);
+}
+.s6 {
+  align-items: center;
+  color: var(--color-text-secondary);
+  display: flex;
+  font-size: var(--font-size-xs);
+  gap: var(--space-1);
+}
+.s7 {
+  align-items: center;
+  display: flex;
+  font-size: var(--font-size-xs);
+  gap: var(--space-1);
+}
+.s8 {
+  height: 48px;
+  margin-bottom: var(--spacing-3);
+  opacity: 0.4;
+  width: 48px;
+}

@@ -115,7 +115,7 @@
   border: none;
   color: var(--color-text-secondary);
   cursor: pointer;
-  padding: 4px;
+  padding: var(--space-1);
   border-radius: var(--radius-sm);
   display: flex;
   transition: color var(--duration-fast) var(--ease-default);

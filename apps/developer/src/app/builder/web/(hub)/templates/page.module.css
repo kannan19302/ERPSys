@@ -37,7 +37,7 @@
   border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
   height: 80px;
   margin-bottom: var(--space-3);
   overflow: hidden;

@@ -10,6 +10,6 @@
   border-top-color: var(--color-primary);
   border: 3px solid var(--color-border);
   height: 24px;
-  margin-right: 8px;
+  margin-right: var(--space-2);
   width: 24px;
 }

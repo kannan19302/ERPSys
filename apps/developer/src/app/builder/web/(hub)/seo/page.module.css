@@ -121,7 +121,7 @@
   color: #006621;
   font-family: Arial, sans-serif;
   font-size: 13px;
-  margin: 0 0 4px 0;
+  margin: 0 0 var(--space-1) 0;
 }
 .s21 {
   color: #545454;

@@ -10,6 +10,6 @@
 }
 .s3 {
   color: var(--color-text-tertiary);
-  padding: 40px;
+  padding: var(--space-10);
   text-align: center;
 }

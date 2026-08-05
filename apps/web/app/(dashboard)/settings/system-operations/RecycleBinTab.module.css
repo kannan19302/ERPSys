@@ -148,7 +148,7 @@
 .s18 {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   padding: 4px 10px;
   border-radius: var(--radius-md);
   border: none;
@@ -162,7 +162,7 @@
 .s19 {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   padding: 4px 10px;
   border-radius: var(--radius-md);
   border: none;

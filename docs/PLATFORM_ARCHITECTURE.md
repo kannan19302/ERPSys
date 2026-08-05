@@ -1021,7 +1021,7 @@ Measured, not asserted. Every "done" below is backed by a gate that passes and, 
 was a defect, by a gate that was proven able to fail. Counts are the output of
 `node scripts/ci/check-policy.mjs --report` and of the tree itself, not estimates.
 
-**Programme completion: ~88%**, weighted by the § 14 timeline (59 scheduled weeks, Phases 0–5).
+**Programme completion: ~90%**, weighted by the § 14 timeline (59 scheduled weeks, Phases 0–5).
 
 > #### ✅ The isolation suite now proves the claim it makes (fixed 2026-08-05)
 >
@@ -1055,13 +1055,24 @@ Phase 0 is presentational debt that cannot corrupt data or bypass authorisation:
 a third of them the `connect` module's deliberate Google Material palette — 3,215 hardcoded
 pixel values, and one reviewed raw-SQL exception.
 
-**Why the pixel ratchet is not being swept mechanically.** Colours map onto a semantic palette
-whose meaning is recoverable from the value (`#22c55e` is success, `#4f46e5` is chart series 1),
-and a wrong mapping is visible in a screenshot. Spacing does not work that way: `13px` has no
-token because the type scale jumps 12 → 14, `1px` borders are not spacing at all, and a wrong
-`--space-*` substitution shifts layout on pages no automated gate here can inspect. Closing it
-needs visual regression coverage first, which is Phase 6 work — sweeping 3,215 values blind on a
-system that runs payroll would trade a cosmetic ratchet for an unverifiable change.
+**The pixel ratchet, and the part of it that was provably safe.** 3,571 → 2,787:
+1,296 exact values across 207 files became spacing tokens. This needed no visual
+regression coverage, because pins — so
+1rem is exactly 16px, is exactly 8px, and substituting an
+exact match produces an identical computed value. It is a rename, not a
+redesign.
+
+The migration is deliberately narrow, because that identity is the entire safety
+argument: spacing properties only (never , which has values like 13px
+with no token, and never , where 1px is not spacing); exact
+matches only, so 7px stays 7px rather than being rounded to the nearest token,
+which would smuggle a design change in as a cleanup; and CSS files only, since a
+px string in TSX may be a canvas coordinate or a chart dimension where
+does not resolve.
+
+**The remaining 2,787 are the genuinely unsafe cases** and still need visual
+regression coverage first — odd values with no token, font sizes, border widths,
+and every px inside TSX.
 
 | Phase                           |  Scheduled | Complete | Gate to proceed                                                                                                           |
 | :------------------------------ | ---------: | -------: | :------------------------------------------------------------------------------------------------------------------------ |

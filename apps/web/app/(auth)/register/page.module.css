@@ -41,7 +41,7 @@
 .featureTitle {
   align-items: center;
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 /* === Brand area (centered logo) === */
@@ -312,7 +312,7 @@
 .logoErrorText {
   color: var(--color-danger);
   font-size: 12px;
-  margin-top: 4px;
+  margin-top: var(--space-1);
 }
 
 /* === Error banner === */
@@ -367,7 +367,7 @@
   color: var(--color-danger);
   font-size: 11px;
   font-weight: 500;
-  margin-top: 4px;
+  margin-top: var(--space-1);
 }
 
 /* === Password Checklist === */
@@ -415,7 +415,7 @@
 }
 .pwdStrengthBar {
   display: flex;
-  gap: 4px;
+  gap: var(--space-1);
   flex-grow: 1;
   background: var(--color-border-light);
   border-radius: var(--radius-full);
@@ -477,14 +477,14 @@
   display: flex;
   font-size: var(--text-sm);
   font-weight: 600;
-  gap: 4px;
+  gap: var(--space-1);
   padding: var(--space-2) var(--space-4);
 }
 .submitBtn {
   flex: 1;
 }
 .sparkleIcon {
-  margin-left: 4px;
+  margin-left: var(--space-1);
 }
 
 /* === Provisioning console === */
@@ -652,7 +652,7 @@
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
   min-height: 80px;
   padding: var(--space-2);
   position: relative;

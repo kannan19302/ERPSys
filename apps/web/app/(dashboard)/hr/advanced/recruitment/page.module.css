@@ -1,5 +1,5 @@
 .s0 {
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
   background: var(--color-primary-light);
   border-radius: var(--radius-md);
   font-size: var(--text-sm);
@@ -15,7 +15,7 @@
 
 .s3 {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   justify-content: flex-end;
 }
 
@@ -75,7 +75,7 @@
 .s11 {
   width: 100%;
   font-size: 11px;
-  padding: 4px;
+  padding: var(--space-1);
 }
 
 .s12 {
@@ -126,7 +126,7 @@
 
 .s17 {
   display: flex;
-  gap: 4px;
+  gap: var(--space-1);
   justify-content: flex-end;
 }
 
@@ -137,4 +137,3 @@
   overflow-x: auto;
   padding-bottom: var(--space-4);
 }
-

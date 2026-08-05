@@ -231,6 +231,20 @@
   text-align: left;
   padding: calc(var(--space-1) * 0);
 }
-.s1 { color: var(--color-text-secondary); font-size: var(--font-size-sm); line-height: 1.6; margin: 0; padding-left: 16px; }
-.s2 { line-height: 1.5; margin: 0; }
-.s3 { height: 48px; margin-bottom: var(--spacing-3); opacity: 0.4; width: 48px; }
+.s1 {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: 1.6;
+  margin: 0;
+  padding-left: var(--space-4);
+}
+.s2 {
+  line-height: 1.5;
+  margin: 0;
+}
+.s3 {
+  height: 48px;
+  margin-bottom: var(--spacing-3);
+  opacity: 0.4;
+  width: 48px;
+}

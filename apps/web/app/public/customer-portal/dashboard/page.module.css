@@ -6,27 +6,27 @@
 .s2 {
   margin: 0 auto;
   max-width: 1000px;
-  padding: 24px;
+  padding: var(--space-6);
 }
 .s3 {
   align-items: center;
   display: flex;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5);
 }
 .s4 {
   opacity: 0.6;
 }
 .s5 {
   display: grid;
-  gap: 12px;
+  gap: var(--space-3);
   grid-template-columns: repeat(4, 1fr);
-  margin-bottom: 24px;
+  margin-bottom: var(--space-6);
 }
 .s6 {
   display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
 }
 .s7 {
   display: flex;
@@ -36,8 +36,8 @@
 .s8 {
   align-items: center;
   display: flex;
-  gap: 8px;
-  padding: 8px;
+  gap: var(--space-2);
+  padding: var(--space-2);
 }
 .s9 {
   width: 120px;
@@ -45,13 +45,13 @@
 .s10 {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 .s11 {
   border-radius: 6px;
   border: 1px solid var(--border-color);
-  margin-bottom: 16px;
-  padding: 12px;
+  margin-bottom: var(--space-4);
+  padding: var(--space-3);
 }
 .s12 {
   cursor: pointer;

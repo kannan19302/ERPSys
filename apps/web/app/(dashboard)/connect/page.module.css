@@ -26,7 +26,7 @@
   border-radius: 4px;
   color: var(--color-primary);
   font-weight: 600;
-  padding: 0 4px;
+  padding: 0 var(--space-1);
 }
 .s6 {
   background: transparent;
@@ -51,8 +51,8 @@
 .s8 {
   align-items: center;
   display: flex;
-  gap: 12px;
-  padding: 12px 0 4px;
+  gap: var(--space-3);
+  padding: var(--space-3) 0 var(--space-1);
   user-select: none;
 }
 .s9 {
@@ -82,7 +82,7 @@
   border: none;
   cursor: pointer;
   display: flex;
-  gap: 4px;
+  gap: var(--space-1);
   padding: 0;
 }
 .s13 {
@@ -108,7 +108,7 @@
   color: var(--color-text-secondary);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-4);
   height: 60vh;
   justify-content: center;
 }
@@ -120,7 +120,7 @@
   align-items: center;
   color: var(--color-text-secondary);
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   height: 50vh;
   justify-content: center;
 }
@@ -135,13 +135,13 @@
   border-bottom: 1px solid var(--color-border);
   display: flex;
   flex-shrink: 0;
-  gap: 12px;
+  gap: var(--space-3);
   padding: 10px 20px;
 }
 .s21 {
   align-items: center;
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
 }
 .s22 {
   font-size: 17px;
@@ -178,7 +178,7 @@
   border-radius: 12px;
   border: 1px solid var(--color-border);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
-  margin-top: 4px;
+  margin-top: var(--space-1);
   overflow: hidden;
   position: absolute;
   right: 0;
@@ -188,19 +188,19 @@
 }
 .s27 {
   border-bottom: 1px solid var(--color-border);
-  padding: 12px;
+  padding: var(--space-3);
 }
 .s28 {
   color: var(--color-text-secondary);
   font-size: 11px;
   font-weight: 700;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
   text-transform: uppercase;
 }
 .s29 {
   display: flex;
   gap: 6px;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 .s30 {
   background: var(--color-bg);
@@ -223,8 +223,8 @@
 .s32 {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  margin-bottom: 8px;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
 }
 .s33 {
   background: var(--color-bg);
@@ -233,7 +233,7 @@
   color: var(--color-text);
   cursor: pointer;
   font-size: 12px;
-  padding: 4px 8px;
+  padding: var(--space-1) var(--space-2);
 }
 .s34 {
   background: var(--color-primary);
@@ -247,13 +247,13 @@
   width: 100%;
 }
 .s35 {
-  padding: 8px;
+  padding: var(--space-2);
 }
 .s36 {
   color: var(--color-text-secondary);
   font-size: 11px;
   font-weight: 700;
-  padding: 4px 8px;
+  padding: var(--space-1) var(--space-2);
   text-transform: uppercase;
 }
 .s37 {
@@ -263,7 +263,7 @@
   cursor: pointer;
   display: flex;
   font-size: 13px;
-  gap: 8px;
+  gap: var(--space-2);
   padding: 7px 8px;
   text-align: left;
   width: 100%;
@@ -312,9 +312,9 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  gap: 8px;
+  gap: var(--space-2);
   overflow-y: auto;
-  padding: 4px 8px 12px;
+  padding: var(--space-1) var(--space-2) var(--space-3);
 }
 .s45 {
   color: #f6bf26;
@@ -331,7 +331,7 @@
   font-size: 12px;
 }
 .s48 {
-  gap: 8px;
+  gap: var(--space-2);
 }
 .s49 {
   display: block;
@@ -398,7 +398,7 @@
 }
 .s57 {
   color: var(--color-primary);
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 .s58 {
   color: var(--color-primary);
@@ -412,7 +412,7 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  gap: 16px;
+  gap: var(--space-4);
   justify-content: center;
 }
 .s60 {
@@ -425,7 +425,7 @@
 }
 .s62 {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
 }
 .s63 {
   align-items: center;
@@ -433,9 +433,9 @@
   border-bottom: 1px solid var(--color-border);
   display: flex;
   flex-shrink: 0;
-  gap: 12px;
+  gap: var(--space-3);
   min-height: 52px;
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
 }
 .s64 {
   align-items: center;
@@ -473,8 +473,8 @@
   cursor: pointer;
   display: flex;
   font-size: 12px;
-  gap: 4px;
-  padding: 4px 8px;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
 }
 .s69 {
   display: flex;
@@ -493,7 +493,7 @@
   border-radius: 10px;
   border: 1px solid var(--color-border);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
-  margin-top: 4px;
+  margin-top: var(--space-1);
   max-height: 360px;
   overflow-y: auto;
   position: absolute;
@@ -509,12 +509,12 @@
   display: flex;
   font-size: 12px;
   gap: 6px;
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
 }
 .s73 {
   color: var(--color-text-tertiary);
   font-size: 13px;
-  padding: 16px 12px;
+  padding: var(--space-4) var(--space-3);
   text-align: center;
 }
 .s74 {
@@ -522,14 +522,14 @@
   border-bottom: 1px solid var(--color-border);
   border: none;
   cursor: pointer;
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   text-align: left;
   width: 100%;
 }
 .s75 {
   display: flex;
   font-size: 12px;
-  gap: 8px;
+  gap: var(--space-2);
   justify-content: space-between;
 }
 .s76 {
@@ -553,7 +553,7 @@
   cursor: pointer;
   display: flex;
   font-size: 12px;
-  gap: 4px;
+  gap: var(--space-1);
   padding: 5px 8px;
 }
 .s80 {
@@ -584,7 +584,7 @@
   cursor: pointer;
   display: flex;
   font-size: 12px;
-  gap: 8px;
+  gap: var(--space-2);
   padding: 6px 16px;
   text-align: left;
   width: 100%;
@@ -595,7 +595,7 @@
   flex: 1;
   gap: 0;
   overflow-y: auto;
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
 }
 .s85 {
   align-items: center;
@@ -603,7 +603,7 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  gap: 8px;
+  gap: var(--space-2);
   justify-content: center;
 }
 .s86 {
@@ -632,7 +632,7 @@
   bottom: 100%;
   box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.1);
   left: 16px;
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
   overflow: hidden;
   position: absolute;
   width: 260px;
@@ -652,7 +652,7 @@
   color: var(--color-text);
   cursor: pointer;
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   padding: 7px 10px;
   text-align: left;
   width: 100%;
@@ -665,8 +665,8 @@
 .s95 {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  padding: 8px 16px 0;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4) 0;
 }
 .s96 {
   align-items: center;
@@ -675,13 +675,13 @@
   font-size: 12px;
   font-style: italic;
   height: 20px;
-  padding: 0 16px;
+  padding: 0 var(--space-4);
 }
 .s97 {
   border-bottom: 1px solid var(--color-border);
   display: flex;
   gap: 2px;
-  padding: 4px 16px;
+  padding: var(--space-1) var(--space-4);
 }
 .s98 {
   background: none;
@@ -701,7 +701,7 @@
   border-radius: 10px;
   border: 1px solid var(--color-border);
   display: flex;
-  gap: 4px;
+  gap: var(--space-1);
   padding: 4px 6px;
 }
 .s101 {
@@ -734,7 +734,7 @@
 }
 .s104 {
   bottom: 100%;
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
   position: absolute;
   right: 16px;
   z-index: 20;
@@ -768,20 +768,20 @@
   border: none;
   color: var(--color-text-secondary);
   cursor: pointer;
-  padding: 4px;
+  padding: var(--space-1);
 }
 .s109 {
   display: flex;
   flex-direction: column;
   flex: 1;
-  gap: 12px;
+  gap: var(--space-3);
   overflow-y: auto;
-  padding: 12px;
+  padding: var(--space-3);
 }
 .s110 {
   color: var(--color-text-tertiary);
   font-size: 13px;
-  padding: 20px;
+  padding: var(--space-5);
   text-align: center;
 }
 .s111 {
@@ -816,7 +816,7 @@
 .s116 {
   border-top: 1px solid var(--color-border);
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   justify-content: flex-end;
   margin-top: 2px;
   padding-top: 6px;
@@ -830,7 +830,7 @@
   display: flex;
   font-size: 11px;
   font-weight: 600;
-  gap: 4px;
+  gap: var(--space-1);
 }
 .s118 {
   align-items: center;
@@ -840,28 +840,28 @@
   cursor: pointer;
   display: flex;
   font-size: 11px;
-  gap: 4px;
+  gap: var(--space-1);
 }
 .s119 {
   display: flex;
   flex-direction: column;
   flex: 1;
-  gap: 8px;
+  gap: var(--space-2);
   overflow-y: auto;
-  padding: 12px;
+  padding: var(--space-3);
 }
 .s120 {
   align-items: center;
   color: var(--color-text-tertiary);
   display: flex;
   font-size: 11px;
-  gap: 8px;
-  padding: 4px 0;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
 }
 .s121 {
   border-top: 1px solid var(--color-border);
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   padding: 10px;
 }
 .s122 {
@@ -900,12 +900,12 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  gap: 16px;
+  gap: var(--space-4);
   overflow-y: auto;
-  padding: 16px;
+  padding: var(--space-4);
 }
 .s127 {
-  padding: 12px 0;
+  padding: var(--space-3) 0;
   text-align: center;
 }
 .s128 {
@@ -921,7 +921,7 @@
 .s129 {
   font-size: 16px;
   font-weight: 700;
-  margin: 0 0 4px;
+  margin: 0 0 var(--space-1);
 }
 .s130 {
   color: var(--color-text-secondary);
@@ -943,14 +943,14 @@
   flex-direction: column;
   flex: 1;
   font-size: 11px;
-  gap: 4px;
+  gap: var(--space-1);
   padding: 10px;
 }
 .s133 {
   align-items: center;
   display: flex;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 .s134 {
   color: var(--color-text-secondary);
@@ -977,13 +977,13 @@
   color: var(--color-text-secondary);
   font-size: 12px;
   font-weight: 700;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 .s138 {
   align-items: center;
   display: flex;
   font-size: 12px;
-  gap: 8px;
+  gap: var(--space-2);
   padding: 5px 0;
 }
 .s139 {
@@ -1023,19 +1023,19 @@
 .s145 {
   flex: 1;
   overflow-y: auto;
-  padding: 12px;
+  padding: var(--space-3);
 }
 .s146 {
   background: var(--color-bg);
   border-radius: 8px;
   border: 1px solid var(--color-border);
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
   padding: 10px;
 }
 .s147 {
   align-items: center;
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   margin-bottom: 6px;
 }
 .s148 {
@@ -1084,7 +1084,7 @@
 .s154 {
   align-items: center;
   display: flex;
-  gap: 48px;
+  gap: var(--space-12);
   max-width: 960px;
 }
 .s155 {
@@ -1092,7 +1092,7 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  gap: 20px;
+  gap: var(--space-5);
 }
 .s156 {
   align-items: center;
@@ -1141,17 +1141,17 @@
 .s162 {
   color: #9aa0a6;
   font-size: 14px;
-  margin-top: 12px;
+  margin-top: var(--space-3);
 }
 .s163 {
   display: flex;
-  gap: 12px;
+  gap: var(--space-3);
 }
 .s164 {
   align-items: center;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-4);
   width: 340px;
 }
 .s165 {
@@ -1176,8 +1176,8 @@
 .s168 {
   align-items: center;
   display: flex;
-  gap: 8px;
-  margin-top: 4px;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
 }
 .s169 {
   color: #9aa0a6;
@@ -1192,7 +1192,7 @@
   font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.25px;
-  margin-top: 8px;
+  margin-top: var(--space-2);
   padding: 14px 48px;
 }
 .s171 {
@@ -1204,7 +1204,7 @@
   cursor: pointer;
   display: flex;
   font-size: 14px;
-  gap: 8px;
+  gap: var(--space-2);
   padding: 10px 24px;
 }
 .s172 {
@@ -1213,7 +1213,7 @@
   color: #9aa0a6;
   cursor: pointer;
   font-size: 14px;
-  margin-top: 8px;
+  margin-top: var(--space-2);
 }
 .s173 {
   background: #202124;
@@ -1227,9 +1227,9 @@
   align-items: center;
   display: flex;
   flex-shrink: 0;
-  gap: 12px;
+  gap: var(--space-3);
   min-height: 48px;
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
 }
 .s175 {
   color: #8ab4f8;
@@ -1269,14 +1269,14 @@
   border: none;
   color: #9aa0a6;
   cursor: pointer;
-  padding: 4px;
+  padding: var(--space-1);
 }
 .s182 {
   display: flex;
   flex-direction: column;
   flex: 1;
   min-width: 0;
-  padding: 8px;
+  padding: var(--space-2);
   position: relative;
 }
 .s183 {
@@ -1286,7 +1286,7 @@
   border-radius: 20px;
   bottom: 100px;
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   left: 50%;
   padding: 6px 14px;
   position: absolute;
@@ -1306,7 +1306,7 @@
   bottom: 80px;
   left: 50%;
   max-width: 70%;
-  padding: 8px 20px;
+  padding: var(--space-2) var(--space-5);
   position: absolute;
   transform: translateX(-50%);
   z-index: 5;
@@ -1320,8 +1320,8 @@
 .s188 {
   display: grid;
   flex: 1;
-  gap: 8px;
-  padding: 4px;
+  gap: var(--space-2);
+  padding: var(--space-1);
 }
 .s189 {
   align-items: center;
@@ -1357,7 +1357,7 @@
 }
 .s194 {
   display: flex;
-  gap: 4px;
+  gap: var(--space-1);
   position: absolute;
   right: 8px;
   top: 8px;
@@ -1401,7 +1401,7 @@
   border-radius: 4px;
   bottom: 4px;
   display: flex;
-  gap: 4px;
+  gap: var(--space-1);
   left: 6px;
   padding: 2px 6px;
   position: absolute;
@@ -1428,17 +1428,17 @@
   flex: 1;
   font-size: 13px;
   font-weight: 600;
-  padding: 12px;
+  padding: var(--space-3);
 }
 .s203 {
   background: transparent;
   border: none;
   color: #9aa0a6;
   cursor: pointer;
-  padding: 0 12px;
+  padding: 0 var(--space-3);
 }
 .s204 {
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 .s205 {
   align-items: center;
@@ -1447,7 +1447,7 @@
   font-size: 12px;
   font-weight: 600;
   gap: 6px;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 .s206 {
   align-items: center;
@@ -1473,14 +1473,14 @@
   color: #9aa0a6;
   font-size: 12px;
   font-weight: 600;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 .s210 {
   align-items: center;
   border-radius: 6px;
   display: flex;
   gap: 10px;
-  padding: 8px 4px;
+  padding: var(--space-2) var(--space-1);
 }
 .s211 {
   color: #9aa0a6;
@@ -1488,7 +1488,7 @@
 }
 .s212 {
   display: flex;
-  gap: 4px;
+  gap: var(--space-1);
 }
 .s213 {
   color: #9aa0a6;
@@ -1498,7 +1498,7 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  gap: 8px;
+  gap: var(--space-2);
   justify-content: center;
 }
 .s215 {
@@ -1543,7 +1543,7 @@
   flex: 1;
   font-size: 13px;
   outline: none;
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
 }
 .s223 {
   align-items: center;
@@ -1559,15 +1559,15 @@
   align-items: center;
   display: flex;
   flex-shrink: 0;
-  gap: 8px;
+  gap: var(--space-2);
   justify-content: center;
-  padding: 12px 16px;
+  padding: var(--space-3) var(--space-4);
   position: relative;
 }
 .s225 {
   align-items: center;
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   left: 16px;
   position: absolute;
 }
@@ -1592,10 +1592,10 @@
   border-radius: 24px;
   bottom: 100%;
   display: flex;
-  gap: 4px;
+  gap: var(--space-1);
   left: 50%;
-  margin-bottom: 8px;
-  padding: 4px 8px;
+  margin-bottom: var(--space-2);
+  padding: var(--space-1) var(--space-2);
   position: absolute;
   transform: translateX(-50%);
   white-space: nowrap;
@@ -1606,14 +1606,14 @@
   border: none;
   cursor: pointer;
   font-size: 20px;
-  padding: 4px;
+  padding: var(--space-1);
 }
 .s230 {
   background: #2d2e31;
   border-radius: 8px;
   bottom: 100%;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
   overflow: hidden;
   position: absolute;
   right: 0;
@@ -1626,7 +1626,7 @@
   cursor: pointer;
   display: flex;
   font-size: 13px;
-  gap: 12px;
+  gap: var(--space-3);
   padding: 10px 14px;
   text-align: left;
   width: 100%;
@@ -1634,12 +1634,12 @@
 .s232 {
   background: #5f6368;
   height: 32px;
-  margin: 0 4px;
+  margin: 0 var(--space-1);
   width: 1px;
 }
 .s233 {
   display: flex;
-  gap: 4px;
+  gap: var(--space-1);
   position: absolute;
   right: 16px;
 }
@@ -1665,7 +1665,7 @@
 .s236 {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 }
 .s237 {
   color: var(--color-text-tertiary);
@@ -1686,7 +1686,7 @@
 .s239 {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: var(--space-1);
 }
 .s240 {
   align-items: center;
@@ -1696,7 +1696,7 @@
   color: var(--color-primary);
   display: inline-flex;
   font-size: 12px;
-  gap: 4px;
+  gap: var(--space-1);
   padding: 3px 8px 3px 4px;
 }
 .s241 {
@@ -1732,7 +1732,7 @@
 .s245 {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 }
 .s246 {
   color: var(--color-text-tertiary);
@@ -1752,7 +1752,7 @@
 }
 .s248 {
   display: flex;
-  gap: 4px;
+  gap: var(--space-1);
   position: absolute;
   right: 14px;
   top: 50%;
@@ -1769,7 +1769,7 @@
 .s250 {
   color: var(--color-text-tertiary);
   font-size: 12px;
-  padding: 8px 4px;
+  padding: var(--space-2) var(--space-1);
 }
 .s251 {
   display: flex;
@@ -1845,13 +1845,13 @@
 .s260 {
   color: var(--color-text-tertiary);
   font-size: 14px;
-  padding: 20px;
+  padding: var(--space-5);
   text-align: center;
 }
 .s261 {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-4);
 }
 .s262 {
   font-size: 18px;
@@ -1863,7 +1863,7 @@
   display: flex;
   gap: 6px;
   justify-content: center;
-  margin-top: 8px;
+  margin-top: var(--space-2);
 }
 .s264 {
   color: var(--color-text-secondary);
@@ -1872,13 +1872,13 @@
 .s265 {
   color: var(--color-text-tertiary);
   font-size: 13px;
-  margin: 4px 0 0;
+  margin: var(--space-1) 0 0;
 }
 .s266 {
   color: var(--color-primary);
   font-size: 13px;
   font-weight: 600;
-  margin: 8px 0 0;
+  margin: var(--space-2) 0 0;
 }
 .s267 {
   flex: 1;
@@ -1910,7 +1910,7 @@
   border-radius: 8px;
   border: 1px solid var(--color-border);
   display: flex;
-  gap: 12px;
+  gap: var(--space-3);
   padding: 8px 10px;
 }
 .s272 {
@@ -1927,7 +1927,7 @@
   display: flex;
   flex-wrap: wrap;
   font-size: 11px;
-  gap: 4px;
+  gap: var(--space-1);
 }
 .s274 {
   align-items: center;
@@ -1939,7 +1939,7 @@
   display: flex;
   font-size: 12px;
   font-weight: 600;
-  gap: 4px;
+  gap: var(--space-1);
   padding: 4px 10px;
 }
 .s275 {
@@ -1967,13 +1967,13 @@
 }
 .s279 {
   border-top: 1px solid var(--color-border);
-  padding-top: 16px;
+  padding-top: var(--space-4);
 }
 .s280 {
   color: var(--color-text-tertiary);
   font-size: 11px;
   font-weight: 700;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
   text-transform: uppercase;
 }
 .s281 {
@@ -1982,7 +1982,7 @@
   border: 1px solid var(--color-border);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   left: 0;
-  margin-top: 4px;
+  margin-top: var(--space-1);
   max-height: 220px;
   overflow-y: auto;
   position: absolute;
@@ -2002,7 +2002,7 @@
   border: none;
   cursor: pointer;
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   padding: 8px 10px;
   text-align: left;
   width: 100%;
@@ -2021,15 +2021,15 @@
   border: none;
   color: var(--color-text-tertiary);
   cursor: pointer;
-  padding: 4px;
+  padding: var(--space-1);
 }
 .s287 {
   align-items: center;
   color: var(--color-danger);
   display: flex;
   font-size: 13px;
-  gap: 8px;
-  padding: 12px;
+  gap: var(--space-2);
+  padding: var(--space-3);
 }
 .s288 {
   background: none;
@@ -2043,7 +2043,7 @@
 .s289 {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
   max-height: 420px;
   overflow-y: auto;
 }
@@ -2065,7 +2065,7 @@
   align-items: center;
   display: flex;
   gap: 6px;
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 }
 .s293 {
   -webkit-box-orient: vertical;
@@ -2107,8 +2107,8 @@
 .s300 {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 4px;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
 }
 .s301 {
   align-items: center;
@@ -2118,7 +2118,7 @@
   color: var(--color-text);
   display: flex;
   font-size: 11px;
-  gap: 4px;
+  gap: var(--space-1);
   padding: 3px 8px;
   text-decoration: none;
 }
@@ -2136,8 +2136,8 @@
   border: 1px solid var(--color-border);
   display: flex;
   font-size: 13px;
-  gap: 8px;
-  margin: 4px 0;
+  gap: var(--space-2);
+  margin: var(--space-1) 0;
   padding: 6px 12px;
 }
 .s305 {
@@ -2174,8 +2174,8 @@
 }
 .s310 {
   display: flex;
-  gap: 8px;
-  margin-top: 4px;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
 }
 .s311 {
   background: var(--color-bg);
@@ -2203,7 +2203,7 @@
   color: var(--color-text-secondary);
   cursor: pointer;
   font-size: 12px;
-  padding: 0 12px;
+  padding: 0 var(--space-3);
 }
 .s314 {
   background: var(--color-bg);
@@ -2235,8 +2235,8 @@
 .s318 {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
 }
 .s319 {
   border-radius: 8px;
@@ -2259,9 +2259,9 @@
   color: var(--color-text);
   display: flex;
   font-size: 12px;
-  gap: 8px;
+  gap: var(--space-2);
   max-width: 280px;
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   text-decoration: none;
 }
 .s322 {
@@ -2278,7 +2278,7 @@
   align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: var(--space-1);
   margin-top: 6px;
 }
 .s325 {
@@ -2289,7 +2289,7 @@
   cursor: pointer;
   display: flex;
   font-size: 12px;
-  gap: 4px;
+  gap: var(--space-1);
   padding: 3px 8px;
   transition: all 0.15s;
 }
@@ -2303,7 +2303,7 @@
   display: flex;
   font-size: 12px;
   font-weight: 600;
-  gap: 4px;
+  gap: var(--space-1);
   padding: 3px 10px;
 }
 .s327 {
@@ -2323,7 +2323,7 @@
   z-index: 10;
 }
 .s329 {
-  margin-top: 4px;
+  margin-top: var(--space-1);
   position: absolute;
   right: 0;
   top: 100%;
@@ -2345,7 +2345,7 @@
   display: flex;
   flex-direction: column;
   font-size: 12px;
-  gap: 4px;
+  gap: var(--space-1);
   padding: 6px 10px;
   width: 168px;
 }
@@ -2381,7 +2381,7 @@
   display: flex;
   flex-direction: column;
   font-size: 12px;
-  gap: 4px;
+  gap: var(--space-1);
   padding: 6px 10px;
   width: 168px;
 }
@@ -2423,7 +2423,7 @@
 }
 .s342 {
   border-bottom: 1px solid var(--color-border);
-  padding: 8px;
+  padding: var(--space-2);
 }
 .s343 {
   background: var(--color-bg);
@@ -2454,13 +2454,13 @@
   grid-template-columns: repeat(6, 1fr);
   max-height: 220px;
   overflow-y: auto;
-  padding: 8px;
+  padding: var(--space-2);
 }
 .s347 {
   color: var(--color-text-tertiary);
   font-size: 12px;
   grid-column: span 6;
-  padding: 12px 0;
+  padding: var(--space-3) 0;
   text-align: center;
 }
 .s348 {
@@ -2469,7 +2469,7 @@
   border: none;
   cursor: pointer;
   font-size: 20px;
-  padding: 4px;
+  padding: var(--space-1);
 }
 .s349 {
   align-items: center;
@@ -2477,7 +2477,7 @@
   display: flex;
   inset: 0;
   justify-content: center;
-  padding: 16px;
+  padding: var(--space-4);
   position: fixed;
   z-index: 1000;
 }
@@ -2488,7 +2488,7 @@
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
   max-height: 85vh;
   overflow-y: auto;
-  padding: 20px;
+  padding: var(--space-5);
 }
 .s351 {
   align-items: center;
@@ -2496,7 +2496,7 @@
   border-radius: 8px;
   border: 1px solid var(--color-border);
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   margin-top: 6px;
   max-width: 420px;
   padding: 6px 12px;
@@ -2531,7 +2531,7 @@
   flex: 1;
   justify-content: center;
   min-width: 0;
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
 }
 .s356 {
   color: var(--color-primary);
@@ -2553,7 +2553,7 @@
 .s358 {
   color: var(--color-text-tertiary);
   font-size: 10px;
-  margin-top: 4px;
+  margin-top: var(--space-1);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2562,8 +2562,8 @@
   align-items: center;
   cursor: pointer;
   display: inline-flex;
-  gap: 4px;
-  margin-top: 4px;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
   position: relative;
   user-select: none;
 }

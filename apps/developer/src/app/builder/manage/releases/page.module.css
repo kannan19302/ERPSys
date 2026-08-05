@@ -90,7 +90,7 @@
   color: var(--color-primary);
   display: flex;
   font-size: 10px;
-  gap: 4px;
+  gap: var(--space-1);
   padding: 2px 8px;
 }
 .s18 {
@@ -124,7 +124,7 @@
   color: var(--color-text-secondary);
   font-size: var(--text-xs);
   font-weight: 600;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 .s23 {
   display: grid;
@@ -136,7 +136,7 @@
   background: white;
   border-radius: 4px;
   border: 1px solid var(--color-border);
-  padding: 8px;
+  padding: var(--space-2);
 }
 .s25 {
   color: var(--color-primary);
@@ -147,7 +147,7 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  gap: 8px;
+  gap: var(--space-2);
 }
 .s27 {
   background: var(--color-bg-sunken);
@@ -173,5 +173,5 @@
   padding: var(--space-12);
 }
 .s29 {
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }

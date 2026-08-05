@@ -3,7 +3,7 @@
 }
 .s2 {
   display: flex;
-  gap: 4px;
+  gap: var(--space-1);
 }
 .s3 {
   color: var(--color-danger-hover);

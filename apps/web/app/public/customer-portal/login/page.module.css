@@ -6,15 +6,15 @@
   min-height: 100vh;
 }
 .s2 {
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 }
 .s3 {
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5);
   opacity: 0.65;
 }
 .s4 {
   align-items: center;
   display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
 }

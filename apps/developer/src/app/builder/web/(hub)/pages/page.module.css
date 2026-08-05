@@ -17,7 +17,7 @@
   display: inline-flex;
   font-size: var(--text-xs);
   font-weight: 600;
-  gap: 4px;
+  gap: var(--space-1);
 }
 .s4 {
   display: flex;
@@ -43,11 +43,11 @@
   font-family: monospace;
 }
 .s9 {
-  padding: 4px 8px;
+  padding: var(--space-1) var(--space-2);
 }
 .s10 {
   color: var(--color-danger);
-  padding: 4px 8px;
+  padding: var(--space-1) var(--space-2);
 }
 .s11 {
   display: flex;
@@ -145,11 +145,11 @@
   border: 1px solid var(--color-border);
   display: flex;
   gap: var(--space-2);
-  padding: 4px;
+  padding: var(--space-1);
 }
 .s26 {
   background: var(--color-bg);
-  padding: 4px 12px;
+  padding: var(--space-1) var(--space-3);
 }
 .s27 {
   align-items: center;
@@ -219,7 +219,7 @@
   cursor: pointer;
   display: flex;
   font-size: var(--text-sm);
-  gap: 8px;
+  gap: var(--space-2);
 }
 .s37 {
   background: var(--color-bg-elevated);

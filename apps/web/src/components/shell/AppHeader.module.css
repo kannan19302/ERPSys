@@ -212,7 +212,7 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 4px;
+  padding: var(--space-1);
   border-radius: var(--radius-lg);
   transition: all var(--duration-fast) var(--ease-default);
 }
