@@ -1,0 +1,5 @@
+# Use hoisted node-linker to prevent duplicate packages in monorepo and ensure
+# single React instances across Next.js and peer-dependent UI packages.
+# This fixes "Invalid Hook Call" and other symlink-related Docker volume issues.
+node-linker=hoisted
+shamefully-hoist=true
