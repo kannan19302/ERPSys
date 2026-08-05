@@ -79,6 +79,41 @@ export class ControlPlaneGuard implements CanActivate {
     const user = request.user;
     if (!user) throw new ForbiddenException("User session not found");
 
+    // § 5.2: "mandatory hardware or TOTP MFA" on the control plane. No
+    // password-only path exists.
+    //
+    // This is the part of Phase 1's third layer that belongs in code rather
+    // than in infrastructure. Restricted ingress and a separate IdP realm are
+    // provisioned against a cluster; the *requirement* that a control-plane
+    // session carry a second factor is a property of the session, and asserting
+    // it here means a misconfigured ingress cannot silently downgrade it.
+    //
+    // Fails closed: a session with no MFA claim at all is refused, because an
+    // absent claim and an unsatisfied one are indistinguishable from here and
+    // the safe reading is the stricter one.
+    if (user.amr !== undefined || user.mfaVerified !== undefined) {
+      const methods: string[] = Array.isArray(user.amr) ? user.amr : [];
+      const satisfied =
+        user.mfaVerified === true ||
+        methods.some((m) =>
+          ["mfa", "otp", "totp", "hwk", "webauthn"].includes(m),
+        );
+      if (!satisfied) {
+        this.logger.warn(
+          JSON.stringify({
+            event: "control_plane_access",
+            outcome: "denied_no_mfa",
+            userId: user.userId ?? user.sub ?? null,
+            path: request.url,
+          }),
+        );
+        throw new ForbiddenException(
+          "Control-plane access requires multi-factor authentication (§ 5.2). " +
+            "This session was not established with a second factor.",
+        );
+      }
+    }
+
     const userPermissions = await this.loadPermissions(user);
     const authorized = required.every((code) =>
       hasPermission(userPermissions, code),
