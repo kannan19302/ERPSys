@@ -4,7 +4,10 @@
   "consumer": "@unerp/developer",
   "providers": {
     "@unerp/framework": {
-      "symbols": ["RouteGuard", "useApiClient"],
+      "symbols": [
+        "RouteGuard",
+        "useApiClient"
+      ],
       "namespaceImports": 0,
       "consumingFiles": 39
     },
@@ -44,7 +47,11 @@
       "consumingFiles": 47
     },
     "@unerp/ui/layout": {
-      "symbols": ["ModuleTab", "SubTab", "SubTabBar"],
+      "symbols": [
+        "ModuleTab",
+        "SubTab",
+        "SubTabBar"
+      ],
       "namespaceImports": 0,
       "consumingFiles": 11
     }

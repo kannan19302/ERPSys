@@ -4,7 +4,9 @@
   "consumer": "@unerp/console",
   "providers": {
     "@unerp/framework": {
-      "symbols": ["RouteGuard"],
+      "symbols": [
+        "RouteGuard"
+      ],
       "namespaceImports": 0,
       "consumingFiles": 3
     },

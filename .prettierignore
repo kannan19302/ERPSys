@@ -1,0 +1,17 @@
+# Generated artifacts. Prettier must not touch these: they are written by a
+# generator and compared byte-for-byte against a freshly generated copy, so
+# reformatting them makes the drift check fail on every commit — which happened
+# repeatedly during the § 14 Phase 3 migration and each time looked like a real
+# CDC violation.
+**/cdc/expectations.json
+.quality-policy-baseline.json
+.quality-baseline.json
+scripts/ci/decimal-arithmetic-baseline.json
+scripts/module-boundary-baseline.json
+scripts/schema-lint-baseline.json
+
+# Build output and vendored trees
+dist/
+.next/
+node_modules/
+coverage/

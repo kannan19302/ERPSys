@@ -55,7 +55,11 @@
       "consumingFiles": 8
     },
     "@unerp/sandbox": {
-      "symbols": ["HostCapabilities", "SandboxInstallation", "SandboxRunner"],
+      "symbols": [
+        "HostCapabilities",
+        "SandboxInstallation",
+        "SandboxRunner"
+      ],
       "namespaceImports": 0,
       "consumingFiles": 2
     },

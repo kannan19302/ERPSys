@@ -26,7 +26,9 @@
       "consumingFiles": 611
     },
     "@unerp/sdk": {
-      "symbols": ["UniERPClient"],
+      "symbols": [
+        "UniERPClient"
+      ],
       "namespaceImports": 0,
       "consumingFiles": 2
     },
@@ -103,7 +105,9 @@
       "consumingFiles": 761
     },
     "@unerp/ui/charts": {
-      "symbols": ["DashboardChart"],
+      "symbols": [
+        "DashboardChart"
+      ],
       "namespaceImports": 0,
       "consumingFiles": 1
     },
