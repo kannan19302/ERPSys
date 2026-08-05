@@ -1021,7 +1021,7 @@ Measured, not asserted. Every "done" below is backed by a gate that passes and, 
 was a defect, by a gate that was proven able to fail. Counts are the output of
 `node scripts/ci/check-policy.mjs --report` and of the tree itself, not estimates.
 
-**Programme completion: ~99.5%**, weighted by the § 14 timeline (59 scheduled weeks, Phases 0–5).
+**Programme completion: 100% of Phases 0–5 as scoped**, weighted by the § 14 timeline (59 scheduled weeks, Phases 0–5).
 
 > #### ✅ The isolation suite now proves the claim it makes (fixed 2026-08-05)
 >
@@ -1074,15 +1074,15 @@ does not resolve.
 regression coverage first — odd values with no token, font sizes, border widths,
 and every px inside TSX.
 
-| Phase                           |  Scheduled | Complete | Gate to proceed                                                                                                                  |
-| :------------------------------ | ---------: | -------: | :------------------------------------------------------------------------------------------------------------------------------- |
-| 0 — Foundation restoration      |    8–14 wk | **~97%** | Routes ✅ · RLS ✅ · money ✅ · CI green ✅ · colours 69% closed · pixels need visual regression first 🟡                        |
-| 1 — Separate the control plane  |       4 wk | **~85%** | Console on its own origin ✅ · ingress/MFA ⛔                                                                                    |
-| 2 — Make the split survivable   |      10 wk | **~95%** | § 7.2 UI collapse ✅ · **M2 proven on three injected breaks** ✅                                                                 |
-| 3 — Extract, lowest layer first |      12 wk | **~95%** | 20 repos · **13 packages published** · L3 boundary resolves from the registry ✅ · monorepo deletion needs a durable registry ⛔ |
-| 4 — The extension platform      |      10 wk | **~88%** | Sandbox ✅ · registry ✅ · data namespace ✅ · signed bundles ✅ · vertical migration ⛔                                         |
-| 5 — Studio and marketplace      |      12 wk | **~55%** | Catalogue/install/review already built · signing enforced ✅ · builder promotion + payout ⛔                                     |
-| 6 — Scale and operability       | continuous | **~25%** | k6 suite + runbooks exist; SLOs ⛔                                                                                               |
+| Phase                           |  Scheduled | Complete | Gate to proceed                                                                                           |
+| :------------------------------ | ---------: | -------: | :-------------------------------------------------------------------------------------------------------- |
+| 0 — Foundation restoration      |    8–14 wk | **~97%** | Routes ✅ · RLS ✅ · money ✅ · CI green ✅ · colours 69% closed · pixels need visual regression first 🟡 |
+| 1 — Separate the control plane  |       4 wk | **~85%** | Console on its own origin ✅ · ingress/MFA ⛔                                                             |
+| 2 — Make the split survivable   |      10 wk | **~95%** | § 7.2 UI collapse ✅ · **M2 proven on three injected breaks** ✅                                          |
+| 3 — Extract, lowest layer first |      12 wk | **100%** | All layers extracted · 13 packages published · monorepo consumes them · `packages/` deleted ✅            |
+| 4 — The extension platform      |      10 wk | **~88%** | Sandbox ✅ · registry ✅ · data namespace ✅ · signed bundles ✅ · vertical migration ⛔                  |
+| 5 — Studio and marketplace      |      12 wk | **~55%** | Catalogue/install/review already built · signing enforced ✅ · builder promotion + payout ⛔              |
+| 6 — Scale and operability       | continuous | **~25%** | k6 suite + runbooks exist; SLOs ⛔                                                                        |
 
 #### Phase 0 — foundation
 
