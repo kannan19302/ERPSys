@@ -128,7 +128,7 @@ importers:
         version: 1.0.2(prisma@6.19.3(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
       '@unerp/blockchain':
         specifier: ^1.0.2
-        version: 1.0.2(@unerp/shared@1.0.3)
+        version: 1.0.2(@unerp/shared@1.0.4)
       '@unerp/database':
         specifier: ^1.0.4
         version: 1.0.4(prisma@6.19.3(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
@@ -142,8 +142,8 @@ importers:
         specifier: ^0.2.2
         version: 0.2.2
       '@unerp/shared':
-        specifier: ^1.0.3
-        version: 1.0.3
+        specifier: ^1.0.4
+        version: 1.0.4
       bullmq:
         specifier: ^5.79.1
         version: 5.79.1
@@ -254,11 +254,11 @@ importers:
   apps/console:
     dependencies:
       '@unerp/framework':
-        specifier: ^0.1.2
-        version: 0.1.2(@types/react@19.2.17)(next@15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)
+        specifier: ^0.1.3
+        version: 0.1.3(@types/react@19.2.17)(next@15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)
       '@unerp/ui':
-        specifier: ^1.0.6
-        version: 1.0.6(@types/react@19.2.17)(next@15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)
+        specifier: ^1.0.8
+        version: 1.0.8(@types/react@19.2.17)(next@15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)
       next:
         specifier: 15.3.4
         version: 15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -285,17 +285,17 @@ importers:
   apps/developer:
     dependencies:
       '@unerp/framework':
-        specifier: ^0.1.2
-        version: 0.1.2(@types/react@19.2.17)(next@15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)
+        specifier: ^0.1.3
+        version: 0.1.3(@types/react@19.2.17)(next@15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)
       '@unerp/sdk':
         specifier: ^1.0.2
         version: 1.0.2
       '@unerp/shared':
-        specifier: ^1.0.3
-        version: 1.0.3
+        specifier: ^1.0.4
+        version: 1.0.4
       '@unerp/ui':
-        specifier: ^1.0.6
-        version: 1.0.6(@types/react@19.2.17)(next@15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)
+        specifier: ^1.0.8
+        version: 1.0.8(@types/react@19.2.17)(next@15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)
       next:
         specifier: 15.3.4
         version: 15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -407,7 +407,7 @@ importers:
         version: 1.0.2(prisma@6.19.3(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
       '@unerp/blockchain':
         specifier: ^1.0.2
-        version: 1.0.2(@unerp/shared@1.0.3)
+        version: 1.0.2(@unerp/shared@1.0.4)
       '@unerp/database':
         specifier: ^1.0.4
         version: 1.0.4(prisma@6.19.3(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
@@ -415,8 +415,8 @@ importers:
         specifier: ^0.2.2
         version: 0.2.2
       '@unerp/shared':
-        specifier: ^1.0.3
-        version: 1.0.3
+        specifier: ^1.0.4
+        version: 1.0.4
       bullmq:
         specifier: ^5.79.1
         version: 5.79.1
@@ -545,17 +545,17 @@ importers:
         specifier: ^1.0.2
         version: 1.0.2(prisma@6.19.3(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
       '@unerp/framework':
-        specifier: ^0.1.2
-        version: 0.1.2(@types/react@19.2.17)(next@15.5.19(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)(redux@5.0.1)
+        specifier: ^0.1.3
+        version: 0.1.3(@types/react@19.2.17)(next@15.5.19(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)(redux@5.0.1)
       '@unerp/sdk':
         specifier: ^1.0.2
         version: 1.0.2
       '@unerp/shared':
-        specifier: ^1.0.3
-        version: 1.0.3
+        specifier: ^1.0.4
+        version: 1.0.4
       '@unerp/ui':
-        specifier: ^1.0.6
-        version: 1.0.6(@types/react@19.2.17)(next@15.5.19(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)(redux@5.0.1)
+        specifier: ^1.0.8
+        version: 1.0.8(@types/react@19.2.17)(next@15.5.19(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)(redux@5.0.1)
       '@xyflow/react':
         specifier: ^12.11.0
         version: 12.11.0(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(immer@11.1.8)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -3249,8 +3249,8 @@ packages:
   '@unerp/extension-api@1.0.5':
     resolution: {integrity: sha512-VNL+i5RQNuFLBVYQjkWVlU3Zz7PJpUEpEexV3R2/pz/H1OpJbakr6e1HlvOz0dswuy68ITbCR6SCejtw95u8IQ==}
 
-  '@unerp/framework@0.1.2':
-    resolution: {integrity: sha512-OZ8ukab5Tk1naXTAsH/ZFXsDFCSI5nLmm0Xs+hOiWMHzxNTbqNJRU3CDPQx0cpApTXFGQQL3T1aXwvNA/JJFhg==}
+  '@unerp/framework@0.1.3':
+    resolution: {integrity: sha512-Q7CvcmiG1faihM+ToT4AMfrfP1hl6HsemJYhqnRcc/sb/r5HxduhgLs99lHyM2GwIy+x2wXOkCsVf7YEPHBtZQ==}
     peerDependencies:
       react: ^19.0.0
       react-dom: ^19.0.0
@@ -3264,11 +3264,11 @@ packages:
   '@unerp/service-kit@0.2.2':
     resolution: {integrity: sha512-bfNyHdVc7PhB+7DE+7RxMOLj6IEv4ZxHXo99fUFIk0eZD8yKwDlF7XEvkzKTbKERc3zB7ey794+ttEP83p1ZHQ==}
 
-  '@unerp/shared@1.0.3':
-    resolution: {integrity: sha512-KhtbT7BNPPmXZmWl89GG6Wx2mT8vbJtiE83oN1C6oErxLJ7RVwacYlm1jmWFMkCgvYgRNW+fql2pNinopfQjkA==}
+  '@unerp/shared@1.0.4':
+    resolution: {integrity: sha512-KHSipkOGJgy3OZaWj5K6Mdu2OruE/A4Yw/PoSPsMUVPOXRzAHzGbJVzr+neHWyfQxXPkQQl/WhQjfylQO1FiAA==}
 
-  '@unerp/ui@1.0.6':
-    resolution: {integrity: sha512-Se1bigXIkQ1DKRntepVc6gfYwCZR8GHRFpVbZErmNeKsA/M5U+XNwBG/EYAjlO1sasTQczFCTnovQNegB5tsEg==}
+  '@unerp/ui@1.0.8':
+    resolution: {integrity: sha512-nxjxi5v3lqWx8Yg8qm7suA87ML1BhhcC6FtUUmV/xcIeCtbsoNMtTHPDL0yjrlcEiyKKBMZXLllMllPYg+xyNQ==}
     peerDependencies:
       next: '>=14.0.0'
       react: ^19.0.0
@@ -3971,6 +3971,7 @@ packages:
   cron-parser@4.9.0:
     resolution: {integrity: sha512-p0SaNjrHOnQeR8/VnfGbmg9te2kfyYSQ7Sc/j/6DtPL3JQvKxmjO9TSjNFpujqV3vEYYBvNNvXSxzyksBWAx1Q==}
     engines: {node: '>=12.0.0'}
+    deprecated: v4 is no longer maintained, upgrade to v5
 
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
@@ -9799,18 +9800,18 @@ snapshots:
   '@unerp/auth@1.0.2(prisma@6.19.3(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)':
     dependencies:
       '@unerp/database': 1.0.4(prisma@6.19.3(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
-      '@unerp/shared': 1.0.3
+      '@unerp/shared': 1.0.4
       bcryptjs: 2.4.3
       jsonwebtoken: 9.0.3
     transitivePeerDependencies:
       - prisma
       - typescript
 
-  '@unerp/blockchain@1.0.2(@unerp/shared@1.0.3)':
+  '@unerp/blockchain@1.0.2(@unerp/shared@1.0.4)':
     dependencies:
       '@grpc/grpc-js': 1.14.4
       '@hyperledger/fabric-gateway': 1.11.0
-      '@unerp/shared': 1.0.3
+      '@unerp/shared': 1.0.4
       crypto: 1.0.1
 
   '@unerp/config@1.0.1': {}
@@ -9828,10 +9829,10 @@ snapshots:
     dependencies:
       zod: 3.25.76
 
-  '@unerp/framework@0.1.2(@types/react@19.2.17)(next@15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)':
+  '@unerp/framework@0.1.3(@types/react@19.2.17)(next@15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)':
     dependencies:
       '@tanstack/react-query': 5.101.1(react@19.2.7)
-      '@unerp/ui': 1.0.6(@types/react@19.2.17)(next@15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)
+      '@unerp/ui': 1.0.8(@types/react@19.2.17)(next@15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)
       react: 19.2.7
       react-dom: 19.2.7(react@19.2.7)
       zod: 3.25.76
@@ -9841,10 +9842,10 @@ snapshots:
       - react-is
       - redux
 
-  '@unerp/framework@0.1.2(@types/react@19.2.17)(next@15.5.19(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)(redux@5.0.1)':
+  '@unerp/framework@0.1.3(@types/react@19.2.17)(next@15.5.19(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)(redux@5.0.1)':
     dependencies:
       '@tanstack/react-query': 5.101.1(react@19.2.7)
-      '@unerp/ui': 1.0.6(@types/react@19.2.17)(next@15.5.19(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)(redux@5.0.1)
+      '@unerp/ui': 1.0.8(@types/react@19.2.17)(next@15.5.19(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)(redux@5.0.1)
       react: 19.2.7
       react-dom: 19.2.7(react@19.2.7)
       zod: 3.25.76
@@ -9865,11 +9866,11 @@ snapshots:
 
   '@unerp/service-kit@0.2.2': {}
 
-  '@unerp/shared@1.0.3':
+  '@unerp/shared@1.0.4':
     dependencies:
       zod: 3.25.76
 
-  '@unerp/ui@1.0.6(@types/react@19.2.17)(next@15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)':
+  '@unerp/ui@1.0.8(@types/react@19.2.17)(next@15.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)':
     dependencies:
       '@radix-ui/react-slot': 1.2.5(@types/react@19.2.17)(react@19.2.7)
       lucide-react: 0.460.0(react@19.2.7)
@@ -9883,7 +9884,7 @@ snapshots:
       - react-is
       - redux
 
-  '@unerp/ui@1.0.6(@types/react@19.2.17)(next@15.5.19(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)(redux@5.0.1)':
+  '@unerp/ui@1.0.8(@types/react@19.2.17)(next@15.5.19(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react-is@17.0.2)(react@19.2.7)(redux@5.0.1)':
     dependencies:
       '@radix-ui/react-slot': 1.2.5(@types/react@19.2.17)(react@19.2.7)
       lucide-react: 0.460.0(react@19.2.7)
