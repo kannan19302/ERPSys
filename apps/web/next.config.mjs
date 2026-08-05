@@ -16,29 +16,27 @@ const nextConfig = {
     return config;
   },
   reactStrictMode: true,
-  // transpilePackages: only include packages that:
-  //   1. Ship TypeScript source (need webpack transpilation)
-  //   2. Have NO CSS module imports (safe for edge runtime / middleware)
+  // @unerp/ui and @unerp/framework must be TRANSPILED, not treated as external.
   //
-  // @unerp/ui and @unerp/framework CANNOT be here because their dist/index.js
-  // pulls in the design system's component layer, which requires CSS module
-  // .css files. The Next.js edge runtime (middleware) cannot handle CSS
-  // modules, causing the middleware compilation to hang indefinitely.
+  // They ship CSS modules beside their compiled components. As server-external
+  // packages Node `require()`s them raw and chokes on the first stylesheet —
+  // `SyntaxError: Unexpected token '.'`, pointing at the `.class` selector in
+  // button.module.css, which reads like a corrupt build and is Node being handed
+  // CSS and asked to parse JavaScript. Webpack has to own these so the CSS
+  // modules are processed rather than required.
   //
-  // Instead, @unerp/ui and @unerp/framework are treated as server externals:
-  // Next.js will use their pre-built dist/index.js without bundling.
+  // The previous comment here warned that transpiling them hung the middleware
+  // compile indefinitely. That was true in the monorepo, and it is no longer:
+  // the middleware compiles in about a second now. The hang was the bind-mounted
+  // Docker filesystem, not the transpilation — running natively (§ 12) took the
+  // same compile from 962s to 1s.
   transpilePackages: [
     '@unerp/shared',
     '@unerp/auth',
-  ],
-  // Tell Next.js to NOT bundle these workspace packages on the server/edge:
-  // use their pre-built dist/ files directly via require().
-  serverExternalPackages: [
-    // One entry, not fourteen: the design system is a single package with
-    // subpath exports (PLATFORM_ARCHITECTURE.md § 7.2).
     '@unerp/ui',
     '@unerp/framework',
   ],
+
   experimental: {
     // NOTE: '@unerp/ui' was previously listed here alongside being in
     // transpilePackages. Applying both experimental.optimizePackageImports
