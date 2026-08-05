@@ -1,6 +1,11 @@
 
 /** @type {import('next').NextConfig} */
 const apiBaseUrl = process.env.API_URL || 'http://localhost:3001';
+// Authentication lives in its own service. § 5.2 gives each plane a separate
+// identity realm, so /auth/* is served by the IdP rather than by the business
+// API — and proxying every /api/v1/* path to the API meant registration and
+// login 404'd against a service that never owned them.
+const idpBaseUrl = process.env.IDP_URL || 'http://localhost:3005';
 
 const nextConfig = {
   // Force webpack to poll for file changes instead of relying on inotify,
@@ -57,6 +62,12 @@ const nextConfig = {
       {
         source: '/mfa-push-sw.js',
         destination: '/mfa-push-sw',
+      },
+      // Auth first: order matters, because the catch-all below would otherwise
+      // swallow these and send them to the API.
+      {
+        source: '/api/v1/auth/:path*',
+        destination: `${idpBaseUrl}/api/v1/auth/:path*`,
       },
       {
         source: '/api/v1/:path*',

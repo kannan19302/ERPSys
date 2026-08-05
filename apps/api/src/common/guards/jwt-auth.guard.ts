@@ -6,6 +6,7 @@ import {
 } from "@nestjs/common";
 import { verifyTypedToken, TOKEN_TYPE } from "@unerp/auth";
 import { idpClient } from "../idp-client";
+import { runWithTenantSession } from "@unerp/database";
 
 const AUTH_COOKIE = "auth_token";
 
@@ -61,10 +62,31 @@ export class JwtAuthGuard implements CanActivate {
     // UserSession moved to the IdP schema in the split, so this reads through the
     // IdP client rather than the main one.
     if (decoded.sid) {
-      const session = await idpClient.userSession.findUnique({
-        where: { id: decoded.sid },
-        select: { isActive: true, expiresAt: true },
-      });
+      // The lookup runs inside a tenant session derived from the token's own
+      // claim, and it has to.
+      //
+      // user_sessions carries RLS with ENABLE + FORCE, and the application role
+      // is NOBYPASSRLS. Querying it before any tenant context is established
+      // returns zero rows — not "revoked", simply invisible — so this guard
+      // rejected EVERY authenticated request with "Session has been revoked or
+      // expired" while the row sat there active and unexpired. Authentication
+      // could not work at all against a correctly-secured database; it only
+      // appeared to work where RLS was unenforced or the connection was the
+      // table owner.
+      //
+      // Using the token's tenantId is safe here even though the token is not yet
+      // fully trusted: the signature has already been verified above, and the
+      // context only widens visibility to that one tenant's own sessions. A
+      // forged tenantId cannot help an attacker, because the session id must
+      // still exist within it.
+      const session = await runWithTenantSession(
+        { tenantId: decoded.tenantId ?? "", userId: decoded.userId ?? "" },
+        () =>
+          idpClient.userSession.findUnique({
+            where: { id: decoded.sid },
+            select: { isActive: true, expiresAt: true },
+          }),
+      );
       if (
         !session ||
         !session.isActive ||
