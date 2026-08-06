@@ -68,7 +68,8 @@
     "check:cdc:record": "node scripts/ci/cdc-harness.mjs --record",
     "dev:down": "node scripts/dev.mjs --down",
     "dev:reset": "node scripts/dev.mjs --reset",
-    "smoke": "node scripts/ci/smoke-journey.mjs"
+    "smoke": "node scripts/ci/smoke-journey.mjs",
+    "check:resolution": "node scripts/ci/check-node-resolution.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.0",

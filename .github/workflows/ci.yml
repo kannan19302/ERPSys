@@ -82,7 +82,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        check: [lint, typecheck, architecture, contracts, format]
+        check: [lint, typecheck, architecture, contracts, format, resolution]
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -116,6 +116,18 @@ jobs:
       - name: Format
         if: matrix.check == 'format'
         run: pnpm format:check
+
+      # Every check above resolves modules the way a bundler does — the compiler
+      # because the root tsconfig sets moduleResolution "bundler", the test
+      # runner because vitest resolves through Vite. Node does not, and Node is
+      # what runs in production. On 2026-08-06 the API exited during module load
+      # on an extensionless re-export while all of these were green.
+      # PLATFORM_ARCHITECTURE.md § 14.1.
+      - name: Node resolution
+        if: matrix.check == 'resolution'
+        run: |
+          pnpm build
+          pnpm check:resolution
 
   # ─────────────────────────────────────────────────────────────────────────
   # Tier 3 — supply chain. Blocking, not advisory.

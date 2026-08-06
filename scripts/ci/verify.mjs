@@ -128,6 +128,18 @@ const GATES = [
     cmd: ["pnpm", ["build"]],
     skipInFast: true,
   },
+  {
+    name: "Node resolution",
+    why: "Every gate above resolves modules through a bundler. The runtime does not. § 14.1.",
+    // Runs after Build because it reads the emitted dist/, which is the artifact
+    // that actually loads. On 2026-08-06 the API exited during module load on an
+    // extensionless re-export while all fourteen gates above were green — the
+    // root tsconfig sets moduleResolution "bundler", so the compiler was told to
+    // assume it resolved, and vitest resolves through Vite. Nothing in the
+    // pipeline modelled Node's resolver until this. Proven able to fail.
+    cmd: ["node", ["scripts/ci/check-node-resolution.mjs"]],
+    skipInFast: true,
+  },
 ];
 
 const C = {
