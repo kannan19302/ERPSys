@@ -223,20 +223,31 @@ export class AuthService {
    * Registers a new tenant along with its organization, default roles, and super admin user.
    */
   async register(dto: RegisterInput) {
-    const slug = dto.organizationName
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "");
+    const baseSlug =
+      dto.organizationName
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "") || "workspace";
 
-    // Check if slug already exists
-    const existingTenant = await prisma.tenant.findUnique({
-      where: { slug },
-    });
-    if (existingTenant) {
-      throw new BadRequestException(
-        "An organization with a similar name already exists. Choose a different name.",
-      );
+    // A taken slug gets a suffix; it does not reject the signup.
+    //
+    // Registration used to fail with "An organization with a similar name
+    // already exists" whenever the derived slug was taken. Two problems with
+    // that. Company names are not globally unique — there are many businesses
+    // called Acme, and one tenant claiming the name locked out every other
+    // customer who shares it. And the message answered a question the caller
+    // has no right to ask: it confirmed whether a given company is on the
+    // platform, turning the public signup form into a tenant-enumeration oracle
+    // for anyone with a list of company names.
+    //
+    // The slug is a URL and must be unique. The display name need not be, and
+    // is stored exactly as the customer typed it.
+    let slug = baseSlug;
+    for (let attempt = 2; attempt <= 100; attempt += 1) {
+      const taken = await prisma.tenant.findUnique({ where: { slug } });
+      if (!taken) break;
+      slug = `${baseSlug}-${attempt}`;
     }
 
     const tenantId = dto.tenantId || randomUUID();
