@@ -38,7 +38,7 @@
     "@types/multer": "^1.4.11",
     "@unerp/auth": "^1.0.2",
     "@unerp/blockchain": "^1.0.2",
-    "@unerp/database": "^1.0.7",
+    "@unerp/database": "^1.0.10",
     "@unerp/service-kit": "^0.2.2",
     "@unerp/shared": "^1.0.4",
     "bullmq": "^5.79.1",

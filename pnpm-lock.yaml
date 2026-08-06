@@ -130,8 +130,8 @@ importers:
         specifier: ^1.0.2
         version: 1.0.2(@unerp/shared@1.0.4)
       '@unerp/database':
-        specifier: ^1.0.7
-        version: 1.0.7(prisma@6.19.3(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
+        specifier: ^1.0.10
+        version: 1.0.10(prisma@6.19.3(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
       '@unerp/extension-api':
         specifier: ^1.0.5
         version: 1.0.5
@@ -409,8 +409,8 @@ importers:
         specifier: ^1.0.2
         version: 1.0.2(@unerp/shared@1.0.4)
       '@unerp/database':
-        specifier: ^1.0.7
-        version: 1.0.7(prisma@6.19.3(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
+        specifier: ^1.0.10
+        version: 1.0.10(prisma@6.19.3(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
       '@unerp/service-kit':
         specifier: ^0.2.2
         version: 0.2.2
@@ -3243,8 +3243,8 @@ packages:
   '@unerp/contracts@1.0.2':
     resolution: {integrity: sha512-DeTbONoOHUNsWurZ7t8n5kUam/0sIxclFaz5Dr1CAeWJYI0k0Qg/HOVcG90vkSJxovG1yRsroqO9slZ8EbezHQ==}
 
-  '@unerp/database@1.0.7':
-    resolution: {integrity: sha512-3LWiWhBWdyEhvnmRwfLLfbmNAY2TaGyCNUpDfo4dIuwvG0p6ySn/q94j0lKuZZ4kqmZOhemKNa6v9sK4oqxKYA==}
+  '@unerp/database@1.0.10':
+    resolution: {integrity: sha512-uZ1ZFLazQVgVxd0ADQXkfLAPyhXbxk4/VBENhTjK4923UvZC/6/9TryJvSqtSy6jPELwUxf2oFdVYRKzP8ntLw==}
 
   '@unerp/extension-api@1.0.5':
     resolution: {integrity: sha512-VNL+i5RQNuFLBVYQjkWVlU3Zz7PJpUEpEexV3R2/pz/H1OpJbakr6e1HlvOz0dswuy68ITbCR6SCejtw95u8IQ==}
@@ -9799,7 +9799,7 @@ snapshots:
 
   '@unerp/auth@1.0.2(prisma@6.19.3(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)':
     dependencies:
-      '@unerp/database': 1.0.7(prisma@6.19.3(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
+      '@unerp/database': 1.0.10(prisma@6.19.3(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
       '@unerp/shared': 1.0.4
       bcryptjs: 2.4.3
       jsonwebtoken: 9.0.3
@@ -9818,7 +9818,7 @@ snapshots:
 
   '@unerp/contracts@1.0.2': {}
 
-  '@unerp/database@1.0.7(prisma@6.19.3(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)':
+  '@unerp/database@1.0.10(prisma@6.19.3(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)':
     dependencies:
       '@prisma/client': 6.19.3(prisma@6.19.3(magicast@0.3.5)(typescript@5.9.3))(typescript@5.9.3)
     transitivePeerDependencies:
