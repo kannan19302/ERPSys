@@ -7,7 +7,7 @@
 [![CI](https://github.com/kannan19302/ERPSys/actions/workflows/ci.yml/badge.svg)](https://github.com/kannan19302/ERPSys/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/kannan19302/ERPSys/actions/workflows/codeql.yml/badge.svg)](https://github.com/kannan19302/ERPSys/actions/workflows/codeql.yml)
 [![CD](https://github.com/kannan19302/ERPSys/actions/workflows/cd.yml/badge.svg)](https://github.com/kannan19302/ERPSys/actions/workflows/cd.yml)
-[![License: Proprietary](https://img.shields.io/badge/license-proprietary-lightgrey.svg)](LICENSE)
+[![Licence: AGPL-3.0](https://img.shields.io/badge/licence-AGPL--3.0-blue.svg)](LICENSE)
 [![Conventional Commits](https://img.shields.io/badge/commits-conventional-fe5196.svg)](https://www.conventionalcommits.org)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
@@ -407,7 +407,16 @@ This project is built with AI-Agent Driven Development (AADD). All AI agents mus
 
 ## License
 
-Proprietary — All rights reserved. See [LICENSE](LICENSE).
+Copyright (C) 2026 UniERP contributors.
+
+[GNU Affero General Public License v3.0](LICENSE) — the same licence as every
+other repository in the UniERP family. If you run a modified UniERP as a network
+service, you owe your users the modified source.
+
+This repository was previously All Rights Reserved, which contradicted the
+platform's public claim to be self-hostable in full with no proprietary runtime
+dependency. ERPSys is the build that claim depends on, so the licence now matches
+it.
 
 ## Contact
 
