@@ -108,7 +108,7 @@
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.1.0",
-    "lucide-react": "^0.460.0",
+    "lucide-react": "^1.28.0",
     "recharts": "^3.9.0"
   },
   "peerDependencies": {
