@@ -12,7 +12,7 @@
   "packageManager": "pnpm@9.15.4",
   "scripts": {
     "build": "turbo run build",
-    "dev": "pwsh -NoProfile -File scripts/dev.ps1",
+    "dev": "node scripts/dev.mjs",
     "dev:web": "turbo run dev --filter=@unerp/web",
     "dev:api": "turbo run dev --filter=@unerp/api",
     "docker:up": "docker compose -f docker-compose.dev.yml up -d --build",
@@ -66,8 +66,8 @@
     "debt:report": "node scripts/ci/check-suppressions.mjs --report && node scripts/ci/check-policy.mjs",
     "check:cdc": "node scripts/ci/cdc-harness.mjs",
     "check:cdc:record": "node scripts/ci/cdc-harness.mjs --record",
-    "dev:down": "pwsh -NoProfile -File scripts/dev.ps1 -Down",
-    "dev:reset": "pwsh -NoProfile -File scripts/dev.ps1 -Reset",
+    "dev:down": "node scripts/dev.mjs --down",
+    "dev:reset": "node scripts/dev.mjs --reset",
     "smoke": "node scripts/ci/smoke-journey.mjs"
   },
   "devDependencies": {

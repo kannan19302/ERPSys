@@ -110,3 +110,7 @@ sbom.json
 # (query_engine-windows.dll.node) that is wrong on any other OS, and it is
 # generated output, not source.
 packages/database/src/idp-client/
+
+# pnpm content-addressed store. Created locally when the global store is
+# unavailable; tens of thousands of files, and never part of the source.
+.pnpm-store/
