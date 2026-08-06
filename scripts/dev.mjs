@@ -155,8 +155,13 @@ const env = {
   S3_ACCESS_KEY: process.env.S3_ACCESS_KEY ?? "minioadmin",
   S3_SECRET_KEY: process.env.S3_SECRET_KEY ?? "minioadmin",
   S3_BUCKET: process.env.S3_BUCKET ?? "unerp-uploads",
+  // Server-side only: next.config.mjs uses this to know where to proxy.
   API_URL: "http://localhost:3001",
-  NEXT_PUBLIC_API_URL: "http://localhost:3001",
+  // Deliberately NOT set. The browser must call the web origin so the rewrite
+  // can send /api/v1/auth/* to the IdP and everything else to the API. Setting
+  // it to a bare origin made the browser request http://localhost:3001/auth/me
+  // — no /api/v1, no proxy, and auth aimed at the service that does not own it.
+  NEXT_PUBLIC_API_URL: "",
   IDP_URL: "http://localhost:3005",
   NEXTAUTH_URL: "http://localhost:3000",
   // The API and IdP must agree on this or every token verifies at one and fails
