@@ -219,11 +219,14 @@ if (!DOCKER_ONLY) {
   await wait("http://localhost:3000/", "Web");
   console.log(`  ${c.green("✓")}  Web`);
 
-  process.on("SIGINT", () => {
+  const shutdown = () => {
+    console.log(c.dim("\n  stopping…"));
     for (const { child } of children) child.kill();
     docker([...COMPOSE, "down"], { quiet: true });
     process.exit(0);
-  });
+  };
+  process.on("SIGINT", shutdown);
+  process.on("SIGTERM", shutdown);
 }
 
 console.log(`
@@ -239,3 +242,10 @@ console.log(`
   ${c.dim("Logs:")}        docker compose -f docker-compose.dev.yml logs -f api web
   ${c.dim("Stop:")}        pnpm dev --down
 `);
+
+if (!DOCKER_ONLY) {
+  console.log(c.dim("  Ctrl-C to stop.\n"));
+  // Hold the event loop open. The applications are children of this process;
+  // returning here would kill them the moment the summary printed.
+  await new Promise(() => {});
+}
