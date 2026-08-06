@@ -74,7 +74,8 @@ class SearchIndexConfigModel extends SearchIndexConfig {
 
   factory SearchIndexConfigModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('SearchIndexConfig missing id');
+    if (id is! String)
+      throw const ParseException('SearchIndexConfig missing id');
     return SearchIndexConfigModel(
       id: id,
       resourceType: json['resourceType'] as String? ?? '',
@@ -116,7 +117,8 @@ class SearchSynonymGroupModel extends SearchSynonymGroup {
 
   factory SearchSynonymGroupModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('SearchSynonymGroup missing id');
+    if (id is! String)
+      throw const ParseException('SearchSynonymGroup missing id');
     return SearchSynonymGroupModel(
       id: id,
       terms: (json['terms'] as List<dynamic>?)

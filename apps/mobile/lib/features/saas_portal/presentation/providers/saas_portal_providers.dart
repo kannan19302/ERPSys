@@ -30,14 +30,16 @@ final Provider<SaasPortalRepository> saasPortalRepositoryProvider =
 final FutureProvider<PortalBillingInfo> portalBillingInfoProvider =
     FutureProvider<PortalBillingInfo>((Ref ref) async {
   final result = await GetPortalBillingInfoUseCase(
-    ref.watch(saasPortalRepositoryProvider),)(const NoParams());
+    ref.watch(saasPortalRepositoryProvider),
+  )(const NoParams());
   return result.fold((f) => throw f, (v) => v);
 });
 
 class PortalPlanListState extends Equatable {
   const PortalPlanListState({
     this.items = const <PortalPlan>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: 'price'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -54,20 +56,36 @@ class PortalPlanListState extends Equatable {
   final Failure? loadMoreFailure;
 
   PortalPlanListState copyWith({
-    List<PortalPlan>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<PortalPlan>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       PortalPlanListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<PortalPlanListController, PortalPlanListState>
@@ -94,8 +112,11 @@ class PortalPlanListController extends Notifier<PortalPlanListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -108,8 +129,11 @@ class PortalPlanListController extends Notifier<PortalPlanListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -118,7 +142,8 @@ class PortalPlanListController extends Notifier<PortalPlanListState> {
 class PortalSupportTicketListState extends Equatable {
   const PortalSupportTicketListState({
     this.items = const <PortalSupportTicket>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -135,29 +160,47 @@ class PortalSupportTicketListState extends Equatable {
   final Failure? loadMoreFailure;
 
   PortalSupportTicketListState copyWith({
-    List<PortalSupportTicket>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<PortalSupportTicket>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       PortalSupportTicketListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
-final NotifierProvider<PortalSupportTicketListController, PortalSupportTicketListState>
-    portalSupportTicketListControllerProvider =
-    NotifierProvider<PortalSupportTicketListController, PortalSupportTicketListState>(
+final NotifierProvider<PortalSupportTicketListController,
+        PortalSupportTicketListState>
+    portalSupportTicketListControllerProvider = NotifierProvider<
+        PortalSupportTicketListController, PortalSupportTicketListState>(
   PortalSupportTicketListController.new,
 );
 
-class PortalSupportTicketListController extends Notifier<PortalSupportTicketListState> {
+class PortalSupportTicketListController
+    extends Notifier<PortalSupportTicketListState> {
   Timer? _searchDebounce;
 
   @override
@@ -178,8 +221,11 @@ class PortalSupportTicketListController extends Notifier<PortalSupportTicketList
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -192,8 +238,11 @@ class PortalSupportTicketListController extends Notifier<PortalSupportTicketList
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -201,17 +250,20 @@ class PortalSupportTicketListController extends Notifier<PortalSupportTicketList
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
 
-  Future<Result<PortalSupportTicket>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<PortalSupportTicket>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SavePortalSupportTicketUseCase(
-      ref.read(saasPortalRepositoryProvider),)(
-      SavePortalSupportTicketParams(id: id, payload: payload),);
+      ref.read(saasPortalRepositoryProvider),
+    )(
+      SavePortalSupportTicketParams(id: id, payload: payload),
+    );
     if (result.isOk) await refresh();
     return result;
   }
 }
-

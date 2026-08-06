@@ -71,7 +71,8 @@ class _WarehouseFormPageState extends ConsumerState<WarehouseFormPage> {
             TextFormField(
               controller: _nameCtrl,
               decoration: const InputDecoration(labelText: 'Name *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
               textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: Spacing.x4),
@@ -158,9 +159,9 @@ class _WarehouseFormPageState extends ConsumerState<WarehouseFormPage> {
       (_) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_isEditing
-                ? 'Warehouse updated'
-                : 'Warehouse created',),
+            content: Text(
+              _isEditing ? 'Warehouse updated' : 'Warehouse created',
+            ),
           ),
         );
         Navigator.of(context).pop();

@@ -12,10 +12,12 @@ class ReportTemplateFormPage extends ConsumerStatefulWidget {
   final String? templateId;
 
   @override
-  ConsumerState<ReportTemplateFormPage> createState() => _ReportTemplateFormPageState();
+  ConsumerState<ReportTemplateFormPage> createState() =>
+      _ReportTemplateFormPageState();
 }
 
-class _ReportTemplateFormPageState extends ConsumerState<ReportTemplateFormPage> {
+class _ReportTemplateFormPageState
+    extends ConsumerState<ReportTemplateFormPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
   final _descriptionCtrl = TextEditingController();
@@ -33,7 +35,8 @@ class _ReportTemplateFormPageState extends ConsumerState<ReportTemplateFormPage>
   }
 
   Future<void> _load() async {
-    final t = ref.read(reportTemplateDetailProvider(widget.templateId!)).valueOrNull;
+    final t =
+        ref.read(reportTemplateDetailProvider(widget.templateId!)).valueOrNull;
     if (t != null) {
       _nameCtrl.text = t.name;
       _descriptionCtrl.text = t.description ?? '';
@@ -56,16 +59,21 @@ class _ReportTemplateFormPageState extends ConsumerState<ReportTemplateFormPage>
     setState(() => _saving = true);
     final payload = <String, dynamic>{
       'name': _nameCtrl.text.trim(),
-      'description': _descriptionCtrl.text.trim().isEmpty ? null : _descriptionCtrl.text.trim(),
+      'description': _descriptionCtrl.text.trim().isEmpty
+          ? null
+          : _descriptionCtrl.text.trim(),
       'format': _format,
       'status': _status,
       'reportType': _descriptionCtrl.text.trim(),
     };
-    final result = await ref.read(reportTemplateListControllerProvider.notifier).save(payload, id: widget.templateId);
+    final result = await ref
+        .read(reportTemplateListControllerProvider.notifier)
+        .save(payload, id: widget.templateId);
     if (!context.mounted) return;
     setState(() => _saving = false);
     result.fold(
-      (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(),
     );
   }
@@ -79,7 +87,10 @@ class _ReportTemplateFormPageState extends ConsumerState<ReportTemplateFormPage>
           TextButton(
             onPressed: _saving ? null : _save,
             child: _saving
-                ? const SizedBox(height: Spacing.x5, width: Spacing.x5, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    height: Spacing.x5,
+                    width: Spacing.x5,
+                    child: CircularProgressIndicator(strokeWidth: 2))
                 : const Text('Save'),
           ),
         ],
@@ -92,13 +103,15 @@ class _ReportTemplateFormPageState extends ConsumerState<ReportTemplateFormPage>
             TextFormField(
               controller: _nameCtrl,
               decoration: const InputDecoration(labelText: 'Name *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _descriptionCtrl,
               maxLines: 3,
-              decoration: const InputDecoration(labelText: 'Description', alignLabelWithHint: true),
+              decoration: const InputDecoration(
+                  labelText: 'Description', alignLabelWithHint: true),
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
@@ -110,7 +123,9 @@ class _ReportTemplateFormPageState extends ConsumerState<ReportTemplateFormPage>
                 DropdownMenuItem(value: 'XLSX', child: Text('Excel')),
                 DropdownMenuItem(value: 'HTML', child: Text('HTML')),
               ],
-              onChanged: (v) { if (v != null) setState(() => _format = v); },
+              onChanged: (v) {
+                if (v != null) setState(() => _format = v);
+              },
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
@@ -121,7 +136,9 @@ class _ReportTemplateFormPageState extends ConsumerState<ReportTemplateFormPage>
                 DropdownMenuItem(value: 'ACTIVE', child: Text('Active')),
                 DropdownMenuItem(value: 'ARCHIVED', child: Text('Archived')),
               ],
-              onChanged: (v) { if (v != null) setState(() => _status = v); },
+              onChanged: (v) {
+                if (v != null) setState(() => _status = v);
+              },
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(

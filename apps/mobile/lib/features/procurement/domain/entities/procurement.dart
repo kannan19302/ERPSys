@@ -41,9 +41,23 @@ class PurchaseOrder extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, poNumber, vendorId, vendorName, status, items, subtotal,
-        taxTotal, totalAmount, currency, orderDate, expectedDate,
-        notes, shippingAddress, terms, createdAt, updatedAt,
+        id,
+        poNumber,
+        vendorId,
+        vendorName,
+        status,
+        items,
+        subtotal,
+        taxTotal,
+        totalAmount,
+        currency,
+        orderDate,
+        expectedDate,
+        notes,
+        shippingAddress,
+        terms,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -74,8 +88,16 @@ class PurchaseOrderItem extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, productId, productName, description, quantity,
-        receivedQuantity, rate, amount, taxRate, deliveryDate,
+        id,
+        productId,
+        productName,
+        description,
+        quantity,
+        receivedQuantity,
+        rate,
+        amount,
+        taxRate,
+        deliveryDate,
       ];
 }
 
@@ -116,9 +138,21 @@ class Vendor extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, email, phone, taxId, address, status,
-        paymentTerms, currency, bankDetails, rating, totalPurchases,
-        notes, createdAt, updatedAt,
+        id,
+        name,
+        email,
+        phone,
+        taxId,
+        address,
+        status,
+        paymentTerms,
+        currency,
+        bankDetails,
+        rating,
+        totalPurchases,
+        notes,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -155,9 +189,19 @@ class RFQ extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, rfqNumber, vendorId, vendorName, status, items,
-        deliveryDate, responseDeadline, vendorCount, quotations,
-        notes, createdAt, updatedAt,
+        id,
+        rfqNumber,
+        vendorId,
+        vendorName,
+        status,
+        items,
+        deliveryDate,
+        responseDeadline,
+        vendorCount,
+        quotations,
+        notes,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -180,7 +224,12 @@ class RFQItem extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, productId, productName, description, quantity, uom,
+        id,
+        productId,
+        productName,
+        description,
+        quantity,
+        uom,
       ];
 }
 
@@ -221,9 +270,21 @@ class SupplierQuotation extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, rfqId, rfqNumber, vendorId, vendorName, status, items,
-        subtotal, taxTotal, totalAmount, currency, validUntil,
-        notes, createdAt, updatedAt,
+        id,
+        rfqId,
+        rfqNumber,
+        vendorId,
+        vendorName,
+        status,
+        items,
+        subtotal,
+        taxTotal,
+        totalAmount,
+        currency,
+        validUntil,
+        notes,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -250,8 +311,14 @@ class SupplierQuotationItem extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, productId, productName, description, quantity,
-        rate, amount, deliveryDate,
+        id,
+        productId,
+        productName,
+        description,
+        quantity,
+        rate,
+        amount,
+        deliveryDate,
       ];
 }
 
@@ -290,9 +357,20 @@ class PurchaseRequisition extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, title, requisitionNumber, department, requestedBy,
-        requestedById, status, priority, items, totalEstimated,
-        requiredDate, notes, createdAt, updatedAt,
+        id,
+        title,
+        requisitionNumber,
+        department,
+        requestedBy,
+        requestedById,
+        status,
+        priority,
+        items,
+        totalEstimated,
+        requiredDate,
+        notes,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -319,8 +397,14 @@ class PurchaseRequisitionItem extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, productId, productName, description, quantity,
-        estimatedRate, estimatedAmount, requiredDate,
+        id,
+        productId,
+        productName,
+        description,
+        quantity,
+        estimatedRate,
+        estimatedAmount,
+        requiredDate,
       ];
 }
 
@@ -359,9 +443,20 @@ class PurchaseReceipt extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, receiptNumber, purchaseOrderId, poNumber, supplierId,
-        supplierName, warehouseId, warehouseName, status, items,
-        receivedDate, notes, createdAt, updatedAt,
+        id,
+        receiptNumber,
+        purchaseOrderId,
+        poNumber,
+        supplierId,
+        supplierName,
+        warehouseId,
+        warehouseName,
+        status,
+        items,
+        receivedDate,
+        notes,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -390,8 +485,15 @@ class PurchaseReceiptItem extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, productId, productName, orderedQuantity, receivedQuantity,
-        acceptedQuantity, rejectedQuantity, rate, amount,
+        id,
+        productId,
+        productName,
+        orderedQuantity,
+        receivedQuantity,
+        acceptedQuantity,
+        rejectedQuantity,
+        rate,
+        amount,
       ];
 }
 
@@ -430,9 +532,20 @@ class SupplierContract extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, contractNumber, supplierId, supplierName, type,
-        startDate, endDate, terms, value, currency, status,
-        notes, createdAt, updatedAt,
+        id,
+        contractNumber,
+        supplierId,
+        supplierName,
+        type,
+        startDate,
+        endDate,
+        terms,
+        value,
+        currency,
+        status,
+        notes,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -459,8 +572,14 @@ class ProcurementDashboardStats extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        totalPO, totalSpend, pendingApprovals, vendorCount,
-        spendByVendor, spendByMonth, recentPOs, overdueDeliveries,
+        totalPO,
+        totalSpend,
+        pendingApprovals,
+        vendorCount,
+        spendByVendor,
+        spendByMonth,
+        recentPOs,
+        overdueDeliveries,
       ];
 }
 

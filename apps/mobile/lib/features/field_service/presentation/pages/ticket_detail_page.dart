@@ -38,23 +38,35 @@ class TicketDetailPage extends ConsumerWidget {
                     children: [
                       _DetailRow(label: 'Ticket #', value: ticket.ticketNumber),
                       _DetailRow(label: 'Title', value: ticket.title),
-                      _DetailRow(label: 'Customer', value: ticket.customerName ?? '-'),
+                      _DetailRow(
+                          label: 'Customer', value: ticket.customerName ?? '-'),
                       _DetailRow(label: 'Priority', value: ticket.priority),
-                      _DetailRow(label: 'Technician', value: ticket.technicianName ?? '-'),
-                      _DetailRow(label: 'Scheduled', value: ticket.scheduledDate != null
-                          ? Formatters.dateTime(ticket.scheduledDate!)
-                          : '-',),
+                      _DetailRow(
+                          label: 'Technician',
+                          value: ticket.technicianName ?? '-'),
+                      _DetailRow(
+                        label: 'Scheduled',
+                        value: ticket.scheduledDate != null
+                            ? Formatters.dateTime(ticket.scheduledDate!)
+                            : '-',
+                      ),
                       if (ticket.completedAt != null)
-                        _DetailRow(label: 'Completed', value: Formatters.dateTime(ticket.completedAt!)),
-                      if (ticket.description != null && ticket.description!.isNotEmpty) ...[
+                        _DetailRow(
+                            label: 'Completed',
+                            value: Formatters.dateTime(ticket.completedAt!)),
+                      if (ticket.description != null &&
+                          ticket.description!.isNotEmpty) ...[
                         const SizedBox(height: 12),
-                        const Text('Description', style: TextStyle(fontWeight: FontWeight.w600)),
+                        const Text('Description',
+                            style: TextStyle(fontWeight: FontWeight.w600)),
                         const SizedBox(height: 4),
                         Text(ticket.description!),
                       ],
-                      if (ticket.resolution != null && ticket.resolution!.isNotEmpty) ...[
+                      if (ticket.resolution != null &&
+                          ticket.resolution!.isNotEmpty) ...[
                         const SizedBox(height: 12),
-                        const Text('Resolution', style: TextStyle(fontWeight: FontWeight.w600)),
+                        const Text('Resolution',
+                            style: TextStyle(fontWeight: FontWeight.w600)),
                         const SizedBox(height: 4),
                         Text(ticket.resolution!),
                       ],
@@ -91,7 +103,8 @@ class _StatusBadge extends StatelessWidget {
       ),
       child: Text(
         status.replaceAll('_', ' '),
-        style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 13),
+        style:
+            TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 13),
       ),
     );
   }
@@ -104,16 +117,18 @@ class _DetailRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 6),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 120,
-          child: Text(label, style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w500)),
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 120,
+              child: Text(label,
+                  style: const TextStyle(
+                      color: Colors.grey, fontWeight: FontWeight.w500)),
+            ),
+            Expanded(child: Text(value)),
+          ],
         ),
-        Expanded(child: Text(value)),
-      ],
-    ),
-  );
+      );
 }

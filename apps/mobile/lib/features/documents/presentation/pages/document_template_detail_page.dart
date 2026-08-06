@@ -26,10 +26,14 @@ class DocumentTemplateDetailPage extends ConsumerWidget {
       body: templateAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load template.'),
-          onRetry: () => ref.invalidate(documentTemplateDetailProvider(templateId)),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load template.'),
+          onRetry: () =>
+              ref.invalidate(documentTemplateDetailProvider(templateId)),
         ),
-        data: (DocumentTemplate template) => _TemplateDetail(template: template),
+        data: (DocumentTemplate template) =>
+            _TemplateDetail(template: template),
       ),
     );
   }
@@ -60,7 +64,8 @@ class _TemplateDetail extends StatelessWidget {
             children: <Widget>[
               Row(
                 children: <Widget>[
-                  Icon(Icons.description_outlined, size: Spacing.x8, color: t.primary),
+                  Icon(Icons.description_outlined,
+                      size: Spacing.x8, color: t.primary),
                   const SizedBox(width: Spacing.x3),
                   Expanded(
                     child: Text(
@@ -70,9 +75,11 @@ class _TemplateDetail extends StatelessWidget {
                   ),
                 ],
               ),
-              if (template.description != null && template.description!.isNotEmpty) ...<Widget>[
+              if (template.description != null &&
+                  template.description!.isNotEmpty) ...<Widget>[
                 const SizedBox(height: Spacing.x2),
-                Text(template.description!, style: TextStyle(color: t.textSecondary)),
+                Text(template.description!,
+                    style: TextStyle(color: t.textSecondary)),
               ],
             ],
           ),
@@ -89,7 +96,8 @@ class _TemplateDetail extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              const Text('Details', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              const Text('Details',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               const SizedBox(height: Spacing.x3),
               _FieldRow('Category', template.category ?? '—'),
               _FieldRow('Created', Formatters.date(template.createdAt)),

@@ -41,7 +41,9 @@ class _TimesheetListPageState extends ConsumerState<TimesheetListPage> {
     final t = context.tokens;
 
     final double totalHours = state.items.fold<double>(
-      0, (double sum, Timesheet ts) => sum + ts.hours,);
+      0,
+      (double sum, Timesheet ts) => sum + ts.hours,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -53,17 +55,23 @@ class _TimesheetListPageState extends ConsumerState<TimesheetListPage> {
             initialValue: state.query.sort,
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
-                .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value),),)
+                .map(
+                  (e) => PopupMenuItem<String>(
+                    value: e.key,
+                    child: Text(e.value),
+                  ),
+                )
                 .toList(),
           ),
         ],
       ),
       body: Column(
         children: [
-          if (state.cachedAt != null) StaleDataBanner(cachedAt: state.cachedAt!),
+          if (state.cachedAt != null)
+            StaleDataBanner(cachedAt: state.cachedAt!),
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -75,29 +83,36 @@ class _TimesheetListPageState extends ConsumerState<TimesheetListPage> {
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} entry${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-              const Spacer(),
-              Text(
-                '${totalHours.toStringAsFixed(1)}h total',
-                style: TextStyle(
-                  color: t.textSecondary, fontSize: TypeScale.xs,
-                  fontWeight: TypeScale.semibold,
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} entry${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
                 ),
-              ),
-            ],),
+                const Spacer(),
+                Text(
+                  '${totalHours.toStringAsFixed(1)}h total',
+                  style: TextStyle(
+                    color: t.textSecondary,
+                    fontSize: TypeScale.xs,
+                    fontWeight: TypeScale.semibold,
+                  ),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -163,17 +178,27 @@ class _TimesheetTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (ts.projectName != null)
-                      Text(ts.projectName!, style: Theme.of(context).textTheme.titleSmall),
+                      Text(ts.projectName!,
+                          style: Theme.of(context).textTheme.titleSmall),
                     const SizedBox(height: Spacing.x0_5),
-                    Text(Formatters.date(ts.date),
-                        style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
+                    Text(
+                      Formatters.date(ts.date),
+                      style: TextStyle(
+                          color: t.textTertiary, fontSize: TypeScale.xs),
+                    ),
                     if (ts.employeeName != null) ...[
                       const SizedBox(height: Spacing.x0_5),
-                      Row(children: [
-                        Icon(Icons.person_outline, size: TypeScale.sm, color: t.textTertiary),
-                        const SizedBox(width: Spacing.x0_5),
-                        Text(ts.employeeName!, style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
-                      ],),
+                      Row(
+                        children: [
+                          Icon(Icons.person_outline,
+                              size: TypeScale.sm, color: t.textTertiary),
+                          const SizedBox(width: Spacing.x0_5),
+                          Text(ts.employeeName!,
+                              style: TextStyle(
+                                  color: t.textTertiary,
+                                  fontSize: TypeScale.xs)),
+                        ],
+                      ),
                     ],
                   ],
                 ),
@@ -181,8 +206,10 @@ class _TimesheetTile extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text('${ts.hours.toStringAsFixed(1)}h',
-                      style: Theme.of(context).textTheme.labelLarge,),
+                  Text(
+                    '${ts.hours.toStringAsFixed(1)}h',
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
                   const SizedBox(height: Spacing.x0_5),
                   UiStatusBadge(label: ts.status, tone: _statusTone(ts.status)),
                 ],

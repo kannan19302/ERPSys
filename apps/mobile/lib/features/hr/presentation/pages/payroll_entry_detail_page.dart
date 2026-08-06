@@ -20,7 +20,8 @@ class PayrollEntryDetailPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final FutureProviderFamily<Payslip, String> provider = payslipDetailProvider;
+    final FutureProviderFamily<Payslip, String> provider =
+        payslipDetailProvider;
     final AsyncValue<Payslip> asyncPayslip = ref.watch(provider(payslipId));
 
     return asyncPayslip.when(
@@ -79,9 +80,11 @@ class _PayslipDetail extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 const UiSectionHeader(title: 'Earnings'),
-                _Row('Total Earnings', Formatters.currency(payslip.totalEarnings)),
+                _Row('Total Earnings',
+                    Formatters.currency(payslip.totalEarnings)),
                 if (payslip.totalDeductions > 0)
-                  _Row('Total Deductions', '-${Formatters.currency(payslip.totalDeductions)}'),
+                  _Row('Total Deductions',
+                      '-${Formatters.currency(payslip.totalDeductions)}'),
                 const Divider(),
                 _Row(
                   'Net Pay',
@@ -90,17 +93,18 @@ class _PayslipDetail extends StatelessWidget {
               ],
             ),
           ),
-          if (payslip.status != null || payslip.generatedDate != null) ...<Widget>[
+          if (payslip.status != null ||
+              payslip.generatedDate != null) ...<Widget>[
             const SizedBox(height: Spacing.x4),
             UiCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   const UiSectionHeader(title: 'Status'),
-                  if (payslip.status != null)
-                    _Row('Status', payslip.status!),
+                  if (payslip.status != null) _Row('Status', payslip.status!),
                   if (payslip.generatedDate != null)
-                    _Row('Generated', Formatters.dateTime(payslip.generatedDate!)),
+                    _Row('Generated',
+                        Formatters.dateTime(payslip.generatedDate!)),
                 ],
               ),
             ),

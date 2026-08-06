@@ -30,8 +30,16 @@ class AnalyticsKpi extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, value, target, unit, period, trend,
-        status, createdAt, updatedAt,
+        id,
+        name,
+        value,
+        target,
+        unit,
+        period,
+        trend,
+        status,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -58,8 +66,14 @@ class AnalyticsDashboard extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, title, description, layout, widgets,
-        status, createdAt, updatedAt,
+        id,
+        title,
+        description,
+        layout,
+        widgets,
+        status,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -105,8 +119,14 @@ class AnalyticsReport extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, title, description, reportType, config,
-        status, createdAt, updatedAt,
+        id,
+        title,
+        description,
+        reportType,
+        config,
+        status,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -131,7 +151,13 @@ class AnalyticsPipeline extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, stages, totalValue, status, createdAt, updatedAt,
+        id,
+        name,
+        stages,
+        totalValue,
+        status,
+        createdAt,
+        updatedAt,
       ];
 }
 

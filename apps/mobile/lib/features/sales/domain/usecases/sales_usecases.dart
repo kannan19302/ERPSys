@@ -78,7 +78,8 @@ class ConvertQuotationUseCase extends UseCase<SalesOrder, String> {
   final SalesRepository _repository;
 
   @override
-  Future<Result<SalesOrder>> call(String id) => _repository.convertQuotation(id);
+  Future<Result<SalesOrder>> call(String id) =>
+      _repository.convertQuotation(id);
 }
 
 class ListSalesOrdersUseCase
@@ -130,7 +131,8 @@ class ConfirmSalesOrderUseCase extends UseCase<SalesOrder, String> {
   final SalesRepository _repository;
 
   @override
-  Future<Result<SalesOrder>> call(String id) => _repository.confirmSalesOrder(id);
+  Future<Result<SalesOrder>> call(String id) =>
+      _repository.confirmSalesOrder(id);
 }
 
 class CancelSalesOrderUseCase extends UseCase<SalesOrder, String> {
@@ -139,7 +141,8 @@ class CancelSalesOrderUseCase extends UseCase<SalesOrder, String> {
   final SalesRepository _repository;
 
   @override
-  Future<Result<SalesOrder>> call(String id) => _repository.cancelSalesOrder(id);
+  Future<Result<SalesOrder>> call(String id) =>
+      _repository.cancelSalesOrder(id);
 }
 
 class ListDeliveryNotesUseCase
@@ -159,7 +162,8 @@ class GetDeliveryNoteUseCase extends UseCase<DeliveryNote, String> {
   final SalesRepository _repository;
 
   @override
-  Future<Result<DeliveryNote>> call(String id) => _repository.getDeliveryNote(id);
+  Future<Result<DeliveryNote>> call(String id) =>
+      _repository.getDeliveryNote(id);
 }
 
 class SaveDeliveryNoteUseCase extends UseCase<DeliveryNote, SaveSalesParams> {
@@ -191,7 +195,8 @@ class SubmitDeliveryNoteUseCase extends UseCase<DeliveryNote, String> {
   final SalesRepository _repository;
 
   @override
-  Future<Result<DeliveryNote>> call(String id) => _repository.submitDeliveryNote(id);
+  Future<Result<DeliveryNote>> call(String id) =>
+      _repository.submitDeliveryNote(id);
 }
 
 class ListSalesReturnsUseCase
@@ -239,7 +244,8 @@ class SalesReturnApproveUseCase extends UseCase<SalesReturn, String> {
   final SalesRepository _repository;
 
   @override
-  Future<Result<SalesReturn>> call(String id) => _repository.approveSalesReturn(id);
+  Future<Result<SalesReturn>> call(String id) =>
+      _repository.approveSalesReturn(id);
 }
 
 class SalesReturnRejectUseCase extends UseCase<SalesReturn, String> {
@@ -248,7 +254,8 @@ class SalesReturnRejectUseCase extends UseCase<SalesReturn, String> {
   final SalesRepository _repository;
 
   @override
-  Future<Result<SalesReturn>> call(String id) => _repository.rejectSalesReturn(id);
+  Future<Result<SalesReturn>> call(String id) =>
+      _repository.rejectSalesReturn(id);
 }
 
 class ListOpportunitiesUseCase
@@ -262,8 +269,7 @@ class ListOpportunitiesUseCase
       _repository.listOpportunities(params);
 }
 
-class GetSalesPipelineUseCase
-    extends UseCase<List<SalesPipeline>, NoParams> {
+class GetSalesPipelineUseCase extends UseCase<List<SalesPipeline>, NoParams> {
   const GetSalesPipelineUseCase(this._repository);
 
   final SalesRepository _repository;
@@ -315,18 +321,19 @@ class DeleteOpportunityUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deleteOpportunity(id);
 }
 
-class UpdateOpportunityStageUseCase extends UseCase<Opportunity, Map<String, dynamic>> {
+class UpdateOpportunityStageUseCase
+    extends UseCase<Opportunity, Map<String, dynamic>> {
   const UpdateOpportunityStageUseCase(this._repository);
 
   final SalesRepository _repository;
 
   @override
   Future<Result<Opportunity>> call(Map<String, dynamic> params) =>
-      _repository.updateOpportunityStage(params['id'] as String, params['stage'] as String);
+      _repository.updateOpportunityStage(
+          params['id'] as String, params['stage'] as String);
 }
 
-class ListSalesActivityUseCase
-    extends UseCase<List<SalesActivity>, NoParams> {
+class ListSalesActivityUseCase extends UseCase<List<SalesActivity>, NoParams> {
   const ListSalesActivityUseCase(this._repository);
 
   final SalesRepository _repository;

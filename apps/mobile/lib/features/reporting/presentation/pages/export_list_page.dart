@@ -13,7 +13,8 @@ class ReportExportListPage extends ConsumerStatefulWidget {
   static const String routeName = 'report-exports';
   static const String routePath = '/reporting/exports';
   @override
-  ConsumerState<ReportExportListPage> createState() => _ReportExportListPageState();
+  ConsumerState<ReportExportListPage> createState() =>
+      _ReportExportListPageState();
 }
 
 class _ReportExportListPageState extends ConsumerState<ReportExportListPage> {
@@ -46,8 +47,12 @@ class _ReportExportListPageState extends ConsumerState<ReportExportListPage> {
             initialValue: state.query.sort,
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
-                .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value),),)
+                .map(
+                  (e) => PopupMenuItem<String>(
+                    value: e.key,
+                    child: Text(e.value),
+                  ),
+                )
                 .toList(),
           ),
         ],
@@ -55,7 +60,8 @@ class _ReportExportListPageState extends ConsumerState<ReportExportListPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -67,21 +73,27 @@ class _ReportExportListPageState extends ConsumerState<ReportExportListPage> {
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} export${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} export${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -89,7 +101,8 @@ class _ReportExportListPageState extends ConsumerState<ReportExportListPage> {
     );
   }
 
-  Widget _body(ReportExportListState state, ReportExportListController controller) {
+  Widget _body(
+      ReportExportListState state, ReportExportListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -133,29 +146,45 @@ class _ExportTile extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(exportItem.reportName ?? exportItem.id,
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                UiStatusBadge(
-                  label: exportItem.status,
-                  tone: _statusTone(exportItem.status),
-                ),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      exportItem.reportName ?? exportItem.id,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  UiStatusBadge(
+                    label: exportItem.status,
+                    tone: _statusTone(exportItem.status),
+                  ),
+                ],
+              ),
               const SizedBox(height: Spacing.x1),
-              Row(children: [
-                Text(exportItem.format,
-                    style: Theme.of(context).textTheme.labelLarge,),
-                const SizedBox(width: Spacing.x2),
-                if (exportItem.fileSize != null)
-                  Text(_formatSize(exportItem.fileSize!),
-                      style: TextStyle(color: t.textSecondary, fontSize: TypeScale.sm),),
-              ],),
+              Row(
+                children: [
+                  Text(
+                    exportItem.format,
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                  const SizedBox(width: Spacing.x2),
+                  if (exportItem.fileSize != null)
+                    Text(
+                      _formatSize(exportItem.fileSize!),
+                      style: TextStyle(
+                          color: t.textSecondary, fontSize: TypeScale.sm),
+                    ),
+                ],
+              ),
               if (exportItem.createdAt != null) ...[
                 const SizedBox(height: Spacing.x1),
-                Text(DateFormat.yMMMd().add_jm().format(exportItem.createdAt!.toLocal()),
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
+                Text(
+                  DateFormat.yMMMd()
+                      .add_jm()
+                      .format(exportItem.createdAt!.toLocal()),
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
               ],
             ],
           ),

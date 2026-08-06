@@ -11,7 +11,8 @@ abstract class NotificationsRemoteDataSource {
   Future<void> markStatus(String id, {required bool read});
 }
 
-class NotificationsRemoteDataSourceImpl implements NotificationsRemoteDataSource {
+class NotificationsRemoteDataSourceImpl
+    implements NotificationsRemoteDataSource {
   const NotificationsRemoteDataSourceImpl(this._client);
 
   final ApiClient _client;

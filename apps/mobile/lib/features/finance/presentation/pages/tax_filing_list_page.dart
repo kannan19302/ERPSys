@@ -48,7 +48,8 @@ class _TaxFilingListPageState extends ConsumerState<TaxFilingListPage> {
   @override
   Widget build(BuildContext context) {
     final FinanceListState<TaxFiling> state = ref.watch(taxFilingsProvider);
-    final TaxFilingsController controller = ref.read(taxFilingsProvider.notifier);
+    final TaxFilingsController controller =
+        ref.read(taxFilingsProvider.notifier);
     final Palette t = context.tokens;
 
     return Scaffold(
@@ -75,7 +76,10 @@ class _TaxFilingListPageState extends ConsumerState<TaxFilingListPage> {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2,
+              Spacing.x4,
+              Spacing.x3,
+              Spacing.x4,
+              Spacing.x2,
             ),
             child: TextField(
               controller: _search,
@@ -117,7 +121,8 @@ class _TaxFilingListPageState extends ConsumerState<TaxFilingListPage> {
                   underline: const SizedBox.shrink(),
                   items: _statusFilters.entries
                       .map(
-                        (MapEntry<String, String> e) => DropdownMenuItem<String>(
+                        (MapEntry<String, String> e) =>
+                            DropdownMenuItem<String>(
                           value: e.key,
                           child: Text(e.value),
                         ),
@@ -128,7 +133,8 @@ class _TaxFilingListPageState extends ConsumerState<TaxFilingListPage> {
                     if (value == null) {
                       controller.applyFilters(const <String, String>{});
                     } else {
-                      controller.applyFilters(<String, String>{'status': value});
+                      controller
+                          .applyFilters(<String, String>{'status': value});
                     }
                   },
                 ),
@@ -141,7 +147,8 @@ class _TaxFilingListPageState extends ConsumerState<TaxFilingListPage> {
     );
   }
 
-  Widget _body(FinanceListState<TaxFiling> state, TaxFilingsController controller) {
+  Widget _body(
+      FinanceListState<TaxFiling> state, TaxFilingsController controller) {
     if (state.isLoading && state.items.isEmpty) {
       return const LoadingView();
     }

@@ -28,7 +28,8 @@ class SalesDashboardPage extends ConsumerWidget {
           : ordersState.failure != null && ordersState.items.isEmpty
               ? FailureView(
                   failure: ordersState.failure!,
-                  onRetry: () => ref.read(salesOrdersProvider.notifier).refresh(),
+                  onRetry: () =>
+                      ref.read(salesOrdersProvider.notifier).refresh(),
                 )
               : _DashboardContent(orders: ordersState.items),
     );
@@ -47,7 +48,8 @@ class _DashboardContent extends StatelessWidget {
     final int totalOrders = orders.length;
     final double totalRevenue =
         orders.fold(0, (double sum, SalesOrder o) => sum + o.totalAmount);
-    final double avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+    final double avgOrderValue =
+        totalOrders > 0 ? totalRevenue / totalOrders : 0;
     final int pendingOrders =
         orders.where((SalesOrder o) => o.status == 'DRAFT').length;
 
@@ -141,8 +143,8 @@ class _DashboardContent extends StatelessWidget {
               const UiSectionHeader(title: 'Recent Orders'),
               const SizedBox(height: Spacing.x2),
               ...orders.take(5).map(
-                (SalesOrder order) => _RecentOrderRow(order: order),
-              ),
+                    (SalesOrder order) => _RecentOrderRow(order: order),
+                  ),
               if (orders.isEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: Spacing.x4),

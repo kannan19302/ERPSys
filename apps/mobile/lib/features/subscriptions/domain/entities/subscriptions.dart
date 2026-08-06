@@ -29,8 +29,17 @@ class SubscriptionPlan extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, description, price, interval, trialDays,
-        features, isActive, sortOrder, createdAt, updatedAt,
+        id,
+        name,
+        description,
+        price,
+        interval,
+        trialDays,
+        features,
+        isActive,
+        sortOrder,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -61,8 +70,16 @@ class SubscriptionBillingCycle extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, subscriptionId, periodStart, periodEnd, status,
-        amount, currency, invoiceId, paidAt, createdAt,
+        id,
+        subscriptionId,
+        periodStart,
+        periodEnd,
+        status,
+        amount,
+        currency,
+        invoiceId,
+        paidAt,
+        createdAt,
       ];
 }
 
@@ -85,7 +102,12 @@ class SubscriptionUsageRecord extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, subscriptionId, metric, quantity, unit, recordedAt,
+        id,
+        subscriptionId,
+        metric,
+        quantity,
+        unit,
+        recordedAt,
       ];
 }
 
@@ -110,7 +132,12 @@ class ChurnSurveyResponse extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, subscriptionId, reason, feedback, rating,
-        wouldRecommend, createdAt,
+        id,
+        subscriptionId,
+        reason,
+        feedback,
+        rating,
+        wouldRecommend,
+        createdAt,
       ];
 }

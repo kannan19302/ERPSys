@@ -36,7 +36,8 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -48,21 +49,27 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} course${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} course${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -92,33 +99,48 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(c.name,
-                          style: Theme.of(context).textTheme.titleSmall,),
-                      const SizedBox(height: 2),
-                      Text(c.code,
-                          style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs),),
-                    ],
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          c.name,
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          c.code,
+                          style: TextStyle(
+                              color: context.tokens.textSecondary,
+                              fontSize: TypeScale.xs),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                UiStatusBadge(
-                  label: c.status,
-                  tone: c.status == 'ACTIVE' ? UiTone.success : UiTone.neutral,
-                ),
-              ],),
+                  UiStatusBadge(
+                    label: c.status,
+                    tone:
+                        c.status == 'ACTIVE' ? UiTone.success : UiTone.neutral,
+                  ),
+                ],
+              ),
               if (c.instructor != null) ...[
                 const SizedBox(height: Spacing.x1),
-                Text('Instructor: ${c.instructor}',
-                    style: const TextStyle(fontSize: TypeScale.xs),),
+                Text(
+                  'Instructor: ${c.instructor}',
+                  style: const TextStyle(fontSize: TypeScale.xs),
+                ),
               ],
               if (c.credits > 0) ...[
                 const SizedBox(height: Spacing.x1),
-                Text('${c.credits} credits | ${c.durationHours}h',
-                    style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs),),
+                Text(
+                  '${c.credits} credits | ${c.durationHours}h',
+                  style: TextStyle(
+                      color: context.tokens.textSecondary,
+                      fontSize: TypeScale.xs),
+                ),
               ],
             ],
           ),

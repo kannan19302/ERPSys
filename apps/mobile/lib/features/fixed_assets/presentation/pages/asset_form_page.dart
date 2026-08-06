@@ -94,14 +94,19 @@ class _AssetFormPageState extends ConsumerState<AssetFormPage> {
       'notes': _notesController.text.trim(),
       'status': _status,
       'depreciationMethod': _depreciationMethod,
-      if (_purchaseDate != null) 'purchaseDate': _purchaseDate!.toIso8601String(),
-      if (_warrantyExpiry != null) 'warrantyExpiry': _warrantyExpiry!.toIso8601String(),
+      if (_purchaseDate != null)
+        'purchaseDate': _purchaseDate!.toIso8601String(),
+      if (_warrantyExpiry != null)
+        'warrantyExpiry': _warrantyExpiry!.toIso8601String(),
     };
-    final result = await ref.read(fixedAssetListControllerProvider.notifier).save(payload, id: widget.id);
+    final result = await ref
+        .read(fixedAssetListControllerProvider.notifier)
+        .save(payload, id: widget.id);
     if (!mounted) return;
     setState(() => _isLoading = false);
     result.fold(
-      (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(true),
     );
   }
@@ -115,7 +120,8 @@ class _AssetFormPageState extends ConsumerState<AssetFormPage> {
       );
     }
     return Scaffold(
-      appBar: AppBar(title: Text(widget.id != null ? 'Edit Asset' : 'New Asset')),
+      appBar:
+          AppBar(title: Text(widget.id != null ? 'Edit Asset' : 'New Asset')),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -124,15 +130,18 @@ class _AssetFormPageState extends ConsumerState<AssetFormPage> {
             UiTextField(
               label: 'Name',
               controller: _nameController,
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+              validator: (v) =>
+                  (v == null || v.trim().isEmpty) ? 'Required' : null,
             ),
             UiTextField(
               label: 'Asset Category',
               controller: _assetCategoryController,
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+              validator: (v) =>
+                  (v == null || v.trim().isEmpty) ? 'Required' : null,
             ),
             UiTextField(label: 'Asset Tag', controller: _assetTagController),
-            UiTextField(label: 'Serial Number', controller: _serialNumberController),
+            UiTextField(
+                label: 'Serial Number', controller: _serialNumberController),
             UiTextField(label: 'Location', controller: _locationController),
             UiTextField(label: 'Department', controller: _departmentController),
             UiDropdownField(
@@ -142,14 +151,27 @@ class _AssetFormPageState extends ConsumerState<AssetFormPage> {
               items: const ['ACTIVE', 'UNDER_MAINTENANCE', 'DISPOSED', 'SOLD'],
               onChanged: (v) => setState(() => _status = v!),
             ),
-            UiTextField(label: 'Purchase Cost', controller: _purchaseCostController, keyboardType: TextInputType.number),
-            UiTextField(label: 'Salvage Value', controller: _salvageValueController, keyboardType: TextInputType.number),
-            UiTextField(label: 'Useful Life (Years)', controller: _usefulLifeController, keyboardType: TextInputType.number),
+            UiTextField(
+                label: 'Purchase Cost',
+                controller: _purchaseCostController,
+                keyboardType: TextInputType.number),
+            UiTextField(
+                label: 'Salvage Value',
+                controller: _salvageValueController,
+                keyboardType: TextInputType.number),
+            UiTextField(
+                label: 'Useful Life (Years)',
+                controller: _usefulLifeController,
+                keyboardType: TextInputType.number),
             UiDropdownField(
               label: 'Depreciation Method',
               itemLabel: (v) => v.toString(),
               selectedItem: _depreciationMethod,
-              items: const ['STRAIGHT_LINE', 'DOUBLE_DECLINING', 'SUM_OF_YEARS'],
+              items: const [
+                'STRAIGHT_LINE',
+                'DOUBLE_DECLINING',
+                'SUM_OF_YEARS'
+              ],
               onChanged: (v) => setState(() => _depreciationMethod = v!),
             ),
             UiDatePickerField(
@@ -162,13 +184,19 @@ class _AssetFormPageState extends ConsumerState<AssetFormPage> {
               selectedDate: _warrantyExpiry,
               onChanged: (v) => setState(() => _warrantyExpiry = v),
             ),
-            UiTextField(label: 'Insurance Policy', controller: _insurancePolicyController),
-            UiTextField(label: 'Notes', controller: _notesController, maxLines: 3),
+            UiTextField(
+                label: 'Insurance Policy',
+                controller: _insurancePolicyController),
+            UiTextField(
+                label: 'Notes', controller: _notesController, maxLines: 3),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _isLoading ? null : _submit,
               child: _isLoading
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2))
                   : const Text('Save'),
             ),
           ],

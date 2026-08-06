@@ -242,7 +242,8 @@ class EducationFeeInvoiceModel extends EducationFeeInvoice {
 
   factory EducationFeeInvoiceModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('EducationFeeInvoice missing id');
+    if (id is! String)
+      throw const ParseException('EducationFeeInvoice missing id');
     return EducationFeeInvoiceModel(
       id: id,
       studentId: json['studentId'] as String? ?? '',

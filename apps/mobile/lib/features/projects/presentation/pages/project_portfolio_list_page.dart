@@ -15,10 +15,12 @@ class ProjectPortfolioListPage extends ConsumerStatefulWidget {
   static const String routeName = 'project-portfolios';
   static const String routePath = '/projects/portfolios';
   @override
-  ConsumerState<ProjectPortfolioListPage> createState() => _ProjectPortfolioListPageState();
+  ConsumerState<ProjectPortfolioListPage> createState() =>
+      _ProjectPortfolioListPageState();
 }
 
-class _ProjectPortfolioListPageState extends ConsumerState<ProjectPortfolioListPage> {
+class _ProjectPortfolioListPageState
+    extends ConsumerState<ProjectPortfolioListPage> {
   final TextEditingController _search = TextEditingController();
 
   @override
@@ -30,7 +32,8 @@ class _ProjectPortfolioListPageState extends ConsumerState<ProjectPortfolioListP
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(projectPortfolioListControllerProvider);
-    final controller = ref.read(projectPortfolioListControllerProvider.notifier);
+    final controller =
+        ref.read(projectPortfolioListControllerProvider.notifier);
     final t = context.tokens;
 
     return Scaffold(
@@ -47,9 +50,11 @@ class _ProjectPortfolioListPageState extends ConsumerState<ProjectPortfolioListP
       ),
       body: Column(
         children: [
-          if (state.cachedAt != null) StaleDataBanner(cachedAt: state.cachedAt!),
+          if (state.cachedAt != null)
+            StaleDataBanner(cachedAt: state.cachedAt!),
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -61,19 +66,27 @@ class _ProjectPortfolioListPageState extends ConsumerState<ProjectPortfolioListP
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading ? 'Loading...' : '${state.meta.total} portfolio${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} portfolio${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -81,7 +94,8 @@ class _ProjectPortfolioListPageState extends ConsumerState<ProjectPortfolioListP
     );
   }
 
-  Widget _body(ProjectPortfolioListState state, ProjectPortfolioListController controller) {
+  Widget _body(ProjectPortfolioListState state,
+      ProjectPortfolioListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -127,23 +141,38 @@ class _PortfolioTile extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(child: Text(portfolio.name,
-                    style: Theme.of(context).textTheme.titleSmall,),),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: Spacing.x2_5, vertical: Spacing.x1),
-                  decoration: BoxDecoration(color: t.primaryLight, borderRadius: Radii.pill),
-                  child: Text('${portfolio.projectCount} projects',
-                      style: TextStyle(color: t.primary, fontSize: TypeScale.xs),),
-                ),
-              ],),
-              if (portfolio.description != null && portfolio.description!.isNotEmpty) ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      portfolio.name,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: Spacing.x2_5, vertical: Spacing.x1),
+                    decoration: BoxDecoration(
+                        color: t.primaryLight, borderRadius: Radii.pill),
+                    child: Text(
+                      '${portfolio.projectCount} projects',
+                      style:
+                          TextStyle(color: t.primary, fontSize: TypeScale.xs),
+                    ),
+                  ),
+                ],
+              ),
+              if (portfolio.description != null &&
+                  portfolio.description!.isNotEmpty) ...[
                 const SizedBox(height: Spacing.x1),
-                Text(portfolio.description!, style: TextStyle(color: t.textSecondary)),
+                Text(portfolio.description!,
+                    style: TextStyle(color: t.textSecondary)),
               ],
               const SizedBox(height: Spacing.x1),
-              Text('Budget: ${Formatters.currency(portfolio.totalBudget)}',
-                  style: Theme.of(context).textTheme.labelLarge,),
+              Text(
+                'Budget: ${Formatters.currency(portfolio.totalBudget)}',
+                style: Theme.of(context).textTheme.labelLarge,
+              ),
             ],
           ),
         ),

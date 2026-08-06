@@ -35,7 +35,8 @@ class PwaPushSubscriptionModel extends PwaPushSubscription {
 
   factory PwaPushSubscriptionModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('PwaPushSubscription missing id');
+    if (id is! String)
+      throw const ParseException('PwaPushSubscription missing id');
     return PwaPushSubscriptionModel(
       id: id,
       userId: json['userId'] as String? ?? '',
@@ -90,7 +91,8 @@ class PwaManifestConfigModel extends PwaManifestConfig {
 
   factory PwaManifestConfigModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('PwaManifestConfig missing id');
+    if (id is! String)
+      throw const ParseException('PwaManifestConfig missing id');
     return PwaManifestConfigModel(
       id: id,
       appName: json['appName'] as String? ?? '',
@@ -137,7 +139,8 @@ class PwaOfflineQueueItemModel extends PwaOfflineQueueItem {
 
   factory PwaOfflineQueueItemModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('PwaOfflineQueueItem missing id');
+    if (id is! String)
+      throw const ParseException('PwaOfflineQueueItem missing id');
     return PwaOfflineQueueItemModel(
       id: id,
       userId: json['userId'] as String?,

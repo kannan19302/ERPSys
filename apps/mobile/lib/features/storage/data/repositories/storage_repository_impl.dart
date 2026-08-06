@@ -36,7 +36,8 @@ class StorageRepositoryImpl implements StorageRepository {
       final List<Map<String, dynamic>> jsonItems = page.data
           .map((dynamic e) => (e as dynamic).toJson() as Map<String, dynamic>)
           .toList(growable: false);
-      await _cache.write(_tenantId, namespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, namespace, query.cacheKey, <String, Object?>{
         'data': jsonItems,
         'meta': page.meta.toJson(),
       });
@@ -44,9 +45,11 @@ class StorageRepositoryImpl implements StorageRepository {
         Cacheable<Paginated<T>>(value: page),
       );
     } on NetworkException catch (error) {
-      final cached = _cache.read<Map<String, dynamic>>(_tenantId, namespace, query.cacheKey);
+      final cached = _cache.read<Map<String, dynamic>>(
+          _tenantId, namespace, query.cacheKey);
       if (cached == null) {
-        return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
+        return Result<Cacheable<Paginated<T>>>.err(
+            mapExceptionToFailure(error));
       }
       return Result<Cacheable<Paginated<T>>>.ok(
         Cacheable<Paginated<T>>(
@@ -88,9 +91,14 @@ class StorageRepositoryImpl implements StorageRepository {
   }
 
   @override
-  Future<Result<Cacheable<Paginated<StorageBucket>>>> listBuckets(ListQuery q) =>
-      _paginated(_bucketNamespace, q, () => _remote.listBuckets(q),
-        StorageBucketModel.fromJson,);
+  Future<Result<Cacheable<Paginated<StorageBucket>>>> listBuckets(
+          ListQuery q) =>
+      _paginated(
+        _bucketNamespace,
+        q,
+        () => _remote.listBuckets(q),
+        StorageBucketModel.fromJson,
+      );
 
   @override
   Future<Result<StorageBucket>> getBucket(String id) =>
@@ -101,7 +109,8 @@ class StorageRepositoryImpl implements StorageRepository {
       _write(() => _remote.createBucket(p));
 
   @override
-  Future<Result<StorageBucket>> updateBucket(String id, Map<String, dynamic> p) =>
+  Future<Result<StorageBucket>> updateBucket(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateBucket(id, p));
 
   @override
@@ -110,8 +119,12 @@ class StorageRepositoryImpl implements StorageRepository {
 
   @override
   Future<Result<Cacheable<Paginated<StorageFile>>>> listFiles(ListQuery q) =>
-      _paginated(_fileNamespace, q, () => _remote.listFiles(q),
-        StorageFileModel.fromJson,);
+      _paginated(
+        _fileNamespace,
+        q,
+        () => _remote.listFiles(q),
+        StorageFileModel.fromJson,
+      );
 
   @override
   Future<Result<StorageFile>> getFile(String id) =>
@@ -130,9 +143,14 @@ class StorageRepositoryImpl implements StorageRepository {
       _delete(() => _remote.deleteFile(id));
 
   @override
-  Future<Result<Cacheable<Paginated<StoragePolicy>>>> listPolicies(ListQuery q) =>
-      _paginated(_policyNamespace, q, () => _remote.listPolicies(q),
-        StoragePolicyModel.fromJson,);
+  Future<Result<Cacheable<Paginated<StoragePolicy>>>> listPolicies(
+          ListQuery q) =>
+      _paginated(
+        _policyNamespace,
+        q,
+        () => _remote.listPolicies(q),
+        StoragePolicyModel.fromJson,
+      );
 
   @override
   Future<Result<StoragePolicy>> getPolicy(String id) =>
@@ -143,7 +161,8 @@ class StorageRepositoryImpl implements StorageRepository {
       _write(() => _remote.createPolicy(p));
 
   @override
-  Future<Result<StoragePolicy>> updatePolicy(String id, Map<String, dynamic> p) =>
+  Future<Result<StoragePolicy>> updatePolicy(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updatePolicy(id, p));
 
   @override

@@ -35,7 +35,8 @@ class _SaasTenantListPageState extends ConsumerState<SaasTenantListPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -47,21 +48,27 @@ class _SaasTenantListPageState extends ConsumerState<SaasTenantListPage> {
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} tenant${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} tenant${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -92,32 +99,52 @@ class _SaasTenantListPageState extends ConsumerState<SaasTenantListPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(tenant.organizationName,
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                UiStatusBadge(
-                  label: tenant.status,
-                  tone: tenant.status == 'ACTIVE' ? UiTone.success : UiTone.neutral,
-                ),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      tenant.organizationName,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  UiStatusBadge(
+                    label: tenant.status,
+                    tone: tenant.status == 'ACTIVE'
+                        ? UiTone.success
+                        : UiTone.neutral,
+                  ),
+                ],
+              ),
               const SizedBox(height: Spacing.x1),
               if (tenant.domain != null)
-                Text(tenant.domain!,
-                    style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs),),
+                Text(
+                  tenant.domain!,
+                  style: TextStyle(
+                      color: palette.textSecondary, fontSize: TypeScale.xs),
+                ),
               if (tenant.planName != null) ...[
                 const SizedBox(height: Spacing.x1),
-                Text('Plan: ${tenant.planName}',
-                    style: TextStyle(fontSize: TypeScale.xs, color: palette.textTertiary),),
+                Text(
+                  'Plan: ${tenant.planName}',
+                  style: TextStyle(
+                      fontSize: TypeScale.xs, color: palette.textTertiary),
+                ),
               ],
-              Row(children: [
-                Text('${tenant.userCount} users',
-                    style: TextStyle(fontSize: TypeScale.xs, color: palette.textTertiary),),
-                const SizedBox(width: Spacing.x4),
-                Text('${tenant.storageUsed.toStringAsFixed(0)} MB',
-                    style: TextStyle(fontSize: TypeScale.xs, color: palette.textTertiary),),
-              ],),
+              Row(
+                children: [
+                  Text(
+                    '${tenant.userCount} users',
+                    style: TextStyle(
+                        fontSize: TypeScale.xs, color: palette.textTertiary),
+                  ),
+                  const SizedBox(width: Spacing.x4),
+                  Text(
+                    '${tenant.storageUsed.toStringAsFixed(0)} MB',
+                    style: TextStyle(
+                        fontSize: TypeScale.xs, color: palette.textTertiary),
+                  ),
+                ],
+              ),
             ],
           ),
         ),

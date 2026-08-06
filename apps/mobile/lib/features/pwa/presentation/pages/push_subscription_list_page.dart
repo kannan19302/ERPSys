@@ -11,14 +11,17 @@ class PushSubscriptionListPage extends ConsumerStatefulWidget {
   static const String routeName = 'push-subscriptions';
   static const String routePath = '/pwa/push-subscriptions';
   @override
-  ConsumerState<PushSubscriptionListPage> createState() => _PushSubscriptionListPageState();
+  ConsumerState<PushSubscriptionListPage> createState() =>
+      _PushSubscriptionListPageState();
 }
 
-class _PushSubscriptionListPageState extends ConsumerState<PushSubscriptionListPage> {
+class _PushSubscriptionListPageState
+    extends ConsumerState<PushSubscriptionListPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(pushSubscriptionListControllerProvider);
-    final controller = ref.read(pushSubscriptionListControllerProvider.notifier);
+    final controller =
+        ref.read(pushSubscriptionListControllerProvider.notifier);
     final palette = context.tokens;
     return Scaffold(
       appBar: AppBar(title: const Text('Push Subscriptions')),
@@ -26,7 +29,8 @@ class _PushSubscriptionListPageState extends ConsumerState<PushSubscriptionListP
     );
   }
 
-  Widget _body(PushSubscriptionListState state, PushSubscriptionListController controller, Palette palette) {
+  Widget _body(PushSubscriptionListState state,
+      PushSubscriptionListController controller, Palette palette) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -40,7 +44,8 @@ class _PushSubscriptionListPageState extends ConsumerState<PushSubscriptionListP
       onRefresh: controller.refresh,
       onLoadMore: controller.loadMore,
       emptyTitle: 'No push subscriptions',
-      emptyMessage: 'Devices subscribed to push notifications will appear here.',
+      emptyMessage:
+          'Devices subscribed to push notifications will appear here.',
       itemBuilder: (_, PwaPushSubscription s, __) => Card(
         margin: EdgeInsets.zero,
         child: Padding(
@@ -48,15 +53,24 @@ class _PushSubscriptionListPageState extends ConsumerState<PushSubscriptionListP
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(s.browser ?? s.deviceType ?? 'Unknown device',
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                Text(s.platform ?? '', style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs)),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      s.browser ?? s.deviceType ?? 'Unknown device',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  Text(s.platform ?? '',
+                      style: TextStyle(
+                          color: palette.textSecondary,
+                          fontSize: TypeScale.xs)),
+                ],
+              ),
               const SizedBox(height: Spacing.x1),
-              Text(s.status, style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs)),
+              Text(s.status,
+                  style: TextStyle(
+                      color: palette.textSecondary, fontSize: TypeScale.xs)),
             ],
           ),
         ),

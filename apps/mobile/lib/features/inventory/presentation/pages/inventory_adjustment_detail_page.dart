@@ -53,8 +53,16 @@ class _AdjustmentDetail extends StatelessWidget {
 
     final (IconData icon, Color color, String label) =
         switch (adjustment.type) {
-      'POSITIVE' => (Icons.add_circle_outline, t.success, 'Positive Adjustment'),
-      'NEGATIVE' => (Icons.remove_circle_outline, t.danger, 'Negative Adjustment'),
+      'POSITIVE' => (
+          Icons.add_circle_outline,
+          t.success,
+          'Positive Adjustment'
+        ),
+      'NEGATIVE' => (
+          Icons.remove_circle_outline,
+          t.danger,
+          'Negative Adjustment'
+        ),
       'ADJUST' => (Icons.tune_outlined, t.info, 'Stock Adjust'),
       _ => (Icons.help_outline, t.textSecondary, adjustment.type),
     };

@@ -18,13 +18,16 @@ abstract class DriveRepository {
   Future<Result<DriveFile>> starFile(String id);
   Future<Result<DriveFile>> restoreFile(String id);
 
-  Future<Result<Cacheable<Paginated<DriveFolder>>>> listFolders(ListQuery query);
+  Future<Result<Cacheable<Paginated<DriveFolder>>>> listFolders(
+      ListQuery query);
   Future<Result<DriveFolder>> getFolder(String id);
   Future<Result<DriveFolder>> createFolder(Map<String, dynamic> payload);
-  Future<Result<DriveFolder>> updateFolder(String id, Map<String, dynamic> payload);
+  Future<Result<DriveFolder>> updateFolder(
+      String id, Map<String, dynamic> payload);
   Future<Result<void>> deleteFolder(String id);
 
-  Future<Result<Cacheable<Paginated<DriveTrashItem>>>> listTrash(ListQuery query);
+  Future<Result<Cacheable<Paginated<DriveTrashItem>>>> listTrash(
+      ListQuery query);
   Future<Result<void>> restoreTrashItem(String id);
   Future<Result<void>> emptyTrash();
 

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -77,12 +76,12 @@ class _WorkOrderDetail extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: Spacing.x1),
-              Text(workOrder.productName, style: TextStyle(color: t.textSecondary)),
+              Text(workOrder.productName,
+                  style: TextStyle(color: t.textSecondary)),
               if (hasReferences) ...<Widget>[
                 const SizedBox(height: Spacing.x4),
                 const Divider(),
-                if (workOrder.bomId != null)
-                  _Row('BOM', workOrder.bomId!),
+                if (workOrder.bomId != null) _Row('BOM', workOrder.bomId!),
                 if (workOrder.workstationId != null)
                   _Row('Workstation', workOrder.workstationId!),
                 if (workOrder.routingId != null)

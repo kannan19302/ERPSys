@@ -35,7 +35,8 @@ class PwaRepositoryImpl implements PwaRepository {
       final List<Map<String, dynamic>> jsonItems = page.data
           .map((dynamic e) => (e as dynamic).toJson() as Map<String, dynamic>)
           .toList(growable: false);
-      await _cache.write(_tenantId, namespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, namespace, query.cacheKey, <String, Object?>{
         'data': jsonItems,
         'meta': page.meta.toJson(),
       });
@@ -43,9 +44,11 @@ class PwaRepositoryImpl implements PwaRepository {
         Cacheable<Paginated<T>>(value: page),
       );
     } on NetworkException catch (error) {
-      final cached = _cache.read<Map<String, dynamic>>(_tenantId, namespace, query.cacheKey);
+      final cached = _cache.read<Map<String, dynamic>>(
+          _tenantId, namespace, query.cacheKey);
       if (cached == null) {
-        return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
+        return Result<Cacheable<Paginated<T>>>.err(
+            mapExceptionToFailure(error));
       }
       return Result<Cacheable<Paginated<T>>>.ok(
         Cacheable<Paginated<T>>(
@@ -87,9 +90,13 @@ class PwaRepositoryImpl implements PwaRepository {
   }
 
   @override
-  Future<Result<Cacheable<Paginated<PwaPushSubscription>>>> listPushSubscriptions(ListQuery q) =>
-      _paginated(_pushNamespace, q, () => _remote.listPushSubscriptions(q),
-        PwaPushSubscriptionModel.fromJson,);
+  Future<Result<Cacheable<Paginated<PwaPushSubscription>>>>
+      listPushSubscriptions(ListQuery q) => _paginated(
+            _pushNamespace,
+            q,
+            () => _remote.listPushSubscriptions(q),
+            PwaPushSubscriptionModel.fromJson,
+          );
 
   @override
   Future<Result<void>> deletePushSubscription(String id) =>
@@ -100,13 +107,19 @@ class PwaRepositoryImpl implements PwaRepository {
       _single(() => _remote.getManifestConfig());
 
   @override
-  Future<Result<PwaManifestConfig>> updateManifestConfig(Map<String, dynamic> p) =>
+  Future<Result<PwaManifestConfig>> updateManifestConfig(
+          Map<String, dynamic> p) =>
       _write(() => _remote.updateManifestConfig(p));
 
   @override
-  Future<Result<Cacheable<Paginated<PwaOfflineQueueItem>>>> listOfflineQueue(ListQuery q) =>
-      _paginated(_offlineNamespace, q, () => _remote.listOfflineQueue(q),
-        PwaOfflineQueueItemModel.fromJson,);
+  Future<Result<Cacheable<Paginated<PwaOfflineQueueItem>>>> listOfflineQueue(
+          ListQuery q) =>
+      _paginated(
+        _offlineNamespace,
+        q,
+        () => _remote.listOfflineQueue(q),
+        PwaOfflineQueueItemModel.fromJson,
+      );
 
   @override
   Future<Result<PwaOfflineQueueItem>> getOfflineQueueItem(String id) =>

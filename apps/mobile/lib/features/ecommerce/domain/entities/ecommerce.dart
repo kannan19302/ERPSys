@@ -41,9 +41,23 @@ class EcommerceProduct extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, slug, description, price, comparePrice, currency,
-        categoryId, categoryName, images, inventory, sku, status,
-        rating, reviewCount, createdAt, updatedAt,
+        id,
+        name,
+        slug,
+        description,
+        price,
+        comparePrice,
+        currency,
+        categoryId,
+        categoryName,
+        images,
+        inventory,
+        sku,
+        status,
+        rating,
+        reviewCount,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -76,8 +90,17 @@ class EcommerceCategory extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, slug, description, parentId, image, sortOrder,
-        productCount, status, createdAt, updatedAt,
+        id,
+        name,
+        slug,
+        description,
+        parentId,
+        image,
+        sortOrder,
+        productCount,
+        status,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -118,9 +141,21 @@ class EcommerceOrder extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, orderNumber, customerId, customerName, items, subtotal,
-        shippingCost, taxTotal, totalAmount, currency, status,
-        paymentStatus, shippingAddress, createdAt, updatedAt,
+        id,
+        orderNumber,
+        customerId,
+        customerName,
+        items,
+        subtotal,
+        shippingCost,
+        taxTotal,
+        totalAmount,
+        currency,
+        status,
+        paymentStatus,
+        shippingAddress,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -143,7 +178,12 @@ class EcommerceOrderItem extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, productId, productName, quantity, unitPrice, totalPrice,
+        id,
+        productId,
+        productName,
+        quantity,
+        unitPrice,
+        totalPrice,
       ];
 }
 
@@ -168,6 +208,12 @@ class EcommerceCartItem extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, productId, productName, image, quantity, unitPrice, totalPrice,
+        id,
+        productId,
+        productName,
+        image,
+        quantity,
+        unitPrice,
+        totalPrice,
       ];
 }

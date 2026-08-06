@@ -42,10 +42,14 @@ class _PaymentListPageState extends ConsumerState<PaymentListPage> {
       ),
       body: Column(
         children: <Widget>[
-          if (state.cachedAt != null) StaleDataBanner(cachedAt: state.cachedAt!),
+          if (state.cachedAt != null)
+            StaleDataBanner(cachedAt: state.cachedAt!),
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2,
+              Spacing.x4,
+              Spacing.x3,
+              Spacing.x4,
+              Spacing.x2,
             ),
             child: TextField(
               controller: _search,
@@ -109,8 +113,7 @@ class _PaymentListPageState extends ConsumerState<PaymentListPage> {
       emptyMessage: state.query.search?.isNotEmpty ?? false
           ? 'Nothing matches "${state.query.search}".'
           : 'Payments recorded in UniERP will appear here.',
-      itemBuilder: (BuildContext context, Payment payment, _) =>
-          _PaymentTile(
+      itemBuilder: (BuildContext context, Payment payment, _) => _PaymentTile(
         payment: payment,
         onTap: () => context.pushNamed(
           'invoice-detail',
@@ -205,7 +208,8 @@ class _PaymentTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: <Widget>[
               Text(
-                Formatters.currency(payment.amount, currencyCode: payment.currency),
+                Formatters.currency(payment.amount,
+                    currencyCode: payment.currency),
                 style: Theme.of(context).textTheme.labelLarge,
               ),
               const SizedBox(height: Spacing.x1),

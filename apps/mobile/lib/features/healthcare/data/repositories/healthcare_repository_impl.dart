@@ -39,7 +39,8 @@ class HealthcareRepositoryImpl implements HealthcareRepository {
       final List<Map<String, dynamic>> jsonItems = page.data
           .map((dynamic e) => (e as dynamic).toJson() as Map<String, dynamic>)
           .toList(growable: false);
-      await _cache.write(_tenantId, namespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, namespace, query.cacheKey, <String, Object?>{
         'data': jsonItems,
         'meta': page.meta.toJson(),
       });
@@ -47,9 +48,11 @@ class HealthcareRepositoryImpl implements HealthcareRepository {
         Cacheable<Paginated<T>>(value: page),
       );
     } on NetworkException catch (error) {
-      final cached = _cache.read<Map<String, dynamic>>(_tenantId, namespace, query.cacheKey);
+      final cached = _cache.read<Map<String, dynamic>>(
+          _tenantId, namespace, query.cacheKey);
       if (cached == null) {
-        return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
+        return Result<Cacheable<Paginated<T>>>.err(
+            mapExceptionToFailure(error));
       }
       return Result<Cacheable<Paginated<T>>>.ok(
         Cacheable<Paginated<T>>(
@@ -92,8 +95,12 @@ class HealthcareRepositoryImpl implements HealthcareRepository {
 
   @override
   Future<Result<Cacheable<Paginated<Patient>>>> listPatients(ListQuery q) =>
-      _paginated(_patientNamespace, q, () => _remote.listPatients(q),
-        PatientModel.fromJson,);
+      _paginated(
+        _patientNamespace,
+        q,
+        () => _remote.listPatients(q),
+        PatientModel.fromJson,
+      );
 
   @override
   Future<Result<Patient>> getPatient(String id) =>
@@ -112,9 +119,14 @@ class HealthcareRepositoryImpl implements HealthcareRepository {
       _delete(() => _remote.deletePatient(id));
 
   @override
-  Future<Result<Cacheable<Paginated<Appointment>>>> listAppointments(ListQuery q) =>
-      _paginated(_appointmentNamespace, q, () => _remote.listAppointments(q),
-        AppointmentModel.fromJson,);
+  Future<Result<Cacheable<Paginated<Appointment>>>> listAppointments(
+          ListQuery q) =>
+      _paginated(
+        _appointmentNamespace,
+        q,
+        () => _remote.listAppointments(q),
+        AppointmentModel.fromJson,
+      );
 
   @override
   Future<Result<Appointment>> getAppointment(String id) =>
@@ -125,7 +137,8 @@ class HealthcareRepositoryImpl implements HealthcareRepository {
       _write(() => _remote.createAppointment(p));
 
   @override
-  Future<Result<Appointment>> updateAppointment(String id, Map<String, dynamic> p) =>
+  Future<Result<Appointment>> updateAppointment(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateAppointment(id, p));
 
   @override
@@ -133,9 +146,14 @@ class HealthcareRepositoryImpl implements HealthcareRepository {
       _delete(() => _remote.deleteAppointment(id));
 
   @override
-  Future<Result<Cacheable<Paginated<Prescription>>>> listPrescriptions(ListQuery q) =>
-      _paginated(_prescriptionNamespace, q, () => _remote.listPrescriptions(q),
-        PrescriptionModel.fromJson,);
+  Future<Result<Cacheable<Paginated<Prescription>>>> listPrescriptions(
+          ListQuery q) =>
+      _paginated(
+        _prescriptionNamespace,
+        q,
+        () => _remote.listPrescriptions(q),
+        PrescriptionModel.fromJson,
+      );
 
   @override
   Future<Result<Prescription>> getPrescription(String id) =>
@@ -147,8 +165,12 @@ class HealthcareRepositoryImpl implements HealthcareRepository {
 
   @override
   Future<Result<Cacheable<Paginated<LabOrder>>>> listLabOrders(ListQuery q) =>
-      _paginated(_labOrderNamespace, q, () => _remote.listLabOrders(q),
-        LabOrderModel.fromJson,);
+      _paginated(
+        _labOrderNamespace,
+        q,
+        () => _remote.listLabOrders(q),
+        LabOrderModel.fromJson,
+      );
 
   @override
   Future<Result<LabOrder>> getLabOrder(String id) =>
@@ -159,13 +181,19 @@ class HealthcareRepositoryImpl implements HealthcareRepository {
       _write(() => _remote.createLabOrder(p));
 
   @override
-  Future<Result<LabOrder>> updateLabOrderResult(String id, Map<String, dynamic> p) =>
+  Future<Result<LabOrder>> updateLabOrderResult(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateLabOrderResult(id, p));
 
   @override
-  Future<Result<Cacheable<Paginated<MedicalRecord>>>> listMedicalRecords(ListQuery q) =>
-      _paginated(_medicalRecordNamespace, q, () => _remote.listMedicalRecords(q),
-        MedicalRecordModel.fromJson,);
+  Future<Result<Cacheable<Paginated<MedicalRecord>>>> listMedicalRecords(
+          ListQuery q) =>
+      _paginated(
+        _medicalRecordNamespace,
+        q,
+        () => _remote.listMedicalRecords(q),
+        MedicalRecordModel.fromJson,
+      );
 
   @override
   Future<Result<MedicalRecord>> getMedicalRecord(String id) =>
@@ -176,9 +204,14 @@ class HealthcareRepositoryImpl implements HealthcareRepository {
       _write(() => _remote.createMedicalRecord(p));
 
   @override
-  Future<Result<Cacheable<Paginated<InsuranceClaim>>>> listInsuranceClaims(ListQuery q) =>
-      _paginated(_insuranceClaimNamespace, q, () => _remote.listInsuranceClaims(q),
-        InsuranceClaimModel.fromJson,);
+  Future<Result<Cacheable<Paginated<InsuranceClaim>>>> listInsuranceClaims(
+          ListQuery q) =>
+      _paginated(
+        _insuranceClaimNamespace,
+        q,
+        () => _remote.listInsuranceClaims(q),
+        InsuranceClaimModel.fromJson,
+      );
 
   @override
   Future<Result<InsuranceClaim>> getInsuranceClaim(String id) =>
@@ -189,7 +222,8 @@ class HealthcareRepositoryImpl implements HealthcareRepository {
       _write(() => _remote.createInsuranceClaim(p));
 
   @override
-  Future<Result<InsuranceClaim>> updateInsuranceClaim(String id, Map<String, dynamic> p) =>
+  Future<Result<InsuranceClaim>> updateInsuranceClaim(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateInsuranceClaim(id, p));
 
   @override
@@ -205,6 +239,7 @@ class HealthcareRepositoryImpl implements HealthcareRepository {
       _single(() => _remote.rejectInsuranceClaim(id));
 
   @override
-  Future<Result<Prescription>> updatePrescription(String id, Map<String, dynamic> p) async => throw UnimplementedError();
-
+  Future<Result<Prescription>> updatePrescription(
+          String id, Map<String, dynamic> p) async =>
+      throw UnimplementedError();
 }

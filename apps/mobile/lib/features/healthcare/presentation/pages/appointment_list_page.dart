@@ -13,7 +13,8 @@ class AppointmentListPage extends ConsumerStatefulWidget {
   static const String routeName = 'appointments';
   static const String routePath = '/healthcare/appointments';
   @override
-  ConsumerState<AppointmentListPage> createState() => _AppointmentListPageState();
+  ConsumerState<AppointmentListPage> createState() =>
+      _AppointmentListPageState();
 }
 
 class _AppointmentListPageState extends ConsumerState<AppointmentListPage> {
@@ -36,7 +37,8 @@ class _AppointmentListPageState extends ConsumerState<AppointmentListPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -48,21 +50,27 @@ class _AppointmentListPageState extends ConsumerState<AppointmentListPage> {
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} appointment${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} appointment${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -70,7 +78,8 @@ class _AppointmentListPageState extends ConsumerState<AppointmentListPage> {
     );
   }
 
-  Widget _body(AppointmentListState state, AppointmentListController controller) {
+  Widget _body(
+      AppointmentListState state, AppointmentListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -92,19 +101,27 @@ class _AppointmentListPageState extends ConsumerState<AppointmentListPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(a.patientName,
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                UiStatusBadge(
-                  label: a.status,
-                  tone: _statusTone(a.status),
-                ),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      a.patientName,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  UiStatusBadge(
+                    label: a.status,
+                    tone: _statusTone(a.status),
+                  ),
+                ],
+              ),
               const SizedBox(height: Spacing.x1),
-              Text(a.doctorName ?? 'No doctor assigned',
-                  style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs),),
+              Text(
+                a.doctorName ?? 'No doctor assigned',
+                style: TextStyle(
+                    color: context.tokens.textSecondary,
+                    fontSize: TypeScale.xs),
+              ),
               const SizedBox(height: Spacing.x1),
               Text(
                 '${a.appointmentDate.day}/${a.appointmentDate.month}/${a.appointmentDate.year}',

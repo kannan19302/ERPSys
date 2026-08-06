@@ -14,7 +14,8 @@ class SalesReturnFormPage extends ConsumerStatefulWidget {
   static const String routePath = '/sales/returns/new';
 
   @override
-  ConsumerState<SalesReturnFormPage> createState() => _SalesReturnFormPageState();
+  ConsumerState<SalesReturnFormPage> createState() =>
+      _SalesReturnFormPageState();
 }
 
 class _SalesReturnFormPageState extends ConsumerState<SalesReturnFormPage> {
@@ -43,11 +44,13 @@ class _SalesReturnFormPageState extends ConsumerState<SalesReturnFormPage> {
 
   void _addItem() {
     setState(() {
-      _items.add(_ReturnLineItem(
-        productCtrl: TextEditingController(),
-        qtyCtrl: TextEditingController(text: '1'),
-        rateCtrl: TextEditingController(),
-      ),);
+      _items.add(
+        _ReturnLineItem(
+          productCtrl: TextEditingController(),
+          qtyCtrl: TextEditingController(text: '1'),
+          rateCtrl: TextEditingController(),
+        ),
+      );
     });
   }
 
@@ -69,17 +72,21 @@ class _SalesReturnFormPageState extends ConsumerState<SalesReturnFormPage> {
       'reason': _reasonCtrl.text.trim(),
       'reasonType': _reasonType,
       'notes': _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
-      'items': _items.map((_ReturnLineItem item) => <String, dynamic>{
-        'productName': item.productCtrl.text.trim(),
-        'quantity': double.tryParse(item.qtyCtrl.text) ?? 1,
-        'rate': double.tryParse(item.rateCtrl.text) ?? 0,
-        'amount': (double.tryParse(item.qtyCtrl.text) ?? 0) * (double.tryParse(item.rateCtrl.text) ?? 0),
-      },).toList(),
+      'items': _items
+          .map(
+            (_ReturnLineItem item) => <String, dynamic>{
+              'productName': item.productCtrl.text.trim(),
+              'quantity': double.tryParse(item.qtyCtrl.text) ?? 1,
+              'rate': double.tryParse(item.rateCtrl.text) ?? 0,
+              'amount': (double.tryParse(item.qtyCtrl.text) ?? 0) *
+                  (double.tryParse(item.rateCtrl.text) ?? 0),
+            },
+          )
+          .toList(),
     };
 
-    final Result<SalesReturn> result = await ref
-        .read(salesReturnsProvider.notifier)
-        .create(payload);
+    final Result<SalesReturn> result =
+        await ref.read(salesReturnsProvider.notifier).create(payload);
 
     if (!context.mounted) return;
     setState(() => _saving = false);
@@ -127,9 +134,12 @@ class _SalesReturnFormPageState extends ConsumerState<SalesReturnFormPage> {
               initialValue: _reasonType,
               decoration: const InputDecoration(labelText: 'Return Type'),
               items: const <DropdownMenuItem<String>>[
-                DropdownMenuItem<String>(value: 'RETURN', child: Text('Return')),
-                DropdownMenuItem<String>(value: 'REFUND', child: Text('Refund')),
-                DropdownMenuItem<String>(value: 'EXCHANGE', child: Text('Exchange')),
+                DropdownMenuItem<String>(
+                    value: 'RETURN', child: Text('Return')),
+                DropdownMenuItem<String>(
+                    value: 'REFUND', child: Text('Refund')),
+                DropdownMenuItem<String>(
+                    value: 'EXCHANGE', child: Text('Exchange')),
               ],
               onChanged: (String? v) {
                 if (v != null) setState(() => _reasonType = v);
@@ -164,9 +174,9 @@ class _SalesReturnFormPageState extends ConsumerState<SalesReturnFormPage> {
               ],
             ),
             ..._items.asMap().entries.map(
-              (MapEntry<int, _ReturnLineItem> entry) =>
-                  _buildItemRow(entry.key, entry.value),
-            ),
+                  (MapEntry<int, _ReturnLineItem> entry) =>
+                      _buildItemRow(entry.key, entry.value),
+                ),
             if (_items.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: Spacing.x6),

@@ -32,8 +32,7 @@ class StockLevelDetailPage extends ConsumerWidget {
           failure: error is Failure
               ? error
               : const ServerFailure('Could not load stock level.'),
-          onRetry: () =>
-              ref.invalidate(stockLevelDetailProvider(stockLevelId)),
+          onRetry: () => ref.invalidate(stockLevelDetailProvider(stockLevelId)),
         ),
         data: (StockLevel level) => _StockLevelDetail(level: level),
       ),
@@ -116,7 +115,8 @@ class _StockLevelDetail extends StatelessWidget {
                 child: LinearProgressIndicator(
                   value: level.quantity == 0
                       ? 0
-                      : (level.availableQuantity / level.quantity).clamp(0.0, 1.0),
+                      : (level.availableQuantity / level.quantity)
+                          .clamp(0.0, 1.0),
                   minHeight: 6,
                   backgroundColor: t.bgSunken,
                   valueColor: AlwaysStoppedAnimation<Color>(
@@ -213,6 +213,5 @@ class _Row extends StatelessWidget {
 }
 
 extension on StockLevel {
-  double get availableRatio =>
-      quantity == 0 ? 0 : availableQuantity / quantity;
+  double get availableRatio => quantity == 0 ? 0 : availableQuantity / quantity;
 }

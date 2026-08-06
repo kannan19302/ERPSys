@@ -27,7 +27,9 @@ class ProjectDetailPage extends ConsumerWidget {
       body: projectAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load project.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load project.'),
           onRetry: () => ref.invalidate(projectDetailProvider(projectId)),
         ),
         data: (Project project) => _ProjectDetail(project: project),
@@ -60,17 +62,20 @@ class _ProjectDetail extends StatelessWidget {
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                   ),
-                  UiStatusBadge(label: project.status, tone: _statusTone(project.status)),
+                  UiStatusBadge(
+                      label: project.status, tone: _statusTone(project.status)),
                 ],
               ),
               const SizedBox(height: Spacing.x1),
               if (project.description.isNotEmpty) Text(project.description),
               const SizedBox(height: Spacing.x3),
-              LinearProgressIndicator(value: (project.progress / 100).clamp(0, 1)),
+              LinearProgressIndicator(
+                  value: (project.progress / 100).clamp(0, 1)),
               const SizedBox(height: Spacing.x1),
               Text(
                 '${Formatters.percent(project.progress, decimals: 0)} complete',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                style:
+                    TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
             ],
           ),
@@ -97,11 +102,15 @@ class _ProjectDetail extends StatelessWidget {
               _Row('Customer', project.customerName ?? '—'),
               _Row(
                 'Start date',
-                project.startDate == null ? '—' : Formatters.date(project.startDate!),
+                project.startDate == null
+                    ? '—'
+                    : Formatters.date(project.startDate!),
               ),
               _Row(
                 'End date',
-                project.endDate == null ? '—' : Formatters.date(project.endDate!),
+                project.endDate == null
+                    ? '—'
+                    : Formatters.date(project.endDate!),
               ),
             ],
           ),

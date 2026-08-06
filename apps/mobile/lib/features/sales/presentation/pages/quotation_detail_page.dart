@@ -47,7 +47,8 @@ class QuotationDetailPage extends ConsumerWidget {
               : const ServerFailure('Could not load quotation.'),
           onRetry: () => ref.invalidate(quotationDetailProvider(quotationId)),
         ),
-        data: (Quotation quotation) => _QuotationDetail(quotation: quotation, ref: ref),
+        data: (Quotation quotation) =>
+            _QuotationDetail(quotation: quotation, ref: ref),
       ),
     );
   }

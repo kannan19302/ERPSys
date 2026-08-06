@@ -7,9 +7,20 @@ import '../../domain/entities/admin.dart';
 import '../providers/admin_providers.dart';
 
 const List<String> _moduleGroups = <String>[
-  'dashboard', 'inventory', 'sales', 'procurement', 'crm', 'hr',
-  'finance', 'projects', 'manufacturing', 'communication', 'analytics',
-  'admin', 'settings', 'reports',
+  'dashboard',
+  'inventory',
+  'sales',
+  'procurement',
+  'crm',
+  'hr',
+  'finance',
+  'projects',
+  'manufacturing',
+  'communication',
+  'analytics',
+  'admin',
+  'settings',
+  'reports',
 ];
 
 const List<String> _actions = <String>['read', 'create', 'update', 'delete'];
@@ -53,7 +64,8 @@ class _AdminRoleFormPageState extends ConsumerState<AdminRoleFormPage> {
   }
 
   Future<void> _loadRole() async {
-    final AdminRole? role = ref.read(adminRoleDetailProvider(widget.roleId!)).valueOrNull;
+    final AdminRole? role =
+        ref.read(adminRoleDetailProvider(widget.roleId!)).valueOrNull;
     if (role != null) {
       _nameCtrl.text = role.name;
       _descCtrl.text = role.description ?? '';
@@ -75,7 +87,8 @@ class _AdminRoleFormPageState extends ConsumerState<AdminRoleFormPage> {
 
     final Map<String, dynamic> payload = <String, dynamic>{
       'name': _nameCtrl.text.trim(),
-      'description': _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
+      'description':
+          _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
       'permissions': _selectedPermissions.toList(),
     };
 
@@ -110,7 +123,10 @@ class _AdminRoleFormPageState extends ConsumerState<AdminRoleFormPage> {
           TextButton(
             onPressed: _saving ? null : _save,
             child: _saving
-                ? const SizedBox(height: Spacing.x5, width: Spacing.x5, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    height: Spacing.x5,
+                    width: Spacing.x5,
+                    child: CircularProgressIndicator(strokeWidth: 2))
                 : const Text('Save'),
           ),
         ],
@@ -123,26 +139,31 @@ class _AdminRoleFormPageState extends ConsumerState<AdminRoleFormPage> {
             TextFormField(
               controller: _nameCtrl,
               decoration: const InputDecoration(labelText: 'Name *'),
-              validator: (String? v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (String? v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
               enabled: !_isSystem,
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _descCtrl,
               maxLines: 3,
-              decoration: const InputDecoration(labelText: 'Description', alignLabelWithHint: true),
+              decoration: const InputDecoration(
+                  labelText: 'Description', alignLabelWithHint: true),
               enabled: !_isSystem,
             ),
             const SizedBox(height: Spacing.x4),
             Text('Permissions', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: Spacing.x2),
             if (_isSystem)
-              Text('System role permissions cannot be modified.',
-                  style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),)
+              Text(
+                'System role permissions cannot be modified.',
+                style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),
+              )
             else
               ...grouped.entries.map((MapEntry<String, List<String>> entry) {
                 final String module = entry.key;
-                final bool allSelected = entry.value.every((String p) => _selectedPermissions.contains(p));
+                final bool allSelected = entry.value
+                    .every((String p) => _selectedPermissions.contains(p));
                 return Padding(
                   padding: const EdgeInsets.only(bottom: Spacing.x3),
                   child: Column(
@@ -160,11 +181,18 @@ class _AdminRoleFormPageState extends ConsumerState<AdminRoleFormPage> {
                         },
                         child: Row(
                           children: <Widget>[
-                            Icon(allSelected ? Icons.check_box : Icons.check_box_outline_blank,
-                                size: TypeScale.xl, color: allSelected ? t.primary : t.textTertiary,),
+                            Icon(
+                              allSelected
+                                  ? Icons.check_box
+                                  : Icons.check_box_outline_blank,
+                              size: TypeScale.xl,
+                              color: allSelected ? t.primary : t.textTertiary,
+                            ),
                             const SizedBox(width: Spacing.x2),
-                            Text(module[0].toUpperCase() + module.substring(1),
-                                style: Theme.of(context).textTheme.labelLarge,),
+                            Text(
+                              module[0].toUpperCase() + module.substring(1),
+                              style: Theme.of(context).textTheme.labelLarge,
+                            ),
                           ],
                         ),
                       ),
@@ -175,17 +203,27 @@ class _AdminRoleFormPageState extends ConsumerState<AdminRoleFormPage> {
                           spacing: Spacing.x2,
                           runSpacing: Spacing.x1,
                           children: entry.value.map((String perm) {
-                            final bool sel = _selectedPermissions.contains(perm);
+                            final bool sel =
+                                _selectedPermissions.contains(perm);
                             return FilterChip(
-                              label: Text(perm.split('.').last,
-                                  style: TextStyle(fontSize: TypeScale.xs,
-                                      color: sel ? t.primary : t.textSecondary,),),
+                              label: Text(
+                                perm.split('.').last,
+                                style: TextStyle(
+                                  fontSize: TypeScale.xs,
+                                  color: sel ? t.primary : t.textSecondary,
+                                ),
+                              ),
                               selected: sel,
                               onSelected: (bool v) => setState(() {
-                                if (v) { _selectedPermissions.add(perm); } else { _selectedPermissions.remove(perm); }
+                                if (v) {
+                                  _selectedPermissions.add(perm);
+                                } else {
+                                  _selectedPermissions.remove(perm);
+                                }
                               }),
                               visualDensity: VisualDensity.compact,
-                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
                             );
                           }).toList(),
                         ),

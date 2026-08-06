@@ -35,8 +35,7 @@ class StockMovementDetailPage extends ConsumerWidget {
           onRetry: () =>
               ref.invalidate(stockMovementDetailProvider(movementId)),
         ),
-        data: (StockMovement movement) =>
-            _MovementDetail(movement: movement),
+        data: (StockMovement movement) => _MovementDetail(movement: movement),
       ),
     );
   }
@@ -51,8 +50,7 @@ class _MovementDetail extends StatelessWidget {
   Widget build(BuildContext context) {
     final Palette t = context.tokens;
 
-    final (IconData icon, Color color, String label) =
-        switch (movement.type) {
+    final (IconData icon, Color color, String label) = switch (movement.type) {
       'IN' => (Icons.arrow_downward, t.success, 'Stock In'),
       'OUT' => (Icons.arrow_upward, t.danger, 'Stock Out'),
       'TRANSFER' => (Icons.swap_horiz, t.info, 'Transfer'),

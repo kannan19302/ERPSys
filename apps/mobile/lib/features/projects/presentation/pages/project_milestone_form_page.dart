@@ -14,10 +14,12 @@ class ProjectMilestoneFormPage extends ConsumerStatefulWidget {
   final String? milestoneId;
 
   @override
-  ConsumerState<ProjectMilestoneFormPage> createState() => _ProjectMilestoneFormPageState();
+  ConsumerState<ProjectMilestoneFormPage> createState() =>
+      _ProjectMilestoneFormPageState();
 }
 
-class _ProjectMilestoneFormPageState extends ConsumerState<ProjectMilestoneFormPage> {
+class _ProjectMilestoneFormPageState
+    extends ConsumerState<ProjectMilestoneFormPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
   final _projectIdCtrl = TextEditingController();
@@ -35,7 +37,8 @@ class _ProjectMilestoneFormPageState extends ConsumerState<ProjectMilestoneFormP
   }
 
   Future<void> _load() async {
-    final m = ref.read(milestoneDetailProvider(widget.milestoneId!)).valueOrNull;
+    final m =
+        ref.read(milestoneDetailProvider(widget.milestoneId!)).valueOrNull;
     if (m != null) {
       _nameCtrl.text = m.title;
       _projectIdCtrl.text = m.projectId;
@@ -61,16 +64,22 @@ class _ProjectMilestoneFormPageState extends ConsumerState<ProjectMilestoneFormP
       'projectId': _projectIdCtrl.text.trim(),
       'dueDate': _dueDate?.toIso8601String(),
       'status': _status,
-      'description': _descriptionCtrl.text.trim().isEmpty ? null : _descriptionCtrl.text.trim(),
+      'description': _descriptionCtrl.text.trim().isEmpty
+          ? null
+          : _descriptionCtrl.text.trim(),
     };
 
-    final result = await ref.read(milestoneListControllerProvider.notifier).save(
-      payload, id: widget.milestoneId,);
+    final result =
+        await ref.read(milestoneListControllerProvider.notifier).save(
+              payload,
+              id: widget.milestoneId,
+            );
 
     if (!context.mounted) return;
     setState(() => _saving = false);
     result.fold(
-      (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(),
     );
   }
@@ -84,7 +93,10 @@ class _ProjectMilestoneFormPageState extends ConsumerState<ProjectMilestoneFormP
           TextButton(
             onPressed: _saving ? null : _save,
             child: _saving
-                ? const SizedBox(height: Spacing.x5, width: Spacing.x5, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    height: Spacing.x5,
+                    width: Spacing.x5,
+                    child: CircularProgressIndicator(strokeWidth: 2))
                 : const Text('Save'),
           ),
         ],
@@ -97,19 +109,22 @@ class _ProjectMilestoneFormPageState extends ConsumerState<ProjectMilestoneFormP
             TextFormField(
               controller: _nameCtrl,
               decoration: const InputDecoration(labelText: 'Name *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _projectIdCtrl,
               decoration: const InputDecoration(labelText: 'Project ID *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _descriptionCtrl,
               maxLines: 3,
-              decoration: const InputDecoration(labelText: 'Description', alignLabelWithHint: true),
+              decoration: const InputDecoration(
+                  labelText: 'Description', alignLabelWithHint: true),
             ),
             const SizedBox(height: Spacing.x4),
             InkWell(
@@ -124,7 +139,9 @@ class _ProjectMilestoneFormPageState extends ConsumerState<ProjectMilestoneFormP
               },
               child: InputDecorator(
                 decoration: const InputDecoration(labelText: 'Due Date *'),
-                child: Text(_dueDate != null ? Formatters.date(_dueDate!) : 'Tap to select'),
+                child: Text(_dueDate != null
+                    ? Formatters.date(_dueDate!)
+                    : 'Tap to select'),
               ),
             ),
             const SizedBox(height: Spacing.x4),
@@ -132,9 +149,12 @@ class _ProjectMilestoneFormPageState extends ConsumerState<ProjectMilestoneFormP
               initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: ['PENDING', 'IN_PROGRESS', 'ACHIEVED', 'MISSED']
-                  .map((v) => DropdownMenuItem<String>(value: v, child: Text(v)))
+                  .map(
+                      (v) => DropdownMenuItem<String>(value: v, child: Text(v)))
                   .toList(),
-              onChanged: (v) { if (v != null) setState(() => _status = v); },
+              onChanged: (v) {
+                if (v != null) setState(() => _status = v);
+              },
             ),
           ],
         ),

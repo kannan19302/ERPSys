@@ -32,7 +32,8 @@ final Provider<AdminRepository> adminRepositoryProvider =
 class AdminListState<T extends Equatable> extends Equatable {
   const AdminListState({
     this.items = const <Never>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -51,22 +52,40 @@ class AdminListState<T extends Equatable> extends Equatable {
   final DateTime? cachedAt;
 
   AdminListState<T> copyWith({
-    List<T>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, DateTime? cachedAt,
-    bool clearFailures = false, bool clearCachedAt = false,
+    List<T>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    DateTime? cachedAt,
+    bool clearFailures = false,
+    bool clearCachedAt = false,
   }) =>
       AdminListState<T>(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
         cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure, cachedAt];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure,
+        cachedAt
+      ];
 }
 
 // ── Users ─────────────────────────────────────────────────────────────────
@@ -74,7 +93,8 @@ class AdminListState<T extends Equatable> extends Equatable {
 class AdminUserListState extends Equatable {
   const AdminUserListState({
     this.items = const <AdminUser>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -91,20 +111,36 @@ class AdminUserListState extends Equatable {
   final Failure? loadMoreFailure;
 
   AdminUserListState copyWith({
-    List<AdminUser>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<AdminUser>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       AdminUserListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<AdminUserListController, AdminUserListState>
@@ -134,8 +170,11 @@ class AdminUserListController extends Notifier<AdminUserListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -148,8 +187,11 @@ class AdminUserListController extends Notifier<AdminUserListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -157,22 +199,27 @@ class AdminUserListController extends Notifier<AdminUserListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteAdminUserUseCase(
-      ref.read(adminRepositoryProvider),)(id);
+      ref.read(adminRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 
-  Future<Result<AdminUser>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<AdminUser>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveAdminUserUseCase(
-      ref.read(adminRepositoryProvider),)(
-      SaveAdminUserParams(id: id, payload: payload),);
+      ref.read(adminRepositoryProvider),
+    )(
+      SaveAdminUserParams(id: id, payload: payload),
+    );
     if (result.isOk) await refresh();
     return result;
   }
@@ -183,7 +230,8 @@ class AdminUserListController extends Notifier<AdminUserListState> {
 class AdminRoleListState extends Equatable {
   const AdminRoleListState({
     this.items = const <AdminRole>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: 'name'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -200,20 +248,36 @@ class AdminRoleListState extends Equatable {
   final Failure? loadMoreFailure;
 
   AdminRoleListState copyWith({
-    List<AdminRole>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<AdminRole>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       AdminRoleListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<AdminRoleListController, AdminRoleListState>
@@ -240,23 +304,30 @@ class AdminRoleListController extends Notifier<AdminRoleListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteAdminRoleUseCase(
-      ref.read(adminRepositoryProvider),)(id);
+      ref.read(adminRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 
-  Future<Result<AdminRole>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<AdminRole>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveAdminRoleUseCase(
-      ref.read(adminRepositoryProvider),)(
-      SaveAdminRoleParams(id: id, payload: payload),);
+      ref.read(adminRepositoryProvider),
+    )(
+      SaveAdminRoleParams(id: id, payload: payload),
+    );
     if (result.isOk) await refresh();
     return result;
   }
@@ -265,14 +336,16 @@ class AdminRoleListController extends Notifier<AdminRoleListState> {
 final FutureProviderFamily<AdminRole, String> adminRoleDetailProvider =
     FutureProvider.family<AdminRole, String>((Ref ref, String id) async {
   final result = await GetAdminRoleUseCase(
-    ref.watch(adminRepositoryProvider),)(id);
+    ref.watch(adminRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
 FutureProvider<AdminRole?> getAdminRoleProvider(String id) =>
     FutureProvider<AdminRole?>((ref) async {
       final result = await GetAdminRoleUseCase(
-        ref.watch(adminRepositoryProvider),)(id);
+        ref.watch(adminRepositoryProvider),
+      )(id);
       return result.fold((f) => null, (v) => v);
     });
 
@@ -281,7 +354,8 @@ FutureProvider<AdminRole?> getAdminRoleProvider(String id) =>
 class AdminSettingListState extends Equatable {
   const AdminSettingListState({
     this.items = const <AdminSetting>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: 'key'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -298,20 +372,36 @@ class AdminSettingListState extends Equatable {
   final Failure? loadMoreFailure;
 
   AdminSettingListState copyWith({
-    List<AdminSetting>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<AdminSetting>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       AdminSettingListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<AdminSettingListController, AdminSettingListState>
@@ -341,8 +431,11 @@ class AdminSettingListController extends Notifier<AdminSettingListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -355,8 +448,11 @@ class AdminSettingListController extends Notifier<AdminSettingListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -364,15 +460,21 @@ class AdminSettingListController extends Notifier<AdminSettingListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
 
   Future<Result<AdminSetting>> updateValue(String key, Object value) async {
     final result = await UpdateAdminSettingUseCase(
-      ref.read(adminRepositoryProvider),)(
-      <String, dynamic>{'key': key, 'value': {'value': value}},);
+      ref.read(adminRepositoryProvider),
+    )(
+      <String, dynamic>{
+        'key': key,
+        'value': {'value': value}
+      },
+    );
     if (result.isOk) await refresh();
     return result;
   }
@@ -383,7 +485,8 @@ class AdminSettingListController extends Notifier<AdminSettingListState> {
 class AuditLogListState extends Equatable {
   const AuditLogListState({
     this.items = const <AdminAuditLog>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -400,20 +503,36 @@ class AuditLogListState extends Equatable {
   final Failure? loadMoreFailure;
 
   AuditLogListState copyWith({
-    List<AdminAuditLog>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<AdminAuditLog>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       AuditLogListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<AuditLogListController, AuditLogListState>
@@ -440,8 +559,11 @@ class AuditLogListController extends Notifier<AuditLogListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -454,8 +576,11 @@ class AuditLogListController extends Notifier<AuditLogListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -466,7 +591,8 @@ class AuditLogListController extends Notifier<AuditLogListState> {
 final FutureProviderFamily<SystemHealth, void> systemHealthProvider =
     FutureProvider.family<SystemHealth, void>((Ref ref, _) async {
   final result = await GetSystemHealthUseCase(
-    ref.watch(adminRepositoryProvider),)(const NoParams());
+    ref.watch(adminRepositoryProvider),
+  )(const NoParams());
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -475,7 +601,8 @@ final FutureProviderFamily<SystemHealth, void> systemHealthProvider =
 class AdminApiKeyListState extends Equatable {
   const AdminApiKeyListState({
     this.items = const <AdminApiKey>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -492,20 +619,36 @@ class AdminApiKeyListState extends Equatable {
   final Failure? loadMoreFailure;
 
   AdminApiKeyListState copyWith({
-    List<AdminApiKey>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<AdminApiKey>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       AdminApiKeyListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<AdminApiKeyListController, AdminApiKeyListState>
@@ -535,8 +678,11 @@ class AdminApiKeyListController extends Notifier<AdminApiKeyListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -549,8 +695,11 @@ class AdminApiKeyListController extends Notifier<AdminApiKeyListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -558,14 +707,16 @@ class AdminApiKeyListController extends Notifier<AdminApiKeyListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteAdminApiKeyUseCase(
-      ref.read(adminRepositoryProvider),)(id);
+      ref.read(adminRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
@@ -574,7 +725,8 @@ class AdminApiKeyListController extends Notifier<AdminApiKeyListState> {
 final FutureProviderFamily<AdminApiKey, String> adminApiKeyDetailProvider =
     FutureProvider.family<AdminApiKey, String>((Ref ref, String id) async {
   final result = await GetAdminApiKeyUseCase(
-    ref.watch(adminRepositoryProvider),)(id);
+    ref.watch(adminRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -583,7 +735,8 @@ final FutureProviderFamily<AdminApiKey, String> adminApiKeyDetailProvider =
 class AdminTenantListState extends Equatable {
   const AdminTenantListState({
     this.items = const <AdminTenant>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -600,20 +753,36 @@ class AdminTenantListState extends Equatable {
   final Failure? loadMoreFailure;
 
   AdminTenantListState copyWith({
-    List<AdminTenant>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<AdminTenant>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       AdminTenantListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<AdminTenantListController, AdminTenantListState>
@@ -643,8 +812,11 @@ class AdminTenantListController extends Notifier<AdminTenantListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -657,8 +829,11 @@ class AdminTenantListController extends Notifier<AdminTenantListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -666,13 +841,15 @@ class AdminTenantListController extends Notifier<AdminTenantListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
 
   void applyFilters(Map<String, String> filters) {
-    state = state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
+    state =
+        state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
     refresh();
   }
 }
@@ -680,7 +857,8 @@ class AdminTenantListController extends Notifier<AdminTenantListState> {
 final FutureProviderFamily<AdminTenant, String> adminTenantDetailProvider =
     FutureProvider.family<AdminTenant, String>((Ref ref, String id) async {
   final result = await GetAdminTenantUseCase(
-    ref.watch(adminRepositoryProvider),)(id);
+    ref.watch(adminRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -708,9 +886,15 @@ class AdminDashboardState extends Equatable {
   final Failure? failure;
 
   AdminDashboardState copyWith({
-    int? userCount, int? activeSessions, int? apiCalls, int? storageUsedMb,
-    SystemHealth? health, List<AdminAuditLog>? recentAuditLogs,
-    bool? isLoading, Failure? failure, bool clearFailures = false,
+    int? userCount,
+    int? activeSessions,
+    int? apiCalls,
+    int? storageUsedMb,
+    SystemHealth? health,
+    List<AdminAuditLog>? recentAuditLogs,
+    bool? isLoading,
+    Failure? failure,
+    bool clearFailures = false,
   }) =>
       AdminDashboardState(
         userCount: userCount ?? this.userCount,
@@ -725,8 +909,14 @@ class AdminDashboardState extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        userCount, activeSessions, apiCalls, storageUsedMb,
-        health, recentAuditLogs, isLoading, failure,
+        userCount,
+        activeSessions,
+        apiCalls,
+        storageUsedMb,
+        health,
+        recentAuditLogs,
+        isLoading,
+        failure,
       ];
 }
 
@@ -748,7 +938,8 @@ class AdminDashboardController extends Notifier<AdminDashboardState> {
     state = state.copyWith(isLoading: true, clearFailures: true);
     try {
       final healthResult = await GetSystemHealthUseCase(
-        ref.read(adminRepositoryProvider),)(const NoParams());
+        ref.read(adminRepositoryProvider),
+      )(const NoParams());
       SystemHealth? health;
       if (healthResult.isOk) health = healthResult.valueOrNull;
 
@@ -762,7 +953,8 @@ class AdminDashboardController extends Notifier<AdminDashboardState> {
     } on Object catch (e) {
       state = state.copyWith(
         isLoading: false,
-        failure: e is Failure ? e : const ServerFailure('Could not load dashboard.'),
+        failure:
+            e is Failure ? e : const ServerFailure('Could not load dashboard.'),
       );
     }
   }
@@ -782,7 +974,10 @@ class AuthSessionListState extends Equatable {
   final Failure? failure;
 
   AuthSessionListState copyWith({
-    List<dynamic>? items, bool? isLoading, Failure? failure, bool clearFailures = false,
+    List<dynamic>? items,
+    bool? isLoading,
+    Failure? failure,
+    bool clearFailures = false,
   }) =>
       AuthSessionListState(
         items: items ?? this.items,

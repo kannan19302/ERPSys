@@ -29,7 +29,8 @@ final Provider<SavedViewsRepository> savedViewsRepositoryProvider =
 class SavedViewListState extends Equatable {
   const SavedViewListState({
     this.items = const <SavedView>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -46,20 +47,36 @@ class SavedViewListState extends Equatable {
   final Failure? loadMoreFailure;
 
   SavedViewListState copyWith({
-    List<SavedView>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<SavedView>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       SavedViewListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<SavedViewListController, SavedViewListState>
@@ -89,8 +106,11 @@ class SavedViewListController extends Notifier<SavedViewListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -103,8 +123,11 @@ class SavedViewListController extends Notifier<SavedViewListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -112,22 +135,27 @@ class SavedViewListController extends Notifier<SavedViewListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteSavedViewUseCase(
-      ref.read(savedViewsRepositoryProvider),)(id);
+      ref.read(savedViewsRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 
-  Future<Result<SavedView>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<SavedView>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveSavedViewUseCase(
-      ref.read(savedViewsRepositoryProvider),)(
-      SaveSavedViewParams(id: id, payload: payload),);
+      ref.read(savedViewsRepositoryProvider),
+    )(
+      SaveSavedViewParams(id: id, payload: payload),
+    );
     if (result.isOk) await refresh();
     return result;
   }
@@ -136,6 +164,7 @@ class SavedViewListController extends Notifier<SavedViewListState> {
 final FutureProviderFamily<SavedView, String> savedViewDetailProvider =
     FutureProvider.family<SavedView, String>((Ref ref, String id) async {
   final result = await GetSavedViewUseCase(
-    ref.watch(savedViewsRepositoryProvider),)(id);
+    ref.watch(savedViewsRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });

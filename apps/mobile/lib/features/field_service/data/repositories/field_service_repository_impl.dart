@@ -37,7 +37,8 @@ class FieldServiceRepositoryImpl implements FieldServiceRepository {
       final List<Map<String, dynamic>> jsonItems = page.data
           .map((dynamic e) => (e as dynamic).toJson() as Map<String, dynamic>)
           .toList(growable: false);
-      await _cache.write(_tenantId, namespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, namespace, query.cacheKey, <String, Object?>{
         'data': jsonItems,
         'meta': page.meta.toJson(),
       });
@@ -45,9 +46,11 @@ class FieldServiceRepositoryImpl implements FieldServiceRepository {
         Cacheable<Paginated<T>>(value: page),
       );
     } on NetworkException catch (error) {
-      final cached = _cache.read<Map<String, dynamic>>(_tenantId, namespace, query.cacheKey);
+      final cached = _cache.read<Map<String, dynamic>>(
+          _tenantId, namespace, query.cacheKey);
       if (cached == null) {
-        return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
+        return Result<Cacheable<Paginated<T>>>.err(
+            mapExceptionToFailure(error));
       }
       return Result<Cacheable<Paginated<T>>>.ok(
         Cacheable<Paginated<T>>(
@@ -89,9 +92,14 @@ class FieldServiceRepositoryImpl implements FieldServiceRepository {
   }
 
   @override
-  Future<Result<Cacheable<Paginated<ServiceTicket>>>> listServiceTickets(ListQuery q) =>
-      _paginated(_ticketNamespace, q, () => _remote.listServiceTickets(q),
-        ServiceTicketModel.fromJson,);
+  Future<Result<Cacheable<Paginated<ServiceTicket>>>> listServiceTickets(
+          ListQuery q) =>
+      _paginated(
+        _ticketNamespace,
+        q,
+        () => _remote.listServiceTickets(q),
+        ServiceTicketModel.fromJson,
+      );
 
   @override
   Future<Result<ServiceTicket>> getServiceTicket(String id) =>
@@ -102,7 +110,8 @@ class FieldServiceRepositoryImpl implements FieldServiceRepository {
       _write(() => _remote.createServiceTicket(p));
 
   @override
-  Future<Result<ServiceTicket>> updateServiceTicket(String id, Map<String, dynamic> p) =>
+  Future<Result<ServiceTicket>> updateServiceTicket(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateServiceTicket(id, p));
 
   @override
@@ -110,11 +119,13 @@ class FieldServiceRepositoryImpl implements FieldServiceRepository {
       _delete(() => _remote.deleteServiceTicket(id));
 
   @override
-  Future<Result<ServiceTicket>> dispatchServiceTicket(String id, Map<String, dynamic> p) =>
+  Future<Result<ServiceTicket>> dispatchServiceTicket(
+          String id, Map<String, dynamic> p) =>
       _single(() => _remote.dispatchServiceTicket(id, p));
 
   @override
-  Future<Result<ServiceTicket>> completeServiceTicket(String id, Map<String, dynamic> p) =>
+  Future<Result<ServiceTicket>> completeServiceTicket(
+          String id, Map<String, dynamic> p) =>
       _single(() => _remote.completeServiceTicket(id, p));
 
   @override
@@ -122,9 +133,14 @@ class FieldServiceRepositoryImpl implements FieldServiceRepository {
       _single(() => _remote.cancelServiceTicket(id));
 
   @override
-  Future<Result<Cacheable<Paginated<Technician>>>> listTechnicians(ListQuery q) =>
-      _paginated(_technicianNamespace, q, () => _remote.listTechnicians(q),
-        TechnicianModel.fromJson,);
+  Future<Result<Cacheable<Paginated<Technician>>>> listTechnicians(
+          ListQuery q) =>
+      _paginated(
+        _technicianNamespace,
+        q,
+        () => _remote.listTechnicians(q),
+        TechnicianModel.fromJson,
+      );
 
   @override
   Future<Result<Technician>> getTechnician(String id) =>
@@ -135,7 +151,8 @@ class FieldServiceRepositoryImpl implements FieldServiceRepository {
       _write(() => _remote.createTechnician(p));
 
   @override
-  Future<Result<Technician>> updateTechnician(String id, Map<String, dynamic> p) =>
+  Future<Result<Technician>> updateTechnician(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateTechnician(id, p));
 
   @override
@@ -143,20 +160,27 @@ class FieldServiceRepositoryImpl implements FieldServiceRepository {
       _delete(() => _remote.deleteTechnician(id));
 
   @override
-  Future<Result<Cacheable<Paginated<ServiceSchedule>>>> listServiceSchedules(ListQuery q) =>
-      _paginated(_scheduleNamespace, q, () => _remote.listServiceSchedules(q),
-        ServiceScheduleModel.fromJson,);
+  Future<Result<Cacheable<Paginated<ServiceSchedule>>>> listServiceSchedules(
+          ListQuery q) =>
+      _paginated(
+        _scheduleNamespace,
+        q,
+        () => _remote.listServiceSchedules(q),
+        ServiceScheduleModel.fromJson,
+      );
 
   @override
   Future<Result<ServiceSchedule>> getServiceSchedule(String id) =>
       _single(() => _remote.getServiceSchedule(id));
 
   @override
-  Future<Result<ServiceSchedule>> createServiceSchedule(Map<String, dynamic> p) =>
+  Future<Result<ServiceSchedule>> createServiceSchedule(
+          Map<String, dynamic> p) =>
       _write(() => _remote.createServiceSchedule(p));
 
   @override
-  Future<Result<ServiceSchedule>> updateServiceSchedule(String id, Map<String, dynamic> p) =>
+  Future<Result<ServiceSchedule>> updateServiceSchedule(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateServiceSchedule(id, p));
 
   @override
@@ -172,20 +196,27 @@ class FieldServiceRepositoryImpl implements FieldServiceRepository {
       _single(() => _remote.completeServiceSchedule(id));
 
   @override
-  Future<Result<Cacheable<Paginated<ServiceContract>>>> listServiceContracts(ListQuery q) =>
-      _paginated(_contractNamespace, q, () => _remote.listServiceContracts(q),
-        ServiceContractModel.fromJson,);
+  Future<Result<Cacheable<Paginated<ServiceContract>>>> listServiceContracts(
+          ListQuery q) =>
+      _paginated(
+        _contractNamespace,
+        q,
+        () => _remote.listServiceContracts(q),
+        ServiceContractModel.fromJson,
+      );
 
   @override
   Future<Result<ServiceContract>> getServiceContract(String id) =>
       _single(() => _remote.getServiceContract(id));
 
   @override
-  Future<Result<ServiceContract>> createServiceContract(Map<String, dynamic> p) =>
+  Future<Result<ServiceContract>> createServiceContract(
+          Map<String, dynamic> p) =>
       _write(() => _remote.createServiceContract(p));
 
   @override
-  Future<Result<ServiceContract>> updateServiceContract(String id, Map<String, dynamic> p) =>
+  Future<Result<ServiceContract>> updateServiceContract(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateServiceContract(id, p));
 
   @override

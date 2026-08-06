@@ -12,7 +12,8 @@ class ApiException implements Exception {
   String get message => envelope.message;
 
   @override
-  String toString() => 'ApiException(${envelope.statusCode}: ${envelope.message})';
+  String toString() =>
+      'ApiException(${envelope.statusCode}: ${envelope.message})';
 }
 
 /// Connectivity/timeout/socket-level problem — no HTTP response was received.

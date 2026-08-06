@@ -45,7 +45,8 @@ class SalesReturnDetailPage extends ConsumerWidget {
           failure: error is Failure
               ? error
               : const ServerFailure('Could not load sales return.'),
-          onRetry: () => ref.invalidate(salesReturnDetailProvider(salesReturnId)),
+          onRetry: () =>
+              ref.invalidate(salesReturnDetailProvider(salesReturnId)),
         ),
         data: (SalesReturn ret) => _SalesReturnDetail(ret: ret, ref: ref),
       ),

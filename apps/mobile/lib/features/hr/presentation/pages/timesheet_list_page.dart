@@ -23,8 +23,7 @@ class TimesheetListPage extends ConsumerStatefulWidget {
 class _TimesheetListPageState extends ConsumerState<TimesheetListPage> {
   @override
   Widget build(BuildContext context) {
-    final TimesheetListState state =
-        ref.watch(timesheetListControllerProvider);
+    final TimesheetListState state = ref.watch(timesheetListControllerProvider);
     final TimesheetListController controller =
         ref.read(timesheetListControllerProvider.notifier);
     final Palette t = context.tokens;
@@ -47,14 +46,16 @@ class _TimesheetListPageState extends ConsumerState<TimesheetListPage> {
               TimesheetStatus.submitted,
               TimesheetStatus.approved,
               TimesheetStatus.rejected,
-            ].map(
-              (String v) => PopupMenuItem<String>(
-                value: v,
-                child: Text(
-                  v.isEmpty ? 'All' : _statusLabel(v),
-                ),
-              ),
-            ).toList(),
+            ]
+                .map(
+                  (String v) => PopupMenuItem<String>(
+                    value: v,
+                    child: Text(
+                      v.isEmpty ? 'All' : _statusLabel(v),
+                    ),
+                  ),
+                )
+                .toList(),
           ),
         ],
       ),
@@ -65,10 +66,14 @@ class _TimesheetListPageState extends ConsumerState<TimesheetListPage> {
       ),
       body: Column(
         children: <Widget>[
-          if (state.cachedAt != null) StaleDataBanner(cachedAt: state.cachedAt!),
+          if (state.cachedAt != null)
+            StaleDataBanner(cachedAt: state.cachedAt!),
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2,
+              Spacing.x4,
+              Spacing.x3,
+              Spacing.x4,
+              Spacing.x2,
             ),
             child: Text(
               state.isLoading
@@ -144,8 +149,11 @@ class _TimesheetTile extends StatelessWidget {
           CircleAvatar(
             radius: Spacing.x4,
             backgroundColor: t.bgSunken,
-            child: Icon(Icons.access_time_outlined,
-                color: t.textSecondary, size: TypeScale.lg,),
+            child: Icon(
+              Icons.access_time_outlined,
+              color: t.textSecondary,
+              size: TypeScale.lg,
+            ),
           ),
           const SizedBox(width: Spacing.x3),
           Expanded(
@@ -159,12 +167,14 @@ class _TimesheetTile extends StatelessWidget {
                 const SizedBox(height: Spacing.x0_5),
                 Text(
                   'Week of ${Formatters.date(timesheet.weekStart)}',
-                  style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),
+                  style:
+                      TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),
                 ),
                 const SizedBox(height: Spacing.x0_5),
                 Text(
                   '${timesheet.totalHours.toStringAsFixed(1)} h',
-                  style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
                 ),
               ],
             ),

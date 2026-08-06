@@ -12,10 +12,12 @@ class BlockchainContractListPage extends ConsumerStatefulWidget {
   static const String routeName = 'blockchain-contracts';
   static const String routePath = '/blockchain/contracts';
   @override
-  ConsumerState<BlockchainContractListPage> createState() => _BlockchainContractListPageState();
+  ConsumerState<BlockchainContractListPage> createState() =>
+      _BlockchainContractListPageState();
 }
 
-class _BlockchainContractListPageState extends ConsumerState<BlockchainContractListPage> {
+class _BlockchainContractListPageState
+    extends ConsumerState<BlockchainContractListPage> {
   final TextEditingController _search = TextEditingController();
 
   @override
@@ -27,7 +29,8 @@ class _BlockchainContractListPageState extends ConsumerState<BlockchainContractL
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(blockchainContractListControllerProvider);
-    final controller = ref.read(blockchainContractListControllerProvider.notifier);
+    final controller =
+        ref.read(blockchainContractListControllerProvider.notifier);
     final t = context.tokens;
 
     return Scaffold(
@@ -37,7 +40,8 @@ class _BlockchainContractListPageState extends ConsumerState<BlockchainContractL
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -49,21 +53,27 @@ class _BlockchainContractListPageState extends ConsumerState<BlockchainContractL
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} contract${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} contract${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -71,7 +81,8 @@ class _BlockchainContractListPageState extends ConsumerState<BlockchainContractL
     );
   }
 
-  Widget _body(BlockchainContractListState state, BlockchainContractListController controller) {
+  Widget _body(BlockchainContractListState state,
+      BlockchainContractListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -118,32 +129,45 @@ class _ContractTile extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(children: [
-              Expanded(
-                child: Text(contract.name,
-                    style: Theme.of(context).textTheme.titleSmall,),
-              ),
-              UiStatusBadge(
-                label: contract.status,
-                tone: _statusTone(contract.status),
-              ),
-            ],),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    contract.name,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+                UiStatusBadge(
+                  label: contract.status,
+                  tone: _statusTone(contract.status),
+                ),
+              ],
+            ),
             const SizedBox(height: Spacing.x1),
-            Text(contract.address.length > 20
-                ? '${contract.address.substring(0, 20)}...'
-                : contract.address,
-                style: TextStyle(color: t.textSecondary),),
+            Text(
+              contract.address.length > 20
+                  ? '${contract.address.substring(0, 20)}...'
+                  : contract.address,
+              style: TextStyle(color: t.textSecondary),
+            ),
             const SizedBox(height: Spacing.x1),
-            Row(children: [
-              Text(contract.network,
-                  style: Theme.of(context).textTheme.labelLarge,),
-              const Spacer(),
-              if (contract.owner != null)
-                Text(contract.owner!.length > 12
-                    ? 'Owner: ${contract.owner!.substring(0, 12)}...'
-                    : 'Owner: ${contract.owner}',
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
-            ],),
+            Row(
+              children: [
+                Text(
+                  contract.network,
+                  style: Theme.of(context).textTheme.labelLarge,
+                ),
+                const Spacer(),
+                if (contract.owner != null)
+                  Text(
+                    contract.owner!.length > 12
+                        ? 'Owner: ${contract.owner!.substring(0, 12)}...'
+                        : 'Owner: ${contract.owner}',
+                    style: TextStyle(
+                        color: t.textSecondary, fontSize: TypeScale.xs),
+                  ),
+              ],
+            ),
           ],
         ),
       ),

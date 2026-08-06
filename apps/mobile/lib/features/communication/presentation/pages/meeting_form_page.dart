@@ -32,7 +32,8 @@ class _MeetingFormPageState extends ConsumerState<MeetingFormPage> {
 
     final Map<String, dynamic> payload = <String, dynamic>{
       'title': _titleCtrl.text.trim(),
-      'hostName': _hostNameCtrl.text.trim().isEmpty ? null : _hostNameCtrl.text.trim(),
+      'hostName':
+          _hostNameCtrl.text.trim().isEmpty ? null : _hostNameCtrl.text.trim(),
       'startTime': _startTime.toIso8601String(),
       'endTime': _endTime?.toIso8601String(),
     };
@@ -73,7 +74,8 @@ class _MeetingFormPageState extends ConsumerState<MeetingFormPage> {
         initialTime: TimeOfDay.fromDateTime(_startTime),
       );
       if (time != null) {
-        setState(() => _startTime = DateTime(picked.year, picked.month, picked.day, time.hour, time.minute));
+        setState(() => _startTime = DateTime(
+            picked.year, picked.month, picked.day, time.hour, time.minute));
       }
     }
   }
@@ -88,10 +90,12 @@ class _MeetingFormPageState extends ConsumerState<MeetingFormPage> {
     if (picked != null && mounted) {
       final TimeOfDay? time = await showTimePicker(
         context: context,
-        initialTime: TimeOfDay.fromDateTime(_endTime ?? _startTime.add(const Duration(hours: 1))),
+        initialTime: TimeOfDay.fromDateTime(
+            _endTime ?? _startTime.add(const Duration(hours: 1))),
       );
       if (time != null) {
-        setState(() => _endTime = DateTime(picked.year, picked.month, picked.day, time.hour, time.minute));
+        setState(() => _endTime = DateTime(
+            picked.year, picked.month, picked.day, time.hour, time.minute));
       }
     }
   }
@@ -155,7 +159,8 @@ class _MeetingFormPageState extends ConsumerState<MeetingFormPage> {
                   _endTime != null
                       ? '${_endTime!.toLocal()}'.substring(0, 16)
                       : 'Not set',
-                  style: TextStyle(color: _endTime != null ? t.text : t.textTertiary),
+                  style: TextStyle(
+                      color: _endTime != null ? t.text : t.textTertiary),
                 ),
               ),
             ),

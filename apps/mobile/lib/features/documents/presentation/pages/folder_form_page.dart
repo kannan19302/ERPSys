@@ -40,9 +40,8 @@ class _FolderFormPageState extends ConsumerState<FolderFormPage> {
   }
 
   Future<void> _loadFolder() async {
-    final DocumentFolder? folder = ref
-        .read(folderDetailProvider(widget.folderId!))
-        .valueOrNull;
+    final DocumentFolder? folder =
+        ref.read(folderDetailProvider(widget.folderId!)).valueOrNull;
     if (folder != null) {
       _nameCtrl.text = folder.name;
       _descriptionCtrl.text = folder.description ?? '';
@@ -64,8 +63,11 @@ class _FolderFormPageState extends ConsumerState<FolderFormPage> {
 
     final Map<String, dynamic> payload = <String, dynamic>{
       'name': _nameCtrl.text.trim(),
-      'description': _descriptionCtrl.text.trim().isEmpty ? null : _descriptionCtrl.text.trim(),
-      'parentId': _parentIdCtrl.text.trim().isEmpty ? null : _parentIdCtrl.text.trim(),
+      'description': _descriptionCtrl.text.trim().isEmpty
+          ? null
+          : _descriptionCtrl.text.trim(),
+      'parentId':
+          _parentIdCtrl.text.trim().isEmpty ? null : _parentIdCtrl.text.trim(),
     };
 
     final Result<DocumentFolder> result = await ref

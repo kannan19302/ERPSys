@@ -199,7 +199,8 @@ class ServiceLevelAgreementModel extends ServiceLevelAgreement {
 
   factory ServiceLevelAgreementModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('ServiceLevelAgreement missing id');
+    if (id is! String)
+      throw const ParseException('ServiceLevelAgreement missing id');
     return ServiceLevelAgreementModel(
       id: id,
       name: json['name'] as String? ?? '',

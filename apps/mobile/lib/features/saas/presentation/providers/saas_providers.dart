@@ -29,7 +29,8 @@ final Provider<SaasRepository> saasRepositoryProvider =
 class SaasPlanListState extends Equatable {
   const SaasPlanListState({
     this.items = const <SaasPlan>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -46,20 +47,36 @@ class SaasPlanListState extends Equatable {
   final Failure? loadMoreFailure;
 
   SaasPlanListState copyWith({
-    List<SaasPlan>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<SaasPlan>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       SaasPlanListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<SaasPlanListController, SaasPlanListState>
@@ -89,8 +106,11 @@ class SaasPlanListController extends Notifier<SaasPlanListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -103,8 +123,11 @@ class SaasPlanListController extends Notifier<SaasPlanListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -112,14 +135,16 @@ class SaasPlanListController extends Notifier<SaasPlanListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteSaasPlanUseCase(
-      ref.read(saasRepositoryProvider),)(id);
+      ref.read(saasRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
@@ -128,14 +153,16 @@ class SaasPlanListController extends Notifier<SaasPlanListState> {
 final FutureProviderFamily<SaasPlan, String> saasPlanDetailProvider =
     FutureProvider.family<SaasPlan, String>((Ref ref, String id) async {
   final result = await GetSaasPlanUseCase(
-    ref.watch(saasRepositoryProvider),)(id);
+    ref.watch(saasRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
 class SaasSubscriptionListState extends Equatable {
   const SaasSubscriptionListState({
     this.items = const <SaasSubscription>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -152,29 +179,46 @@ class SaasSubscriptionListState extends Equatable {
   final Failure? loadMoreFailure;
 
   SaasSubscriptionListState copyWith({
-    List<SaasSubscription>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<SaasSubscription>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       SaasSubscriptionListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
-final NotifierProvider<SaasSubscriptionListController, SaasSubscriptionListState>
-    saasSubscriptionListControllerProvider =
+final NotifierProvider<SaasSubscriptionListController,
+        SaasSubscriptionListState> saasSubscriptionListControllerProvider =
     NotifierProvider<SaasSubscriptionListController, SaasSubscriptionListState>(
   SaasSubscriptionListController.new,
 );
 
-class SaasSubscriptionListController extends Notifier<SaasSubscriptionListState> {
+class SaasSubscriptionListController
+    extends Notifier<SaasSubscriptionListState> {
   Timer? _searchDebounce;
 
   @override
@@ -195,8 +239,11 @@ class SaasSubscriptionListController extends Notifier<SaasSubscriptionListState>
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -209,8 +256,11 @@ class SaasSubscriptionListController extends Notifier<SaasSubscriptionListState>
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -218,7 +268,8 @@ class SaasSubscriptionListController extends Notifier<SaasSubscriptionListState>
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
@@ -227,7 +278,8 @@ class SaasSubscriptionListController extends Notifier<SaasSubscriptionListState>
 class SaasInvoiceListState extends Equatable {
   const SaasInvoiceListState({
     this.items = const <SaasInvoice>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -244,20 +296,36 @@ class SaasInvoiceListState extends Equatable {
   final Failure? loadMoreFailure;
 
   SaasInvoiceListState copyWith({
-    List<SaasInvoice>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<SaasInvoice>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       SaasInvoiceListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<SaasInvoiceListController, SaasInvoiceListState>
@@ -284,8 +352,11 @@ class SaasInvoiceListController extends Notifier<SaasInvoiceListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -298,8 +369,11 @@ class SaasInvoiceListController extends Notifier<SaasInvoiceListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -308,7 +382,8 @@ class SaasInvoiceListController extends Notifier<SaasInvoiceListState> {
 class SaasTenantListState extends Equatable {
   const SaasTenantListState({
     this.items = const <SaasTenant>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -325,20 +400,36 @@ class SaasTenantListState extends Equatable {
   final Failure? loadMoreFailure;
 
   SaasTenantListState copyWith({
-    List<SaasTenant>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<SaasTenant>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       SaasTenantListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<SaasTenantListController, SaasTenantListState>
@@ -368,8 +459,11 @@ class SaasTenantListController extends Notifier<SaasTenantListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -382,8 +476,11 @@ class SaasTenantListController extends Notifier<SaasTenantListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -391,17 +488,41 @@ class SaasTenantListController extends Notifier<SaasTenantListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
 }
 
-final FutureProviderFamily<SaasSubscription, String> saasSubscriptionDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
-final FutureProviderFamily<SaasTenant, String> saasTenantDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
-final FutureProviderFamily<SaasInvoice, String> saasInvoiceDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<SaasSubscription, String>
+    saasSubscriptionDetailProvider =
+    FutureProvider.family((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<SaasTenant, String> saasTenantDetailProvider =
+    FutureProvider.family((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<SaasInvoice, String> saasInvoiceDetailProvider =
+    FutureProvider.family((ref, id) async => throw UnimplementedError());
 
-extension SaveSaasPlan on SaasPlanListController { Future<Result<SaasPlan>> save(Map<String, dynamic> payload, {String? id}) async => throw UnimplementedError(); }
-extension SaveSaasSubscription on SaasSubscriptionListController { Future<Result<SaasSubscription>> save(Map<String, dynamic> payload, {String? id}) async => throw UnimplementedError(); }
-extension SaveSaasTenant on SaasTenantListController { Future<Result<SaasTenant>> save(Map<String, dynamic> payload, {String? id}) async => throw UnimplementedError(); }
-extension SaveSaasInvoice on SaasInvoiceListController { Future<Result<SaasInvoice>> save(Map<String, dynamic> payload, {String? id}) async => throw UnimplementedError(); }
+extension SaveSaasPlan on SaasPlanListController {
+  Future<Result<SaasPlan>> save(Map<String, dynamic> payload,
+          {String? id}) async =>
+      throw UnimplementedError();
+}
+
+extension SaveSaasSubscription on SaasSubscriptionListController {
+  Future<Result<SaasSubscription>> save(Map<String, dynamic> payload,
+          {String? id}) async =>
+      throw UnimplementedError();
+}
+
+extension SaveSaasTenant on SaasTenantListController {
+  Future<Result<SaasTenant>> save(Map<String, dynamic> payload,
+          {String? id}) async =>
+      throw UnimplementedError();
+}
+
+extension SaveSaasInvoice on SaasInvoiceListController {
+  Future<Result<SaasInvoice>> save(Map<String, dynamic> payload,
+          {String? id}) async =>
+      throw UnimplementedError();
+}

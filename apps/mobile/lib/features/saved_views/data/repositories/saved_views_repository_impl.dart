@@ -35,7 +35,8 @@ class SavedViewsRepositoryImpl implements SavedViewsRepository {
       final List<Map<String, dynamic>> jsonItems = page.data
           .map((dynamic e) => (e as dynamic).toJson() as Map<String, dynamic>)
           .toList(growable: false);
-      await _cache.write(_tenantId, namespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, namespace, query.cacheKey, <String, Object?>{
         'data': jsonItems,
         'meta': page.meta.toJson(),
       });
@@ -43,9 +44,11 @@ class SavedViewsRepositoryImpl implements SavedViewsRepository {
         Cacheable<Paginated<T>>(value: page),
       );
     } on NetworkException catch (error) {
-      final cached = _cache.read<Map<String, dynamic>>(_tenantId, namespace, query.cacheKey);
+      final cached = _cache.read<Map<String, dynamic>>(
+          _tenantId, namespace, query.cacheKey);
       if (cached == null) {
-        return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
+        return Result<Cacheable<Paginated<T>>>.err(
+            mapExceptionToFailure(error));
       }
       return Result<Cacheable<Paginated<T>>>.ok(
         Cacheable<Paginated<T>>(
@@ -87,8 +90,10 @@ class SavedViewsRepositoryImpl implements SavedViewsRepository {
   }
 
   @override
-  Future<Result<Cacheable<Paginated<SavedView>>>> listSavedViews(ListQuery query) =>
-      _paginated(_viewNamespace, query, () => _remote.listSavedViews(query), SavedViewModel.fromJson);
+  Future<Result<Cacheable<Paginated<SavedView>>>> listSavedViews(
+          ListQuery query) =>
+      _paginated(_viewNamespace, query, () => _remote.listSavedViews(query),
+          SavedViewModel.fromJson);
 
   @override
   Future<Result<SavedView>> getSavedView(String id) =>
@@ -99,7 +104,8 @@ class SavedViewsRepositoryImpl implements SavedViewsRepository {
       _write(() => _remote.createSavedView(payload));
 
   @override
-  Future<Result<SavedView>> updateSavedView(String id, Map<String, dynamic> payload) =>
+  Future<Result<SavedView>> updateSavedView(
+          String id, Map<String, dynamic> payload) =>
       _write(() => _remote.updateSavedView(id, payload));
 
   @override
@@ -107,8 +113,10 @@ class SavedViewsRepositoryImpl implements SavedViewsRepository {
       _delete(() => _remote.deleteSavedView(id));
 
   @override
-  Future<Result<Cacheable<Paginated<SavedViewShare>>>> listShares(ListQuery query) =>
-      _paginated(_shareNamespace, query, () => _remote.listShares(query), SavedViewShareModel.fromJson);
+  Future<Result<Cacheable<Paginated<SavedViewShare>>>> listShares(
+          ListQuery query) =>
+      _paginated(_shareNamespace, query, () => _remote.listShares(query),
+          SavedViewShareModel.fromJson);
 
   @override
   Future<Result<SavedViewShare>> createShare(Map<String, dynamic> payload) =>

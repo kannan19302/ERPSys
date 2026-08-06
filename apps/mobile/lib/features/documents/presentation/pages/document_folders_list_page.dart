@@ -12,10 +12,12 @@ class DocumentFoldersListPage extends ConsumerStatefulWidget {
   static const String routeName = 'document-folders';
   static const String routePath = '/documents/folders';
   @override
-  ConsumerState<DocumentFoldersListPage> createState() => _DocumentFoldersListPageState();
+  ConsumerState<DocumentFoldersListPage> createState() =>
+      _DocumentFoldersListPageState();
 }
 
-class _DocumentFoldersListPageState extends ConsumerState<DocumentFoldersListPage> {
+class _DocumentFoldersListPageState
+    extends ConsumerState<DocumentFoldersListPage> {
   final TextEditingController _search = TextEditingController();
 
   @override
@@ -36,9 +38,11 @@ class _DocumentFoldersListPageState extends ConsumerState<DocumentFoldersListPag
       ),
       body: Column(
         children: [
-          if (state.cachedAt != null) StaleDataBanner(cachedAt: state.cachedAt!),
+          if (state.cachedAt != null)
+            StaleDataBanner(cachedAt: state.cachedAt!),
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -50,21 +54,27 @@ class _DocumentFoldersListPageState extends ConsumerState<DocumentFoldersListPag
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} folder${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} folder${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -90,7 +100,8 @@ class _DocumentFoldersListPageState extends ConsumerState<DocumentFoldersListPag
       emptyMessage: state.query.search?.isNotEmpty ?? false
           ? 'Nothing matches "${state.query.search}".'
           : 'Document folders created in UniERP will appear here.',
-      itemBuilder: (_, DocumentFolder folder, __) => _FolderTile(folder: folder),
+      itemBuilder: (_, DocumentFolder folder, __) =>
+          _FolderTile(folder: folder),
     );
   }
 }
@@ -113,25 +124,32 @@ class _FolderTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(folder.name,
-                    style: Theme.of(context).textTheme.titleSmall,),
-                if (folder.description != null && folder.description!.isNotEmpty)
+                Text(
+                  folder.name,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                if (folder.description != null &&
+                    folder.description!.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: Spacing.x1),
-                    child: Text(folder.description!,
-                        style: TextStyle(
-                          color: t.textSecondary,
-                          fontSize: TypeScale.sm,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,),
+                    child: Text(
+                      folder.description!,
+                      style: TextStyle(
+                        color: t.textSecondary,
+                        fontSize: TypeScale.sm,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 const SizedBox(height: Spacing.x1),
-                Text('${folder.documentCount} document${folder.documentCount == 1 ? '' : 's'}',
-                    style: TextStyle(
-                      color: t.textTertiary,
-                      fontSize: TypeScale.xs,
-                    ),),
+                Text(
+                  '${folder.documentCount} document${folder.documentCount == 1 ? '' : 's'}',
+                  style: TextStyle(
+                    color: t.textTertiary,
+                    fontSize: TypeScale.xs,
+                  ),
+                ),
               ],
             ),
           ),

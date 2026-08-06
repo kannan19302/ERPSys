@@ -25,8 +25,15 @@ class CompensationBand extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, minSalary, maxSalary, currency,
-        grade, status, notes, createdAt,
+        id,
+        name,
+        minSalary,
+        maxSalary,
+        currency,
+        grade,
+        status,
+        notes,
+        createdAt,
       ];
 }
 
@@ -57,8 +64,16 @@ class BenefitPlan extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, planType, status, provider, monthlyCost,
-        employeeCostShare, description, enrollmentDeadline, createdAt,
+        id,
+        name,
+        planType,
+        status,
+        provider,
+        monthlyCost,
+        employeeCostShare,
+        description,
+        enrollmentDeadline,
+        createdAt,
       ];
 }
 
@@ -87,8 +102,15 @@ class SuccessionPlan extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, title, position, status, primarySuccessor,
-        secondarySuccessor, readinessLevel, notes, createdAt,
+        id,
+        title,
+        position,
+        status,
+        primarySuccessor,
+        secondarySuccessor,
+        readinessLevel,
+        notes,
+        createdAt,
       ];
 }
 
@@ -117,8 +139,15 @@ class WorkforceAnalytic extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, metricName, metricValue, period, department,
-        previousValue, changePercent, dimension, createdAt,
+        id,
+        metricName,
+        metricValue,
+        period,
+        department,
+        previousValue,
+        changePercent,
+        dimension,
+        createdAt,
       ];
 }
 
@@ -147,7 +176,14 @@ class LearningPath extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, title, category, status, estimatedHours,
-        enrolledCount, completionRate, description, createdAt,
+        id,
+        title,
+        category,
+        status,
+        estimatedHours,
+        enrolledCount,
+        completionRate,
+        description,
+        createdAt,
       ];
 }

@@ -35,7 +35,9 @@ class _ComplianceFormPageState extends ConsumerState<ComplianceFormPage> {
   }
 
   Future<void> _load() async {
-    final c = ref.read(reportComplianceDetailProvider(widget.complianceId!)).valueOrNull;
+    final c = ref
+        .read(reportComplianceDetailProvider(widget.complianceId!))
+        .valueOrNull;
     if (c != null) {
       _nameCtrl.text = c.name;
       _regulationCtrl.text = c.regulation ?? '';
@@ -59,16 +61,21 @@ class _ComplianceFormPageState extends ConsumerState<ComplianceFormPage> {
     setState(() => _saving = true);
     final payload = <String, dynamic>{
       'name': _nameCtrl.text.trim(),
-      'regulation': _regulationCtrl.text.trim().isEmpty ? null : _regulationCtrl.text.trim(),
+      'regulation': _regulationCtrl.text.trim().isEmpty
+          ? null
+          : _regulationCtrl.text.trim(),
       'status': _status,
       'findings': int.tryParse(_findingsCtrl.text) ?? 0,
       'nextRunAt': _dueDate?.toIso8601String(),
     };
-    final result = await ref.read(reportComplianceListControllerProvider.notifier).save(payload, id: widget.complianceId);
+    final result = await ref
+        .read(reportComplianceListControllerProvider.notifier)
+        .save(payload, id: widget.complianceId);
     if (!context.mounted) return;
     setState(() => _saving = false);
     result.fold(
-      (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(),
     );
   }
@@ -82,7 +89,10 @@ class _ComplianceFormPageState extends ConsumerState<ComplianceFormPage> {
           TextButton(
             onPressed: _saving ? null : _save,
             child: _saving
-                ? const SizedBox(height: Spacing.x5, width: Spacing.x5, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    height: Spacing.x5,
+                    width: Spacing.x5,
+                    child: CircularProgressIndicator(strokeWidth: 2))
                 : const Text('Save'),
           ),
         ],
@@ -95,7 +105,8 @@ class _ComplianceFormPageState extends ConsumerState<ComplianceFormPage> {
             TextFormField(
               controller: _nameCtrl,
               decoration: const InputDecoration(labelText: 'Name *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
@@ -110,7 +121,9 @@ class _ComplianceFormPageState extends ConsumerState<ComplianceFormPage> {
                 DropdownMenuItem(value: 'ACTIVE', child: Text('Active')),
                 DropdownMenuItem(value: 'INACTIVE', child: Text('Inactive')),
               ],
-              onChanged: (v) { if (v != null) setState(() => _status = v); },
+              onChanged: (v) {
+                if (v != null) setState(() => _status = v);
+              },
             ),
             const SizedBox(height: Spacing.x4),
             InkWell(
@@ -128,7 +141,9 @@ class _ComplianceFormPageState extends ConsumerState<ComplianceFormPage> {
                   labelText: 'Due Date',
                   suffixIcon: Icon(Icons.calendar_today),
                 ),
-                child: Text(_dueDate != null ? Formatters.date(_dueDate!) : 'Select date'),
+                child: Text(_dueDate != null
+                    ? Formatters.date(_dueDate!)
+                    : 'Select date'),
               ),
             ),
             const SizedBox(height: Spacing.x4),
@@ -141,7 +156,8 @@ class _ComplianceFormPageState extends ConsumerState<ComplianceFormPage> {
             TextFormField(
               controller: _notesCtrl,
               maxLines: 4,
-              decoration: const InputDecoration(labelText: 'Notes', alignLabelWithHint: true),
+              decoration: const InputDecoration(
+                  labelText: 'Notes', alignLabelWithHint: true),
             ),
           ],
         ),

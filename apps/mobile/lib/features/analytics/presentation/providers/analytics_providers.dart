@@ -29,7 +29,8 @@ final Provider<AnalyticsRepository> analyticsRepositoryProvider =
 class KpiListState extends Equatable {
   const KpiListState({
     this.items = const <AnalyticsKpi>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -48,23 +49,39 @@ class KpiListState extends Equatable {
   final DateTime? cachedAt;
 
   KpiListState copyWith({
-    List<AnalyticsKpi>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, DateTime? cachedAt,
-    bool clearFailures = false, bool clearCachedAt = false,
+    List<AnalyticsKpi>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    DateTime? cachedAt,
+    bool clearFailures = false,
+    bool clearCachedAt = false,
   }) =>
       KpiListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
         cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
       );
 
   @override
   List<Object?> get props => <Object?>[
-        items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure, cachedAt,
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure,
+        cachedAt,
       ];
 }
 
@@ -95,8 +112,12 @@ class KpiListController extends Notifier<KpiListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true, cachedAt: page.cachedAt,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
+        cachedAt: page.cachedAt,
         clearCachedAt: !page.isFromCache,
       ),
     );
@@ -110,8 +131,11 @@ class KpiListController extends Notifier<KpiListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -119,7 +143,8 @@ class KpiListController extends Notifier<KpiListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
@@ -130,20 +155,24 @@ class KpiListController extends Notifier<KpiListState> {
   }
 
   void applyFilters(Map<String, String> filters) {
-    state = state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
+    state =
+        state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
     refresh();
   }
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteKpiUseCase(
-      ref.read(analyticsRepositoryProvider),)(id);
+      ref.read(analyticsRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 
-  Future<Result<AnalyticsKpi>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<AnalyticsKpi>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveKpiUseCase(
-      ref.read(analyticsRepositoryProvider),)(
+      ref.read(analyticsRepositoryProvider),
+    )(
       SaveKpiParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -154,14 +183,16 @@ class KpiListController extends Notifier<KpiListState> {
 final FutureProviderFamily<AnalyticsKpi, String> analyticsKpiDetailProvider =
     FutureProvider.family<AnalyticsKpi, String>((Ref ref, String id) async {
   final result = await GetKpiUseCase(
-    ref.watch(analyticsRepositoryProvider),)(id);
+    ref.watch(analyticsRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (kpi) => kpi);
 });
 
 class DashboardListState extends Equatable {
   const DashboardListState({
     this.items = const <AnalyticsDashboard>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -178,20 +209,36 @@ class DashboardListState extends Equatable {
   final Failure? loadMoreFailure;
 
   DashboardListState copyWith({
-    List<AnalyticsDashboard>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<AnalyticsDashboard>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       DashboardListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<DashboardListController, DashboardListState>
@@ -221,8 +268,11 @@ class DashboardListController extends Notifier<DashboardListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -235,8 +285,11 @@ class DashboardListController extends Notifier<DashboardListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -244,7 +297,8 @@ class DashboardListController extends Notifier<DashboardListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
@@ -256,14 +310,17 @@ class DashboardListController extends Notifier<DashboardListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteDashboardUseCase(
-      ref.read(analyticsRepositoryProvider),)(id);
+      ref.read(analyticsRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 
-  Future<Result<AnalyticsDashboard>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<AnalyticsDashboard>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveDashboardUseCase(
-      ref.read(analyticsRepositoryProvider),)(
+      ref.read(analyticsRepositoryProvider),
+    )(
       SaveDashboardParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -271,17 +328,21 @@ class DashboardListController extends Notifier<DashboardListState> {
   }
 }
 
-final FutureProviderFamily<AnalyticsDashboard, String> analyticsDashboardDetailProvider =
-    FutureProvider.family<AnalyticsDashboard, String>((Ref ref, String id) async {
+final FutureProviderFamily<AnalyticsDashboard, String>
+    analyticsDashboardDetailProvider =
+    FutureProvider.family<AnalyticsDashboard, String>(
+        (Ref ref, String id) async {
   final result = await GetDashboardUseCase(
-    ref.watch(analyticsRepositoryProvider),)(id);
+    ref.watch(analyticsRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (d) => d);
 });
 
 class ReportListState extends Equatable {
   const ReportListState({
     this.items = const <AnalyticsReport>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -298,20 +359,36 @@ class ReportListState extends Equatable {
   final Failure? loadMoreFailure;
 
   ReportListState copyWith({
-    List<AnalyticsReport>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<AnalyticsReport>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       ReportListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<ReportListController, ReportListState>
@@ -341,8 +418,11 @@ class ReportListController extends Notifier<ReportListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -355,8 +435,11 @@ class ReportListController extends Notifier<ReportListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -369,21 +452,25 @@ class ReportListController extends Notifier<ReportListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteReportUseCase(
-      ref.read(analyticsRepositoryProvider),)(id);
+      ref.read(analyticsRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 
-  Future<Result<AnalyticsReport>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<AnalyticsReport>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveReportUseCase(
-      ref.read(analyticsRepositoryProvider),)(
+      ref.read(analyticsRepositoryProvider),
+    )(
       SaveReportParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -391,17 +478,20 @@ class ReportListController extends Notifier<ReportListState> {
   }
 }
 
-final FutureProviderFamily<AnalyticsReport, String> analyticsReportDetailProvider =
+final FutureProviderFamily<AnalyticsReport, String>
+    analyticsReportDetailProvider =
     FutureProvider.family<AnalyticsReport, String>((Ref ref, String id) async {
   final result = await GetReportUseCase(
-    ref.watch(analyticsRepositoryProvider),)(id);
+    ref.watch(analyticsRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (r) => r);
 });
 
 class PipelineListState extends Equatable {
   const PipelineListState({
     this.items = const <AnalyticsPipeline>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -418,20 +508,36 @@ class PipelineListState extends Equatable {
   final Failure? loadMoreFailure;
 
   PipelineListState copyWith({
-    List<AnalyticsPipeline>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<AnalyticsPipeline>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       PipelineListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<PipelineListController, PipelineListState>
@@ -461,8 +567,11 @@ class PipelineListController extends Notifier<PipelineListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -475,8 +584,11 @@ class PipelineListController extends Notifier<PipelineListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -489,15 +601,19 @@ class PipelineListController extends Notifier<PipelineListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
 }
 
-final FutureProviderFamily<AnalyticsPipeline, String> analyticsPipelineDetailProvider =
-    FutureProvider.family<AnalyticsPipeline, String>((Ref ref, String id) async {
+final FutureProviderFamily<AnalyticsPipeline, String>
+    analyticsPipelineDetailProvider =
+    FutureProvider.family<AnalyticsPipeline, String>(
+        (Ref ref, String id) async {
   final result = await GetPipelineUseCase(
-    ref.watch(analyticsRepositoryProvider),)(id);
+    ref.watch(analyticsRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });

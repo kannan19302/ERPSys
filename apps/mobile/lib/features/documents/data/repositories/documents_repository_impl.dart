@@ -37,7 +37,8 @@ class DocumentsRepositoryImpl implements DocumentsRepository {
       final List<Map<String, dynamic>> jsonItems = page.data
           .map((dynamic e) => (e as dynamic).toJson() as Map<String, dynamic>)
           .toList(growable: false);
-      await _cache.write(_tenantId, namespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, namespace, query.cacheKey, <String, Object?>{
         'data': jsonItems,
         'meta': page.meta.toJson(),
       });
@@ -45,9 +46,11 @@ class DocumentsRepositoryImpl implements DocumentsRepository {
         Cacheable<Paginated<T>>(value: page),
       );
     } on NetworkException catch (error) {
-      final cached = _cache.read<Map<String, dynamic>>(_tenantId, namespace, query.cacheKey);
+      final cached = _cache.read<Map<String, dynamic>>(
+          _tenantId, namespace, query.cacheKey);
       if (cached == null) {
-        return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
+        return Result<Cacheable<Paginated<T>>>.err(
+            mapExceptionToFailure(error));
       }
       return Result<Cacheable<Paginated<T>>>.ok(
         Cacheable<Paginated<T>>(
@@ -89,9 +92,14 @@ class DocumentsRepositoryImpl implements DocumentsRepository {
   }
 
   @override
-  Future<Result<Cacheable<Paginated<DocumentFolder>>>> listFolders(ListQuery q) =>
-      _paginated(_foldersNamespace, q, () => _remote.listFolders(q),
-        DocumentFolderModel.fromJson,);
+  Future<Result<Cacheable<Paginated<DocumentFolder>>>> listFolders(
+          ListQuery q) =>
+      _paginated(
+        _foldersNamespace,
+        q,
+        () => _remote.listFolders(q),
+        DocumentFolderModel.fromJson,
+      );
 
   @override
   Future<Result<DocumentFolder>> getFolder(String id) =>
@@ -102,7 +110,8 @@ class DocumentsRepositoryImpl implements DocumentsRepository {
       _write(() => _remote.createFolder(p));
 
   @override
-  Future<Result<DocumentFolder>> updateFolder(String id, Map<String, dynamic> p) =>
+  Future<Result<DocumentFolder>> updateFolder(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateFolder(id, p));
 
   @override
@@ -111,8 +120,12 @@ class DocumentsRepositoryImpl implements DocumentsRepository {
 
   @override
   Future<Result<Cacheable<Paginated<Document>>>> listDocuments(ListQuery q) =>
-      _paginated(_documentsNamespace, q, () => _remote.listDocuments(q),
-        DocumentModel.fromJson,);
+      _paginated(
+        _documentsNamespace,
+        q,
+        () => _remote.listDocuments(q),
+        DocumentModel.fromJson,
+      );
 
   @override
   Future<Result<Document>> getDocument(String id) =>
@@ -144,15 +157,25 @@ class DocumentsRepositoryImpl implements DocumentsRepository {
 
   @override
   Future<Result<Cacheable<Paginated<DocumentVersion>>>> listDocumentVersions(
-    String documentId, ListQuery q,) =>
-      _paginated(_versionsNamespace, q,
+    String documentId,
+    ListQuery q,
+  ) =>
+      _paginated(
+        _versionsNamespace,
+        q,
         () => _remote.listDocumentVersions(documentId, q),
-        DocumentVersionModel.fromJson,);
+        DocumentVersionModel.fromJson,
+      );
 
   @override
-  Future<Result<Cacheable<Paginated<DocumentTemplate>>>> listTemplates(ListQuery q) =>
-      _paginated(_templatesNamespace, q, () => _remote.listTemplates(q),
-        DocumentTemplateModel.fromJson,);
+  Future<Result<Cacheable<Paginated<DocumentTemplate>>>> listTemplates(
+          ListQuery q) =>
+      _paginated(
+        _templatesNamespace,
+        q,
+        () => _remote.listTemplates(q),
+        DocumentTemplateModel.fromJson,
+      );
 
   @override
   Future<Result<DocumentTemplate>> getTemplate(String id) =>

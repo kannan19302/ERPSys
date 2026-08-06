@@ -189,18 +189,20 @@ class _FormBody extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
-                    children: validationErrors.entries.map(
-                      (MapEntry<String, String> entry) => Padding(
-                        padding: const EdgeInsets.only(bottom: Spacing.x1),
-                        child: Text(
-                          '${entry.key}: ${entry.value}',
-                          style: TextStyle(
-                            fontSize: TypeScale.xs,
-                            color: t.danger,
+                    children: validationErrors.entries
+                        .map(
+                          (MapEntry<String, String> entry) => Padding(
+                            padding: const EdgeInsets.only(bottom: Spacing.x1),
+                            child: Text(
+                              '${entry.key}: ${entry.value}',
+                              style: TextStyle(
+                                fontSize: TypeScale.xs,
+                                color: t.danger,
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    ).toList(),
+                        )
+                        .toList(),
                   ),
                 ),
               ],

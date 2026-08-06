@@ -13,10 +13,12 @@ class ChartOfAccountFormPage extends ConsumerStatefulWidget {
   final String? accountId;
 
   @override
-  ConsumerState<ChartOfAccountFormPage> createState() => _ChartOfAccountFormPageState();
+  ConsumerState<ChartOfAccountFormPage> createState() =>
+      _ChartOfAccountFormPageState();
 }
 
-class _ChartOfAccountFormPageState extends ConsumerState<ChartOfAccountFormPage> {
+class _ChartOfAccountFormPageState
+    extends ConsumerState<ChartOfAccountFormPage> {
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -36,16 +38,20 @@ class _ChartOfAccountFormPageState extends ConsumerState<ChartOfAccountFormPage>
                     const UiSectionHeader(title: 'Account Details'),
                     TextFormField(
                       decoration: const InputDecoration(labelText: 'Code'),
-                      validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                      validator: (v) =>
+                          v == null || v.isEmpty ? 'Required' : null,
                     ),
                     const SizedBox(height: Spacing.x3),
                     TextFormField(
                       decoration: const InputDecoration(labelText: 'Name'),
-                      validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                      validator: (v) =>
+                          v == null || v.isEmpty ? 'Required' : null,
                     ),
                     const SizedBox(height: Spacing.x3),
                     TextFormField(
-                      decoration: const InputDecoration(labelText: 'Type (asset/liability/equity/income/expense)'),
+                      decoration: const InputDecoration(
+                          labelText:
+                              'Type (asset/liability/equity/income/expense)'),
                     ),
                     const SizedBox(height: Spacing.x3),
                     TextFormField(

@@ -23,7 +23,9 @@ class RFQDetailPage extends ConsumerWidget {
       body: async.when(
         loading: () => const LoadingView(),
         error: (error, _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load RFQ.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load RFQ.'),
           onRetry: () => ref.invalidate(rfqDetailProvider(rfqId)),
         ),
         data: (rfq) => _RFQDetail(rfq: rfq),
@@ -42,69 +44,99 @@ class _RFQDetail extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(Spacing.x4),
       children: [
-        UiCard(child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(children: [
-              Expanded(child: Text(rfq.rfqNumber, style: Theme.of(context).textTheme.titleLarge)),
-              UiStatusBadge(label: rfq.status, tone: _statusTone(rfq.status)),
-            ],),
-            if (rfq.vendorName != null) ...[
-              const SizedBox(height: Spacing.x1),
-              Text(rfq.vendorName!, style: TextStyle(color: t.textSecondary)),
-            ],
-          ],
-        ),),
-        const SizedBox(height: Spacing.x4),
-        UiCard(child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const UiSectionHeader(title: 'Items'),
-            ...rfq.items.map((item) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: Spacing.x1),
-              child: Row(children: [
-                Expanded(child: Text(item.productName ?? 'Item')),
-                Text('${item.quantity.toStringAsFixed(0)} ${item.uom ?? 'pcs'}'),
-              ],),
-            ),),
-            if (rfq.items.isEmpty) Text('No items', style: TextStyle(color: t.textTertiary)),
-          ],
-        ),),
-        const SizedBox(height: Spacing.x4),
-        UiCard(child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const UiSectionHeader(title: 'Details'),
-            _Row('Vendors', '${rfq.vendorCount}'),
-            if (rfq.deliveryDate != null) _Row('Delivery Date', Formatters.date(rfq.deliveryDate!)),
-            if (rfq.responseDeadline != null) _Row('Response Deadline', Formatters.dateTime(rfq.responseDeadline!)),
-            if (rfq.notes != null && rfq.notes!.isNotEmpty) _Row('Notes', rfq.notes!),
-            if (rfq.createdAt != null) _Row('Created', Formatters.dateTime(rfq.createdAt!)),
-          ],
-        ),),
-        if (rfq.quotations.isNotEmpty) ...[
-          const SizedBox(height: Spacing.x4),
-          UiCard(child: Column(
+        UiCard(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const UiSectionHeader(title: 'Quotations Received'),
-              ...rfq.quotations.map((q) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: Spacing.x1),
-                child: Row(children: [
-                  Expanded(child: Text(q.vendorName ?? 'Supplier')),
-                  Text(Formatters.currency(q.totalAmount)),
-                ],),
-              ),),
+              Row(
+                children: [
+                  Expanded(
+                      child: Text(rfq.rfqNumber,
+                          style: Theme.of(context).textTheme.titleLarge)),
+                  UiStatusBadge(
+                      label: rfq.status, tone: _statusTone(rfq.status)),
+                ],
+              ),
+              if (rfq.vendorName != null) ...[
+                const SizedBox(height: Spacing.x1),
+                Text(rfq.vendorName!, style: TextStyle(color: t.textSecondary)),
+              ],
             ],
-          ),),
+          ),
+        ),
+        const SizedBox(height: Spacing.x4),
+        UiCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const UiSectionHeader(title: 'Items'),
+              ...rfq.items.map(
+                (item) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: Spacing.x1),
+                  child: Row(
+                    children: [
+                      Expanded(child: Text(item.productName ?? 'Item')),
+                      Text(
+                          '${item.quantity.toStringAsFixed(0)} ${item.uom ?? 'pcs'}'),
+                    ],
+                  ),
+                ),
+              ),
+              if (rfq.items.isEmpty)
+                Text('No items', style: TextStyle(color: t.textTertiary)),
+            ],
+          ),
+        ),
+        const SizedBox(height: Spacing.x4),
+        UiCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const UiSectionHeader(title: 'Details'),
+              _Row('Vendors', '${rfq.vendorCount}'),
+              if (rfq.deliveryDate != null)
+                _Row('Delivery Date', Formatters.date(rfq.deliveryDate!)),
+              if (rfq.responseDeadline != null)
+                _Row('Response Deadline',
+                    Formatters.dateTime(rfq.responseDeadline!)),
+              if (rfq.notes != null && rfq.notes!.isNotEmpty)
+                _Row('Notes', rfq.notes!),
+              if (rfq.createdAt != null)
+                _Row('Created', Formatters.dateTime(rfq.createdAt!)),
+            ],
+          ),
+        ),
+        if (rfq.quotations.isNotEmpty) ...[
+          const SizedBox(height: Spacing.x4),
+          UiCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const UiSectionHeader(title: 'Quotations Received'),
+                ...rfq.quotations.map(
+                  (q) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: Spacing.x1),
+                    child: Row(
+                      children: [
+                        Expanded(child: Text(q.vendorName ?? 'Supplier')),
+                        Text(Formatters.currency(q.totalAmount)),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ],
     );
   }
 
   UiTone _statusTone(String status) => switch (status) {
-        'DRAFT' => UiTone.neutral, 'SENT' => UiTone.info,
-        'CLOSED' => UiTone.success, _ => UiTone.neutral,
+        'DRAFT' => UiTone.neutral,
+        'SENT' => UiTone.info,
+        'CLOSED' => UiTone.success,
+        _ => UiTone.neutral,
       };
 }
 
@@ -116,10 +148,14 @@ class _Row extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: Spacing.x1_5),
-      child: Row(children: [
-        Expanded(child: Text(label, style: TextStyle(color: context.tokens.textSecondary))),
-        Text(value, style: Theme.of(context).textTheme.labelLarge),
-      ],),
+      child: Row(
+        children: [
+          Expanded(
+              child: Text(label,
+                  style: TextStyle(color: context.tokens.textSecondary))),
+          Text(value, style: Theme.of(context).textTheme.labelLarge),
+        ],
+      ),
     );
   }
 }

@@ -52,7 +52,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<void> verifyEmail(String token) async {
-    await _client.post(ApiPaths.verifyEmail, body: <String, dynamic>{'token': token});
+    await _client
+        .post(ApiPaths.verifyEmail, body: <String, dynamic>{'token': token});
   }
 
   @override
@@ -77,7 +78,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         'email': email,
         'password': password,
         'rememberMe': rememberMe,
-        if (tenantSlug != null && tenantSlug.isNotEmpty) 'tenantSlug': tenantSlug,
+        if (tenantSlug != null && tenantSlug.isNotEmpty)
+          'tenantSlug': tenantSlug,
         if (captchaToken != null) 'captchaToken': captchaToken,
       },
     );

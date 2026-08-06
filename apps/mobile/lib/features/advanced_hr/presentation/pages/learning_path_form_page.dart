@@ -18,7 +18,8 @@ class LearningPathFormPage extends ConsumerStatefulWidget {
   final String? pathId;
 
   @override
-  ConsumerState<LearningPathFormPage> createState() => _LearningPathFormPageState();
+  ConsumerState<LearningPathFormPage> createState() =>
+      _LearningPathFormPageState();
 }
 
 class _LearningPathFormPageState extends ConsumerState<LearningPathFormPage> {
@@ -41,9 +42,8 @@ class _LearningPathFormPageState extends ConsumerState<LearningPathFormPage> {
   }
 
   Future<void> _loadPath() async {
-    final LearningPath? path = ref
-        .read(learningPathDetailProvider(widget.pathId!))
-        .valueOrNull;
+    final LearningPath? path =
+        ref.read(learningPathDetailProvider(widget.pathId!)).valueOrNull;
     if (path != null) {
       _titleCtrl.text = path.title;
       _categoryCtrl.text = path.category;
@@ -68,7 +68,9 @@ class _LearningPathFormPageState extends ConsumerState<LearningPathFormPage> {
       'title': _titleCtrl.text.trim(),
       'category': _categoryCtrl.text.trim(),
       'status': _status,
-      'description': _descriptionCtrl.text.trim().isEmpty ? null : _descriptionCtrl.text.trim(),
+      'description': _descriptionCtrl.text.trim().isEmpty
+          ? null
+          : _descriptionCtrl.text.trim(),
     };
 
     final Result<LearningPath> result = await ref
@@ -129,9 +131,12 @@ class _LearningPathFormPageState extends ConsumerState<LearningPathFormPage> {
               initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: const <DropdownMenuItem<String>>[
-                DropdownMenuItem<String>(value: 'ACTIVE', child: Text('Active')),
-                DropdownMenuItem<String>(value: 'INACTIVE', child: Text('Inactive')),
-                DropdownMenuItem<String>(value: 'ARCHIVED', child: Text('Archived')),
+                DropdownMenuItem<String>(
+                    value: 'ACTIVE', child: Text('Active')),
+                DropdownMenuItem<String>(
+                    value: 'INACTIVE', child: Text('Inactive')),
+                DropdownMenuItem<String>(
+                    value: 'ARCHIVED', child: Text('Archived')),
               ],
               onChanged: (String? v) {
                 if (v != null) setState(() => _status = v);

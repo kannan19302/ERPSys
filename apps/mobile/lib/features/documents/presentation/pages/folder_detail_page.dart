@@ -40,7 +40,9 @@ class FolderDetailPage extends ConsumerWidget {
       body: folderAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load folder.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load folder.'),
           onRetry: () => ref.invalidate(folderDetailProvider(folderId)),
         ),
         data: (DocumentFolder folder) => _FolderDetail(folder: folder),
@@ -68,9 +70,8 @@ class FolderDetailPage extends ConsumerWidget {
     );
     if (confirmed != true || !context.mounted) return;
 
-    final result = await ref
-        .read(folderListControllerProvider.notifier)
-        .delete(folderId);
+    final result =
+        await ref.read(folderListControllerProvider.notifier).delete(folderId);
 
     if (!context.mounted) return;
     result.fold(
@@ -106,7 +107,8 @@ class _FolderDetail extends StatelessWidget {
             children: <Widget>[
               Row(
                 children: <Widget>[
-                  Icon(Icons.folder_outlined, size: Spacing.x8, color: t.primary),
+                  Icon(Icons.folder_outlined,
+                      size: Spacing.x8, color: t.primary),
                   const SizedBox(width: Spacing.x3),
                   Expanded(
                     child: Text(
@@ -116,9 +118,11 @@ class _FolderDetail extends StatelessWidget {
                   ),
                 ],
               ),
-              if (folder.description != null && folder.description!.isNotEmpty) ...<Widget>[
+              if (folder.description != null &&
+                  folder.description!.isNotEmpty) ...<Widget>[
                 const SizedBox(height: Spacing.x2),
-                Text(folder.description!, style: TextStyle(color: t.textSecondary)),
+                Text(folder.description!,
+                    style: TextStyle(color: t.textSecondary)),
               ],
             ],
           ),
@@ -135,7 +139,8 @@ class _FolderDetail extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              const Text('Details', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              const Text('Details',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               const SizedBox(height: Spacing.x3),
               _FieldRow('Documents', '${folder.documentCount}'),
               _FieldRow('Parent Folder', folder.parentId ?? '—'),

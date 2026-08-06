@@ -149,7 +149,8 @@ class AiPredictionModel extends AiPrediction {
       id: id,
       modelId: json['modelId'] as String?,
       modelName: json['modelName'] as String?,
-      input: json['input'] as Map<String, dynamic>? ?? const <String, dynamic>{},
+      input:
+          json['input'] as Map<String, dynamic>? ?? const <String, dynamic>{},
       output: json['output'] as Map<String, dynamic>?,
       confidence: asDouble(json['confidence']),
       processingTime: asDouble(json['processingTime']),

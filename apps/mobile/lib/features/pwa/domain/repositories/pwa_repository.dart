@@ -10,11 +10,14 @@ class Cacheable<T> {
 }
 
 abstract class PwaRepository {
-  Future<Result<Cacheable<Paginated<PwaPushSubscription>>>> listPushSubscriptions(ListQuery query);
+  Future<Result<Cacheable<Paginated<PwaPushSubscription>>>>
+      listPushSubscriptions(ListQuery query);
   Future<Result<void>> deletePushSubscription(String id);
   Future<Result<PwaManifestConfig>> getManifestConfig();
-  Future<Result<PwaManifestConfig>> updateManifestConfig(Map<String, dynamic> payload);
-  Future<Result<Cacheable<Paginated<PwaOfflineQueueItem>>>> listOfflineQueue(ListQuery query);
+  Future<Result<PwaManifestConfig>> updateManifestConfig(
+      Map<String, dynamic> payload);
+  Future<Result<Cacheable<Paginated<PwaOfflineQueueItem>>>> listOfflineQueue(
+      ListQuery query);
   Future<Result<PwaOfflineQueueItem>> getOfflineQueueItem(String id);
   Future<Result<PwaOfflineQueueItem>> retryOfflineQueueItem(String id);
 }

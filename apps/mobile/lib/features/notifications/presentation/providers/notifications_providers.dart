@@ -12,8 +12,9 @@ final Provider<NotificationsRemoteDataSource>
   (Ref ref) => NotificationsRemoteDataSourceImpl(ref.watch(apiClientProvider)),
 );
 
-final NotifierProvider<NotificationsController, AsyncValue<List<AppNotification>>>
-    notificationsControllerProvider = NotifierProvider<NotificationsController,
+final NotifierProvider<NotificationsController,
+        AsyncValue<List<AppNotification>>> notificationsControllerProvider =
+    NotifierProvider<NotificationsController,
         AsyncValue<List<AppNotification>>>(NotificationsController.new);
 
 /// Badge count for the shell's bottom-nav icon.
@@ -27,7 +28,8 @@ final Provider<int> unreadNotificationCountProvider = Provider<int>((Ref ref) {
   );
 });
 
-class NotificationsController extends Notifier<AsyncValue<List<AppNotification>>> {
+class NotificationsController
+    extends Notifier<AsyncValue<List<AppNotification>>> {
   @override
   AsyncValue<List<AppNotification>> build() {
     ref.watch(activeTenantIdProvider);
@@ -84,7 +86,8 @@ class NotificationsController extends Notifier<AsyncValue<List<AppNotification>>
   Future<void> markAllRead() async {
     final List<AppNotification>? items = state.valueOrNull;
     if (items == null) return;
-    for (final AppNotification n in items.where((AppNotification n) => n.isUnread)) {
+    for (final AppNotification n
+        in items.where((AppNotification n) => n.isUnread)) {
       await markRead(n.id);
     }
   }

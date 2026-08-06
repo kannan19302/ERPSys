@@ -30,7 +30,8 @@ class _DepartmentListPageState extends ConsumerState<DepartmentListPage> {
 
   @override
   Widget build(BuildContext context) {
-    final AsyncValue<List<Department>> asyncDepts = ref.watch(departmentsProvider);
+    final AsyncValue<List<Department>> asyncDepts =
+        ref.watch(departmentsProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Departments')),
@@ -43,7 +44,10 @@ class _DepartmentListPageState extends ConsumerState<DepartmentListPage> {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2,
+              Spacing.x4,
+              Spacing.x3,
+              Spacing.x4,
+              Spacing.x2,
             ),
             child: TextField(
               controller: _search,
@@ -72,17 +76,18 @@ class _DepartmentListPageState extends ConsumerState<DepartmentListPage> {
   Widget _buildBody(AsyncValue<List<Department>> asyncDepts) {
     return asyncDepts.when(
       loading: () => const LoadingView(),
-error: (Object e, StackTrace _) => FailureView(
-          failure: e is Failure ? e : ServerFailure(e.toString()),
-          onRetry: () => ref.invalidate(departmentsProvider),
+      error: (Object e, StackTrace _) => FailureView(
+        failure: e is Failure ? e : ServerFailure(e.toString()),
+        onRetry: () => ref.invalidate(departmentsProvider),
       ),
       data: (List<Department> departments) {
         final List<Department> filtered = _search.text.isEmpty
             ? departments
             : departments
-                .where((Department d) => d.name
-                    .toLowerCase()
-                    .contains(_search.text.toLowerCase()),)
+                .where(
+                  (Department d) =>
+                      d.name.toLowerCase().contains(_search.text.toLowerCase()),
+                )
                 .toList(growable: false);
 
         if (filtered.isEmpty) {
@@ -120,8 +125,10 @@ error: (Object e, StackTrace _) => FailureView(
                 children: <Widget>[
                   Row(
                     children: <Widget>[
-                      Icon(Icons.account_tree_outlined,
-                          color: context.tokens.textSecondary,),
+                      Icon(
+                        Icons.account_tree_outlined,
+                        color: context.tokens.textSecondary,
+                      ),
                       const SizedBox(width: Spacing.x2),
                       Expanded(
                         child: Text(
@@ -158,7 +165,7 @@ error: (Object e, StackTrace _) => FailureView(
     );
   }
 
-  List<Department> _childrenOf(List<Department> all, String parentId) =>
-      all.where((Department d) => d.parentDepartmentId == parentId).toList(growable: false);
+  List<Department> _childrenOf(List<Department> all, String parentId) => all
+      .where((Department d) => d.parentDepartmentId == parentId)
+      .toList(growable: false);
 }
-

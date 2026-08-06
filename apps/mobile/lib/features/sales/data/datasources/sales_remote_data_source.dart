@@ -10,7 +10,8 @@ abstract class SalesRemoteDataSource {
 
   Future<QuotationModel> createQuotation(Map<String, dynamic> payload);
 
-  Future<QuotationModel> updateQuotation(String id, Map<String, dynamic> payload);
+  Future<QuotationModel> updateQuotation(
+      String id, Map<String, dynamic> payload);
 
   Future<void> deleteQuotation(String id);
 
@@ -26,7 +27,8 @@ abstract class SalesRemoteDataSource {
 
   Future<SalesOrderModel> createSalesOrder(Map<String, dynamic> payload);
 
-  Future<SalesOrderModel> updateSalesOrder(String id, Map<String, dynamic> payload);
+  Future<SalesOrderModel> updateSalesOrder(
+      String id, Map<String, dynamic> payload);
 
   Future<void> deleteSalesOrder(String id);
 
@@ -40,7 +42,8 @@ abstract class SalesRemoteDataSource {
 
   Future<DeliveryNoteModel> createDeliveryNote(Map<String, dynamic> payload);
 
-  Future<DeliveryNoteModel> updateDeliveryNote(String id, Map<String, dynamic> payload);
+  Future<DeliveryNoteModel> updateDeliveryNote(
+      String id, Map<String, dynamic> payload);
 
   Future<void> deleteDeliveryNote(String id);
 
@@ -66,7 +69,8 @@ abstract class SalesRemoteDataSource {
 
   Future<OpportunityModel> createOpportunity(Map<String, dynamic> payload);
 
-  Future<OpportunityModel> updateOpportunity(String id, Map<String, dynamic> payload);
+  Future<OpportunityModel> updateOpportunity(
+      String id, Map<String, dynamic> payload);
 
   Future<void> deleteOpportunity(String id);
 
@@ -112,7 +116,8 @@ class SalesRemoteDataSourceImpl implements SalesRemoteDataSource {
       );
 
   @override
-  Future<void> deleteQuotation(String id) => _client.delete(ApiPaths.quotation(id));
+  Future<void> deleteQuotation(String id) =>
+      _client.delete(ApiPaths.quotation(id));
 
   @override
   Future<QuotationModel> submitQuotation(String id) async =>
@@ -142,10 +147,12 @@ class SalesRemoteDataSourceImpl implements SalesRemoteDataSource {
 
   @override
   Future<SalesOrderModel> getSalesOrder(String id) async =>
-      SalesOrderModel.fromJson(await _client.getObject(ApiPaths.salesOrder(id)));
+      SalesOrderModel.fromJson(
+          await _client.getObject(ApiPaths.salesOrder(id)));
 
   @override
-  Future<SalesOrderModel> createSalesOrder(Map<String, dynamic> payload) async =>
+  Future<SalesOrderModel> createSalesOrder(
+          Map<String, dynamic> payload) async =>
       SalesOrderModel.fromJson(
         await _client.post(ApiPaths.salesOrders, body: payload),
       );
@@ -160,7 +167,8 @@ class SalesRemoteDataSourceImpl implements SalesRemoteDataSource {
       );
 
   @override
-  Future<void> deleteSalesOrder(String id) => _client.delete(ApiPaths.salesOrder(id));
+  Future<void> deleteSalesOrder(String id) =>
+      _client.delete(ApiPaths.salesOrder(id));
 
   @override
   Future<SalesOrderModel> confirmSalesOrder(String id) async =>
@@ -184,10 +192,12 @@ class SalesRemoteDataSourceImpl implements SalesRemoteDataSource {
 
   @override
   Future<DeliveryNoteModel> getDeliveryNote(String id) async =>
-      DeliveryNoteModel.fromJson(await _client.getObject(ApiPaths.deliveryNote(id)));
+      DeliveryNoteModel.fromJson(
+          await _client.getObject(ApiPaths.deliveryNote(id)));
 
   @override
-  Future<DeliveryNoteModel> createDeliveryNote(Map<String, dynamic> payload) async =>
+  Future<DeliveryNoteModel> createDeliveryNote(
+          Map<String, dynamic> payload) async =>
       DeliveryNoteModel.fromJson(
         await _client.post(ApiPaths.deliveryNotes, body: payload),
       );
@@ -221,10 +231,12 @@ class SalesRemoteDataSourceImpl implements SalesRemoteDataSource {
 
   @override
   Future<SalesReturnModel> getSalesReturn(String id) async =>
-      SalesReturnModel.fromJson(await _client.getObject(ApiPaths.salesReturn(id)));
+      SalesReturnModel.fromJson(
+          await _client.getObject(ApiPaths.salesReturn(id)));
 
   @override
-  Future<SalesReturnModel> createSalesReturn(Map<String, dynamic> payload) async =>
+  Future<SalesReturnModel> createSalesReturn(
+          Map<String, dynamic> payload) async =>
       SalesReturnModel.fromJson(
         await _client.post(ApiPaths.salesReturns, body: payload),
       );
@@ -247,7 +259,8 @@ class SalesRemoteDataSourceImpl implements SalesRemoteDataSource {
 
   @override
   Future<List<SalesPipelineModel>> listPipelines() async {
-    final List<Map<String, dynamic>> raw = await _client.getList(ApiPaths.salesPipelines);
+    final List<Map<String, dynamic>> raw =
+        await _client.getList(ApiPaths.salesPipelines);
     return raw.map(SalesPipelineModel.fromJson).toList(growable: false);
   }
 
@@ -266,7 +279,8 @@ class SalesRemoteDataSourceImpl implements SalesRemoteDataSource {
       );
 
   @override
-  Future<OpportunityModel> createOpportunity(Map<String, dynamic> payload) async =>
+  Future<OpportunityModel> createOpportunity(
+          Map<String, dynamic> payload) async =>
       OpportunityModel.fromJson(
         await _client.post(ApiPaths.opportunities, body: payload),
       );
@@ -285,9 +299,11 @@ class SalesRemoteDataSourceImpl implements SalesRemoteDataSource {
       _client.delete(ApiPaths.opportunity(id));
 
   @override
-  Future<OpportunityModel> updateOpportunityStage(String id, String stage) async =>
+  Future<OpportunityModel> updateOpportunityStage(
+          String id, String stage) async =>
       OpportunityModel.fromJson(
-        await _client.post(ApiPaths.opportunityStage(id), body: <String, dynamic>{'stage': stage}),
+        await _client.post(ApiPaths.opportunityStage(id),
+            body: <String, dynamic>{'stage': stage}),
       );
 
   @override
@@ -304,7 +320,8 @@ class SalesRemoteDataSourceImpl implements SalesRemoteDataSource {
   }
 
   @override
-  Future<SalesActivityModel> logSalesActivity(Map<String, dynamic> payload) async =>
+  Future<SalesActivityModel> logSalesActivity(
+          Map<String, dynamic> payload) async =>
       SalesActivityModel.fromJson(
         await _client.post(ApiPaths.salesActivity, body: payload),
       );

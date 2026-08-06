@@ -40,7 +40,9 @@ class BuilderPageDetailPage extends ConsumerWidget {
       body: pageAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load page.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load page.'),
           onRetry: () => ref.invalidate(builderPageDetailProvider(pageId)),
         ),
         data: (BuilderPage page) => _BuilderPageDetail(page: page),
@@ -143,7 +145,8 @@ class _BuilderPageDetail extends StatelessWidget {
               _FieldRow('Layout', page.layout),
               _FieldRow('Slug', page.slug ?? '—'),
               _FieldRow('Sections', '${page.sections.length}'),
-              _FieldRow('Created', Formatters.date(page.createdAt ?? DateTime.now())),
+              _FieldRow(
+                  'Created', Formatters.date(page.createdAt ?? DateTime.now())),
             ],
           ),
         ),
@@ -160,26 +163,35 @@ class _BuilderPageDetail extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text('Sections', style: Theme.of(context).textTheme.titleMedium),
+                Text('Sections',
+                    style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: Spacing.x3),
-                ...page.sections.map((BuilderPageSection section) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: Spacing.x1_5),
-                  child: Row(
-                    children: <Widget>[
-                      Icon(Icons.view_column, size: TypeScale.lg, color: t.primary),
-                      const SizedBox(width: Spacing.x2),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text(section.title ?? section.type, style: const TextStyle(fontWeight: TypeScale.medium)),
-                            Text(section.type, style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
-                          ],
+                ...page.sections.map(
+                  (BuilderPageSection section) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: Spacing.x1_5),
+                    child: Row(
+                      children: <Widget>[
+                        Icon(Icons.view_column,
+                            size: TypeScale.lg, color: t.primary),
+                        const SizedBox(width: Spacing.x2),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(section.title ?? section.type,
+                                  style: const TextStyle(
+                                      fontWeight: TypeScale.medium)),
+                              Text(section.type,
+                                  style: TextStyle(
+                                      color: t.textSecondary,
+                                      fontSize: TypeScale.xs)),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),),
+                ),
               ],
             ),
           ),

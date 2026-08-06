@@ -37,13 +37,17 @@ class AppointmentDetailPage extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _DetailRow(label: 'Patient', value: apt.patientName),
-                      _DetailRow(label: 'Date', value: Formatters.dateTime(apt.appointmentDate)),
+                      _DetailRow(
+                          label: 'Date',
+                          value: Formatters.dateTime(apt.appointmentDate)),
                       _DetailRow(label: 'Doctor', value: apt.doctorName ?? '-'),
-                      _DetailRow(label: 'Specialty', value: apt.specialty ?? '-'),
+                      _DetailRow(
+                          label: 'Specialty', value: apt.specialty ?? '-'),
                       _DetailRow(label: 'Reason', value: apt.reason ?? '-'),
                       if (apt.notes != null && apt.notes!.isNotEmpty) ...[
                         const SizedBox(height: 12),
-                        const Text('Notes', style: TextStyle(fontWeight: FontWeight.w600)),
+                        const Text('Notes',
+                            style: TextStyle(fontWeight: FontWeight.w600)),
                         const SizedBox(height: 4),
                         Text(apt.notes!),
                       ],
@@ -82,7 +86,8 @@ class _StatusBadge extends StatelessWidget {
       ),
       child: Text(
         status.replaceAll('_', ' '),
-        style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 13),
+        style:
+            TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 13),
       ),
     );
   }
@@ -95,16 +100,18 @@ class _DetailRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 6),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 100,
-          child: Text(label, style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w500)),
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 100,
+              child: Text(label,
+                  style: const TextStyle(
+                      color: Colors.grey, fontWeight: FontWeight.w500)),
+            ),
+            Expanded(child: Text(value)),
+          ],
         ),
-        Expanded(child: Text(value)),
-      ],
-    ),
-  );
+      );
 }

@@ -30,7 +30,8 @@ class ResponseCache {
       'at': DateTime.now().toUtc().toIso8601String(),
       'payload': payload,
     };
-    await _prefs.setString(_key(tenantId, namespace, suffix), jsonEncode(entry));
+    await _prefs.setString(
+        _key(tenantId, namespace, suffix), jsonEncode(entry));
   }
 
   /// Returns the cached payload when present and younger than [Env.cacheTtl].

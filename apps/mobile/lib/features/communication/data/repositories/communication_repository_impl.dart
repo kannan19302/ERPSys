@@ -37,7 +37,8 @@ class CommunicationRepositoryImpl implements CommunicationRepository {
       final List<Map<String, dynamic>> jsonItems = page.data
           .map((dynamic e) => (e as dynamic).toJson() as Map<String, dynamic>)
           .toList(growable: false);
-      await _cache.write(_tenantId, namespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, namespace, query.cacheKey, <String, Object?>{
         'data': jsonItems,
         'meta': page.meta.toJson(),
       });
@@ -45,9 +46,11 @@ class CommunicationRepositoryImpl implements CommunicationRepository {
         Cacheable<Paginated<T>>(value: page),
       );
     } on NetworkException catch (error) {
-      final cached = _cache.read<Map<String, dynamic>>(_tenantId, namespace, query.cacheKey);
+      final cached = _cache.read<Map<String, dynamic>>(
+          _tenantId, namespace, query.cacheKey);
       if (cached == null) {
-        return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
+        return Result<Cacheable<Paginated<T>>>.err(
+            mapExceptionToFailure(error));
       }
       return Result<Cacheable<Paginated<T>>>.ok(
         Cacheable<Paginated<T>>(
@@ -90,8 +93,12 @@ class CommunicationRepositoryImpl implements CommunicationRepository {
 
   @override
   Future<Result<Cacheable<Paginated<Channel>>>> listChannels(ListQuery query) =>
-      _paginated(_channelNamespace, query, () => _remote.listChannels(query),
-        ChannelModel.fromJson,);
+      _paginated(
+        _channelNamespace,
+        query,
+        () => _remote.listChannels(query),
+        ChannelModel.fromJson,
+      );
 
   @override
   Future<Result<Channel>> getChannel(String id) =>
@@ -102,7 +109,8 @@ class CommunicationRepositoryImpl implements CommunicationRepository {
       _write(() => _remote.createChannel(payload));
 
   @override
-  Future<Result<Channel>> updateChannel(String id, Map<String, dynamic> payload) =>
+  Future<Result<Channel>> updateChannel(
+          String id, Map<String, dynamic> payload) =>
       _write(() => _remote.updateChannel(id, payload));
 
   @override
@@ -119,10 +127,15 @@ class CommunicationRepositoryImpl implements CommunicationRepository {
 
   @override
   Future<Result<Cacheable<Paginated<Message>>>> listChannelMessages(
-    String channelId, ListQuery query,) =>
-      _paginated('$_messageNamespace.$channelId', query,
+    String channelId,
+    ListQuery query,
+  ) =>
+      _paginated(
+        '$_messageNamespace.$channelId',
+        query,
         () => _remote.listChannelMessages(channelId, query),
-        MessageModel.fromJson,);
+        MessageModel.fromJson,
+      );
 
   @override
   Future<Result<Message>> getMessage(String id) =>
@@ -133,7 +146,8 @@ class CommunicationRepositoryImpl implements CommunicationRepository {
       _write(() => _remote.sendMessage(payload));
 
   @override
-  Future<Result<Message>> updateMessage(String id, Map<String, dynamic> payload) =>
+  Future<Result<Message>> updateMessage(
+          String id, Map<String, dynamic> payload) =>
       _write(() => _remote.updateMessage(id, payload));
 
   @override
@@ -141,31 +155,43 @@ class CommunicationRepositoryImpl implements CommunicationRepository {
       _delete(() => _remote.deleteMessage(id));
 
   @override
-  Future<Result<Message>> reactToMessage(String id, Map<String, dynamic> payload) =>
+  Future<Result<Message>> reactToMessage(
+          String id, Map<String, dynamic> payload) =>
       _write(() => _remote.reactToMessage(id, payload));
 
   @override
-  Future<Result<Message>> replyToMessage(String id, Map<String, dynamic> payload) =>
+  Future<Result<Message>> replyToMessage(
+          String id, Map<String, dynamic> payload) =>
       _write(() => _remote.replyToMessage(id, payload));
 
   @override
-  Future<Result<Message>> forwardMessage(String id, Map<String, dynamic> payload) =>
+  Future<Result<Message>> forwardMessage(
+          String id, Map<String, dynamic> payload) =>
       _write(() => _remote.forwardMessage(id, payload));
 
   @override
-  Future<Result<Cacheable<Paginated<DirectMessage>>>> listDirectMessages(ListQuery query) =>
-      _paginated(_directMessageNamespace, query,
+  Future<Result<Cacheable<Paginated<DirectMessage>>>> listDirectMessages(
+          ListQuery query) =>
+      _paginated(
+        _directMessageNamespace,
+        query,
         () => _remote.listDirectMessages(query),
-        DirectMessageModel.fromJson,);
+        DirectMessageModel.fromJson,
+      );
 
   @override
-  Future<Result<DirectMessage>> sendDirectMessage(Map<String, dynamic> payload) =>
+  Future<Result<DirectMessage>> sendDirectMessage(
+          Map<String, dynamic> payload) =>
       _write(() => _remote.sendDirectMessage(payload));
 
   @override
   Future<Result<Cacheable<Paginated<Meeting>>>> listMeetings(ListQuery query) =>
-      _paginated(_meetingNamespace, query, () => _remote.listMeetings(query),
-        MeetingModel.fromJson,);
+      _paginated(
+        _meetingNamespace,
+        query,
+        () => _remote.listMeetings(query),
+        MeetingModel.fromJson,
+      );
 
   @override
   Future<Result<Meeting>> getMeeting(String id) =>

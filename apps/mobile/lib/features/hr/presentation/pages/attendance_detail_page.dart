@@ -17,8 +17,11 @@ class AttendanceDetailPage extends ConsumerWidget {
   final String attendanceId;
 
   Attendance? _findAttendance(WidgetRef ref) {
-    final AttendanceListState state = ref.watch(attendanceListControllerProvider);
-    return state.items.where((Attendance a) => a.id == attendanceId).firstOrNull;
+    final AttendanceListState state =
+        ref.watch(attendanceListControllerProvider);
+    return state.items
+        .where((Attendance a) => a.id == attendanceId)
+        .firstOrNull;
   }
 
   @override
@@ -33,7 +36,8 @@ class AttendanceDetailPage extends ConsumerWidget {
       );
     }
 
-    final (String statusLabel, Color statusColor, Color statusBg) = switch (a.status) {
+    final (String statusLabel, Color statusColor, Color statusBg) =
+        switch (a.status) {
       AttendanceStatus.present => ('Present', t.success, t.successLight),
       AttendanceStatus.absent => ('Absent', t.danger, t.dangerLight),
       AttendanceStatus.late => ('Late', t.warning, t.warningLight),
@@ -72,13 +76,16 @@ class AttendanceDetailPage extends ConsumerWidget {
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: Spacing.x2_5, vertical: Spacing.x1,
+                        horizontal: Spacing.x2_5,
+                        vertical: Spacing.x1,
                       ),
-                      decoration: BoxDecoration(color: statusBg, borderRadius: Radii.pill),
+                      decoration: BoxDecoration(
+                          color: statusBg, borderRadius: Radii.pill),
                       child: Text(
                         statusLabel,
                         style: TextStyle(
-                          color: statusColor, fontSize: TypeScale.xs,
+                          color: statusColor,
+                          fontSize: TypeScale.xs,
                           fontWeight: TypeScale.medium,
                         ),
                       ),
@@ -87,17 +94,25 @@ class AttendanceDetailPage extends ConsumerWidget {
                 ),
                 const SizedBox(height: Spacing.x3),
                 _Row('Date', Formatters.date(a.date)),
-                _Row('Clock In', a.clockIn != null ? Formatters.dateTime(a.clockIn!) : '—'),
-                _Row('Clock Out', a.clockOut != null ? Formatters.dateTime(a.clockOut!) : '—'),
+                _Row('Clock In',
+                    a.clockIn != null ? Formatters.dateTime(a.clockIn!) : '—'),
+                _Row(
+                    'Clock Out',
+                    a.clockOut != null
+                        ? Formatters.dateTime(a.clockOut!)
+                        : '—'),
                 _Row(
                   'Hours Worked',
-                  a.hoursWorked != null ? '${a.hoursWorked!.toStringAsFixed(1)} h' : '—',
+                  a.hoursWorked != null
+                      ? '${a.hoursWorked!.toStringAsFixed(1)} h'
+                      : '—',
                 ),
                 if (a.notes != null && a.notes!.isNotEmpty) ...<Widget>[
                   const SizedBox(height: Spacing.x2),
                   Text(
                     a.notes!,
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.sm),
+                    style: TextStyle(
+                        color: t.textSecondary, fontSize: TypeScale.sm),
                   ),
                 ],
               ],

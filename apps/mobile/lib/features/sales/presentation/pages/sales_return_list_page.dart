@@ -20,7 +20,8 @@ class SalesReturnListPage extends ConsumerStatefulWidget {
   static const String routePath = '/sales/returns';
 
   @override
-  ConsumerState<SalesReturnListPage> createState() => _SalesReturnListPageState();
+  ConsumerState<SalesReturnListPage> createState() =>
+      _SalesReturnListPageState();
 }
 
 class _SalesReturnListPageState extends ConsumerState<SalesReturnListPage> {
@@ -85,7 +86,10 @@ class _SalesReturnListPageState extends ConsumerState<SalesReturnListPage> {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2,
+              Spacing.x4,
+              Spacing.x3,
+              Spacing.x4,
+              Spacing.x2,
             ),
             child: TextField(
               controller: _search,
@@ -127,7 +131,8 @@ class _SalesReturnListPageState extends ConsumerState<SalesReturnListPage> {
                   underline: const SizedBox.shrink(),
                   items: _statusFilters.entries
                       .map(
-                        (MapEntry<String, String> e) => DropdownMenuItem<String>(
+                        (MapEntry<String, String> e) =>
+                            DropdownMenuItem<String>(
                           value: e.key,
                           child: Text(e.value),
                         ),
@@ -138,7 +143,8 @@ class _SalesReturnListPageState extends ConsumerState<SalesReturnListPage> {
                     if (value == null) {
                       controller.applyFilters(const <String, String>{});
                     } else {
-                      controller.applyFilters(<String, String>{'status': value});
+                      controller
+                          .applyFilters(<String, String>{'status': value});
                     }
                   },
                 ),

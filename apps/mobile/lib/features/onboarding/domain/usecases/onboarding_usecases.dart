@@ -13,7 +13,8 @@ class GetOnboardingStateUseCase extends UseCase<OnboardingChecklist, NoParams> {
       _repository.getState();
 }
 
-class CompleteOnboardingStepUseCase extends UseCase<OnboardingChecklist, String> {
+class CompleteOnboardingStepUseCase
+    extends UseCase<OnboardingChecklist, String> {
   const CompleteOnboardingStepUseCase(this._repository);
 
   final OnboardingRepository _repository;

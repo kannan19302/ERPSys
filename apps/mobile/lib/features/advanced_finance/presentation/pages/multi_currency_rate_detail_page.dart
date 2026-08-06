@@ -28,8 +28,11 @@ class MultiCurrencyRateDetailPage extends ConsumerWidget {
       body: rateAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load currency rate.'),
-          onRetry: () => ref.invalidate(multiCurrencyRateDetailProvider(rateId)),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load currency rate.'),
+          onRetry: () =>
+              ref.invalidate(multiCurrencyRateDetailProvider(rateId)),
         ),
         data: (MultiCurrencyRate rate) => _MultiCurrencyRateDetail(rate: rate),
       ),
@@ -106,8 +109,16 @@ class _MultiCurrencyRateDetail extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               const _SectionTitle(title: 'Timeline'),
-              _FieldRow('Rate Date', rate.rateDate != null ? Formatters.date(rate.rateDate!) : '—'),
-              _FieldRow('Created', rate.createdAt != null ? Formatters.dateTime(rate.createdAt!) : '—'),
+              _FieldRow(
+                  'Rate Date',
+                  rate.rateDate != null
+                      ? Formatters.date(rate.rateDate!)
+                      : '—'),
+              _FieldRow(
+                  'Created',
+                  rate.createdAt != null
+                      ? Formatters.dateTime(rate.createdAt!)
+                      : '—'),
             ],
           ),
         ),

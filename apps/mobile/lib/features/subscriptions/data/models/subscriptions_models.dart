@@ -31,7 +31,8 @@ class SubscriptionPlanModel extends SubscriptionPlan {
 
   factory SubscriptionPlanModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('SubscriptionPlan missing id');
+    if (id is! String)
+      throw const ParseException('SubscriptionPlan missing id');
     return SubscriptionPlanModel(
       id: id,
       name: json['name'] as String? ?? '',
@@ -81,11 +82,13 @@ class SubscriptionBillingCycleModel extends SubscriptionBillingCycle {
 
   factory SubscriptionBillingCycleModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('SubscriptionBillingCycle missing id');
+    if (id is! String)
+      throw const ParseException('SubscriptionBillingCycle missing id');
     return SubscriptionBillingCycleModel(
       id: id,
       subscriptionId: json['subscriptionId'] as String? ?? '',
-      periodStart: DateTime.tryParse('${json['periodStart']}') ?? DateTime.now(),
+      periodStart:
+          DateTime.tryParse('${json['periodStart']}') ?? DateTime.now(),
       periodEnd: DateTime.tryParse('${json['periodEnd']}') ?? DateTime.now(),
       status: json['status'] as String? ?? 'PENDING',
       amount: asDouble(json['amount']),
@@ -122,7 +125,8 @@ class SubscriptionUsageRecordModel extends SubscriptionUsageRecord {
 
   factory SubscriptionUsageRecordModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('SubscriptionUsageRecord missing id');
+    if (id is! String)
+      throw const ParseException('SubscriptionUsageRecord missing id');
     return SubscriptionUsageRecordModel(
       id: id,
       subscriptionId: json['subscriptionId'] as String? ?? '',
@@ -156,7 +160,8 @@ class ChurnSurveyResponseModel extends ChurnSurveyResponse {
 
   factory ChurnSurveyResponseModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('ChurnSurveyResponse missing id');
+    if (id is! String)
+      throw const ParseException('ChurnSurveyResponse missing id');
     return ChurnSurveyResponseModel(
       id: id,
       subscriptionId: json['subscriptionId'] as String? ?? '',

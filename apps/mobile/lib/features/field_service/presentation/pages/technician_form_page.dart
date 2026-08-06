@@ -72,11 +72,14 @@ class _TechnicianFormPageState extends ConsumerState<TechnicianFormPage> {
       'serviceArea': _serviceAreaController.text.trim(),
       'status': _status,
     };
-    final result = await ref.read(technicianListControllerProvider.notifier).save(payload, id: widget.id);
+    final result = await ref
+        .read(technicianListControllerProvider.notifier)
+        .save(payload, id: widget.id);
     if (!mounted) return;
     setState(() => _isLoading = false);
     result.fold(
-      (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(true),
     );
   }
@@ -90,7 +93,9 @@ class _TechnicianFormPageState extends ConsumerState<TechnicianFormPage> {
       );
     }
     return Scaffold(
-      appBar: AppBar(title: Text(widget.id != null ? 'Edit Technician' : 'New Technician')),
+      appBar: AppBar(
+          title:
+              Text(widget.id != null ? 'Edit Technician' : 'New Technician')),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -99,11 +104,19 @@ class _TechnicianFormPageState extends ConsumerState<TechnicianFormPage> {
             UiTextField(
               label: 'Name',
               controller: _nameController,
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+              validator: (v) =>
+                  (v == null || v.trim().isEmpty) ? 'Required' : null,
             ),
-            UiTextField(label: 'Email', controller: _emailController, keyboardType: TextInputType.emailAddress),
-            UiTextField(label: 'Phone', controller: _phoneController, keyboardType: TextInputType.phone),
-            UiTextField(label: 'Specialization', controller: _specializationController),
+            UiTextField(
+                label: 'Email',
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress),
+            UiTextField(
+                label: 'Phone',
+                controller: _phoneController,
+                keyboardType: TextInputType.phone),
+            UiTextField(
+                label: 'Specialization', controller: _specializationController),
             UiDropdownField(
               label: 'Status',
               itemLabel: (v) => v.toString(),
@@ -111,14 +124,20 @@ class _TechnicianFormPageState extends ConsumerState<TechnicianFormPage> {
               items: const ['AVAILABLE', 'BUSY', 'OFFLINE'],
               onChanged: (v) => setState(() => _status = v!),
             ),
-            UiTextField(label: 'Skill Level', controller: _skillLevelController),
-            UiTextField(label: 'Vehicle Info', controller: _vehicleInfoController),
-            UiTextField(label: 'Service Area', controller: _serviceAreaController),
+            UiTextField(
+                label: 'Skill Level', controller: _skillLevelController),
+            UiTextField(
+                label: 'Vehicle Info', controller: _vehicleInfoController),
+            UiTextField(
+                label: 'Service Area', controller: _serviceAreaController),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _isLoading ? null : _submit,
               child: _isLoading
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2))
                   : const Text('Save'),
             ),
           ],

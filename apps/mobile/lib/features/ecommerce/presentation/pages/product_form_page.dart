@@ -18,10 +18,12 @@ class EcommerceProductFormPage extends ConsumerStatefulWidget {
   final String? productId;
 
   @override
-  ConsumerState<EcommerceProductFormPage> createState() => _EcommerceProductFormPageState();
+  ConsumerState<EcommerceProductFormPage> createState() =>
+      _EcommerceProductFormPageState();
 }
 
-class _EcommerceProductFormPageState extends ConsumerState<EcommerceProductFormPage> {
+class _EcommerceProductFormPageState
+    extends ConsumerState<EcommerceProductFormPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _nameCtrl = TextEditingController();
   final TextEditingController _descriptionCtrl = TextEditingController();
@@ -46,9 +48,8 @@ class _EcommerceProductFormPageState extends ConsumerState<EcommerceProductFormP
   }
 
   Future<void> _loadProduct() async {
-    final EcommerceProduct? product = ref
-        .read(ecommerceProductDetailProvider(widget.productId!))
-        .valueOrNull;
+    final EcommerceProduct? product =
+        ref.read(ecommerceProductDetailProvider(widget.productId!)).valueOrNull;
     if (product != null) {
       _nameCtrl.text = product.name;
       _descriptionCtrl.text = product.description ?? '';
@@ -81,13 +82,18 @@ class _EcommerceProductFormPageState extends ConsumerState<EcommerceProductFormP
 
     final Map<String, dynamic> payload = <String, dynamic>{
       'name': _nameCtrl.text.trim(),
-      'description': _descriptionCtrl.text.trim().isEmpty ? null : _descriptionCtrl.text.trim(),
+      'description': _descriptionCtrl.text.trim().isEmpty
+          ? null
+          : _descriptionCtrl.text.trim(),
       'price': double.tryParse(_priceCtrl.text) ?? 0,
       'comparePrice': double.tryParse(_comparePriceCtrl.text),
       'sku': _skuCtrl.text.trim().isEmpty ? null : _skuCtrl.text.trim(),
       'inventory': int.tryParse(_inventoryCtrl.text) ?? 0,
-      'categoryId': _categoryIdCtrl.text.trim().isEmpty ? null : _categoryIdCtrl.text.trim(),
-      'currency': _currencyCtrl.text.trim().isEmpty ? 'USD' : _currencyCtrl.text.trim(),
+      'categoryId': _categoryIdCtrl.text.trim().isEmpty
+          ? null
+          : _categoryIdCtrl.text.trim(),
+      'currency':
+          _currencyCtrl.text.trim().isEmpty ? 'USD' : _currencyCtrl.text.trim(),
       'status': _status,
     };
 
@@ -193,8 +199,10 @@ class _EcommerceProductFormPageState extends ConsumerState<EcommerceProductFormP
               initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: const <DropdownMenuItem<String>>[
-                DropdownMenuItem<String>(value: 'ACTIVE', child: Text('Active')),
-                DropdownMenuItem<String>(value: 'INACTIVE', child: Text('Inactive')),
+                DropdownMenuItem<String>(
+                    value: 'ACTIVE', child: Text('Active')),
+                DropdownMenuItem<String>(
+                    value: 'INACTIVE', child: Text('Inactive')),
                 DropdownMenuItem<String>(value: 'DRAFT', child: Text('Draft')),
               ],
               onChanged: (String? v) {

@@ -12,10 +12,12 @@ class BlockchainTransactionListPage extends ConsumerStatefulWidget {
   static const String routeName = 'blockchain-transactions';
   static const String routePath = '/blockchain/transactions';
   @override
-  ConsumerState<BlockchainTransactionListPage> createState() => _BlockchainTransactionListPageState();
+  ConsumerState<BlockchainTransactionListPage> createState() =>
+      _BlockchainTransactionListPageState();
 }
 
-class _BlockchainTransactionListPageState extends ConsumerState<BlockchainTransactionListPage> {
+class _BlockchainTransactionListPageState
+    extends ConsumerState<BlockchainTransactionListPage> {
   final TextEditingController _search = TextEditingController();
 
   static const Map<String, String> _sortOptions = <String, String>{
@@ -35,7 +37,8 @@ class _BlockchainTransactionListPageState extends ConsumerState<BlockchainTransa
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(blockchainTransactionListControllerProvider);
-    final controller = ref.read(blockchainTransactionListControllerProvider.notifier);
+    final controller =
+        ref.read(blockchainTransactionListControllerProvider.notifier);
     final t = context.tokens;
 
     return Scaffold(
@@ -48,17 +51,23 @@ class _BlockchainTransactionListPageState extends ConsumerState<BlockchainTransa
             initialValue: state.query.sort,
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
-                .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value),),)
+                .map(
+                  (e) => PopupMenuItem<String>(
+                    value: e.key,
+                    child: Text(e.value),
+                  ),
+                )
                 .toList(),
           ),
         ],
       ),
       body: Column(
         children: [
-          if (state.cachedAt != null) StaleDataBanner(cachedAt: state.cachedAt!),
+          if (state.cachedAt != null)
+            StaleDataBanner(cachedAt: state.cachedAt!),
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -70,21 +79,27 @@ class _BlockchainTransactionListPageState extends ConsumerState<BlockchainTransa
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} tx${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} tx${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -92,7 +107,8 @@ class _BlockchainTransactionListPageState extends ConsumerState<BlockchainTransa
     );
   }
 
-  Widget _body(BlockchainTransactionListState state, BlockchainTransactionListController controller) {
+  Widget _body(BlockchainTransactionListState state,
+      BlockchainTransactionListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -139,28 +155,41 @@ class _TxTile extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(children: [
-              Expanded(
-                child: Text(tx.txHash.length > 20 ? '${tx.txHash.substring(0, 20)}...' : tx.txHash,
-                    style: Theme.of(context).textTheme.titleSmall,),
-              ),
-              UiStatusBadge(
-                label: tx.status,
-                tone: _statusTone(tx.status),
-              ),
-            ],),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    tx.txHash.length > 20
+                        ? '${tx.txHash.substring(0, 20)}...'
+                        : tx.txHash,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+                UiStatusBadge(
+                  label: tx.status,
+                  tone: _statusTone(tx.status),
+                ),
+              ],
+            ),
             const SizedBox(height: Spacing.x1),
             if (tx.network != null)
               Text(tx.network!, style: TextStyle(color: t.textSecondary)),
             const SizedBox(height: Spacing.x1),
-            Row(children: [
-              Text('${tx.value.toStringAsFixed(6)} ETH',
-                  style: Theme.of(context).textTheme.labelLarge,),
-              const Spacer(),
-              if (tx.confirmations > 0)
-                Text('${tx.confirmations} conf',
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
-            ],),
+            Row(
+              children: [
+                Text(
+                  '${tx.value.toStringAsFixed(6)} ETH',
+                  style: Theme.of(context).textTheme.labelLarge,
+                ),
+                const Spacer(),
+                if (tx.confirmations > 0)
+                  Text(
+                    '${tx.confirmations} conf',
+                    style: TextStyle(
+                        color: t.textSecondary, fontSize: TypeScale.xs),
+                  ),
+              ],
+            ),
           ],
         ),
       ),

@@ -13,7 +13,8 @@ class BankAccountFormPage extends ConsumerStatefulWidget {
   final String? bankAccountId;
 
   @override
-  ConsumerState<BankAccountFormPage> createState() => _BankAccountFormPageState();
+  ConsumerState<BankAccountFormPage> createState() =>
+      _BankAccountFormPageState();
 }
 
 class _BankAccountFormPageState extends ConsumerState<BankAccountFormPage> {
@@ -35,18 +36,23 @@ class _BankAccountFormPageState extends ConsumerState<BankAccountFormPage> {
                   children: <Widget>[
                     const UiSectionHeader(title: 'Account Details'),
                     TextFormField(
-                      decoration: const InputDecoration(labelText: 'Account Name'),
-                      validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                      decoration:
+                          const InputDecoration(labelText: 'Account Name'),
+                      validator: (v) =>
+                          v == null || v.isEmpty ? 'Required' : null,
                     ),
                     const SizedBox(height: Spacing.x3),
                     TextFormField(
-                      decoration: const InputDecoration(labelText: 'Account Number'),
-                      validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                      decoration:
+                          const InputDecoration(labelText: 'Account Number'),
+                      validator: (v) =>
+                          v == null || v.isEmpty ? 'Required' : null,
                     ),
                     const SizedBox(height: Spacing.x3),
                     TextFormField(
                       decoration: const InputDecoration(labelText: 'Bank Name'),
-                      validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                      validator: (v) =>
+                          v == null || v.isEmpty ? 'Required' : null,
                     ),
                     const SizedBox(height: Spacing.x3),
                     TextFormField(

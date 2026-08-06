@@ -44,20 +44,28 @@ class _UsageLogListPageState extends ConsumerState<UsageLogListPage> {
         margin: EdgeInsets.zero,
         child: Padding(
           padding: const EdgeInsets.all(Spacing.x3),
-          child: Row(children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('${log.method} ${log.endpoint}',
-                      style: Theme.of(context).textTheme.titleSmall,),
-                  const SizedBox(height: Spacing.x1),
-                  Text('${log.statusCode} · ${log.responseMs}ms',
-                      style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs),),
-                ],
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${log.method} ${log.endpoint}',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    const SizedBox(height: Spacing.x1),
+                    Text(
+                      '${log.statusCode} · ${log.responseMs}ms',
+                      style: TextStyle(
+                          color: context.tokens.textSecondary,
+                          fontSize: TypeScale.xs),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],),
+            ],
+          ),
         ),
       ),
     );

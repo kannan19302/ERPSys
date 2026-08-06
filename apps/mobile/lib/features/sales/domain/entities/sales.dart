@@ -129,7 +129,8 @@ class SalesOrderItem extends Equatable {
   final double amount;
 
   @override
-  List<Object?> get props => <Object?>[id, productId, productName, quantity, rate, amount];
+  List<Object?> get props =>
+      <Object?>[id, productId, productName, quantity, rate, amount];
 }
 
 class DeliveryNote extends Equatable {
@@ -193,7 +194,8 @@ class DeliveryNoteItem extends Equatable {
   final double? amount;
 
   @override
-  List<Object?> get props => <Object?>[id, productId, productName, quantity, rate, amount];
+  List<Object?> get props =>
+      <Object?>[id, productId, productName, quantity, rate, amount];
 }
 
 class SalesReturn extends Equatable {
@@ -260,7 +262,8 @@ class SalesReturnItem extends Equatable {
   final double amount;
 
   @override
-  List<Object?> get props => <Object?>[id, productId, productName, quantity, rate, amount];
+  List<Object?> get props =>
+      <Object?>[id, productId, productName, quantity, rate, amount];
 }
 
 class SalesPipeline extends Equatable {
@@ -378,5 +381,6 @@ class SalesActivity extends Equatable {
   final DateTime? createdAt;
 
   @override
-  List<Object?> get props => <Object?>[id, type, subject, description, dateTime, createdAt];
+  List<Object?> get props =>
+      <Object?>[id, type, subject, description, dateTime, createdAt];
 }

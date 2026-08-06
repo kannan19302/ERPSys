@@ -129,12 +129,14 @@ class _TabbedDetailViewState extends State<TabbedDetailView>
           child: TabBarView(
             controller: _tabController,
             physics: widget.physics,
-            children: widget.tabs.map(
-              (DetailTab tab) => SingleChildScrollView(
-                padding: widget.contentPadding,
-                child: tab.builder(context),
-              ),
-            ).toList(),
+            children: widget.tabs
+                .map(
+                  (DetailTab tab) => SingleChildScrollView(
+                    padding: widget.contentPadding,
+                    child: tab.builder(context),
+                  ),
+                )
+                .toList(),
           ),
         ),
       ],

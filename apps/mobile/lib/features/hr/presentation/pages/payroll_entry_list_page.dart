@@ -71,8 +71,11 @@ class _PayrollEntryListPageState extends ConsumerState<PayrollEntryListPage> {
                     CircleAvatar(
                       radius: Spacing.x4,
                       backgroundColor: t.bgSunken,
-                      child: Icon(Icons.person_outline,
-                          color: t.textSecondary, size: TypeScale.lg,),
+                      child: Icon(
+                        Icons.person_outline,
+                        color: t.textSecondary,
+                        size: TypeScale.lg,
+                      ),
                     ),
                     const SizedBox(width: Spacing.x3),
                     Expanded(

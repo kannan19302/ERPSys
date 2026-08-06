@@ -29,8 +29,17 @@ class Bom extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, productId, productName, type, quantity, status, items,
-        wastagePercentage, createdAt, updatedAt,
+        id,
+        name,
+        productId,
+        productName,
+        type,
+        quantity,
+        status,
+        items,
+        wastagePercentage,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -57,7 +66,14 @@ class BomItem extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, bomId, productId, productName, quantity, rate, amount, scrapPercentage,
+        id,
+        bomId,
+        productId,
+        productName,
+        quantity,
+        rate,
+        amount,
+        scrapPercentage,
       ];
 }
 
@@ -100,9 +116,22 @@ class WorkOrder extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, workOrderNumber, productId, productName, quantity, producedQuantity,
-        status, bomId, workstationId, routingId, scheduledStart, scheduledEnd,
-        actualStart, actualEnd, createdAt, updatedAt,
+        id,
+        workOrderNumber,
+        productId,
+        productName,
+        quantity,
+        producedQuantity,
+        status,
+        bomId,
+        workstationId,
+        routingId,
+        scheduledStart,
+        scheduledEnd,
+        actualStart,
+        actualEnd,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -131,8 +160,15 @@ class WorkOrderOperation extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, workOrderId, operationName, workstationId, status,
-        scheduledDuration, actualDuration, startedAt, completedAt,
+        id,
+        workOrderId,
+        operationName,
+        workstationId,
+        status,
+        scheduledDuration,
+        actualDuration,
+        startedAt,
+        completedAt,
       ];
 }
 
@@ -159,8 +195,14 @@ class MrpRun extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, productId, productName, demandQuantity, supplyQuantity,
-        netRequirement, status, createdAt,
+        id,
+        productId,
+        productName,
+        demandQuantity,
+        supplyQuantity,
+        netRequirement,
+        status,
+        createdAt,
       ];
 }
 
@@ -187,17 +229,29 @@ class Workstation extends Equatable {
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
-  Workstation copyWith({double? utilization}) =>
-      Workstation(
-        id: id, name: name, code: code, location: location,
-        status: status, capacity: capacity,
+  Workstation copyWith({double? utilization}) => Workstation(
+        id: id,
+        name: name,
+        code: code,
+        location: location,
+        status: status,
+        capacity: capacity,
         utilization: utilization ?? this.utilization,
-        createdAt: createdAt, updatedAt: updatedAt,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
       );
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, code, location, status, capacity, utilization, createdAt, updatedAt,
+        id,
+        name,
+        code,
+        location,
+        status,
+        capacity,
+        utilization,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -226,7 +280,15 @@ class Routing extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, productId, productName, status, steps, totalDuration, createdAt, updatedAt,
+        id,
+        name,
+        productId,
+        productName,
+        status,
+        steps,
+        totalDuration,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -251,7 +313,13 @@ class RoutingStep extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, routingId, stepName, stepOrder, workstationId, duration, description,
+        id,
+        routingId,
+        stepName,
+        stepOrder,
+        workstationId,
+        duration,
+        description,
       ];
 }
 
@@ -286,8 +354,18 @@ class QualityInspection extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, inspectionNumber, productId, productName, workOrderId, type, status,
-        inspectedBy, totalQty, passedQty, failedQty, createdAt,
+        id,
+        inspectionNumber,
+        productId,
+        productName,
+        workOrderId,
+        type,
+        status,
+        inspectedBy,
+        totalQty,
+        passedQty,
+        failedQty,
+        createdAt,
       ];
 }
 
@@ -318,7 +396,15 @@ class EngineeringChangeOrder extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, bomId, bomName, description, reason, status,
-        effectiveDate, approvedBy, createdAt,
+        id,
+        name,
+        bomId,
+        bomName,
+        description,
+        reason,
+        status,
+        effectiveDate,
+        approvedBy,
+        createdAt,
       ];
 }

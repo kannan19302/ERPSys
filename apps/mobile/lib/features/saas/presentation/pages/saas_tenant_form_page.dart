@@ -25,21 +25,29 @@ class _SaasTenantFormPageState extends ConsumerState<SaasTenantFormPage> {
   bool get _isEditing => widget.tenantId != null;
 
   @override
-  void dispose() { _orgCtrl.dispose(); _domainCtrl.dispose(); super.dispose(); }
+  void dispose() {
+    _orgCtrl.dispose();
+    _domainCtrl.dispose();
+    super.dispose();
+  }
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
     final payload = <String, dynamic>{
       'organizationName': _orgCtrl.text.trim(),
-      'domain': _domainCtrl.text.trim().isEmpty ? null : _domainCtrl.text.trim(),
+      'domain':
+          _domainCtrl.text.trim().isEmpty ? null : _domainCtrl.text.trim(),
       'status': _status,
     };
-    final result = await ref.read(saasTenantListControllerProvider.notifier).save(payload, id: widget.tenantId);
+    final result = await ref
+        .read(saasTenantListControllerProvider.notifier)
+        .save(payload, id: widget.tenantId);
     if (!context.mounted) return;
     setState(() => _saving = false);
     result.fold(
-      (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(),
     );
   }
@@ -47,18 +55,50 @@ class _SaasTenantFormPageState extends ConsumerState<SaasTenantFormPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(_isEditing ? 'Edit Tenant' : 'New Tenant'), actions: [
-        TextButton(onPressed: _saving ? null : _save, child: _saving ? const SizedBox(height: Spacing.x5, width: Spacing.x5, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Save')),
-      ],),
-      body: Form(key: _formKey, child: ListView(padding: const EdgeInsets.all(Spacing.x4), children: [
-        TextFormField(controller: _orgCtrl, decoration: const InputDecoration(labelText: 'Organization Name *'), validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null),
-        const SizedBox(height: Spacing.x4), TextFormField(controller: _domainCtrl, decoration: const InputDecoration(labelText: 'Domain')),
-        const SizedBox(height: Spacing.x4),
-        DropdownButtonFormField<String>(initialValue: _status, decoration: const InputDecoration(labelText: 'Status'), items: const [
-          DropdownMenuItem(value: 'ACTIVE', child: Text('Active')), DropdownMenuItem(value: 'INACTIVE', child: Text('Inactive')),
-          DropdownMenuItem(value: 'SUSPENDED', child: Text('Suspended')),
-        ], onChanged: (v) { if (v != null) setState(() => _status = v); },),
-      ],),),
+      appBar: AppBar(
+        title: Text(_isEditing ? 'Edit Tenant' : 'New Tenant'),
+        actions: [
+          TextButton(
+              onPressed: _saving ? null : _save,
+              child: _saving
+                  ? const SizedBox(
+                      height: Spacing.x5,
+                      width: Spacing.x5,
+                      child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Text('Save')),
+        ],
+      ),
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.all(Spacing.x4),
+          children: [
+            TextFormField(
+                controller: _orgCtrl,
+                decoration:
+                    const InputDecoration(labelText: 'Organization Name *'),
+                validator: (v) =>
+                    v == null || v.trim().isEmpty ? 'Required' : null),
+            const SizedBox(height: Spacing.x4),
+            TextFormField(
+                controller: _domainCtrl,
+                decoration: const InputDecoration(labelText: 'Domain')),
+            const SizedBox(height: Spacing.x4),
+            DropdownButtonFormField<String>(
+              initialValue: _status,
+              decoration: const InputDecoration(labelText: 'Status'),
+              items: const [
+                DropdownMenuItem(value: 'ACTIVE', child: Text('Active')),
+                DropdownMenuItem(value: 'INACTIVE', child: Text('Inactive')),
+                DropdownMenuItem(value: 'SUSPENDED', child: Text('Suspended')),
+              ],
+              onChanged: (v) {
+                if (v != null) setState(() => _status = v);
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

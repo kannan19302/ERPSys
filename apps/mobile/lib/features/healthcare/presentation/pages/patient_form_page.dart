@@ -86,11 +86,14 @@ class _PatientFormPageState extends ConsumerState<PatientFormPage> {
       'gender': _gender,
       if (_dateOfBirth != null) 'dateOfBirth': _dateOfBirth!.toIso8601String(),
     };
-    final result = await ref.read(patientListControllerProvider.notifier).save(payload, id: widget.id);
+    final result = await ref
+        .read(patientListControllerProvider.notifier)
+        .save(payload, id: widget.id);
     if (!mounted) return;
     setState(() => _isLoading = false);
     result.fold(
-      (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(true),
     );
   }
@@ -104,7 +107,8 @@ class _PatientFormPageState extends ConsumerState<PatientFormPage> {
       );
     }
     return Scaffold(
-      appBar: AppBar(title: Text(widget.id != null ? 'Edit Patient' : 'New Patient')),
+      appBar: AppBar(
+          title: Text(widget.id != null ? 'Edit Patient' : 'New Patient')),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -113,7 +117,8 @@ class _PatientFormPageState extends ConsumerState<PatientFormPage> {
             UiTextField(
               label: 'Name',
               controller: _nameController,
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+              validator: (v) =>
+                  (v == null || v.trim().isEmpty) ? 'Required' : null,
             ),
             UiDropdownField(
               label: 'Gender',
@@ -127,22 +132,45 @@ class _PatientFormPageState extends ConsumerState<PatientFormPage> {
               selectedDate: _dateOfBirth,
               onChanged: (v) => setState(() => _dateOfBirth = v),
             ),
-            UiTextField(label: 'Phone', controller: _phoneController, keyboardType: TextInputType.phone),
-            UiTextField(label: 'Email', controller: _emailController, keyboardType: TextInputType.emailAddress),
-            UiTextField(label: 'Address', controller: _addressController, maxLines: 2),
-            UiTextField(label: 'Blood Group', controller: _bloodGroupController),
-            UiTextField(label: 'Allergies', controller: _allergiesController, maxLines: 2),
-            UiTextField(label: 'Medical History', controller: _medicalHistoryController, maxLines: 3),
+            UiTextField(
+                label: 'Phone',
+                controller: _phoneController,
+                keyboardType: TextInputType.phone),
+            UiTextField(
+                label: 'Email',
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress),
+            UiTextField(
+                label: 'Address', controller: _addressController, maxLines: 2),
+            UiTextField(
+                label: 'Blood Group', controller: _bloodGroupController),
+            UiTextField(
+                label: 'Allergies',
+                controller: _allergiesController,
+                maxLines: 2),
+            UiTextField(
+                label: 'Medical History',
+                controller: _medicalHistoryController,
+                maxLines: 3),
             const Divider(height: 32),
-            const Text('Emergency Contact', style: TextStyle(fontWeight: FontWeight.w600)),
+            const Text('Emergency Contact',
+                style: TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
-            UiTextField(label: 'Contact Name', controller: _emergencyContactNameController),
-            UiTextField(label: 'Contact Phone', controller: _emergencyContactPhoneController, keyboardType: TextInputType.phone),
+            UiTextField(
+                label: 'Contact Name',
+                controller: _emergencyContactNameController),
+            UiTextField(
+                label: 'Contact Phone',
+                controller: _emergencyContactPhoneController,
+                keyboardType: TextInputType.phone),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _isLoading ? null : _submit,
               child: _isLoading
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2))
                   : const Text('Save'),
             ),
           ],

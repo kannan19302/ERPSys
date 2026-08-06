@@ -37,8 +37,21 @@ class PwaPushSubscription extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, userId, endpoint, p256dhKey, authKey, userAgent, deviceType,
-        browser, platform, tags, status, lastPushedAt, expiresAt, createdAt, updatedAt,
+        id,
+        userId,
+        endpoint,
+        p256dhKey,
+        authKey,
+        userAgent,
+        deviceType,
+        browser,
+        platform,
+        tags,
+        status,
+        lastPushedAt,
+        expiresAt,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -69,8 +82,16 @@ class PwaManifestConfig extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, appName, shortName, themeColor, backgroundColor,
-        displayMode, startUrl, icons, createdAt, updatedAt,
+        id,
+        appName,
+        shortName,
+        themeColor,
+        backgroundColor,
+        displayMode,
+        startUrl,
+        icons,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -99,7 +120,14 @@ class PwaOfflineQueueItem extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, userId, actionType, payload, status,
-        errorMessage, retryCount, syncedAt, createdAt,
+        id,
+        userId,
+        actionType,
+        payload,
+        status,
+        errorMessage,
+        retryCount,
+        syncedAt,
+        createdAt,
       ];
 }

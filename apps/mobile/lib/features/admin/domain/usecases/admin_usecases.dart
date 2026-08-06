@@ -4,7 +4,8 @@ import '../../../../core/usecase/usecase.dart';
 import '../entities/admin.dart';
 import '../repositories/admin_repository.dart';
 
-class ListAdminUsersUseCase extends UseCase<Cacheable<Paginated<AdminUser>>, ListQuery> {
+class ListAdminUsersUseCase
+    extends UseCase<Cacheable<Paginated<AdminUser>>, ListQuery> {
   const ListAdminUsersUseCase(this._repository);
   final AdminRepository _repository;
   @override
@@ -37,7 +38,8 @@ class DeleteAdminUserUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deleteUser(id);
 }
 
-class ListAdminRolesUseCase extends UseCase<Cacheable<Paginated<AdminRole>>, ListQuery> {
+class ListAdminRolesUseCase
+    extends UseCase<Cacheable<Paginated<AdminRole>>, ListQuery> {
   const ListAdminRolesUseCase(this._repository);
   final AdminRepository _repository;
   @override
@@ -77,7 +79,8 @@ class GetAdminRoleUseCase extends UseCase<AdminRole, String> {
   Future<Result<AdminRole>> call(String id) => _repository.getRole(id);
 }
 
-class ListAdminSettingsUseCase extends UseCase<Cacheable<Paginated<AdminSetting>>, ListQuery> {
+class ListAdminSettingsUseCase
+    extends UseCase<Cacheable<Paginated<AdminSetting>>, ListQuery> {
   const ListAdminSettingsUseCase(this._repository);
   final AdminRepository _repository;
   @override
@@ -85,15 +88,18 @@ class ListAdminSettingsUseCase extends UseCase<Cacheable<Paginated<AdminSetting>
       _repository.listSettings(params);
 }
 
-class UpdateAdminSettingUseCase extends UseCase<AdminSetting, Map<String, dynamic>> {
+class UpdateAdminSettingUseCase
+    extends UseCase<AdminSetting, Map<String, dynamic>> {
   const UpdateAdminSettingUseCase(this._repository);
   final AdminRepository _repository;
   @override
   Future<Result<AdminSetting>> call(Map<String, dynamic> params) =>
-      _repository.updateSetting(params['key'] as String, params['value'] as Map<String, dynamic>);
+      _repository.updateSetting(
+          params['key'] as String, params['value'] as Map<String, dynamic>);
 }
 
-class ListAdminAuditLogsUseCase extends UseCase<Cacheable<Paginated<AdminAuditLog>>, ListQuery> {
+class ListAdminAuditLogsUseCase
+    extends UseCase<Cacheable<Paginated<AdminAuditLog>>, ListQuery> {
   const ListAdminAuditLogsUseCase(this._repository);
   final AdminRepository _repository;
   @override
@@ -109,7 +115,8 @@ class GetSystemHealthUseCase extends UseCase<SystemHealth, NoParams> {
       _repository.getSystemHealth();
 }
 
-class ListAdminApiKeysUseCase extends UseCase<Cacheable<Paginated<AdminApiKey>>, ListQuery> {
+class ListAdminApiKeysUseCase
+    extends UseCase<Cacheable<Paginated<AdminApiKey>>, ListQuery> {
   const ListAdminApiKeysUseCase(this._repository);
   final AdminRepository _repository;
   @override
@@ -124,7 +131,8 @@ class GetAdminApiKeyUseCase extends UseCase<AdminApiKey, String> {
   Future<Result<AdminApiKey>> call(String id) => _repository.getApiKey(id);
 }
 
-class CreateAdminApiKeyUseCase extends UseCase<AdminApiKey, Map<String, dynamic>> {
+class CreateAdminApiKeyUseCase
+    extends UseCase<AdminApiKey, Map<String, dynamic>> {
   const CreateAdminApiKeyUseCase(this._repository);
   final AdminRepository _repository;
   @override
@@ -139,7 +147,8 @@ class DeleteAdminApiKeyUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deleteApiKey(id);
 }
 
-class ListAdminTenantsUseCase extends UseCase<Cacheable<Paginated<AdminTenant>>, ListQuery> {
+class ListAdminTenantsUseCase
+    extends UseCase<Cacheable<Paginated<AdminTenant>>, ListQuery> {
   const ListAdminTenantsUseCase(this._repository);
   final AdminRepository _repository;
   @override
@@ -154,7 +163,8 @@ class GetAdminTenantUseCase extends UseCase<AdminTenant, String> {
   Future<Result<AdminTenant>> call(String id) => _repository.getTenant(id);
 }
 
-class CreateAdminTenantUseCase extends UseCase<AdminTenant, Map<String, dynamic>> {
+class CreateAdminTenantUseCase
+    extends UseCase<AdminTenant, Map<String, dynamic>> {
   const CreateAdminTenantUseCase(this._repository);
   final AdminRepository _repository;
   @override

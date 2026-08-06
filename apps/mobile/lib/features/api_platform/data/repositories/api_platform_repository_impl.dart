@@ -37,7 +37,8 @@ class ApiPlatformRepositoryImpl implements ApiPlatformRepository {
       final List<Map<String, dynamic>> jsonItems = page.data
           .map((dynamic e) => (e as dynamic).toJson() as Map<String, dynamic>)
           .toList(growable: false);
-      await _cache.write(_tenantId, namespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, namespace, query.cacheKey, <String, Object?>{
         'data': jsonItems,
         'meta': page.meta.toJson(),
       });
@@ -45,9 +46,11 @@ class ApiPlatformRepositoryImpl implements ApiPlatformRepository {
         Cacheable<Paginated<T>>(value: page),
       );
     } on NetworkException catch (error) {
-      final cached = _cache.read<Map<String, dynamic>>(_tenantId, namespace, query.cacheKey);
+      final cached = _cache.read<Map<String, dynamic>>(
+          _tenantId, namespace, query.cacheKey);
       if (cached == null) {
-        return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
+        return Result<Cacheable<Paginated<T>>>.err(
+            mapExceptionToFailure(error));
       }
       return Result<Cacheable<Paginated<T>>>.ok(
         Cacheable<Paginated<T>>(
@@ -90,8 +93,12 @@ class ApiPlatformRepositoryImpl implements ApiPlatformRepository {
 
   @override
   Future<Result<Cacheable<Paginated<ApiKey>>>> listApiKeys(ListQuery q) =>
-      _paginated(_keyNamespace, q, () => _remote.listApiKeys(q),
-        ApiKeyModel.fromJson,);
+      _paginated(
+        _keyNamespace,
+        q,
+        () => _remote.listApiKeys(q),
+        ApiKeyModel.fromJson,
+      );
 
   @override
   Future<Result<ApiKey>> getApiKey(String id) =>
@@ -114,9 +121,14 @@ class ApiPlatformRepositoryImpl implements ApiPlatformRepository {
       _single(() => _remote.revokeApiKey(id));
 
   @override
-  Future<Result<Cacheable<Paginated<WebhookEndpoint>>>> listWebhooks(ListQuery q) =>
-      _paginated(_webhookNamespace, q, () => _remote.listWebhooks(q),
-        WebhookEndpointModel.fromJson,);
+  Future<Result<Cacheable<Paginated<WebhookEndpoint>>>> listWebhooks(
+          ListQuery q) =>
+      _paginated(
+        _webhookNamespace,
+        q,
+        () => _remote.listWebhooks(q),
+        WebhookEndpointModel.fromJson,
+      );
 
   @override
   Future<Result<WebhookEndpoint>> getWebhook(String id) =>
@@ -127,7 +139,8 @@ class ApiPlatformRepositoryImpl implements ApiPlatformRepository {
       _write(() => _remote.createWebhook(p));
 
   @override
-  Future<Result<WebhookEndpoint>> updateWebhook(String id, Map<String, dynamic> p) =>
+  Future<Result<WebhookEndpoint>> updateWebhook(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateWebhook(id, p));
 
   @override
@@ -135,21 +148,32 @@ class ApiPlatformRepositoryImpl implements ApiPlatformRepository {
       _delete(() => _remote.deleteWebhook(id));
 
   @override
-  Future<Result<Cacheable<Paginated<ApiUsageLog>>>> listUsageLogs(ListQuery q) =>
-      _paginated(_usageNamespace, q, () => _remote.listUsageLogs(q),
-        ApiUsageLogModel.fromJson,);
+  Future<Result<Cacheable<Paginated<ApiUsageLog>>>> listUsageLogs(
+          ListQuery q) =>
+      _paginated(
+        _usageNamespace,
+        q,
+        () => _remote.listUsageLogs(q),
+        ApiUsageLogModel.fromJson,
+      );
 
   @override
-  Future<Result<Cacheable<Paginated<ApiRateLimitRule>>>> listRateLimits(ListQuery q) =>
-      _paginated(_rateLimitNamespace, q, () => _remote.listRateLimits(q),
-        ApiRateLimitRuleModel.fromJson,);
+  Future<Result<Cacheable<Paginated<ApiRateLimitRule>>>> listRateLimits(
+          ListQuery q) =>
+      _paginated(
+        _rateLimitNamespace,
+        q,
+        () => _remote.listRateLimits(q),
+        ApiRateLimitRuleModel.fromJson,
+      );
 
   @override
   Future<Result<ApiRateLimitRule>> createRateLimit(Map<String, dynamic> p) =>
       _write(() => _remote.createRateLimit(p));
 
   @override
-  Future<Result<ApiRateLimitRule>> updateRateLimit(String id, Map<String, dynamic> p) =>
+  Future<Result<ApiRateLimitRule>> updateRateLimit(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateRateLimit(id, p));
 
   @override

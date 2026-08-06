@@ -4,7 +4,8 @@ import '../../../../core/usecase/usecase.dart';
 import '../entities/documents.dart';
 import '../repositories/documents_repository.dart';
 
-class ListFoldersUseCase extends UseCase<Cacheable<Paginated<DocumentFolder>>, ListQuery> {
+class ListFoldersUseCase
+    extends UseCase<Cacheable<Paginated<DocumentFolder>>, ListQuery> {
   const ListFoldersUseCase(this._repository);
   final DocumentsRepository _repository;
   @override
@@ -44,7 +45,8 @@ class DeleteFolderUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deleteFolder(id);
 }
 
-class ListDocumentsUseCase extends UseCase<Cacheable<Paginated<Document>>, ListQuery> {
+class ListDocumentsUseCase
+    extends UseCase<Cacheable<Paginated<Document>>, ListQuery> {
   const ListDocumentsUseCase(this._repository);
   final DocumentsRepository _repository;
   @override
@@ -106,24 +108,29 @@ class SignDocumentUseCase extends UseCase<Document, String> {
 }
 
 class ListDocumentVersionsParams {
-  const ListDocumentVersionsParams({required this.documentId, required this.query});
+  const ListDocumentVersionsParams(
+      {required this.documentId, required this.query});
   final String documentId;
   final ListQuery query;
 }
 
-class ListDocumentVersionsUseCase extends UseCase<Cacheable<Paginated<DocumentVersion>>, ListDocumentVersionsParams> {
+class ListDocumentVersionsUseCase extends UseCase<
+    Cacheable<Paginated<DocumentVersion>>, ListDocumentVersionsParams> {
   const ListDocumentVersionsUseCase(this._repository);
   final DocumentsRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<DocumentVersion>>>> call(ListDocumentVersionsParams params) =>
+  Future<Result<Cacheable<Paginated<DocumentVersion>>>> call(
+          ListDocumentVersionsParams params) =>
       _repository.listDocumentVersions(params.documentId, params.query);
 }
 
-class ListTemplatesUseCase extends UseCase<Cacheable<Paginated<DocumentTemplate>>, ListQuery> {
+class ListTemplatesUseCase
+    extends UseCase<Cacheable<Paginated<DocumentTemplate>>, ListQuery> {
   const ListTemplatesUseCase(this._repository);
   final DocumentsRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<DocumentTemplate>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<DocumentTemplate>>>> call(
+          ListQuery params) =>
       _repository.listTemplates(params);
 }
 
@@ -131,7 +138,8 @@ class GetTemplateUseCase extends UseCase<DocumentTemplate, String> {
   const GetTemplateUseCase(this._repository);
   final DocumentsRepository _repository;
   @override
-  Future<Result<DocumentTemplate>> call(String id) => _repository.getTemplate(id);
+  Future<Result<DocumentTemplate>> call(String id) =>
+      _repository.getTemplate(id);
 }
 
 class SaveTemplateParams {
@@ -142,7 +150,8 @@ class SaveTemplateParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveTemplateUseCase extends UseCase<DocumentTemplate, SaveTemplateParams> {
+class SaveTemplateUseCase
+    extends UseCase<DocumentTemplate, SaveTemplateParams> {
   const SaveTemplateUseCase(this._repository);
   final DocumentsRepository _repository;
   @override

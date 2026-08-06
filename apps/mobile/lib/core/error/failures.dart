@@ -60,7 +60,8 @@ class ConflictFailure extends Failure {
 
 /// 429 — the API throttler rejected the call.
 class RateLimitFailure extends Failure {
-  const RateLimitFailure(super.message, {super.code, super.requestId, this.retryAfter});
+  const RateLimitFailure(super.message,
+      {super.code, super.requestId, this.retryAfter});
 
   final Duration? retryAfter;
 
@@ -91,13 +92,15 @@ class CacheFailure extends Failure {
 /// MFA challenge issued by `POST /auth/login`; not an error, but it interrupts
 /// the use case's happy path, so it travels as a typed failure.
 class MfaRequiredFailure extends Failure {
-  const MfaRequiredFailure(super.message, {required this.challengeToken, this.pushSent = false});
+  const MfaRequiredFailure(super.message,
+      {required this.challengeToken, this.pushSent = false});
 
   final String challengeToken;
   final bool pushSent;
 
   @override
-  List<Object?> get props => <Object?>[...super.props, challengeToken, pushSent];
+  List<Object?> get props =>
+      <Object?>[...super.props, challengeToken, pushSent];
 }
 
 /// The account exists in more than one tenant, so login needs an org slug.

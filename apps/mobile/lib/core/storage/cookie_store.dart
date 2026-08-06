@@ -34,7 +34,8 @@ class CookieStore {
   /// [CookieJar] still lets [readCsrfToken] read the one cookie JS can see.
   static Future<CookieStore> create() async {
     if (kIsWeb) {
-      return CookieStore(CookieJar(ignoreExpires: false), Uri.parse(Env.apiOrigin));
+      return CookieStore(
+          CookieJar(ignoreExpires: false), Uri.parse(Env.apiOrigin));
     }
     final Directory supportDir = await getApplicationSupportDirectory();
     final PersistCookieJar jar = PersistCookieJar(

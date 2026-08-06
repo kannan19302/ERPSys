@@ -92,7 +92,10 @@ class _PollFormPageState extends ConsumerState<PollFormPage> {
             const SizedBox(height: Spacing.x4),
             Text('Options', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: Spacing.x2),
-            ..._optionCtrls.asMap().entries.map((MapEntry<int, TextEditingController> entry) {
+            ..._optionCtrls
+                .asMap()
+                .entries
+                .map((MapEntry<int, TextEditingController> entry) {
               return Padding(
                 padding: const EdgeInsets.only(bottom: Spacing.x3),
                 child: Row(

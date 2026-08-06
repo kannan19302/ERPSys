@@ -4,7 +4,8 @@ import '../../../../core/usecase/usecase.dart';
 import '../entities/healthcare.dart';
 import '../repositories/healthcare_repository.dart';
 
-class ListPatientsUseCase extends UseCase<Cacheable<Paginated<Patient>>, ListQuery> {
+class ListPatientsUseCase
+    extends UseCase<Cacheable<Paginated<Patient>>, ListQuery> {
   const ListPatientsUseCase(this._repository);
   final HealthcareRepository _repository;
   @override
@@ -44,7 +45,8 @@ class DeletePatientUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deletePatient(id);
 }
 
-class ListAppointmentsUseCase extends UseCase<Cacheable<Paginated<Appointment>>, ListQuery> {
+class ListAppointmentsUseCase
+    extends UseCase<Cacheable<Paginated<Appointment>>, ListQuery> {
   const ListAppointmentsUseCase(this._repository);
   final HealthcareRepository _repository;
   @override
@@ -65,7 +67,8 @@ class SaveAppointmentParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveAppointmentUseCase extends UseCase<Appointment, SaveAppointmentParams> {
+class SaveAppointmentUseCase
+    extends UseCase<Appointment, SaveAppointmentParams> {
   const SaveAppointmentUseCase(this._repository);
   final HealthcareRepository _repository;
   @override
@@ -84,7 +87,8 @@ class DeleteAppointmentUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deleteAppointment(id);
 }
 
-class ListPrescriptionsUseCase extends UseCase<Cacheable<Paginated<Prescription>>, ListQuery> {
+class ListPrescriptionsUseCase
+    extends UseCase<Cacheable<Paginated<Prescription>>, ListQuery> {
   const ListPrescriptionsUseCase(this._repository);
   final HealthcareRepository _repository;
   @override
@@ -92,7 +96,8 @@ class ListPrescriptionsUseCase extends UseCase<Cacheable<Paginated<Prescription>
       _repository.listPrescriptions(params);
 }
 
-class ListLabOrdersUseCase extends UseCase<Cacheable<Paginated<LabOrder>>, ListQuery> {
+class ListLabOrdersUseCase
+    extends UseCase<Cacheable<Paginated<LabOrder>>, ListQuery> {
   const ListLabOrdersUseCase(this._repository);
   final HealthcareRepository _repository;
   @override
@@ -100,7 +105,8 @@ class ListLabOrdersUseCase extends UseCase<Cacheable<Paginated<LabOrder>>, ListQ
       _repository.listLabOrders(params);
 }
 
-class ListMedicalRecordsUseCase extends UseCase<Cacheable<Paginated<MedicalRecord>>, ListQuery> {
+class ListMedicalRecordsUseCase
+    extends UseCase<Cacheable<Paginated<MedicalRecord>>, ListQuery> {
   const ListMedicalRecordsUseCase(this._repository);
   final HealthcareRepository _repository;
   @override
@@ -139,8 +145,7 @@ class GetLabOrderUseCase extends UseCase<LabOrder, String> {
   const GetLabOrderUseCase(this._repository);
   final HealthcareRepository _repository;
   @override
-  Future<Result<LabOrder>> call(String id) =>
-      _repository.getLabOrder(id);
+  Future<Result<LabOrder>> call(String id) => _repository.getLabOrder(id);
 }
 
 class SaveLabOrderParams {
@@ -149,8 +154,7 @@ class SaveLabOrderParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveLabOrderUseCase
-    extends UseCase<LabOrder, SaveLabOrderParams> {
+class SaveLabOrderUseCase extends UseCase<LabOrder, SaveLabOrderParams> {
   const SaveLabOrderUseCase(this._repository);
   final HealthcareRepository _repository;
   @override
@@ -162,7 +166,8 @@ class SaveLabOrderUseCase
   }
 }
 
-class ListInsuranceClaimsUseCase extends UseCase<Cacheable<Paginated<InsuranceClaim>>, ListQuery> {
+class ListInsuranceClaimsUseCase
+    extends UseCase<Cacheable<Paginated<InsuranceClaim>>, ListQuery> {
   const ListInsuranceClaimsUseCase(this._repository);
   final HealthcareRepository _repository;
   @override

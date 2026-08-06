@@ -160,8 +160,8 @@ class _KpiCard extends StatelessWidget {
     final Palette t = context.tokens;
 
     return SizedBox(
-      width: (MediaQuery.sizeOf(context).width - Spacing.x4 * 2 - Spacing.x3) /
-          2,
+      width:
+          (MediaQuery.sizeOf(context).width - Spacing.x4 * 2 - Spacing.x3) / 2,
       child: UiCard(
         padding: const EdgeInsets.all(Spacing.x3),
         child: Column(

@@ -39,7 +39,8 @@ class ApiKeyModel extends ApiKey {
       status: json['status'] as String? ?? 'ACTIVE',
       scopes: (json['scopes'] as List<dynamic>?)
               ?.map((e) => e.toString())
-              .toList(growable: false) ?? const [],
+              .toList(growable: false) ??
+          const [],
       ipWhitelist: json['ipWhitelist'] as String?,
       expiresAt: DateTime.tryParse('${json['expiresAt']}'),
       createdAt: DateTime.tryParse('${json['createdAt']}'),
@@ -148,7 +149,8 @@ class ApiRateLimitRuleModel extends ApiRateLimitRule {
 
   factory ApiRateLimitRuleModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('ApiRateLimitRule missing id');
+    if (id is! String)
+      throw const ParseException('ApiRateLimitRule missing id');
     return ApiRateLimitRuleModel(
       id: id,
       name: json['name'] as String? ?? '',

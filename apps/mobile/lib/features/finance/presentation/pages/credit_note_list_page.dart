@@ -48,7 +48,8 @@ class _CreditNoteListPageState extends ConsumerState<CreditNoteListPage> {
   @override
   Widget build(BuildContext context) {
     final FinanceListState<CreditNote> state = ref.watch(creditNotesProvider);
-    final CreditNotesController controller = ref.read(creditNotesProvider.notifier);
+    final CreditNotesController controller =
+        ref.read(creditNotesProvider.notifier);
     final Palette t = context.tokens;
 
     return Scaffold(
@@ -75,7 +76,10 @@ class _CreditNoteListPageState extends ConsumerState<CreditNoteListPage> {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2,
+              Spacing.x4,
+              Spacing.x3,
+              Spacing.x4,
+              Spacing.x2,
             ),
             child: TextField(
               controller: _search,
@@ -117,7 +121,8 @@ class _CreditNoteListPageState extends ConsumerState<CreditNoteListPage> {
                   underline: const SizedBox.shrink(),
                   items: _statusFilters.entries
                       .map(
-                        (MapEntry<String, String> e) => DropdownMenuItem<String>(
+                        (MapEntry<String, String> e) =>
+                            DropdownMenuItem<String>(
                           value: e.key,
                           child: Text(e.value),
                         ),
@@ -128,7 +133,8 @@ class _CreditNoteListPageState extends ConsumerState<CreditNoteListPage> {
                     if (value == null) {
                       controller.applyFilters(const <String, String>{});
                     } else {
-                      controller.applyFilters(<String, String>{'status': value});
+                      controller
+                          .applyFilters(<String, String>{'status': value});
                     }
                   },
                 ),
@@ -141,7 +147,8 @@ class _CreditNoteListPageState extends ConsumerState<CreditNoteListPage> {
     );
   }
 
-  Widget _body(FinanceListState<CreditNote> state, CreditNotesController controller) {
+  Widget _body(
+      FinanceListState<CreditNote> state, CreditNotesController controller) {
     if (state.isLoading && state.items.isEmpty) {
       return const LoadingView();
     }
@@ -161,8 +168,7 @@ class _CreditNoteListPageState extends ConsumerState<CreditNoteListPage> {
       emptyMessage: state.query.search?.isNotEmpty ?? false
           ? 'Nothing matches "${state.query.search}".'
           : 'Credit notes created in UniERP will appear here.',
-      itemBuilder: (BuildContext context, CreditNote cn, _) =>
-          _CreditNoteTile(
+      itemBuilder: (BuildContext context, CreditNote cn, _) => _CreditNoteTile(
         creditNote: cn,
         onTap: () => context.pushNamed(
           'credit-note-detail',
@@ -238,7 +244,8 @@ class _CreditNoteTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: <Widget>[
               Text(
-                Formatters.currency(creditNote.totalAmount, currencyCode: creditNote.currency),
+                Formatters.currency(creditNote.totalAmount,
+                    currencyCode: creditNote.currency),
                 style: Theme.of(context).textTheme.labelLarge,
               ),
               const SizedBox(height: Spacing.x1),

@@ -42,7 +42,9 @@ class QuotationModel extends Quotation {
         'customerId': customerId,
         'customerName': customerName,
         'status': status,
-        'items': items.map((QuotationItem e) => (e as QuotationItemModel).toJson()).toList(),
+        'items': items
+            .map((QuotationItem e) => (e as QuotationItemModel).toJson())
+            .toList(),
         'totalAmount': totalAmount,
         'validUntil': validUntil?.toIso8601String(),
         'notes': notes,
@@ -62,7 +64,8 @@ class QuotationItemModel extends QuotationItem {
     super.deliveryDate,
   });
 
-  factory QuotationItemModel.fromJson(Map<String, dynamic> json) => QuotationItemModel(
+  factory QuotationItemModel.fromJson(Map<String, dynamic> json) =>
+      QuotationItemModel(
         id: json['id'] as String? ?? '',
         productId: json['productId'] as String? ?? '',
         productName: json['productName'] as String? ?? '',
@@ -102,8 +105,8 @@ class SalesOrderModel extends SalesOrder {
     if (id is! String) {
       throw const ParseException('SalesOrder is missing its id');
     }
-    final List<SalesOrderItem> items =
-        _parseItems<SalesOrderItem>(json['items'], SalesOrderItemModel.fromJson);
+    final List<SalesOrderItem> items = _parseItems<SalesOrderItem>(
+        json['items'], SalesOrderItemModel.fromJson);
 
     return SalesOrderModel(
       id: id,
@@ -124,7 +127,9 @@ class SalesOrderModel extends SalesOrder {
         'customerId': customerId,
         'customerName': customerName,
         'status': status,
-        'items': items.map((SalesOrderItem e) => (e as SalesOrderItemModel).toJson()).toList(),
+        'items': items
+            .map((SalesOrderItem e) => (e as SalesOrderItemModel).toJson())
+            .toList(),
         'totalAmount': totalAmount,
         'deliveryDate': deliveryDate?.toIso8601String(),
         'notes': notes,
@@ -143,7 +148,8 @@ class SalesOrderItemModel extends SalesOrderItem {
     required super.amount,
   });
 
-  factory SalesOrderItemModel.fromJson(Map<String, dynamic> json) => SalesOrderItemModel(
+  factory SalesOrderItemModel.fromJson(Map<String, dynamic> json) =>
+      SalesOrderItemModel(
         id: json['id'] as String? ?? '',
         productId: json['productId'] as String? ?? '',
         productName: json['productName'] as String? ?? '',
@@ -182,8 +188,8 @@ class DeliveryNoteModel extends DeliveryNote {
     if (id is! String) {
       throw const ParseException('DeliveryNote is missing its id');
     }
-    final List<DeliveryNoteItem> items =
-        _parseItems<DeliveryNoteItem>(json['items'], DeliveryNoteItemModel.fromJson);
+    final List<DeliveryNoteItem> items = _parseItems<DeliveryNoteItem>(
+        json['items'], DeliveryNoteItemModel.fromJson);
 
     return DeliveryNoteModel(
       id: id,
@@ -206,7 +212,9 @@ class DeliveryNoteModel extends DeliveryNote {
         'customerId': customerId,
         'customerName': customerName,
         'status': status,
-        'items': items.map((DeliveryNoteItem e) => (e as DeliveryNoteItemModel).toJson()).toList(),
+        'items': items
+            .map((DeliveryNoteItem e) => (e as DeliveryNoteItemModel).toJson())
+            .toList(),
         'deliveryDate': deliveryDate?.toIso8601String(),
         'shippingAddress': shippingAddress,
         'notes': notes,
@@ -225,7 +233,8 @@ class DeliveryNoteItemModel extends DeliveryNoteItem {
     super.amount,
   });
 
-  factory DeliveryNoteItemModel.fromJson(Map<String, dynamic> json) => DeliveryNoteItemModel(
+  factory DeliveryNoteItemModel.fromJson(Map<String, dynamic> json) =>
+      DeliveryNoteItemModel(
         id: json['id'] as String? ?? '',
         productId: json['productId'] as String? ?? '',
         productName: json['productName'] as String? ?? '',
@@ -265,8 +274,8 @@ class SalesReturnModel extends SalesReturn {
     if (id is! String) {
       throw const ParseException('SalesReturn is missing its id');
     }
-    final List<SalesReturnItem> items =
-        _parseItems<SalesReturnItem>(json['items'], SalesReturnItemModel.fromJson);
+    final List<SalesReturnItem> items = _parseItems<SalesReturnItem>(
+        json['items'], SalesReturnItemModel.fromJson);
 
     return SalesReturnModel(
       id: id,
@@ -292,7 +301,9 @@ class SalesReturnModel extends SalesReturn {
         'status': status,
         'reason': reason,
         'reasonType': reasonType,
-        'items': items.map((SalesReturnItem e) => (e as SalesReturnItemModel).toJson()).toList(),
+        'items': items
+            .map((SalesReturnItem e) => (e as SalesReturnItemModel).toJson())
+            .toList(),
         'totalAmount': totalAmount,
         'notes': notes,
         'createdAt': createdAt?.toIso8601String(),
@@ -310,7 +321,8 @@ class SalesReturnItemModel extends SalesReturnItem {
     required super.amount,
   });
 
-  factory SalesReturnItemModel.fromJson(Map<String, dynamic> json) => SalesReturnItemModel(
+  factory SalesReturnItemModel.fromJson(Map<String, dynamic> json) =>
+      SalesReturnItemModel(
         id: json['id'] as String? ?? '',
         productId: json['productId'] as String? ?? '',
         productName: json['productName'] as String? ?? '',
@@ -370,7 +382,8 @@ class PipelineStageModel extends PipelineStage {
     required super.order,
   });
 
-  factory PipelineStageModel.fromJson(Map<String, dynamic> json) => PipelineStageModel(
+  factory PipelineStageModel.fromJson(Map<String, dynamic> json) =>
+      PipelineStageModel(
         name: json['name'] as String? ?? '',
         order: asInt(json['order']),
       );
@@ -492,7 +505,10 @@ class SalesActivityModel extends SalesActivity {
 
 List<T> _parseItems<T>(Object? raw, T Function(Map<String, dynamic>) fromJson) {
   if (raw is List) {
-    return raw.whereType<Map<String, dynamic>>().map(fromJson).toList(growable: false);
+    return raw
+        .whereType<Map<String, dynamic>>()
+        .map(fromJson)
+        .toList(growable: false);
   }
   return <T>[];
 }

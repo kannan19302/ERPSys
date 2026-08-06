@@ -40,7 +40,9 @@ class BuilderFormDetailPage extends ConsumerWidget {
       body: formAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load form.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load form.'),
           onRetry: () => ref.invalidate(builderFormDetailProvider(formId)),
         ),
         data: (BuilderForm form) => _BuilderFormDetail(form: form),
@@ -139,14 +141,17 @@ class _BuilderFormDetail extends StatelessWidget {
                   ),
                 ],
               ),
-              if (form.description != null && form.description!.isNotEmpty) ...<Widget>[
+              if (form.description != null &&
+                  form.description!.isNotEmpty) ...<Widget>[
                 const SizedBox(height: Spacing.x2),
-                Text(form.description!, style: TextStyle(color: t.textSecondary)),
+                Text(form.description!,
+                    style: TextStyle(color: t.textSecondary)),
               ],
               const SizedBox(height: Spacing.x2),
               _FieldRow('Version', 'v${form.version}'),
               _FieldRow('Fields', '${form.fields.length}'),
-              _FieldRow('Created', Formatters.date(form.createdAt ?? DateTime.now())),
+              _FieldRow(
+                  'Created', Formatters.date(form.createdAt ?? DateTime.now())),
             ],
           ),
         ),
@@ -165,26 +170,34 @@ class _BuilderFormDetail extends StatelessWidget {
               children: <Widget>[
                 Text('Fields', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: Spacing.x3),
-                ...form.fields.map((BuilderFormField field) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: Spacing.x1_5),
-                  child: Row(
-                    children: <Widget>[
-                      Icon(Icons.text_fields, size: TypeScale.lg, color: t.primary),
-                      const SizedBox(width: Spacing.x2),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text(field.label, style: const TextStyle(fontWeight: TypeScale.medium)),
-                            Text(field.fieldType, style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
-                          ],
+                ...form.fields.map(
+                  (BuilderFormField field) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: Spacing.x1_5),
+                    child: Row(
+                      children: <Widget>[
+                        Icon(Icons.text_fields,
+                            size: TypeScale.lg, color: t.primary),
+                        const SizedBox(width: Spacing.x2),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(field.label,
+                                  style: const TextStyle(
+                                      fontWeight: TypeScale.medium)),
+                              Text(field.fieldType,
+                                  style: TextStyle(
+                                      color: t.textSecondary,
+                                      fontSize: TypeScale.xs)),
+                            ],
+                          ),
                         ),
-                      ),
-                      if (field.required)
-                        Icon(Icons.star, size: TypeScale.sm, color: t.danger),
-                    ],
+                        if (field.required)
+                          Icon(Icons.star, size: TypeScale.sm, color: t.danger),
+                      ],
+                    ),
                   ),
-                ),),
+                ),
               ],
             ),
           ),

@@ -14,8 +14,12 @@ int asInt(Object? value) => switch (value) {
       _ => 0,
     };
 
-List<T> _parseItems<T>(List<dynamic>? raw, T Function(Map<String, dynamic>) fromJson) =>
-    raw?.map((e) => fromJson(e as Map<String, dynamic>)).toList(growable: false) ?? const [];
+List<T> _parseItems<T>(
+        List<dynamic>? raw, T Function(Map<String, dynamic>) fromJson) =>
+    raw
+        ?.map((e) => fromJson(e as Map<String, dynamic>))
+        .toList(growable: false) ??
+    const [];
 
 class MultiCurrencyRateModel extends MultiCurrencyRate {
   const MultiCurrencyRateModel({
@@ -30,7 +34,8 @@ class MultiCurrencyRateModel extends MultiCurrencyRate {
 
   factory MultiCurrencyRateModel.fromJson(Map<String, dynamic> json) {
     final id = json['id'];
-    if (id is! String) throw const ParseException('MultiCurrencyRate missing id');
+    if (id is! String)
+      throw const ParseException('MultiCurrencyRate missing id');
     return MultiCurrencyRateModel(
       id: id,
       fromCurrency: json['fromCurrency'] as String? ?? '',
@@ -69,7 +74,8 @@ class ConsolidationReportModel extends ConsolidationReport {
 
   factory ConsolidationReportModel.fromJson(Map<String, dynamic> json) {
     final id = json['id'];
-    if (id is! String) throw const ParseException('ConsolidationReport missing id');
+    if (id is! String)
+      throw const ParseException('ConsolidationReport missing id');
     return ConsolidationReportModel(
       id: id,
       title: json['title'] as String? ?? '',
@@ -116,7 +122,8 @@ class IntercompanyAgreementModel extends IntercompanyAgreement {
 
   factory IntercompanyAgreementModel.fromJson(Map<String, dynamic> json) {
     final id = json['id'];
-    if (id is! String) throw const ParseException('IntercompanyAgreement missing id');
+    if (id is! String)
+      throw const ParseException('IntercompanyAgreement missing id');
     return IntercompanyAgreementModel(
       id: id,
       agreementNumber: json['agreementNumber'] as String? ?? '',
@@ -172,7 +179,9 @@ class CostAllocationModel extends CostAllocation {
       status: json['status'] as String? ?? 'DRAFT',
       totalAmount: asDouble(json['totalAmount']),
       fromCostCenter: json['fromCostCenter'] as String?,
-      toCostCenters: _parseItems<String>(json['toCostCenters'] as List<dynamic>?, (e) => e['id'] as String? ?? ''),
+      toCostCenters: _parseItems<String>(
+          json['toCostCenters'] as List<dynamic>?,
+          (e) => e['id'] as String? ?? ''),
       method: json['method'] as String? ?? 'EQUAL',
       allocationDate: DateTime.tryParse('${json['allocationDate']}'),
       notes: json['notes'] as String?,
@@ -211,7 +220,8 @@ class RevenueRecognitionEntryModel extends RevenueRecognitionEntry {
 
   factory RevenueRecognitionEntryModel.fromJson(Map<String, dynamic> json) {
     final id = json['id'];
-    if (id is! String) throw const ParseException('RevenueRecognitionEntry missing id');
+    if (id is! String)
+      throw const ParseException('RevenueRecognitionEntry missing id');
     return RevenueRecognitionEntryModel(
       id: id,
       sourceType: json['sourceType'] as String? ?? '',
@@ -300,7 +310,8 @@ class FinancialCloseTaskModel extends FinancialCloseTask {
 
   factory FinancialCloseTaskModel.fromJson(Map<String, dynamic> json) {
     final id = json['id'];
-    if (id is! String) throw const ParseException('FinancialCloseTask missing id');
+    if (id is! String)
+      throw const ParseException('FinancialCloseTask missing id');
     return FinancialCloseTaskModel(
       id: id,
       title: json['title'] as String? ?? '',

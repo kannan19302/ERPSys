@@ -46,19 +46,20 @@ class _SalesOrderFormPageState extends ConsumerState<SalesOrderFormPage> {
   }
 
   Future<void> _loadOrder() async {
-    final SalesOrder? order = ref
-        .read(salesOrderDetailProvider(widget.orderId!))
-        .valueOrNull;
+    final SalesOrder? order =
+        ref.read(salesOrderDetailProvider(widget.orderId!)).valueOrNull;
     if (order != null) {
       _customerCtrl.text = order.customerName;
       _notesCtrl.text = order.notes ?? '';
       _orderDate = order.createdAt ?? DateTime.now();
       for (final SalesOrderItem item in order.items) {
-        _items.add(_OrderLineItem(
-          productCtrl: TextEditingController(text: item.productName),
-          qtyCtrl: TextEditingController(text: item.quantity.toString()),
-          rateCtrl: TextEditingController(text: item.rate.toString()),
-        ),);
+        _items.add(
+          _OrderLineItem(
+            productCtrl: TextEditingController(text: item.productName),
+            qtyCtrl: TextEditingController(text: item.quantity.toString()),
+            rateCtrl: TextEditingController(text: item.rate.toString()),
+          ),
+        );
       }
     }
   }
@@ -79,11 +80,13 @@ class _SalesOrderFormPageState extends ConsumerState<SalesOrderFormPage> {
 
   void _addItem() {
     setState(() {
-      _items.add(_OrderLineItem(
-        productCtrl: TextEditingController(),
-        qtyCtrl: TextEditingController(text: '1'),
-        rateCtrl: TextEditingController(),
-      ),);
+      _items.add(
+        _OrderLineItem(
+          productCtrl: TextEditingController(),
+          qtyCtrl: TextEditingController(text: '1'),
+          rateCtrl: TextEditingController(),
+        ),
+      );
     });
   }
 
@@ -113,15 +116,21 @@ class _SalesOrderFormPageState extends ConsumerState<SalesOrderFormPage> {
     final Map<String, dynamic> payload = <String, dynamic>{
       'customerName': _customerCtrl.text.trim(),
       'orderDate': _orderDate?.toIso8601String(),
-      'shippingAddress': _shippingCtrl.text.trim().isEmpty ? null : _shippingCtrl.text.trim(),
+      'shippingAddress':
+          _shippingCtrl.text.trim().isEmpty ? null : _shippingCtrl.text.trim(),
       'notes': _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
       'terms': _termsCtrl.text.trim().isEmpty ? null : _termsCtrl.text.trim(),
-      'items': _items.map((_OrderLineItem item) => <String, dynamic>{
-        'productName': item.productCtrl.text.trim(),
-        'quantity': double.tryParse(item.qtyCtrl.text) ?? 1,
-        'rate': double.tryParse(item.rateCtrl.text) ?? 0,
-        'amount': (double.tryParse(item.qtyCtrl.text) ?? 0) * (double.tryParse(item.rateCtrl.text) ?? 0),
-      },).toList(),
+      'items': _items
+          .map(
+            (_OrderLineItem item) => <String, dynamic>{
+              'productName': item.productCtrl.text.trim(),
+              'quantity': double.tryParse(item.qtyCtrl.text) ?? 1,
+              'rate': double.tryParse(item.rateCtrl.text) ?? 0,
+              'amount': (double.tryParse(item.qtyCtrl.text) ?? 0) *
+                  (double.tryParse(item.rateCtrl.text) ?? 0),
+            },
+          )
+          .toList(),
       'totalAmount': _totalAmount,
     };
 
@@ -236,9 +245,9 @@ class _SalesOrderFormPageState extends ConsumerState<SalesOrderFormPage> {
               ],
             ),
             ..._items.asMap().entries.map(
-              (MapEntry<int, _OrderLineItem> entry) =>
-                  _buildItemRow(entry.key, entry.value),
-            ),
+                  (MapEntry<int, _OrderLineItem> entry) =>
+                      _buildItemRow(entry.key, entry.value),
+                ),
             if (_items.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: Spacing.x6),
@@ -255,8 +264,10 @@ class _SalesOrderFormPageState extends ConsumerState<SalesOrderFormPage> {
                 padding: const EdgeInsets.symmetric(vertical: Spacing.x2),
                 child: Row(
                   children: <Widget>[
-                    const Text('Total',
-                        style: TextStyle(fontWeight: FontWeight.bold),),
+                    const Text(
+                      'Total',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     const Spacer(),
                     Text(
                       Formatters.currency(_totalAmount),

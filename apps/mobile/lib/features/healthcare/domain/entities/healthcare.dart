@@ -37,9 +37,21 @@ class Patient extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, dateOfBirth, gender, phone, email, address, bloodGroup,
-        allergies, medicalHistory, emergencyContactName, emergencyContactPhone,
-        status, createdAt, updatedAt,
+        id,
+        name,
+        dateOfBirth,
+        gender,
+        phone,
+        email,
+        address,
+        bloodGroup,
+        allergies,
+        medicalHistory,
+        emergencyContactName,
+        emergencyContactPhone,
+        status,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -72,8 +84,17 @@ class Appointment extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, patientId, patientName, appointmentDate, status,
-        doctorName, specialty, reason, notes, createdAt, updatedAt,
+        id,
+        patientId,
+        patientName,
+        appointmentDate,
+        status,
+        doctorName,
+        specialty,
+        reason,
+        notes,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -108,9 +129,18 @@ class Prescription extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, patientId, patientName, prescriptionDate, status,
-        doctorName, medications, diagnosis, notes, refillCount,
-        createdAt, updatedAt,
+        id,
+        patientId,
+        patientName,
+        prescriptionDate,
+        status,
+        doctorName,
+        medications,
+        diagnosis,
+        notes,
+        refillCount,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -147,9 +177,19 @@ class LabOrder extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, patientId, patientName, testName, status, orderedBy,
-        collectedAt, result, resultDate, referenceRange, notes,
-        createdAt, updatedAt,
+        id,
+        patientId,
+        patientName,
+        testName,
+        status,
+        orderedBy,
+        collectedAt,
+        result,
+        resultDate,
+        referenceRange,
+        notes,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -182,8 +222,17 @@ class MedicalRecord extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, patientId, patientName, recordType, recordDate, title,
-        description, attachments, createdBy, createdAt, updatedAt,
+        id,
+        patientId,
+        patientName,
+        recordType,
+        recordDate,
+        title,
+        description,
+        attachments,
+        createdBy,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -220,8 +269,18 @@ class InsuranceClaim extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, patientId, patientName, claimNumber, status,
-        insuranceProvider, claimAmount, approvedAmount, claimDate,
-        approvalDate, notes, createdAt, updatedAt,
+        id,
+        patientId,
+        patientName,
+        claimNumber,
+        status,
+        insuranceProvider,
+        claimAmount,
+        approvedAmount,
+        claimDate,
+        approvalDate,
+        notes,
+        createdAt,
+        updatedAt,
       ];
 }

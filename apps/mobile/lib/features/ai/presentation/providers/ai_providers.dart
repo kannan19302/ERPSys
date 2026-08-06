@@ -17,8 +17,7 @@ final Provider<AiRemoteDataSource> aiRemoteDataSourceProvider =
   (Ref ref) => AiRemoteDataSourceImpl(ref.watch(apiClientProvider)),
 );
 
-final Provider<AiRepository> aiRepositoryProvider =
-    Provider<AiRepository>(
+final Provider<AiRepository> aiRepositoryProvider = Provider<AiRepository>(
   (Ref ref) => AiRepositoryImpl(
     remote: ref.watch(aiRemoteDataSourceProvider),
     cache: ref.watch(responseCacheProvider),
@@ -29,7 +28,8 @@ final Provider<AiRepository> aiRepositoryProvider =
 class AiModelListState extends Equatable {
   const AiModelListState({
     this.items = const <AiModel>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -48,23 +48,39 @@ class AiModelListState extends Equatable {
   final DateTime? cachedAt;
 
   AiModelListState copyWith({
-    List<AiModel>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, DateTime? cachedAt,
-    bool clearFailures = false, bool clearCachedAt = false,
+    List<AiModel>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    DateTime? cachedAt,
+    bool clearFailures = false,
+    bool clearCachedAt = false,
   }) =>
       AiModelListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
         cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
       );
 
   @override
   List<Object?> get props => <Object?>[
-        items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure, cachedAt,
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure,
+        cachedAt,
       ];
 }
 
@@ -95,8 +111,12 @@ class AiModelListController extends Notifier<AiModelListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true, cachedAt: page.cachedAt,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
+        cachedAt: page.cachedAt,
         clearCachedAt: !page.isFromCache,
       ),
     );
@@ -110,8 +130,11 @@ class AiModelListController extends Notifier<AiModelListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -119,7 +142,8 @@ class AiModelListController extends Notifier<AiModelListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
@@ -130,20 +154,24 @@ class AiModelListController extends Notifier<AiModelListState> {
   }
 
   void applyFilters(Map<String, String> filters) {
-    state = state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
+    state =
+        state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
     refresh();
   }
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteAiModelUseCase(
-      ref.read(aiRepositoryProvider),)(id);
+      ref.read(aiRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 
-  Future<Result<AiModel>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<AiModel>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveAiModelUseCase(
-      ref.read(aiRepositoryProvider),)(
+      ref.read(aiRepositoryProvider),
+    )(
       SaveAiModelParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -154,14 +182,16 @@ class AiModelListController extends Notifier<AiModelListState> {
 final FutureProviderFamily<AiModel, String> aiModelDetailProvider =
     FutureProvider.family<AiModel, String>((Ref ref, String id) async {
   final result = await GetAiModelUseCase(
-    ref.watch(aiRepositoryProvider),)(id);
+    ref.watch(aiRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (m) => m);
 });
 
 class AiPromptListState extends Equatable {
   const AiPromptListState({
     this.items = const <AiPrompt>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -178,20 +208,36 @@ class AiPromptListState extends Equatable {
   final Failure? loadMoreFailure;
 
   AiPromptListState copyWith({
-    List<AiPrompt>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<AiPrompt>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       AiPromptListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<AiPromptListController, AiPromptListState>
@@ -221,8 +267,11 @@ class AiPromptListController extends Notifier<AiPromptListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -235,8 +284,11 @@ class AiPromptListController extends Notifier<AiPromptListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -244,7 +296,8 @@ class AiPromptListController extends Notifier<AiPromptListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
@@ -256,14 +309,17 @@ class AiPromptListController extends Notifier<AiPromptListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteAiPromptUseCase(
-      ref.read(aiRepositoryProvider),)(id);
+      ref.read(aiRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 
-  Future<Result<AiPrompt>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<AiPrompt>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveAiPromptUseCase(
-      ref.read(aiRepositoryProvider),)(
+      ref.read(aiRepositoryProvider),
+    )(
       SaveAiPromptParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -274,14 +330,16 @@ class AiPromptListController extends Notifier<AiPromptListState> {
 final FutureProviderFamily<AiPrompt, String> aiPromptDetailProvider =
     FutureProvider.family<AiPrompt, String>((Ref ref, String id) async {
   final result = await GetAiPromptUseCase(
-    ref.watch(aiRepositoryProvider),)(id);
+    ref.watch(aiRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (p) => p);
 });
 
 class AiTrainingDataListState extends Equatable {
   const AiTrainingDataListState({
     this.items = const <AiTrainingData>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -298,20 +356,36 @@ class AiTrainingDataListState extends Equatable {
   final Failure? loadMoreFailure;
 
   AiTrainingDataListState copyWith({
-    List<AiTrainingData>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<AiTrainingData>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       AiTrainingDataListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<AiTrainingDataListController, AiTrainingDataListState>
@@ -341,8 +415,11 @@ class AiTrainingDataListController extends Notifier<AiTrainingDataListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -355,8 +432,11 @@ class AiTrainingDataListController extends Notifier<AiTrainingDataListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -364,7 +444,8 @@ class AiTrainingDataListController extends Notifier<AiTrainingDataListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
@@ -376,14 +457,17 @@ class AiTrainingDataListController extends Notifier<AiTrainingDataListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteAiTrainingDataUseCase(
-      ref.read(aiRepositoryProvider),)(id);
+      ref.read(aiRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 
-  Future<Result<AiTrainingData>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<AiTrainingData>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveAiTrainingDataUseCase(
-      ref.read(aiRepositoryProvider),)(
+      ref.read(aiRepositoryProvider),
+    )(
       payload,
     );
     if (result.isOk) await refresh();
@@ -394,7 +478,8 @@ class AiTrainingDataListController extends Notifier<AiTrainingDataListState> {
 class AiPredictionListState extends Equatable {
   const AiPredictionListState({
     this.items = const <AiPrediction>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -411,20 +496,36 @@ class AiPredictionListState extends Equatable {
   final Failure? loadMoreFailure;
 
   AiPredictionListState copyWith({
-    List<AiPrediction>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<AiPrediction>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       AiPredictionListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<AiPredictionListController, AiPredictionListState>
@@ -454,8 +555,11 @@ class AiPredictionListController extends Notifier<AiPredictionListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -468,8 +572,11 @@ class AiPredictionListController extends Notifier<AiPredictionListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -482,14 +589,17 @@ class AiPredictionListController extends Notifier<AiPredictionListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
 
-  Future<Result<AiPrediction>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<AiPrediction>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveAiPredictionUseCase(
-      ref.read(aiRepositoryProvider),)(
+      ref.read(aiRepositoryProvider),
+    )(
       payload,
     );
     if (result.isOk) await refresh();
@@ -500,13 +610,16 @@ class AiPredictionListController extends Notifier<AiPredictionListState> {
 final FutureProviderFamily<AiPrediction, String> aiPredictionDetailProvider =
     FutureProvider.family<AiPrediction, String>((Ref ref, String id) async {
   final result = await GetAiPredictionUseCase(
-    ref.watch(aiRepositoryProvider),)(id);
+    ref.watch(aiRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
-final FutureProviderFamily<AiTrainingData, String> aiTrainingDataDetailProvider =
+final FutureProviderFamily<AiTrainingData, String>
+    aiTrainingDataDetailProvider =
     FutureProvider.family<AiTrainingData, String>((Ref ref, String id) async {
   final result = await GetAiTrainingDataUseCase(
-    ref.watch(aiRepositoryProvider),)(id);
+    ref.watch(aiRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });

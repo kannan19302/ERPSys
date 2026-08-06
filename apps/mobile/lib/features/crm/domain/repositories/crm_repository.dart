@@ -19,7 +19,8 @@ abstract class CrmRepository {
 
   Future<Result<Customer>> createCustomer(Map<String, dynamic> payload);
 
-  Future<Result<Customer>> updateCustomer(String id, Map<String, dynamic> payload);
+  Future<Result<Customer>> updateCustomer(
+      String id, Map<String, dynamic> payload);
 
   Future<Result<void>> deleteCustomer(String id);
 
@@ -38,7 +39,8 @@ abstract class CrmRepository {
 
   Future<Result<Contact>> createContact(Map<String, dynamic> payload);
 
-  Future<Result<Contact>> updateContact(String id, Map<String, dynamic> payload);
+  Future<Result<Contact>> updateContact(
+      String id, Map<String, dynamic> payload);
 
   Future<Result<void>> deleteContact(String id);
 
@@ -64,7 +66,8 @@ abstract class CrmRepository {
 
   Future<Result<Activity>> getActivity(String id);
 
-  Future<Result<Activity>> updateActivity(String id, Map<String, dynamic> payload);
+  Future<Result<Activity>> updateActivity(
+      String id, Map<String, dynamic> payload);
 
   Future<Result<void>> deleteActivity(String id);
 
@@ -78,7 +81,8 @@ abstract class CrmRepository {
 
   Future<Result<EmailTemplate>> getEmailTemplate(String id);
 
-  Future<Result<EmailTemplate>> createEmailTemplate(Map<String, dynamic> payload);
+  Future<Result<EmailTemplate>> createEmailTemplate(
+      Map<String, dynamic> payload);
 
   Future<Result<EmailTemplate>> updateEmailTemplate(
     String id,

@@ -50,8 +50,12 @@ class _KpiListPageState extends ConsumerState<KpiListPage> {
             initialValue: state.query.sort,
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
-                .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value),),)
+                .map(
+                  (e) => PopupMenuItem<String>(
+                    value: e.key,
+                    child: Text(e.value),
+                  ),
+                )
                 .toList(),
           ),
         ],
@@ -66,9 +70,11 @@ class _KpiListPageState extends ConsumerState<KpiListPage> {
       ),
       body: Column(
         children: [
-          if (state.cachedAt != null) StaleDataBanner(cachedAt: state.cachedAt!),
+          if (state.cachedAt != null)
+            StaleDataBanner(cachedAt: state.cachedAt!),
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -80,21 +86,27 @@ class _KpiListPageState extends ConsumerState<KpiListPage> {
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} KPI${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} KPI${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -146,29 +158,42 @@ class _KpiTile extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(kpi.name,
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                UiStatusBadge(
-                  label: kpi.status,
-                  tone: _statusTone(kpi.status),
-                ),
-              ],),
-              const SizedBox(height: Spacing.x1),
-              Row(children: [
-                Text('${kpi.value.toStringAsFixed(1)}${kpi.unit ?? ''}',
-                    style: Theme.of(context).textTheme.labelLarge,),
-                if (kpi.target != null) ...[
-                  const SizedBox(width: Spacing.x2),
-                  Text('of ${kpi.target}',
-                      style: TextStyle(color: t.textSecondary, fontSize: TypeScale.sm),),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      kpi.name,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  UiStatusBadge(
+                    label: kpi.status,
+                    tone: _statusTone(kpi.status),
+                  ),
                 ],
-              ],),
+              ),
+              const SizedBox(height: Spacing.x1),
+              Row(
+                children: [
+                  Text(
+                    '${kpi.value.toStringAsFixed(1)}${kpi.unit ?? ''}',
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                  if (kpi.target != null) ...[
+                    const SizedBox(width: Spacing.x2),
+                    Text(
+                      'of ${kpi.target}',
+                      style: TextStyle(
+                          color: t.textSecondary, fontSize: TypeScale.sm),
+                    ),
+                  ],
+                ],
+              ),
               if (kpi.trend != null) ...[
                 const SizedBox(height: Spacing.x1),
-                Text(kpi.trend!, style: TextStyle(color: t.textSecondary, fontSize: TypeScale.sm)),
+                Text(kpi.trend!,
+                    style: TextStyle(
+                        color: t.textSecondary, fontSize: TypeScale.sm)),
               ],
             ],
           ),

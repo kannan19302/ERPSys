@@ -4,7 +4,8 @@ import '../../../../core/usecase/usecase.dart';
 import '../entities/saas.dart';
 import '../repositories/saas_repository.dart';
 
-class ListSaasPlansUseCase extends UseCase<Cacheable<Paginated<SaasPlan>>, ListQuery> {
+class ListSaasPlansUseCase
+    extends UseCase<Cacheable<Paginated<SaasPlan>>, ListQuery> {
   const ListSaasPlansUseCase(this._repository);
   final SaasRepository _repository;
   @override
@@ -44,11 +45,13 @@ class DeleteSaasPlanUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deletePlan(id);
 }
 
-class ListSaasSubscriptionsUseCase extends UseCase<Cacheable<Paginated<SaasSubscription>>, ListQuery> {
+class ListSaasSubscriptionsUseCase
+    extends UseCase<Cacheable<Paginated<SaasSubscription>>, ListQuery> {
   const ListSaasSubscriptionsUseCase(this._repository);
   final SaasRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<SaasSubscription>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<SaasSubscription>>>> call(
+          ListQuery params) =>
       _repository.listSubscriptions(params);
 }
 
@@ -56,7 +59,8 @@ class GetSaasSubscriptionUseCase extends UseCase<SaasSubscription, String> {
   const GetSaasSubscriptionUseCase(this._repository);
   final SaasRepository _repository;
   @override
-  Future<Result<SaasSubscription>> call(String id) => _repository.getSubscription(id);
+  Future<Result<SaasSubscription>> call(String id) =>
+      _repository.getSubscription(id);
 }
 
 class SaveSaasSubscriptionParams {
@@ -65,7 +69,8 @@ class SaveSaasSubscriptionParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveSaasSubscriptionUseCase extends UseCase<SaasSubscription, SaveSaasSubscriptionParams> {
+class SaveSaasSubscriptionUseCase
+    extends UseCase<SaasSubscription, SaveSaasSubscriptionParams> {
   const SaveSaasSubscriptionUseCase(this._repository);
   final SaasRepository _repository;
   @override
@@ -84,7 +89,8 @@ class CancelSaasSubscriptionUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.cancelSubscription(id);
 }
 
-class ListSaasInvoicesUseCase extends UseCase<Cacheable<Paginated<SaasInvoice>>, ListQuery> {
+class ListSaasInvoicesUseCase
+    extends UseCase<Cacheable<Paginated<SaasInvoice>>, ListQuery> {
   const ListSaasInvoicesUseCase(this._repository);
   final SaasRepository _repository;
   @override
@@ -99,15 +105,18 @@ class GetSaasInvoiceUseCase extends UseCase<SaasInvoice, String> {
   Future<Result<SaasInvoice>> call(String id) => _repository.getInvoice(id);
 }
 
-class ListSaasUsageUseCase extends UseCase<Cacheable<Paginated<SaasUsageRecord>>, ListQuery> {
+class ListSaasUsageUseCase
+    extends UseCase<Cacheable<Paginated<SaasUsageRecord>>, ListQuery> {
   const ListSaasUsageUseCase(this._repository);
   final SaasRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<SaasUsageRecord>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<SaasUsageRecord>>>> call(
+          ListQuery params) =>
       _repository.listUsage(params);
 }
 
-class ListSaasQuotasUseCase extends UseCase<Cacheable<Paginated<SaasQuota>>, ListQuery> {
+class ListSaasQuotasUseCase
+    extends UseCase<Cacheable<Paginated<SaasQuota>>, ListQuery> {
   const ListSaasQuotasUseCase(this._repository);
   final SaasRepository _repository;
   @override
@@ -115,7 +124,8 @@ class ListSaasQuotasUseCase extends UseCase<Cacheable<Paginated<SaasQuota>>, Lis
       _repository.listQuotas(params);
 }
 
-class ListSaasTenantsUseCase extends UseCase<Cacheable<Paginated<SaasTenant>>, ListQuery> {
+class ListSaasTenantsUseCase
+    extends UseCase<Cacheable<Paginated<SaasTenant>>, ListQuery> {
   const ListSaasTenantsUseCase(this._repository);
   final SaasRepository _repository;
   @override
@@ -148,11 +158,9 @@ class SaveSaasTenantUseCase extends UseCase<SaasTenant, SaveSaasTenantParams> {
   }
 }
 
-
 class DeleteSaasTenantUseCase extends UseCase<void, String> {
   DeleteSaasTenantUseCase(this.repository);
   final SaasRepository repository;
   @override
   Future<Result<void>> call(String params) async => const Result.ok(null);
 }
-

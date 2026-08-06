@@ -13,15 +13,18 @@ class MultiCurrencyRateFormPage extends ConsumerStatefulWidget {
   static const String routeName = 'multi-currency-rate-new';
   static const String routeEditName = 'multi-currency-rate-edit';
   static const String routePath = '/advanced-finance/currency-rates/new';
-  static const String routeEditPath = '/advanced-finance/currency-rates/:id/edit';
+  static const String routeEditPath =
+      '/advanced-finance/currency-rates/:id/edit';
 
   final String? rateId;
 
   @override
-  ConsumerState<MultiCurrencyRateFormPage> createState() => _MultiCurrencyRateFormPageState();
+  ConsumerState<MultiCurrencyRateFormPage> createState() =>
+      _MultiCurrencyRateFormPageState();
 }
 
-class _MultiCurrencyRateFormPageState extends ConsumerState<MultiCurrencyRateFormPage> {
+class _MultiCurrencyRateFormPageState
+    extends ConsumerState<MultiCurrencyRateFormPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _fromCurrencyCtrl = TextEditingController();
   final TextEditingController _toCurrencyCtrl = TextEditingController();
@@ -41,9 +44,8 @@ class _MultiCurrencyRateFormPageState extends ConsumerState<MultiCurrencyRateFor
   }
 
   Future<void> _loadRate() async {
-    final MultiCurrencyRate? rate = ref
-        .read(multiCurrencyRateDetailProvider(widget.rateId!))
-        .valueOrNull;
+    final MultiCurrencyRate? rate =
+        ref.read(multiCurrencyRateDetailProvider(widget.rateId!)).valueOrNull;
     if (rate != null) {
       _fromCurrencyCtrl.text = rate.fromCurrency;
       _toCurrencyCtrl.text = rate.toCurrency;
@@ -69,7 +71,8 @@ class _MultiCurrencyRateFormPageState extends ConsumerState<MultiCurrencyRateFor
       'fromCurrency': _fromCurrencyCtrl.text.trim().toUpperCase(),
       'toCurrency': _toCurrencyCtrl.text.trim().toUpperCase(),
       'rate': double.tryParse(_rateCtrl.text) ?? 0,
-      'source': _sourceCtrl.text.trim().isEmpty ? null : _sourceCtrl.text.trim(),
+      'source':
+          _sourceCtrl.text.trim().isEmpty ? null : _sourceCtrl.text.trim(),
     };
 
     final Result<MultiCurrencyRate> result = await ref
@@ -129,7 +132,8 @@ class _MultiCurrencyRateFormPageState extends ConsumerState<MultiCurrencyRateFor
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _rateCtrl,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(labelText: 'Rate *'),
               validator: (String? v) =>
                   v == null || v.trim().isEmpty ? 'Required' : null,

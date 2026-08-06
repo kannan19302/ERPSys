@@ -13,7 +13,8 @@ class ProjectRiskFormPage extends ConsumerStatefulWidget {
   final String? riskId;
 
   @override
-  ConsumerState<ProjectRiskFormPage> createState() => _ProjectRiskFormPageState();
+  ConsumerState<ProjectRiskFormPage> createState() =>
+      _ProjectRiskFormPageState();
 }
 
 class _ProjectRiskFormPageState extends ConsumerState<ProjectRiskFormPage> {
@@ -63,21 +64,29 @@ class _ProjectRiskFormPageState extends ConsumerState<ProjectRiskFormPage> {
 
     final payload = <String, dynamic>{
       'title': _titleCtrl.text.trim(),
-      'description': _descriptionCtrl.text.trim().isEmpty ? null : _descriptionCtrl.text.trim(),
+      'description': _descriptionCtrl.text.trim().isEmpty
+          ? null
+          : _descriptionCtrl.text.trim(),
       'probability': _probability,
       'impact': _impact,
       'status': _status,
-      'mitigationPlan': _mitigationCtrl.text.trim().isEmpty ? null : _mitigationCtrl.text.trim(),
+      'mitigationPlan': _mitigationCtrl.text.trim().isEmpty
+          ? null
+          : _mitigationCtrl.text.trim(),
       'owner': _ownerCtrl.text.trim().isEmpty ? null : _ownerCtrl.text.trim(),
     };
 
-    final result = await ref.read(projectRiskListControllerProvider.notifier).save(
-      payload, id: widget.riskId,);
+    final result =
+        await ref.read(projectRiskListControllerProvider.notifier).save(
+              payload,
+              id: widget.riskId,
+            );
 
     if (!context.mounted) return;
     setState(() => _saving = false);
     result.fold(
-      (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(),
     );
   }
@@ -91,7 +100,10 @@ class _ProjectRiskFormPageState extends ConsumerState<ProjectRiskFormPage> {
           TextButton(
             onPressed: _saving ? null : _save,
             child: _saving
-                ? const SizedBox(height: Spacing.x5, width: Spacing.x5, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    height: Spacing.x5,
+                    width: Spacing.x5,
+                    child: CircularProgressIndicator(strokeWidth: 2))
                 : const Text('Save'),
           ),
         ],
@@ -104,13 +116,15 @@ class _ProjectRiskFormPageState extends ConsumerState<ProjectRiskFormPage> {
             TextFormField(
               controller: _titleCtrl,
               decoration: const InputDecoration(labelText: 'Title *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _descriptionCtrl,
               maxLines: 3,
-              decoration: const InputDecoration(labelText: 'Description', alignLabelWithHint: true),
+              decoration: const InputDecoration(
+                  labelText: 'Description', alignLabelWithHint: true),
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
@@ -122,33 +136,43 @@ class _ProjectRiskFormPageState extends ConsumerState<ProjectRiskFormPage> {
               initialValue: _probability,
               decoration: const InputDecoration(labelText: 'Probability'),
               items: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
-                  .map((v) => DropdownMenuItem<String>(value: v, child: Text(v)))
+                  .map(
+                      (v) => DropdownMenuItem<String>(value: v, child: Text(v)))
                   .toList(),
-              onChanged: (v) { if (v != null) setState(() => _probability = v); },
+              onChanged: (v) {
+                if (v != null) setState(() => _probability = v);
+              },
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
               initialValue: _impact,
               decoration: const InputDecoration(labelText: 'Impact'),
               items: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
-                  .map((v) => DropdownMenuItem<String>(value: v, child: Text(v)))
+                  .map(
+                      (v) => DropdownMenuItem<String>(value: v, child: Text(v)))
                   .toList(),
-              onChanged: (v) { if (v != null) setState(() => _impact = v); },
+              onChanged: (v) {
+                if (v != null) setState(() => _impact = v);
+              },
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
               initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: ['IDENTIFIED', 'IN_PROGRESS', 'MITIGATED', 'CLOSED']
-                  .map((v) => DropdownMenuItem<String>(value: v, child: Text(v)))
+                  .map(
+                      (v) => DropdownMenuItem<String>(value: v, child: Text(v)))
                   .toList(),
-              onChanged: (v) { if (v != null) setState(() => _status = v); },
+              onChanged: (v) {
+                if (v != null) setState(() => _status = v);
+              },
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _mitigationCtrl,
               maxLines: 4,
-              decoration: const InputDecoration(labelText: 'Mitigation Plan', alignLabelWithHint: true),
+              decoration: const InputDecoration(
+                  labelText: 'Mitigation Plan', alignLabelWithHint: true),
             ),
           ],
         ),

@@ -26,7 +26,9 @@ class CarrierDetailPage extends ConsumerWidget {
       body: carrierAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load carrier.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load carrier.'),
           onRetry: () => ref.invalidate(carrierDetailProvider(carrierId)),
         ),
         data: (Carrier carrier) => _CarrierDetail(carrier: carrier),

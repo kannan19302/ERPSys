@@ -40,8 +40,11 @@ class EcommerceProductDetailPage extends ConsumerWidget {
       body: productAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load product.'),
-          onRetry: () => ref.invalidate(ecommerceProductDetailProvider(productId)),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load product.'),
+          onRetry: () =>
+              ref.invalidate(ecommerceProductDetailProvider(productId)),
         ),
         data: (EcommerceProduct product) => _ProductDetail(product: product),
       ),
@@ -117,7 +120,8 @@ class _ProductDetail extends StatelessWidget {
               ),
               const SizedBox(height: Spacing.x2),
               Text(
-                Formatters.currency(product.price, currencyCode: product.currency),
+                Formatters.currency(product.price,
+                    currencyCode: product.currency),
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               if (product.comparePrice != null) ...<Widget>[
@@ -144,17 +148,23 @@ class _ProductDetail extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              const Text('Details', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              const Text('Details',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               const SizedBox(height: Spacing.x3),
               _FieldRow('SKU', product.sku ?? '—'),
               _FieldRow('Category', product.categoryName ?? '—'),
               _FieldRow('Inventory', '${product.inventory} units'),
-              _FieldRow('Rating', product.rating != null ? '${product.rating!.toStringAsFixed(1)} ★' : '—'),
+              _FieldRow(
+                  'Rating',
+                  product.rating != null
+                      ? '${product.rating!.toStringAsFixed(1)} ★'
+                      : '—'),
               _FieldRow('Reviews', '${product.reviewCount}'),
             ],
           ),
         ),
-        if (product.description != null && product.description!.isNotEmpty) ...<Widget>[
+        if (product.description != null &&
+            product.description!.isNotEmpty) ...<Widget>[
           const SizedBox(height: Spacing.x4),
           Container(
             width: double.infinity,
@@ -167,7 +177,9 @@ class _ProductDetail extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                const Text('Description', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                const Text('Description',
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 const SizedBox(height: Spacing.x2),
                 Text(product.description!),
               ],
@@ -194,9 +206,14 @@ class _StatusPill extends StatelessWidget {
       _ => (status, t.textSecondary, t.bgSunken),
     };
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: Spacing.x2_5, vertical: Spacing.x1),
+      padding: const EdgeInsets.symmetric(
+          horizontal: Spacing.x2_5, vertical: Spacing.x1),
       decoration: BoxDecoration(color: bg, borderRadius: Radii.pill),
-      child: Text(label, style: TextStyle(color: color, fontSize: TypeScale.xs, fontWeight: TypeScale.medium)),
+      child: Text(label,
+          style: TextStyle(
+              color: color,
+              fontSize: TypeScale.xs,
+              fontWeight: TypeScale.medium)),
     );
   }
 }

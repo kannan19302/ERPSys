@@ -30,7 +30,8 @@ final Provider<HealthcareRepository> healthcareRepositoryProvider =
 class PatientListState extends Equatable {
   const PatientListState({
     this.items = const <Patient>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -47,20 +48,36 @@ class PatientListState extends Equatable {
   final Failure? loadMoreFailure;
 
   PatientListState copyWith({
-    List<Patient>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<Patient>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       PatientListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<PatientListController, PatientListState>
@@ -90,8 +107,11 @@ class PatientListController extends Notifier<PatientListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -104,8 +124,11 @@ class PatientListController extends Notifier<PatientListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -113,7 +136,8 @@ class PatientListController extends Notifier<PatientListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
@@ -125,14 +149,17 @@ class PatientListController extends Notifier<PatientListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeletePatientUseCase(
-      ref.read(healthcareRepositoryProvider),)(id);
+      ref.read(healthcareRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 
-  Future<Result<Patient>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<Patient>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SavePatientUseCase(
-      ref.read(healthcareRepositoryProvider),)(
+      ref.read(healthcareRepositoryProvider),
+    )(
       SavePatientParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -143,14 +170,16 @@ class PatientListController extends Notifier<PatientListState> {
 final FutureProviderFamily<Patient, String> patientDetailProvider =
     FutureProvider.family<Patient, String>((Ref ref, String id) async {
   final result = await GetPatientUseCase(
-    ref.watch(healthcareRepositoryProvider),)(id);
+    ref.watch(healthcareRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
 class AppointmentListState extends Equatable {
   const AppointmentListState({
     this.items = const <Appointment>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-appointmentDate'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -167,20 +196,36 @@ class AppointmentListState extends Equatable {
   final Failure? loadMoreFailure;
 
   AppointmentListState copyWith({
-    List<Appointment>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<Appointment>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       AppointmentListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<AppointmentListController, AppointmentListState>
@@ -210,8 +255,11 @@ class AppointmentListController extends Notifier<AppointmentListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -224,8 +272,11 @@ class AppointmentListController extends Notifier<AppointmentListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -233,21 +284,25 @@ class AppointmentListController extends Notifier<AppointmentListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteAppointmentUseCase(
-      ref.read(healthcareRepositoryProvider),)(id);
+      ref.read(healthcareRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 
-  Future<Result<Appointment>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<Appointment>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveAppointmentUseCase(
-      ref.read(healthcareRepositoryProvider),)(
+      ref.read(healthcareRepositoryProvider),
+    )(
       SaveAppointmentParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -258,21 +313,24 @@ class AppointmentListController extends Notifier<AppointmentListState> {
 final FutureProviderFamily<Appointment, String> appointmentDetailProvider =
     FutureProvider.family<Appointment, String>((Ref ref, String id) async {
   final result = await GetAppointmentUseCase(
-    ref.watch(healthcareRepositoryProvider),)(id);
+    ref.watch(healthcareRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
 final FutureProviderFamily<Prescription, String> prescriptionDetailProvider =
     FutureProvider.family<Prescription, String>((Ref ref, String id) async {
   final result = await GetPrescriptionUseCase(
-    ref.watch(healthcareRepositoryProvider),)(id);
+    ref.watch(healthcareRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
 class PrescriptionListState extends Equatable {
   const PrescriptionListState({
     this.items = const <Prescription>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-prescriptionDate'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -289,20 +347,36 @@ class PrescriptionListState extends Equatable {
   final Failure? loadMoreFailure;
 
   PrescriptionListState copyWith({
-    List<Prescription>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<Prescription>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       PrescriptionListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<PrescriptionListController, PrescriptionListState>
@@ -332,8 +406,11 @@ class PrescriptionListController extends Notifier<PrescriptionListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -346,15 +423,20 @@ class PrescriptionListController extends Notifier<PrescriptionListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
 
-  Future<Result<Prescription>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<Prescription>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SavePrescriptionUseCase(
-      ref.read(healthcareRepositoryProvider),)(
+      ref.read(healthcareRepositoryProvider),
+    )(
       SavePrescriptionParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -365,14 +447,16 @@ class PrescriptionListController extends Notifier<PrescriptionListState> {
 final FutureProviderFamily<LabOrder, String> labOrderDetailProvider =
     FutureProvider.family<LabOrder, String>((Ref ref, String id) async {
   final result = await GetLabOrderUseCase(
-    ref.watch(healthcareRepositoryProvider),)(id);
+    ref.watch(healthcareRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
 class LabOrderListState extends Equatable {
   const LabOrderListState({
     this.items = const <LabOrder>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -389,20 +473,36 @@ class LabOrderListState extends Equatable {
   final Failure? loadMoreFailure;
 
   LabOrderListState copyWith({
-    List<LabOrder>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<LabOrder>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       LabOrderListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<LabOrderListController, LabOrderListState>
@@ -432,8 +532,11 @@ class LabOrderListController extends Notifier<LabOrderListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -446,15 +549,19 @@ class LabOrderListController extends Notifier<LabOrderListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
 
   Future<Result<LabOrder>> save(Map<String, dynamic> payload) async {
     final result = await SaveLabOrderUseCase(
-      ref.read(healthcareRepositoryProvider),)(
+      ref.read(healthcareRepositoryProvider),
+    )(
       SaveLabOrderParams(id: null, payload: payload),
     );
     if (result.isOk) await refresh();

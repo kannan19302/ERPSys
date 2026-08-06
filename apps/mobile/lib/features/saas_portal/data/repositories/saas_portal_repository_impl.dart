@@ -35,7 +35,8 @@ class SaasPortalRepositoryImpl implements SaasPortalRepository {
       final List<Map<String, dynamic>> jsonItems = page.data
           .map((dynamic e) => (e as dynamic).toJson() as Map<String, dynamic>)
           .toList(growable: false);
-      await _cache.write(_tenantId, namespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, namespace, query.cacheKey, <String, Object?>{
         'data': jsonItems,
         'meta': page.meta.toJson(),
       });
@@ -43,9 +44,11 @@ class SaasPortalRepositoryImpl implements SaasPortalRepository {
         Cacheable<Paginated<T>>(value: page),
       );
     } on NetworkException catch (error) {
-      final cached = _cache.read<Map<String, dynamic>>(_tenantId, namespace, query.cacheKey);
+      final cached = _cache.read<Map<String, dynamic>>(
+          _tenantId, namespace, query.cacheKey);
       if (cached == null) {
-        return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
+        return Result<Cacheable<Paginated<T>>>.err(
+            mapExceptionToFailure(error));
       }
       return Result<Cacheable<Paginated<T>>>.ok(
         Cacheable<Paginated<T>>(
@@ -81,26 +84,35 @@ class SaasPortalRepositoryImpl implements SaasPortalRepository {
       _single(() => _remote.getBillingInfo());
 
   @override
-  Future<Result<PortalBillingInfo>> updateBillingInfo(Map<String, dynamic> payload) =>
+  Future<Result<PortalBillingInfo>> updateBillingInfo(
+          Map<String, dynamic> payload) =>
       _write(() => _remote.updateBillingInfo(payload));
 
   @override
   Future<Result<Cacheable<Paginated<PortalPlan>>>> listPlans(ListQuery query) =>
-      _paginated(_planNamespace, query, () => _remote.listPlans(query), PortalPlanModel.fromJson);
+      _paginated(_planNamespace, query, () => _remote.listPlans(query),
+          PortalPlanModel.fromJson);
 
   @override
-  Future<Result<Cacheable<Paginated<PortalSupportTicket>>>> listSupportTickets(ListQuery query) =>
-      _paginated(_ticketNamespace, query, () => _remote.listSupportTickets(query), PortalSupportTicketModel.fromJson);
+  Future<Result<Cacheable<Paginated<PortalSupportTicket>>>> listSupportTickets(
+          ListQuery query) =>
+      _paginated(
+          _ticketNamespace,
+          query,
+          () => _remote.listSupportTickets(query),
+          PortalSupportTicketModel.fromJson);
 
   @override
   Future<Result<PortalSupportTicket>> getSupportTicket(String id) =>
       _single(() => _remote.getSupportTicket(id));
 
   @override
-  Future<Result<PortalSupportTicket>> createSupportTicket(Map<String, dynamic> payload) =>
+  Future<Result<PortalSupportTicket>> createSupportTicket(
+          Map<String, dynamic> payload) =>
       _write(() => _remote.createSupportTicket(payload));
 
   @override
-  Future<Result<PortalSupportTicket>> updateSupportTicket(String id, Map<String, dynamic> p) async => throw UnimplementedError();
-
+  Future<Result<PortalSupportTicket>> updateSupportTicket(
+          String id, Map<String, dynamic> p) async =>
+      throw UnimplementedError();
 }

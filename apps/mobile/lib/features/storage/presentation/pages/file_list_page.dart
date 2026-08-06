@@ -11,7 +11,8 @@ class StorageFileListPage extends ConsumerStatefulWidget {
   static const String routeName = 'storage-files';
   static const String routePath = '/storage/files';
   @override
-  ConsumerState<StorageFileListPage> createState() => _StorageFileListPageState();
+  ConsumerState<StorageFileListPage> createState() =>
+      _StorageFileListPageState();
 }
 
 class _StorageFileListPageState extends ConsumerState<StorageFileListPage> {
@@ -33,7 +34,8 @@ class _StorageFileListPageState extends ConsumerState<StorageFileListPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -45,21 +47,27 @@ class _StorageFileListPageState extends ConsumerState<StorageFileListPage> {
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} file${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} file${state.meta.total == 1 ? '' : 's'}',
+                  style: TextStyle(
+                      color: palette.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -89,16 +97,25 @@ class _StorageFileListPageState extends ConsumerState<StorageFileListPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Icon(Icons.insert_drive_file, size: TypeScale.base, color: context.tokens.textSecondary),
-                const SizedBox(width: Spacing.x2),
-                Expanded(
-                  child: Text(f.name, style: Theme.of(context).textTheme.titleSmall),
-                ),
-              ],),
+              Row(
+                children: [
+                  Icon(Icons.insert_drive_file,
+                      size: TypeScale.base,
+                      color: context.tokens.textSecondary),
+                  const SizedBox(width: Spacing.x2),
+                  Expanded(
+                    child: Text(f.name,
+                        style: Theme.of(context).textTheme.titleSmall),
+                  ),
+                ],
+              ),
               const SizedBox(height: Spacing.x1),
-              Text('${f.bucket} · ${f.mimeType ?? "unknown type"}',
-                  style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs),),
+              Text(
+                '${f.bucket} · ${f.mimeType ?? "unknown type"}',
+                style: TextStyle(
+                    color: context.tokens.textSecondary,
+                    fontSize: TypeScale.xs),
+              ),
             ],
           ),
         ),

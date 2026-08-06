@@ -133,7 +133,8 @@ class FakeProjectsRepository implements ProjectsRepository {
   Result<void> deleteResult = const Result<void>.ok(null);
   Result<Cacheable<Paginated<Project>>> listProjectsResult =
       Result<Cacheable<Paginated<Project>>>.ok(
-    Cacheable<Paginated<Project>>(value: _page(<Project>[_projectA, _projectB])),
+    Cacheable<Paginated<Project>>(
+        value: _page(<Project>[_projectA, _projectB])),
   );
   Result<Project> saveProjectResult = Result<Project>.ok(_projectA);
 
@@ -157,7 +158,8 @@ class FakeProjectsRepository implements ProjectsRepository {
 
   Result<Cacheable<Paginated<ProjectBudget>>> listProjectBudgetsResult =
       Result<Cacheable<Paginated<ProjectBudget>>>.ok(
-    Cacheable<Paginated<ProjectBudget>>(value: _page(<ProjectBudget>[_budgetA])),
+    Cacheable<Paginated<ProjectBudget>>(
+        value: _page(<ProjectBudget>[_budgetA])),
   );
   Result<ProjectBudget> saveProjectBudgetResult =
       const Result<ProjectBudget>.ok(_budgetA);
@@ -166,8 +168,7 @@ class FakeProjectsRepository implements ProjectsRepository {
       Result<Cacheable<Paginated<ProjectRisk>>>.ok(
     Cacheable<Paginated<ProjectRisk>>(value: _page(<ProjectRisk>[_riskA])),
   );
-  Result<ProjectRisk> saveProjectRiskResult =
-      Result<ProjectRisk>.ok(_riskA);
+  Result<ProjectRisk> saveProjectRiskResult = Result<ProjectRisk>.ok(_riskA);
 
   Result<Cacheable<Paginated<ProjectPortfolio>>> listProjectPortfoliosResult =
       Result<Cacheable<Paginated<ProjectPortfolio>>>.ok(
@@ -223,8 +224,7 @@ class FakeProjectsRepository implements ProjectsRepository {
       listTasksResult;
 
   @override
-  Future<Result<Task>> getTask(String id) async =>
-      Result<Task>.ok(_taskA);
+  Future<Result<Task>> getTask(String id) async => Result<Task>.ok(_taskA);
 
   @override
   Future<Result<Task>> createTask(Map<String, dynamic> payload) async {
@@ -391,9 +391,9 @@ class FakeProjectsRepository implements ProjectsRepository {
   }
 
   @override
-  Future<Result<Cacheable<Paginated<ProjectPortfolio>>>>
-      listProjectPortfolios(ListQuery query) async =>
-          listProjectPortfoliosResult;
+  Future<Result<Cacheable<Paginated<ProjectPortfolio>>>> listProjectPortfolios(
+          ListQuery query) async =>
+      listProjectPortfoliosResult;
 
   @override
   Future<Result<ProjectPortfolio>> getProjectPortfolio(String id) async =>
@@ -431,9 +431,10 @@ void main() {
     fakeRepository = FakeProjectsRepository();
     container = ProviderContainer(
       overrides: <Override>[
-      sharedPreferencesProvider.overrideWithValue(MockSharedPreferences()),
-      cookieStoreProvider.overrideWithValue(CookieStore(CookieJar(), Uri.parse('http://localhost'))),
-      apiClientProvider.overrideWithValue(ApiClient.forTesting(Dio())),
+        sharedPreferencesProvider.overrideWithValue(MockSharedPreferences()),
+        cookieStoreProvider.overrideWithValue(
+            CookieStore(CookieJar(), Uri.parse('http://localhost'))),
+        apiClientProvider.overrideWithValue(ApiClient.forTesting(Dio())),
         projectsRepositoryProvider.overrideWithValue(fakeRepository),
         activeTenantIdProvider.overrideWithValue('tenant-1'),
       ],
@@ -446,7 +447,8 @@ void main() {
       container.read(projectListControllerProvider);
       await Future<void>.delayed(Duration.zero);
 
-      final ProjectListState state = container.read(projectListControllerProvider);
+      final ProjectListState state =
+          container.read(projectListControllerProvider);
       expect(state.items, hasLength(2));
       expect(state.items[0].id, 'prj1');
       expect(state.isLoading, isFalse);
@@ -458,7 +460,8 @@ void main() {
 
       await container.read(projectListControllerProvider.notifier).refresh();
 
-      final ProjectListState state = container.read(projectListControllerProvider);
+      final ProjectListState state =
+          container.read(projectListControllerProvider);
       expect(state.items, hasLength(2));
       expect(state.query.page, 1);
       expect(state.isLoading, isFalse);
@@ -482,7 +485,8 @@ void main() {
       );
       await container.read(projectListControllerProvider.notifier).loadMore();
 
-      final ProjectListState state = container.read(projectListControllerProvider);
+      final ProjectListState state =
+          container.read(projectListControllerProvider);
       expect(state.items, hasLength(2));
       expect(state.items[0].id, 'prj1');
       expect(state.items[1].id, 'prj2');
@@ -504,7 +508,8 @@ void main() {
       container.read(projectListControllerProvider.notifier).search('design');
       await Future<void>.delayed(const Duration(milliseconds: 400));
 
-      final ProjectListState state = container.read(projectListControllerProvider);
+      final ProjectListState state =
+          container.read(projectListControllerProvider);
       expect(state.query.search, 'design');
       expect(state.query.page, 1);
     });
@@ -515,7 +520,8 @@ void main() {
 
       container.read(projectListControllerProvider.notifier).applySort('name');
 
-      final ProjectListState state = container.read(projectListControllerProvider);
+      final ProjectListState state =
+          container.read(projectListControllerProvider);
       expect(state.query.sort, 'name');
       expect(state.query.page, 1);
     });
@@ -528,7 +534,8 @@ void main() {
           .read(projectListControllerProvider.notifier)
           .applyFilters(<String, String>{'status': 'ACTIVE'});
 
-      final ProjectListState state = container.read(projectListControllerProvider);
+      final ProjectListState state =
+          container.read(projectListControllerProvider);
       expect(state.query.filters, <String, String>{'status': 'ACTIVE'});
       expect(state.query.page, 1);
     });
@@ -578,7 +585,8 @@ void main() {
       container.read(projectListControllerProvider);
       await Future<void>.delayed(Duration.zero);
 
-      final ProjectListState state = container.read(projectListControllerProvider);
+      final ProjectListState state =
+          container.read(projectListControllerProvider);
       expect(state.failure, isA<ServerFailure>());
       expect(state.items, isEmpty);
       expect(state.isLoading, isFalse);
@@ -612,8 +620,7 @@ void main() {
     });
 
     test('loadMore appends data', () async {
-      fakeRepository.listTasksResult =
-          Result<Cacheable<Paginated<Task>>>.ok(
+      fakeRepository.listTasksResult = Result<Cacheable<Paginated<Task>>>.ok(
         Cacheable<Paginated<Task>>(
           value: _page(<Task>[_taskA], hasMore: true),
         ),
@@ -621,8 +628,7 @@ void main() {
       container.read(taskListControllerProvider);
       await Future<void>.delayed(Duration.zero);
 
-      fakeRepository.listTasksResult =
-          Result<Cacheable<Paginated<Task>>>.ok(
+      fakeRepository.listTasksResult = Result<Cacheable<Paginated<Task>>>.ok(
         Cacheable<Paginated<Task>>(
           value: _page(<Task>[_taskB], page: 2),
         ),

@@ -33,7 +33,8 @@ class _TicketFormPageState extends ConsumerState<TicketFormPage> {
   }
 
   Future<void> _loadExisting() async {
-    final ticket = await ref.read(serviceTicketDetailProvider(widget.id!).future);
+    final ticket =
+        await ref.read(serviceTicketDetailProvider(widget.id!).future);
     if (!mounted) return;
     _titleController.text = ticket.title;
     _customerNameController.text = ticket.customerName ?? '';
@@ -64,13 +65,17 @@ class _TicketFormPageState extends ConsumerState<TicketFormPage> {
       'resolution': _resolutionController.text.trim(),
       'status': _status,
       'priority': _priority,
-      if (_scheduledDate != null) 'scheduledDate': _scheduledDate!.toIso8601String(),
+      if (_scheduledDate != null)
+        'scheduledDate': _scheduledDate!.toIso8601String(),
     };
-    final result = await ref.read(serviceTicketListControllerProvider.notifier).save(payload, id: widget.id);
+    final result = await ref
+        .read(serviceTicketListControllerProvider.notifier)
+        .save(payload, id: widget.id);
     if (!mounted) return;
     setState(() => _isLoading = false);
     result.fold(
-      (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(true),
     );
   }
@@ -84,7 +89,8 @@ class _TicketFormPageState extends ConsumerState<TicketFormPage> {
       );
     }
     return Scaffold(
-      appBar: AppBar(title: Text(widget.id != null ? 'Edit Ticket' : 'New Ticket')),
+      appBar:
+          AppBar(title: Text(widget.id != null ? 'Edit Ticket' : 'New Ticket')),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -93,7 +99,8 @@ class _TicketFormPageState extends ConsumerState<TicketFormPage> {
             UiTextField(
               label: 'Title',
               controller: _titleController,
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+              validator: (v) =>
+                  (v == null || v.trim().isEmpty) ? 'Required' : null,
             ),
             UiTextField(
               label: 'Customer Name',
@@ -132,7 +139,10 @@ class _TicketFormPageState extends ConsumerState<TicketFormPage> {
             ElevatedButton(
               onPressed: _isLoading ? null : _submit,
               child: _isLoading
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2))
                   : const Text('Save'),
             ),
           ],

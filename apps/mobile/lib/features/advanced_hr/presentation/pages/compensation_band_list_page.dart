@@ -13,10 +13,12 @@ class CompensationBandListPage extends ConsumerStatefulWidget {
   static const String routeName = 'compensation-bands';
   static const String routePath = '/advanced-hr/compensation-bands';
   @override
-  ConsumerState<CompensationBandListPage> createState() => _CompensationBandListPageState();
+  ConsumerState<CompensationBandListPage> createState() =>
+      _CompensationBandListPageState();
 }
 
-class _CompensationBandListPageState extends ConsumerState<CompensationBandListPage> {
+class _CompensationBandListPageState
+    extends ConsumerState<CompensationBandListPage> {
   final TextEditingController _search = TextEditingController();
 
   static const Map<String, String> _sortOptions = <String, String>{
@@ -36,7 +38,8 @@ class _CompensationBandListPageState extends ConsumerState<CompensationBandListP
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(compensationBandListControllerProvider);
-    final controller = ref.read(compensationBandListControllerProvider.notifier);
+    final controller =
+        ref.read(compensationBandListControllerProvider.notifier);
     final t = context.tokens;
 
     return Scaffold(
@@ -49,17 +52,23 @@ class _CompensationBandListPageState extends ConsumerState<CompensationBandListP
             initialValue: state.query.sort,
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
-                .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value),),)
+                .map(
+                  (e) => PopupMenuItem<String>(
+                    value: e.key,
+                    child: Text(e.value),
+                  ),
+                )
                 .toList(),
           ),
         ],
       ),
       body: Column(
         children: [
-          if (state.cachedAt != null) StaleDataBanner(cachedAt: state.cachedAt!),
+          if (state.cachedAt != null)
+            StaleDataBanner(cachedAt: state.cachedAt!),
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -71,21 +80,27 @@ class _CompensationBandListPageState extends ConsumerState<CompensationBandListP
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} band${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} band${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -93,7 +108,8 @@ class _CompensationBandListPageState extends ConsumerState<CompensationBandListP
     );
   }
 
-  Widget _body(CompensationBandListState state, CompensationBandListController controller) {
+  Widget _body(CompensationBandListState state,
+      CompensationBandListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -133,23 +149,33 @@ class _BandTile extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(children: [
-              Expanded(
-                child: Text(band.name,
-                    style: Theme.of(context).textTheme.titleSmall,),
-              ),
-              UiStatusBadge(
-                label: band.status,
-                tone: band.status == 'ACTIVE' ? UiTone.success : UiTone.neutral,
-              ),
-            ],),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    band.name,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+                UiStatusBadge(
+                  label: band.status,
+                  tone:
+                      band.status == 'ACTIVE' ? UiTone.success : UiTone.neutral,
+                ),
+              ],
+            ),
             const SizedBox(height: Spacing.x1),
-            Text('${Formatters.currency(band.minSalary)} - ${Formatters.currency(band.maxSalary)}',
-                style: Theme.of(context).textTheme.labelLarge,),
+            Text(
+              '${Formatters.currency(band.minSalary)} - ${Formatters.currency(band.maxSalary)}',
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
             if (band.grade != null) ...[
               const SizedBox(height: Spacing.x1),
-              Text('Grade: ${band.grade}',
-                  style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
+              Text(
+                'Grade: ${band.grade}',
+                style:
+                    TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+              ),
             ],
           ],
         ),

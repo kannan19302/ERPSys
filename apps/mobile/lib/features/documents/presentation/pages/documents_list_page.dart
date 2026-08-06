@@ -48,17 +48,23 @@ class _DocumentsListPageState extends ConsumerState<DocumentsListPage> {
             initialValue: state.query.sort,
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
-                .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value),),)
+                .map(
+                  (e) => PopupMenuItem<String>(
+                    value: e.key,
+                    child: Text(e.value),
+                  ),
+                )
                 .toList(),
           ),
         ],
       ),
       body: Column(
         children: [
-          if (state.cachedAt != null) StaleDataBanner(cachedAt: state.cachedAt!),
+          if (state.cachedAt != null)
+            StaleDataBanner(cachedAt: state.cachedAt!),
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -70,21 +76,27 @@ class _DocumentsListPageState extends ConsumerState<DocumentsListPage> {
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} document${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} document${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -141,35 +153,52 @@ class _DocumentTile extends StatelessWidget {
       onTap: onTap,
       child: Row(
         children: [
-          Icon(_fileIcon(document.fileType), size: Spacing.x6, color: t.primary),
+          Icon(_fileIcon(document.fileType),
+              size: Spacing.x6, color: t.primary),
           const SizedBox(width: Spacing.x3),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(children: [
-                  Expanded(
-                    child: Text(document.name,
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        document.name,
                         style: Theme.of(context).textTheme.titleSmall,
                         maxLines: 1,
-                        overflow: TextOverflow.ellipsis,),
-                  ),
-                  if (document.starred)
-                    const Icon(Icons.star, size: TypeScale.base, color: Colors.amber),
-                ],),
-                const SizedBox(height: Spacing.x1),
-                Row(children: [
-                  Text(document.fileType.toUpperCase(),
-                      style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
-                  const SizedBox(width: Spacing.x2),
-                  Text(Formatters.compact(document.fileSize),
-                      style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
-                  if (document.folderName != null) ...<Widget>[
-                    const SizedBox(width: Spacing.x2),
-                    Text('in ${document.folderName}',
-                        style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (document.starred)
+                      const Icon(Icons.star,
+                          size: TypeScale.base, color: Colors.amber),
                   ],
-                ],),
+                ),
+                const SizedBox(height: Spacing.x1),
+                Row(
+                  children: [
+                    Text(
+                      document.fileType.toUpperCase(),
+                      style: TextStyle(
+                          color: t.textTertiary, fontSize: TypeScale.xs),
+                    ),
+                    const SizedBox(width: Spacing.x2),
+                    Text(
+                      Formatters.compact(document.fileSize),
+                      style: TextStyle(
+                          color: t.textTertiary, fontSize: TypeScale.xs),
+                    ),
+                    if (document.folderName != null) ...<Widget>[
+                      const SizedBox(width: Spacing.x2),
+                      Text(
+                        'in ${document.folderName}',
+                        style: TextStyle(
+                            color: t.textTertiary, fontSize: TypeScale.xs),
+                      ),
+                    ],
+                  ],
+                ),
                 const SizedBox(height: Spacing.x1),
                 UiStatusBadge(
                   label: document.status,

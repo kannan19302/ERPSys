@@ -49,9 +49,8 @@ class _ContactFormPageState extends ConsumerState<ContactFormPage> {
   }
 
   Future<void> _loadContact() async {
-    final Contact? contact = ref
-        .read(contactDetailProvider(widget.contactId!))
-        .valueOrNull;
+    final Contact? contact =
+        ref.read(contactDetailProvider(widget.contactId!)).valueOrNull;
     if (contact != null) {
       _firstNameCtrl.text = contact.firstName ?? '';
       _lastNameCtrl.text = contact.lastName ?? '';
@@ -93,9 +92,13 @@ class _ContactFormPageState extends ConsumerState<ContactFormPage> {
       'lastName': _lastNameCtrl.text.trim(),
       'email': _emailCtrl.text.trim().isEmpty ? null : _emailCtrl.text.trim(),
       'phone': _phoneCtrl.text.trim().isEmpty ? null : _phoneCtrl.text.trim(),
-      'mobile': _mobileCtrl.text.trim().isEmpty ? null : _mobileCtrl.text.trim(),
-      'position': _positionCtrl.text.trim().isEmpty ? null : _positionCtrl.text.trim(),
-      'department': _departmentCtrl.text.trim().isEmpty ? null : _departmentCtrl.text.trim(),
+      'mobile':
+          _mobileCtrl.text.trim().isEmpty ? null : _mobileCtrl.text.trim(),
+      'position':
+          _positionCtrl.text.trim().isEmpty ? null : _positionCtrl.text.trim(),
+      'department': _departmentCtrl.text.trim().isEmpty
+          ? null
+          : _departmentCtrl.text.trim(),
       'isPrimary': _isPrimary,
       'notes': _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
     };

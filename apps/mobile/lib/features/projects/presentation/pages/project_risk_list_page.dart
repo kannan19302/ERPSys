@@ -12,7 +12,8 @@ class ProjectRiskListPage extends ConsumerStatefulWidget {
   static const String routeName = 'project-risks';
   static const String routePath = '/projects/risks';
   @override
-  ConsumerState<ProjectRiskListPage> createState() => _ProjectRiskListPageState();
+  ConsumerState<ProjectRiskListPage> createState() =>
+      _ProjectRiskListPageState();
 }
 
 class _ProjectRiskListPageState extends ConsumerState<ProjectRiskListPage> {
@@ -39,7 +40,8 @@ class _ProjectRiskListPageState extends ConsumerState<ProjectRiskListPage> {
     );
   }
 
-  Widget _body(ProjectRiskListState state, ProjectRiskListController controller) {
+  Widget _body(
+      ProjectRiskListState state, ProjectRiskListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -61,13 +63,17 @@ class _ProjectRiskListPageState extends ConsumerState<ProjectRiskListPage> {
 }
 
 class _RiskTile extends StatelessWidget {
-
   const _RiskTile({required this.risk});
   Color _severityColor(dynamic a, [dynamic b]) => Colors.red;
   final ProjectRisk risk;
 
   UiTone _severityTone(String probability, String impact) {
-    final levels = <String, int>{'LOW': 1, 'MEDIUM': 2, 'HIGH': 3, 'CRITICAL': 4};
+    final levels = <String, int>{
+      'LOW': 1,
+      'MEDIUM': 2,
+      'HIGH': 3,
+      'CRITICAL': 4
+    };
     final int p = levels[probability] ?? 1;
     final int i = levels[impact] ?? 1;
     final int combined = p * i;
@@ -95,29 +101,37 @@ class _RiskTile extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: Spacing.x2, vertical: Spacing.x0_5),
-                decoration: BoxDecoration(
-                  color: _severityColor(sev, t).withAlpha(30),
-                  borderRadius: Radii.pill,
-                ),
-                child: Text(
-                  '${risk.probability}/${risk.impact}',
-                  style: TextStyle(
-                    color: _severityColor(sev, t),
-                    fontSize: TypeScale.xs,
-                    fontWeight: TypeScale.semibold,
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: Spacing.x2, vertical: Spacing.x0_5),
+                  decoration: BoxDecoration(
+                    color: _severityColor(sev, t).withAlpha(30),
+                    borderRadius: Radii.pill,
+                  ),
+                  child: Text(
+                    '${risk.probability}/${risk.impact}',
+                    style: TextStyle(
+                      color: _severityColor(sev, t),
+                      fontSize: TypeScale.xs,
+                      fontWeight: TypeScale.semibold,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: Spacing.x2),
-              Expanded(child: Text(risk.title, style: Theme.of(context).textTheme.titleSmall)),
-              UiStatusBadge(label: risk.status, tone: _statusTone(risk.status)),
-            ],),
+                const SizedBox(width: Spacing.x2),
+                Expanded(
+                    child: Text(risk.title,
+                        style: Theme.of(context).textTheme.titleSmall)),
+                UiStatusBadge(
+                    label: risk.status, tone: _statusTone(risk.status)),
+              ],
+            ),
             if (risk.description != null && risk.description!.isNotEmpty) ...[
               const SizedBox(height: Spacing.x1),
-              Text(risk.description!, style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
+              Text(risk.description!,
+                  style: TextStyle(
+                      color: t.textSecondary, fontSize: TypeScale.xs)),
             ],
           ],
         ),

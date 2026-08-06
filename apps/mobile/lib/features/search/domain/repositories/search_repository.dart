@@ -11,10 +11,15 @@ class Cacheable<T> {
 
 abstract class SearchRepository {
   Future<Result<Cacheable<Paginated<SearchResult>>>> search(ListQuery query);
-  Future<Result<Cacheable<Paginated<SearchIndexConfig>>>> listIndexConfigs(ListQuery query);
-  Future<Result<SearchIndexConfig>> updateIndexConfig(String id, Map<String, dynamic> payload);
-  Future<Result<Cacheable<Paginated<SearchSynonymGroup>>>> listSynonyms(ListQuery query);
-  Future<Result<SearchSynonymGroup>> createSynonym(Map<String, dynamic> payload);
-  Future<Result<SearchSynonymGroup>> updateSynonym(String id, Map<String, dynamic> payload);
+  Future<Result<Cacheable<Paginated<SearchIndexConfig>>>> listIndexConfigs(
+      ListQuery query);
+  Future<Result<SearchIndexConfig>> updateIndexConfig(
+      String id, Map<String, dynamic> payload);
+  Future<Result<Cacheable<Paginated<SearchSynonymGroup>>>> listSynonyms(
+      ListQuery query);
+  Future<Result<SearchSynonymGroup>> createSynonym(
+      Map<String, dynamic> payload);
+  Future<Result<SearchSynonymGroup>> updateSynonym(
+      String id, Map<String, dynamic> payload);
   Future<Result<void>> deleteSynonym(String id);
 }

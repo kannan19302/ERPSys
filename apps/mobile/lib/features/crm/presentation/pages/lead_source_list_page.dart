@@ -45,7 +45,10 @@ class _LeadSourceListPageState extends ConsumerState<LeadSourceListPage> {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2,
+              Spacing.x4,
+              Spacing.x3,
+              Spacing.x4,
+              Spacing.x2,
             ),
             child: Row(
               children: <Widget>[

@@ -12,10 +12,12 @@ class SupplierContractFormPage extends ConsumerStatefulWidget {
   final String? contractId;
 
   @override
-  ConsumerState<SupplierContractFormPage> createState() => _SupplierContractFormPageState();
+  ConsumerState<SupplierContractFormPage> createState() =>
+      _SupplierContractFormPageState();
 }
 
-class _SupplierContractFormPageState extends ConsumerState<SupplierContractFormPage> {
+class _SupplierContractFormPageState
+    extends ConsumerState<SupplierContractFormPage> {
   final _formKey = GlobalKey<FormState>();
   final _supplierCtrl = TextEditingController();
   final _typeCtrl = TextEditingController();
@@ -34,7 +36,9 @@ class _SupplierContractFormPageState extends ConsumerState<SupplierContractFormP
   void initState() {
     super.initState();
     if (_isEditing) {
-      final c = ref.read(supplierContractDetailProvider(widget.contractId!)).valueOrNull;
+      final c = ref
+          .read(supplierContractDetailProvider(widget.contractId!))
+          .valueOrNull;
       if (c != null) {
         _supplierCtrl.text = c.supplierName;
         _typeCtrl.text = c.type;
@@ -51,9 +55,14 @@ class _SupplierContractFormPageState extends ConsumerState<SupplierContractFormP
 
   @override
   void dispose() {
-    _supplierCtrl.dispose(); _typeCtrl.dispose(); _startDateCtrl.dispose();
-    _endDateCtrl.dispose(); _termsCtrl.dispose(); _valueCtrl.dispose();
-    _currencyCtrl.dispose(); _notesCtrl.dispose();
+    _supplierCtrl.dispose();
+    _typeCtrl.dispose();
+    _startDateCtrl.dispose();
+    _endDateCtrl.dispose();
+    _termsCtrl.dispose();
+    _valueCtrl.dispose();
+    _currencyCtrl.dispose();
+    _notesCtrl.dispose();
     super.dispose();
   }
 
@@ -64,22 +73,28 @@ class _SupplierContractFormPageState extends ConsumerState<SupplierContractFormP
     final payload = <String, dynamic>{
       'supplierName': _supplierCtrl.text.trim(),
       'type': _typeCtrl.text.trim(),
-      'startDate': _startDateCtrl.text.trim().isEmpty ? null : _startDateCtrl.text.trim(),
-      'endDate': _endDateCtrl.text.trim().isEmpty ? null : _endDateCtrl.text.trim(),
+      'startDate': _startDateCtrl.text.trim().isEmpty
+          ? null
+          : _startDateCtrl.text.trim(),
+      'endDate':
+          _endDateCtrl.text.trim().isEmpty ? null : _endDateCtrl.text.trim(),
       'terms': _termsCtrl.text.trim().isEmpty ? null : _termsCtrl.text.trim(),
       'value': double.tryParse(_valueCtrl.text) ?? 0,
-      'currency': _currencyCtrl.text.trim().isEmpty ? 'USD' : _currencyCtrl.text.trim(),
+      'currency':
+          _currencyCtrl.text.trim().isEmpty ? 'USD' : _currencyCtrl.text.trim(),
       'status': _status,
       'notes': _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
     };
 
-    final result = await ref.read(supplierContractListControllerProvider.notifier)
+    final result = await ref
+        .read(supplierContractListControllerProvider.notifier)
         .save(payload, id: widget.contractId);
 
     if (!context.mounted) return;
     setState(() => _saving = false);
     result.fold(
-      (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(),
     );
   }
@@ -93,7 +108,10 @@ class _SupplierContractFormPageState extends ConsumerState<SupplierContractFormP
           TextButton(
             onPressed: _saving ? null : _save,
             child: _saving
-                ? const SizedBox(height: Spacing.x5, width: Spacing.x5, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    height: Spacing.x5,
+                    width: Spacing.x5,
+                    child: CircularProgressIndicator(strokeWidth: 2))
                 : const Text('Save'),
           ),
         ],
@@ -106,13 +124,15 @@ class _SupplierContractFormPageState extends ConsumerState<SupplierContractFormP
             TextFormField(
               controller: _supplierCtrl,
               decoration: const InputDecoration(labelText: 'Supplier *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _typeCtrl,
               decoration: const InputDecoration(labelText: 'Contract Type *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
@@ -143,23 +163,28 @@ class _SupplierContractFormPageState extends ConsumerState<SupplierContractFormP
                 DropdownMenuItem(value: 'DRAFT', child: Text('Draft')),
                 DropdownMenuItem(value: 'ACTIVE', child: Text('Active')),
                 DropdownMenuItem(value: 'EXPIRED', child: Text('Expired')),
-                DropdownMenuItem(value: 'TERMINATED', child: Text('Terminated')),
+                DropdownMenuItem(
+                    value: 'TERMINATED', child: Text('Terminated')),
               ],
-              onChanged: (v) { if (v != null) setState(() => _status = v); },
+              onChanged: (v) {
+                if (v != null) setState(() => _status = v);
+              },
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _termsCtrl,
               maxLines: 4,
               textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(labelText: 'Terms', alignLabelWithHint: true),
+              decoration: const InputDecoration(
+                  labelText: 'Terms', alignLabelWithHint: true),
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _notesCtrl,
               maxLines: 3,
               textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(labelText: 'Notes', alignLabelWithHint: true),
+              decoration: const InputDecoration(
+                  labelText: 'Notes', alignLabelWithHint: true),
             ),
           ],
         ),

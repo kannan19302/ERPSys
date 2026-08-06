@@ -41,9 +41,8 @@ class _ReportFormPageState extends ConsumerState<ReportFormPage> {
   }
 
   Future<void> _loadReport() async {
-    final AnalyticsReport? report = ref
-        .read(analyticsReportDetailProvider(widget.reportId!))
-        .valueOrNull;
+    final AnalyticsReport? report =
+        ref.read(analyticsReportDetailProvider(widget.reportId!)).valueOrNull;
     if (report != null) {
       _titleCtrl.text = report.title;
       _descriptionCtrl.text = report.description ?? '';
@@ -66,8 +65,12 @@ class _ReportFormPageState extends ConsumerState<ReportFormPage> {
 
     final Map<String, dynamic> payload = <String, dynamic>{
       'title': _titleCtrl.text.trim(),
-      'description': _descriptionCtrl.text.trim().isEmpty ? null : _descriptionCtrl.text.trim(),
-      'reportType': _reportTypeCtrl.text.trim().isEmpty ? null : _reportTypeCtrl.text.trim(),
+      'description': _descriptionCtrl.text.trim().isEmpty
+          ? null
+          : _descriptionCtrl.text.trim(),
+      'reportType': _reportTypeCtrl.text.trim().isEmpty
+          ? null
+          : _reportTypeCtrl.text.trim(),
       'status': _status,
     };
 
@@ -140,8 +143,10 @@ class _ReportFormPageState extends ConsumerState<ReportFormPage> {
               decoration: const InputDecoration(labelText: 'Status'),
               items: const <DropdownMenuItem<String>>[
                 DropdownMenuItem<String>(value: 'DRAFT', child: Text('Draft')),
-                DropdownMenuItem<String>(value: 'PUBLISHED', child: Text('Published')),
-                DropdownMenuItem<String>(value: 'ARCHIVED', child: Text('Archived')),
+                DropdownMenuItem<String>(
+                    value: 'PUBLISHED', child: Text('Published')),
+                DropdownMenuItem<String>(
+                    value: 'ARCHIVED', child: Text('Archived')),
               ],
               onChanged: (String? v) {
                 if (v != null) setState(() => _status = v);

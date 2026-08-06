@@ -151,7 +151,8 @@ class AuthInterceptor extends QueuedInterceptor {
       }
       return true;
     } on Object catch (error) {
-      _log.warn('Silent refresh failed', data: <String, Object?>{'error': '$error'});
+      _log.warn('Silent refresh failed',
+          data: <String, Object?>{'error': '$error'});
       return false;
     }
   }

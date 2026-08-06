@@ -8,14 +8,17 @@ class SupplierQuotationFormPage extends ConsumerStatefulWidget {
   static const String routeName = 'supplier-quotation-new';
   static const String routeEditName = 'supplier-quotation-edit';
   static const String routePath = '/procurement/supplier-quotations/new';
-  static const String routeEditPath = '/procurement/supplier-quotations/:id/edit';
+  static const String routeEditPath =
+      '/procurement/supplier-quotations/:id/edit';
   final String? quotationId;
 
   @override
-  ConsumerState<SupplierQuotationFormPage> createState() => _SupplierQuotationFormPageState();
+  ConsumerState<SupplierQuotationFormPage> createState() =>
+      _SupplierQuotationFormPageState();
 }
 
-class _SupplierQuotationFormPageState extends ConsumerState<SupplierQuotationFormPage> {
+class _SupplierQuotationFormPageState
+    extends ConsumerState<SupplierQuotationFormPage> {
   final _formKey = GlobalKey<FormState>();
   final _rfqRefCtrl = TextEditingController();
   final _supplierCtrl = TextEditingController();
@@ -33,11 +36,15 @@ class _SupplierQuotationFormPageState extends ConsumerState<SupplierQuotationFor
   }
 
   void _addItem() {
-    setState(() => _items.add(_SQLineItem(
-      productCtrl: TextEditingController(),
-      qtyCtrl: TextEditingController(text: '1'),
-      rateCtrl: TextEditingController(),
-    ),),);
+    setState(
+      () => _items.add(
+        _SQLineItem(
+          productCtrl: TextEditingController(),
+          qtyCtrl: TextEditingController(text: '1'),
+          rateCtrl: TextEditingController(),
+        ),
+      ),
+    );
   }
 
   void _removeItem(int index) {
@@ -64,24 +71,33 @@ class _SupplierQuotationFormPageState extends ConsumerState<SupplierQuotationFor
     setState(() => _saving = true);
 
     final payload = <String, dynamic>{
-      'rfqNumber': _rfqRefCtrl.text.trim().isEmpty ? null : _rfqRefCtrl.text.trim(),
+      'rfqNumber':
+          _rfqRefCtrl.text.trim().isEmpty ? null : _rfqRefCtrl.text.trim(),
       'vendorName': _supplierCtrl.text.trim(),
-      'validUntil': _validUntilCtrl.text.trim().isEmpty ? null : _validUntilCtrl.text.trim(),
+      'validUntil': _validUntilCtrl.text.trim().isEmpty
+          ? null
+          : _validUntilCtrl.text.trim(),
       'notes': _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
-      'items': _items.map((i) => <String, dynamic>{
-        'productName': i.productCtrl.text.trim(),
-        'quantity': double.tryParse(i.qtyCtrl.text) ?? 0,
-        'rate': double.tryParse(i.rateCtrl.text) ?? 0,
-      },).toList(),
+      'items': _items
+          .map(
+            (i) => <String, dynamic>{
+              'productName': i.productCtrl.text.trim(),
+              'quantity': double.tryParse(i.qtyCtrl.text) ?? 0,
+              'rate': double.tryParse(i.rateCtrl.text) ?? 0,
+            },
+          )
+          .toList(),
     };
 
-    final result = await ref.read(supplierQuotationListControllerProvider.notifier)
+    final result = await ref
+        .read(supplierQuotationListControllerProvider.notifier)
         .save(payload, id: widget.quotationId);
 
     if (!context.mounted) return;
     setState(() => _saving = false);
     result.fold(
-      (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(),
     );
   }
@@ -95,7 +111,10 @@ class _SupplierQuotationFormPageState extends ConsumerState<SupplierQuotationFor
           TextButton(
             onPressed: _saving ? null : _save,
             child: _saving
-                ? const SizedBox(height: Spacing.x5, width: Spacing.x5, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    height: Spacing.x5,
+                    width: Spacing.x5,
+                    child: CircularProgressIndicator(strokeWidth: 2))
                 : const Text('Save'),
           ),
         ],
@@ -113,7 +132,8 @@ class _SupplierQuotationFormPageState extends ConsumerState<SupplierQuotationFor
             TextFormField(
               controller: _supplierCtrl,
               decoration: const InputDecoration(labelText: 'Supplier *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
@@ -121,41 +141,59 @@ class _SupplierQuotationFormPageState extends ConsumerState<SupplierQuotationFor
               decoration: const InputDecoration(labelText: 'Valid Until'),
             ),
             const SizedBox(height: Spacing.x4),
-            Row(children: [
-              const Text('Items', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-              const Spacer(),
-              TextButton.icon(
-                onPressed: _addItem,
-                icon: const Icon(Icons.add, size: 18),
-                label: const Text('Add'),
-              ),
-            ],),
+            Row(
+              children: [
+                const Text('Items',
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                const Spacer(),
+                TextButton.icon(
+                  onPressed: _addItem,
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text('Add'),
+                ),
+              ],
+            ),
             ...List.generate(_items.length, (i) {
               final item = _items[i];
               return Padding(
                 padding: const EdgeInsets.only(bottom: Spacing.x3),
-                child: Row(children: [
-                  Expanded(flex: 2, child: TextFormField(
-                    controller: item.productCtrl,
-                    decoration: const InputDecoration(labelText: 'Product', isDense: true),
-                  ),),
-                  const SizedBox(width: Spacing.x2),
-                  Expanded(flex: 1, child: TextFormField(
-                    controller: item.qtyCtrl,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Qty', isDense: true),
-                  ),),
-                  const SizedBox(width: Spacing.x2),
-                  Expanded(flex: 1, child: TextFormField(
-                    controller: item.rateCtrl,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Rate', isDense: true),
-                  ),),
-                  IconButton(
-                    icon: const Icon(Icons.remove_circle_outline, size: 20),
-                    onPressed: () => _removeItem(i),
-                  ),
-                ],),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: TextFormField(
+                        controller: item.productCtrl,
+                        decoration: const InputDecoration(
+                            labelText: 'Product', isDense: true),
+                      ),
+                    ),
+                    const SizedBox(width: Spacing.x2),
+                    Expanded(
+                      flex: 1,
+                      child: TextFormField(
+                        controller: item.qtyCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                            labelText: 'Qty', isDense: true),
+                      ),
+                    ),
+                    const SizedBox(width: Spacing.x2),
+                    Expanded(
+                      flex: 1,
+                      child: TextFormField(
+                        controller: item.rateCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                            labelText: 'Rate', isDense: true),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.remove_circle_outline, size: 20),
+                      onPressed: () => _removeItem(i),
+                    ),
+                  ],
+                ),
               );
             }),
             const SizedBox(height: Spacing.x4),
@@ -163,7 +201,8 @@ class _SupplierQuotationFormPageState extends ConsumerState<SupplierQuotationFor
               controller: _notesCtrl,
               maxLines: 3,
               textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(labelText: 'Notes', alignLabelWithHint: true),
+              decoration: const InputDecoration(
+                  labelText: 'Notes', alignLabelWithHint: true),
             ),
           ],
         ),

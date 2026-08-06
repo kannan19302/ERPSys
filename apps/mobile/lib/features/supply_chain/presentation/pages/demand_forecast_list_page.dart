@@ -12,10 +12,12 @@ class DemandForecastListPage extends ConsumerStatefulWidget {
   static const String routeName = 'demand-forecasts';
   static const String routePath = '/supply-chain/demand-forecast';
   @override
-  ConsumerState<DemandForecastListPage> createState() => _DemandForecastListPageState();
+  ConsumerState<DemandForecastListPage> createState() =>
+      _DemandForecastListPageState();
 }
 
-class _DemandForecastListPageState extends ConsumerState<DemandForecastListPage> {
+class _DemandForecastListPageState
+    extends ConsumerState<DemandForecastListPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(demandForecastListControllerProvider);
@@ -30,14 +32,17 @@ class _DemandForecastListPageState extends ConsumerState<DemandForecastListPage>
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} forecast${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} forecast${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -45,7 +50,8 @@ class _DemandForecastListPageState extends ConsumerState<DemandForecastListPage>
     );
   }
 
-  Widget _body(DemandForecastListState state, DemandForecastListController controller) {
+  Widget _body(
+      DemandForecastListState state, DemandForecastListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -61,7 +67,8 @@ class _DemandForecastListPageState extends ConsumerState<DemandForecastListPage>
       onLoadMore: controller.loadMore,
       emptyTitle: 'No forecasts',
       emptyMessage: 'Demand forecasts generated in UniERP will appear here.',
-      itemBuilder: (_, DemandForecast forecast, __) => _ForecastTile(forecast: forecast),
+      itemBuilder: (_, DemandForecast forecast, __) =>
+          _ForecastTile(forecast: forecast),
     );
   }
 }
@@ -81,34 +88,52 @@ class _ForecastTile extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(children: [
-              Expanded(
-                child: Text(forecast.productName,
-                    style: Theme.of(context).textTheme.titleSmall,),
-              ),
-              UiStatusBadge(
-                label: forecast.period,
-                tone: UiTone.info,
-              ),
-            ],),
-            const SizedBox(height: Spacing.x1),
-            Row(children: [
-              Text('Forecast: ',
-                  style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
-              Text('${forecast.forecastQuantity}',
-                  style: const TextStyle(fontWeight: TypeScale.semibold),),
-              if (forecast.actualQuantity != null) ...<Widget>[
-                const SizedBox(width: Spacing.x3),
-                Text('Actual: ',
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
-                Text('${forecast.actualQuantity}',
-                    style: const TextStyle(fontWeight: TypeScale.semibold),),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    forecast.productName,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+                UiStatusBadge(
+                  label: forecast.period,
+                  tone: UiTone.info,
+                ),
               ],
-            ],),
+            ),
+            const SizedBox(height: Spacing.x1),
+            Row(
+              children: [
+                Text(
+                  'Forecast: ',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+                Text(
+                  '${forecast.forecastQuantity}',
+                  style: const TextStyle(fontWeight: TypeScale.semibold),
+                ),
+                if (forecast.actualQuantity != null) ...<Widget>[
+                  const SizedBox(width: Spacing.x3),
+                  Text(
+                    'Actual: ',
+                    style: TextStyle(
+                        color: t.textSecondary, fontSize: TypeScale.xs),
+                  ),
+                  Text(
+                    '${forecast.actualQuantity}',
+                    style: const TextStyle(fontWeight: TypeScale.semibold),
+                  ),
+                ],
+              ],
+            ),
             if (forecast.accuracy != null) ...<Widget>[
               const SizedBox(height: Spacing.x0_5),
-              Text('Accuracy: ${(forecast.accuracy! * 100).toStringAsFixed(1)}%',
-                  style: TextStyle(color: t.success, fontSize: TypeScale.xs),),
+              Text(
+                'Accuracy: ${(forecast.accuracy! * 100).toStringAsFixed(1)}%',
+                style: TextStyle(color: t.success, fontSize: TypeScale.xs),
+              ),
             ],
           ],
         ),

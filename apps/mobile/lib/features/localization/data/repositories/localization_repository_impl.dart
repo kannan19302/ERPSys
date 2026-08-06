@@ -36,7 +36,8 @@ class LocalizationRepositoryImpl implements LocalizationRepository {
       final List<Map<String, dynamic>> jsonItems = page.data
           .map((dynamic e) => (e as dynamic).toJson() as Map<String, dynamic>)
           .toList(growable: false);
-      await _cache.write(_tenantId, namespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, namespace, query.cacheKey, <String, Object?>{
         'data': jsonItems,
         'meta': page.meta.toJson(),
       });
@@ -44,9 +45,11 @@ class LocalizationRepositoryImpl implements LocalizationRepository {
         Cacheable<Paginated<T>>(value: page),
       );
     } on NetworkException catch (error) {
-      final cached = _cache.read<Map<String, dynamic>>(_tenantId, namespace, query.cacheKey);
+      final cached = _cache.read<Map<String, dynamic>>(
+          _tenantId, namespace, query.cacheKey);
       if (cached == null) {
-        return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
+        return Result<Cacheable<Paginated<T>>>.err(
+            mapExceptionToFailure(error));
       }
       return Result<Cacheable<Paginated<T>>>.ok(
         Cacheable<Paginated<T>>(
@@ -80,16 +83,22 @@ class LocalizationRepositoryImpl implements LocalizationRepository {
   }
 
   @override
-  Future<Result<Cacheable<Paginated<LocalizationTranslation>>>> listTranslations(ListQuery q) =>
-      _paginated(_translationNamespace, q, () => _remote.listTranslations(q),
-        LocalizationTranslationModel.fromJson,);
+  Future<Result<Cacheable<Paginated<LocalizationTranslation>>>>
+      listTranslations(ListQuery q) => _paginated(
+            _translationNamespace,
+            q,
+            () => _remote.listTranslations(q),
+            LocalizationTranslationModel.fromJson,
+          );
 
   @override
-  Future<Result<LocalizationTranslation>> createTranslation(Map<String, dynamic> p) =>
+  Future<Result<LocalizationTranslation>> createTranslation(
+          Map<String, dynamic> p) =>
       _write(() => _remote.createTranslation(p));
 
   @override
-  Future<Result<LocalizationTranslation>> updateTranslation(String id, Map<String, dynamic> p) =>
+  Future<Result<LocalizationTranslation>> updateTranslation(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateTranslation(id, p));
 
   @override
@@ -97,16 +106,22 @@ class LocalizationRepositoryImpl implements LocalizationRepository {
       _delete(() => _remote.deleteTranslation(id));
 
   @override
-  Future<Result<Cacheable<Paginated<LocalizationLanguage>>>> listLanguages(ListQuery q) =>
-      _paginated(_languageNamespace, q, () => _remote.listLanguages(q),
-        LocalizationLanguageModel.fromJson,);
+  Future<Result<Cacheable<Paginated<LocalizationLanguage>>>> listLanguages(
+          ListQuery q) =>
+      _paginated(
+        _languageNamespace,
+        q,
+        () => _remote.listLanguages(q),
+        LocalizationLanguageModel.fromJson,
+      );
 
   @override
   Future<Result<LocalizationLanguage>> createLanguage(Map<String, dynamic> p) =>
       _write(() => _remote.createLanguage(p));
 
   @override
-  Future<Result<LocalizationLanguage>> updateLanguage(String id, Map<String, dynamic> p) =>
+  Future<Result<LocalizationLanguage>> updateLanguage(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateLanguage(id, p));
 
   @override
@@ -114,16 +129,22 @@ class LocalizationRepositoryImpl implements LocalizationRepository {
       _delete(() => _remote.deleteLanguage(id));
 
   @override
-  Future<Result<Cacheable<Paginated<LocalizationRegion>>>> listRegions(ListQuery q) =>
-      _paginated(_regionNamespace, q, () => _remote.listRegions(q),
-        LocalizationRegionModel.fromJson,);
+  Future<Result<Cacheable<Paginated<LocalizationRegion>>>> listRegions(
+          ListQuery q) =>
+      _paginated(
+        _regionNamespace,
+        q,
+        () => _remote.listRegions(q),
+        LocalizationRegionModel.fromJson,
+      );
 
   @override
   Future<Result<LocalizationRegion>> createRegion(Map<String, dynamic> p) =>
       _write(() => _remote.createRegion(p));
 
   @override
-  Future<Result<LocalizationRegion>> updateRegion(String id, Map<String, dynamic> p) =>
+  Future<Result<LocalizationRegion>> updateRegion(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateRegion(id, p));
 
   @override

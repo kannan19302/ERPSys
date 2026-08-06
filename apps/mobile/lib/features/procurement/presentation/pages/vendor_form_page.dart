@@ -77,22 +77,30 @@ class _VendorFormPageState extends ConsumerState<VendorFormPage> {
       'email': _emailCtrl.text.trim().isEmpty ? null : _emailCtrl.text.trim(),
       'phone': _phoneCtrl.text.trim().isEmpty ? null : _phoneCtrl.text.trim(),
       'taxId': _taxIdCtrl.text.trim().isEmpty ? null : _taxIdCtrl.text.trim(),
-      'address': _addressCtrl.text.trim().isEmpty ? null : _addressCtrl.text.trim(),
+      'address':
+          _addressCtrl.text.trim().isEmpty ? null : _addressCtrl.text.trim(),
       'status': _status,
-      'paymentTerms': _paymentTermsCtrl.text.trim().isEmpty ? null : _paymentTermsCtrl.text.trim(),
-      'currency': _currencyCtrl.text.trim().isEmpty ? 'USD' : _currencyCtrl.text.trim(),
-      'bankDetails': _bankDetailsCtrl.text.trim().isEmpty ? null : _bankDetailsCtrl.text.trim(),
+      'paymentTerms': _paymentTermsCtrl.text.trim().isEmpty
+          ? null
+          : _paymentTermsCtrl.text.trim(),
+      'currency':
+          _currencyCtrl.text.trim().isEmpty ? 'USD' : _currencyCtrl.text.trim(),
+      'bankDetails': _bankDetailsCtrl.text.trim().isEmpty
+          ? null
+          : _bankDetailsCtrl.text.trim(),
       'notes': _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
     };
 
-    final result = await ref.read(vendorListControllerProvider.notifier)
+    final result = await ref
+        .read(vendorListControllerProvider.notifier)
         .save(payload, id: widget.vendorId);
 
     if (!context.mounted) return;
     setState(() => _saving = false);
 
     result.fold(
-      (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(),
     );
   }
@@ -106,7 +114,10 @@ class _VendorFormPageState extends ConsumerState<VendorFormPage> {
           TextButton(
             onPressed: _saving ? null : _save,
             child: _saving
-                ? const SizedBox(height: Spacing.x5, width: Spacing.x5, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    height: Spacing.x5,
+                    width: Spacing.x5,
+                    child: CircularProgressIndicator(strokeWidth: 2))
                 : const Text('Save'),
           ),
         ],
@@ -119,7 +130,8 @@ class _VendorFormPageState extends ConsumerState<VendorFormPage> {
             TextFormField(
               controller: _nameCtrl,
               decoration: const InputDecoration(labelText: 'Name *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
@@ -143,7 +155,8 @@ class _VendorFormPageState extends ConsumerState<VendorFormPage> {
               controller: _addressCtrl,
               maxLines: 2,
               textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(labelText: 'Address', alignLabelWithHint: true),
+              decoration: const InputDecoration(
+                  labelText: 'Address', alignLabelWithHint: true),
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
@@ -152,9 +165,12 @@ class _VendorFormPageState extends ConsumerState<VendorFormPage> {
               items: const [
                 DropdownMenuItem(value: 'ACTIVE', child: Text('Active')),
                 DropdownMenuItem(value: 'INACTIVE', child: Text('Inactive')),
-                DropdownMenuItem(value: 'BLACKLISTED', child: Text('Blacklisted')),
+                DropdownMenuItem(
+                    value: 'BLACKLISTED', child: Text('Blacklisted')),
               ],
-              onChanged: (v) { if (v != null) setState(() => _status = v); },
+              onChanged: (v) {
+                if (v != null) setState(() => _status = v);
+              },
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
@@ -176,7 +192,8 @@ class _VendorFormPageState extends ConsumerState<VendorFormPage> {
               controller: _notesCtrl,
               maxLines: 3,
               textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(labelText: 'Notes', alignLabelWithHint: true),
+              decoration: const InputDecoration(
+                  labelText: 'Notes', alignLabelWithHint: true),
             ),
           ],
         ),

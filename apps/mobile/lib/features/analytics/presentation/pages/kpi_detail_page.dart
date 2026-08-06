@@ -28,7 +28,9 @@ class KpiDetailPage extends ConsumerWidget {
       body: kpiAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load KPI.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load KPI.'),
           onRetry: () => ref.invalidate(analyticsKpiDetailProvider(kpiId)),
         ),
         data: (AnalyticsKpi kpi) => _KpiDetail(kpi: kpi),
@@ -113,7 +115,8 @@ class _KpiDetail extends StatelessWidget {
                       const SizedBox(height: Spacing.x1),
                       Text(
                         '${pct.toStringAsFixed(1)}% of target',
-                        style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                        style: TextStyle(
+                            color: t.textSecondary, fontSize: TypeScale.xs),
                       ),
                     ],
                   ],
@@ -130,7 +133,8 @@ class _KpiDetail extends StatelessWidget {
               const _SectionTitle(title: 'KPI Details'),
               _FieldRow('Name', kpi.name),
               _FieldRow('Value', Formatters.number(kpi.value)),
-              _FieldRow('Target', kpi.target != null ? Formatters.number(kpi.target!) : '—'),
+              _FieldRow('Target',
+                  kpi.target != null ? Formatters.number(kpi.target!) : '—'),
               _FieldRow('Unit', kpi.unit ?? '—'),
               _FieldRow('Period', kpi.period ?? '—'),
               _FieldRow('Trend', kpi.trend ?? '—'),
@@ -144,8 +148,16 @@ class _KpiDetail extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               const _SectionTitle(title: 'Timeline'),
-              _FieldRow('Created', kpi.createdAt != null ? Formatters.dateTime(kpi.createdAt!) : '—'),
-              _FieldRow('Updated', kpi.updatedAt != null ? Formatters.dateTime(kpi.updatedAt!) : '—'),
+              _FieldRow(
+                  'Created',
+                  kpi.createdAt != null
+                      ? Formatters.dateTime(kpi.createdAt!)
+                      : '—'),
+              _FieldRow(
+                  'Updated',
+                  kpi.updatedAt != null
+                      ? Formatters.dateTime(kpi.updatedAt!)
+                      : '—'),
             ],
           ),
         ),

@@ -40,7 +40,9 @@ class CustomerDetailPage extends ConsumerWidget {
       body: customerAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load customer.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load customer.'),
           onRetry: () => ref.invalidate(customerDetailProvider(customerId)),
         ),
         data: (Customer customer) => _CustomerDetail(customer: customer),
@@ -68,9 +70,8 @@ class CustomerDetailPage extends ConsumerWidget {
     );
     if (confirmed != true || !context.mounted) return;
 
-    final result = await ref
-        .read(customersProvider.notifier)
-        .delete(customerId);
+    final result =
+        await ref.read(customersProvider.notifier).delete(customerId);
 
     if (!context.mounted) return;
     result.fold(
@@ -135,9 +136,11 @@ class _CustomerDetail extends StatelessWidget {
               if (customer.email != null || customer.phone != null) ...<Widget>[
                 const SizedBox(height: Spacing.x2),
                 if (customer.email != null)
-                  Text(customer.email!, style: TextStyle(color: t.textSecondary)),
+                  Text(customer.email!,
+                      style: TextStyle(color: t.textSecondary)),
                 if (customer.phone != null)
-                  Text(customer.phone!, style: TextStyle(color: t.textSecondary)),
+                  Text(customer.phone!,
+                      style: TextStyle(color: t.textSecondary)),
               ],
             ],
           ),
@@ -184,8 +187,10 @@ class _CustomerDetail extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               const _SectionTitle(title: 'Metrics'),
-              _FieldRow('Credit Limit', Formatters.currency(customer.creditLimit)),
-              _FieldRow('Total Revenue', Formatters.currency(customer.totalRevenue)),
+              _FieldRow(
+                  'Credit Limit', Formatters.currency(customer.creditLimit)),
+              _FieldRow(
+                  'Total Revenue', Formatters.currency(customer.totalRevenue)),
               _FieldRow('Total Orders', '${customer.totalOrders}'),
             ],
           ),

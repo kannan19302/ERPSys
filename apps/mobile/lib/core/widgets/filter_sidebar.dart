@@ -93,8 +93,7 @@ class FilterState {
       other.textValues == textValues;
 
   @override
-  int get hashCode =>
-      Object.hash(checkboxValues, dateRange, textValues);
+  int get hashCode => Object.hash(checkboxValues, dateRange, textValues);
 }
 
 // ── Filter sidebar ─────────────────────────────────────────────────────────
@@ -138,10 +137,12 @@ class _FilterSidebarState extends State<FilterSidebar>
     _slideAnimation = Tween<Offset>(
       begin: const Offset(1, 0),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Motion.easeDefault,
-    ),);
+    ).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Motion.easeDefault,
+      ),
+    );
 
     _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
@@ -156,7 +157,8 @@ class _FilterSidebarState extends State<FilterSidebar>
   @override
   void didUpdateWidget(FilterSidebar oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.initialState != null && widget.initialState != oldWidget.initialState) {
+    if (widget.initialState != null &&
+        widget.initialState != oldWidget.initialState) {
       _state = widget.initialState!;
     }
   }
@@ -204,12 +206,15 @@ class _FilterSidebarState extends State<FilterSidebar>
                     Expanded(
                       child: ListView(
                         padding: const EdgeInsets.all(Spacing.x4),
-                        children: widget.configs.map(
-                          (FilterConfig config) => Padding(
-                            padding: const EdgeInsets.only(bottom: Spacing.x5),
-                            child: _buildFilter(config),
-                          ),
-                        ).toList(),
+                        children: widget.configs
+                            .map(
+                              (FilterConfig config) => Padding(
+                                padding:
+                                    const EdgeInsets.only(bottom: Spacing.x5),
+                                child: _buildFilter(config),
+                              ),
+                            )
+                            .toList(),
                       ),
                     ),
                     const Divider(height: 1),
@@ -391,7 +396,8 @@ class _CheckboxFilter extends StatelessWidget {
         const SizedBox(height: Spacing.x2),
         ...options.map(
           (String option) => CheckboxListTile(
-            title: Text(option, style: TextStyle(fontSize: TypeScale.sm, color: t.text)),
+            title: Text(option,
+                style: TextStyle(fontSize: TypeScale.sm, color: t.text)),
             value: selected.contains(option),
             dense: true,
             contentPadding: EdgeInsets.zero,
@@ -458,7 +464,8 @@ class _DateRangeFilter extends StatelessWidget {
             ),
             child: Row(
               children: <Widget>[
-                Icon(Icons.date_range, size: TypeScale.lg, color: t.textTertiary),
+                Icon(Icons.date_range,
+                    size: TypeScale.lg, color: t.textTertiary),
                 const SizedBox(width: Spacing.x2),
                 Expanded(
                   child: Text(
@@ -474,7 +481,8 @@ class _DateRangeFilter extends StatelessWidget {
                 if (value != null)
                   GestureDetector(
                     onTap: () => onChanged(null),
-                    child: Icon(Icons.close, size: TypeScale.lg, color: t.textTertiary),
+                    child: Icon(Icons.close,
+                        size: TypeScale.lg, color: t.textTertiary),
                   ),
               ],
             ),

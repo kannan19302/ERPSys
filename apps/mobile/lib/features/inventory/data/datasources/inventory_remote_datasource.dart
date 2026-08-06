@@ -107,8 +107,7 @@ class InventoryRemoteDataSourceImpl implements InventoryRemoteDataSource {
       ProductModel.fromJson(await _client.getObject(ApiPaths.product(id)));
 
   @override
-  Future<InventoryStatsModel> stats() async =>
-      InventoryStatsModel.fromJson(
+  Future<InventoryStatsModel> stats() async => InventoryStatsModel.fromJson(
         await _client.getObject(ApiPaths.productStats),
       );
 
@@ -128,8 +127,7 @@ class InventoryRemoteDataSourceImpl implements InventoryRemoteDataSource {
       );
 
   @override
-  Future<void> deleteProduct(String id) =>
-      _client.delete(ApiPaths.product(id));
+  Future<void> deleteProduct(String id) => _client.delete(ApiPaths.product(id));
 
   @override
   Future<void> adjustStock(Map<String, dynamic> payload) async {

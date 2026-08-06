@@ -19,7 +19,8 @@ final Provider<AuthRemoteDataSource> authRemoteDataSourceProvider =
   (Ref ref) => AuthRemoteDataSourceImpl(ref.watch(apiClientProvider)),
 );
 
-final Provider<AuthRepository> authRepositoryProvider = Provider<AuthRepository>(
+final Provider<AuthRepository> authRepositoryProvider =
+    Provider<AuthRepository>(
   (Ref ref) => AuthRepositoryImpl(
     remote: ref.watch(authRemoteDataSourceProvider),
     sessionStore: ref.watch(secureSessionStoreProvider),
@@ -36,8 +37,8 @@ final NotifierProvider<AuthController, AuthState> authControllerProvider =
 /// The active tenant id — every cache read/write is scoped by it, so a tenant
 /// switch can never surface another organisation's data.
 final Provider<String> activeTenantIdProvider = Provider<String>(
-  (Ref ref) =>
-      ref.watch(authControllerProvider.select((AuthState s) => s.tenant?.id ?? '')),
+  (Ref ref) => ref.watch(
+      authControllerProvider.select((AuthState s) => s.tenant?.id ?? '')),
 );
 
 /// Permission set for the signed-in user, consumed by [PermissionGate].
@@ -140,7 +141,8 @@ class AuthController extends Notifier<AuthState> {
     );
 
     state = result.fold(
-      (Failure failure) => state.copyWith(isSubmitting: false, failure: failure),
+      (Failure failure) =>
+          state.copyWith(isSubmitting: false, failure: failure),
       (Session session) => state.copyWith(
         status: AuthStatus.authenticated,
         session: session,
@@ -166,7 +168,8 @@ class AuthController extends Notifier<AuthState> {
     final Result<Session> result = await SwitchTenantUseCase(_repository)(slug);
 
     state = result.fold(
-      (Failure failure) => state.copyWith(isSubmitting: false, failure: failure),
+      (Failure failure) =>
+          state.copyWith(isSubmitting: false, failure: failure),
       (Session session) => state.copyWith(
         status: AuthStatus.authenticated,
         session: session,
@@ -190,7 +193,8 @@ class AuthController extends Notifier<AuthState> {
   void onSessionExpired() {
     if (state.status == AuthStatus.unauthenticated) return;
     state = state.signedOut(
-      failure: const UnauthorizedFailure('Your session expired. Please sign in again.'),
+      failure: const UnauthorizedFailure(
+          'Your session expired. Please sign in again.'),
     );
   }
 

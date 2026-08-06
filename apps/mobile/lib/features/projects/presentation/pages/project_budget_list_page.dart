@@ -13,7 +13,8 @@ class ProjectBudgetListPage extends ConsumerStatefulWidget {
   static const String routeName = 'project-budgets';
   static const String routePath = '/projects/budgets';
   @override
-  ConsumerState<ProjectBudgetListPage> createState() => _ProjectBudgetListPageState();
+  ConsumerState<ProjectBudgetListPage> createState() =>
+      _ProjectBudgetListPageState();
 }
 
 class _ProjectBudgetListPageState extends ConsumerState<ProjectBudgetListPage> {
@@ -29,14 +30,17 @@ class _ProjectBudgetListPageState extends ConsumerState<ProjectBudgetListPage> {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} budget${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} budget${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -44,7 +48,8 @@ class _ProjectBudgetListPageState extends ConsumerState<ProjectBudgetListPage> {
     );
   }
 
-  Widget _body(ProjectBudgetListState state, ProjectBudgetListController controller) {
+  Widget _body(
+      ProjectBudgetListState state, ProjectBudgetListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -92,24 +97,39 @@ class _BudgetTile extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(child: Text(budget.category,
-                    style: Theme.of(context).textTheme.titleSmall,),),
-                Text(Formatters.currency(budget.budgetedAmount),
-                    style: Theme.of(context).textTheme.labelLarge,),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      budget.category,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  Text(
+                    Formatters.currency(budget.budgetedAmount),
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                ],
+              ),
               const SizedBox(height: Spacing.x1),
-              Row(children: [
-                Text('Spent: ${Formatters.currency(budget.spentAmount)}',
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
-                const Spacer(),
-                Text('Remaining: ${Formatters.currency(budget.remainingAmount)}',
+              Row(
+                children: [
+                  Text(
+                    'Spent: ${Formatters.currency(budget.spentAmount)}',
+                    style: TextStyle(
+                        color: t.textSecondary, fontSize: TypeScale.xs),
+                  ),
+                  const Spacer(),
+                  Text(
+                    'Remaining: ${Formatters.currency(budget.remainingAmount)}',
                     style: TextStyle(
                       color: budget.remainingAmount < 0 ? t.danger : t.success,
                       fontSize: TypeScale.xs,
                       fontWeight: TypeScale.semibold,
-                    ),),
-              ],),
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: Spacing.x1),
               ClipRRect(
                 borderRadius: Radii.pill,
@@ -117,12 +137,18 @@ class _BudgetTile extends StatelessWidget {
                   value: (spentPct / 100).clamp(0, 1),
                   minHeight: 4,
                   backgroundColor: t.bgSunken,
-                  color: spentPct > 90 ? t.danger : spentPct > 75 ? t.warning : t.primary,
+                  color: spentPct > 90
+                      ? t.danger
+                      : spentPct > 75
+                          ? t.warning
+                          : t.primary,
                 ),
               ),
               const SizedBox(height: Spacing.x0_5),
-              Text('${spentPct.toStringAsFixed(0)}% used',
-                  style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
+              Text(
+                '${spentPct.toStringAsFixed(0)}% used',
+                style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),
+              ),
             ],
           ),
         ),

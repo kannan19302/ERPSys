@@ -44,9 +44,8 @@ class _KpiFormPageState extends ConsumerState<KpiFormPage> {
   }
 
   Future<void> _loadKpi() async {
-    final AnalyticsKpi? kpi = ref
-        .read(analyticsKpiDetailProvider(widget.kpiId!))
-        .valueOrNull;
+    final AnalyticsKpi? kpi =
+        ref.read(analyticsKpiDetailProvider(widget.kpiId!)).valueOrNull;
     if (kpi != null) {
       _nameCtrl.text = kpi.name;
       _valueCtrl.text = kpi.value.toString();
@@ -78,7 +77,8 @@ class _KpiFormPageState extends ConsumerState<KpiFormPage> {
       'value': double.tryParse(_valueCtrl.text) ?? 0,
       'target': double.tryParse(_targetCtrl.text),
       'unit': _unitCtrl.text.trim().isEmpty ? null : _unitCtrl.text.trim(),
-      'period': _periodCtrl.text.trim().isEmpty ? null : _periodCtrl.text.trim(),
+      'period':
+          _periodCtrl.text.trim().isEmpty ? null : _periodCtrl.text.trim(),
       'trend': _trendCtrl.text.trim().isEmpty ? null : _trendCtrl.text.trim(),
       'status': _status,
     };
@@ -131,13 +131,15 @@ class _KpiFormPageState extends ConsumerState<KpiFormPage> {
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _valueCtrl,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(labelText: 'Value'),
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _targetCtrl,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(labelText: 'Target'),
             ),
             const SizedBox(height: Spacing.x4),
@@ -169,8 +171,10 @@ class _KpiFormPageState extends ConsumerState<KpiFormPage> {
               initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: const <DropdownMenuItem<String>>[
-                DropdownMenuItem<String>(value: 'ACTIVE', child: Text('Active')),
-                DropdownMenuItem<String>(value: 'INACTIVE', child: Text('Inactive')),
+                DropdownMenuItem<String>(
+                    value: 'ACTIVE', child: Text('Active')),
+                DropdownMenuItem<String>(
+                    value: 'INACTIVE', child: Text('Inactive')),
               ],
               onChanged: (String? v) {
                 if (v != null) setState(() => _status = v);

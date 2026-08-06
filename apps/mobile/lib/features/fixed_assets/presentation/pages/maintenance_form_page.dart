@@ -11,7 +11,8 @@ class MaintenanceFormPage extends ConsumerStatefulWidget {
   final String? id;
 
   @override
-  ConsumerState<MaintenanceFormPage> createState() => _MaintenanceFormPageState();
+  ConsumerState<MaintenanceFormPage> createState() =>
+      _MaintenanceFormPageState();
 }
 
 class _MaintenanceFormPageState extends ConsumerState<MaintenanceFormPage> {
@@ -38,7 +39,8 @@ class _MaintenanceFormPageState extends ConsumerState<MaintenanceFormPage> {
   }
 
   Future<void> _loadExisting() async {
-    final schedule = await ref.read(maintenanceScheduleDetailProvider(widget.id!).future);
+    final schedule =
+        await ref.read(maintenanceScheduleDetailProvider(widget.id!).future);
     if (!mounted) return;
     _assetIdController.text = schedule.assetId;
     _assetNameController.text = schedule.assetName ?? '';
@@ -82,14 +84,19 @@ class _MaintenanceFormPageState extends ConsumerState<MaintenanceFormPage> {
       'notes': _notesController.text.trim(),
       'priority': _priority,
       'status': _status,
-      if (_scheduledDate != null) 'scheduledDate': _scheduledDate!.toIso8601String(),
-      if (_completedDate != null) 'completedDate': _completedDate!.toIso8601String(),
+      if (_scheduledDate != null)
+        'scheduledDate': _scheduledDate!.toIso8601String(),
+      if (_completedDate != null)
+        'completedDate': _completedDate!.toIso8601String(),
     };
-    final result = await ref.read(maintenanceScheduleListControllerProvider.notifier).save(payload, id: widget.id);
+    final result = await ref
+        .read(maintenanceScheduleListControllerProvider.notifier)
+        .save(payload, id: widget.id);
     if (!mounted) return;
     setState(() => _isLoading = false);
     result.fold(
-      (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(true),
     );
   }
@@ -103,7 +110,9 @@ class _MaintenanceFormPageState extends ConsumerState<MaintenanceFormPage> {
       );
     }
     return Scaffold(
-      appBar: AppBar(title: Text(widget.id != null ? 'Edit Maintenance' : 'New Maintenance')),
+      appBar: AppBar(
+          title:
+              Text(widget.id != null ? 'Edit Maintenance' : 'New Maintenance')),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -112,15 +121,20 @@ class _MaintenanceFormPageState extends ConsumerState<MaintenanceFormPage> {
             UiTextField(
               label: 'Asset ID',
               controller: _assetIdController,
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+              validator: (v) =>
+                  (v == null || v.trim().isEmpty) ? 'Required' : null,
             ),
             UiTextField(label: 'Asset Name', controller: _assetNameController),
             UiTextField(
               label: 'Maintenance Type',
               controller: _maintenanceTypeController,
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+              validator: (v) =>
+                  (v == null || v.trim().isEmpty) ? 'Required' : null,
             ),
-            UiTextField(label: 'Description', controller: _descriptionController, maxLines: 3),
+            UiTextField(
+                label: 'Description',
+                controller: _descriptionController,
+                maxLines: 3),
             UiDropdownField(
               label: 'Priority',
               itemLabel: (v) => v.toString(),
@@ -132,7 +146,12 @@ class _MaintenanceFormPageState extends ConsumerState<MaintenanceFormPage> {
               label: 'Status',
               itemLabel: (v) => v.toString(),
               selectedItem: _status,
-              items: const ['SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'],
+              items: const [
+                'SCHEDULED',
+                'IN_PROGRESS',
+                'COMPLETED',
+                'CANCELLED'
+              ],
               onChanged: (v) => setState(() => _status = v!),
             ),
             UiDatePickerField(
@@ -145,15 +164,26 @@ class _MaintenanceFormPageState extends ConsumerState<MaintenanceFormPage> {
               selectedDate: _completedDate,
               onChanged: (v) => setState(() => _completedDate = v),
             ),
-            UiTextField(label: 'Assigned To', controller: _assignedToController),
-            UiTextField(label: 'Estimated Cost', controller: _estimatedCostController, keyboardType: TextInputType.number),
-            UiTextField(label: 'Actual Cost', controller: _actualCostController, keyboardType: TextInputType.number),
-            UiTextField(label: 'Notes', controller: _notesController, maxLines: 3),
+            UiTextField(
+                label: 'Assigned To', controller: _assignedToController),
+            UiTextField(
+                label: 'Estimated Cost',
+                controller: _estimatedCostController,
+                keyboardType: TextInputType.number),
+            UiTextField(
+                label: 'Actual Cost',
+                controller: _actualCostController,
+                keyboardType: TextInputType.number),
+            UiTextField(
+                label: 'Notes', controller: _notesController, maxLines: 3),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _isLoading ? null : _submit,
               child: _isLoading
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2))
                   : const Text('Save'),
             ),
           ],

@@ -44,7 +44,9 @@ class ProductDetailPage extends ConsumerWidget {
       body: productAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load product.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load product.'),
           onRetry: () => ref.invalidate(productDetailProvider(productId)),
         ),
         data: (Product product) => _ProductDetail(product: product),
@@ -116,7 +118,8 @@ class _ProductDetail extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: Spacing.x1),
-              Text('SKU ${product.sku}', style: TextStyle(color: t.textSecondary)),
+              Text('SKU ${product.sku}',
+                  style: TextStyle(color: t.textSecondary)),
               if (product.description != null &&
                   product.description!.isNotEmpty) ...<Widget>[
                 const SizedBox(height: Spacing.x3),

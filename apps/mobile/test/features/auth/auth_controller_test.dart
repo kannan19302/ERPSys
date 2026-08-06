@@ -23,7 +23,8 @@ const AuthUser _user = AuthUser(
   permissions: <String>['inventory.product.read'],
 );
 const Tenant _tenant = Tenant(id: 't1', name: 'System Tenant', slug: 'system');
-const Session _session = Session(accessToken: 'token', user: _user, tenant: _tenant);
+const Session _session =
+    Session(accessToken: 'token', user: _user, tenant: _tenant);
 
 /// Hand-written fake — swaps behaviour per test via the mutable fields below,
 /// no mock framework required for this small a surface.
@@ -31,7 +32,8 @@ class FakeAuthRepository implements AuthRepository {
   Result<Session?> restoreResult = const Result<Session?>.ok(null);
   Result<Session> loginResult = const Result<Session>.ok(_session);
   Result<Session> mfaResult = const Result<Session>.ok(_session);
-  Result<List<Tenant>> tenantsResult = const Result<List<Tenant>>.ok(<Tenant>[_tenant]);
+  Result<List<Tenant>> tenantsResult =
+      const Result<List<Tenant>>.ok(<Tenant>[_tenant]);
   Result<Session> switchTenantResult = const Result<Session>.ok(_session);
   int logoutCalls = 0;
 
@@ -51,10 +53,12 @@ class FakeAuthRepository implements AuthRepository {
       );
 
   @override
-  Future<Result<void>> verifyEmail(String token) async => const Result<void>.ok(null);
+  Future<Result<void>> verifyEmail(String token) async =>
+      const Result<void>.ok(null);
 
   @override
-  Future<Result<void>> resendVerification(String email) async => const Result<void>.ok(null);
+  Future<Result<void>> resendVerification(String email) async =>
+      const Result<void>.ok(null);
 
   @override
   Future<Result<Session?>> restoreSession() async => restoreResult;
@@ -77,17 +81,20 @@ class FakeAuthRepository implements AuthRepository {
       mfaResult;
 
   @override
-  Future<Result<Session?>> pollMfaPush({required String challengeToken}) async =>
+  Future<Result<Session?>> pollMfaPush(
+          {required String challengeToken}) async =>
       const Result<Session?>.ok(null);
 
   @override
-  Future<Result<AuthUser>> fetchProfile() async => const Result<AuthUser>.ok(_user);
+  Future<Result<AuthUser>> fetchProfile() async =>
+      const Result<AuthUser>.ok(_user);
 
   @override
   Future<Result<List<Tenant>>> listTenants() async => tenantsResult;
 
   @override
-  Future<Result<Session>> switchTenant(String tenantSlug) async => switchTenantResult;
+  Future<Result<Session>> switchTenant(String tenantSlug) async =>
+      switchTenantResult;
 
   @override
   Future<Result<void>> logout() async {
@@ -96,7 +103,8 @@ class FakeAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<Result<void>> forgotPassword(String email) async => const Result<void>.ok(null);
+  Future<Result<void>> forgotPassword(String email) async =>
+      const Result<void>.ok(null);
 }
 
 void main() {
@@ -107,9 +115,10 @@ void main() {
     fakeRepository = FakeAuthRepository();
     container = ProviderContainer(
       overrides: <Override>[
-      sharedPreferencesProvider.overrideWithValue(MockSharedPreferences()),
-      cookieStoreProvider.overrideWithValue(CookieStore(CookieJar(), Uri.parse('http://localhost'))),
-      apiClientProvider.overrideWithValue(ApiClient.forTesting(Dio())),
+        sharedPreferencesProvider.overrideWithValue(MockSharedPreferences()),
+        cookieStoreProvider.overrideWithValue(
+            CookieStore(CookieJar(), Uri.parse('http://localhost'))),
+        apiClientProvider.overrideWithValue(ApiClient.forTesting(Dio())),
         authRepositoryProvider.overrideWithValue(fakeRepository),
       ],
     );
@@ -122,7 +131,8 @@ void main() {
       container.read(authControllerProvider);
       await Future<void>.delayed(Duration.zero);
 
-      expect(container.read(authControllerProvider).status, AuthStatus.unauthenticated);
+      expect(container.read(authControllerProvider).status,
+          AuthStatus.unauthenticated);
     });
 
     test('restores straight to authenticated when a session exists', () async {
@@ -151,9 +161,11 @@ void main() {
       expect(state.failure, isNull);
     });
 
-    test('an MFA challenge moves to mfaRequired without authenticating', () async {
+    test('an MFA challenge moves to mfaRequired without authenticating',
+        () async {
       fakeRepository.loginResult = const Result<Session>.err(
-        MfaRequiredFailure('MFA required', challengeToken: 'chal-1', pushSent: true),
+        MfaRequiredFailure('MFA required',
+            challengeToken: 'chal-1', pushSent: true),
       );
       container.read(authControllerProvider);
       await Future<void>.delayed(Duration.zero);
@@ -169,9 +181,12 @@ void main() {
       expect(state.isAuthenticated, isFalse);
     });
 
-    test('a multi-tenant email sets requiresTenantSlug instead of failing silently', () async {
+    test(
+        'a multi-tenant email sets requiresTenantSlug instead of failing silently',
+        () async {
       fakeRepository.loginResult = const Result<Session>.err(
-        TenantSelectionRequiredFailure('Multiple organizations use this email.'),
+        TenantSelectionRequiredFailure(
+            'Multiple organizations use this email.'),
       );
       container.read(authControllerProvider);
       await Future<void>.delayed(Duration.zero);
@@ -185,7 +200,8 @@ void main() {
       expect(state.isAuthenticated, isFalse);
     });
 
-    test('a plain failure surfaces the message without changing status', () async {
+    test('a plain failure surfaces the message without changing status',
+        () async {
       fakeRepository.loginResult = const Result<Session>.err(
         UnauthorizedFailure('Invalid credentials'),
       );
@@ -227,7 +243,8 @@ void main() {
 
       await container.read(authControllerProvider.notifier).logout();
 
-      expect(container.read(authControllerProvider).status, AuthStatus.unauthenticated);
+      expect(container.read(authControllerProvider).status,
+          AuthStatus.unauthenticated);
       expect(fakeRepository.logoutCalls, 1);
     });
   });
@@ -248,7 +265,8 @@ void main() {
     test('is a no-op when already unauthenticated', () async {
       container.read(authControllerProvider);
       await Future<void>.delayed(Duration.zero);
-      expect(container.read(authControllerProvider).status, AuthStatus.unauthenticated);
+      expect(container.read(authControllerProvider).status,
+          AuthStatus.unauthenticated);
 
       // Should not throw or overwrite state with a redundant failure banner.
       container.read(authControllerProvider.notifier).onSessionExpired();

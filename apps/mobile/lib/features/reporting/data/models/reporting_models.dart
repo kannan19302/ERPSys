@@ -147,7 +147,8 @@ class ReportComplianceModel extends ReportCompliance {
 
   factory ReportComplianceModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('ReportCompliance missing id');
+    if (id is! String)
+      throw const ParseException('ReportCompliance missing id');
     return ReportComplianceModel(
       id: id,
       name: json['name'] as String? ?? '',

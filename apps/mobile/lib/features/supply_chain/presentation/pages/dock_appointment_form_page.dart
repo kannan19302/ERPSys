@@ -9,10 +9,12 @@ class DockAppointmentFormPage extends ConsumerStatefulWidget {
   static const String routeName = 'dock-appointment-new';
   static const String routePath = '/supply-chain/dock-appointments/new';
   @override
-  ConsumerState<DockAppointmentFormPage> createState() => _DockAppointmentFormPageState();
+  ConsumerState<DockAppointmentFormPage> createState() =>
+      _DockAppointmentFormPageState();
 }
 
-class _DockAppointmentFormPageState extends ConsumerState<DockAppointmentFormPage> {
+class _DockAppointmentFormPageState
+    extends ConsumerState<DockAppointmentFormPage> {
   final _formKey = GlobalKey<FormState>();
   final _warehouseIdCtrl = TextEditingController();
   final _warehouseNameCtrl = TextEditingController();
@@ -38,21 +40,34 @@ class _DockAppointmentFormPageState extends ConsumerState<DockAppointmentFormPag
     setState(() => _saving = true);
 
     final payload = <String, dynamic>{
-      'warehouseId': _warehouseIdCtrl.text.trim().isEmpty ? null : _warehouseIdCtrl.text.trim(),
-      'warehouseName': _warehouseNameCtrl.text.trim().isEmpty ? null : _warehouseNameCtrl.text.trim(),
-      'carrierId': _carrierIdCtrl.text.trim().isEmpty ? null : _carrierIdCtrl.text.trim(),
-      'carrierName': _carrierNameCtrl.text.trim().isEmpty ? null : _carrierNameCtrl.text.trim(),
+      'warehouseId': _warehouseIdCtrl.text.trim().isEmpty
+          ? null
+          : _warehouseIdCtrl.text.trim(),
+      'warehouseName': _warehouseNameCtrl.text.trim().isEmpty
+          ? null
+          : _warehouseNameCtrl.text.trim(),
+      'carrierId': _carrierIdCtrl.text.trim().isEmpty
+          ? null
+          : _carrierIdCtrl.text.trim(),
+      'carrierName': _carrierNameCtrl.text.trim().isEmpty
+          ? null
+          : _carrierNameCtrl.text.trim(),
       'scheduledAt': DateTime.now().toIso8601String(),
-      'reference': _referenceCtrl.text.trim().isEmpty ? null : _referenceCtrl.text.trim(),
+      'reference': _referenceCtrl.text.trim().isEmpty
+          ? null
+          : _referenceCtrl.text.trim(),
       'notes': _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
       'status': 'SCHEDULED',
     };
 
-    final result = await ref.read(dockAppointmentListControllerProvider.notifier).save(payload);
+    final result = await ref
+        .read(dockAppointmentListControllerProvider.notifier)
+        .save(payload);
     if (!context.mounted) return;
     setState(() => _saving = false);
     result.fold(
-      (Failure f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (Failure f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(),
     );
   }
@@ -66,7 +81,10 @@ class _DockAppointmentFormPageState extends ConsumerState<DockAppointmentFormPag
           TextButton(
             onPressed: _saving ? null : _save,
             child: _saving
-                ? const SizedBox(height: Spacing.x5, width: Spacing.x5, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    height: Spacing.x5,
+                    width: Spacing.x5,
+                    child: CircularProgressIndicator(strokeWidth: 2))
                 : const Text('Save'),
           ),
         ],
@@ -106,7 +124,8 @@ class _DockAppointmentFormPageState extends ConsumerState<DockAppointmentFormPag
               controller: _notesCtrl,
               maxLines: 3,
               textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(labelText: 'Notes', alignLabelWithHint: true),
+              decoration: const InputDecoration(
+                  labelText: 'Notes', alignLabelWithHint: true),
             ),
           ],
         ),

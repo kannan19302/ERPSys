@@ -33,9 +33,8 @@ class _LeadSourceFormPageState extends ConsumerState<LeadSourceFormPage> {
     setState(() => _saving = true);
 
     final String name = _nameCtrl.text.trim();
-    final Result<LeadSource> result = await ref
-        .read(leadSourcesProvider.notifier)
-        .create(name);
+    final Result<LeadSource> result =
+        await ref.read(leadSourcesProvider.notifier).create(name);
 
     if (!context.mounted) return;
     setState(() => _saving = false);

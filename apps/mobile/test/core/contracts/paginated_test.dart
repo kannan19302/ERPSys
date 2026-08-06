@@ -17,7 +17,8 @@ void main() {
     });
 
     test('hasMore is false on the last page', () {
-      const PaginationMeta meta = PaginationMeta(page: 5, limit: 25, total: 120, totalPages: 5);
+      const PaginationMeta meta =
+          PaginationMeta(page: 5, limit: 25, total: 120, totalPages: 5);
       expect(meta.hasMore, isFalse);
     });
 
@@ -35,10 +36,16 @@ void main() {
 
   group('Paginated.fromJson', () {
     test('parses the frozen { data, meta } contract', () {
-      final Paginated<Map<String, dynamic>> page = Paginated<Map<String, dynamic>>.fromJson(
+      final Paginated<Map<String, dynamic>> page =
+          Paginated<Map<String, dynamic>>.fromJson(
         <String, dynamic>{
           'data': <Map<String, dynamic>>[_item('a'), _item('b')],
-          'meta': <String, dynamic>{'page': 1, 'limit': 25, 'total': 2, 'totalPages': 1},
+          'meta': <String, dynamic>{
+            'page': 1,
+            'limit': 25,
+            'total': 2,
+            'totalPages': 1
+          },
         },
         (Map<String, dynamic> j) => j,
       );
@@ -52,7 +59,8 @@ void main() {
       // /notifications) return a plain array instead of the pagination
       // envelope — ApiClient.getList() handles that separately, but
       // Paginated.fromJson must not explode if it's ever handed one.
-      final Paginated<Map<String, dynamic>> page = Paginated<Map<String, dynamic>>.fromJson(
+      final Paginated<Map<String, dynamic>> page =
+          Paginated<Map<String, dynamic>>.fromJson(
         <String, dynamic>{},
         (Map<String, dynamic> j) => j,
       );

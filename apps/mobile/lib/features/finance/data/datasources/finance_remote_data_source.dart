@@ -42,7 +42,8 @@ abstract class FinanceRemoteDataSource {
 
   Future<TaxFilingModel> createTaxFiling(Map<String, dynamic> payload);
 
-  Future<TaxFilingModel> updateTaxFiling(String id, Map<String, dynamic> payload);
+  Future<TaxFilingModel> updateTaxFiling(
+      String id, Map<String, dynamic> payload);
 
   Future<void> deleteTaxFiling(String id);
 
@@ -60,9 +61,11 @@ abstract class FinanceRemoteDataSource {
 
   Future<ChartOfAccountModel> getChartOfAccount(String id);
 
-  Future<ChartOfAccountModel> createChartOfAccount(Map<String, dynamic> payload);
+  Future<ChartOfAccountModel> createChartOfAccount(
+      Map<String, dynamic> payload);
 
-  Future<ChartOfAccountModel> updateChartOfAccount(String id, Map<String, dynamic> payload);
+  Future<ChartOfAccountModel> updateChartOfAccount(
+      String id, Map<String, dynamic> payload);
 
   Future<void> deleteChartOfAccount(String id);
 
@@ -72,7 +75,8 @@ abstract class FinanceRemoteDataSource {
 
   Future<JournalEntryModel> createJournalEntry(Map<String, dynamic> payload);
 
-  Future<JournalEntryModel> updateJournalEntry(String id, Map<String, dynamic> payload);
+  Future<JournalEntryModel> updateJournalEntry(
+      String id, Map<String, dynamic> payload);
 
   Future<void> deleteJournalEntry(String id);
 
@@ -84,7 +88,8 @@ abstract class FinanceRemoteDataSource {
 
   Future<BankAccountModel> createBankAccount(Map<String, dynamic> payload);
 
-  Future<BankAccountModel> updateBankAccount(String id, Map<String, dynamic> payload);
+  Future<BankAccountModel> updateBankAccount(
+      String id, Map<String, dynamic> payload);
 
   Future<void> deleteBankAccount(String id);
 
@@ -170,7 +175,8 @@ class FinanceRemoteDataSourceImpl implements FinanceRemoteDataSource {
 
   @override
   Future<CreditNoteModel> getCreditNote(String id) async =>
-      CreditNoteModel.fromJson(await _client.getObject(ApiPaths.creditNote(id)));
+      CreditNoteModel.fromJson(
+          await _client.getObject(ApiPaths.creditNote(id)));
 
   @override
   Future<Paginated<TaxRateModel>> listTaxRates(ListQuery query) =>
@@ -245,7 +251,8 @@ class FinanceRemoteDataSourceImpl implements FinanceRemoteDataSource {
       );
 
   @override
-  Future<void> deleteTaxFiling(String id) => _client.delete(ApiPaths.taxFiling(id));
+  Future<void> deleteTaxFiling(String id) =>
+      _client.delete(ApiPaths.taxFiling(id));
 
   @override
   Future<TaxFilingModel> submitTaxFiling(String id) async =>

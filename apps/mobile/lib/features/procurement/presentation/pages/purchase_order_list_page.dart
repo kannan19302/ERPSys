@@ -15,7 +15,8 @@ class PurchaseOrderListPage extends ConsumerStatefulWidget {
   static const String routeName = 'purchase-orders';
   static const String routePath = '/procurement/purchase-orders';
   @override
-  ConsumerState<PurchaseOrderListPage> createState() => _PurchaseOrderListPageState();
+  ConsumerState<PurchaseOrderListPage> createState() =>
+      _PurchaseOrderListPageState();
 }
 
 class _PurchaseOrderListPageState extends ConsumerState<PurchaseOrderListPage> {
@@ -51,8 +52,12 @@ class _PurchaseOrderListPageState extends ConsumerState<PurchaseOrderListPage> {
             initialValue: state.query.sort,
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
-                .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value),),)
+                .map(
+                  (e) => PopupMenuItem<String>(
+                    value: e.key,
+                    child: Text(e.value),
+                  ),
+                )
                 .toList(),
           ),
         ],
@@ -67,9 +72,11 @@ class _PurchaseOrderListPageState extends ConsumerState<PurchaseOrderListPage> {
       ),
       body: Column(
         children: [
-          if (state.cachedAt != null) StaleDataBanner(cachedAt: state.cachedAt!),
+          if (state.cachedAt != null)
+            StaleDataBanner(cachedAt: state.cachedAt!),
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -81,21 +88,27 @@ class _PurchaseOrderListPageState extends ConsumerState<PurchaseOrderListPage> {
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} PO${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} PO${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -103,7 +116,8 @@ class _PurchaseOrderListPageState extends ConsumerState<PurchaseOrderListPage> {
     );
   }
 
-  Widget _body(PurchaseOrderListState state, PurchaseOrderListController controller) {
+  Widget _body(
+      PurchaseOrderListState state, PurchaseOrderListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -150,22 +164,30 @@ class _PoTile extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(po.poNumber,
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                UiStatusBadge(
-                  label: po.status,
-                  tone: _statusTone(po.status),
-                ),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      po.poNumber,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  UiStatusBadge(
+                    label: po.status,
+                    tone: _statusTone(po.status),
+                  ),
+                ],
+              ),
               const SizedBox(height: Spacing.x1),
-              Text(po.vendorName,
-                  style: TextStyle(color: t.textSecondary),),
+              Text(
+                po.vendorName,
+                style: TextStyle(color: t.textSecondary),
+              ),
               const SizedBox(height: Spacing.x1),
-              Text('\$${po.totalAmount.toStringAsFixed(2)}',
-                  style: Theme.of(context).textTheme.labelLarge,),
+              Text(
+                '\$${po.totalAmount.toStringAsFixed(2)}',
+                style: Theme.of(context).textTheme.labelLarge,
+              ),
             ],
           ),
         ),

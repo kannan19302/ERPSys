@@ -83,8 +83,8 @@ abstract class HrRepository {
   Future<Result<Payslip>> getPayslip(String id);
 
   // Salary structures
-  Future<Result<Cacheable<Paginated<SalaryStructure>>>>
-      listSalaryStructures(ListQuery query);
+  Future<Result<Cacheable<Paginated<SalaryStructure>>>> listSalaryStructures(
+      ListQuery query);
   Future<Result<SalaryStructure>> createSalaryStructure(
     Map<String, dynamic> payload,
   );

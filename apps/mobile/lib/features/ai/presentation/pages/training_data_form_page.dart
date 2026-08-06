@@ -18,10 +18,12 @@ class AiTrainingDataFormPage extends ConsumerStatefulWidget {
   final String? dataId;
 
   @override
-  ConsumerState<AiTrainingDataFormPage> createState() => _AiTrainingDataFormPageState();
+  ConsumerState<AiTrainingDataFormPage> createState() =>
+      _AiTrainingDataFormPageState();
 }
 
-class _AiTrainingDataFormPageState extends ConsumerState<AiTrainingDataFormPage> {
+class _AiTrainingDataFormPageState
+    extends ConsumerState<AiTrainingDataFormPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _nameCtrl = TextEditingController();
   final TextEditingController _dataTypeCtrl = TextEditingController();
@@ -41,9 +43,8 @@ class _AiTrainingDataFormPageState extends ConsumerState<AiTrainingDataFormPage>
   }
 
   Future<void> _loadData() async {
-    final AiTrainingData? data = ref
-        .read(aiTrainingDataDetailProvider(widget.dataId!))
-        .valueOrNull;
+    final AiTrainingData? data =
+        ref.read(aiTrainingDataDetailProvider(widget.dataId!)).valueOrNull;
     if (data != null) {
       _nameCtrl.text = data.name;
       _dataTypeCtrl.text = data.dataType ?? '';
@@ -66,9 +67,11 @@ class _AiTrainingDataFormPageState extends ConsumerState<AiTrainingDataFormPage>
 
     final Map<String, dynamic> payload = <String, dynamic>{
       'name': _nameCtrl.text.trim(),
-      'dataType': _dataTypeCtrl.text.trim().isEmpty ? null : _dataTypeCtrl.text.trim(),
+      'dataType':
+          _dataTypeCtrl.text.trim().isEmpty ? null : _dataTypeCtrl.text.trim(),
       'status': _status,
-      'fileUrl': _fileUrlCtrl.text.trim().isEmpty ? null : _fileUrlCtrl.text.trim(),
+      'fileUrl':
+          _fileUrlCtrl.text.trim().isEmpty ? null : _fileUrlCtrl.text.trim(),
     };
 
     final Result<AiTrainingData> result = await ref
@@ -129,9 +132,12 @@ class _AiTrainingDataFormPageState extends ConsumerState<AiTrainingDataFormPage>
               initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: const <DropdownMenuItem<String>>[
-                DropdownMenuItem<String>(value: 'PENDING', child: Text('Pending')),
-                DropdownMenuItem<String>(value: 'ACTIVE', child: Text('Active')),
-                DropdownMenuItem<String>(value: 'FAILED', child: Text('Failed')),
+                DropdownMenuItem<String>(
+                    value: 'PENDING', child: Text('Pending')),
+                DropdownMenuItem<String>(
+                    value: 'ACTIVE', child: Text('Active')),
+                DropdownMenuItem<String>(
+                    value: 'FAILED', child: Text('Failed')),
               ],
               onChanged: (String? v) {
                 if (v != null) setState(() => _status = v);

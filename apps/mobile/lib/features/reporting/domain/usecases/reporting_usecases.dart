@@ -4,7 +4,8 @@ import '../../../../core/usecase/usecase.dart';
 import '../entities/reporting.dart';
 import '../repositories/reporting_repository.dart';
 
-class ListReportTemplatesUseCase extends UseCase<Cacheable<Paginated<ReportTemplate>>, ListQuery> {
+class ListReportTemplatesUseCase
+    extends UseCase<Cacheable<Paginated<ReportTemplate>>, ListQuery> {
   const ListReportTemplatesUseCase(this._repository);
   final ReportingRepository _repository;
   @override
@@ -25,7 +26,8 @@ class SaveReportTemplateParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveReportTemplateUseCase extends UseCase<ReportTemplate, SaveReportTemplateParams> {
+class SaveReportTemplateUseCase
+    extends UseCase<ReportTemplate, SaveReportTemplateParams> {
   const SaveReportTemplateUseCase(this._repository);
   final ReportingRepository _repository;
   @override
@@ -48,10 +50,12 @@ class GenerateReportTemplateUseCase extends UseCase<ReportTemplate, String> {
   const GenerateReportTemplateUseCase(this._repository);
   final ReportingRepository _repository;
   @override
-  Future<Result<ReportTemplate>> call(String id) => _repository.generateTemplate(id);
+  Future<Result<ReportTemplate>> call(String id) =>
+      _repository.generateTemplate(id);
 }
 
-class ListReportJobsUseCase extends UseCase<Cacheable<Paginated<ReportJob>>, ListQuery> {
+class ListReportJobsUseCase
+    extends UseCase<Cacheable<Paginated<ReportJob>>, ListQuery> {
   const ListReportJobsUseCase(this._repository);
   final ReportingRepository _repository;
   @override
@@ -66,7 +70,8 @@ class GetReportJobUseCase extends UseCase<ReportJob, String> {
   Future<Result<ReportJob>> call(String id) => _repository.getJob(id);
 }
 
-class ListReportExportsUseCase extends UseCase<Cacheable<Paginated<ReportExport>>, ListQuery> {
+class ListReportExportsUseCase
+    extends UseCase<Cacheable<Paginated<ReportExport>>, ListQuery> {
   const ListReportExportsUseCase(this._repository);
   final ReportingRepository _repository;
   @override
@@ -81,11 +86,13 @@ class GetReportExportUseCase extends UseCase<ReportExport, String> {
   Future<Result<ReportExport>> call(String id) => _repository.getExport(id);
 }
 
-class ListReportComplianceUseCase extends UseCase<Cacheable<Paginated<ReportCompliance>>, ListQuery> {
+class ListReportComplianceUseCase
+    extends UseCase<Cacheable<Paginated<ReportCompliance>>, ListQuery> {
   const ListReportComplianceUseCase(this._repository);
   final ReportingRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<ReportCompliance>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<ReportCompliance>>>> call(
+          ListQuery params) =>
       _repository.listCompliance(params);
 }
 
@@ -95,7 +102,8 @@ class SaveReportJobUseCaseParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveReportJobUseCase extends UseCase<ReportJob, SaveReportJobUseCaseParams> {
+class SaveReportJobUseCase
+    extends UseCase<ReportJob, SaveReportJobUseCaseParams> {
   const SaveReportJobUseCase(this._repository);
   final ReportingRepository _repository;
   @override
@@ -129,7 +137,8 @@ class GetReportComplianceUseCase extends UseCase<ReportCompliance, String> {
   const GetReportComplianceUseCase(this._repository);
   final ReportingRepository _repository;
   @override
-  Future<Result<ReportCompliance>> call(String id) => _repository.getCompliance(id);
+  Future<Result<ReportCompliance>> call(String id) =>
+      _repository.getCompliance(id);
 }
 
 class SaveComplianceParams {
@@ -138,7 +147,8 @@ class SaveComplianceParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveComplianceUseCase extends UseCase<ReportCompliance, SaveComplianceParams> {
+class SaveComplianceUseCase
+    extends UseCase<ReportCompliance, SaveComplianceParams> {
   const SaveComplianceUseCase(this._repository);
   final ReportingRepository _repository;
   @override
@@ -149,4 +159,3 @@ class SaveComplianceUseCase extends UseCase<ReportCompliance, SaveCompliancePara
         : _repository.updateCompliance(id, params.payload);
   }
 }
-

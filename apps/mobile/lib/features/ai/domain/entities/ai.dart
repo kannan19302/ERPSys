@@ -25,8 +25,15 @@ class AiModel extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, provider, version, status,
-        capabilities, config, createdAt, updatedAt,
+        id,
+        name,
+        provider,
+        version,
+        status,
+        capabilities,
+        config,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -51,8 +58,13 @@ class AiPrompt extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, title, prompt, modelId, status,
-        responseTime, createdAt,
+        id,
+        title,
+        prompt,
+        modelId,
+        status,
+        responseTime,
+        createdAt,
       ];
 }
 
@@ -77,7 +89,13 @@ class AiTrainingData extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, dataType, status, recordsCount, fileUrl, createdAt,
+        id,
+        name,
+        dataType,
+        status,
+        recordsCount,
+        fileUrl,
+        createdAt,
       ];
 }
 
@@ -104,7 +122,13 @@ class AiPrediction extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, modelId, modelName, input, output,
-        confidence, processingTime, createdAt,
+        id,
+        modelId,
+        modelName,
+        input,
+        output,
+        confidence,
+        processingTime,
+        createdAt,
       ];
 }

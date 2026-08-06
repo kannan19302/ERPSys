@@ -158,7 +158,8 @@ class PeopleOnboardingTaskModel extends PeopleOnboardingTask {
 
   factory PeopleOnboardingTaskModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('PeopleOnboardingTask missing id');
+    if (id is! String)
+      throw const ParseException('PeopleOnboardingTask missing id');
     return PeopleOnboardingTaskModel(
       id: id,
       title: json['title'] as String? ?? '',
@@ -213,7 +214,8 @@ class PeopleRecognitionEntryModel extends PeopleRecognitionEntry {
 
   factory PeopleRecognitionEntryModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('PeopleRecognitionEntry missing id');
+    if (id is! String)
+      throw const ParseException('PeopleRecognitionEntry missing id');
     return PeopleRecognitionEntryModel(
       id: id,
       message: json['message'] as String? ?? '',

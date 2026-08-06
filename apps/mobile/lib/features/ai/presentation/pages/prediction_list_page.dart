@@ -13,7 +13,8 @@ class AiPredictionListPage extends ConsumerStatefulWidget {
   static const String routeName = 'ai-predictions';
   static const String routePath = '/ai/predictions';
   @override
-  ConsumerState<AiPredictionListPage> createState() => _AiPredictionListPageState();
+  ConsumerState<AiPredictionListPage> createState() =>
+      _AiPredictionListPageState();
 }
 
 class _AiPredictionListPageState extends ConsumerState<AiPredictionListPage> {
@@ -48,8 +49,12 @@ class _AiPredictionListPageState extends ConsumerState<AiPredictionListPage> {
             initialValue: state.query.sort,
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
-                .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value),),)
+                .map(
+                  (e) => PopupMenuItem<String>(
+                    value: e.key,
+                    child: Text(e.value),
+                  ),
+                )
                 .toList(),
           ),
         ],
@@ -57,7 +62,8 @@ class _AiPredictionListPageState extends ConsumerState<AiPredictionListPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -69,21 +75,27 @@ class _AiPredictionListPageState extends ConsumerState<AiPredictionListPage> {
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} prediction${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} prediction${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -91,7 +103,8 @@ class _AiPredictionListPageState extends ConsumerState<AiPredictionListPage> {
     );
   }
 
-  Widget _body(AiPredictionListState state, AiPredictionListController controller) {
+  Widget _body(
+      AiPredictionListState state, AiPredictionListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -135,31 +148,49 @@ class _PredictionTile extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(prediction.modelName ?? prediction.modelId ?? prediction.id,
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                if (prediction.confidence != null)
-                  UiStatusBadge(
-                    label: '${(prediction.confidence! * 100).toStringAsFixed(0)}%',
-                    tone: _confidenceTone(prediction.confidence!),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      prediction.modelName ??
+                          prediction.modelId ??
+                          prediction.id,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
                   ),
-              ],),
+                  if (prediction.confidence != null)
+                    UiStatusBadge(
+                      label:
+                          '${(prediction.confidence! * 100).toStringAsFixed(0)}%',
+                      tone: _confidenceTone(prediction.confidence!),
+                    ),
+                ],
+              ),
               const SizedBox(height: Spacing.x1),
               if (prediction.output != null)
-                Text('${prediction.output}',
-                    maxLines: 2, overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: t.textSecondary),),
+                Text(
+                  '${prediction.output}',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: t.textSecondary),
+                ),
               if (prediction.processingTime != null) ...[
                 const SizedBox(height: Spacing.x1),
-                Text('${prediction.processingTime!.toStringAsFixed(2)}s',
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
+                Text(
+                  '${prediction.processingTime!.toStringAsFixed(2)}s',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
               ],
               if (prediction.createdAt != null) ...[
                 const SizedBox(height: Spacing.x1),
-                Text(DateFormat.yMMMd().add_jm().format(prediction.createdAt!.toLocal()),
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
+                Text(
+                  DateFormat.yMMMd()
+                      .add_jm()
+                      .format(prediction.createdAt!.toLocal()),
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
               ],
             ],
           ),

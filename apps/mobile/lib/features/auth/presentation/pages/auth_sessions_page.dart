@@ -34,7 +34,8 @@ class _AuthSessionsPageState extends ConsumerState<AuthSessionsPage> {
       _sessions = raw.cast<Map<String, dynamic>>();
       _failure = null;
     } on Object catch (e) {
-      _failure = e is Failure ? e : const ServerFailure('Could not load sessions.');
+      _failure =
+          e is Failure ? e : const ServerFailure('Could not load sessions.');
     }
     if (mounted) setState(() => _loading = false);
   }
@@ -47,7 +48,9 @@ class _AuthSessionsPageState extends ConsumerState<AuthSessionsPage> {
     } on Object catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e is Failure ? e.message : 'Failed to revoke session')),
+          SnackBar(
+              content:
+                  Text(e is Failure ? e.message : 'Failed to revoke session')),
         );
       }
     }
@@ -71,11 +74,15 @@ class _AuthSessionsPageState extends ConsumerState<AuthSessionsPage> {
                       itemBuilder: (BuildContext context, int index) {
                         final Map<String, dynamic> session = _sessions![index];
                         final bool isCurrent = session['isCurrent'] == true;
-                        final String device = session['device'] as String? ?? 'Unknown device';
-                        final String browser = session['browser'] as String? ?? '';
-                        final String location = session['location'] as String? ?? '';
+                        final String device =
+                            session['device'] as String? ?? 'Unknown device';
+                        final String browser =
+                            session['browser'] as String? ?? '';
+                        final String location =
+                            session['location'] as String? ?? '';
                         final String ip = session['ipAddress'] as String? ?? '';
-                        final String lastActive = session['lastActiveAt'] as String? ?? '';
+                        final String lastActive =
+                            session['lastActiveAt'] as String? ?? '';
                         final String id = '${session['id']}';
 
                         return Padding(
@@ -83,47 +90,82 @@ class _AuthSessionsPageState extends ConsumerState<AuthSessionsPage> {
                           child: Container(
                             padding: const EdgeInsets.all(Spacing.x4),
                             decoration: BoxDecoration(
-                              color: t.bgElevated, borderRadius: Radii.card,
-                              border: Border.all(color: isCurrent ? t.primary : t.border),
+                              color: t.bgElevated,
+                              borderRadius: Radii.card,
+                              border: Border.all(
+                                  color: isCurrent ? t.primary : t.border),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
-                                Row(children: <Widget>[
-                                  Icon(Icons.devices_outlined, size: TypeScale.xl, color: isCurrent ? t.primary : t.textSecondary),
-                                  const SizedBox(width: Spacing.x2),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        Text(device, style: Theme.of(context).textTheme.labelLarge),
-                                        if (browser.isNotEmpty)
-                                          Text(browser, style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
-                                      ],
+                                Row(
+                                  children: <Widget>[
+                                    Icon(Icons.devices_outlined,
+                                        size: TypeScale.xl,
+                                        color: isCurrent
+                                            ? t.primary
+                                            : t.textSecondary),
+                                    const SizedBox(width: Spacing.x2),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Text(device,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .labelLarge),
+                                          if (browser.isNotEmpty)
+                                            Text(browser,
+                                                style: TextStyle(
+                                                    color: t.textTertiary,
+                                                    fontSize: TypeScale.xs)),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  if (isCurrent)
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: Spacing.x2, vertical: Spacing.x0_5),
-                                      decoration: BoxDecoration(color: t.primaryLight, borderRadius: Radii.pill),
-                                      child: Text('Current', style: TextStyle(color: t.primary, fontSize: TypeScale.xs, fontWeight: TypeScale.medium)),
-                                    ),
-                                ],),
+                                    if (isCurrent)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: Spacing.x2,
+                                            vertical: Spacing.x0_5),
+                                        decoration: BoxDecoration(
+                                            color: t.primaryLight,
+                                            borderRadius: Radii.pill),
+                                        child: Text('Current',
+                                            style: TextStyle(
+                                                color: t.primary,
+                                                fontSize: TypeScale.xs,
+                                                fontWeight: TypeScale.medium)),
+                                      ),
+                                  ],
+                                ),
                                 const SizedBox(height: Spacing.x2),
                                 if (location.isNotEmpty)
-                                  Text(location, style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
+                                  Text(location,
+                                      style: TextStyle(
+                                          color: t.textSecondary,
+                                          fontSize: TypeScale.xs)),
                                 if (ip.isNotEmpty)
-                                  Text(ip, style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
+                                  Text(ip,
+                                      style: TextStyle(
+                                          color: t.textTertiary,
+                                          fontSize: TypeScale.xs)),
                                 if (lastActive.isNotEmpty)
-                                  Text('Last active: ${_parseDate(lastActive)}',
-                                      style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
+                                  Text(
+                                    'Last active: ${_parseDate(lastActive)}',
+                                    style: TextStyle(
+                                        color: t.textTertiary,
+                                        fontSize: TypeScale.xs),
+                                  ),
                                 if (!isCurrent) ...<Widget>[
                                   const SizedBox(height: Spacing.x2),
                                   Align(
                                     alignment: Alignment.centerRight,
                                     child: TextButton(
-                                      onPressed: () => _confirmRevoke(context, id),
-                                      style: TextButton.styleFrom(foregroundColor: t.danger),
+                                      onPressed: () =>
+                                          _confirmRevoke(context, id),
+                                      style: TextButton.styleFrom(
+                                          foregroundColor: t.danger),
                                       child: const Text('Revoke'),
                                     ),
                                   ),
@@ -144,8 +186,12 @@ class _AuthSessionsPageState extends ConsumerState<AuthSessionsPage> {
         title: const Text('Revoke session?'),
         content: const Text('The device will be signed out immediately.'),
         actions: <Widget>[
-          TextButton(onPressed: () => Navigator.of(dc).pop(false), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.of(dc).pop(true), child: const Text('Revoke')),
+          TextButton(
+              onPressed: () => Navigator.of(dc).pop(false),
+              child: const Text('Cancel')),
+          FilledButton(
+              onPressed: () => Navigator.of(dc).pop(true),
+              child: const Text('Revoke')),
         ],
       ),
     );

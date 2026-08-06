@@ -14,7 +14,6 @@ int asInt(Object? value) => switch (value) {
       _ => 0,
     };
 
-
 class CompensationBandModel extends CompensationBand {
   const CompensationBandModel({
     required super.id,
@@ -30,7 +29,8 @@ class CompensationBandModel extends CompensationBand {
 
   factory CompensationBandModel.fromJson(Map<String, dynamic> json) {
     final id = json['id'];
-    if (id is! String) throw const ParseException('CompensationBand missing id');
+    if (id is! String)
+      throw const ParseException('CompensationBand missing id');
     return CompensationBandModel(
       id: id,
       name: json['name'] as String? ?? '',
@@ -159,7 +159,8 @@ class WorkforceAnalyticModel extends WorkforceAnalytic {
 
   factory WorkforceAnalyticModel.fromJson(Map<String, dynamic> json) {
     final id = json['id'];
-    if (id is! String) throw const ParseException('WorkforceAnalytic missing id');
+    if (id is! String)
+      throw const ParseException('WorkforceAnalytic missing id');
     return WorkforceAnalyticModel(
       id: id,
       metricName: json['metricName'] as String? ?? '',

@@ -77,7 +77,8 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
       ),
       body: Column(
         children: <Widget>[
-          if (state.cachedAt != null) StaleDataBanner(cachedAt: state.cachedAt!),
+          if (state.cachedAt != null)
+            StaleDataBanner(cachedAt: state.cachedAt!),
           Padding(
             padding: const EdgeInsets.fromLTRB(
               Spacing.x4,

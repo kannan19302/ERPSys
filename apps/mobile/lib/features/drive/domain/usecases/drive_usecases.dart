@@ -4,7 +4,8 @@ import '../../../../core/usecase/usecase.dart';
 import '../entities/drive.dart';
 import '../repositories/drive_repository.dart';
 
-class ListDriveFilesUseCase extends UseCase<Cacheable<Paginated<DriveFile>>, ListQuery> {
+class ListDriveFilesUseCase
+    extends UseCase<Cacheable<Paginated<DriveFile>>, ListQuery> {
   const ListDriveFilesUseCase(this._repository);
   final DriveRepository _repository;
   @override
@@ -51,7 +52,8 @@ class RestoreDriveFileUseCase extends UseCase<DriveFile, String> {
   Future<Result<DriveFile>> call(String id) => _repository.restoreFile(id);
 }
 
-class ListDriveFoldersUseCase extends UseCase<Cacheable<Paginated<DriveFolder>>, ListQuery> {
+class ListDriveFoldersUseCase
+    extends UseCase<Cacheable<Paginated<DriveFolder>>, ListQuery> {
   const ListDriveFoldersUseCase(this._repository);
   final DriveRepository _repository;
   @override
@@ -65,7 +67,8 @@ class SaveDriveFolderParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveDriveFolderUseCase extends UseCase<DriveFolder, SaveDriveFolderParams> {
+class SaveDriveFolderUseCase
+    extends UseCase<DriveFolder, SaveDriveFolderParams> {
   const SaveDriveFolderUseCase(this._repository);
   final DriveRepository _repository;
   @override
@@ -84,7 +87,8 @@ class DeleteDriveFolderUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deleteFolder(id);
 }
 
-class ListDriveTrashUseCase extends UseCase<Cacheable<Paginated<DriveTrashItem>>, ListQuery> {
+class ListDriveTrashUseCase
+    extends UseCase<Cacheable<Paginated<DriveTrashItem>>, ListQuery> {
   const ListDriveTrashUseCase(this._repository);
   final DriveRepository _repository;
   @override
@@ -106,7 +110,8 @@ class EmptyDriveTrashUseCase extends UseCase<void, NoParams> {
   Future<Result<void>> call(NoParams params) => _repository.emptyTrash();
 }
 
-class ListDriveTagsUseCase extends UseCase<Cacheable<Paginated<DriveTag>>, ListQuery> {
+class ListDriveTagsUseCase
+    extends UseCase<Cacheable<Paginated<DriveTag>>, ListQuery> {
   const ListDriveTagsUseCase(this._repository);
   final DriveRepository _repository;
   @override

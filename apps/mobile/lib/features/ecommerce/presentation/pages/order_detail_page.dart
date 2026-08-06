@@ -26,7 +26,9 @@ class EcommerceOrderDetailPage extends ConsumerWidget {
       body: orderAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load order.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load order.'),
           onRetry: () => ref.invalidate(ecommerceOrderDetailProvider(orderId)),
         ),
         data: (EcommerceOrder order) => _OrderDetail(order: order),
@@ -71,7 +73,8 @@ class _OrderDetail extends StatelessWidget {
               ),
               const SizedBox(height: Spacing.x2),
               Text(
-                Formatters.currency(order.totalAmount, currencyCode: order.currency),
+                Formatters.currency(order.totalAmount,
+                    currencyCode: order.currency),
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
             ],
@@ -89,7 +92,8 @@ class _OrderDetail extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              const Text('Customer', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              const Text('Customer',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               const SizedBox(height: Spacing.x2),
               Text(order.customerName ?? '—'),
             ],
@@ -107,38 +111,45 @@ class _OrderDetail extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              const Text('Items', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              const Text('Items',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               const SizedBox(height: Spacing.x3),
-              ...order.items.map((EcommerceOrderItem item) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: Spacing.x1),
-                child: Row(
-                  children: <Widget>[
-                    Expanded(child: Text(item.productName ?? 'Product')),
-                    Text('x${item.quantity.toStringAsFixed(0)}'),
-                    const SizedBox(width: Spacing.x3),
-                    Text(Formatters.currency(item.totalPrice, currencyCode: order.currency)),
-                  ],
+              ...order.items.map(
+                (EcommerceOrderItem item) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: Spacing.x1),
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(child: Text(item.productName ?? 'Product')),
+                      Text('x${item.quantity.toStringAsFixed(0)}'),
+                      const SizedBox(width: Spacing.x3),
+                      Text(Formatters.currency(item.totalPrice,
+                          currencyCode: order.currency)),
+                    ],
+                  ),
                 ),
-              ),),
+              ),
               const Divider(height: Spacing.x6),
               Row(
                 children: <Widget>[
                   const Expanded(child: Text('Subtotal')),
-                  Text(Formatters.currency(order.subtotal, currencyCode: order.currency)),
+                  Text(Formatters.currency(order.subtotal,
+                      currencyCode: order.currency)),
                 ],
               ),
               const SizedBox(height: Spacing.x1),
               Row(
                 children: <Widget>[
                   const Expanded(child: Text('Shipping')),
-                  Text(Formatters.currency(order.shippingCost, currencyCode: order.currency)),
+                  Text(Formatters.currency(order.shippingCost,
+                      currencyCode: order.currency)),
                 ],
               ),
               const SizedBox(height: Spacing.x1),
               Row(
                 children: <Widget>[
                   const Expanded(child: Text('Tax')),
-                  Text(Formatters.currency(order.taxTotal, currencyCode: order.currency)),
+                  Text(Formatters.currency(order.taxTotal,
+                      currencyCode: order.currency)),
                 ],
               ),
             ],
@@ -156,11 +167,13 @@ class _OrderDetail extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              const Text('Details', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              const Text('Details',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               const SizedBox(height: Spacing.x3),
               _FieldRow('Payment', order.paymentStatus ?? '—'),
               _FieldRow('Shipping', order.shippingAddress ?? '—'),
-              _FieldRow('Created', Formatters.date(order.createdAt ?? DateTime.now())),
+              _FieldRow('Created',
+                  Formatters.date(order.createdAt ?? DateTime.now())),
             ],
           ),
         ),
@@ -186,9 +199,14 @@ class _OrderStatusPill extends StatelessWidget {
       _ => (status, t.textSecondary, t.bgSunken),
     };
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: Spacing.x2_5, vertical: Spacing.x1),
+      padding: const EdgeInsets.symmetric(
+          horizontal: Spacing.x2_5, vertical: Spacing.x1),
       decoration: BoxDecoration(color: bg, borderRadius: Radii.pill),
-      child: Text(label, style: TextStyle(color: color, fontSize: TypeScale.xs, fontWeight: TypeScale.medium)),
+      child: Text(label,
+          style: TextStyle(
+              color: color,
+              fontSize: TypeScale.xs,
+              fontWeight: TypeScale.medium)),
     );
   }
 }

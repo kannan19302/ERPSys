@@ -25,8 +25,15 @@ class ReportTemplate extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, description, reportType, config,
-        format, status, createdAt, updatedAt,
+        id,
+        name,
+        description,
+        reportType,
+        config,
+        format,
+        status,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -58,8 +65,14 @@ class ReportJob extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, templateId, templateName, status,
-        startedAt, completedAt, error, createdAt,
+        id,
+        templateId,
+        templateName,
+        status,
+        startedAt,
+        completedAt,
+        error,
+        createdAt,
       ];
 }
 
@@ -86,8 +99,14 @@ class ReportExport extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, reportId, reportName, format, status,
-        fileUrl, fileSize, createdAt,
+        id,
+        reportId,
+        reportName,
+        format,
+        status,
+        fileUrl,
+        fileSize,
+        createdAt,
       ];
 }
 
@@ -117,7 +136,13 @@ class ReportCompliance extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, regulation, status,
-        lastRunAt, nextRunAt, findings, createdAt,
+        id,
+        name,
+        regulation,
+        status,
+        lastRunAt,
+        nextRunAt,
+        findings,
+        createdAt,
       ];
 }

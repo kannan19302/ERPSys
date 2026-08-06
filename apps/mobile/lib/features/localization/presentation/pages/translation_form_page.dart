@@ -1,10 +1,9 @@
-
 import 'package:flutter/material.dart';
 
 class TranslationFormPage extends StatelessWidget {
   const TranslationFormPage({super.key, this.id});
   final String? id;
-  
+
   @override
   Widget build(BuildContext context) {
     return const Scaffold(

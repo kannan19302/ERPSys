@@ -64,7 +64,8 @@ class UiSectionHeader extends StatelessWidget {
 
 /// Compact status pill matching the web `.ui-badge` variants.
 class UiStatusBadge extends StatelessWidget {
-  const UiStatusBadge({required this.label, this.tone = UiTone.neutral, super.key});
+  const UiStatusBadge(
+      {required this.label, this.tone = UiTone.neutral, super.key});
 
   final String label;
   final UiTone tone;

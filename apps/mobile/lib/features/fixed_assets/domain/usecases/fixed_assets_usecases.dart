@@ -4,7 +4,8 @@ import '../../../../core/usecase/usecase.dart';
 import '../entities/fixed_assets.dart';
 import '../repositories/fixed_assets_repository.dart';
 
-class ListFixedAssetsUseCase extends UseCase<Cacheable<Paginated<FixedAsset>>, ListQuery> {
+class ListFixedAssetsUseCase
+    extends UseCase<Cacheable<Paginated<FixedAsset>>, ListQuery> {
   const ListFixedAssetsUseCase(this._repository);
   final FixedAssetsRepository _repository;
   @override
@@ -50,7 +51,8 @@ class DisposeFixedAssetParams {
   final Map<String, dynamic> payload;
 }
 
-class DisposeFixedAssetUseCase extends UseCase<FixedAsset, DisposeFixedAssetParams> {
+class DisposeFixedAssetUseCase
+    extends UseCase<FixedAsset, DisposeFixedAssetParams> {
   const DisposeFixedAssetUseCase(this._repository);
   final FixedAssetsRepository _repository;
   @override
@@ -58,13 +60,14 @@ class DisposeFixedAssetUseCase extends UseCase<FixedAsset, DisposeFixedAssetPara
       _repository.disposeFixedAsset(params.id, params.payload);
 }
 
-class ListDepreciationSchedulesUseCase
-    extends UseCase<Cacheable<Paginated<AssetDepreciationSchedule>>, ListQuery> {
+class ListDepreciationSchedulesUseCase extends UseCase<
+    Cacheable<Paginated<AssetDepreciationSchedule>>, ListQuery> {
   const ListDepreciationSchedulesUseCase(this._repository);
   final FixedAssetsRepository _repository;
   @override
   Future<Result<Cacheable<Paginated<AssetDepreciationSchedule>>>> call(
-    ListQuery params,) =>
+    ListQuery params,
+  ) =>
       _repository.listDepreciationSchedules(params);
 }
 
@@ -74,7 +77,8 @@ class ListMaintenanceSchedulesUseCase
   final FixedAssetsRepository _repository;
   @override
   Future<Result<Cacheable<Paginated<AssetMaintenanceSchedule>>>> call(
-    ListQuery params,) =>
+    ListQuery params,
+  ) =>
       _repository.listMaintenanceSchedules(params);
 }
 
@@ -91,8 +95,7 @@ class GetDisposalUseCase extends UseCase<AssetDisposal, String> {
   const GetDisposalUseCase(this._repository);
   final FixedAssetsRepository _repository;
   @override
-  Future<Result<AssetDisposal>> call(String id) =>
-      _repository.getDisposal(id);
+  Future<Result<AssetDisposal>> call(String id) => _repository.getDisposal(id);
 }
 
 class SaveDisposalParams {
@@ -101,8 +104,7 @@ class SaveDisposalParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveDisposalUseCase
-    extends UseCase<AssetDisposal, SaveDisposalParams> {
+class SaveDisposalUseCase extends UseCase<AssetDisposal, SaveDisposalParams> {
   const SaveDisposalUseCase(this._repository);
   final FixedAssetsRepository _repository;
   @override
@@ -135,7 +137,8 @@ class SaveMaintenanceScheduleUseCase
   final FixedAssetsRepository _repository;
   @override
   Future<Result<AssetMaintenanceSchedule>> call(
-      SaveMaintenanceScheduleParams params,) {
+    SaveMaintenanceScheduleParams params,
+  ) {
     final String? id = params.id;
     return id == null
         ? _repository.createMaintenanceSchedule(params.payload)

@@ -37,7 +37,8 @@ const Product _productB = Product(
   isActive: true,
 );
 
-Paginated<Product> _page(List<Product> items, {int page = 1, bool hasMore = false}) =>
+Paginated<Product> _page(List<Product> items,
+        {int page = 1, bool hasMore = false}) =>
     Paginated<Product>(
       data: items,
       meta: PaginationMeta(
@@ -53,23 +54,27 @@ Paginated<Product> _page(List<Product> items, {int page = 1, bool hasMore = fals
 /// Rule 25).
 class FakeInventoryRepository extends Mock implements InventoryRepository {
   final List<ListQuery> receivedQueries = <ListQuery>[];
-  Future<Result<Cacheable<Paginated<Product>>>> Function(ListQuery)? listHandler;
+  Future<Result<Cacheable<Paginated<Product>>>> Function(ListQuery)?
+      listHandler;
   int deleteCalls = 0;
   Result<void> deleteResult = const Result<void>.ok(null);
 
   @override
-  Future<Result<Cacheable<Paginated<Product>>>> listProducts(ListQuery query) async {
+  Future<Result<Cacheable<Paginated<Product>>>> listProducts(
+      ListQuery query) async {
     receivedQueries.add(query);
-    final Future<Result<Cacheable<Paginated<Product>>>> Function(ListQuery)? handler =
-        listHandler;
+    final Future<Result<Cacheable<Paginated<Product>>>> Function(ListQuery)?
+        handler = listHandler;
     if (handler != null) return handler(query);
     return Result<Cacheable<Paginated<Product>>>.ok(
-      Cacheable<Paginated<Product>>(value: _page(<Product>[_productA, _productB])),
+      Cacheable<Paginated<Product>>(
+          value: _page(<Product>[_productA, _productB])),
     );
   }
 
   @override
-  Future<Result<Product>> getProduct(String id) async => const Result<Product>.ok(_productA);
+  Future<Result<Product>> getProduct(String id) async =>
+      const Result<Product>.ok(_productA);
 
   @override
   Future<Result<InventoryStats>> stats() async =>
@@ -80,7 +85,8 @@ class FakeInventoryRepository extends Mock implements InventoryRepository {
       const Result<Product>.ok(_productA);
 
   @override
-  Future<Result<Product>> updateProduct(String id, Map<String, dynamic> payload) async =>
+  Future<Result<Product>> updateProduct(
+          String id, Map<String, dynamic> payload) async =>
       const Result<Product>.ok(_productA);
 
   @override
@@ -102,9 +108,10 @@ void main() {
     fakeRepository = FakeInventoryRepository();
     container = ProviderContainer(
       overrides: <Override>[
-      sharedPreferencesProvider.overrideWithValue(MockSharedPreferences()),
-      cookieStoreProvider.overrideWithValue(CookieStore(CookieJar(), Uri.parse('http://localhost'))),
-      apiClientProvider.overrideWithValue(ApiClient.forTesting(Dio())),
+        sharedPreferencesProvider.overrideWithValue(MockSharedPreferences()),
+        cookieStoreProvider.overrideWithValue(
+            CookieStore(CookieJar(), Uri.parse('http://localhost'))),
+        apiClientProvider.overrideWithValue(ApiClient.forTesting(Dio())),
         inventoryRepositoryProvider.overrideWithValue(fakeRepository),
         activeTenantIdProvider.overrideWithValue('tenant-1'),
       ],
@@ -116,41 +123,48 @@ void main() {
     container.read(productListControllerProvider);
     await Future<void>.delayed(Duration.zero);
 
-    final ProductListState state = container.read(productListControllerProvider);
+    final ProductListState state =
+        container.read(productListControllerProvider);
     expect(state.items, hasLength(2));
     expect(state.isLoading, isFalse);
     expect(fakeRepository.receivedQueries.single.page, 1);
   });
 
-  test('a repository failure on first load surfaces without clearing to empty silently', () async {
+  test(
+      'a repository failure on first load surfaces without clearing to empty silently',
+      () async {
     fakeRepository.listHandler = (ListQuery q) async =>
         const Result<Cacheable<Paginated<Product>>>.err(ServerFailure('down'));
     container.read(productListControllerProvider);
     await Future<void>.delayed(Duration.zero);
 
-    final ProductListState state = container.read(productListControllerProvider);
+    final ProductListState state =
+        container.read(productListControllerProvider);
     expect(state.failure, isA<ServerFailure>());
     expect(state.items, isEmpty);
   });
 
   test('loadMore requests the next server page and appends results', () async {
-    fakeRepository.listHandler = (ListQuery q) async => Result<Cacheable<Paginated<Product>>>.ok(
-          Cacheable<Paginated<Product>>(
-            value: _page(
-              <Product>[if (q.page == 1) _productA else _productB],
-              page: q.page,
-              hasMore: q.page == 1,
-            ),
-          ),
-        );
+    fakeRepository.listHandler =
+        (ListQuery q) async => Result<Cacheable<Paginated<Product>>>.ok(
+              Cacheable<Paginated<Product>>(
+                value: _page(
+                  <Product>[if (q.page == 1) _productA else _productB],
+                  page: q.page,
+                  hasMore: q.page == 1,
+                ),
+              ),
+            );
     container.read(productListControllerProvider);
     await Future<void>.delayed(Duration.zero);
 
     await container.read(productListControllerProvider.notifier).loadMore();
 
-    final ProductListState state = container.read(productListControllerProvider);
+    final ProductListState state =
+        container.read(productListControllerProvider);
     expect(state.items.map((Product p) => p.id), <String>['p1', 'p2']);
-    expect(fakeRepository.receivedQueries.map((ListQuery q) => q.page), <int>[1, 2]);
+    expect(fakeRepository.receivedQueries.map((ListQuery q) => q.page),
+        <int>[1, 2]);
   });
 
   test('loadMore is a no-op once every page has been fetched', () async {
@@ -160,7 +174,8 @@ void main() {
 
     await container.read(productListControllerProvider.notifier).loadMore();
 
-    expect(fakeRepository.receivedQueries, hasLength(1)); // only the initial load
+    expect(
+        fakeRepository.receivedQueries, hasLength(1)); // only the initial load
   });
 
   test('search resets to page 1 and forwards the term to the server', () async {
@@ -179,8 +194,9 @@ void main() {
     container.read(productListControllerProvider);
     await Future<void>.delayed(Duration.zero);
 
-    final Result<void> result =
-        await container.read(productListControllerProvider.notifier).delete('p1');
+    final Result<void> result = await container
+        .read(productListControllerProvider.notifier)
+        .delete('p1');
 
     expect(result.isOk, isTrue);
     expect(fakeRepository.deleteCalls, 1);

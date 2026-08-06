@@ -20,7 +20,8 @@ class DeliveryNoteListPage extends ConsumerStatefulWidget {
   static const String routePath = '/sales/delivery-notes';
 
   @override
-  ConsumerState<DeliveryNoteListPage> createState() => _DeliveryNoteListPageState();
+  ConsumerState<DeliveryNoteListPage> createState() =>
+      _DeliveryNoteListPageState();
 }
 
 class _DeliveryNoteListPageState extends ConsumerState<DeliveryNoteListPage> {
@@ -86,7 +87,10 @@ class _DeliveryNoteListPageState extends ConsumerState<DeliveryNoteListPage> {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2,
+              Spacing.x4,
+              Spacing.x3,
+              Spacing.x4,
+              Spacing.x2,
             ),
             child: TextField(
               controller: _search,
@@ -128,7 +132,8 @@ class _DeliveryNoteListPageState extends ConsumerState<DeliveryNoteListPage> {
                   underline: const SizedBox.shrink(),
                   items: _statusFilters.entries
                       .map(
-                        (MapEntry<String, String> e) => DropdownMenuItem<String>(
+                        (MapEntry<String, String> e) =>
+                            DropdownMenuItem<String>(
                           value: e.key,
                           child: Text(e.value),
                         ),
@@ -139,7 +144,8 @@ class _DeliveryNoteListPageState extends ConsumerState<DeliveryNoteListPage> {
                     if (value == null) {
                       controller.applyFilters(const <String, String>{});
                     } else {
-                      controller.applyFilters(<String, String>{'status': value});
+                      controller
+                          .applyFilters(<String, String>{'status': value});
                     }
                   },
                 ),

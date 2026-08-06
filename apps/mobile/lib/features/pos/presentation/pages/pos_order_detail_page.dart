@@ -19,14 +19,17 @@ class PosOrderDetailPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final String orderId = id ?? '';
-    final AsyncValue<PosOrder> orderAsync = ref.watch(posOrderDetailProvider(orderId));
+    final AsyncValue<PosOrder> orderAsync =
+        ref.watch(posOrderDetailProvider(orderId));
 
     return Scaffold(
       appBar: AppBar(title: const Text('Order')),
       body: orderAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load order.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load order.'),
           onRetry: () => ref.invalidate(posOrderDetailProvider(orderId)),
         ),
         data: (PosOrder order) => _PosOrderDetail(order: order),
@@ -59,7 +62,8 @@ class _PosOrderDetail extends StatelessWidget {
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                   ),
-                  UiStatusBadge(label: order.status, tone: _statusTone(order.status)),
+                  UiStatusBadge(
+                      label: order.status, tone: _statusTone(order.status)),
                 ],
               ),
               const SizedBox(height: Spacing.x2),
@@ -174,7 +178,8 @@ class _FieldRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: Spacing.x1_5),
       child: Row(
         children: <Widget>[
-          Expanded(child: Text(label, style: TextStyle(color: t.textSecondary))),
+          Expanded(
+              child: Text(label, style: TextStyle(color: t.textSecondary))),
           Text(value, style: Theme.of(context).textTheme.labelLarge),
         ],
       ),

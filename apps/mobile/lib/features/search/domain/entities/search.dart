@@ -25,8 +25,15 @@ class SearchResult extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, resourceType, title, subtitle, description, resourceId,
-        score, highlights, createdAt,
+        id,
+        resourceType,
+        title,
+        subtitle,
+        description,
+        resourceId,
+        score,
+        highlights,
+        createdAt,
       ];
 }
 
@@ -55,8 +62,15 @@ class SearchIndexConfig extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, resourceType, fields, name, isActive, weight,
-        fuzzyLevel, createdAt, updatedAt,
+        id,
+        resourceType,
+        fields,
+        name,
+        isActive,
+        weight,
+        fuzzyLevel,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -79,6 +93,11 @@ class SearchSynonymGroup extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, terms, locale, isActive, createdAt, updatedAt,
+        id,
+        terms,
+        locale,
+        isActive,
+        createdAt,
+        updatedAt,
       ];
 }

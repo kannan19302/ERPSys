@@ -47,14 +47,16 @@ class _PerformanceReviewListPageState
               PerformanceReviewStatus.draft,
               PerformanceReviewStatus.submitted,
               PerformanceReviewStatus.completed,
-            ].map(
-              (String v) => PopupMenuItem<String>(
-                value: v,
-                child: Text(
-                  v.isEmpty ? 'All' : _statusLabel(v),
-                ),
-              ),
-            ).toList(),
+            ]
+                .map(
+                  (String v) => PopupMenuItem<String>(
+                    value: v,
+                    child: Text(
+                      v.isEmpty ? 'All' : _statusLabel(v),
+                    ),
+                  ),
+                )
+                .toList(),
           ),
         ],
       ),
@@ -65,10 +67,14 @@ class _PerformanceReviewListPageState
       ),
       body: Column(
         children: <Widget>[
-          if (state.cachedAt != null) StaleDataBanner(cachedAt: state.cachedAt!),
+          if (state.cachedAt != null)
+            StaleDataBanner(cachedAt: state.cachedAt!),
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2,
+              Spacing.x4,
+              Spacing.x3,
+              Spacing.x4,
+              Spacing.x2,
             ),
             child: Text(
               state.isLoading
@@ -146,8 +152,11 @@ class _ReviewTile extends StatelessWidget {
           CircleAvatar(
             radius: Spacing.x4,
             backgroundColor: t.bgSunken,
-            child: Icon(Icons.rate_review_outlined,
-                color: t.textSecondary, size: TypeScale.lg,),
+            child: Icon(
+              Icons.rate_review_outlined,
+              color: t.textSecondary,
+              size: TypeScale.lg,
+            ),
           ),
           const SizedBox(width: Spacing.x3),
           Expanded(
@@ -161,15 +170,16 @@ class _ReviewTile extends StatelessWidget {
                 const SizedBox(height: Spacing.x0_5),
                 Text(
                   'Period: ${review.reviewPeriod}',
-                  style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),
+                  style:
+                      TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),
                 ),
                 if (review.reviewerName != null)
                   Text(
                     'Reviewer: ${review.reviewerName}',
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                    style: TextStyle(
+                        color: t.textSecondary, fontSize: TypeScale.xs),
                   ),
-                if (review.rating != null)
-                  _RatingStars(rating: review.rating!),
+                if (review.rating != null) _RatingStars(rating: review.rating!),
               ],
             ),
           ),

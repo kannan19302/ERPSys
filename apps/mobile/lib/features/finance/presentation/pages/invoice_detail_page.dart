@@ -36,7 +36,9 @@ class InvoiceDetailPage extends ConsumerWidget {
       body: invoiceAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load invoice.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load invoice.'),
           onRetry: () => ref.invalidate(invoiceDetailProvider(invoiceId)),
         ),
         data: (Invoice invoice) => _InvoiceDetail(invoice: invoice),
@@ -64,9 +66,7 @@ class InvoiceDetailPage extends ConsumerWidget {
     );
     if (confirmed != true || !context.mounted) return;
 
-    final result = await ref
-        .read(invoicesProvider.notifier)
-        .delete(invoiceId);
+    final result = await ref.read(invoicesProvider.notifier).delete(invoiceId);
 
     if (!context.mounted) return;
     result.fold(
@@ -114,7 +114,8 @@ class _InvoiceDetail extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: Spacing.x2),
-              Text(invoice.customerName, style: TextStyle(color: t.textSecondary)),
+              Text(invoice.customerName,
+                  style: TextStyle(color: t.textSecondary)),
               const SizedBox(height: Spacing.x1),
               Text(
                 'Invoice date: ${Formatters.date(invoice.invoiceDate)}',
@@ -140,11 +141,23 @@ class _InvoiceDetail extends StatelessWidget {
                 ),
               ),
               const Divider(),
-              _FieldRow('Subtotal', Formatters.currency(invoice.subtotal, currencyCode: invoice.currency)),
-              _FieldRow('Tax', Formatters.currency(invoice.taxTotal, currencyCode: invoice.currency)),
+              _FieldRow(
+                  'Subtotal',
+                  Formatters.currency(invoice.subtotal,
+                      currencyCode: invoice.currency)),
+              _FieldRow(
+                  'Tax',
+                  Formatters.currency(invoice.taxTotal,
+                      currencyCode: invoice.currency)),
               if (invoice.discountTotal > 0)
-                _FieldRow('Discount', Formatters.currency(invoice.discountTotal, currencyCode: invoice.currency)),
-              _FieldRow('Total', Formatters.currency(invoice.totalAmount, currencyCode: invoice.currency)),
+                _FieldRow(
+                    'Discount',
+                    Formatters.currency(invoice.discountTotal,
+                        currencyCode: invoice.currency)),
+              _FieldRow(
+                  'Total',
+                  Formatters.currency(invoice.totalAmount,
+                      currencyCode: invoice.currency)),
             ],
           ),
         ),
@@ -187,7 +200,8 @@ class _LineItemRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text(item.productName ?? 'Item', style: Theme.of(context).textTheme.labelLarge),
+                Text(item.productName ?? 'Item',
+                    style: Theme.of(context).textTheme.labelLarge),
                 if (item.description != null && item.description!.isNotEmpty)
                   Text(
                     item.description!,

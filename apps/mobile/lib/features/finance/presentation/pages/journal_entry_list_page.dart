@@ -18,7 +18,8 @@ class JournalEntryListPage extends ConsumerStatefulWidget {
   static const String routePath = '/finance/journal-entries';
 
   @override
-  ConsumerState<JournalEntryListPage> createState() => _JournalEntryListPageState();
+  ConsumerState<JournalEntryListPage> createState() =>
+      _JournalEntryListPageState();
 }
 
 class _JournalEntryListPageState extends ConsumerState<JournalEntryListPage> {
@@ -46,8 +47,10 @@ class _JournalEntryListPageState extends ConsumerState<JournalEntryListPage> {
 
   @override
   Widget build(BuildContext context) {
-    final FinanceListState<JournalEntry> state = ref.watch(journalEntriesProvider);
-    final JournalEntriesController controller = ref.read(journalEntriesProvider.notifier);
+    final FinanceListState<JournalEntry> state =
+        ref.watch(journalEntriesProvider);
+    final JournalEntriesController controller =
+        ref.read(journalEntriesProvider.notifier);
     final Palette t = context.tokens;
 
     return Scaffold(
@@ -74,7 +77,10 @@ class _JournalEntryListPageState extends ConsumerState<JournalEntryListPage> {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2,
+              Spacing.x4,
+              Spacing.x3,
+              Spacing.x4,
+              Spacing.x2,
             ),
             child: TextField(
               controller: _search,
@@ -116,7 +122,8 @@ class _JournalEntryListPageState extends ConsumerState<JournalEntryListPage> {
                   underline: const SizedBox.shrink(),
                   items: _statusFilters.entries
                       .map(
-                        (MapEntry<String, String> e) => DropdownMenuItem<String>(
+                        (MapEntry<String, String> e) =>
+                            DropdownMenuItem<String>(
                           value: e.key,
                           child: Text(e.value),
                         ),
@@ -127,7 +134,8 @@ class _JournalEntryListPageState extends ConsumerState<JournalEntryListPage> {
                     if (value == null) {
                       controller.applyFilters(const <String, String>{});
                     } else {
-                      controller.applyFilters(<String, String>{'status': value});
+                      controller
+                          .applyFilters(<String, String>{'status': value});
                     }
                   },
                 ),
@@ -140,7 +148,8 @@ class _JournalEntryListPageState extends ConsumerState<JournalEntryListPage> {
     );
   }
 
-  Widget _body(FinanceListState<JournalEntry> state, JournalEntriesController controller) {
+  Widget _body(FinanceListState<JournalEntry> state,
+      JournalEntriesController controller) {
     if (state.isLoading && state.items.isEmpty) {
       return const LoadingView();
     }

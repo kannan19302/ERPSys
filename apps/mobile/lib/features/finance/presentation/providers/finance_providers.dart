@@ -36,7 +36,8 @@ final Provider<FinanceRepository> financeRepositoryProvider =
 class FinanceListState<T extends Equatable> extends Equatable {
   const FinanceListState({
     this.items = const <Never>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -121,7 +122,9 @@ class InvoicesController extends Notifier<FinanceListState<Invoice>> {
 
     state = result.fold(
       (Failure failure) => state.copyWith(
-        isLoading: false, failure: failure, items: const <Invoice>[],
+        isLoading: false,
+        failure: failure,
+        items: const <Invoice>[],
       ),
       (Cacheable<Paginated<Invoice>> page) => state.copyWith(
         items: page.value.data,
@@ -239,7 +242,9 @@ class PaymentsController extends Notifier<FinanceListState<Payment>> {
 
     state = result.fold(
       (Failure failure) => state.copyWith(
-        isLoading: false, failure: failure, items: const <Payment>[],
+        isLoading: false,
+        failure: failure,
+        items: const <Payment>[],
       ),
       (Cacheable<Paginated<Payment>> page) => state.copyWith(
         items: page.value.data,
@@ -284,17 +289,9 @@ class PaymentsController extends Notifier<FinanceListState<Payment>> {
   }
 }
 
-
 // ── Credit Notes ────────────────────────────────────────────────────────────
 
-
-
-
-
 // ── Budgets ─────────────────────────────────────────────────────────────────
-
-
-
 
 // ── Reports ─────────────────────────────────────────────────────────────────
 
@@ -331,7 +328,11 @@ final FutureProvider<Map<String, dynamic>> balanceSheetProvider =
   );
 });
 
-final NotifierProvider<BankAccountsController, FinanceListState<BankAccount>> bankAccountsProvider = NotifierProvider<BankAccountsController, FinanceListState<BankAccount>>(BankAccountsController.new);
+final NotifierProvider<BankAccountsController, FinanceListState<BankAccount>>
+    bankAccountsProvider =
+    NotifierProvider<BankAccountsController, FinanceListState<BankAccount>>(
+        BankAccountsController.new);
+
 class BankAccountsController extends Notifier<FinanceListState<BankAccount>> {
   void search(String s) {}
   void applyFilters(Map<String, String> f) {}
@@ -342,18 +343,22 @@ class BankAccountsController extends Notifier<FinanceListState<BankAccount>> {
   Future<Result<void>> submit(String id) async => throw UnimplementedError();
   Future<Result<void>> approve(String id) async => throw UnimplementedError();
   Future<Result<void>> post(String id) async => throw UnimplementedError();
-  
 
-  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async => throw UnimplementedError();
+  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async =>
+      throw UnimplementedError();
   @override
   FinanceListState<BankAccount> build() {
     Future<void>.microtask(() {});
-    return const FinanceListState<BankAccount>(); // Or just throw UnimplementedError if it complains about const
+    return const FinanceListState<
+        BankAccount>(); // Or just throw UnimplementedError if it complains about const
   }
 }
 
+final NotifierProvider<BudgetsController, FinanceListState<Budget>>
+    budgetsProvider =
+    NotifierProvider<BudgetsController, FinanceListState<Budget>>(
+        BudgetsController.new);
 
-final NotifierProvider<BudgetsController, FinanceListState<Budget>> budgetsProvider = NotifierProvider<BudgetsController, FinanceListState<Budget>>(BudgetsController.new);
 class BudgetsController extends Notifier<FinanceListState<Budget>> {
   void search(String s) {}
   void applyFilters(Map<String, String> f) {}
@@ -364,19 +369,24 @@ class BudgetsController extends Notifier<FinanceListState<Budget>> {
   Future<Result<void>> submit(String id) async => throw UnimplementedError();
   Future<Result<void>> approve(String id) async => throw UnimplementedError();
   Future<Result<void>> post(String id) async => throw UnimplementedError();
-  
 
-  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async => throw UnimplementedError();
+  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async =>
+      throw UnimplementedError();
   @override
   FinanceListState<Budget> build() {
     Future<void>.microtask(() {});
-    return const FinanceListState<Budget>(); // Or just throw UnimplementedError if it complains about const
+    return const FinanceListState<
+        Budget>(); // Or just throw UnimplementedError if it complains about const
   }
 }
 
+final NotifierProvider<ChartOfAccountsController,
+        FinanceListState<ChartOfAccount>> chartOfAccountsProvider =
+    NotifierProvider<ChartOfAccountsController,
+        FinanceListState<ChartOfAccount>>(ChartOfAccountsController.new);
 
-final NotifierProvider<ChartOfAccountsController, FinanceListState<ChartOfAccount>> chartOfAccountsProvider = NotifierProvider<ChartOfAccountsController, FinanceListState<ChartOfAccount>>(ChartOfAccountsController.new);
-class ChartOfAccountsController extends Notifier<FinanceListState<ChartOfAccount>> {
+class ChartOfAccountsController
+    extends Notifier<FinanceListState<ChartOfAccount>> {
   void search(String s) {}
   void applyFilters(Map<String, String> f) {}
   void applySort(String s) {}
@@ -386,18 +396,22 @@ class ChartOfAccountsController extends Notifier<FinanceListState<ChartOfAccount
   Future<Result<void>> submit(String id) async => throw UnimplementedError();
   Future<Result<void>> approve(String id) async => throw UnimplementedError();
   Future<Result<void>> post(String id) async => throw UnimplementedError();
-  
 
-  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async => throw UnimplementedError();
+  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async =>
+      throw UnimplementedError();
   @override
   FinanceListState<ChartOfAccount> build() {
     Future<void>.microtask(() {});
-    return const FinanceListState<ChartOfAccount>(); // Or just throw UnimplementedError if it complains about const
+    return const FinanceListState<
+        ChartOfAccount>(); // Or just throw UnimplementedError if it complains about const
   }
 }
 
+final NotifierProvider<CreditNotesController, FinanceListState<CreditNote>>
+    creditNotesProvider =
+    NotifierProvider<CreditNotesController, FinanceListState<CreditNote>>(
+        CreditNotesController.new);
 
-final NotifierProvider<CreditNotesController, FinanceListState<CreditNote>> creditNotesProvider = NotifierProvider<CreditNotesController, FinanceListState<CreditNote>>(CreditNotesController.new);
 class CreditNotesController extends Notifier<FinanceListState<CreditNote>> {
   void search(String s) {}
   void applyFilters(Map<String, String> f) {}
@@ -408,19 +422,24 @@ class CreditNotesController extends Notifier<FinanceListState<CreditNote>> {
   Future<Result<void>> submit(String id) async => throw UnimplementedError();
   Future<Result<void>> approve(String id) async => throw UnimplementedError();
   Future<Result<void>> post(String id) async => throw UnimplementedError();
-  
 
-  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async => throw UnimplementedError();
+  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async =>
+      throw UnimplementedError();
   @override
   FinanceListState<CreditNote> build() {
     Future<void>.microtask(() {});
-    return const FinanceListState<CreditNote>(); // Or just throw UnimplementedError if it complains about const
+    return const FinanceListState<
+        CreditNote>(); // Or just throw UnimplementedError if it complains about const
   }
 }
 
+final NotifierProvider<JournalEntriesController, FinanceListState<JournalEntry>>
+    journalEntriesProvider =
+    NotifierProvider<JournalEntriesController, FinanceListState<JournalEntry>>(
+        JournalEntriesController.new);
 
-final NotifierProvider<JournalEntriesController, FinanceListState<JournalEntry>> journalEntriesProvider = NotifierProvider<JournalEntriesController, FinanceListState<JournalEntry>>(JournalEntriesController.new);
-class JournalEntriesController extends Notifier<FinanceListState<JournalEntry>> {
+class JournalEntriesController
+    extends Notifier<FinanceListState<JournalEntry>> {
   void search(String s) {}
   void applyFilters(Map<String, String> f) {}
   void applySort(String s) {}
@@ -430,18 +449,22 @@ class JournalEntriesController extends Notifier<FinanceListState<JournalEntry>> 
   Future<Result<void>> submit(String id) async => throw UnimplementedError();
   Future<Result<void>> approve(String id) async => throw UnimplementedError();
   Future<Result<void>> post(String id) async => throw UnimplementedError();
-  
 
-  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async => throw UnimplementedError();
+  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async =>
+      throw UnimplementedError();
   @override
   FinanceListState<JournalEntry> build() {
     Future<void>.microtask(() {});
-    return const FinanceListState<JournalEntry>(); // Or just throw UnimplementedError if it complains about const
+    return const FinanceListState<
+        JournalEntry>(); // Or just throw UnimplementedError if it complains about const
   }
 }
 
+final NotifierProvider<TaxFilingsController, FinanceListState<TaxFiling>>
+    taxFilingsProvider =
+    NotifierProvider<TaxFilingsController, FinanceListState<TaxFiling>>(
+        TaxFilingsController.new);
 
-final NotifierProvider<TaxFilingsController, FinanceListState<TaxFiling>> taxFilingsProvider = NotifierProvider<TaxFilingsController, FinanceListState<TaxFiling>>(TaxFilingsController.new);
 class TaxFilingsController extends Notifier<FinanceListState<TaxFiling>> {
   void search(String s) {}
   void applyFilters(Map<String, String> f) {}
@@ -452,18 +475,22 @@ class TaxFilingsController extends Notifier<FinanceListState<TaxFiling>> {
   Future<Result<void>> submit(String id) async => throw UnimplementedError();
   Future<Result<void>> approve(String id) async => throw UnimplementedError();
   Future<Result<void>> post(String id) async => throw UnimplementedError();
-  
 
-  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async => throw UnimplementedError();
+  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async =>
+      throw UnimplementedError();
   @override
   FinanceListState<TaxFiling> build() {
     Future<void>.microtask(() {});
-    return const FinanceListState<TaxFiling>(); // Or just throw UnimplementedError if it complains about const
+    return const FinanceListState<
+        TaxFiling>(); // Or just throw UnimplementedError if it complains about const
   }
 }
 
+final NotifierProvider<TaxRatesController, FinanceListState<TaxRate>>
+    taxRatesProvider =
+    NotifierProvider<TaxRatesController, FinanceListState<TaxRate>>(
+        TaxRatesController.new);
 
-final NotifierProvider<TaxRatesController, FinanceListState<TaxRate>> taxRatesProvider = NotifierProvider<TaxRatesController, FinanceListState<TaxRate>>(TaxRatesController.new);
 class TaxRatesController extends Notifier<FinanceListState<TaxRate>> {
   void search(String s) {}
   void applyFilters(Map<String, String> f) {}
@@ -474,18 +501,27 @@ class TaxRatesController extends Notifier<FinanceListState<TaxRate>> {
   Future<Result<void>> submit(String id) async => throw UnimplementedError();
   Future<Result<void>> approve(String id) async => throw UnimplementedError();
   Future<Result<void>> post(String id) async => throw UnimplementedError();
-  
 
-  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async => throw UnimplementedError();
+  Future<Result<void>> save(Map<String, dynamic> data, {String? id}) async =>
+      throw UnimplementedError();
   @override
   FinanceListState<TaxRate> build() {
     Future<void>.microtask(() {});
-    return const FinanceListState<TaxRate>(); // Or just throw UnimplementedError if it complains about const
+    return const FinanceListState<
+        TaxRate>(); // Or just throw UnimplementedError if it complains about const
   }
 }
-final FutureProviderFamily<BankAccount, String> bankAccountDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
-final FutureProviderFamily<Budget, String> budgetDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
-final FutureProviderFamily<JournalEntry, String> journalEntryDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
-final FutureProviderFamily<CreditNote, String> creditNoteDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
-final FutureProviderFamily<ChartOfAccount, String> chartOfAccountDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
-final FutureProviderFamily<TaxFiling, String> taxFilingDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
+
+final FutureProviderFamily<BankAccount, String> bankAccountDetailProvider =
+    FutureProvider.family((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<Budget, String> budgetDetailProvider =
+    FutureProvider.family((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<JournalEntry, String> journalEntryDetailProvider =
+    FutureProvider.family((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<CreditNote, String> creditNoteDetailProvider =
+    FutureProvider.family((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<ChartOfAccount, String>
+    chartOfAccountDetailProvider =
+    FutureProvider.family((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<TaxFiling, String> taxFilingDetailProvider =
+    FutureProvider.family((ref, id) async => throw UnimplementedError());

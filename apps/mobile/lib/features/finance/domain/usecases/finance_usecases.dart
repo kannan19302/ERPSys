@@ -96,8 +96,7 @@ class GetPaymentUseCase extends UseCase<Payment, String> {
   Future<Result<Payment>> call(String id) => _repository.getPayment(id);
 }
 
-class CreatePaymentUseCase
-    extends UseCase<Payment, Map<String, dynamic>> {
+class CreatePaymentUseCase extends UseCase<Payment, Map<String, dynamic>> {
   const CreatePaymentUseCase(this._repository);
 
   final FinanceRepository _repository;
@@ -109,8 +108,7 @@ class CreatePaymentUseCase
 
 // ── Credit Notes ────────────────────────────────────────────────────────────
 
-class ListCreditNotesUseCase
-    extends UseCase<Paginated<CreditNote>, ListQuery> {
+class ListCreditNotesUseCase extends UseCase<Paginated<CreditNote>, ListQuery> {
   const ListCreditNotesUseCase(this._repository);
 
   final FinanceRepository _repository;
@@ -131,8 +129,7 @@ class GetCreditNoteUseCase extends UseCase<CreditNote, String> {
 
 // ── Budgets ─────────────────────────────────────────────────────────────────
 
-class ListBudgetsUseCase
-    extends UseCase<Paginated<Budget>, ListQuery> {
+class ListBudgetsUseCase extends UseCase<Paginated<Budget>, ListQuery> {
   const ListBudgetsUseCase(this._repository);
 
   final FinanceRepository _repository;
@@ -142,8 +139,7 @@ class ListBudgetsUseCase
       _repository.listBudgets(params);
 }
 
-class GetBudgetVsActualsUseCase
-    extends UseCase<Map<String, dynamic>, String> {
+class GetBudgetVsActualsUseCase extends UseCase<Map<String, dynamic>, String> {
   const GetBudgetVsActualsUseCase(this._repository);
 
   final FinanceRepository _repository;
@@ -164,8 +160,7 @@ class DeleteBudgetUseCase extends UseCase<void, String> {
 
 // ── Tax Filings ──────────────────────────────────────────────────────────────
 
-class ListTaxFilingsUseCase
-    extends UseCase<Paginated<TaxFiling>, ListQuery> {
+class ListTaxFilingsUseCase extends UseCase<Paginated<TaxFiling>, ListQuery> {
   const ListTaxFilingsUseCase(this._repository);
 
   final FinanceRepository _repository;
@@ -285,8 +280,7 @@ class DeleteChartOfAccountUseCase extends UseCase<void, String> {
   final FinanceRepository _repository;
 
   @override
-  Future<Result<void>> call(String id) =>
-      _repository.deleteChartOfAccount(id);
+  Future<Result<void>> call(String id) => _repository.deleteChartOfAccount(id);
 }
 
 // ── Journal Entries ──────────────────────────────────────────────────────────
@@ -340,8 +334,7 @@ class DeleteJournalEntryUseCase extends UseCase<void, String> {
   final FinanceRepository _repository;
 
   @override
-  Future<Result<void>> call(String id) =>
-      _repository.deleteJournalEntry(id);
+  Future<Result<void>> call(String id) => _repository.deleteJournalEntry(id);
 }
 
 class PostJournalEntryUseCase extends UseCase<JournalEntry, String> {
@@ -373,8 +366,7 @@ class GetBankAccountUseCase extends UseCase<BankAccount, String> {
   final FinanceRepository _repository;
 
   @override
-  Future<Result<BankAccount>> call(String id) =>
-      _repository.getBankAccount(id);
+  Future<Result<BankAccount>> call(String id) => _repository.getBankAccount(id);
 }
 
 class SaveBankAccountParams {
@@ -405,22 +397,23 @@ class DeleteBankAccountUseCase extends UseCase<void, String> {
   final FinanceRepository _repository;
 
   @override
-  Future<Result<void>> call(String id) =>
-      _repository.deleteBankAccount(id);
+  Future<Result<void>> call(String id) => _repository.deleteBankAccount(id);
 }
-
 
 class GetBudgetUseCase extends UseCase<Budget, String> {
   GetBudgetUseCase(this.repository);
   final FinanceRepository repository;
   @override
-  Future<Result<Budget>> call(String params) async => throw UnimplementedError();
+  Future<Result<Budget>> call(String params) async =>
+      throw UnimplementedError();
 }
-
 
 class ListTaxRatesUseCase extends UseCase<Paginated<TaxRate>, ListQuery> {
   ListTaxRatesUseCase(this.repository);
   final FinanceRepository repository;
   @override
-  Future<Result<Paginated<TaxRate>>> call(ListQuery params) async => const Result.ok(Paginated(data: [], meta: PaginationMeta(page: 1, limit: 10, total: 0, totalPages: 0)));
+  Future<Result<Paginated<TaxRate>>> call(ListQuery params) async =>
+      const Result.ok(Paginated(
+          data: [],
+          meta: PaginationMeta(page: 1, limit: 10, total: 0, totalPages: 0)));
 }

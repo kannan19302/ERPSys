@@ -50,8 +50,12 @@ class _ShipmentListPageState extends ConsumerState<ShipmentListPage> {
             initialValue: state.query.sort,
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
-                .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value),),)
+                .map(
+                  (e) => PopupMenuItem<String>(
+                    value: e.key,
+                    child: Text(e.value),
+                  ),
+                )
                 .toList(),
           ),
         ],
@@ -66,9 +70,11 @@ class _ShipmentListPageState extends ConsumerState<ShipmentListPage> {
       ),
       body: Column(
         children: [
-          if (state.cachedAt != null) StaleDataBanner(cachedAt: state.cachedAt!),
+          if (state.cachedAt != null)
+            StaleDataBanner(cachedAt: state.cachedAt!),
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -80,21 +86,27 @@ class _ShipmentListPageState extends ConsumerState<ShipmentListPage> {
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} shipment${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} shipment${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -149,33 +161,55 @@ class _ShipmentTile extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(shipment.shipmentNumber,
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                UiStatusBadge(
-                  label: shipment.status,
-                  tone: _statusTone(shipment.status),
-                ),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      shipment.shipmentNumber,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  UiStatusBadge(
+                    label: shipment.status,
+                    tone: _statusTone(shipment.status),
+                  ),
+                ],
+              ),
               const SizedBox(height: Spacing.x1),
-              Text(shipment.carrierName,
-                  style: TextStyle(color: t.textSecondary),),
+              Text(
+                shipment.carrierName,
+                style: TextStyle(color: t.textSecondary),
+              ),
               const SizedBox(height: Spacing.x1),
-              Row(children: [
-                Icon(Icons.trip_origin, size: TypeScale.sm, color: t.textTertiary),
-                const SizedBox(width: Spacing.x1),
-                Expanded(child: Text(shipment.origin,
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),),
-              ],),
+              Row(
+                children: [
+                  Icon(Icons.trip_origin,
+                      size: TypeScale.sm, color: t.textTertiary),
+                  const SizedBox(width: Spacing.x1),
+                  Expanded(
+                    child: Text(
+                      shipment.origin,
+                      style: TextStyle(
+                          color: t.textSecondary, fontSize: TypeScale.xs),
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: Spacing.x0_5),
-              Row(children: [
-                Icon(Icons.location_on, size: TypeScale.sm, color: t.textTertiary),
-                const SizedBox(width: Spacing.x1),
-                Expanded(child: Text(shipment.destination,
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),),
-              ],),
+              Row(
+                children: [
+                  Icon(Icons.location_on,
+                      size: TypeScale.sm, color: t.textTertiary),
+                  const SizedBox(width: Spacing.x1),
+                  Expanded(
+                    child: Text(
+                      shipment.destination,
+                      style: TextStyle(
+                          color: t.textSecondary, fontSize: TypeScale.xs),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),

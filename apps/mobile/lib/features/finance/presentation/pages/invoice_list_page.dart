@@ -77,10 +77,14 @@ class _InvoiceListPageState extends ConsumerState<InvoiceListPage> {
       ),
       body: Column(
         children: <Widget>[
-          if (state.cachedAt != null) StaleDataBanner(cachedAt: state.cachedAt!),
+          if (state.cachedAt != null)
+            StaleDataBanner(cachedAt: state.cachedAt!),
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2,
+              Spacing.x4,
+              Spacing.x3,
+              Spacing.x4,
+              Spacing.x2,
             ),
             child: TextField(
               controller: _search,
@@ -122,7 +126,8 @@ class _InvoiceListPageState extends ConsumerState<InvoiceListPage> {
                   underline: const SizedBox.shrink(),
                   items: _statusFilters.entries
                       .map(
-                        (MapEntry<String, String> e) => DropdownMenuItem<String>(
+                        (MapEntry<String, String> e) =>
+                            DropdownMenuItem<String>(
                           value: e.key,
                           child: Text(e.value),
                         ),
@@ -133,7 +138,8 @@ class _InvoiceListPageState extends ConsumerState<InvoiceListPage> {
                     if (value == null) {
                       controller.applyFilters(const <String, String>{});
                     } else {
-                      controller.applyFilters(<String, String>{'status': value});
+                      controller
+                          .applyFilters(<String, String>{'status': value});
                     }
                   },
                 ),
@@ -166,8 +172,7 @@ class _InvoiceListPageState extends ConsumerState<InvoiceListPage> {
       emptyMessage: state.query.search?.isNotEmpty ?? false
           ? 'Nothing matches "${state.query.search}".'
           : 'Invoices created in UniERP will appear here.',
-      itemBuilder: (BuildContext context, Invoice invoice, _) =>
-          _InvoiceTile(
+      itemBuilder: (BuildContext context, Invoice invoice, _) => _InvoiceTile(
         invoice: invoice,
         onTap: () => context.pushNamed(
           'invoice-detail',
@@ -242,7 +247,8 @@ class _InvoiceTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: <Widget>[
               Text(
-                Formatters.currency(invoice.totalAmount, currencyCode: invoice.currency),
+                Formatters.currency(invoice.totalAmount,
+                    currencyCode: invoice.currency),
                 style: Theme.of(context).textTheme.labelLarge,
               ),
               const SizedBox(height: Spacing.x1),

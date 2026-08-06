@@ -24,8 +24,10 @@ class SalesForecastPage extends ConsumerWidget {
             tooltip: 'Period',
             onSelected: (String v) {},
             itemBuilder: (_) => <PopupMenuEntry<String>>[
-              const PopupMenuItem<String>(value: 'monthly', child: Text('Monthly')),
-              const PopupMenuItem<String>(value: 'quarterly', child: Text('Quarterly')),
+              const PopupMenuItem<String>(
+                  value: 'monthly', child: Text('Monthly')),
+              const PopupMenuItem<String>(
+                  value: 'quarterly', child: Text('Quarterly')),
             ],
           ),
         ],

@@ -36,8 +36,11 @@ class BankAccountDetailPage extends ConsumerWidget {
       body: accountAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load bank account.'),
-          onRetry: () => ref.invalidate(bankAccountDetailProvider(bankAccountId)),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load bank account.'),
+          onRetry: () =>
+              ref.invalidate(bankAccountDetailProvider(bankAccountId)),
         ),
         data: (BankAccount acc) => _BankAccountDetail(account: acc),
       ),
@@ -64,9 +67,8 @@ class BankAccountDetailPage extends ConsumerWidget {
     );
     if (confirmed != true || !context.mounted) return;
 
-    final result = await ref
-        .read(bankAccountsProvider.notifier)
-        .delete(bankAccountId);
+    final result =
+        await ref.read(bankAccountsProvider.notifier).delete(bankAccountId);
 
     if (!context.mounted) return;
     result.fold(
@@ -123,7 +125,10 @@ class _BankAccountDetail extends StatelessWidget {
               _FieldRow('Bank Name', account.bankName),
               _FieldRow('Branch', account.branch ?? '—'),
               _FieldRow('Currency', account.currency),
-              _FieldRow('Balance', Formatters.currency(account.balance, currencyCode: account.currency)),
+              _FieldRow(
+                  'Balance',
+                  Formatters.currency(account.balance,
+                      currencyCode: account.currency)),
               _FieldRow('Status', account.isActive ? 'Active' : 'Inactive'),
             ],
           ),
@@ -165,7 +170,8 @@ class _FieldRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: Spacing.x1_5),
       child: Row(
         children: <Widget>[
-          Expanded(child: Text(label, style: TextStyle(color: t.textSecondary))),
+          Expanded(
+              child: Text(label, style: TextStyle(color: t.textSecondary))),
           Text(value, style: Theme.of(context).textTheme.labelLarge),
         ],
       ),

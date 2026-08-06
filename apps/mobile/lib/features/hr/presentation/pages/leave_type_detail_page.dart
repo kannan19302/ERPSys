@@ -18,7 +18,8 @@ class LeaveTypeDetailPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<List<LeaveType>> asyncTypes = ref.watch(leaveTypesProvider);
+    final AsyncValue<List<LeaveType>> asyncTypes =
+        ref.watch(leaveTypesProvider);
     return asyncTypes.when(
       loading: () => Scaffold(
         appBar: AppBar(title: const Text('Leave Type')),
@@ -39,9 +40,7 @@ class LeaveTypeDetailPage extends ConsumerWidget {
           );
         }
 
-        final Color? color = lt.color != null
-            ? _parseColor(lt.color!)
-            : null;
+        final Color? color = lt.color != null ? _parseColor(lt.color!) : null;
 
         return Scaffold(
           appBar: AppBar(
@@ -65,7 +64,8 @@ class LeaveTypeDetailPage extends ConsumerWidget {
                   height: Spacing.x2,
                   decoration: BoxDecoration(
                     color: color,
-                    borderRadius: const BorderRadius.all(Radius.circular(Radii.sm)),
+                    borderRadius:
+                        const BorderRadius.all(Radius.circular(Radii.sm)),
                   ),
                 ),
               const SizedBox(height: Spacing.x4),

@@ -45,9 +45,11 @@ class _PerformanceReviewFormPageState
   void _load() {
     final PerformanceReviewListState state =
         ref.read(performanceReviewListControllerProvider);
-    final PerformanceReview? pr = state.items.where(
-      (PerformanceReview r) => r.id == widget.reviewId,
-    ).firstOrNull;
+    final PerformanceReview? pr = state.items
+        .where(
+          (PerformanceReview r) => r.id == widget.reviewId,
+        )
+        .firstOrNull;
     if (pr != null) {
       _employeeCtrl.text = pr.employeeName;
       _reviewerCtrl.text = pr.reviewerName ?? '';
@@ -75,14 +77,12 @@ class _PerformanceReviewFormPageState
     final Map<String, dynamic> payload = <String, dynamic>{
       'employeeId': _employeeCtrl.text.trim(),
       'employeeName': _employeeCtrl.text.trim(),
-      'reviewerName': _reviewerCtrl.text.trim().isEmpty
-          ? null
-          : _reviewerCtrl.text.trim(),
+      'reviewerName':
+          _reviewerCtrl.text.trim().isEmpty ? null : _reviewerCtrl.text.trim(),
       'reviewPeriod': _periodCtrl.text.trim(),
       'goals': _goalsCtrl.text.trim().isEmpty ? null : _goalsCtrl.text.trim(),
-      'feedback': _feedbackCtrl.text.trim().isEmpty
-          ? null
-          : _feedbackCtrl.text.trim(),
+      'feedback':
+          _feedbackCtrl.text.trim().isEmpty ? null : _feedbackCtrl.text.trim(),
       'rating': _rating,
       'status': PerformanceReviewStatus.draft,
     };

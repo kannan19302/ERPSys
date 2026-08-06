@@ -237,7 +237,8 @@ class MaintenanceOrderModel extends MaintenanceOrder {
 
   factory MaintenanceOrderModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('MaintenanceOrder missing id');
+    if (id is! String)
+      throw const ParseException('MaintenanceOrder missing id');
     return MaintenanceOrderModel(
       id: id,
       title: json['title'] as String? ?? '',
@@ -296,11 +297,13 @@ class PropertyValuationModel extends PropertyValuation {
 
   factory PropertyValuationModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('PropertyValuation missing id');
+    if (id is! String)
+      throw const ParseException('PropertyValuation missing id');
     return PropertyValuationModel(
       id: id,
       propertyId: json['propertyId'] as String? ?? '',
-      valuationDate: DateTime.tryParse('${json['valuationDate']}') ?? DateTime.now(),
+      valuationDate:
+          DateTime.tryParse('${json['valuationDate']}') ?? DateTime.now(),
       estimatedValue: asDouble(json['estimatedValue']),
       assessedValue: asDouble(json['assessedValue']),
       appraisedBy: json['appraisedBy'] as String?,

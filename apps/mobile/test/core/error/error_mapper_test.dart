@@ -37,7 +37,10 @@ void main() {
     group('ApiException status mapping — mirrors error-envelope.ts', () {
       Failure mapStatus(int status) => mapExceptionToFailure(
             ApiException(
-              ErrorEnvelope(statusCode: status, code: codeForStatus(status), message: 'm'),
+              ErrorEnvelope(
+                  statusCode: status,
+                  code: codeForStatus(status),
+                  message: 'm'),
             ),
           );
 
@@ -72,7 +75,8 @@ void main() {
       });
     });
 
-    test('validation failure carries field errors from a Zod-style envelope', () {
+    test('validation failure carries field errors from a Zod-style envelope',
+        () {
       const ApiException error = ApiException(
         ErrorEnvelope(
           statusCode: 400,

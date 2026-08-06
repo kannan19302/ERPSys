@@ -4,7 +4,8 @@ import '../../../../core/usecase/usecase.dart';
 import '../entities/education.dart';
 import '../repositories/education_repository.dart';
 
-class ListStudentsUseCase extends UseCase<Cacheable<Paginated<Student>>, ListQuery> {
+class ListStudentsUseCase
+    extends UseCase<Cacheable<Paginated<Student>>, ListQuery> {
   const ListStudentsUseCase(this._repository);
   final EducationRepository _repository;
   @override
@@ -44,7 +45,8 @@ class DeleteStudentUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deleteStudent(id);
 }
 
-class ListCoursesUseCase extends UseCase<Cacheable<Paginated<Course>>, ListQuery> {
+class ListCoursesUseCase
+    extends UseCase<Cacheable<Paginated<Course>>, ListQuery> {
   const ListCoursesUseCase(this._repository);
   final EducationRepository _repository;
   @override
@@ -84,7 +86,8 @@ class DeleteCourseUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deleteCourse(id);
 }
 
-class ListEnrollmentsUseCase extends UseCase<Cacheable<Paginated<Enrollment>>, ListQuery> {
+class ListEnrollmentsUseCase
+    extends UseCase<Cacheable<Paginated<Enrollment>>, ListQuery> {
   const ListEnrollmentsUseCase(this._repository);
   final EducationRepository _repository;
   @override
@@ -92,7 +95,8 @@ class ListEnrollmentsUseCase extends UseCase<Cacheable<Paginated<Enrollment>>, L
       _repository.listEnrollments(params);
 }
 
-class ListGradeEntriesUseCase extends UseCase<Cacheable<Paginated<GradeEntry>>, ListQuery> {
+class ListGradeEntriesUseCase
+    extends UseCase<Cacheable<Paginated<GradeEntry>>, ListQuery> {
   const ListGradeEntriesUseCase(this._repository);
   final EducationRepository _repository;
   @override
@@ -100,11 +104,13 @@ class ListGradeEntriesUseCase extends UseCase<Cacheable<Paginated<GradeEntry>>, 
       _repository.listGradeEntries(params);
 }
 
-class ListEducationFeeInvoicesUseCase extends UseCase<Cacheable<Paginated<EducationFeeInvoice>>, ListQuery> {
+class ListEducationFeeInvoicesUseCase
+    extends UseCase<Cacheable<Paginated<EducationFeeInvoice>>, ListQuery> {
   const ListEducationFeeInvoicesUseCase(this._repository);
   final EducationRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<EducationFeeInvoice>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<EducationFeeInvoice>>>> call(
+          ListQuery params) =>
       _repository.listEducationFeeInvoices(params);
 }
 

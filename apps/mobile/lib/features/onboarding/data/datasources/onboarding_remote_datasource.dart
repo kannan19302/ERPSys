@@ -15,7 +15,8 @@ class OnboardingRemoteDataSourceImpl implements OnboardingRemoteDataSource {
 
   @override
   Future<OnboardingChecklistModel> getState() async =>
-      OnboardingChecklistModel.fromJson(await _client.getObject(ApiPaths.onboarding));
+      OnboardingChecklistModel.fromJson(
+          await _client.getObject(ApiPaths.onboarding));
 
   @override
   Future<OnboardingChecklistModel> completeStep(String key) async =>

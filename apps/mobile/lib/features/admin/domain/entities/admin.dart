@@ -29,8 +29,16 @@ class AdminUser extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, email, firstName, lastName, avatar, status,
-        lastLoginAt, roles, createdAt, updatedAt,
+        id,
+        email,
+        firstName,
+        lastName,
+        avatar,
+        status,
+        lastLoginAt,
+        roles,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -57,7 +65,14 @@ class AdminRole extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, description, isSystem, permissions, userCount, createdAt, updatedAt,
+        id,
+        name,
+        description,
+        isSystem,
+        permissions,
+        userCount,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -86,7 +101,15 @@ class AdminSetting extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, key, value, type, category, description, isEncrypted, createdAt, updatedAt,
+        id,
+        key,
+        value,
+        type,
+        category,
+        description,
+        isEncrypted,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -115,8 +138,15 @@ class AdminAuditLog extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, userId, action, entityType, entityId,
-        changes, ipAddress, userAgent, createdAt,
+        id,
+        userId,
+        action,
+        entityType,
+        entityId,
+        changes,
+        ipAddress,
+        userAgent,
+        createdAt,
       ];
 }
 
@@ -151,8 +181,18 @@ class SystemHealth extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, status, uptimeSeconds, activeUsers, apiLatencyMs, dbLatencyMs,
-        cacheHitRate, storageUsedMb, memoryUsageMb, cpuUsagePercent, lastChecked, createdAt,
+        id,
+        status,
+        uptimeSeconds,
+        activeUsers,
+        apiLatencyMs,
+        dbLatencyMs,
+        cacheHitRate,
+        storageUsedMb,
+        memoryUsageMb,
+        cpuUsagePercent,
+        lastChecked,
+        createdAt,
       ];
 }
 
@@ -183,7 +223,14 @@ class AdminApiKey extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, key, permissions, lastUsedAt, expiresAt, isActive, createdAt,
+        id,
+        name,
+        key,
+        permissions,
+        lastUsedAt,
+        expiresAt,
+        isActive,
+        createdAt,
       ];
 }
 
@@ -210,6 +257,13 @@ class AdminTenant extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, slug, domain, plan, status, userCount, createdAt,
+        id,
+        name,
+        slug,
+        domain,
+        plan,
+        status,
+        userCount,
+        createdAt,
       ];
 }

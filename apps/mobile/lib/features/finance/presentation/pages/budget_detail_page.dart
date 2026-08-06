@@ -36,7 +36,9 @@ class BudgetDetailPage extends ConsumerWidget {
       body: budgetAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load budget.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load budget.'),
           onRetry: () => ref.invalidate(budgetDetailProvider(budgetId)),
         ),
         data: (Budget budget) => _BudgetDetail(budget: budget),
@@ -64,9 +66,7 @@ class BudgetDetailPage extends ConsumerWidget {
     );
     if (confirmed != true || !context.mounted) return;
 
-    final result = await ref
-        .read(budgetsProvider.notifier)
-        .delete(budgetId);
+    final result = await ref.read(budgetsProvider.notifier).delete(budgetId);
 
     if (!context.mounted) return;
     result.fold(
@@ -115,7 +115,8 @@ class _BudgetDetail extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: Spacing.x2),
-              Text('FY ${budget.fiscalYear}', style: TextStyle(color: t.textSecondary)),
+              Text('FY ${budget.fiscalYear}',
+                  style: TextStyle(color: t.textSecondary)),
             ],
           ),
         ),
@@ -128,11 +129,20 @@ class _BudgetDetail extends StatelessWidget {
               const SizedBox(height: Spacing.x2),
               Row(
                 children: <Widget>[
-                  _MetricColumn(label: 'Budget', value: Formatters.currency(budget.totalAmount), t: t),
+                  _MetricColumn(
+                      label: 'Budget',
+                      value: Formatters.currency(budget.totalAmount),
+                      t: t),
                   const SizedBox(width: Spacing.x3),
-                  _MetricColumn(label: 'Spent', value: Formatters.currency(budget.spentAmount), t: t),
+                  _MetricColumn(
+                      label: 'Spent',
+                      value: Formatters.currency(budget.spentAmount),
+                      t: t),
                   const SizedBox(width: Spacing.x3),
-                  _MetricColumn(label: 'Remaining', value: Formatters.currency(budget.remainingAmount), t: t),
+                  _MetricColumn(
+                      label: 'Remaining',
+                      value: Formatters.currency(budget.remainingAmount),
+                      t: t),
                 ],
               ),
               const SizedBox(height: Spacing.x4),
@@ -164,7 +174,11 @@ class _BudgetDetail extends StatelessWidget {
               _FieldRow('Name', budget.name),
               _FieldRow('Fiscal Year', budget.fiscalYear),
               _FieldRow('Status', budget.status),
-              _FieldRow('Created', budget.createdAt != null ? Formatters.date(budget.createdAt!) : '—'),
+              _FieldRow(
+                  'Created',
+                  budget.createdAt != null
+                      ? Formatters.date(budget.createdAt!)
+                      : '—'),
             ],
           ),
         ),
@@ -174,7 +188,8 @@ class _BudgetDetail extends StatelessWidget {
 }
 
 class _MetricColumn extends StatelessWidget {
-  const _MetricColumn({required this.label, required this.value, required this.t});
+  const _MetricColumn(
+      {required this.label, required this.value, required this.t});
 
   final String label;
   final String value;
@@ -186,7 +201,8 @@ class _MetricColumn extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text(label, style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
+          Text(label,
+              style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
           const SizedBox(height: Spacing.x1),
           Text(value, style: Theme.of(context).textTheme.labelLarge),
         ],
@@ -227,7 +243,8 @@ class _FieldRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: Spacing.x1_5),
       child: Row(
         children: <Widget>[
-          Expanded(child: Text(label, style: TextStyle(color: t.textSecondary))),
+          Expanded(
+              child: Text(label, style: TextStyle(color: t.textSecondary))),
           Text(value, style: Theme.of(context).textTheme.labelLarge),
         ],
       ),

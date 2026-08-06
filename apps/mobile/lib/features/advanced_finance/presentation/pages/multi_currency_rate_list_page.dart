@@ -13,10 +13,12 @@ class MultiCurrencyRateListPage extends ConsumerStatefulWidget {
   static const String routeName = 'multi-currency-rates';
   static const String routePath = '/advanced-finance/currency-rates';
   @override
-  ConsumerState<MultiCurrencyRateListPage> createState() => _MultiCurrencyRateListPageState();
+  ConsumerState<MultiCurrencyRateListPage> createState() =>
+      _MultiCurrencyRateListPageState();
 }
 
-class _MultiCurrencyRateListPageState extends ConsumerState<MultiCurrencyRateListPage> {
+class _MultiCurrencyRateListPageState
+    extends ConsumerState<MultiCurrencyRateListPage> {
   final TextEditingController _search = TextEditingController();
 
   static const Map<String, String> _sortOptions = <String, String>{
@@ -36,7 +38,8 @@ class _MultiCurrencyRateListPageState extends ConsumerState<MultiCurrencyRateLis
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(multiCurrencyRateListControllerProvider);
-    final controller = ref.read(multiCurrencyRateListControllerProvider.notifier);
+    final controller =
+        ref.read(multiCurrencyRateListControllerProvider.notifier);
     final t = context.tokens;
 
     return Scaffold(
@@ -49,17 +52,23 @@ class _MultiCurrencyRateListPageState extends ConsumerState<MultiCurrencyRateLis
             initialValue: state.query.sort,
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
-                .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value),),)
+                .map(
+                  (e) => PopupMenuItem<String>(
+                    value: e.key,
+                    child: Text(e.value),
+                  ),
+                )
                 .toList(),
           ),
         ],
       ),
       body: Column(
         children: [
-          if (state.cachedAt != null) StaleDataBanner(cachedAt: state.cachedAt!),
+          if (state.cachedAt != null)
+            StaleDataBanner(cachedAt: state.cachedAt!),
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -71,21 +80,27 @@ class _MultiCurrencyRateListPageState extends ConsumerState<MultiCurrencyRateLis
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} rate${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} rate${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -93,7 +108,8 @@ class _MultiCurrencyRateListPageState extends ConsumerState<MultiCurrencyRateLis
     );
   }
 
-  Widget _body(MultiCurrencyRateListState state, MultiCurrencyRateListController controller) {
+  Widget _body(MultiCurrencyRateListState state,
+      MultiCurrencyRateListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -131,23 +147,33 @@ class _RateTile extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(children: [
-              Expanded(
-                child: Text('${rate.fromCurrency} / ${rate.toCurrency}',
-                    style: Theme.of(context).textTheme.titleSmall,),
-              ),
-              UiStatusBadge(
-                label: rate.source ?? 'MANUAL',
-                tone: UiTone.info,
-              ),
-            ],),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${rate.fromCurrency} / ${rate.toCurrency}',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+                UiStatusBadge(
+                  label: rate.source ?? 'MANUAL',
+                  tone: UiTone.info,
+                ),
+              ],
+            ),
             const SizedBox(height: Spacing.x1),
-            Text(rate.rate.toStringAsFixed(6),
-                style: Theme.of(context).textTheme.labelLarge,),
+            Text(
+              rate.rate.toStringAsFixed(6),
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
             if (rate.rateDate != null) ...[
               const SizedBox(height: Spacing.x1),
-              Text(Formatters.date(rate.rateDate!),
-                  style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs),),
+              Text(
+                Formatters.date(rate.rateDate!),
+                style: TextStyle(
+                    color: context.tokens.textSecondary,
+                    fontSize: TypeScale.xs),
+              ),
             ],
           ],
         ),

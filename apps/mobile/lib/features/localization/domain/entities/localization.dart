@@ -23,7 +23,14 @@ class LocalizationTranslation extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, locale, key, value, module, isOverride, createdAt, updatedAt,
+        id,
+        locale,
+        key,
+        value,
+        module,
+        isOverride,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -52,7 +59,15 @@ class LocalizationLanguage extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, code, name, direction, isActive, isDefault, sortOrder, createdAt, updatedAt,
+        id,
+        code,
+        name,
+        direction,
+        isActive,
+        isDefault,
+        sortOrder,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -83,6 +98,15 @@ class LocalizationRegion extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, code, name, locale, dateFormat, timeFormat, timezone, currencyCode, createdAt, updatedAt,
+        id,
+        code,
+        name,
+        locale,
+        dateFormat,
+        timeFormat,
+        timezone,
+        currencyCode,
+        createdAt,
+        updatedAt,
       ];
 }

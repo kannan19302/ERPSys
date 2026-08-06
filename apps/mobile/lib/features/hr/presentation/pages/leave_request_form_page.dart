@@ -66,7 +66,8 @@ class _LeaveRequestFormPageState extends ConsumerState<LeaveRequestFormPage> {
       'fromDate': _fromDate.toIso8601String(),
       'toDate': _toDate.toIso8601String(),
       'days': days,
-      'reason': _reasonCtrl.text.trim().isEmpty ? null : _reasonCtrl.text.trim(),
+      'reason':
+          _reasonCtrl.text.trim().isEmpty ? null : _reasonCtrl.text.trim(),
       'emergencyContact': _emergencyCtrl.text.trim().isEmpty
           ? null
           : _emergencyCtrl.text.trim(),
@@ -89,7 +90,8 @@ class _LeaveRequestFormPageState extends ConsumerState<LeaveRequestFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final AsyncValue<List<LeaveType>> typesAsync = ref.watch(leaveTypesProvider);
+    final AsyncValue<List<LeaveType>> typesAsync =
+        ref.watch(leaveTypesProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -135,8 +137,7 @@ class _LeaveRequestFormPageState extends ConsumerState<LeaveRequestFormPage> {
                         ),
                       )
                       .toList(),
-                  onChanged: (String? v) =>
-                      setState(() => _leaveTypeId = v),
+                  onChanged: (String? v) => setState(() => _leaveTypeId = v),
                   validator: (String? v) =>
                       v == null ? 'Select a leave type' : null,
                 );
@@ -191,15 +192,17 @@ class _LeaveRequestFormPageState extends ConsumerState<LeaveRequestFormPage> {
       ),
     );
   }
-Future<Result<LeaveRequest>> _saveLeaveRequest(
-      Map<String, dynamic> payload,) async {
+
+  Future<Result<LeaveRequest>> _saveLeaveRequest(
+    Map<String, dynamic> payload,
+  ) async {
     final HrRepository repo = ref.read(hrRepositoryProvider);
-    final Result<LeaveRequest> result =
-        await SaveLeaveRequestUseCase(repo)(
+    final Result<LeaveRequest> result = await SaveLeaveRequestUseCase(repo)(
       SaveLeaveRequestParams(payload: payload),
     );
     if (result.isOk) {
-      unawaited(ref.read(leaveRequestListControllerProvider.notifier).refresh());
+      unawaited(
+          ref.read(leaveRequestListControllerProvider.notifier).refresh());
     }
     return result;
   }

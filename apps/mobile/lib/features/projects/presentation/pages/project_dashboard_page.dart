@@ -75,7 +75,8 @@ class ProjectDashboardPage extends ConsumerWidget {
                 const UiSectionHeader(title: 'Tasks by Status'),
                 SimpleBarChart(
                   data: [
-                    BarChartItem(label: 'Todo', value: 15, color: p.textSecondary),
+                    BarChartItem(
+                        label: 'Todo', value: 15, color: p.textSecondary),
                     BarChartItem(label: 'In Prog.', value: 22, color: p.info),
                     BarChartItem(label: 'Review', value: 8, color: p.warning),
                     BarChartItem(label: 'Done', value: 30, color: p.success),
@@ -95,10 +96,14 @@ class ProjectDashboardPage extends ConsumerWidget {
                 const UiSectionHeader(title: 'Budget Distribution'),
                 SimplePieChart(
                   data: [
-                    PieChartItem(label: 'Development', value: 450000, color: p.primary),
-                    PieChartItem(label: 'Operations', value: 300000, color: p.info),
-                    PieChartItem(label: 'Marketing', value: 250000, color: p.warning),
-                    PieChartItem(label: 'Other', value: 250000, color: p.success),
+                    PieChartItem(
+                        label: 'Development', value: 450000, color: p.primary),
+                    PieChartItem(
+                        label: 'Operations', value: 300000, color: p.info),
+                    PieChartItem(
+                        label: 'Marketing', value: 250000, color: p.warning),
+                    PieChartItem(
+                        label: 'Other', value: 250000, color: p.success),
                   ],
                   size: 140,
                   legendPosition: PieLegendPosition.bottom,
@@ -114,13 +119,25 @@ class ProjectDashboardPage extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 UiSectionHeader(title: 'Recent Activity'),
-                _ActivityItem(icon: Icons.add_circle_outline, text: 'New task created in Project Alpha', time: '2h ago'),
+                _ActivityItem(
+                    icon: Icons.add_circle_outline,
+                    text: 'New task created in Project Alpha',
+                    time: '2h ago'),
                 Divider(height: 1),
-                _ActivityItem(icon: Icons.check_circle_outline, text: 'Task "UI Review" completed', time: '4h ago'),
+                _ActivityItem(
+                    icon: Icons.check_circle_outline,
+                    text: 'Task "UI Review" completed',
+                    time: '4h ago'),
                 Divider(height: 1),
-                _ActivityItem(icon: Icons.people_outline, text: 'John assigned to Project Beta', time: '1d ago'),
+                _ActivityItem(
+                    icon: Icons.people_outline,
+                    text: 'John assigned to Project Beta',
+                    time: '1d ago'),
                 Divider(height: 1),
-                _ActivityItem(icon: Icons.trending_up, text: 'Project Gamma budget updated', time: '2d ago'),
+                _ActivityItem(
+                    icon: Icons.trending_up,
+                    text: 'Project Gamma budget updated',
+                    time: '2d ago'),
               ],
             ),
           ),
@@ -131,7 +148,8 @@ class ProjectDashboardPage extends ConsumerWidget {
 }
 
 class _ActivityItem extends StatelessWidget {
-  const _ActivityItem({required this.icon, required this.text, required this.time});
+  const _ActivityItem(
+      {required this.icon, required this.text, required this.time});
   final IconData icon;
   final String text;
   final String time;
@@ -145,8 +163,11 @@ class _ActivityItem extends StatelessWidget {
         children: [
           Icon(icon, size: TypeScale.lg, color: t.textTertiary),
           const SizedBox(width: Spacing.x2),
-          Expanded(child: Text(text, style: TextStyle(fontSize: TypeScale.sm, color: t.text))),
-          Text(time, style: TextStyle(fontSize: TypeScale.xs, color: t.textTertiary)),
+          Expanded(
+              child: Text(text,
+                  style: TextStyle(fontSize: TypeScale.sm, color: t.text))),
+          Text(time,
+              style: TextStyle(fontSize: TypeScale.xs, color: t.textTertiary)),
         ],
       ),
     );

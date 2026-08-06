@@ -40,9 +40,22 @@ class Invoice extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, customerId, customerName, invoiceNumber, status, items,
-        subtotal, taxTotal, discountTotal, totalAmount, currency,
-        dueDate, invoiceDate, notes, createdAt, updatedAt,
+        id,
+        customerId,
+        customerName,
+        invoiceNumber,
+        status,
+        items,
+        subtotal,
+        taxTotal,
+        discountTotal,
+        totalAmount,
+        currency,
+        dueDate,
+        invoiceDate,
+        notes,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -72,8 +85,15 @@ class InvoiceLineItem extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, productId, productName, description, quantity, rate,
-        amount, taxRate, taxAmount,
+        id,
+        productId,
+        productName,
+        description,
+        quantity,
+        rate,
+        amount,
+        taxRate,
+        taxAmount,
       ];
 }
 
@@ -109,8 +129,18 @@ class Payment extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, invoiceId, invoiceNumber, customerName, amount, currency,
-        paymentDate, method, reference, status, notes, createdAt,
+        id,
+        invoiceId,
+        invoiceNumber,
+        customerName,
+        amount,
+        currency,
+        paymentDate,
+        method,
+        reference,
+        status,
+        notes,
+        createdAt,
       ];
 }
 
@@ -146,8 +176,18 @@ class CreditNote extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, customerId, customerName, creditNoteNumber, status,
-        invoiceId, reason, items, totalAmount, currency, date, createdAt,
+        id,
+        customerId,
+        customerName,
+        creditNoteNumber,
+        status,
+        invoiceId,
+        reason,
+        items,
+        totalAmount,
+        currency,
+        date,
+        createdAt,
       ];
 }
 
@@ -177,8 +217,15 @@ class CreditNoteLineItem extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, productId, productName, description, quantity, rate,
-        amount, taxRate, taxAmount,
+        id,
+        productId,
+        productName,
+        description,
+        quantity,
+        rate,
+        amount,
+        taxRate,
+        taxAmount,
       ];
 }
 
@@ -201,7 +248,8 @@ class TaxRate extends Equatable {
   final DateTime? createdAt;
 
   @override
-  List<Object?> get props => <Object?>[id, name, rate, type, isActive, createdAt];
+  List<Object?> get props =>
+      <Object?>[id, name, rate, type, isActive, createdAt];
 }
 
 /// A budget plan for a fiscal period.
@@ -228,8 +276,14 @@ class Budget extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, fiscalYear, totalAmount, spentAmount,
-        remainingAmount, status, createdAt,
+        id,
+        name,
+        fiscalYear,
+        totalAmount,
+        spentAmount,
+        remainingAmount,
+        status,
+        createdAt,
       ];
 }
 
@@ -261,8 +315,16 @@ class TaxFiling extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, taxType, period, returnType, totalTax, status,
-        filedAt, dueAt, notes, createdAt,
+        id,
+        taxType,
+        period,
+        returnType,
+        totalTax,
+        status,
+        filedAt,
+        dueAt,
+        notes,
+        createdAt,
       ];
 }
 
@@ -290,7 +352,14 @@ class ChartOfAccount extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, code, name, type, parentId, isActive, balance, createdAt,
+        id,
+        code,
+        name,
+        type,
+        parentId,
+        isActive,
+        balance,
+        createdAt,
       ];
 }
 
@@ -314,7 +383,12 @@ class JournalEntryLineItem extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, accountId, accountName, debit, credit, description,
+        id,
+        accountId,
+        accountName,
+        debit,
+        credit,
+        description,
       ];
 }
 
@@ -346,8 +420,16 @@ class JournalEntry extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, entryNumber, date, description, reference,
-        totalDebit, totalCredit, status, createdAt, lineItems,
+        id,
+        entryNumber,
+        date,
+        description,
+        reference,
+        totalDebit,
+        totalCredit,
+        status,
+        createdAt,
+        lineItems,
       ];
 }
 
@@ -377,7 +459,14 @@ class BankAccount extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, accountNumber, bankName, branch, currency,
-        balance, isActive, createdAt,
+        id,
+        name,
+        accountNumber,
+        bankName,
+        branch,
+        currency,
+        balance,
+        isActive,
+        createdAt,
       ];
 }

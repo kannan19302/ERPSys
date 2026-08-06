@@ -22,33 +22,59 @@ import 'package:unerp_mobile/features/pos/presentation/providers/pos_providers.d
 // ── Entity constants ────────────────────────────────────────────────────────
 
 const PosOrderItem _orderItem = PosOrderItem(
-  id: 'poi1', productId: 'p1', productName: 'Widget', quantity: 2, rate: 50, amount: 100,
+  id: 'poi1',
+  productId: 'p1',
+  productName: 'Widget',
+  quantity: 2,
+  rate: 50,
+  amount: 100,
 );
 
 const PosPayment _payment = PosPayment(
-  id: 'pay1', orderId: 'o1', amount: 50, method: 'CASH',
+  id: 'pay1',
+  orderId: 'o1',
+  amount: 50,
+  method: 'CASH',
 );
 
 const PosOrder _completedOrder = PosOrder(
-  id: 'o1', orderNumber: 'POS-001', status: 'COMPLETED',
-  customerId: 'c1', customerName: 'Alpha Corp',
-  items: <PosOrderItem>[_orderItem], payments: <PosPayment>[_payment],
-  subtotal: 100, discountTotal: 0, taxTotal: 10, totalAmount: 110,
+  id: 'o1',
+  orderNumber: 'POS-001',
+  status: 'COMPLETED',
+  customerId: 'c1',
+  customerName: 'Alpha Corp',
+  items: <PosOrderItem>[_orderItem],
+  payments: <PosPayment>[_payment],
+  subtotal: 100,
+  discountTotal: 0,
+  taxTotal: 10,
+  totalAmount: 110,
 );
 
 const PosOrder _walkinOrder = PosOrder(
-  id: 'o2', orderNumber: 'POS-002', status: 'PENDING',
-  subtotal: 50, discountTotal: 5, taxTotal: 5, totalAmount: 50,
+  id: 'o2',
+  orderNumber: 'POS-002',
+  status: 'PENDING',
+  subtotal: 50,
+  discountTotal: 5,
+  taxTotal: 5,
+  totalAmount: 50,
 );
 
 const PosRegister _openRegister = PosRegister(
-  id: 'r1', name: 'Main Register', status: 'OPEN',
-  openingBalance: 500, location: 'Store Front',
+  id: 'r1',
+  name: 'Main Register',
+  status: 'OPEN',
+  openingBalance: 500,
+  location: 'Store Front',
 );
 
 const PosRegister _closedRegister = PosRegister(
-  id: 'r2', name: 'Back Office', status: 'CLOSED',
-  openingBalance: 200, closingBalance: 1800,
+  id: 'r2',
+  name: 'Back Office',
+  status: 'CLOSED',
+  openingBalance: 200,
+  closingBalance: 1800,
 );
 
 // ── Fake repository ─────────────────────────────────────────────────────────
@@ -59,7 +85,8 @@ class FakePosRepository implements PosRepository {
 
   @override
   Future<Result<Cacheable<Paginated<PosOrder>>>> listPosOrders(
-          ListQuery query,) async =>
+    ListQuery query,
+  ) async =>
       const Result<Cacheable<Paginated<PosOrder>>>.ok(
         Cacheable<Paginated<PosOrder>>(
           value: Paginated<PosOrder>(
@@ -79,7 +106,9 @@ class FakePosRepository implements PosRepository {
 
   @override
   Future<Result<PosOrder>> updatePosOrder(
-          String id, Map<String, dynamic> payload,) async =>
+    String id,
+    Map<String, dynamic> payload,
+  ) async =>
       const Result<PosOrder>.ok(_completedOrder);
 
   @override
@@ -96,7 +125,8 @@ class FakePosRepository implements PosRepository {
 
   @override
   Future<Result<Cacheable<Paginated<PosRegister>>>> listPosRegisters(
-          ListQuery query,) async =>
+    ListQuery query,
+  ) async =>
       const Result<Cacheable<Paginated<PosRegister>>>.ok(
         Cacheable<Paginated<PosRegister>>(
           value: Paginated<PosRegister>(
@@ -112,12 +142,15 @@ class FakePosRepository implements PosRepository {
 
   @override
   Future<Result<PosRegister>> createPosRegister(
-          Map<String, dynamic> payload,) async =>
+    Map<String, dynamic> payload,
+  ) async =>
       const Result<PosRegister>.ok(_openRegister);
 
   @override
   Future<Result<PosRegister>> updatePosRegister(
-          String id, Map<String, dynamic> payload,) async =>
+    String id,
+    Map<String, dynamic> payload,
+  ) async =>
       const Result<PosRegister>.ok(_openRegister);
 
   @override
@@ -134,7 +167,8 @@ class FakePosRepository implements PosRepository {
 
   @override
   Future<Result<Cacheable<Paginated<PosShift>>>> listPosShifts(
-          ListQuery query,) async =>
+    ListQuery query,
+  ) async =>
       const Result<Cacheable<Paginated<PosShift>>>.ok(
         Cacheable<Paginated<PosShift>>(
           value: Paginated<PosShift>(
@@ -145,30 +179,45 @@ class FakePosRepository implements PosRepository {
       );
 
   @override
-  Future<Result<PosShift>> getPosShift(String id) async =>
-      Result<PosShift>.ok(PosShift(
-        id: 's1', registerId: 'r1', userId: 'u1',
-        openedAt: DateTime(2026, 7, 29, 8, 0), status: 'OPEN',
-      ),);
+  Future<Result<PosShift>> getPosShift(String id) async => Result<PosShift>.ok(
+        PosShift(
+          id: 's1',
+          registerId: 'r1',
+          userId: 'u1',
+          openedAt: DateTime(2026, 7, 29, 8, 0),
+          status: 'OPEN',
+        ),
+      );
 
   @override
   Future<Result<PosShift>> createPosShift(Map<String, dynamic> payload) async =>
-      Result<PosShift>.ok(PosShift(
-        id: 's1', registerId: 'r1', userId: 'u1',
-        openedAt: DateTime(2026, 7, 29, 8, 0), status: 'OPEN',
-      ),);
+      Result<PosShift>.ok(
+        PosShift(
+          id: 's1',
+          registerId: 'r1',
+          userId: 'u1',
+          openedAt: DateTime(2026, 7, 29, 8, 0),
+          status: 'OPEN',
+        ),
+      );
 
   @override
   Future<Result<PosShift>> closePosShift(String id) async =>
-      Result<PosShift>.ok(PosShift(
-        id: 's1', registerId: 'r1', userId: 'u1',
-        openedAt: DateTime(2026, 7, 29, 8, 0),
-        closedAt: DateTime(2026, 7, 29, 18, 0), status: 'CLOSED',
-      ),);
+      Result<PosShift>.ok(
+        PosShift(
+          id: 's1',
+          registerId: 'r1',
+          userId: 'u1',
+          openedAt: DateTime(2026, 7, 29, 8, 0),
+          closedAt: DateTime(2026, 7, 29, 18, 0),
+          status: 'CLOSED',
+        ),
+      );
 
   @override
   Future<Result<Cacheable<Paginated<PosTerminal>>>> listPosTerminals(
-          ListQuery query,) async =>
+    ListQuery query,
+  ) async =>
       const Result<Cacheable<Paginated<PosTerminal>>>.ok(
         Cacheable<Paginated<PosTerminal>>(
           value: Paginated<PosTerminal>(
@@ -184,12 +233,15 @@ class FakePosRepository implements PosRepository {
 
   @override
   Future<Result<PosTerminal>> createPosTerminal(
-          Map<String, dynamic> payload,) async =>
+    Map<String, dynamic> payload,
+  ) async =>
       const Result<PosTerminal>.ok(PosTerminal(id: 't1', name: 'Terminal 1'));
 
   @override
   Future<Result<PosTerminal>> updatePosTerminal(
-          String id, Map<String, dynamic> payload,) async =>
+    String id,
+    Map<String, dynamic> payload,
+  ) async =>
       const Result<PosTerminal>.ok(PosTerminal(id: 't1', name: 'Terminal 1'));
 
   @override
@@ -198,7 +250,8 @@ class FakePosRepository implements PosRepository {
 
   @override
   Future<Result<Cacheable<Paginated<PosDiscount>>>> listPosDiscounts(
-          ListQuery query,) async =>
+    ListQuery query,
+  ) async =>
       const Result<Cacheable<Paginated<PosDiscount>>>.ok(
         Cacheable<Paginated<PosDiscount>>(
           value: Paginated<PosDiscount>(
@@ -210,17 +263,23 @@ class FakePosRepository implements PosRepository {
 
   @override
   Future<Result<PosDiscount>> getPosDiscount(String id) async =>
-      const Result<PosDiscount>.ok(PosDiscount(id: 'd1', name: 'Sale', type: 'PERCENTAGE', value: 10));
+      const Result<PosDiscount>.ok(
+          PosDiscount(id: 'd1', name: 'Sale', type: 'PERCENTAGE', value: 10));
 
   @override
   Future<Result<PosDiscount>> createPosDiscount(
-          Map<String, dynamic> payload,) async =>
-      const Result<PosDiscount>.ok(PosDiscount(id: 'd1', name: 'Sale', type: 'PERCENTAGE', value: 10));
+    Map<String, dynamic> payload,
+  ) async =>
+      const Result<PosDiscount>.ok(
+          PosDiscount(id: 'd1', name: 'Sale', type: 'PERCENTAGE', value: 10));
 
   @override
   Future<Result<PosDiscount>> updatePosDiscount(
-          String id, Map<String, dynamic> payload,) async =>
-      const Result<PosDiscount>.ok(PosDiscount(id: 'd1', name: 'Sale', type: 'PERCENTAGE', value: 10));
+    String id,
+    Map<String, dynamic> payload,
+  ) async =>
+      const Result<PosDiscount>.ok(
+          PosDiscount(id: 'd1', name: 'Sale', type: 'PERCENTAGE', value: 10));
 
   @override
   Future<Result<void>> deletePosDiscount(String id) async =>
@@ -229,36 +288,43 @@ class FakePosRepository implements PosRepository {
   @override
   Future<Result<Cacheable<Paginated<PosLoyaltyProgram>>>>
       listPosLoyaltyPrograms(ListQuery query) async =>
-      const Result<Cacheable<Paginated<PosLoyaltyProgram>>>.ok(
-        Cacheable<Paginated<PosLoyaltyProgram>>(
-          value: Paginated<PosLoyaltyProgram>(
-            data: <PosLoyaltyProgram>[],
-            meta: PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
-          ),
-        ),
-      );
+          const Result<Cacheable<Paginated<PosLoyaltyProgram>>>.ok(
+            Cacheable<Paginated<PosLoyaltyProgram>>(
+              value: Paginated<PosLoyaltyProgram>(
+                data: <PosLoyaltyProgram>[],
+                meta:
+                    PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+              ),
+            ),
+          );
 
   @override
   Future<Result<PosLoyaltyProgram>> getPosLoyaltyProgram(String id) async =>
-      const Result<PosLoyaltyProgram>.ok(PosLoyaltyProgram(id: 'lp1', name: 'Gold Points'));
+      const Result<PosLoyaltyProgram>.ok(
+          PosLoyaltyProgram(id: 'lp1', name: 'Gold Points'));
 
   @override
   Future<Result<PosLoyaltyProgram>> createPosLoyaltyProgram(
-          Map<String, dynamic> payload,) async =>
-      const Result<PosLoyaltyProgram>.ok(PosLoyaltyProgram(id: 'lp1', name: 'Gold Points'));
+    Map<String, dynamic> payload,
+  ) async =>
+      const Result<PosLoyaltyProgram>.ok(
+          PosLoyaltyProgram(id: 'lp1', name: 'Gold Points'));
 
   @override
   Future<Result<PosLoyaltyProgram>> updatePosLoyaltyProgram(
-          String id, Map<String, dynamic> payload,) async =>
-      const Result<PosLoyaltyProgram>.ok(PosLoyaltyProgram(id: 'lp1', name: 'Gold Points'));
+    String id,
+    Map<String, dynamic> payload,
+  ) async =>
+      const Result<PosLoyaltyProgram>.ok(
+          PosLoyaltyProgram(id: 'lp1', name: 'Gold Points'));
 
   @override
   Future<Result<void>> deletePosLoyaltyProgram(String id) async =>
       const Result<void>.ok(null);
 
   @override
-  Future<Result<Cacheable<Paginated<PosLoyaltyMember>>>>
-      listPosLoyaltyMembers(ListQuery query) async =>
+  Future<Result<Cacheable<Paginated<PosLoyaltyMember>>>> listPosLoyaltyMembers(
+          ListQuery query) async =>
       const Result<Cacheable<Paginated<PosLoyaltyMember>>>.ok(
         Cacheable<Paginated<PosLoyaltyMember>>(
           value: Paginated<PosLoyaltyMember>(
@@ -270,33 +336,46 @@ class FakePosRepository implements PosRepository {
 
   @override
   Future<Result<PosLoyaltyMember>> getPosLoyaltyMember(String id) async =>
-      const Result<PosLoyaltyMember>.ok(PosLoyaltyMember(id: 'lm1', customerId: 'c1', customerName: 'Alpha Corp', programId: 'lp1'));
+      const Result<PosLoyaltyMember>.ok(PosLoyaltyMember(
+          id: 'lm1',
+          customerId: 'c1',
+          customerName: 'Alpha Corp',
+          programId: 'lp1'));
 
   @override
   Future<Result<PosLoyaltyMember>> createPosLoyaltyMember(
-          Map<String, dynamic> payload,) async =>
-      const Result<PosLoyaltyMember>.ok(PosLoyaltyMember(id: 'lm1', customerId: 'c1', customerName: 'Alpha Corp', programId: 'lp1'));
+    Map<String, dynamic> payload,
+  ) async =>
+      const Result<PosLoyaltyMember>.ok(PosLoyaltyMember(
+          id: 'lm1',
+          customerId: 'c1',
+          customerName: 'Alpha Corp',
+          programId: 'lp1'));
 
   @override
   Future<Result<Cacheable<Paginated<PosLoyaltyTransaction>>>>
       listPosLoyaltyTransactions(ListQuery query) async =>
-      const Result<Cacheable<Paginated<PosLoyaltyTransaction>>>.ok(
-        Cacheable<Paginated<PosLoyaltyTransaction>>(
-          value: Paginated<PosLoyaltyTransaction>(
-            data: <PosLoyaltyTransaction>[],
-            meta: PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
-          ),
-        ),
-      );
+          const Result<Cacheable<Paginated<PosLoyaltyTransaction>>>.ok(
+            Cacheable<Paginated<PosLoyaltyTransaction>>(
+              value: Paginated<PosLoyaltyTransaction>(
+                data: <PosLoyaltyTransaction>[],
+                meta:
+                    PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+              ),
+            ),
+          );
 
   @override
   Future<Result<PosLoyaltyTransaction>> createPosLoyaltyTransaction(
-          Map<String, dynamic> payload,) async =>
-      const Result<PosLoyaltyTransaction>.ok(PosLoyaltyTransaction(id: 'lt1', memberId: 'lm1'));
+    Map<String, dynamic> payload,
+  ) async =>
+      const Result<PosLoyaltyTransaction>.ok(
+          PosLoyaltyTransaction(id: 'lt1', memberId: 'lm1'));
 
   @override
   Future<Result<Cacheable<Paginated<PosCoupon>>>> listPosCoupons(
-          ListQuery query,) async =>
+    ListQuery query,
+  ) async =>
       const Result<Cacheable<Paginated<PosCoupon>>>.ok(
         Cacheable<Paginated<PosCoupon>>(
           value: Paginated<PosCoupon>(
@@ -311,11 +390,13 @@ class FakePosRepository implements PosRepository {
       const Result<PosCoupon>.ok(PosCoupon(id: 'cp1', code: 'SAVE10'));
 
   @override
-  Future<Result<PosCoupon>> createPosCoupon(Map<String, dynamic> payload) async =>
+  Future<Result<PosCoupon>> createPosCoupon(
+          Map<String, dynamic> payload) async =>
       const Result<PosCoupon>.ok(PosCoupon(id: 'cp1', code: 'SAVE10'));
 
   @override
-  Future<Result<PosCoupon>> updatePosCoupon(String id, Map<String, dynamic> payload) async =>
+  Future<Result<PosCoupon>> updatePosCoupon(
+          String id, Map<String, dynamic> payload) async =>
       const Result<PosCoupon>.ok(PosCoupon(id: 'cp1', code: 'SAVE10'));
 
   @override
@@ -324,7 +405,8 @@ class FakePosRepository implements PosRepository {
 
   @override
   Future<Result<Cacheable<Paginated<PosGiftCard>>>> listPosGiftCards(
-          ListQuery query,) async =>
+    ListQuery query,
+  ) async =>
       const Result<Cacheable<Paginated<PosGiftCard>>>.ok(
         Cacheable<Paginated<PosGiftCard>>(
           value: Paginated<PosGiftCard>(
@@ -339,7 +421,8 @@ class FakePosRepository implements PosRepository {
       const Result<PosGiftCard>.ok(PosGiftCard(id: 'gc1', code: 'GIFT-001'));
 
   @override
-  Future<Result<PosGiftCard>> createPosGiftCard(Map<String, dynamic> payload) async =>
+  Future<Result<PosGiftCard>> createPosGiftCard(
+          Map<String, dynamic> payload) async =>
       const Result<PosGiftCard>.ok(PosGiftCard(id: 'gc1', code: 'GIFT-001'));
 
   @override
@@ -348,7 +431,8 @@ class FakePosRepository implements PosRepository {
 
   @override
   Future<Result<Cacheable<Paginated<PosPriceList>>>> listPosPriceLists(
-          ListQuery query,) async =>
+    ListQuery query,
+  ) async =>
       const Result<Cacheable<Paginated<PosPriceList>>>.ok(
         Cacheable<Paginated<PosPriceList>>(
           value: Paginated<PosPriceList>(
@@ -363,11 +447,13 @@ class FakePosRepository implements PosRepository {
       const Result<PosPriceList>.ok(PosPriceList(id: 'pl1', name: 'Standard'));
 
   @override
-  Future<Result<PosPriceList>> createPosPriceList(Map<String, dynamic> payload) async =>
+  Future<Result<PosPriceList>> createPosPriceList(
+          Map<String, dynamic> payload) async =>
       const Result<PosPriceList>.ok(PosPriceList(id: 'pl1', name: 'Standard'));
 
   @override
-  Future<Result<PosPriceList>> updatePosPriceList(String id, Map<String, dynamic> payload) async =>
+  Future<Result<PosPriceList>> updatePosPriceList(
+          String id, Map<String, dynamic> payload) async =>
       const Result<PosPriceList>.ok(PosPriceList(id: 'pl1', name: 'Standard'));
 
   @override
@@ -425,7 +511,8 @@ Future<void> pumpWidget(
   final container = ProviderContainer(
     overrides: <Override>[
       sharedPreferencesProvider.overrideWithValue(MockSharedPreferences()),
-      cookieStoreProvider.overrideWithValue(CookieStore(CookieJar(), Uri.parse('http://localhost'))),
+      cookieStoreProvider.overrideWithValue(
+          CookieStore(CookieJar(), Uri.parse('http://localhost'))),
       apiClientProvider.overrideWithValue(ApiClient.forTesting(Dio())),
       activeTenantIdProvider.overrideWithValue('tenant-1'),
       ...overrides,

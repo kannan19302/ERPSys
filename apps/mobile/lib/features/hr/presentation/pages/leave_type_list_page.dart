@@ -17,7 +17,8 @@ class LeaveTypeListPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<List<LeaveType>> asyncTypes = ref.watch(leaveTypesProvider);
+    final AsyncValue<List<LeaveType>> asyncTypes =
+        ref.watch(leaveTypesProvider);
     final Palette t = context.tokens;
 
     return Scaffold(
@@ -58,9 +59,8 @@ class LeaveTypeListPage extends ConsumerWidget {
             separatorBuilder: (_, __) => const SizedBox(height: Spacing.x3),
             itemBuilder: (BuildContext context, int index) {
               final LeaveType lt = types[index];
-              final Color? color = lt.color != null
-                  ? _parseColor(lt.color!)
-                  : null;
+              final Color? color =
+                  lt.color != null ? _parseColor(lt.color!) : null;
 
               return UiCard(
                 onTap: () => context.pushNamed(
@@ -75,7 +75,8 @@ class LeaveTypeListPage extends ConsumerWidget {
                       height: Spacing.x4,
                       decoration: BoxDecoration(
                         color: color ?? t.primary,
-                        borderRadius: const BorderRadius.all(Radius.circular(Radii.sm)),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(Radii.sm)),
                       ),
                     ),
                     const SizedBox(width: Spacing.x3),

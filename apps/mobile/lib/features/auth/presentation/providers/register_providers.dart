@@ -44,7 +44,8 @@ class RegisterController extends Notifier<RegisterState> {
     );
 
     state = result.fold(
-      (Failure failure) => state.copyWith(isSubmitting: false, failure: failure),
+      (Failure failure) =>
+          state.copyWith(isSubmitting: false, failure: failure),
       (RegisteredAccount account) => state.copyWith(
         isSubmitting: false,
         account: account,
@@ -54,8 +55,8 @@ class RegisterController extends Notifier<RegisterState> {
   }
 
   Future<bool> resendVerification(String email) async {
-    final Result<void> result =
-        await ResendVerificationUseCase(ref.read(authRepositoryProvider))(email);
+    final Result<void> result = await ResendVerificationUseCase(
+        ref.read(authRepositoryProvider))(email);
     return result.isOk;
   }
 

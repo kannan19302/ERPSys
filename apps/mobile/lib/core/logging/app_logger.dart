@@ -64,9 +64,8 @@ class AppLogger {
   }) {
     if (Env.isProduction && level.index < LogLevel.warn.index) return;
 
-    final String payload = data == null || data.isEmpty
-        ? message
-        : '$message ${redact(data)}';
+    final String payload =
+        data == null || data.isEmpty ? message : '$message ${redact(data)}';
 
     developer.log(
       payload,

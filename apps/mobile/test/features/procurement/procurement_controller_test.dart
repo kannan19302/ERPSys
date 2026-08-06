@@ -204,8 +204,11 @@ Paginated<T> _page<T>(List<T> items, {int page = 1, bool hasMore = false}) =>
       ),
     );
 
-Cacheable<Paginated<T>> _cachedPage<T>(List<T> items,
-        {int page = 1, bool hasMore = false,}) =>
+Cacheable<Paginated<T>> _cachedPage<T>(
+  List<T> items, {
+  int page = 1,
+  bool hasMore = false,
+}) =>
     Cacheable<Paginated<T>>(
       value: _page<T>(items, page: page, hasMore: hasMore),
     );
@@ -247,14 +250,14 @@ class FakeProcurementRepository implements ProcurementRepository {
   int approveSupplierQuotationCalls = 0;
   Result<SupplierQuotation> approveSupplierQuotationResult =
       const Result<SupplierQuotation>.ok(_sqB);
-  Future<Result<SupplierQuotation>> Function(Map<String, dynamic>, {String? id})?
-      saveSupplierQuotationHandler;
+  Future<Result<SupplierQuotation>> Function(Map<String, dynamic>,
+      {String? id})? saveSupplierQuotationHandler;
 
   // Purchase Requisitions
   Future<Result<Cacheable<Paginated<PurchaseRequisition>>>> Function(ListQuery)?
       listPurchaseRequisitionsHandler;
-  Future<Result<PurchaseRequisition>> Function(Map<String, dynamic>, {String? id})?
-      savePurchaseRequisitionHandler;
+  Future<Result<PurchaseRequisition>> Function(Map<String, dynamic>,
+      {String? id})? savePurchaseRequisitionHandler;
 
   // Purchase Receipts
   Future<Result<Cacheable<Paginated<PurchaseReceipt>>>> Function(ListQuery)?
@@ -274,7 +277,8 @@ class FakeProcurementRepository implements ProcurementRepository {
 
   @override
   Future<Result<Cacheable<Paginated<PurchaseOrder>>>> listPurchaseOrders(
-      ListQuery query,) async {
+    ListQuery query,
+  ) async {
     receivedQueries.add(query);
     final handler = listPurchaseOrdersHandler;
     if (handler != null) return handler(query);
@@ -289,12 +293,15 @@ class FakeProcurementRepository implements ProcurementRepository {
 
   @override
   Future<Result<PurchaseOrder>> createPurchaseOrder(
-          Map<String, dynamic> payload,) async =>
+    Map<String, dynamic> payload,
+  ) async =>
       const Result<PurchaseOrder>.ok(_poA);
 
   @override
   Future<Result<PurchaseOrder>> updatePurchaseOrder(
-      String id, Map<String, dynamic> payload,) async {
+    String id,
+    Map<String, dynamic> payload,
+  ) async {
     final handler = savePurchaseOrderHandler;
     if (handler != null) return handler(payload, id: id);
     return const Result<PurchaseOrder>.ok(_poA);
@@ -328,7 +335,8 @@ class FakeProcurementRepository implements ProcurementRepository {
 
   @override
   Future<Result<Cacheable<Paginated<Vendor>>>> listVendors(
-      ListQuery query,) async {
+    ListQuery query,
+  ) async {
     receivedQueries.add(query);
     final handler = listVendorsHandler;
     if (handler != null) return handler(query);
@@ -350,7 +358,9 @@ class FakeProcurementRepository implements ProcurementRepository {
 
   @override
   Future<Result<Vendor>> updateVendor(
-      String id, Map<String, dynamic> payload,) async {
+    String id,
+    Map<String, dynamic> payload,
+  ) async {
     final handler = saveVendorHandler;
     if (handler != null) return handler(payload, id: id);
     return const Result<Vendor>.ok(_vendorA);
@@ -375,8 +385,7 @@ class FakeProcurementRepository implements ProcurementRepository {
   }
 
   @override
-  Future<Result<RFQ>> getRFQ(String id) async =>
-      const Result<RFQ>.ok(_rfqA);
+  Future<Result<RFQ>> getRFQ(String id) async => const Result<RFQ>.ok(_rfqA);
 
   @override
   Future<Result<RFQ>> createRFQ(Map<String, dynamic> payload) async {
@@ -387,7 +396,9 @@ class FakeProcurementRepository implements ProcurementRepository {
 
   @override
   Future<Result<RFQ>> updateRFQ(
-      String id, Map<String, dynamic> payload,) async {
+    String id,
+    Map<String, dynamic> payload,
+  ) async {
     final handler = saveRFQHandler;
     if (handler != null) return handler(payload, id: id);
     return const Result<RFQ>.ok(_rfqA);
@@ -400,8 +411,7 @@ class FakeProcurementRepository implements ProcurementRepository {
   }
 
   @override
-  Future<Result<RFQ>> closeRFQ(String id) async =>
-      const Result<RFQ>.ok(_rfqB);
+  Future<Result<RFQ>> closeRFQ(String id) async => const Result<RFQ>.ok(_rfqB);
 
   // ── Supplier Quotations ──
 
@@ -422,7 +432,8 @@ class FakeProcurementRepository implements ProcurementRepository {
 
   @override
   Future<Result<SupplierQuotation>> createSupplierQuotation(
-      Map<String, dynamic> payload,) async {
+    Map<String, dynamic> payload,
+  ) async {
     final handler = saveSupplierQuotationHandler;
     if (handler != null) return handler(payload);
     return const Result<SupplierQuotation>.ok(_sqA);
@@ -430,7 +441,9 @@ class FakeProcurementRepository implements ProcurementRepository {
 
   @override
   Future<Result<SupplierQuotation>> updateSupplierQuotation(
-      String id, Map<String, dynamic> payload,) async {
+    String id,
+    Map<String, dynamic> payload,
+  ) async {
     final handler = saveSupplierQuotationHandler;
     if (handler != null) return handler(payload, id: id);
     return const Result<SupplierQuotation>.ok(_sqA);
@@ -448,7 +461,8 @@ class FakeProcurementRepository implements ProcurementRepository {
 
   @override
   Future<Result<SupplierQuotation>> convertSupplierQuotation(
-          String id,) async =>
+    String id,
+  ) async =>
       const Result<SupplierQuotation>.ok(_sqB);
 
   // ── Purchase Requisitions ──
@@ -470,7 +484,8 @@ class FakeProcurementRepository implements ProcurementRepository {
 
   @override
   Future<Result<PurchaseRequisition>> createPurchaseRequisition(
-      Map<String, dynamic> payload,) async {
+    Map<String, dynamic> payload,
+  ) async {
     final handler = savePurchaseRequisitionHandler;
     if (handler != null) return handler(payload);
     return const Result<PurchaseRequisition>.ok(_prA);
@@ -478,7 +493,9 @@ class FakeProcurementRepository implements ProcurementRepository {
 
   @override
   Future<Result<PurchaseRequisition>> updatePurchaseRequisition(
-      String id, Map<String, dynamic> payload,) async {
+    String id,
+    Map<String, dynamic> payload,
+  ) async {
     final handler = savePurchaseRequisitionHandler;
     if (handler != null) return handler(payload, id: id);
     return const Result<PurchaseRequisition>.ok(_prA);
@@ -486,14 +503,15 @@ class FakeProcurementRepository implements ProcurementRepository {
 
   @override
   Future<Result<PurchaseRequisition>> approvePurchaseRequisition(
-          String id,) async =>
+    String id,
+  ) async =>
       const Result<PurchaseRequisition>.ok(_prB);
 
   // ── Purchase Receipts ──
 
   @override
-  Future<Result<Cacheable<Paginated<PurchaseReceipt>>>>
-      listPurchaseReceipts(ListQuery query) async {
+  Future<Result<Cacheable<Paginated<PurchaseReceipt>>>> listPurchaseReceipts(
+      ListQuery query) async {
     receivedQueries.add(query);
     final handler = listPurchaseReceiptsHandler;
     if (handler != null) return handler(query);
@@ -508,7 +526,8 @@ class FakeProcurementRepository implements ProcurementRepository {
 
   @override
   Future<Result<PurchaseReceipt>> createPurchaseReceipt(
-      Map<String, dynamic> payload,) async {
+    Map<String, dynamic> payload,
+  ) async {
     final handler = savePurchaseReceiptHandler;
     if (handler != null) return handler(payload);
     return const Result<PurchaseReceipt>.ok(_precA);
@@ -516,7 +535,9 @@ class FakeProcurementRepository implements ProcurementRepository {
 
   @override
   Future<Result<PurchaseReceipt>> updatePurchaseReceipt(
-      String id, Map<String, dynamic> payload,) async {
+    String id,
+    Map<String, dynamic> payload,
+  ) async {
     final handler = savePurchaseReceiptHandler;
     if (handler != null) return handler(payload, id: id);
     return const Result<PurchaseReceipt>.ok(_precA);
@@ -525,8 +546,8 @@ class FakeProcurementRepository implements ProcurementRepository {
   // ── Supplier Contracts ──
 
   @override
-  Future<Result<Cacheable<Paginated<SupplierContract>>>>
-      listSupplierContracts(ListQuery query) async {
+  Future<Result<Cacheable<Paginated<SupplierContract>>>> listSupplierContracts(
+      ListQuery query) async {
     receivedQueries.add(query);
     final handler = listSupplierContractsHandler;
     if (handler != null) return handler(query);
@@ -541,7 +562,8 @@ class FakeProcurementRepository implements ProcurementRepository {
 
   @override
   Future<Result<SupplierContract>> createSupplierContract(
-      Map<String, dynamic> payload,) async {
+    Map<String, dynamic> payload,
+  ) async {
     final handler = saveSupplierContractHandler;
     if (handler != null) return handler(payload);
     return const Result<SupplierContract>.ok(_scA);
@@ -549,7 +571,9 @@ class FakeProcurementRepository implements ProcurementRepository {
 
   @override
   Future<Result<SupplierContract>> updateSupplierContract(
-      String id, Map<String, dynamic> payload,) async {
+    String id,
+    Map<String, dynamic> payload,
+  ) async {
     final handler = saveSupplierContractHandler;
     if (handler != null) return handler(payload, id: id);
     return const Result<SupplierContract>.ok(_scA);
@@ -578,9 +602,10 @@ void main() {
     fakeRepository = FakeProcurementRepository();
     container = ProviderContainer(
       overrides: <Override>[
-      sharedPreferencesProvider.overrideWithValue(MockSharedPreferences()),
-      cookieStoreProvider.overrideWithValue(CookieStore(CookieJar(), Uri.parse('http://localhost'))),
-      apiClientProvider.overrideWithValue(ApiClient.forTesting(Dio())),
+        sharedPreferencesProvider.overrideWithValue(MockSharedPreferences()),
+        cookieStoreProvider.overrideWithValue(
+            CookieStore(CookieJar(), Uri.parse('http://localhost'))),
+        apiClientProvider.overrideWithValue(ApiClient.forTesting(Dio())),
         procurementRepositoryProvider.overrideWithValue(fakeRepository),
         activeTenantIdProvider.overrideWithValue('tenant-1'),
       ],
@@ -631,8 +656,7 @@ void main() {
 
     test('loadMore appends data and requests next page', () async {
       fakeRepository.listPurchaseOrdersHandler =
-          (ListQuery q) async =>
-              Result<Cacheable<Paginated<PurchaseOrder>>>.ok(
+          (ListQuery q) async => Result<Cacheable<Paginated<PurchaseOrder>>>.ok(
                 _cachedPage<PurchaseOrder>(
                   <PurchaseOrder>[
                     if (q.page == 1) _poA else _poB,
@@ -649,10 +673,14 @@ void main() {
           .loadMore();
 
       final state = container.read(purchaseOrderListControllerProvider);
-      expect(state.items.map((PurchaseOrder po) => po.id),
-          <String>['po1', 'po2'],);
-      expect(fakeRepository.receivedQueries.map((ListQuery q) => q.page),
-          <int>[1, 2],);
+      expect(
+        state.items.map((PurchaseOrder po) => po.id),
+        <String>['po1', 'po2'],
+      );
+      expect(
+        fakeRepository.receivedQueries.map((ListQuery q) => q.page),
+        <int>[1, 2],
+      );
     });
 
     test('loadMore is a no-op when hasMore is false', () async {
@@ -672,7 +700,10 @@ void main() {
 
       final result = await container
           .read(purchaseOrderListControllerProvider.notifier)
-          .save(<String, dynamic>{'vendorId': 'v1', 'items': <Map<String, dynamic>>[]}, id: 'po1');
+          .save(<String, dynamic>{
+        'vendorId': 'v1',
+        'items': <Map<String, dynamic>>[]
+      }, id: 'po1');
 
       expect(result.isOk, isTrue);
       expect(fakeRepository.receivedQueries, hasLength(2));
@@ -684,7 +715,10 @@ void main() {
 
       final result = await container
           .read(purchaseOrderListControllerProvider.notifier)
-          .save(<String, dynamic>{'vendorId': 'v1', 'items': <Map<String, dynamic>>[]});
+          .save(<String, dynamic>{
+        'vendorId': 'v1',
+        'items': <Map<String, dynamic>>[]
+      });
 
       expect(result.isOk, isTrue);
       expect(fakeRepository.receivedQueries, hasLength(2));
@@ -706,7 +740,8 @@ void main() {
     test('failure surfaces correctly', () async {
       fakeRepository.listPurchaseOrdersHandler = (ListQuery q) async =>
           const Result<Cacheable<Paginated<PurchaseOrder>>>.err(
-              ServerFailure('Server error'),);
+            ServerFailure('Server error'),
+          );
       container.read(purchaseOrderListControllerProvider);
       await Future<void>.delayed(Duration.zero);
 
@@ -825,7 +860,10 @@ void main() {
 
       final result = await container
           .read(supplierQuotationListControllerProvider.notifier)
-          .save(<String, dynamic>{'vendorId': 'v1', 'items': <Map<String, dynamic>>[]});
+          .save(<String, dynamic>{
+        'vendorId': 'v1',
+        'items': <Map<String, dynamic>>[]
+      });
 
       expect(result.isOk, isTrue);
       expect(fakeRepository.receivedQueries, hasLength(2));
@@ -852,8 +890,7 @@ void main() {
       container.read(purchaseRequisitionListControllerProvider);
       await Future<void>.delayed(Duration.zero);
 
-      final state =
-          container.read(purchaseRequisitionListControllerProvider);
+      final state = container.read(purchaseRequisitionListControllerProvider);
       expect(state.items, hasLength(2));
       expect(state.isLoading, isFalse);
       expect(fakeRepository.receivedQueries.single.page, 1);
@@ -865,7 +902,10 @@ void main() {
 
       final result = await container
           .read(purchaseRequisitionListControllerProvider.notifier)
-          .save(<String, dynamic>{'title': 'New Req', 'items': <Map<String, dynamic>>[]});
+          .save(<String, dynamic>{
+        'title': 'New Req',
+        'items': <Map<String, dynamic>>[]
+      });
 
       expect(result.isOk, isTrue);
       expect(fakeRepository.receivedQueries, hasLength(2));

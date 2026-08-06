@@ -431,7 +431,8 @@ class UiPhoneField extends StatelessWidget {
           return 'Phone number is required';
         }
         if (value != null && value.trim().isNotEmpty) {
-          final String cleaned = value.trim().replaceAll(RegExp(r'[\s\-\(\)\.]'), '');
+          final String cleaned =
+              value.trim().replaceAll(RegExp(r'[\s\-\(\)\.]'), '');
           if (!_phoneRegExp.hasMatch(cleaned)) {
             return 'Enter a valid phone number';
           }
@@ -592,7 +593,8 @@ class UiDropdownField<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Palette t = context.tokens;
-    final String? displayValue = selectedItem != null ? itemLabel(selectedItem as T) : null;
+    final String? displayValue =
+        selectedItem != null ? itemLabel(selectedItem as T) : null;
 
     return UiFormField(
       label: label,
@@ -715,9 +717,8 @@ class _DropdownSheet<T> extends StatelessWidget {
 
                 return ListTile(
                   title: Text(itemLabel(item)),
-                  trailing: isSelected
-                      ? Icon(Icons.check, color: t.primary)
-                      : null,
+                  trailing:
+                      isSelected ? Icon(Icons.check, color: t.primary) : null,
                   onTap: () => Navigator.of(context).pop(item),
                 );
               },
@@ -769,9 +770,12 @@ class _DropdownSearchDelegate<T> extends SearchDelegate<T?> {
   Widget _buildList(BuildContext context) {
     final List<T> filtered = query.isEmpty
         ? items
-        : items.where(
-            (T item) => itemLabel(item).toLowerCase().contains(query.toLowerCase()),
-          ).toList(growable: false);
+        : items
+            .where(
+              (T item) =>
+                  itemLabel(item).toLowerCase().contains(query.toLowerCase()),
+            )
+            .toList(growable: false);
 
     if (filtered.isEmpty) {
       return Center(
@@ -826,9 +830,8 @@ class UiDatePickerField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Palette t = context.tokens;
-    final String? displayValue = selectedDate != null
-        ? Formatters.date(selectedDate!)
-        : null;
+    final String? displayValue =
+        selectedDate != null ? Formatters.date(selectedDate!) : null;
 
     return UiFormField(
       label: label,
@@ -851,7 +854,8 @@ class UiDatePickerField extends StatelessWidget {
           ),
           child: Row(
             children: <Widget>[
-              Icon(Icons.calendar_today_outlined, size: TypeScale.lg, color: t.textTertiary),
+              Icon(Icons.calendar_today_outlined,
+                  size: TypeScale.lg, color: t.textTertiary),
               const SizedBox(width: Spacing.x2),
               Expanded(
                 child: Text(
@@ -864,7 +868,8 @@ class UiDatePickerField extends StatelessWidget {
               ),
               if (selectedDate != null)
                 IconButton(
-                  icon: Icon(Icons.close, size: TypeScale.lg, color: t.textTertiary),
+                  icon: Icon(Icons.close,
+                      size: TypeScale.lg, color: t.textTertiary),
                   onPressed: enabled && onChanged != null
                       ? () => onChanged!(null)
                       : null,
@@ -1001,9 +1006,8 @@ class UiStatusDropdown extends StatelessWidget {
                       label: item,
                       color: statusColor?.call(item),
                     ),
-                    trailing: isSelected
-                        ? Icon(Icons.check, color: t.primary)
-                        : null,
+                    trailing:
+                        isSelected ? Icon(Icons.check, color: t.primary) : null,
                     onTap: () => Navigator.of(context).pop(item),
                   );
                 },

@@ -27,8 +27,16 @@ class StorageBucket extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, bucketName, provider, region, maxQuotaGb, currentSizeGb,
-        isPublic, versioning, createdAt, updatedAt,
+        id,
+        bucketName,
+        provider,
+        region,
+        maxQuotaGb,
+        currentSizeGb,
+        isPublic,
+        versioning,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -59,8 +67,16 @@ class StorageFile extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, bucket, fileKey, size, mimeType,
-        folderId, createdBy, createdAt, updatedAt,
+        id,
+        name,
+        bucket,
+        fileKey,
+        size,
+        mimeType,
+        folderId,
+        createdBy,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -85,6 +101,12 @@ class StoragePolicy extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, bucketName, roleOrUser, permission, allowedIpSubnet, createdAt, updatedAt,
+        id,
+        bucketName,
+        roleOrUser,
+        permission,
+        allowedIpSubnet,
+        createdAt,
+        updatedAt,
       ];
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-
 class PaymentDetailPage extends ConsumerWidget {
   const PaymentDetailPage({required this.paymentId, super.key});
 

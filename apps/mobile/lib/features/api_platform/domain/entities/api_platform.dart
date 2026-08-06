@@ -27,8 +27,16 @@ class ApiKey extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, prefix, rateLimit, status, scopes,
-        ipWhitelist, expiresAt, createdAt, updatedAt,
+        id,
+        name,
+        prefix,
+        rateLimit,
+        status,
+        scopes,
+        ipWhitelist,
+        expiresAt,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -53,7 +61,13 @@ class WebhookEndpoint extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, targetUrl, events, status, createdAt, updatedAt,
+        id,
+        name,
+        targetUrl,
+        events,
+        status,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -78,7 +92,13 @@ class ApiUsageLog extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, apiKeyId, endpoint, method, statusCode, responseMs, createdAt,
+        id,
+        apiKeyId,
+        endpoint,
+        method,
+        statusCode,
+        responseMs,
+        createdAt,
       ];
 }
 
@@ -107,7 +127,14 @@ class ApiRateLimitRule extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, endpointPath, limitPerMinute, burstLimit,
-        clientTier, isActive, createdAt, updatedAt,
+        id,
+        name,
+        endpointPath,
+        limitPerMinute,
+        burstLimit,
+        clientTier,
+        isActive,
+        createdAt,
+        updatedAt,
       ];
 }

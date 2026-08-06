@@ -44,20 +44,29 @@ class _ApiKeyListPageState extends ConsumerState<ApiKeyListPage> {
         margin: EdgeInsets.zero,
         child: Padding(
           padding: const EdgeInsets.all(Spacing.x3),
-          child: Row(children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(k.name, style: Theme.of(context).textTheme.titleSmall),
-                  const SizedBox(height: Spacing.x1),
-                  Text('${k.prefix}... · ${k.status}',
-                      style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs),),
-                ],
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(k.name, style: Theme.of(context).textTheme.titleSmall),
+                    const SizedBox(height: Spacing.x1),
+                    Text(
+                      '${k.prefix}... · ${k.status}',
+                      style: TextStyle(
+                          color: context.tokens.textSecondary,
+                          fontSize: TypeScale.xs),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            Text('${k.rateLimit}/min', style: TextStyle(color: context.tokens.textTertiary, fontSize: TypeScale.xs)),
-          ],),
+              Text('${k.rateLimit}/min',
+                  style: TextStyle(
+                      color: context.tokens.textTertiary,
+                      fontSize: TypeScale.xs)),
+            ],
+          ),
         ),
       ),
     );

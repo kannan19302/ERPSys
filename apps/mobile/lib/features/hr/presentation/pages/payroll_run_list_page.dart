@@ -38,10 +38,14 @@ class _PayrollRunListPageState extends ConsumerState<PayrollRunListPage> {
       ),
       body: Column(
         children: <Widget>[
-          if (state.cachedAt != null) StaleDataBanner(cachedAt: state.cachedAt!),
+          if (state.cachedAt != null)
+            StaleDataBanner(cachedAt: state.cachedAt!),
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2,
+              Spacing.x4,
+              Spacing.x3,
+              Spacing.x4,
+              Spacing.x2,
             ),
             child: Text(
               state.isLoading
@@ -72,8 +76,7 @@ class _PayrollRunListPageState extends ConsumerState<PayrollRunListPage> {
       onLoadMore: controller.loadMore,
       emptyTitle: 'No payroll runs',
       emptyMessage: 'Payroll runs will appear here.',
-      itemBuilder: (BuildContext context, PayrollRun run, _) =>
-          _PayrollRunTile(
+      itemBuilder: (BuildContext context, PayrollRun run, _) => _PayrollRunTile(
         run: run,
         onTap: () => context.pushNamed(
           'payroll-run-detail',
@@ -109,8 +112,11 @@ class _PayrollRunTile extends StatelessWidget {
           CircleAvatar(
             radius: Spacing.x4,
             backgroundColor: t.bgSunken,
-            child: Icon(Icons.receipt_long_outlined,
-                color: t.textSecondary, size: TypeScale.lg,),
+            child: Icon(
+              Icons.receipt_long_outlined,
+              color: t.textSecondary,
+              size: TypeScale.lg,
+            ),
           ),
           const SizedBox(width: Spacing.x3),
           Expanded(
@@ -126,12 +132,14 @@ class _PayrollRunTile extends StatelessWidget {
                 const SizedBox(height: Spacing.x0_5),
                 Text(
                   '${Formatters.date(run.periodStart)} – ${Formatters.date(run.periodEnd)}',
-                  style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),
+                  style:
+                      TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),
                 ),
                 const SizedBox(height: Spacing.x0_5),
                 Text(
                   '${run.totalEmployees} employees | ${Formatters.currency(run.totalSalary)}',
-                  style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
                 ),
               ],
             ),

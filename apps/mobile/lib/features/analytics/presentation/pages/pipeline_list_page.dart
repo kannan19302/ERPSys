@@ -48,8 +48,12 @@ class _PipelineListPageState extends ConsumerState<PipelineListPage> {
             initialValue: state.query.sort,
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
-                .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value),),)
+                .map(
+                  (e) => PopupMenuItem<String>(
+                    value: e.key,
+                    child: Text(e.value),
+                  ),
+                )
                 .toList(),
           ),
         ],
@@ -57,7 +61,8 @@ class _PipelineListPageState extends ConsumerState<PipelineListPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -69,21 +74,27 @@ class _PipelineListPageState extends ConsumerState<PipelineListPage> {
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} pipeline${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} pipeline${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -135,22 +146,31 @@ class _PipelineTile extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(pipeline.name,
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                UiStatusBadge(
-                  label: pipeline.status,
-                  tone: _statusTone(pipeline.status),
-                ),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      pipeline.name,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  UiStatusBadge(
+                    label: pipeline.status,
+                    tone: _statusTone(pipeline.status),
+                  ),
+                ],
+              ),
               const SizedBox(height: Spacing.x1),
-              Text('\$${pipeline.totalValue.toStringAsFixed(2)}',
-                  style: Theme.of(context).textTheme.labelLarge,),
+              Text(
+                '\$${pipeline.totalValue.toStringAsFixed(2)}',
+                style: Theme.of(context).textTheme.labelLarge,
+              ),
               const SizedBox(height: Spacing.x1),
-              Text('${pipeline.stages.length} stage${pipeline.stages.length == 1 ? '' : 's'}',
-                  style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
+              Text(
+                '${pipeline.stages.length} stage${pipeline.stages.length == 1 ? '' : 's'}',
+                style:
+                    TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+              ),
             ],
           ),
         ),

@@ -35,9 +35,20 @@ class ServiceTicket extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, ticketNumber, title, status, customerName, technicianId,
-        technicianName, priority, description, scheduledDate,
-        completedAt, resolution, createdAt, updatedAt,
+        id,
+        ticketNumber,
+        title,
+        status,
+        customerName,
+        technicianId,
+        technicianName,
+        priority,
+        description,
+        scheduledDate,
+        completedAt,
+        resolution,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -72,8 +83,18 @@ class Technician extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, email, phone, specialization, status, skillLevel,
-        vehicleInfo, serviceArea, rating, createdAt, updatedAt,
+        id,
+        name,
+        email,
+        phone,
+        specialization,
+        status,
+        skillLevel,
+        vehicleInfo,
+        serviceArea,
+        rating,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -114,9 +135,21 @@ class ServiceSchedule extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, ticketId, ticketNumber, technicianId, technicianName,
-        scheduledDate, status, customerName, timeSlot, location, notes,
-        actualStart, actualEnd, createdAt, updatedAt,
+        id,
+        ticketId,
+        ticketNumber,
+        technicianId,
+        technicianName,
+        scheduledDate,
+        status,
+        customerName,
+        timeSlot,
+        location,
+        notes,
+        actualStart,
+        actualEnd,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -153,8 +186,18 @@ class ServiceContract extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, contractNumber, customerName, status, startDate, endDate,
-        serviceType, contractValue, billingCycle, terms, notes,
-        createdAt, updatedAt,
+        id,
+        contractNumber,
+        customerName,
+        status,
+        startDate,
+        endDate,
+        serviceType,
+        contractValue,
+        billingCycle,
+        terms,
+        notes,
+        createdAt,
+        updatedAt,
       ];
 }

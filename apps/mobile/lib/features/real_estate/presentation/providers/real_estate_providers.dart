@@ -30,7 +30,8 @@ final Provider<RealEstateRepository> realEstateRepositoryProvider =
 class PropertyListState extends Equatable {
   const PropertyListState({
     this.items = const <Property>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -67,13 +68,21 @@ class PropertyListState extends Equatable {
         isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
         cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
       );
 
   @override
   List<Object?> get props => <Object?>[
-        items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure, cachedAt,
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure,
+        cachedAt,
       ];
 }
 
@@ -104,8 +113,12 @@ class PropertyListController extends Notifier<PropertyListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true, cachedAt: page.cachedAt,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
+        cachedAt: page.cachedAt,
         clearCachedAt: !page.isFromCache,
       ),
     );
@@ -119,8 +132,11 @@ class PropertyListController extends Notifier<PropertyListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -128,7 +144,8 @@ class PropertyListController extends Notifier<PropertyListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
@@ -139,46 +156,55 @@ class PropertyListController extends Notifier<PropertyListState> {
   }
 
   void applyFilters(Map<String, String> filters) {
-    state = state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
+    state =
+        state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
     refresh();
   }
 
   Future<Result<void>> delete(String id) async {
     final result = await DeletePropertyUseCase(
-      ref.read(realEstateRepositoryProvider),)(id);
+      ref.read(realEstateRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 
-  Future<Result<Lease>> saveLease(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<Lease>> saveLease(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveLeaseUseCase(
-      ref.read(realEstateRepositoryProvider),)(SaveLeaseParams(payload: payload, id: id));
+      ref.read(realEstateRepositoryProvider),
+    )(SaveLeaseParams(payload: payload, id: id));
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<void>> deleteLease(String id) async {
     final result = await DeleteLeaseUseCase(
-      ref.read(realEstateRepositoryProvider),)(id);
+      ref.read(realEstateRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 
-  Future<Result<TenantDetail>> saveTenant(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<TenantDetail>> saveTenant(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveTenantUseCase(
-      ref.read(realEstateRepositoryProvider),)(SaveTenantParams(payload: payload, id: id));
+      ref.read(realEstateRepositoryProvider),
+    )(SaveTenantParams(payload: payload, id: id));
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<void>> deleteTenant(String id) async {
     final result = await DeleteTenantUseCase(
-      ref.read(realEstateRepositoryProvider),)(id);
+      ref.read(realEstateRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 
-  Future<Result<Map<String, dynamic>>> saveUnit(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<Map<String, dynamic>>> saveUnit(Map<String, dynamic> payload,
+      {String? id}) async {
     return const Result.ok(<String, dynamic>{});
   }
 }
@@ -186,32 +212,38 @@ class PropertyListController extends Notifier<PropertyListState> {
 final FutureProviderFamily<Property, String> propertyDetailProvider =
     FutureProvider.family<Property, String>((Ref ref, String id) async {
   final result = await GetPropertyUseCase(
-    ref.watch(realEstateRepositoryProvider),)(id);
+    ref.watch(realEstateRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (p) => p);
 });
 
 final FutureProviderFamily<Lease, String> leaseDetailProvider =
     FutureProvider.family<Lease, String>((Ref ref, String id) async {
   final result = await GetLeaseUseCase(
-    ref.watch(realEstateRepositoryProvider),)(id);
+    ref.watch(realEstateRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (l) => l);
 });
 
 final FutureProviderFamily<TenantDetail, String> tenantDetailProvider =
     FutureProvider.family<TenantDetail, String>((Ref ref, String id) async {
   final result = await GetTenantUseCase(
-    ref.watch(realEstateRepositoryProvider),)(id);
+    ref.watch(realEstateRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (t) => t);
 });
 
 final FutureProviderFamily<MaintenanceOrder, String>
     maintenanceOrderDetailProvider =
-    FutureProvider.family<MaintenanceOrder, String>(
-        (Ref ref, String id) async {
+    FutureProvider.family<MaintenanceOrder, String>((Ref ref, String id) async {
   final result = await GetMaintenanceOrderUseCase(
-    ref.watch(realEstateRepositoryProvider),)(id);
+    ref.watch(realEstateRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (m) => m);
 });
 
-
-extension SaveProperty on PropertyListController { Future<Result<Property>> save(Map<String, dynamic> payload, {String? id}) async => throw UnimplementedError(); }
+extension SaveProperty on PropertyListController {
+  Future<Result<Property>> save(Map<String, dynamic> payload,
+          {String? id}) async =>
+      throw UnimplementedError();
+}

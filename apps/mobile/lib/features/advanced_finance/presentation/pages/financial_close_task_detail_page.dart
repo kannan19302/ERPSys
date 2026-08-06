@@ -28,10 +28,14 @@ class FinancialCloseTaskDetailPage extends ConsumerWidget {
       body: taskAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load close task.'),
-          onRetry: () => ref.invalidate(financialCloseTaskDetailProvider(taskId)),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load close task.'),
+          onRetry: () =>
+              ref.invalidate(financialCloseTaskDetailProvider(taskId)),
         ),
-        data: (FinancialCloseTask task) => _FinancialCloseTaskDetail(task: task),
+        data: (FinancialCloseTask task) =>
+            _FinancialCloseTaskDetail(task: task),
       ),
     );
   }
@@ -103,9 +107,18 @@ class _FinancialCloseTaskDetail extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               const _SectionTitle(title: 'Timeline'),
-              _FieldRow('Due Date', task.dueDate != null ? Formatters.date(task.dueDate!) : '—'),
-              _FieldRow('Completed At', task.completedAt != null ? Formatters.dateTime(task.completedAt!) : '—'),
-              _FieldRow('Created', task.createdAt != null ? Formatters.dateTime(task.createdAt!) : '—'),
+              _FieldRow('Due Date',
+                  task.dueDate != null ? Formatters.date(task.dueDate!) : '—'),
+              _FieldRow(
+                  'Completed At',
+                  task.completedAt != null
+                      ? Formatters.dateTime(task.completedAt!)
+                      : '—'),
+              _FieldRow(
+                  'Created',
+                  task.createdAt != null
+                      ? Formatters.dateTime(task.createdAt!)
+                      : '—'),
             ],
           ),
         ),

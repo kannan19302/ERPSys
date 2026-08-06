@@ -83,7 +83,8 @@ class SaasSubscriptionModel extends SaasSubscription {
 
   factory SaasSubscriptionModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('SaasSubscription missing id');
+    if (id is! String)
+      throw const ParseException('SaasSubscription missing id');
     return SaasSubscriptionModel(
       id: id,
       tenantId: json['tenantId'] as String? ?? '',

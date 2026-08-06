@@ -14,8 +14,12 @@ int asInt(Object? value) => switch (value) {
       _ => 0,
     };
 
-List<T> _parseItems<T>(List<dynamic>? list, T Function(Map<String, dynamic>) fromJson) =>
-    list?.map((e) => fromJson(e as Map<String, dynamic>)).toList(growable: false) ?? const [];
+List<T> _parseItems<T>(
+        List<dynamic>? list, T Function(Map<String, dynamic>) fromJson) =>
+    list
+        ?.map((e) => fromJson(e as Map<String, dynamic>))
+        .toList(growable: false) ??
+    const [];
 
 class EcommerceProductModel extends EcommerceProduct {
   const EcommerceProductModel({
@@ -40,13 +44,15 @@ class EcommerceProductModel extends EcommerceProduct {
 
   factory EcommerceProductModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('EcommerceProduct missing id');
+    if (id is! String)
+      throw const ParseException('EcommerceProduct missing id');
     return EcommerceProductModel(
       id: id,
       name: (json['name'] ?? json['productName']) as String? ?? '',
       slug: json['slug'] as String?,
       description: json['description'] as String?,
-      price: asDouble(json['price'] ?? json['effectivePrice'] ?? json['basePrice']),
+      price: asDouble(
+          json['price'] ?? json['effectivePrice'] ?? json['basePrice']),
       comparePrice: asDouble(json['comparePrice']),
       currency: json['currency'] as String? ?? 'USD',
       categoryId: json['categoryId'] as String?,
@@ -104,7 +110,8 @@ class EcommerceCategoryModel extends EcommerceCategory {
 
   factory EcommerceCategoryModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('EcommerceCategory missing id');
+    if (id is! String)
+      throw const ParseException('EcommerceCategory missing id');
     return EcommerceCategoryModel(
       id: id,
       name: json['name'] as String? ?? '',
@@ -162,7 +169,8 @@ class EcommerceOrderModel extends EcommerceOrder {
       orderNumber: json['orderNumber'] as String? ?? '',
       customerId: json['customerId'] as String?,
       customerName: json['customerName'] as String?,
-      items: _parseItems(json['items'] as List<dynamic>?, EcommerceOrderItemModel.fromJson),
+      items: _parseItems(
+          json['items'] as List<dynamic>?, EcommerceOrderItemModel.fromJson),
       subtotal: asDouble(json['subtotal']),
       shippingCost: asDouble(json['shippingCost']),
       taxTotal: asDouble(json['taxTotal']),

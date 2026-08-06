@@ -18,10 +18,12 @@ class FinancialCloseTaskFormPage extends ConsumerStatefulWidget {
   final String? taskId;
 
   @override
-  ConsumerState<FinancialCloseTaskFormPage> createState() => _FinancialCloseTaskFormPageState();
+  ConsumerState<FinancialCloseTaskFormPage> createState() =>
+      _FinancialCloseTaskFormPageState();
 }
 
-class _FinancialCloseTaskFormPageState extends ConsumerState<FinancialCloseTaskFormPage> {
+class _FinancialCloseTaskFormPageState
+    extends ConsumerState<FinancialCloseTaskFormPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _titleCtrl = TextEditingController();
   final TextEditingController _periodCtrl = TextEditingController();
@@ -43,9 +45,8 @@ class _FinancialCloseTaskFormPageState extends ConsumerState<FinancialCloseTaskF
   }
 
   Future<void> _loadTask() async {
-    final FinancialCloseTask? task = ref
-        .read(financialCloseTaskDetailProvider(widget.taskId!))
-        .valueOrNull;
+    final FinancialCloseTask? task =
+        ref.read(financialCloseTaskDetailProvider(widget.taskId!)).valueOrNull;
     if (task != null) {
       _titleCtrl.text = task.title;
       _periodCtrl.text = task.period;
@@ -74,7 +75,9 @@ class _FinancialCloseTaskFormPageState extends ConsumerState<FinancialCloseTaskF
       'period': _periodCtrl.text.trim(),
       'status': _status,
       'priority': _priority,
-      'assignedTo': _assignedToCtrl.text.trim().isEmpty ? null : _assignedToCtrl.text.trim(),
+      'assignedTo': _assignedToCtrl.text.trim().isEmpty
+          ? null
+          : _assignedToCtrl.text.trim(),
       'notes': _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
     };
 
@@ -138,9 +141,12 @@ class _FinancialCloseTaskFormPageState extends ConsumerState<FinancialCloseTaskF
               initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: const <DropdownMenuItem<String>>[
-                DropdownMenuItem<String>(value: 'PENDING', child: Text('Pending')),
-                DropdownMenuItem<String>(value: 'IN_PROGRESS', child: Text('In Progress')),
-                DropdownMenuItem<String>(value: 'COMPLETED', child: Text('Completed')),
+                DropdownMenuItem<String>(
+                    value: 'PENDING', child: Text('Pending')),
+                DropdownMenuItem<String>(
+                    value: 'IN_PROGRESS', child: Text('In Progress')),
+                DropdownMenuItem<String>(
+                    value: 'COMPLETED', child: Text('Completed')),
               ],
               onChanged: (String? v) {
                 if (v != null) setState(() => _status = v);
@@ -152,7 +158,8 @@ class _FinancialCloseTaskFormPageState extends ConsumerState<FinancialCloseTaskF
               decoration: const InputDecoration(labelText: 'Priority'),
               items: const <DropdownMenuItem<String>>[
                 DropdownMenuItem<String>(value: 'LOW', child: Text('Low')),
-                DropdownMenuItem<String>(value: 'MEDIUM', child: Text('Medium')),
+                DropdownMenuItem<String>(
+                    value: 'MEDIUM', child: Text('Medium')),
                 DropdownMenuItem<String>(value: 'HIGH', child: Text('High')),
               ],
               onChanged: (String? v) {

@@ -4,7 +4,8 @@ import '../../../../core/usecase/usecase.dart';
 import '../entities/procurement.dart';
 import '../repositories/procurement_repository.dart';
 
-class ListPurchaseOrdersUseCase extends UseCase<Cacheable<Paginated<PurchaseOrder>>, ListQuery> {
+class ListPurchaseOrdersUseCase
+    extends UseCase<Cacheable<Paginated<PurchaseOrder>>, ListQuery> {
   const ListPurchaseOrdersUseCase(this._repository);
   final ProcurementRepository _repository;
   @override
@@ -16,7 +17,8 @@ class GetPurchaseOrderUseCase extends UseCase<PurchaseOrder, String> {
   const GetPurchaseOrderUseCase(this._repository);
   final ProcurementRepository _repository;
   @override
-  Future<Result<PurchaseOrder>> call(String id) => _repository.getPurchaseOrder(id);
+  Future<Result<PurchaseOrder>> call(String id) =>
+      _repository.getPurchaseOrder(id);
 }
 
 class SavePurchaseOrderParams {
@@ -25,7 +27,8 @@ class SavePurchaseOrderParams {
   final Map<String, dynamic> payload;
 }
 
-class SavePurchaseOrderUseCase extends UseCase<PurchaseOrder, SavePurchaseOrderParams> {
+class SavePurchaseOrderUseCase
+    extends UseCase<PurchaseOrder, SavePurchaseOrderParams> {
   const SavePurchaseOrderUseCase(this._repository);
   final ProcurementRepository _repository;
   @override
@@ -41,28 +44,32 @@ class SubmitPurchaseOrderUseCase extends UseCase<PurchaseOrder, String> {
   const SubmitPurchaseOrderUseCase(this._repository);
   final ProcurementRepository _repository;
   @override
-  Future<Result<PurchaseOrder>> call(String id) => _repository.submitPurchaseOrder(id);
+  Future<Result<PurchaseOrder>> call(String id) =>
+      _repository.submitPurchaseOrder(id);
 }
 
 class ApprovePurchaseOrderUseCase extends UseCase<PurchaseOrder, String> {
   const ApprovePurchaseOrderUseCase(this._repository);
   final ProcurementRepository _repository;
   @override
-  Future<Result<PurchaseOrder>> call(String id) => _repository.approvePurchaseOrder(id);
+  Future<Result<PurchaseOrder>> call(String id) =>
+      _repository.approvePurchaseOrder(id);
 }
 
 class ReceivePurchaseOrderUseCase extends UseCase<PurchaseOrder, String> {
   const ReceivePurchaseOrderUseCase(this._repository);
   final ProcurementRepository _repository;
   @override
-  Future<Result<PurchaseOrder>> call(String id) => _repository.receivePurchaseOrder(id);
+  Future<Result<PurchaseOrder>> call(String id) =>
+      _repository.receivePurchaseOrder(id);
 }
 
 class CancelPurchaseOrderUseCase extends UseCase<PurchaseOrder, String> {
   const CancelPurchaseOrderUseCase(this._repository);
   final ProcurementRepository _repository;
   @override
-  Future<Result<PurchaseOrder>> call(String id) => _repository.cancelPurchaseOrder(id);
+  Future<Result<PurchaseOrder>> call(String id) =>
+      _repository.cancelPurchaseOrder(id);
 }
 
 class DeletePurchaseOrderUseCase extends UseCase<void, String> {
@@ -72,7 +79,8 @@ class DeletePurchaseOrderUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deletePurchaseOrder(id);
 }
 
-class ListVendorsUseCase extends UseCase<Cacheable<Paginated<Vendor>>, ListQuery> {
+class ListVendorsUseCase
+    extends UseCase<Cacheable<Paginated<Vendor>>, ListQuery> {
   const ListVendorsUseCase(this._repository);
   final ProcurementRepository _repository;
   @override
@@ -159,11 +167,13 @@ class CloseRFQUseCase extends UseCase<RFQ, String> {
   Future<Result<RFQ>> call(String id) => _repository.closeRFQ(id);
 }
 
-class ListSupplierQuotationsUseCase extends UseCase<Cacheable<Paginated<SupplierQuotation>>, ListQuery> {
+class ListSupplierQuotationsUseCase
+    extends UseCase<Cacheable<Paginated<SupplierQuotation>>, ListQuery> {
   const ListSupplierQuotationsUseCase(this._repository);
   final ProcurementRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<SupplierQuotation>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<SupplierQuotation>>>> call(
+          ListQuery params) =>
       _repository.listSupplierQuotations(params);
 }
 
@@ -171,7 +181,8 @@ class GetSupplierQuotationUseCase extends UseCase<SupplierQuotation, String> {
   const GetSupplierQuotationUseCase(this._repository);
   final ProcurementRepository _repository;
   @override
-  Future<Result<SupplierQuotation>> call(String id) => _repository.getSupplierQuotation(id);
+  Future<Result<SupplierQuotation>> call(String id) =>
+      _repository.getSupplierQuotation(id);
 }
 
 class SaveSupplierQuotationParams {
@@ -180,7 +191,8 @@ class SaveSupplierQuotationParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveSupplierQuotationUseCase extends UseCase<SupplierQuotation, SaveSupplierQuotationParams> {
+class SaveSupplierQuotationUseCase
+    extends UseCase<SupplierQuotation, SaveSupplierQuotationParams> {
   const SaveSupplierQuotationUseCase(this._repository);
   final ProcurementRepository _repository;
   @override
@@ -192,40 +204,50 @@ class SaveSupplierQuotationUseCase extends UseCase<SupplierQuotation, SaveSuppli
   }
 }
 
-class ApproveSupplierQuotationUseCase extends UseCase<SupplierQuotation, String> {
+class ApproveSupplierQuotationUseCase
+    extends UseCase<SupplierQuotation, String> {
   const ApproveSupplierQuotationUseCase(this._repository);
   final ProcurementRepository _repository;
   @override
-  Future<Result<SupplierQuotation>> call(String id) => _repository.approveSupplierQuotation(id);
+  Future<Result<SupplierQuotation>> call(String id) =>
+      _repository.approveSupplierQuotation(id);
 }
 
-class RejectSupplierQuotationUseCase extends UseCase<SupplierQuotation, String> {
+class RejectSupplierQuotationUseCase
+    extends UseCase<SupplierQuotation, String> {
   const RejectSupplierQuotationUseCase(this._repository);
   final ProcurementRepository _repository;
   @override
-  Future<Result<SupplierQuotation>> call(String id) => _repository.rejectSupplierQuotation(id);
+  Future<Result<SupplierQuotation>> call(String id) =>
+      _repository.rejectSupplierQuotation(id);
 }
 
-class ConvertSupplierQuotationUseCase extends UseCase<SupplierQuotation, String> {
+class ConvertSupplierQuotationUseCase
+    extends UseCase<SupplierQuotation, String> {
   const ConvertSupplierQuotationUseCase(this._repository);
   final ProcurementRepository _repository;
   @override
-  Future<Result<SupplierQuotation>> call(String id) => _repository.convertSupplierQuotation(id);
+  Future<Result<SupplierQuotation>> call(String id) =>
+      _repository.convertSupplierQuotation(id);
 }
 
-class ListPurchaseRequisitionsUseCase extends UseCase<Cacheable<Paginated<PurchaseRequisition>>, ListQuery> {
+class ListPurchaseRequisitionsUseCase
+    extends UseCase<Cacheable<Paginated<PurchaseRequisition>>, ListQuery> {
   const ListPurchaseRequisitionsUseCase(this._repository);
   final ProcurementRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<PurchaseRequisition>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<PurchaseRequisition>>>> call(
+          ListQuery params) =>
       _repository.listPurchaseRequisitions(params);
 }
 
-class GetPurchaseRequisitionUseCase extends UseCase<PurchaseRequisition, String> {
+class GetPurchaseRequisitionUseCase
+    extends UseCase<PurchaseRequisition, String> {
   const GetPurchaseRequisitionUseCase(this._repository);
   final ProcurementRepository _repository;
   @override
-  Future<Result<PurchaseRequisition>> call(String id) => _repository.getPurchaseRequisition(id);
+  Future<Result<PurchaseRequisition>> call(String id) =>
+      _repository.getPurchaseRequisition(id);
 }
 
 class SavePurchaseRequisitionParams {
@@ -234,11 +256,13 @@ class SavePurchaseRequisitionParams {
   final Map<String, dynamic> payload;
 }
 
-class SavePurchaseRequisitionUseCase extends UseCase<PurchaseRequisition, SavePurchaseRequisitionParams> {
+class SavePurchaseRequisitionUseCase
+    extends UseCase<PurchaseRequisition, SavePurchaseRequisitionParams> {
   const SavePurchaseRequisitionUseCase(this._repository);
   final ProcurementRepository _repository;
   @override
-  Future<Result<PurchaseRequisition>> call(SavePurchaseRequisitionParams params) {
+  Future<Result<PurchaseRequisition>> call(
+      SavePurchaseRequisitionParams params) {
     final String? id = params.id;
     return id == null
         ? _repository.createPurchaseRequisition(params.payload)
@@ -246,18 +270,22 @@ class SavePurchaseRequisitionUseCase extends UseCase<PurchaseRequisition, SavePu
   }
 }
 
-class ApprovePurchaseRequisitionUseCase extends UseCase<PurchaseRequisition, String> {
+class ApprovePurchaseRequisitionUseCase
+    extends UseCase<PurchaseRequisition, String> {
   const ApprovePurchaseRequisitionUseCase(this._repository);
   final ProcurementRepository _repository;
   @override
-  Future<Result<PurchaseRequisition>> call(String id) => _repository.approvePurchaseRequisition(id);
+  Future<Result<PurchaseRequisition>> call(String id) =>
+      _repository.approvePurchaseRequisition(id);
 }
 
-class ListPurchaseReceiptsUseCase extends UseCase<Cacheable<Paginated<PurchaseReceipt>>, ListQuery> {
+class ListPurchaseReceiptsUseCase
+    extends UseCase<Cacheable<Paginated<PurchaseReceipt>>, ListQuery> {
   const ListPurchaseReceiptsUseCase(this._repository);
   final ProcurementRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<PurchaseReceipt>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<PurchaseReceipt>>>> call(
+          ListQuery params) =>
       _repository.listPurchaseReceipts(params);
 }
 
@@ -265,7 +293,8 @@ class GetPurchaseReceiptUseCase extends UseCase<PurchaseReceipt, String> {
   const GetPurchaseReceiptUseCase(this._repository);
   final ProcurementRepository _repository;
   @override
-  Future<Result<PurchaseReceipt>> call(String id) => _repository.getPurchaseReceipt(id);
+  Future<Result<PurchaseReceipt>> call(String id) =>
+      _repository.getPurchaseReceipt(id);
 }
 
 class SavePurchaseReceiptParams {
@@ -274,7 +303,8 @@ class SavePurchaseReceiptParams {
   final Map<String, dynamic> payload;
 }
 
-class SavePurchaseReceiptUseCase extends UseCase<PurchaseReceipt, SavePurchaseReceiptParams> {
+class SavePurchaseReceiptUseCase
+    extends UseCase<PurchaseReceipt, SavePurchaseReceiptParams> {
   const SavePurchaseReceiptUseCase(this._repository);
   final ProcurementRepository _repository;
   @override
@@ -286,11 +316,13 @@ class SavePurchaseReceiptUseCase extends UseCase<PurchaseReceipt, SavePurchaseRe
   }
 }
 
-class ListSupplierContractsUseCase extends UseCase<Cacheable<Paginated<SupplierContract>>, ListQuery> {
+class ListSupplierContractsUseCase
+    extends UseCase<Cacheable<Paginated<SupplierContract>>, ListQuery> {
   const ListSupplierContractsUseCase(this._repository);
   final ProcurementRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<SupplierContract>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<SupplierContract>>>> call(
+          ListQuery params) =>
       _repository.listSupplierContracts(params);
 }
 
@@ -298,7 +330,8 @@ class GetSupplierContractUseCase extends UseCase<SupplierContract, String> {
   const GetSupplierContractUseCase(this._repository);
   final ProcurementRepository _repository;
   @override
-  Future<Result<SupplierContract>> call(String id) => _repository.getSupplierContract(id);
+  Future<Result<SupplierContract>> call(String id) =>
+      _repository.getSupplierContract(id);
 }
 
 class SaveSupplierContractParams {
@@ -307,7 +340,8 @@ class SaveSupplierContractParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveSupplierContractUseCase extends UseCase<SupplierContract, SaveSupplierContractParams> {
+class SaveSupplierContractUseCase
+    extends UseCase<SupplierContract, SaveSupplierContractParams> {
   const SaveSupplierContractUseCase(this._repository);
   final ProcurementRepository _repository;
   @override
@@ -323,10 +357,12 @@ class DeleteSupplierContractUseCase extends UseCase<void, String> {
   const DeleteSupplierContractUseCase(this._repository);
   final ProcurementRepository _repository;
   @override
-  Future<Result<void>> call(String id) => _repository.deleteSupplierContract(id);
+  Future<Result<void>> call(String id) =>
+      _repository.deleteSupplierContract(id);
 }
 
-class GetProcurementDashboardUseCase extends UseCase<ProcurementDashboardStats, void> {
+class GetProcurementDashboardUseCase
+    extends UseCase<ProcurementDashboardStats, void> {
   const GetProcurementDashboardUseCase(this._repository);
   final ProcurementRepository _repository;
   @override

@@ -42,9 +42,8 @@ class _AiModelFormPageState extends ConsumerState<AiModelFormPage> {
   }
 
   Future<void> _loadModel() async {
-    final AiModel? model = ref
-        .read(aiModelDetailProvider(widget.modelId!))
-        .valueOrNull;
+    final AiModel? model =
+        ref.read(aiModelDetailProvider(widget.modelId!)).valueOrNull;
     if (model != null) {
       _nameCtrl.text = model.name;
       _providerCtrl.text = model.provider ?? '';
@@ -69,12 +68,18 @@ class _AiModelFormPageState extends ConsumerState<AiModelFormPage> {
 
     final Map<String, dynamic> payload = <String, dynamic>{
       'name': _nameCtrl.text.trim(),
-      'provider': _providerCtrl.text.trim().isEmpty ? null : _providerCtrl.text.trim(),
-      'version': _versionCtrl.text.trim().isEmpty ? null : _versionCtrl.text.trim(),
+      'provider':
+          _providerCtrl.text.trim().isEmpty ? null : _providerCtrl.text.trim(),
+      'version':
+          _versionCtrl.text.trim().isEmpty ? null : _versionCtrl.text.trim(),
       'status': _status,
       'capabilities': _capabilitiesCtrl.text.trim().isEmpty
           ? <String>[]
-          : _capabilitiesCtrl.text.split(',').map((String s) => s.trim()).where((String s) => s.isNotEmpty).toList(),
+          : _capabilitiesCtrl.text
+              .split(',')
+              .map((String s) => s.trim())
+              .where((String s) => s.isNotEmpty)
+              .toList(),
     };
 
     final Result<AiModel> result = await ref
@@ -140,9 +145,12 @@ class _AiModelFormPageState extends ConsumerState<AiModelFormPage> {
               initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: const <DropdownMenuItem<String>>[
-                DropdownMenuItem<String>(value: 'ACTIVE', child: Text('Active')),
-                DropdownMenuItem<String>(value: 'INACTIVE', child: Text('Inactive')),
-                DropdownMenuItem<String>(value: 'DEPRECATED', child: Text('Deprecated')),
+                DropdownMenuItem<String>(
+                    value: 'ACTIVE', child: Text('Active')),
+                DropdownMenuItem<String>(
+                    value: 'INACTIVE', child: Text('Inactive')),
+                DropdownMenuItem<String>(
+                    value: 'DEPRECATED', child: Text('Deprecated')),
               ],
               onChanged: (String? v) {
                 if (v != null) setState(() => _status = v);

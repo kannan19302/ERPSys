@@ -132,7 +132,8 @@ const SalesReturn _salesReturnApproved = SalesReturn(
 class FakeSalesRepository implements SalesRepository {
   @override
   Future<Result<Cacheable<Paginated<Quotation>>>> listQuotations(
-          ListQuery query,) async =>
+    ListQuery query,
+  ) async =>
       const Result<Cacheable<Paginated<Quotation>>>.ok(
         Cacheable<Paginated<Quotation>>(
           value: Paginated<Quotation>(
@@ -147,12 +148,15 @@ class FakeSalesRepository implements SalesRepository {
       const Result<Quotation>.ok(_quotationDraft);
 
   @override
-  Future<Result<Quotation>> createQuotation(Map<String, dynamic> payload) async =>
+  Future<Result<Quotation>> createQuotation(
+          Map<String, dynamic> payload) async =>
       const Result<Quotation>.ok(_quotationDraft);
 
   @override
   Future<Result<Quotation>> updateQuotation(
-          String id, Map<String, dynamic> payload,) async =>
+    String id,
+    Map<String, dynamic> payload,
+  ) async =>
       const Result<Quotation>.ok(_quotationDraft);
 
   @override
@@ -182,7 +186,8 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<Cacheable<Paginated<SalesOrder>>>> listSalesOrders(
-          ListQuery query,) async =>
+    ListQuery query,
+  ) async =>
       const Result<Cacheable<Paginated<SalesOrder>>>.ok(
         Cacheable<Paginated<SalesOrder>>(
           value: Paginated<SalesOrder>(
@@ -207,7 +212,8 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<SalesOrder>> createSalesOrder(
-          Map<String, dynamic> payload,) async =>
+    Map<String, dynamic> payload,
+  ) async =>
       const Result<SalesOrder>.ok(
         SalesOrder(
           id: 'so1',
@@ -221,7 +227,9 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<SalesOrder>> updateSalesOrder(
-          String id, Map<String, dynamic> payload,) async =>
+    String id,
+    Map<String, dynamic> payload,
+  ) async =>
       const Result<SalesOrder>.ok(
         SalesOrder(
           id: 'so1',
@@ -265,7 +273,8 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<Paginated<DeliveryNote>>> listDeliveryNotes(
-          ListQuery query,) async =>
+    ListQuery query,
+  ) async =>
       const Result<Paginated<DeliveryNote>>.ok(
         Paginated<DeliveryNote>(
           data: <DeliveryNote>[_deliveryNoteDraft],
@@ -279,12 +288,15 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<DeliveryNote>> createDeliveryNote(
-          Map<String, dynamic> payload,) async =>
+    Map<String, dynamic> payload,
+  ) async =>
       const Result<DeliveryNote>.ok(_deliveryNoteDraft);
 
   @override
   Future<Result<DeliveryNote>> updateDeliveryNote(
-          String id, Map<String, dynamic> payload,) async =>
+    String id,
+    Map<String, dynamic> payload,
+  ) async =>
       const Result<DeliveryNote>.ok(_deliveryNoteDraft);
 
   @override
@@ -297,7 +309,8 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<Paginated<SalesReturn>>> listSalesReturns(
-          ListQuery query,) async =>
+    ListQuery query,
+  ) async =>
       const Result<Paginated<SalesReturn>>.ok(
         Paginated<SalesReturn>(
           data: <SalesReturn>[_salesReturnPending],
@@ -311,7 +324,8 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<SalesReturn>> createSalesReturn(
-          Map<String, dynamic> payload,) async =>
+    Map<String, dynamic> payload,
+  ) async =>
       const Result<SalesReturn>.ok(_salesReturnPending);
 
   @override
@@ -338,7 +352,8 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<Paginated<Opportunity>>> listOpportunities(
-          ListQuery query,) async =>
+    ListQuery query,
+  ) async =>
       const Result<Paginated<Opportunity>>.ok(
         Paginated<Opportunity>(
           data: <Opportunity>[_opportunity],
@@ -352,12 +367,15 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<Opportunity>> createOpportunity(
-          Map<String, dynamic> payload,) async =>
+    Map<String, dynamic> payload,
+  ) async =>
       const Result<Opportunity>.ok(_opportunity);
 
   @override
   Future<Result<Opportunity>> updateOpportunity(
-          String id, Map<String, dynamic> payload,) async =>
+    String id,
+    Map<String, dynamic> payload,
+  ) async =>
       const Result<Opportunity>.ok(_opportunity);
 
   @override
@@ -366,7 +384,9 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<Opportunity>> updateOpportunityStage(
-      String id, String stage,) async =>
+    String id,
+    String stage,
+  ) async =>
       const Result<Opportunity>.ok(_opportunity);
 
   @override
@@ -375,7 +395,8 @@ class FakeSalesRepository implements SalesRepository {
 
   @override
   Future<Result<SalesActivity>> logSalesActivity(
-          Map<String, dynamic> payload,) async =>
+    Map<String, dynamic> payload,
+  ) async =>
       const Result<SalesActivity>.ok(
         SalesActivity(id: 'sa1', type: 'NOTE', subject: 'Call log'),
       );
@@ -393,7 +414,8 @@ Future<ProviderContainer> pumpQuotationDetail(
   final repo = repository ?? FakeSalesRepository();
   return pumpWidget(
     tester,
-    quotationDetailProvider(quotation.id).overrideWith((ref) => quotation,
+    quotationDetailProvider(quotation.id).overrideWith(
+      (ref) => quotation,
     ),
     salesRepositoryProvider.overrideWith((ref) => repo),
     QuotationDetailPage(quotationId: quotation.id),
@@ -409,7 +431,8 @@ Future<ProviderContainer> pumpOpportunityDetail(
   final repo = repository ?? FakeSalesRepository();
   return pumpWidget(
     tester,
-    opportunityDetailProvider(opportunity.id).overrideWith((ref) => opportunity,
+    opportunityDetailProvider(opportunity.id).overrideWith(
+      (ref) => opportunity,
     ),
     salesRepositoryProvider.overrideWith((ref) => repo),
     OpportunityDetailPage(opportunityId: opportunity.id),
@@ -425,7 +448,8 @@ Future<ProviderContainer> pumpDeliveryNoteDetail(
   final repo = repository ?? FakeSalesRepository();
   return pumpWidget(
     tester,
-    deliveryNoteDetailProvider(note.id).overrideWith((ref) => note,
+    deliveryNoteDetailProvider(note.id).overrideWith(
+      (ref) => note,
     ),
     salesRepositoryProvider.overrideWith((ref) => repo),
     DeliveryNoteDetailPage(deliveryNoteId: note.id),
@@ -441,7 +465,8 @@ Future<ProviderContainer> pumpSalesReturnDetail(
   final repo = repository ?? FakeSalesRepository();
   return pumpWidget(
     tester,
-    salesReturnDetailProvider(ret.id).overrideWith((ref) => ret,
+    salesReturnDetailProvider(ret.id).overrideWith(
+      (ref) => ret,
     ),
     salesRepositoryProvider.overrideWith((ref) => repo),
     SalesReturnDetailPage(salesReturnId: ret.id),
@@ -459,7 +484,8 @@ Future<ProviderContainer> pumpWidget(
   final container = ProviderContainer(
     overrides: <Override>[
       sharedPreferencesProvider.overrideWithValue(MockSharedPreferences()),
-      cookieStoreProvider.overrideWithValue(CookieStore(CookieJar(), Uri.parse('http://localhost'))),
+      cookieStoreProvider.overrideWithValue(
+          CookieStore(CookieJar(), Uri.parse('http://localhost'))),
       apiClientProvider.overrideWithValue(ApiClient.forTesting(Dio())),
       activeTenantIdProvider.overrideWith((ref) => 'tenant-1'),
       repositoryOverride,

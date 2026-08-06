@@ -13,7 +13,8 @@ class TrackingEventListPage extends ConsumerStatefulWidget {
   static const String routePath = '/supply-chain/tracking-events';
   final String? shipmentId;
   @override
-  ConsumerState<TrackingEventListPage> createState() => _TrackingEventListPageState();
+  ConsumerState<TrackingEventListPage> createState() =>
+      _TrackingEventListPageState();
 }
 
 class _TrackingEventListPageState extends ConsumerState<TrackingEventListPage> {
@@ -29,10 +30,17 @@ class _TrackingEventListPageState extends ConsumerState<TrackingEventListPage> {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(state.isLoading ? 'Loading...' : '${state.meta.total} event${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} event${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -40,7 +48,8 @@ class _TrackingEventListPageState extends ConsumerState<TrackingEventListPage> {
     );
   }
 
-  Widget _body(TrackingEventListState state, TrackingEventListController controller) {
+  Widget _body(
+      TrackingEventListState state, TrackingEventListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -88,22 +97,33 @@ class _EventTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(event.status ?? 'Update',
-                      style: Theme.of(context).textTheme.titleSmall,),
+                  Text(
+                    event.status ?? 'Update',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
                   if (event.location != null) ...[
                     const SizedBox(height: Spacing.x0_5),
-                    Text(event.location!,
-                        style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
+                    Text(
+                      event.location!,
+                      style: TextStyle(
+                          color: t.textSecondary, fontSize: TypeScale.xs),
+                    ),
                   ],
                   if (event.description != null) ...[
                     const SizedBox(height: Spacing.x0_5),
-                    Text(event.description!,
-                        style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
+                    Text(
+                      event.description!,
+                      style: TextStyle(
+                          color: t.textTertiary, fontSize: TypeScale.xs),
+                    ),
                   ],
                   if (event.timestamp != null) ...[
                     const SizedBox(height: Spacing.x0_5),
-                    Text(Formatters.dateTime(event.timestamp!),
-                        style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
+                    Text(
+                      Formatters.dateTime(event.timestamp!),
+                      style: TextStyle(
+                          color: t.textTertiary, fontSize: TypeScale.xs),
+                    ),
                   ],
                 ],
               ),

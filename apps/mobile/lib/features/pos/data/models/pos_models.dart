@@ -34,11 +34,13 @@ class PosOrderModel extends PosOrder {
       customerName: json['customerName'] as String?,
       status: json['status'] as String? ?? 'DRAFT',
       items: (json['items'] as List<dynamic>?)
-              ?.map((Object? e) => PosOrderItemModel.fromJson(e as Map<String, dynamic>))
+              ?.map((Object? e) =>
+                  PosOrderItemModel.fromJson(e as Map<String, dynamic>))
               .toList(growable: false) ??
           const <PosOrderItem>[],
       payments: (json['payments'] as List<dynamic>?)
-              ?.map((Object? e) => PosPaymentModel.fromJson(e as Map<String, dynamic>))
+              ?.map((Object? e) =>
+                  PosPaymentModel.fromJson(e as Map<String, dynamic>))
               .toList(growable: false) ??
           const <PosPayment>[],
       subtotal: asDouble(json['subtotal']),
@@ -60,8 +62,12 @@ class PosOrderModel extends PosOrder {
         'customerId': customerId,
         'customerName': customerName,
         'status': status,
-        'items': items.map((PosOrderItem e) => (e as PosOrderItemModel).toJson()).toList(),
-        'payments': payments.map((PosPayment e) => (e as PosPaymentModel).toJson()).toList(),
+        'items': items
+            .map((PosOrderItem e) => (e as PosOrderItemModel).toJson())
+            .toList(),
+        'payments': payments
+            .map((PosPayment e) => (e as PosPaymentModel).toJson())
+            .toList(),
         'subtotal': subtotal,
         'discountTotal': discountTotal,
         'taxTotal': taxTotal,
@@ -563,17 +569,18 @@ class PosPriceListItemModel extends PosPriceListItem {
     super.price,
   });
 
-  factory PosPriceListItemModel.fromJson(Map<String, dynamic> json) => PosPriceListItemModel(
-    productId: json['productId'] as String? ?? '',
-    productName: json['productName'] as String?,
-    price: asDouble(json['price']),
-  );
+  factory PosPriceListItemModel.fromJson(Map<String, dynamic> json) =>
+      PosPriceListItemModel(
+        productId: json['productId'] as String? ?? '',
+        productName: json['productName'] as String?,
+        price: asDouble(json['price']),
+      );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-    'productId': productId,
-    'productName': productName,
-    'price': price,
-  };
+        'productId': productId,
+        'productName': productName,
+        'price': price,
+      };
 }
 
 class PosPriceListModel extends PosPriceList {
@@ -599,7 +606,8 @@ class PosPriceListModel extends PosPriceList {
       isDefault: json['isDefault'] as bool? ?? false,
       isActive: json['isActive'] as bool? ?? true,
       items: (json['items'] as List<dynamic>?)
-              ?.map((Object? e) => PosPriceListItemModel.fromJson(e as Map<String, dynamic>))
+              ?.map((Object? e) =>
+                  PosPriceListItemModel.fromJson(e as Map<String, dynamic>))
               .toList(growable: false) ??
           const <PosPriceListItem>[],
       createdAt: DateTime.tryParse('${json['createdAt']}'),
@@ -612,7 +620,9 @@ class PosPriceListModel extends PosPriceList {
         'currency': currency,
         'isDefault': isDefault,
         'isActive': isActive,
-        'items': items.map((PosPriceListItem e) => (e as PosPriceListItemModel).toJson()).toList(),
+        'items': items
+            .map((PosPriceListItem e) => (e as PosPriceListItemModel).toJson())
+            .toList(),
         'createdAt': createdAt?.toIso8601String(),
       };
 }

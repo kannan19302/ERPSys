@@ -33,7 +33,9 @@ class ReorderRuleDetailPage extends ConsumerWidget {
             child: IconButton(
               icon: const Icon(Icons.edit_outlined),
               tooltip: 'Edit rule',
-              onPressed: () => Navigator.of(context).pushNamed('reorder-rule-edit', arguments: <String, String>{'id': ruleId}),
+              onPressed: () => Navigator.of(context).pushNamed(
+                  'reorder-rule-edit',
+                  arguments: <String, String>{'id': ruleId}),
             ),
           ),
           PermissionGate(
@@ -159,7 +161,8 @@ class _ReorderRuleDetail extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               const UiSectionHeader(title: 'Details'),
-              _Row('Lead Time', '${rule.leadTime} day${rule.leadTime == 1 ? '' : 's'}'),
+              _Row('Lead Time',
+                  '${rule.leadTime} day${rule.leadTime == 1 ? '' : 's'}'),
               if (rule.createdAt != null)
                 _Row('Created', Formatters.dateTime(rule.createdAt!)),
             ],

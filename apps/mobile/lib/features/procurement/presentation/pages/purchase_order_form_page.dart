@@ -12,7 +12,8 @@ class PurchaseOrderFormPage extends ConsumerStatefulWidget {
   final String? poId;
 
   @override
-  ConsumerState<PurchaseOrderFormPage> createState() => _PurchaseOrderFormPageState();
+  ConsumerState<PurchaseOrderFormPage> createState() =>
+      _PurchaseOrderFormPageState();
 }
 
 class _PurchaseOrderFormPageState extends ConsumerState<PurchaseOrderFormPage> {
@@ -46,24 +47,30 @@ class _PurchaseOrderFormPageState extends ConsumerState<PurchaseOrderFormPage> {
       _termsCtrl.text = po.terms ?? '';
       _items.clear();
       for (final item in po.items) {
-        _items.add(_POLineItem(
-          productCtrl: TextEditingController(text: item.productName ?? ''),
-          qtyCtrl: TextEditingController(text: item.quantity.toString()),
-          rateCtrl: TextEditingController(text: item.rate.toString()),
-          taxCtrl: TextEditingController(text: item.taxRate.toString()),
-        ),);
+        _items.add(
+          _POLineItem(
+            productCtrl: TextEditingController(text: item.productName ?? ''),
+            qtyCtrl: TextEditingController(text: item.quantity.toString()),
+            rateCtrl: TextEditingController(text: item.rate.toString()),
+            taxCtrl: TextEditingController(text: item.taxRate.toString()),
+          ),
+        );
       }
       if (_items.isEmpty) _addItem();
     }
   }
 
   void _addItem() {
-    setState(() => _items.add(_POLineItem(
-      productCtrl: TextEditingController(),
-      qtyCtrl: TextEditingController(text: '1'),
-      rateCtrl: TextEditingController(),
-      taxCtrl: TextEditingController(),
-    ),),);
+    setState(
+      () => _items.add(
+        _POLineItem(
+          productCtrl: TextEditingController(),
+          qtyCtrl: TextEditingController(text: '1'),
+          rateCtrl: TextEditingController(),
+          taxCtrl: TextEditingController(),
+        ),
+      ),
+    );
   }
 
   void _removeItem(int index) {
@@ -85,8 +92,12 @@ class _PurchaseOrderFormPageState extends ConsumerState<PurchaseOrderFormPage> {
 
   @override
   void dispose() {
-    _vendorCtrl.dispose(); _orderDateCtrl.dispose(); _deliveryDateCtrl.dispose();
-    _shippingCtrl.dispose(); _notesCtrl.dispose(); _termsCtrl.dispose();
+    _vendorCtrl.dispose();
+    _orderDateCtrl.dispose();
+    _deliveryDateCtrl.dispose();
+    _shippingCtrl.dispose();
+    _notesCtrl.dispose();
+    _termsCtrl.dispose();
     for (final i in _items) {
       i.dispose();
     }
@@ -99,27 +110,38 @@ class _PurchaseOrderFormPageState extends ConsumerState<PurchaseOrderFormPage> {
 
     final payload = <String, dynamic>{
       'vendorName': _vendorCtrl.text.trim(),
-      'orderDate': _orderDateCtrl.text.trim().isEmpty ? null : _orderDateCtrl.text.trim(),
-      'expectedDate': _deliveryDateCtrl.text.trim().isEmpty ? null : _deliveryDateCtrl.text.trim(),
-      'shippingAddress': _shippingCtrl.text.trim().isEmpty ? null : _shippingCtrl.text.trim(),
+      'orderDate': _orderDateCtrl.text.trim().isEmpty
+          ? null
+          : _orderDateCtrl.text.trim(),
+      'expectedDate': _deliveryDateCtrl.text.trim().isEmpty
+          ? null
+          : _deliveryDateCtrl.text.trim(),
+      'shippingAddress':
+          _shippingCtrl.text.trim().isEmpty ? null : _shippingCtrl.text.trim(),
       'notes': _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
       'terms': _termsCtrl.text.trim().isEmpty ? null : _termsCtrl.text.trim(),
       'subtotal': _subtotal,
-      'items': _items.map((i) => <String, dynamic>{
-        'productName': i.productCtrl.text.trim(),
-        'quantity': double.tryParse(i.qtyCtrl.text) ?? 0,
-        'rate': double.tryParse(i.rateCtrl.text) ?? 0,
-        'taxRate': double.tryParse(i.taxCtrl.text) ?? 0,
-      },).toList(),
+      'items': _items
+          .map(
+            (i) => <String, dynamic>{
+              'productName': i.productCtrl.text.trim(),
+              'quantity': double.tryParse(i.qtyCtrl.text) ?? 0,
+              'rate': double.tryParse(i.rateCtrl.text) ?? 0,
+              'taxRate': double.tryParse(i.taxCtrl.text) ?? 0,
+            },
+          )
+          .toList(),
     };
 
-    final result = await ref.read(purchaseOrderListControllerProvider.notifier)
+    final result = await ref
+        .read(purchaseOrderListControllerProvider.notifier)
         .save(payload, id: widget.poId);
 
     if (!context.mounted) return;
     setState(() => _saving = false);
     result.fold(
-      (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(),
     );
   }
@@ -133,7 +155,10 @@ class _PurchaseOrderFormPageState extends ConsumerState<PurchaseOrderFormPage> {
           TextButton(
             onPressed: _saving ? null : _save,
             child: _saving
-                ? const SizedBox(height: Spacing.x5, width: Spacing.x5, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    height: Spacing.x5,
+                    width: Spacing.x5,
+                    child: CircularProgressIndicator(strokeWidth: 2))
                 : const Text('Save'),
           ),
         ],
@@ -146,7 +171,8 @@ class _PurchaseOrderFormPageState extends ConsumerState<PurchaseOrderFormPage> {
             TextFormField(
               controller: _vendorCtrl,
               decoration: const InputDecoration(labelText: 'Vendor *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
@@ -159,70 +185,99 @@ class _PurchaseOrderFormPageState extends ConsumerState<PurchaseOrderFormPage> {
               decoration: const InputDecoration(labelText: 'Expected Delivery'),
             ),
             const SizedBox(height: Spacing.x4),
-            Row(children: [
-              const Text('Items', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-              const Spacer(),
-              TextButton.icon(
-                onPressed: _addItem, icon: const Icon(Icons.add, size: 18), label: const Text('Add'),
-              ),
-            ],),
+            Row(
+              children: [
+                const Text('Items',
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                const Spacer(),
+                TextButton.icon(
+                  onPressed: _addItem,
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text('Add'),
+                ),
+              ],
+            ),
             ...List.generate(_items.length, (i) {
               final item = _items[i];
               return Padding(
                 padding: const EdgeInsets.only(bottom: Spacing.x3),
-                child: Row(children: [
-                  Expanded(flex: 2, child: TextFormField(
-                    controller: item.productCtrl,
-                    decoration: const InputDecoration(labelText: 'Product', isDense: true),
-                  ),),
-                  const SizedBox(width: Spacing.x1),
-                  Expanded(flex: 1, child: TextFormField(
-                    controller: item.qtyCtrl,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Qty', isDense: true),
-                  ),),
-                  const SizedBox(width: Spacing.x1),
-                  Expanded(flex: 1, child: TextFormField(
-                    controller: item.rateCtrl,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Rate', isDense: true),
-                  ),),
-                  const SizedBox(width: Spacing.x1),
-                  Expanded(flex: 1, child: TextFormField(
-                    controller: item.taxCtrl,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Tax%', isDense: true),
-                  ),),
-                  IconButton(
-                    icon: const Icon(Icons.remove_circle_outline, size: 20),
-                    onPressed: () => _removeItem(i),
-                  ),
-                ],),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: TextFormField(
+                        controller: item.productCtrl,
+                        decoration: const InputDecoration(
+                            labelText: 'Product', isDense: true),
+                      ),
+                    ),
+                    const SizedBox(width: Spacing.x1),
+                    Expanded(
+                      flex: 1,
+                      child: TextFormField(
+                        controller: item.qtyCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                            labelText: 'Qty', isDense: true),
+                      ),
+                    ),
+                    const SizedBox(width: Spacing.x1),
+                    Expanded(
+                      flex: 1,
+                      child: TextFormField(
+                        controller: item.rateCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                            labelText: 'Rate', isDense: true),
+                      ),
+                    ),
+                    const SizedBox(width: Spacing.x1),
+                    Expanded(
+                      flex: 1,
+                      child: TextFormField(
+                        controller: item.taxCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                            labelText: 'Tax%', isDense: true),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.remove_circle_outline, size: 20),
+                      onPressed: () => _removeItem(i),
+                    ),
+                  ],
+                ),
               );
             }),
             const SizedBox(height: Spacing.x2),
-            Text('Subtotal: \$${_subtotal.toStringAsFixed(2)}',
-                style: Theme.of(context).textTheme.labelLarge,),
+            Text(
+              'Subtotal: \$${_subtotal.toStringAsFixed(2)}',
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _shippingCtrl,
               maxLines: 2,
               textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(labelText: 'Shipping Address', alignLabelWithHint: true),
+              decoration: const InputDecoration(
+                  labelText: 'Shipping Address', alignLabelWithHint: true),
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _notesCtrl,
               maxLines: 3,
               textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(labelText: 'Notes', alignLabelWithHint: true),
+              decoration: const InputDecoration(
+                  labelText: 'Notes', alignLabelWithHint: true),
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _termsCtrl,
               maxLines: 3,
               textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(labelText: 'Terms', alignLabelWithHint: true),
+              decoration: const InputDecoration(
+                  labelText: 'Terms', alignLabelWithHint: true),
             ),
           ],
         ),

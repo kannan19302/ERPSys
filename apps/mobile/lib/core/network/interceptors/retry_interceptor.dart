@@ -66,7 +66,8 @@ class RetryInterceptor extends Interceptor {
   }
 
   bool _isRetryable(DioException err, RequestOptions request) {
-    if (!_idempotentMethods.contains(request.method.toUpperCase())) return false;
+    if (!_idempotentMethods.contains(request.method.toUpperCase()))
+      return false;
 
     return switch (err.type) {
       DioExceptionType.connectionTimeout ||

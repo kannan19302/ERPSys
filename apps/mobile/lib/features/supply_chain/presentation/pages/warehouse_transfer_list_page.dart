@@ -13,10 +13,12 @@ class WarehouseTransferListPage extends ConsumerStatefulWidget {
   static const String routeName = 'warehouse-transfers';
   static const String routePath = '/supply-chain/warehouse-transfers';
   @override
-  ConsumerState<WarehouseTransferListPage> createState() => _WarehouseTransferListPageState();
+  ConsumerState<WarehouseTransferListPage> createState() =>
+      _WarehouseTransferListPageState();
 }
 
-class _WarehouseTransferListPageState extends ConsumerState<WarehouseTransferListPage> {
+class _WarehouseTransferListPageState
+    extends ConsumerState<WarehouseTransferListPage> {
   final TextEditingController _search = TextEditingController();
   String? _statusFilter;
 
@@ -42,7 +44,8 @@ class _WarehouseTransferListPageState extends ConsumerState<WarehouseTransferLis
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(warehouseTransferListControllerProvider);
-    final controller = ref.read(warehouseTransferListControllerProvider.notifier);
+    final controller =
+        ref.read(warehouseTransferListControllerProvider.notifier);
     final t = context.tokens;
 
     return Scaffold(
@@ -55,7 +58,8 @@ class _WarehouseTransferListPageState extends ConsumerState<WarehouseTransferLis
             initialValue: state.query.sort,
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
-                .map((e) => PopupMenuItem<String>(value: e.key, child: Text(e.value)))
+                .map((e) =>
+                    PopupMenuItem<String>(value: e.key, child: Text(e.value)))
                 .toList(),
           ),
         ],
@@ -68,7 +72,8 @@ class _WarehouseTransferListPageState extends ConsumerState<WarehouseTransferLis
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -76,34 +81,50 @@ class _WarehouseTransferListPageState extends ConsumerState<WarehouseTransferLis
               decoration: InputDecoration(
                 hintText: 'Search reference',
                 prefixIcon: const Icon(Icons.search),
-                suffixIcon: _search.text.isEmpty ? null : IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () { _search.clear(); controller.search(''); },
-                ),
+                suffixIcon: _search.text.isEmpty
+                    ? null
+                    : IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
+                      ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(state.isLoading ? 'Loading...' : '${state.meta.total} transfer${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
-              const Spacer(),
-              DropdownButton<String?>(
-                value: _statusFilter,
-                hint: const Text('Status'),
-                underline: const SizedBox.shrink(),
-                items: [
-                  const DropdownMenuItem(value: null, child: Text('All')),
-                  ..._statusFilters.entries.map((e) => DropdownMenuItem(value: e.key, child: Text(e.value))),
-                ],
-                onChanged: (v) {
-                  setState(() => _statusFilter = v);
-                  if (v == null) { controller.applyFilters({}); }
-                  else { controller.applyFilters({'status': v}); }
-                },
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} transfer${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+                const Spacer(),
+                DropdownButton<String?>(
+                  value: _statusFilter,
+                  hint: const Text('Status'),
+                  underline: const SizedBox.shrink(),
+                  items: [
+                    const DropdownMenuItem(value: null, child: Text('All')),
+                    ..._statusFilters.entries.map((e) =>
+                        DropdownMenuItem(value: e.key, child: Text(e.value))),
+                  ],
+                  onChanged: (v) {
+                    setState(() => _statusFilter = v);
+                    if (v == null) {
+                      controller.applyFilters({});
+                    } else {
+                      controller.applyFilters({'status': v});
+                    }
+                  },
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -111,7 +132,8 @@ class _WarehouseTransferListPageState extends ConsumerState<WarehouseTransferLis
     );
   }
 
-  Widget _body(WarehouseTransferListState state, WarehouseTransferListController controller) {
+  Widget _body(WarehouseTransferListState state,
+      WarehouseTransferListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -130,8 +152,10 @@ class _WarehouseTransferListPageState extends ConsumerState<WarehouseTransferLis
           : 'Warehouse transfers in UniERP will appear here.',
       itemBuilder: (_, WarehouseTransfer transfer, __) => _TransferTile(
         transfer: transfer,
-        onTap: () => context.pushNamed('warehouse-transfer-detail',
-          pathParameters: <String, String>{'id': transfer.id},),
+        onTap: () => context.pushNamed(
+          'warehouse-transfer-detail',
+          pathParameters: <String, String>{'id': transfer.id},
+        ),
       ),
     );
   }
@@ -143,13 +167,13 @@ class _TransferTile extends StatelessWidget {
   final VoidCallback onTap;
 
   UiTone _statusTone(String status) => switch (status) {
-    'PENDING' => UiTone.warning,
-    'APPROVED' => UiTone.info,
-    'IN_TRANSIT' => UiTone.info,
-    'COMPLETED' => UiTone.success,
-    'CANCELLED' => UiTone.danger,
-    _ => UiTone.neutral,
-  };
+        'PENDING' => UiTone.warning,
+        'APPROVED' => UiTone.info,
+        'IN_TRANSIT' => UiTone.info,
+        'COMPLETED' => UiTone.success,
+        'CANCELLED' => UiTone.danger,
+        _ => UiTone.neutral,
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -163,27 +187,53 @@ class _TransferTile extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(child: Text(transfer.reference ?? 'Transfer',
-                    style: Theme.of(context).textTheme.titleSmall,),),
-                UiStatusBadge(label: transfer.status, tone: _statusTone(transfer.status)),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      transfer.reference ?? 'Transfer',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  UiStatusBadge(
+                      label: transfer.status,
+                      tone: _statusTone(transfer.status)),
+                ],
+              ),
               const SizedBox(height: Spacing.x1),
-              Row(children: [
-                Icon(Icons.arrow_back, size: TypeScale.sm, color: t.textTertiary),
-                const SizedBox(width: Spacing.x1),
-                Expanded(child: Text(transfer.fromWarehouseName ?? '—',
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),),
-              ],),
-              Row(children: [
-                Icon(Icons.arrow_forward, size: TypeScale.sm, color: t.textTertiary),
-                const SizedBox(width: Spacing.x1),
-                Expanded(child: Text(transfer.toWarehouseName ?? '—',
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),),
-              ],),
+              Row(
+                children: [
+                  Icon(Icons.arrow_back,
+                      size: TypeScale.sm, color: t.textTertiary),
+                  const SizedBox(width: Spacing.x1),
+                  Expanded(
+                    child: Text(
+                      transfer.fromWarehouseName ?? '—',
+                      style: TextStyle(
+                          color: t.textSecondary, fontSize: TypeScale.xs),
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Icon(Icons.arrow_forward,
+                      size: TypeScale.sm, color: t.textTertiary),
+                  const SizedBox(width: Spacing.x1),
+                  Expanded(
+                    child: Text(
+                      transfer.toWarehouseName ?? '—',
+                      style: TextStyle(
+                          color: t.textSecondary, fontSize: TypeScale.xs),
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: Spacing.x0_5),
-              Text('${transfer.productName ?? 'Product'} × ${transfer.quantity}',
-                  style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
+              Text(
+                '${transfer.productName ?? 'Product'} × ${transfer.quantity}',
+                style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),
+              ),
             ],
           ),
         ),

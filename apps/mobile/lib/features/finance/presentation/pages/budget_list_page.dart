@@ -75,7 +75,10 @@ class _BudgetListPageState extends ConsumerState<BudgetListPage> {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2,
+              Spacing.x4,
+              Spacing.x3,
+              Spacing.x4,
+              Spacing.x2,
             ),
             child: TextField(
               controller: _search,
@@ -117,7 +120,8 @@ class _BudgetListPageState extends ConsumerState<BudgetListPage> {
                   underline: const SizedBox.shrink(),
                   items: _statusFilters.entries
                       .map(
-                        (MapEntry<String, String> e) => DropdownMenuItem<String>(
+                        (MapEntry<String, String> e) =>
+                            DropdownMenuItem<String>(
                           value: e.key,
                           child: Text(e.value),
                         ),
@@ -128,7 +132,8 @@ class _BudgetListPageState extends ConsumerState<BudgetListPage> {
                     if (value == null) {
                       controller.applyFilters(const <String, String>{});
                     } else {
-                      controller.applyFilters(<String, String>{'status': value});
+                      controller
+                          .applyFilters(<String, String>{'status': value});
                     }
                   },
                 ),
@@ -161,8 +166,7 @@ class _BudgetListPageState extends ConsumerState<BudgetListPage> {
       emptyMessage: state.query.search?.isNotEmpty ?? false
           ? 'Nothing matches "${state.query.search}".'
           : 'Budgets created in UniERP will appear here.',
-      itemBuilder: (BuildContext context, Budget budget, _) =>
-          _BudgetTile(
+      itemBuilder: (BuildContext context, Budget budget, _) => _BudgetTile(
         budget: budget,
         onTap: () => context.pushNamed(
           'budget-detail',
@@ -233,7 +237,8 @@ class _BudgetTile extends StatelessWidget {
             children: <Widget>[
               Text(
                 'Spent ${Formatters.currency(budget.spentAmount)}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                style:
+                    TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
               ),
               const Spacer(),
               Text(

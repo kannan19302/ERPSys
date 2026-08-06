@@ -40,9 +40,8 @@ class _ChannelFormPageState extends ConsumerState<ChannelFormPage> {
   }
 
   Future<void> _loadChannel() async {
-    final Channel? channel = ref
-        .read(channelDetailProvider(widget.channelId!))
-        .valueOrNull;
+    final Channel? channel =
+        ref.read(channelDetailProvider(widget.channelId!)).valueOrNull;
     if (channel != null) {
       _nameCtrl.text = channel.name;
       _descriptionCtrl.text = channel.description ?? '';
@@ -63,7 +62,9 @@ class _ChannelFormPageState extends ConsumerState<ChannelFormPage> {
 
     final Map<String, dynamic> payload = <String, dynamic>{
       'name': _nameCtrl.text.trim(),
-      'description': _descriptionCtrl.text.trim().isEmpty ? null : _descriptionCtrl.text.trim(),
+      'description': _descriptionCtrl.text.trim().isEmpty
+          ? null
+          : _descriptionCtrl.text.trim(),
       'type': _type,
     };
 
@@ -126,8 +127,10 @@ class _ChannelFormPageState extends ConsumerState<ChannelFormPage> {
               initialValue: _type,
               decoration: const InputDecoration(labelText: 'Type'),
               items: const <DropdownMenuItem<String>>[
-                DropdownMenuItem<String>(value: 'PUBLIC', child: Text('Public')),
-                DropdownMenuItem<String>(value: 'PRIVATE', child: Text('Private')),
+                DropdownMenuItem<String>(
+                    value: 'PUBLIC', child: Text('Public')),
+                DropdownMenuItem<String>(
+                    value: 'PRIVATE', child: Text('Private')),
               ],
               onChanged: (String? v) {
                 if (v != null) setState(() => _type = v);

@@ -36,16 +36,19 @@ class _TaxFilingFormPageState extends ConsumerState<TaxFilingFormPage> {
                     const UiSectionHeader(title: 'Filing Details'),
                     TextFormField(
                       decoration: const InputDecoration(labelText: 'Tax Type'),
-                      validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                      validator: (v) =>
+                          v == null || v.isEmpty ? 'Required' : null,
                     ),
                     const SizedBox(height: Spacing.x3),
                     TextFormField(
                       decoration: const InputDecoration(labelText: 'Period'),
-                      validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                      validator: (v) =>
+                          v == null || v.isEmpty ? 'Required' : null,
                     ),
                     const SizedBox(height: Spacing.x3),
                     TextFormField(
-                      decoration: const InputDecoration(labelText: 'Return Type'),
+                      decoration:
+                          const InputDecoration(labelText: 'Return Type'),
                     ),
                     const SizedBox(height: Spacing.x3),
                     TextFormField(

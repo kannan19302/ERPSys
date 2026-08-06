@@ -10,7 +10,8 @@ class SaveWorkflowDefinitionParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveWorkflowDefinitionUseCase extends UseCase<WorkflowDefinition, SaveWorkflowDefinitionParams> {
+class SaveWorkflowDefinitionUseCase
+    extends UseCase<WorkflowDefinition, SaveWorkflowDefinitionParams> {
   const SaveWorkflowDefinitionUseCase(this._repository);
   final WorkflowRepository _repository;
   @override
@@ -22,11 +23,13 @@ class SaveWorkflowDefinitionUseCase extends UseCase<WorkflowDefinition, SaveWork
   }
 }
 
-class ListWorkflowDefinitionsUseCase extends UseCase<Cacheable<Paginated<WorkflowDefinition>>, ListQuery> {
+class ListWorkflowDefinitionsUseCase
+    extends UseCase<Cacheable<Paginated<WorkflowDefinition>>, ListQuery> {
   const ListWorkflowDefinitionsUseCase(this._repository);
   final WorkflowRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<WorkflowDefinition>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<WorkflowDefinition>>>> call(
+          ListQuery params) =>
       _repository.listWorkflowDefinitions(params);
 }
 
@@ -46,7 +49,8 @@ class DeleteWorkflowDefinitionUseCase extends UseCase<void, String> {
       _repository.deleteWorkflowDefinition(id);
 }
 
-class ActivateWorkflowDefinitionUseCase extends UseCase<WorkflowDefinition, String> {
+class ActivateWorkflowDefinitionUseCase
+    extends UseCase<WorkflowDefinition, String> {
   const ActivateWorkflowDefinitionUseCase(this._repository);
   final WorkflowRepository _repository;
   @override
@@ -54,7 +58,8 @@ class ActivateWorkflowDefinitionUseCase extends UseCase<WorkflowDefinition, Stri
       _repository.activateWorkflowDefinition(id);
 }
 
-class DeactivateWorkflowDefinitionUseCase extends UseCase<WorkflowDefinition, String> {
+class DeactivateWorkflowDefinitionUseCase
+    extends UseCase<WorkflowDefinition, String> {
   const DeactivateWorkflowDefinitionUseCase(this._repository);
   final WorkflowRepository _repository;
   @override
@@ -62,11 +67,13 @@ class DeactivateWorkflowDefinitionUseCase extends UseCase<WorkflowDefinition, St
       _repository.deactivateWorkflowDefinition(id);
 }
 
-class ListWorkflowInstancesUseCase extends UseCase<Cacheable<Paginated<WorkflowInstance>>, ListQuery> {
+class ListWorkflowInstancesUseCase
+    extends UseCase<Cacheable<Paginated<WorkflowInstance>>, ListQuery> {
   const ListWorkflowInstancesUseCase(this._repository);
   final WorkflowRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<WorkflowInstance>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<WorkflowInstance>>>> call(
+          ListQuery params) =>
       _repository.listWorkflowInstances(params);
 }
 
@@ -78,7 +85,8 @@ class GetWorkflowInstanceUseCase extends UseCase<WorkflowInstance, String> {
       _repository.getWorkflowInstance(id);
 }
 
-class CreateWorkflowInstanceUseCase extends UseCase<WorkflowInstance, Map<String, dynamic>> {
+class CreateWorkflowInstanceUseCase
+    extends UseCase<WorkflowInstance, Map<String, dynamic>> {
   const CreateWorkflowInstanceUseCase(this._repository);
   final WorkflowRepository _repository;
   @override
@@ -108,7 +116,8 @@ class SaveWorkflowTaskParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveWorkflowTaskUseCase extends UseCase<WorkflowTask, SaveWorkflowTaskParams> {
+class SaveWorkflowTaskUseCase
+    extends UseCase<WorkflowTask, SaveWorkflowTaskParams> {
   const SaveWorkflowTaskUseCase(this._repository);
   final WorkflowRepository _repository;
   @override
@@ -120,7 +129,8 @@ class SaveWorkflowTaskUseCase extends UseCase<WorkflowTask, SaveWorkflowTaskPara
   }
 }
 
-class ListWorkflowTasksUseCase extends UseCase<Cacheable<Paginated<WorkflowTask>>, ListQuery> {
+class ListWorkflowTasksUseCase
+    extends UseCase<Cacheable<Paginated<WorkflowTask>>, ListQuery> {
   const ListWorkflowTasksUseCase(this._repository);
   final WorkflowRepository _repository;
   @override
@@ -144,7 +154,8 @@ class RejectWorkflowTaskUseCase extends UseCase<WorkflowTask, String> {
       _repository.rejectWorkflowTask(id);
 }
 
-class DelegateWorkflowTaskUseCase extends UseCase<WorkflowTask, DelegateWorkflowTaskParams> {
+class DelegateWorkflowTaskUseCase
+    extends UseCase<WorkflowTask, DelegateWorkflowTaskParams> {
   const DelegateWorkflowTaskUseCase(this._repository);
   final WorkflowRepository _repository;
   @override
@@ -153,7 +164,8 @@ class DelegateWorkflowTaskUseCase extends UseCase<WorkflowTask, DelegateWorkflow
 }
 
 class DelegateWorkflowTaskParams {
-  const DelegateWorkflowTaskParams({required this.taskId, required this.payload});
+  const DelegateWorkflowTaskParams(
+      {required this.taskId, required this.payload});
   final String taskId;
   final Map<String, dynamic> payload;
 }
@@ -174,11 +186,11 @@ class GetWorkflowTaskUseCase extends UseCase<WorkflowTask, String> {
       _repository.getWorkflowTask(id);
 }
 
-class ListSlaRulesUseCase extends UseCase<Cacheable<Paginated<SlaRule>>, ListQuery> {
+class ListSlaRulesUseCase
+    extends UseCase<Cacheable<Paginated<SlaRule>>, ListQuery> {
   const ListSlaRulesUseCase(this._repository);
   final WorkflowRepository _repository;
   @override
   Future<Result<Cacheable<Paginated<SlaRule>>>> call(ListQuery params) =>
       _repository.listSlaRules(params);
 }
-

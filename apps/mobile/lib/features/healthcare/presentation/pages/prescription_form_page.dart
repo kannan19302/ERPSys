@@ -11,7 +11,8 @@ class PrescriptionFormPage extends ConsumerStatefulWidget {
   final String? id;
 
   @override
-  ConsumerState<PrescriptionFormPage> createState() => _PrescriptionFormPageState();
+  ConsumerState<PrescriptionFormPage> createState() =>
+      _PrescriptionFormPageState();
 }
 
 class _PrescriptionFormPageState extends ConsumerState<PrescriptionFormPage> {
@@ -73,13 +74,17 @@ class _PrescriptionFormPageState extends ConsumerState<PrescriptionFormPage> {
       'notes': _notesController.text.trim(),
       'refillCount': int.tryParse(_refillCountController.text.trim()) ?? 0,
       'status': _status,
-      if (_prescriptionDate != null) 'prescriptionDate': _prescriptionDate!.toIso8601String(),
+      if (_prescriptionDate != null)
+        'prescriptionDate': _prescriptionDate!.toIso8601String(),
     };
-    final result = await ref.read(prescriptionListControllerProvider.notifier).save(payload, id: widget.id);
+    final result = await ref
+        .read(prescriptionListControllerProvider.notifier)
+        .save(payload, id: widget.id);
     if (!mounted) return;
     setState(() => _isLoading = false);
     result.fold(
-      (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(true),
     );
   }
@@ -93,7 +98,9 @@ class _PrescriptionFormPageState extends ConsumerState<PrescriptionFormPage> {
       );
     }
     return Scaffold(
-      appBar: AppBar(title: Text(widget.id != null ? 'Edit Prescription' : 'New Prescription')),
+      appBar: AppBar(
+          title: Text(
+              widget.id != null ? 'Edit Prescription' : 'New Prescription')),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -102,14 +109,17 @@ class _PrescriptionFormPageState extends ConsumerState<PrescriptionFormPage> {
             UiTextField(
               label: 'Patient ID',
               controller: _patientIdController,
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+              validator: (v) =>
+                  (v == null || v.trim().isEmpty) ? 'Required' : null,
             ),
             UiTextField(
               label: 'Patient Name',
               controller: _patientNameController,
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+              validator: (v) =>
+                  (v == null || v.trim().isEmpty) ? 'Required' : null,
             ),
-            UiTextField(label: 'Doctor Name', controller: _doctorNameController),
+            UiTextField(
+                label: 'Doctor Name', controller: _doctorNameController),
             UiDropdownField(
               label: 'Status',
               itemLabel: (v) => v.toString(),
@@ -122,15 +132,28 @@ class _PrescriptionFormPageState extends ConsumerState<PrescriptionFormPage> {
               selectedDate: _prescriptionDate,
               onChanged: (v) => setState(() => _prescriptionDate = v),
             ),
-            UiTextField(label: 'Medications', controller: _medicationsController, maxLines: 4),
-            UiTextField(label: 'Diagnosis', controller: _diagnosisController, maxLines: 3),
-            UiTextField(label: 'Refill Count', controller: _refillCountController, keyboardType: TextInputType.number),
-            UiTextField(label: 'Notes', controller: _notesController, maxLines: 3),
+            UiTextField(
+                label: 'Medications',
+                controller: _medicationsController,
+                maxLines: 4),
+            UiTextField(
+                label: 'Diagnosis',
+                controller: _diagnosisController,
+                maxLines: 3),
+            UiTextField(
+                label: 'Refill Count',
+                controller: _refillCountController,
+                keyboardType: TextInputType.number),
+            UiTextField(
+                label: 'Notes', controller: _notesController, maxLines: 3),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _isLoading ? null : _submit,
               child: _isLoading
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2))
                   : const Text('Save'),
             ),
           ],

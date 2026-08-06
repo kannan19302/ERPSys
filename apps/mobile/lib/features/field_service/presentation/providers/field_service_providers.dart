@@ -13,7 +13,8 @@ import '../../domain/entities/field_service.dart';
 import '../../domain/repositories/field_service_repository.dart';
 import '../../domain/usecases/field_service_usecases.dart';
 
-final Provider<FieldServiceRemoteDataSource> fieldServiceRemoteDataSourceProvider =
+final Provider<FieldServiceRemoteDataSource>
+    fieldServiceRemoteDataSourceProvider =
     Provider<FieldServiceRemoteDataSource>(
   (Ref ref) => FieldServiceRemoteDataSourceImpl(ref.watch(apiClientProvider)),
 );
@@ -30,7 +31,8 @@ final Provider<FieldServiceRepository> fieldServiceRepositoryProvider =
 class ServiceTicketListState extends Equatable {
   const ServiceTicketListState({
     this.items = const <ServiceTicket>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -47,20 +49,36 @@ class ServiceTicketListState extends Equatable {
   final Failure? loadMoreFailure;
 
   ServiceTicketListState copyWith({
-    List<ServiceTicket>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<ServiceTicket>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       ServiceTicketListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<ServiceTicketListController, ServiceTicketListState>
@@ -90,8 +108,11 @@ class ServiceTicketListController extends Notifier<ServiceTicketListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -104,8 +125,11 @@ class ServiceTicketListController extends Notifier<ServiceTicketListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -113,7 +137,8 @@ class ServiceTicketListController extends Notifier<ServiceTicketListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
@@ -125,7 +150,8 @@ class ServiceTicketListController extends Notifier<ServiceTicketListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteServiceTicketUseCase(
-      ref.read(fieldServiceRepositoryProvider),)(id);
+      ref.read(fieldServiceRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
@@ -134,14 +160,16 @@ class ServiceTicketListController extends Notifier<ServiceTicketListState> {
 final FutureProviderFamily<ServiceTicket, String> serviceTicketDetailProvider =
     FutureProvider.family<ServiceTicket, String>((Ref ref, String id) async {
   final result = await GetServiceTicketUseCase(
-    ref.watch(fieldServiceRepositoryProvider),)(id);
+    ref.watch(fieldServiceRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
 class TechnicianListState extends Equatable {
   const TechnicianListState({
     this.items = const <Technician>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -158,20 +186,36 @@ class TechnicianListState extends Equatable {
   final Failure? loadMoreFailure;
 
   TechnicianListState copyWith({
-    List<Technician>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<Technician>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       TechnicianListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<TechnicianListController, TechnicianListState>
@@ -201,8 +245,11 @@ class TechnicianListController extends Notifier<TechnicianListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -215,8 +262,11 @@ class TechnicianListController extends Notifier<TechnicianListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -224,31 +274,49 @@ class TechnicianListController extends Notifier<TechnicianListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteTechnicianUseCase(
-      ref.read(fieldServiceRepositoryProvider),)(id);
+      ref.read(fieldServiceRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 }
 
-final FutureProviderFamily<Technician, String> technicianDetailProvider = FutureProvider.family<Technician, String>((ref, id) async => throw UnimplementedError());
-final FutureProviderFamily<ServiceSchedule, String> serviceScheduleDetailProvider = FutureProvider.family<ServiceSchedule, String>((ref, id) async => throw UnimplementedError());
-final FutureProviderFamily<ServiceContract, String> serviceContractDetailProvider = FutureProvider.family<ServiceContract, String>((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<Technician, String> technicianDetailProvider =
+    FutureProvider.family<Technician, String>(
+        (ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<ServiceSchedule, String>
+    serviceScheduleDetailProvider =
+    FutureProvider.family<ServiceSchedule, String>(
+        (ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<ServiceContract, String>
+    serviceContractDetailProvider =
+    FutureProvider.family<ServiceContract, String>(
+        (ref, id) async => throw UnimplementedError());
 
 extension SaveTechnician on TechnicianListController {
-  Future<Result<Technician>> save(Map<String, dynamic> payload, {String? id}) async => throw UnimplementedError();
+  Future<Result<Technician>> save(Map<String, dynamic> payload,
+          {String? id}) async =>
+      throw UnimplementedError();
 }
+
 extension SaveServiceTicket on ServiceTicketListController {
-  Future<Result<ServiceTicket>> save(Map<String, dynamic> payload, {String? id}) async => throw UnimplementedError();
+  Future<Result<ServiceTicket>> save(Map<String, dynamic> payload,
+          {String? id}) async =>
+      throw UnimplementedError();
 }
+
 extension SaveServiceSchedule on ServiceScheduleListController {
-  Future<Result<ServiceSchedule>> save(Map<String, dynamic> payload, {String? id}) async => throw UnimplementedError();
+  Future<Result<ServiceSchedule>> save(Map<String, dynamic> payload,
+          {String? id}) async =>
+      throw UnimplementedError();
 }
 
 final NotifierProvider<ServiceScheduleListController, ServiceScheduleListState>
@@ -269,7 +337,6 @@ class ServiceScheduleListState extends Equatable {
   List<Object?> get props => [items];
 }
 
-
 final NotifierProvider<ServiceContractListController, ServiceContractListState>
     serviceContractListControllerProvider =
     NotifierProvider<ServiceContractListController, ServiceContractListState>(
@@ -279,7 +346,9 @@ final NotifierProvider<ServiceContractListController, ServiceContractListState>
 class ServiceContractListController extends Notifier<ServiceContractListState> {
   @override
   ServiceContractListState build() => const ServiceContractListState();
-  Future<Result<ServiceContract>> save(Map<String, dynamic> payload, {String? id}) async => throw UnimplementedError();
+  Future<Result<ServiceContract>> save(Map<String, dynamic> payload,
+          {String? id}) async =>
+      throw UnimplementedError();
 }
 
 class ServiceContractListState extends Equatable {

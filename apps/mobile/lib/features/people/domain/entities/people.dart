@@ -49,10 +49,26 @@ class Person extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, firstName, lastName, email, phone, jobTitle, department,
-        teamId, teamName, reportsTo, reportsToName, status, employeeId,
-        employmentType, joinedDate, location, bio, skills,
-        createdAt, updatedAt,
+        id,
+        firstName,
+        lastName,
+        email,
+        phone,
+        jobTitle,
+        department,
+        teamId,
+        teamName,
+        reportsTo,
+        reportsToName,
+        status,
+        employeeId,
+        employmentType,
+        joinedDate,
+        location,
+        bio,
+        skills,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -83,8 +99,16 @@ class PeopleTeam extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, description, leadId, leadName, department, memberCount,
-        status, createdAt, updatedAt,
+        id,
+        name,
+        description,
+        leadId,
+        leadName,
+        department,
+        memberCount,
+        status,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -125,9 +149,21 @@ class PeopleOnboardingTask extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, title, personId, personName, assignedTo, assignedToName,
-        status, category, description, dueDate, completedDate, isRequired,
-        notes, createdAt, updatedAt,
+        id,
+        title,
+        personId,
+        personName,
+        assignedTo,
+        assignedToName,
+        status,
+        category,
+        description,
+        dueDate,
+        completedDate,
+        isRequired,
+        notes,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -158,7 +194,15 @@ class PeopleRecognitionEntry extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, message, giverId, giverName, receiverId, receiverName,
-        category, badgeType, status, createdAt,
+        id,
+        message,
+        giverId,
+        giverName,
+        receiverId,
+        receiverName,
+        category,
+        badgeType,
+        status,
+        createdAt,
       ];
 }

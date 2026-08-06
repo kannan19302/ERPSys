@@ -14,7 +14,8 @@ class ProjectTaskFormPage extends ConsumerStatefulWidget {
   final String? taskId;
 
   @override
-  ConsumerState<ProjectTaskFormPage> createState() => _ProjectTaskFormPageState();
+  ConsumerState<ProjectTaskFormPage> createState() =>
+      _ProjectTaskFormPageState();
 }
 
 class _ProjectTaskFormPageState extends ConsumerState<ProjectTaskFormPage> {
@@ -67,9 +68,12 @@ class _ProjectTaskFormPageState extends ConsumerState<ProjectTaskFormPage> {
 
     final payload = <String, dynamic>{
       'title': _titleCtrl.text.trim(),
-      'description': _descriptionCtrl.text.trim().isEmpty ? null : _descriptionCtrl.text.trim(),
+      'description': _descriptionCtrl.text.trim().isEmpty
+          ? null
+          : _descriptionCtrl.text.trim(),
       'projectId': _projectIdCtrl.text.trim(),
-      'assigneeName': _assigneeCtrl.text.trim().isEmpty ? null : _assigneeCtrl.text.trim(),
+      'assigneeName':
+          _assigneeCtrl.text.trim().isEmpty ? null : _assigneeCtrl.text.trim(),
       'estimatedHours': double.tryParse(_estHoursCtrl.text),
       'dueDate': _dueDate?.toIso8601String(),
       'priority': _priority,
@@ -77,12 +81,15 @@ class _ProjectTaskFormPageState extends ConsumerState<ProjectTaskFormPage> {
     };
 
     final result = await ref.read(taskListControllerProvider.notifier).save(
-      payload, id: widget.taskId,);
+          payload,
+          id: widget.taskId,
+        );
 
     if (!context.mounted) return;
     setState(() => _saving = false);
     result.fold(
-      (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(),
     );
   }
@@ -96,7 +103,10 @@ class _ProjectTaskFormPageState extends ConsumerState<ProjectTaskFormPage> {
           TextButton(
             onPressed: _saving ? null : _save,
             child: _saving
-                ? const SizedBox(height: Spacing.x5, width: Spacing.x5, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    height: Spacing.x5,
+                    width: Spacing.x5,
+                    child: CircularProgressIndicator(strokeWidth: 2))
                 : const Text('Save'),
           ),
         ],
@@ -109,19 +119,22 @@ class _ProjectTaskFormPageState extends ConsumerState<ProjectTaskFormPage> {
             TextFormField(
               controller: _titleCtrl,
               decoration: const InputDecoration(labelText: 'Title *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _descriptionCtrl,
               maxLines: 3,
-              decoration: const InputDecoration(labelText: 'Description', alignLabelWithHint: true),
+              decoration: const InputDecoration(
+                  labelText: 'Description', alignLabelWithHint: true),
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _projectIdCtrl,
               decoration: const InputDecoration(labelText: 'Project ID *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
@@ -131,10 +144,13 @@ class _ProjectTaskFormPageState extends ConsumerState<ProjectTaskFormPage> {
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _estHoursCtrl,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(labelText: 'Estimated Hours'),
               validator: (v) {
-                if (v != null && v.trim().isNotEmpty && double.tryParse(v) == null) return 'Enter a valid number';
+                if (v != null &&
+                    v.trim().isNotEmpty &&
+                    double.tryParse(v) == null) return 'Enter a valid number';
                 return null;
               },
             ),
@@ -151,7 +167,9 @@ class _ProjectTaskFormPageState extends ConsumerState<ProjectTaskFormPage> {
               },
               child: InputDecorator(
                 decoration: const InputDecoration(labelText: 'Due Date'),
-                child: Text(_dueDate != null ? Formatters.date(_dueDate!) : 'Tap to select'),
+                child: Text(_dueDate != null
+                    ? Formatters.date(_dueDate!)
+                    : 'Tap to select'),
               ),
             ),
             const SizedBox(height: Spacing.x4),
@@ -159,18 +177,24 @@ class _ProjectTaskFormPageState extends ConsumerState<ProjectTaskFormPage> {
               initialValue: _priority,
               decoration: const InputDecoration(labelText: 'Priority'),
               items: ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
-                  .map((v) => DropdownMenuItem<String>(value: v, child: Text(v)))
+                  .map(
+                      (v) => DropdownMenuItem<String>(value: v, child: Text(v)))
                   .toList(),
-              onChanged: (v) { if (v != null) setState(() => _priority = v); },
+              onChanged: (v) {
+                if (v != null) setState(() => _priority = v);
+              },
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
               initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: ['TODO', 'IN_PROGRESS', 'IN_REVIEW', 'DONE']
-                  .map((v) => DropdownMenuItem<String>(value: v, child: Text(v)))
+                  .map(
+                      (v) => DropdownMenuItem<String>(value: v, child: Text(v)))
                   .toList(),
-              onChanged: (v) { if (v != null) setState(() => _status = v); },
+              onChanged: (v) {
+                if (v != null) setState(() => _status = v);
+              },
             ),
           ],
         ),

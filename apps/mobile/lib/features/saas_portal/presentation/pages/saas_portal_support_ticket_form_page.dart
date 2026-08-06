@@ -12,10 +12,12 @@ class SaasPortalSupportTicketFormPage extends ConsumerStatefulWidget {
   final String? ticketId;
 
   @override
-  ConsumerState<SaasPortalSupportTicketFormPage> createState() => _SaasPortalSupportTicketFormPageState();
+  ConsumerState<SaasPortalSupportTicketFormPage> createState() =>
+      _SaasPortalSupportTicketFormPageState();
 }
 
-class _SaasPortalSupportTicketFormPageState extends ConsumerState<SaasPortalSupportTicketFormPage> {
+class _SaasPortalSupportTicketFormPageState
+    extends ConsumerState<SaasPortalSupportTicketFormPage> {
   final _formKey = GlobalKey<FormState>();
   final _subjectCtrl = TextEditingController();
   final _descriptionCtrl = TextEditingController();
@@ -26,22 +28,31 @@ class _SaasPortalSupportTicketFormPageState extends ConsumerState<SaasPortalSupp
   bool get _isEditing => widget.ticketId != null;
 
   @override
-  void dispose() { _subjectCtrl.dispose(); _descriptionCtrl.dispose(); super.dispose(); }
+  void dispose() {
+    _subjectCtrl.dispose();
+    _descriptionCtrl.dispose();
+    super.dispose();
+  }
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
     final payload = <String, dynamic>{
       'subject': _subjectCtrl.text.trim(),
-      'description': _descriptionCtrl.text.trim().isEmpty ? null : _descriptionCtrl.text.trim(),
+      'description': _descriptionCtrl.text.trim().isEmpty
+          ? null
+          : _descriptionCtrl.text.trim(),
       'priority': _priority,
       'category': _category,
     };
-    final result = await ref.read(portalSupportTicketListControllerProvider.notifier).save(payload, id: widget.ticketId);
+    final result = await ref
+        .read(portalSupportTicketListControllerProvider.notifier)
+        .save(payload, id: widget.ticketId);
     if (!context.mounted) return;
     setState(() => _saving = false);
     result.fold(
-      (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(),
     );
   }
@@ -55,26 +66,62 @@ class _SaasPortalSupportTicketFormPageState extends ConsumerState<SaasPortalSupp
           TextButton(
             onPressed: _saving ? null : _save,
             child: _saving
-                ? const SizedBox(height: Spacing.x5, width: Spacing.x5, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    height: Spacing.x5,
+                    width: Spacing.x5,
+                    child: CircularProgressIndicator(strokeWidth: 2))
                 : const Text('Submit'),
           ),
         ],
       ),
-      body: Form(key: _formKey, child: ListView(padding: const EdgeInsets.all(Spacing.x4), children: [
-        TextFormField(controller: _subjectCtrl, decoration: const InputDecoration(labelText: 'Subject *'), validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null),
-        const SizedBox(height: Spacing.x4),
-        TextFormField(controller: _descriptionCtrl, maxLines: 5, decoration: const InputDecoration(labelText: 'Description', alignLabelWithHint: true)),
-        const SizedBox(height: Spacing.x4),
-        DropdownButtonFormField<String>(initialValue: _priority, decoration: const InputDecoration(labelText: 'Priority'), items: const [
-          DropdownMenuItem(value: 'LOW', child: Text('Low')), DropdownMenuItem(value: 'MEDIUM', child: Text('Medium')),
-          DropdownMenuItem(value: 'HIGH', child: Text('High')), DropdownMenuItem(value: 'URGENT', child: Text('Urgent')),
-        ], onChanged: (v) { if (v != null) setState(() => _priority = v); },),
-        const SizedBox(height: Spacing.x4),
-        DropdownButtonFormField<String>(initialValue: _category, decoration: const InputDecoration(labelText: 'Category'), items: const [
-          DropdownMenuItem(value: 'GENERAL', child: Text('General')), DropdownMenuItem(value: 'BILLING', child: Text('Billing')),
-          DropdownMenuItem(value: 'TECHNICAL', child: Text('Technical')), DropdownMenuItem(value: 'FEATURE', child: Text('Feature Request')),
-        ], onChanged: (v) { if (v != null) setState(() => _category = v); },),
-      ],),),
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.all(Spacing.x4),
+          children: [
+            TextFormField(
+                controller: _subjectCtrl,
+                decoration: const InputDecoration(labelText: 'Subject *'),
+                validator: (v) =>
+                    v == null || v.trim().isEmpty ? 'Required' : null),
+            const SizedBox(height: Spacing.x4),
+            TextFormField(
+                controller: _descriptionCtrl,
+                maxLines: 5,
+                decoration: const InputDecoration(
+                    labelText: 'Description', alignLabelWithHint: true)),
+            const SizedBox(height: Spacing.x4),
+            DropdownButtonFormField<String>(
+              initialValue: _priority,
+              decoration: const InputDecoration(labelText: 'Priority'),
+              items: const [
+                DropdownMenuItem(value: 'LOW', child: Text('Low')),
+                DropdownMenuItem(value: 'MEDIUM', child: Text('Medium')),
+                DropdownMenuItem(value: 'HIGH', child: Text('High')),
+                DropdownMenuItem(value: 'URGENT', child: Text('Urgent')),
+              ],
+              onChanged: (v) {
+                if (v != null) setState(() => _priority = v);
+              },
+            ),
+            const SizedBox(height: Spacing.x4),
+            DropdownButtonFormField<String>(
+              initialValue: _category,
+              decoration: const InputDecoration(labelText: 'Category'),
+              items: const [
+                DropdownMenuItem(value: 'GENERAL', child: Text('General')),
+                DropdownMenuItem(value: 'BILLING', child: Text('Billing')),
+                DropdownMenuItem(value: 'TECHNICAL', child: Text('Technical')),
+                DropdownMenuItem(
+                    value: 'FEATURE', child: Text('Feature Request')),
+              ],
+              onChanged: (v) {
+                if (v != null) setState(() => _category = v);
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

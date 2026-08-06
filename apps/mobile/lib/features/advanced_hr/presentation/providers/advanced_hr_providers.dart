@@ -29,7 +29,8 @@ final Provider<AdvancedHrRepository> advancedHrRepositoryProvider =
 class CompensationBandListState extends Equatable {
   const CompensationBandListState({
     this.items = const <CompensationBand>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -48,31 +49,50 @@ class CompensationBandListState extends Equatable {
   final DateTime? cachedAt;
 
   CompensationBandListState copyWith({
-    List<CompensationBand>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, DateTime? cachedAt,
-    bool clearFailures = false, bool clearCachedAt = false,
+    List<CompensationBand>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    DateTime? cachedAt,
+    bool clearFailures = false,
+    bool clearCachedAt = false,
   }) =>
       CompensationBandListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
         cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure, cachedAt];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure,
+        cachedAt
+      ];
 }
 
-final NotifierProvider<CompensationBandListController, CompensationBandListState>
-    compensationBandListControllerProvider =
+final NotifierProvider<CompensationBandListController,
+        CompensationBandListState> compensationBandListControllerProvider =
     NotifierProvider<CompensationBandListController, CompensationBandListState>(
   CompensationBandListController.new,
 );
 
-class CompensationBandListController extends Notifier<CompensationBandListState> {
+class CompensationBandListController
+    extends Notifier<CompensationBandListState> {
   Timer? _searchDebounce;
 
   @override
@@ -93,8 +113,12 @@ class CompensationBandListController extends Notifier<CompensationBandListState>
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true, cachedAt: page.cachedAt,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
+        cachedAt: page.cachedAt,
         clearCachedAt: !page.isFromCache,
       ),
     );
@@ -108,8 +132,11 @@ class CompensationBandListController extends Notifier<CompensationBandListState>
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -117,7 +144,8 @@ class CompensationBandListController extends Notifier<CompensationBandListState>
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
@@ -129,14 +157,17 @@ class CompensationBandListController extends Notifier<CompensationBandListState>
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteCompensationBandUseCase(
-      ref.read(advancedHrRepositoryProvider),)(id);
+      ref.read(advancedHrRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 
-  Future<Result<CompensationBand>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<CompensationBand>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveCompensationBandUseCase(
-      ref.read(advancedHrRepositoryProvider),)(
+      ref.read(advancedHrRepositoryProvider),
+    )(
       SaveCompensationBandParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -147,7 +178,8 @@ class CompensationBandListController extends Notifier<CompensationBandListState>
 class LearningPathListState extends Equatable {
   const LearningPathListState({
     this.items = const <LearningPath>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -164,20 +196,36 @@ class LearningPathListState extends Equatable {
   final Failure? loadMoreFailure;
 
   LearningPathListState copyWith({
-    List<LearningPath>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<LearningPath>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       LearningPathListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<LearningPathListController, LearningPathListState>
@@ -207,8 +255,11 @@ class LearningPathListController extends Notifier<LearningPathListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -221,8 +272,11 @@ class LearningPathListController extends Notifier<LearningPathListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -230,14 +284,17 @@ class LearningPathListController extends Notifier<LearningPathListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
 
-  Future<Result<LearningPath>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<LearningPath>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveLearningPathUseCase(
-      ref.read(advancedHrRepositoryProvider),)(
+      ref.read(advancedHrRepositoryProvider),
+    )(
       SaveLearningPathParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -245,16 +302,19 @@ class LearningPathListController extends Notifier<LearningPathListState> {
   }
 }
 
-final FutureProviderFamily<CompensationBand, String> compensationBandDetailProvider =
+final FutureProviderFamily<CompensationBand, String>
+    compensationBandDetailProvider =
     FutureProvider.family<CompensationBand, String>((Ref ref, String id) async {
   final result = await GetCompensationBandUseCase(
-    ref.watch(advancedHrRepositoryProvider),)(id);
+    ref.watch(advancedHrRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
 final FutureProviderFamily<LearningPath, String> learningPathDetailProvider =
     FutureProvider.family<LearningPath, String>((Ref ref, String id) async {
   final result = await GetLearningPathUseCase(
-    ref.watch(advancedHrRepositoryProvider),)(id);
+    ref.watch(advancedHrRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });

@@ -31,7 +31,8 @@ final Provider<DocumentsRepository> documentsRepositoryProvider =
 class DocumentListState extends Equatable {
   const DocumentListState({
     this.items = const <Document>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -68,13 +69,21 @@ class DocumentListState extends Equatable {
         isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
         cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
       );
 
   @override
   List<Object?> get props => <Object?>[
-        items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure, cachedAt,
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure,
+        cachedAt,
       ];
 }
 
@@ -105,8 +114,12 @@ class DocumentListController extends Notifier<DocumentListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true, cachedAt: page.cachedAt,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
+        cachedAt: page.cachedAt,
         clearCachedAt: !page.isFromCache,
       ),
     );
@@ -120,8 +133,11 @@ class DocumentListController extends Notifier<DocumentListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -129,7 +145,8 @@ class DocumentListController extends Notifier<DocumentListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
@@ -140,28 +157,33 @@ class DocumentListController extends Notifier<DocumentListState> {
   }
 
   void applyFilters(Map<String, String> filters) {
-    state = state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
+    state =
+        state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
     refresh();
   }
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteDocumentUseCase(
-      ref.read(documentsRepositoryProvider),)(id);
+      ref.read(documentsRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<void>> star(String id) async {
     final result = await StarDocumentUseCase(
-      ref.read(documentsRepositoryProvider),)(id);
+      ref.read(documentsRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 }
 
-final documentDetailProvider = FutureProvider.family<Document, String>((Ref ref, String id) async {
+final documentDetailProvider =
+    FutureProvider.family<Document, String>((Ref ref, String id) async {
   final result = await GetDocumentUseCase(
-    ref.watch(documentsRepositoryProvider),)(id);
+    ref.watch(documentsRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (d) => d);
 });
 
@@ -170,7 +192,8 @@ final documentDetailProvider = FutureProvider.family<Document, String>((Ref ref,
 class FolderListState extends Equatable {
   const FolderListState({
     this.items = const <DocumentFolder>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: 'name'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -207,13 +230,21 @@ class FolderListState extends Equatable {
         isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
         cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
       );
 
   @override
   List<Object?> get props => <Object?>[
-        items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure, cachedAt,
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure,
+        cachedAt,
       ];
 }
 
@@ -244,8 +275,12 @@ class FolderListController extends Notifier<FolderListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true, cachedAt: page.cachedAt,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
+        cachedAt: page.cachedAt,
         clearCachedAt: !page.isFromCache,
       ),
     );
@@ -259,8 +294,11 @@ class FolderListController extends Notifier<FolderListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -268,21 +306,25 @@ class FolderListController extends Notifier<FolderListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteFolderUseCase(
-      ref.read(documentsRepositoryProvider),)(id);
+      ref.read(documentsRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 
-  Future<Result<DocumentFolder>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<DocumentFolder>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveFolderUseCase(
-      ref.read(documentsRepositoryProvider),)(
+      ref.read(documentsRepositoryProvider),
+    )(
       SaveFolderParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -290,15 +332,18 @@ class FolderListController extends Notifier<FolderListState> {
   }
 }
 
-final documentTemplateDetailProvider = FutureProvider.family<DocumentTemplate, String>((Ref ref, String id) async {
+final documentTemplateDetailProvider =
+    FutureProvider.family<DocumentTemplate, String>((Ref ref, String id) async {
   final result = await GetTemplateUseCase(
-    ref.watch(documentsRepositoryProvider),)(id);
+    ref.watch(documentsRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (t) => t);
 });
 
 final FutureProviderFamily<DocumentFolder, String> folderDetailProvider =
     FutureProvider.family<DocumentFolder, String>((Ref ref, String id) async {
   final result = await GetFolderUseCase(
-    ref.watch(documentsRepositoryProvider),)(id);
+    ref.watch(documentsRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (f) => f);
 });

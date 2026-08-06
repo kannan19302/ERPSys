@@ -33,8 +33,19 @@ class BlockchainTransaction extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, txHash, status, blockNumber, fromAddress, toAddress,
-        value, gasUsed, gasPrice, network, timestamp, confirmations, createdAt,
+        id,
+        txHash,
+        status,
+        blockNumber,
+        fromAddress,
+        toAddress,
+        value,
+        gasUsed,
+        gasPrice,
+        network,
+        timestamp,
+        confirmations,
+        createdAt,
       ];
 }
 
@@ -67,8 +78,17 @@ class BlockchainContract extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, address, network, status, abi, bytecode,
-        owner, deployTxHash, deployedAt, createdAt,
+        id,
+        name,
+        address,
+        network,
+        status,
+        abi,
+        bytecode,
+        owner,
+        deployTxHash,
+        deployedAt,
+        createdAt,
       ];
 }
 
@@ -99,8 +119,16 @@ class BlockchainAuditEntry extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, eventType, txHash, blockNumber, contractAddress,
-        fromAddress, payload, status, timestamp, createdAt,
+        id,
+        eventType,
+        txHash,
+        blockNumber,
+        contractAddress,
+        fromAddress,
+        payload,
+        status,
+        timestamp,
+        createdAt,
       ];
 }
 
@@ -129,7 +157,14 @@ class BlockchainNetworkHealth extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, network, status, blockHeight, peerCount,
-        syncProgress, latencyMs, lastBlockAt, checkedAt,
+        id,
+        network,
+        status,
+        blockHeight,
+        peerCount,
+        syncProgress,
+        latencyMs,
+        lastBlockAt,
+        checkedAt,
       ];
 }

@@ -13,8 +13,8 @@ import '../../domain/entities/fixed_assets.dart';
 import '../../domain/repositories/fixed_assets_repository.dart';
 import '../../domain/usecases/fixed_assets_usecases.dart';
 
-final Provider<FixedAssetsRemoteDataSource> fixedAssetsRemoteDataSourceProvider =
-    Provider<FixedAssetsRemoteDataSource>(
+final Provider<FixedAssetsRemoteDataSource>
+    fixedAssetsRemoteDataSourceProvider = Provider<FixedAssetsRemoteDataSource>(
   (Ref ref) => FixedAssetsRemoteDataSourceImpl(ref.watch(apiClientProvider)),
 );
 
@@ -30,7 +30,8 @@ final Provider<FixedAssetsRepository> fixedAssetsRepositoryProvider =
 class FixedAssetListState extends Equatable {
   const FixedAssetListState({
     this.items = const <FixedAsset>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -67,13 +68,21 @@ class FixedAssetListState extends Equatable {
         isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
         cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
       );
 
   @override
   List<Object?> get props => <Object?>[
-        items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure, cachedAt,
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure,
+        cachedAt,
       ];
 }
 
@@ -104,8 +113,12 @@ class FixedAssetListController extends Notifier<FixedAssetListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true, cachedAt: page.cachedAt,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
+        cachedAt: page.cachedAt,
         clearCachedAt: !page.isFromCache,
       ),
     );
@@ -119,8 +132,11 @@ class FixedAssetListController extends Notifier<FixedAssetListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -128,7 +144,8 @@ class FixedAssetListController extends Notifier<FixedAssetListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
@@ -139,20 +156,24 @@ class FixedAssetListController extends Notifier<FixedAssetListState> {
   }
 
   void applyFilters(Map<String, String> filters) {
-    state = state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
+    state =
+        state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
     refresh();
   }
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteFixedAssetUseCase(
-      ref.read(fixedAssetsRepositoryProvider),)(id);
+      ref.read(fixedAssetsRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 
-  Future<Result<FixedAsset>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<FixedAsset>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveFixedAssetUseCase(
-      ref.read(fixedAssetsRepositoryProvider),)(
+      ref.read(fixedAssetsRepositoryProvider),
+    )(
       SaveFixedAssetParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -163,21 +184,26 @@ class FixedAssetListController extends Notifier<FixedAssetListState> {
 final FutureProviderFamily<FixedAsset, String> fixedAssetDetailProvider =
     FutureProvider.family<FixedAsset, String>((Ref ref, String id) async {
   final result = await GetFixedAssetUseCase(
-    ref.watch(fixedAssetsRepositoryProvider),)(id);
+    ref.watch(fixedAssetsRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (a) => a);
 });
 
-final FutureProviderFamily<AssetMaintenanceSchedule, String> maintenanceScheduleDetailProvider =
-    FutureProvider.family<AssetMaintenanceSchedule, String>((Ref ref, String id) async {
+final FutureProviderFamily<AssetMaintenanceSchedule, String>
+    maintenanceScheduleDetailProvider =
+    FutureProvider.family<AssetMaintenanceSchedule, String>(
+        (Ref ref, String id) async {
   final result = await GetMaintenanceScheduleUseCase(
-    ref.watch(fixedAssetsRepositoryProvider),)(id);
+    ref.watch(fixedAssetsRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (m) => m);
 });
 
 class MaintenanceScheduleListState extends Equatable {
   const MaintenanceScheduleListState({
     this.items = const <AssetMaintenanceSchedule>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -194,29 +220,47 @@ class MaintenanceScheduleListState extends Equatable {
   final Failure? loadMoreFailure;
 
   MaintenanceScheduleListState copyWith({
-    List<AssetMaintenanceSchedule>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<AssetMaintenanceSchedule>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       MaintenanceScheduleListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
-final NotifierProvider<MaintenanceScheduleListController, MaintenanceScheduleListState>
-    maintenanceScheduleListControllerProvider =
-    NotifierProvider<MaintenanceScheduleListController, MaintenanceScheduleListState>(
+final NotifierProvider<MaintenanceScheduleListController,
+        MaintenanceScheduleListState>
+    maintenanceScheduleListControllerProvider = NotifierProvider<
+        MaintenanceScheduleListController, MaintenanceScheduleListState>(
   MaintenanceScheduleListController.new,
 );
 
-class MaintenanceScheduleListController extends Notifier<MaintenanceScheduleListState> {
+class MaintenanceScheduleListController
+    extends Notifier<MaintenanceScheduleListState> {
   Timer? _searchDebounce;
 
   @override
@@ -237,8 +281,11 @@ class MaintenanceScheduleListController extends Notifier<MaintenanceScheduleList
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -251,15 +298,20 @@ class MaintenanceScheduleListController extends Notifier<MaintenanceScheduleList
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
 
-  Future<Result<AssetMaintenanceSchedule>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<AssetMaintenanceSchedule>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveMaintenanceScheduleUseCase(
-      ref.read(fixedAssetsRepositoryProvider),)(
+      ref.read(fixedAssetsRepositoryProvider),
+    )(
       SaveMaintenanceScheduleParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -270,14 +322,16 @@ class MaintenanceScheduleListController extends Notifier<MaintenanceScheduleList
 final FutureProviderFamily<AssetDisposal, String> assetDisposalDetailProvider =
     FutureProvider.family<AssetDisposal, String>((Ref ref, String id) async {
   final result = await GetDisposalUseCase(
-    ref.watch(fixedAssetsRepositoryProvider),)(id);
+    ref.watch(fixedAssetsRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (d) => d);
 });
 
 class DisposalListState extends Equatable {
   const DisposalListState({
     this.items = const <AssetDisposal>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -294,20 +348,36 @@ class DisposalListState extends Equatable {
   final Failure? loadMoreFailure;
 
   DisposalListState copyWith({
-    List<AssetDisposal>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<AssetDisposal>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       DisposalListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<DisposalListController, DisposalListState>
@@ -337,8 +407,11 @@ class DisposalListController extends Notifier<DisposalListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -351,15 +424,20 @@ class DisposalListController extends Notifier<DisposalListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
 
-  Future<Result<AssetDisposal>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<AssetDisposal>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveDisposalUseCase(
-      ref.read(fixedAssetsRepositoryProvider),)(
+      ref.read(fixedAssetsRepositoryProvider),
+    )(
       SaveDisposalParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();

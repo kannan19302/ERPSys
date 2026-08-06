@@ -38,7 +38,8 @@ class RealEstateRepositoryImpl implements RealEstateRepository {
       final List<Map<String, dynamic>> jsonItems = page.data
           .map((dynamic e) => (e as dynamic).toJson() as Map<String, dynamic>)
           .toList(growable: false);
-      await _cache.write(_tenantId, namespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, namespace, query.cacheKey, <String, Object?>{
         'data': jsonItems,
         'meta': page.meta.toJson(),
       });
@@ -46,9 +47,11 @@ class RealEstateRepositoryImpl implements RealEstateRepository {
         Cacheable<Paginated<T>>(value: page),
       );
     } on NetworkException catch (error) {
-      final cached = _cache.read<Map<String, dynamic>>(_tenantId, namespace, query.cacheKey);
+      final cached = _cache.read<Map<String, dynamic>>(
+          _tenantId, namespace, query.cacheKey);
       if (cached == null) {
-        return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
+        return Result<Cacheable<Paginated<T>>>.err(
+            mapExceptionToFailure(error));
       }
       return Result<Cacheable<Paginated<T>>>.ok(
         Cacheable<Paginated<T>>(
@@ -90,9 +93,14 @@ class RealEstateRepositoryImpl implements RealEstateRepository {
   }
 
   @override
-  Future<Result<Cacheable<Paginated<Property>>>> listProperties(ListQuery query) =>
-      _paginated(_propertyNamespace, query, () => _remote.listProperties(query),
-        PropertyModel.fromJson,);
+  Future<Result<Cacheable<Paginated<Property>>>> listProperties(
+          ListQuery query) =>
+      _paginated(
+        _propertyNamespace,
+        query,
+        () => _remote.listProperties(query),
+        PropertyModel.fromJson,
+      );
 
   @override
   Future<Result<Property>> getProperty(String id) =>
@@ -112,8 +120,12 @@ class RealEstateRepositoryImpl implements RealEstateRepository {
 
   @override
   Future<Result<Cacheable<Paginated<Lease>>>> listLeases(ListQuery query) =>
-      _paginated(_leaseNamespace, query, () => _remote.listLeases(query),
-        LeaseModel.fromJson,);
+      _paginated(
+        _leaseNamespace,
+        query,
+        () => _remote.listLeases(query),
+        LeaseModel.fromJson,
+      );
 
   @override
   Future<Result<Lease>> getLease(String id) =>
@@ -132,9 +144,14 @@ class RealEstateRepositoryImpl implements RealEstateRepository {
       _delete(() => _remote.deleteLease(id));
 
   @override
-  Future<Result<Cacheable<Paginated<TenantDetail>>>> listTenants(ListQuery query) =>
-      _paginated(_tenantNamespace, query, () => _remote.listTenants(query),
-        TenantDetailModel.fromJson,);
+  Future<Result<Cacheable<Paginated<TenantDetail>>>> listTenants(
+          ListQuery query) =>
+      _paginated(
+        _tenantNamespace,
+        query,
+        () => _remote.listTenants(query),
+        TenantDetailModel.fromJson,
+      );
 
   @override
   Future<Result<TenantDetail>> getTenant(String id) =>
@@ -145,7 +162,8 @@ class RealEstateRepositoryImpl implements RealEstateRepository {
       _write(() => _remote.createTenant(p));
 
   @override
-  Future<Result<TenantDetail>> updateTenant(String id, Map<String, dynamic> p) =>
+  Future<Result<TenantDetail>> updateTenant(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateTenant(id, p));
 
   @override
@@ -154,22 +172,29 @@ class RealEstateRepositoryImpl implements RealEstateRepository {
 
   @override
   Future<Result<Cacheable<Paginated<MaintenanceOrder>>>> listMaintenanceOrders(
-    ListQuery query,) =>
-      _paginated(_maintenanceNamespace, query,
+    ListQuery query,
+  ) =>
+      _paginated(
+        _maintenanceNamespace,
+        query,
         () => _remote.listMaintenanceOrders(query),
-        MaintenanceOrderModel.fromJson,);
+        MaintenanceOrderModel.fromJson,
+      );
 
   @override
   Future<Result<MaintenanceOrder>> getMaintenanceOrder(String id) =>
       _single(() => _remote.getMaintenanceOrder(id));
 
   @override
-  Future<Result<MaintenanceOrder>> createMaintenanceOrder(Map<String, dynamic> p) =>
+  Future<Result<MaintenanceOrder>> createMaintenanceOrder(
+          Map<String, dynamic> p) =>
       _write(() => _remote.createMaintenanceOrder(p));
 
   @override
   Future<Result<MaintenanceOrder>> updateMaintenanceOrder(
-    String id, Map<String, dynamic> p,) =>
+    String id,
+    Map<String, dynamic> p,
+  ) =>
       _write(() => _remote.updateMaintenanceOrder(id, p));
 
   @override
@@ -181,13 +206,19 @@ class RealEstateRepositoryImpl implements RealEstateRepository {
       _single(() => _remote.completeMaintenanceOrder(id));
 
   @override
-  Future<Result<Cacheable<Paginated<PropertyValuation>>>> listPropertyValuations(
-    ListQuery query,) =>
-      _paginated(_valuationNamespace, query,
-        () => _remote.listPropertyValuations(query),
-        PropertyValuationModel.fromJson,);
+  Future<Result<Cacheable<Paginated<PropertyValuation>>>>
+      listPropertyValuations(
+    ListQuery query,
+  ) =>
+          _paginated(
+            _valuationNamespace,
+            query,
+            () => _remote.listPropertyValuations(query),
+            PropertyValuationModel.fromJson,
+          );
 
   @override
-  Future<Result<PropertyValuation>> createPropertyValuation(Map<String, dynamic> p) =>
+  Future<Result<PropertyValuation>> createPropertyValuation(
+          Map<String, dynamic> p) =>
       _write(() => _remote.createPropertyValuation(p));
 }

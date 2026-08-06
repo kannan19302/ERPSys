@@ -63,7 +63,9 @@ class _DashboardFormPageState extends ConsumerState<DashboardFormPage> {
 
     final Map<String, dynamic> payload = <String, dynamic>{
       'title': _titleCtrl.text.trim(),
-      'description': _descriptionCtrl.text.trim().isEmpty ? null : _descriptionCtrl.text.trim(),
+      'description': _descriptionCtrl.text.trim().isEmpty
+          ? null
+          : _descriptionCtrl.text.trim(),
       'status': _status,
     };
 
@@ -127,8 +129,10 @@ class _DashboardFormPageState extends ConsumerState<DashboardFormPage> {
               initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: const <DropdownMenuItem<String>>[
-                DropdownMenuItem<String>(value: 'ACTIVE', child: Text('Active')),
-                DropdownMenuItem<String>(value: 'ARCHIVED', child: Text('Archived')),
+                DropdownMenuItem<String>(
+                    value: 'ACTIVE', child: Text('Active')),
+                DropdownMenuItem<String>(
+                    value: 'ARCHIVED', child: Text('Archived')),
               ],
               onChanged: (String? v) {
                 if (v != null) setState(() => _status = v);

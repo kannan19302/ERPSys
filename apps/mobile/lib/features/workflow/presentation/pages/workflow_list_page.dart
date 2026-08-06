@@ -36,7 +36,8 @@ class _WorkflowListPageState extends ConsumerState<WorkflowListPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(workflowDefinitionListControllerProvider);
-    final controller = ref.read(workflowDefinitionListControllerProvider.notifier);
+    final controller =
+        ref.read(workflowDefinitionListControllerProvider.notifier);
     final t = context.tokens;
 
     return Scaffold(
@@ -49,17 +50,23 @@ class _WorkflowListPageState extends ConsumerState<WorkflowListPage> {
             initialValue: state.query.sort,
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
-                .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value),),)
+                .map(
+                  (e) => PopupMenuItem<String>(
+                    value: e.key,
+                    child: Text(e.value),
+                  ),
+                )
                 .toList(),
           ),
         ],
       ),
       body: Column(
         children: [
-          if (state.cachedAt != null) StaleDataBanner(cachedAt: state.cachedAt!),
+          if (state.cachedAt != null)
+            StaleDataBanner(cachedAt: state.cachedAt!),
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -71,21 +78,27 @@ class _WorkflowListPageState extends ConsumerState<WorkflowListPage> {
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} workflow${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} workflow${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -93,7 +106,8 @@ class _WorkflowListPageState extends ConsumerState<WorkflowListPage> {
     );
   }
 
-  Widget _body(WorkflowDefinitionListState state, WorkflowDefinitionListController controller) {
+  Widget _body(WorkflowDefinitionListState state,
+      WorkflowDefinitionListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -144,45 +158,68 @@ class _WorkflowDefinitionTile extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(children: [
-              Expanded(
-                child: Text(definition.name,
-                    style: Theme.of(context).textTheme.titleSmall,),
-              ),
-              UiStatusBadge(
-                label: definition.isActive ? 'ACTIVE' : 'INACTIVE',
-                tone: definition.isActive ? UiTone.success : UiTone.neutral,
-              ),
-            ],),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    definition.name,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+                UiStatusBadge(
+                  label: definition.isActive ? 'ACTIVE' : 'INACTIVE',
+                  tone: definition.isActive ? UiTone.success : UiTone.neutral,
+                ),
+              ],
+            ),
             if (definition.description != null) ...[
               const SizedBox(height: Spacing.x1),
-              Text(definition.description!,
-                  style: TextStyle(color: t.textSecondary, fontSize: TypeScale.sm),),
+              Text(
+                definition.description!,
+                style:
+                    TextStyle(color: t.textSecondary, fontSize: TypeScale.sm),
+              ),
             ],
             const SizedBox(height: Spacing.x2),
-            Row(children: [
-              if (definition.module != null) ...[
-                Text(definition.module!,
-                    style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
-                const SizedBox(width: Spacing.x3),
-              ],
-              Text('v${definition.version}',
-                  style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
-              const Spacer(),
-              Text(Formatters.date(definition.updatedAt),
-                  style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
-            ],),
-            const SizedBox(height: Spacing.x2),
-            Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-              IconButton(
-                icon: Icon(
-                  definition.isActive ? Icons.toggle_off_outlined : Icons.toggle_on_outlined,
-                  color: definition.isActive ? t.danger : t.success,
+            Row(
+              children: [
+                if (definition.module != null) ...[
+                  Text(
+                    definition.module!,
+                    style: TextStyle(
+                        color: t.textTertiary, fontSize: TypeScale.xs),
+                  ),
+                  const SizedBox(width: Spacing.x3),
+                ],
+                Text(
+                  'v${definition.version}',
+                  style:
+                      TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),
                 ),
-                tooltip: definition.isActive ? 'Deactivate' : 'Activate',
-                onPressed: onToggleActive,
-              ),
-            ],),
+                const Spacer(),
+                Text(
+                  Formatters.date(definition.updatedAt),
+                  style:
+                      TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
+            const SizedBox(height: Spacing.x2),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                IconButton(
+                  icon: Icon(
+                    definition.isActive
+                        ? Icons.toggle_off_outlined
+                        : Icons.toggle_on_outlined,
+                    color: definition.isActive ? t.danger : t.success,
+                  ),
+                  tooltip: definition.isActive ? 'Deactivate' : 'Activate',
+                  onPressed: onToggleActive,
+                ),
+              ],
+            ),
           ],
         ),
       ),

@@ -45,19 +45,20 @@ class _QuotationFormPageState extends ConsumerState<QuotationFormPage> {
   }
 
   Future<void> _loadQuotation() async {
-    final Quotation? quotation = ref
-        .read(quotationDetailProvider(widget.quotationId!))
-        .valueOrNull;
+    final Quotation? quotation =
+        ref.read(quotationDetailProvider(widget.quotationId!)).valueOrNull;
     if (quotation != null) {
       _customerCtrl.text = quotation.customerName;
       _notesCtrl.text = quotation.notes ?? '';
       _validUntil = quotation.validUntil;
       for (final QuotationItem item in quotation.items) {
-        _items.add(_QuoteLineItem(
-          productCtrl: TextEditingController(text: item.productName),
-          qtyCtrl: TextEditingController(text: item.quantity.toString()),
-          rateCtrl: TextEditingController(text: item.rate.toString()),
-        ),);
+        _items.add(
+          _QuoteLineItem(
+            productCtrl: TextEditingController(text: item.productName),
+            qtyCtrl: TextEditingController(text: item.quantity.toString()),
+            rateCtrl: TextEditingController(text: item.rate.toString()),
+          ),
+        );
       }
     }
   }
@@ -77,11 +78,13 @@ class _QuotationFormPageState extends ConsumerState<QuotationFormPage> {
 
   void _addItem() {
     setState(() {
-      _items.add(_QuoteLineItem(
-        productCtrl: TextEditingController(),
-        qtyCtrl: TextEditingController(text: '1'),
-        rateCtrl: TextEditingController(),
-      ),);
+      _items.add(
+        _QuoteLineItem(
+          productCtrl: TextEditingController(),
+          qtyCtrl: TextEditingController(text: '1'),
+          rateCtrl: TextEditingController(),
+        ),
+      );
     });
   }
 
@@ -113,18 +116,22 @@ class _QuotationFormPageState extends ConsumerState<QuotationFormPage> {
       'validUntil': _validUntil?.toIso8601String(),
       'notes': _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
       'terms': _termsCtrl.text.trim().isEmpty ? null : _termsCtrl.text.trim(),
-      'items': _items.map((_QuoteLineItem item) => <String, dynamic>{
-        'productName': item.productCtrl.text.trim(),
-        'quantity': double.tryParse(item.qtyCtrl.text) ?? 1,
-        'rate': double.tryParse(item.rateCtrl.text) ?? 0,
-        'amount': (double.tryParse(item.qtyCtrl.text) ?? 0) * (double.tryParse(item.rateCtrl.text) ?? 0),
-      },).toList(),
+      'items': _items
+          .map(
+            (_QuoteLineItem item) => <String, dynamic>{
+              'productName': item.productCtrl.text.trim(),
+              'quantity': double.tryParse(item.qtyCtrl.text) ?? 1,
+              'rate': double.tryParse(item.rateCtrl.text) ?? 0,
+              'amount': (double.tryParse(item.qtyCtrl.text) ?? 0) *
+                  (double.tryParse(item.rateCtrl.text) ?? 0),
+            },
+          )
+          .toList(),
       'totalAmount': _totalAmount,
     };
 
-    final Result<Quotation> result = await ref
-        .read(quotationsProvider.notifier)
-        .create(payload);
+    final Result<Quotation> result =
+        await ref.read(quotationsProvider.notifier).create(payload);
 
     if (!context.mounted) return;
     setState(() => _saving = false);
@@ -172,7 +179,8 @@ class _QuotationFormPageState extends ConsumerState<QuotationFormPage> {
               onTap: () async {
                 final DateTime? picked = await showDatePicker(
                   context: context,
-                  initialDate: _validUntil ?? DateTime.now().add(const Duration(days: 30)),
+                  initialDate: _validUntil ??
+                      DateTime.now().add(const Duration(days: 30)),
                   firstDate: DateTime.now(),
                   lastDate: DateTime.now().add(const Duration(days: 365)),
                 );
@@ -223,9 +231,9 @@ class _QuotationFormPageState extends ConsumerState<QuotationFormPage> {
               ],
             ),
             ..._items.asMap().entries.map(
-              (MapEntry<int, _QuoteLineItem> entry) =>
-                  _buildItemRow(entry.key, entry.value),
-            ),
+                  (MapEntry<int, _QuoteLineItem> entry) =>
+                      _buildItemRow(entry.key, entry.value),
+                ),
             if (_items.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: Spacing.x6),
@@ -242,8 +250,10 @@ class _QuotationFormPageState extends ConsumerState<QuotationFormPage> {
                 padding: const EdgeInsets.symmetric(vertical: Spacing.x2),
                 child: Row(
                   children: <Widget>[
-                    const Text('Total',
-                        style: TextStyle(fontWeight: FontWeight.bold),),
+                    const Text(
+                      'Total',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     const Spacer(),
                     Text(
                       Formatters.currency(_totalAmount),

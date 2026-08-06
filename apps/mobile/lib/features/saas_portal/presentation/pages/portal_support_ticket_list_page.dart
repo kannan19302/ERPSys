@@ -12,10 +12,12 @@ class PortalSupportTicketListPage extends ConsumerStatefulWidget {
   static const String routeName = 'portal-support';
   static const String routePath = '/saas-portal/support';
   @override
-  ConsumerState<PortalSupportTicketListPage> createState() => _PortalSupportTicketListPageState();
+  ConsumerState<PortalSupportTicketListPage> createState() =>
+      _PortalSupportTicketListPageState();
 }
 
-class _PortalSupportTicketListPageState extends ConsumerState<PortalSupportTicketListPage> {
+class _PortalSupportTicketListPageState
+    extends ConsumerState<PortalSupportTicketListPage> {
   final TextEditingController _search = TextEditingController();
 
   static final Map<String, UiTone> _statusTones = <String, UiTone>{
@@ -41,7 +43,8 @@ class _PortalSupportTicketListPageState extends ConsumerState<PortalSupportTicke
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(portalSupportTicketListControllerProvider);
-    final controller = ref.read(portalSupportTicketListControllerProvider.notifier);
+    final controller =
+        ref.read(portalSupportTicketListControllerProvider.notifier);
     final t = context.tokens;
 
     return Scaffold(
@@ -49,7 +52,8 @@ class _PortalSupportTicketListPageState extends ConsumerState<PortalSupportTicke
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -61,21 +65,27 @@ class _PortalSupportTicketListPageState extends ConsumerState<PortalSupportTicke
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} ticket${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} ticket${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -83,7 +93,8 @@ class _PortalSupportTicketListPageState extends ConsumerState<PortalSupportTicke
     );
   }
 
-  Widget _body(PortalSupportTicketListState state, PortalSupportTicketListController controller) {
+  Widget _body(PortalSupportTicketListState state,
+      PortalSupportTicketListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -98,7 +109,8 @@ class _PortalSupportTicketListPageState extends ConsumerState<PortalSupportTicke
       onRefresh: controller.refresh,
       onLoadMore: controller.loadMore,
       emptyTitle: 'No tickets',
-      emptyMessage: 'Support tickets submitted via the portal will appear here.',
+      emptyMessage:
+          'Support tickets submitted via the portal will appear here.',
       itemBuilder: (_, PortalSupportTicket ticket, __) => Card(
         margin: EdgeInsets.zero,
         child: Padding(
@@ -106,28 +118,37 @@ class _PortalSupportTicketListPageState extends ConsumerState<PortalSupportTicke
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(ticket.subject,
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                UiStatusBadge(
-                  label: ticket.priority,
-                  tone: _priorityTones[ticket.priority] ?? UiTone.neutral,
-                ),
-              ],),
-              const SizedBox(height: Spacing.x1),
-              Row(children: [
-                UiStatusBadge(
-                  label: ticket.status,
-                  tone: _statusTones[ticket.status] ?? UiTone.neutral,
-                ),
-                if (ticket.category != null) ...[
-                  const SizedBox(width: Spacing.x2),
-                  Text(ticket.category!,
-                      style: TextStyle(color: palette.textTertiary, fontSize: TypeScale.xs),),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      ticket.subject,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  UiStatusBadge(
+                    label: ticket.priority,
+                    tone: _priorityTones[ticket.priority] ?? UiTone.neutral,
+                  ),
                 ],
-              ],),
+              ),
+              const SizedBox(height: Spacing.x1),
+              Row(
+                children: [
+                  UiStatusBadge(
+                    label: ticket.status,
+                    tone: _statusTones[ticket.status] ?? UiTone.neutral,
+                  ),
+                  if (ticket.category != null) ...[
+                    const SizedBox(width: Spacing.x2),
+                    Text(
+                      ticket.category!,
+                      style: TextStyle(
+                          color: palette.textTertiary, fontSize: TypeScale.xs),
+                    ),
+                  ],
+                ],
+              ),
             ],
           ),
         ),

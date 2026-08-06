@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-
 class TaxRateDetailPage extends ConsumerWidget {
   const TaxRateDetailPage({required this.taxRateId, super.key});
 

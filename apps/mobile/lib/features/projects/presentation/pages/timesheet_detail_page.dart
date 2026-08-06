@@ -23,7 +23,9 @@ class TimesheetDetailPage extends ConsumerWidget {
       body: tsAsync.when(
         loading: () => const LoadingView(),
         error: (error, _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load timesheet.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load timesheet.'),
           onRetry: () => ref.invalidate(timesheetDetailProvider(timesheetId)),
         ),
         data: (ts) => _TimesheetDetail(ts: ts),
@@ -49,33 +51,43 @@ class _TimesheetDetail extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(Spacing.x4),
       children: [
-        UiCard(child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(children: [
-              Expanded(child: Text(
-                ts.projectName ?? 'Timesheet',
-                style: Theme.of(context).textTheme.titleLarge,),),
-              UiStatusBadge(label: ts.status, tone: _statusTone(ts.status)),
-            ],),
-          ],
-        ),),
-        const SizedBox(height: Spacing.x4),
-        UiCard(child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const UiSectionHeader(title: 'Details'),
-            _Row('Project', ts.projectName ?? '—'),
-            _Row('Employee', ts.employeeName ?? ts.employeeId),
-            _Row('Date', Formatters.date(ts.date)),
-            _Row('Hours', '${ts.hours.toStringAsFixed(1)}h'),
-            if (ts.description != null && ts.description!.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: Spacing.x2),
-                child: Text(ts.description!, style: Theme.of(context).textTheme.bodyMedium),
+        UiCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      ts.projectName ?? 'Timesheet',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  ),
+                  UiStatusBadge(label: ts.status, tone: _statusTone(ts.status)),
+                ],
               ),
-          ],
-        ),),
+            ],
+          ),
+        ),
+        const SizedBox(height: Spacing.x4),
+        UiCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const UiSectionHeader(title: 'Details'),
+              _Row('Project', ts.projectName ?? '—'),
+              _Row('Employee', ts.employeeName ?? ts.employeeId),
+              _Row('Date', Formatters.date(ts.date)),
+              _Row('Hours', '${ts.hours.toStringAsFixed(1)}h'),
+              if (ts.description != null && ts.description!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: Spacing.x2),
+                  child: Text(ts.description!,
+                      style: Theme.of(context).textTheme.bodyMedium),
+                ),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -90,10 +102,13 @@ class _Row extends StatelessWidget {
     final t = context.tokens;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: Spacing.x1_5),
-      child: Row(children: [
-        Expanded(child: Text(label, style: TextStyle(color: t.textSecondary))),
-        Text(value, style: Theme.of(context).textTheme.labelLarge),
-      ],),
+      child: Row(
+        children: [
+          Expanded(
+              child: Text(label, style: TextStyle(color: t.textSecondary))),
+          Text(value, style: Theme.of(context).textTheme.labelLarge),
+        ],
+      ),
     );
   }
 }

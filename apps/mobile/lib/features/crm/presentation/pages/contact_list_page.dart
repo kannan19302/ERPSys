@@ -75,10 +75,14 @@ class _ContactListPageState extends ConsumerState<ContactListPage> {
       ),
       body: Column(
         children: <Widget>[
-          if (state.cachedAt != null) StaleDataBanner(cachedAt: state.cachedAt!),
+          if (state.cachedAt != null)
+            StaleDataBanner(cachedAt: state.cachedAt!),
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2,
+              Spacing.x4,
+              Spacing.x3,
+              Spacing.x4,
+              Spacing.x2,
             ),
             child: TextField(
               controller: _search,
@@ -126,7 +130,8 @@ class _ContactListPageState extends ConsumerState<ContactListPage> {
                     if (value == null) {
                       controller.applyFilters(const <String, String>{});
                     } else {
-                      controller.applyFilters(<String, String>{'customerId': value});
+                      controller
+                          .applyFilters(<String, String>{'customerId': value});
                     }
                   },
                 ),
@@ -183,7 +188,12 @@ class _ContactTile extends StatelessWidget {
     final String displayName =
         '${contact.firstName ?? ''} ${contact.lastName ?? ''}'.trim();
     final String initials = displayName.isNotEmpty
-        ? displayName.split(' ').map((String s) => s.isNotEmpty ? s[0] : '').take(2).join().toUpperCase()
+        ? displayName
+            .split(' ')
+            .map((String s) => s.isNotEmpty ? s[0] : '')
+            .take(2)
+            .join()
+            .toUpperCase()
         : '?';
 
     return UiCard(

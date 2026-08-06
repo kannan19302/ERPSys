@@ -37,7 +37,8 @@ class AiRepositoryImpl implements AiRepository {
       final List<Map<String, dynamic>> jsonItems = page.data
           .map((dynamic e) => (e as dynamic).toJson() as Map<String, dynamic>)
           .toList(growable: false);
-      await _cache.write(_tenantId, namespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, namespace, query.cacheKey, <String, Object?>{
         'data': jsonItems,
         'meta': page.meta.toJson(),
       });
@@ -45,9 +46,11 @@ class AiRepositoryImpl implements AiRepository {
         Cacheable<Paginated<T>>(value: page),
       );
     } on NetworkException catch (error) {
-      final cached = _cache.read<Map<String, dynamic>>(_tenantId, namespace, query.cacheKey);
+      final cached = _cache.read<Map<String, dynamic>>(
+          _tenantId, namespace, query.cacheKey);
       if (cached == null) {
-        return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
+        return Result<Cacheable<Paginated<T>>>.err(
+            mapExceptionToFailure(error));
       }
       return Result<Cacheable<Paginated<T>>>.ok(
         Cacheable<Paginated<T>>(
@@ -90,8 +93,12 @@ class AiRepositoryImpl implements AiRepository {
 
   @override
   Future<Result<Cacheable<Paginated<AiModel>>>> listModels(ListQuery query) =>
-      _paginated(_modelNamespace, query, () => _remote.listModels(query),
-        AiModelModel.fromJson,);
+      _paginated(
+        _modelNamespace,
+        query,
+        () => _remote.listModels(query),
+        AiModelModel.fromJson,
+      );
 
   @override
   Future<Result<AiModel>> getModel(String id) =>
@@ -111,8 +118,12 @@ class AiRepositoryImpl implements AiRepository {
 
   @override
   Future<Result<Cacheable<Paginated<AiPrompt>>>> listPrompts(ListQuery query) =>
-      _paginated(_promptNamespace, query, () => _remote.listPrompts(query),
-        AiPromptModel.fromJson,);
+      _paginated(
+        _promptNamespace,
+        query,
+        () => _remote.listPrompts(query),
+        AiPromptModel.fromJson,
+      );
 
   @override
   Future<Result<AiPrompt>> getPrompt(String id) =>
@@ -132,9 +143,14 @@ class AiRepositoryImpl implements AiRepository {
 
   @override
   Future<Result<Cacheable<Paginated<AiTrainingData>>>> listTrainingData(
-    ListQuery query,) =>
-      _paginated(_trainingNamespace, query, () => _remote.listTrainingData(query),
-        AiTrainingDataModel.fromJson,);
+    ListQuery query,
+  ) =>
+      _paginated(
+        _trainingNamespace,
+        query,
+        () => _remote.listTrainingData(query),
+        AiTrainingDataModel.fromJson,
+      );
 
   @override
   Future<Result<AiTrainingData>> getTrainingData(String id) =>
@@ -150,9 +166,14 @@ class AiRepositoryImpl implements AiRepository {
 
   @override
   Future<Result<Cacheable<Paginated<AiPrediction>>>> listPredictions(
-    ListQuery query,) =>
-      _paginated(_predictionNamespace, query, () => _remote.listPredictions(query),
-        AiPredictionModel.fromJson,);
+    ListQuery query,
+  ) =>
+      _paginated(
+        _predictionNamespace,
+        query,
+        () => _remote.listPredictions(query),
+        AiPredictionModel.fromJson,
+      );
 
   @override
   Future<Result<AiPrediction>> createPrediction(Map<String, dynamic> p) =>

@@ -46,7 +46,8 @@ void main() {
     });
 
     test('defaults type/unit/isActive when absent', () {
-      final ProductModel product = ProductModel.fromJson(<String, dynamic>{'id': 'p1'});
+      final ProductModel product =
+          ProductModel.fromJson(<String, dynamic>{'id': 'p1'});
       expect(product.type, 'GOODS');
       expect(product.unit, 'EACH');
       expect(product.isActive, isTrue);
@@ -62,7 +63,8 @@ void main() {
       expect(product.marginPercent, 60);
     });
 
-    test('marginPercent is null when sellPrice is zero (no divide-by-zero)', () {
+    test('marginPercent is null when sellPrice is zero (no divide-by-zero)',
+        () {
       final ProductModel product = ProductModel.fromJson(<String, dynamic>{
         'id': 'p1',
         'costPrice': 10,
@@ -90,7 +92,8 @@ void main() {
 
   group('InventoryStatsModel.fromJson', () {
     test('parses getInventoryStats() output', () {
-      final InventoryStatsModel stats = InventoryStatsModel.fromJson(<String, dynamic>{
+      final InventoryStatsModel stats =
+          InventoryStatsModel.fromJson(<String, dynamic>{
         'totalProducts': 120,
         'activeProducts': 100,
         'totalWarehouses': 3,
@@ -101,7 +104,8 @@ void main() {
     });
 
     test('coerces numeric strings defensively', () {
-      final InventoryStatsModel stats = InventoryStatsModel.fromJson(<String, dynamic>{
+      final InventoryStatsModel stats =
+          InventoryStatsModel.fromJson(<String, dynamic>{
         'totalProducts': '120',
         'activeProducts': '100',
         'totalWarehouses': '3',

@@ -95,8 +95,10 @@ class ConfirmActionDialog extends StatefulWidget {
           reasonHint: reasonHint,
           reasonRequired: reasonRequired,
         ),
-      ).then((ConfirmActionResult? result) =>
-          result ?? const ConfirmActionResult(confirmed: false),);
+      ).then(
+        (ConfirmActionResult? result) =>
+            result ?? const ConfirmActionResult(confirmed: false),
+      );
 }
 
 class _ConfirmActionDialogState extends State<ConfirmActionDialog> {
@@ -148,8 +150,8 @@ class _ConfirmActionDialogState extends State<ConfirmActionDialog> {
       actions: <Widget>[
         TextButton(
           onPressed: () => Navigator.of(context).pop(
-                const ConfirmActionResult(confirmed: false),
-              ),
+            const ConfirmActionResult(confirmed: false),
+          ),
           child: Text(widget.cancelLabel),
         ),
         FilledButton(
@@ -157,7 +159,8 @@ class _ConfirmActionDialogState extends State<ConfirmActionDialog> {
             final String reason = _reasonController.text.trim();
             if (widget.reasonRequired && reason.isEmpty) return;
             Navigator.of(context).pop(
-              ConfirmActionResult(confirmed: true, reason: reason.isEmpty ? null : reason),
+              ConfirmActionResult(
+                  confirmed: true, reason: reason.isEmpty ? null : reason),
             );
           },
           style: widget.isDestructive
@@ -205,8 +208,10 @@ class WorkflowActionDialog extends StatefulWidget {
           rejectLabel: rejectLabel,
           commentHint: commentHint,
         ),
-      ).then((WorkflowActionResult? result) =>
-          result ?? const WorkflowActionResult(approved: false, comment: ''),);
+      ).then(
+        (WorkflowActionResult? result) =>
+            result ?? const WorkflowActionResult(approved: false, comment: ''),
+      );
 }
 
 class _WorkflowActionDialogState extends State<WorkflowActionDialog> {
@@ -324,25 +329,27 @@ class BatchActionDialog extends StatelessWidget {
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
-        children: actions.map(
-          (BatchActionItem item) => ListTile(
-            leading: item.icon != null
-                ? Icon(
-                    item.icon,
-                    color: item.isDestructive ? t.danger : t.primary,
-                  )
-                : null,
-            title: Text(
-              item.label,
-              style: TextStyle(
-                color: item.isDestructive ? t.danger : t.text,
+        children: actions
+            .map(
+              (BatchActionItem item) => ListTile(
+                leading: item.icon != null
+                    ? Icon(
+                        item.icon,
+                        color: item.isDestructive ? t.danger : t.primary,
+                      )
+                    : null,
+                title: Text(
+                  item.label,
+                  style: TextStyle(
+                    color: item.isDestructive ? t.danger : t.text,
+                  ),
+                ),
+                onTap: () => Navigator.of(context).pop(
+                  BatchActionResult(action: item.key),
+                ),
               ),
-            ),
-            onTap: () => Navigator.of(context).pop(
-              BatchActionResult(action: item.key),
-            ),
-          ),
-        ).toList(),
+            )
+            .toList(),
       ),
       actions: <Widget>[
         TextButton(

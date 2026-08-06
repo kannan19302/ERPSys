@@ -28,7 +28,9 @@ class LearningPathDetailPage extends ConsumerWidget {
       body: pathAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load learning path.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load learning path.'),
           onRetry: () => ref.invalidate(learningPathDetailProvider(pathId)),
         ),
         data: (LearningPath path) => _LearningPathDetail(path: path),
@@ -102,7 +104,8 @@ class _LearningPathDetail extends StatelessWidget {
               const _SectionTitle(title: 'Metrics'),
               _FieldRow('Estimated Hours', '${path.estimatedHours}'),
               _FieldRow('Enrolled', '${path.enrolledCount}'),
-              _FieldRow('Completion Rate', Formatters.percent(path.completionRate)),
+              _FieldRow(
+                  'Completion Rate', Formatters.percent(path.completionRate)),
             ],
           ),
         ),
@@ -114,11 +117,16 @@ class _LearningPathDetail extends StatelessWidget {
               const _SectionTitle(title: 'Details'),
               _FieldRow('Category', path.category),
               _FieldRow('Status', statusLabel),
-              _FieldRow('Created', path.createdAt != null ? Formatters.dateTime(path.createdAt!) : '—'),
+              _FieldRow(
+                  'Created',
+                  path.createdAt != null
+                      ? Formatters.dateTime(path.createdAt!)
+                      : '—'),
             ],
           ),
         ),
-        if (path.description != null && path.description!.isNotEmpty) ...<Widget>[
+        if (path.description != null &&
+            path.description!.isNotEmpty) ...<Widget>[
           const SizedBox(height: Spacing.x4),
           _SectionCard(
             child: Column(

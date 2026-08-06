@@ -17,7 +17,8 @@ class SplashPage extends StatelessWidget {
             Container(
               height: Spacing.x12,
               width: Spacing.x12,
-              decoration: BoxDecoration(color: t.primaryLight, borderRadius: Radii.card),
+              decoration: BoxDecoration(
+                  color: t.primaryLight, borderRadius: Radii.card),
               alignment: Alignment.center,
               child: Text(
                 'U',

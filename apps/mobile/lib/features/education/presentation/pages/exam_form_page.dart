@@ -37,35 +37,52 @@ class _ExamFormPageState extends ConsumerState<ExamFormPage> {
     if (_isEditing) {
       final e = ref.read(examDetailProvider(widget.examId!)).valueOrNull;
       if (e != null) {
-        _titleCtrl.text = e.title; _courseIdCtrl.text = e.courseId;
-        _maxScoreCtrl.text = e.maxScore.toString(); _durationCtrl.text = e.durationMinutes?.toString() ?? '';
-        _roomCtrl.text = e.room ?? ''; _notesCtrl.text = e.notes ?? '';
-        _status = e.status; _examType = e.examType ?? 'MIDTERM'; _examDate = e.examDate;
+        _titleCtrl.text = e.title;
+        _courseIdCtrl.text = e.courseId;
+        _maxScoreCtrl.text = e.maxScore.toString();
+        _durationCtrl.text = e.durationMinutes?.toString() ?? '';
+        _roomCtrl.text = e.room ?? '';
+        _notesCtrl.text = e.notes ?? '';
+        _status = e.status;
+        _examType = e.examType ?? 'MIDTERM';
+        _examDate = e.examDate;
       }
     }
   }
 
   @override
   void dispose() {
-    _titleCtrl.dispose(); _courseIdCtrl.dispose(); _maxScoreCtrl.dispose();
-    _durationCtrl.dispose(); _roomCtrl.dispose(); _notesCtrl.dispose();
+    _titleCtrl.dispose();
+    _courseIdCtrl.dispose();
+    _maxScoreCtrl.dispose();
+    _durationCtrl.dispose();
+    _roomCtrl.dispose();
+    _notesCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
-    final result = await ref.read(examListControllerProvider.notifier).save({
-      'title': _titleCtrl.text.trim(), 'courseId': _courseIdCtrl.text.trim(),
-      'examDate': _examDate.toIso8601String(), 'status': _status,
-      'examType': _examType, 'maxScore': double.tryParse(_maxScoreCtrl.text) ?? 100,
-      'durationMinutes': int.tryParse(_durationCtrl.text), 'room': _roomCtrl.text.trim().isEmpty ? null : _roomCtrl.text.trim(),
-      'notes': _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
-    }, id: widget.examId,);
+    final result = await ref.read(examListControllerProvider.notifier).save(
+      {
+        'title': _titleCtrl.text.trim(),
+        'courseId': _courseIdCtrl.text.trim(),
+        'examDate': _examDate.toIso8601String(),
+        'status': _status,
+        'examType': _examType,
+        'maxScore': double.tryParse(_maxScoreCtrl.text) ?? 100,
+        'durationMinutes': int.tryParse(_durationCtrl.text),
+        'room': _roomCtrl.text.trim().isEmpty ? null : _roomCtrl.text.trim(),
+        'notes': _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
+      },
+      id: widget.examId,
+    );
     if (!context.mounted) return;
     setState(() => _saving = false);
     result.fold(
-      (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(),
     );
   }
@@ -75,53 +92,86 @@ class _ExamFormPageState extends ConsumerState<ExamFormPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEditing ? 'Edit Exam' : 'New Exam'),
-        actions: [TextButton(
-          onPressed: _saving ? null : _save,
-          child: _saving
-              ? const SizedBox(height: Spacing.x5, width: Spacing.x5, child: CircularProgressIndicator(strokeWidth: 2))
-              : const Text('Save'),
-        ),],
+        actions: [
+          TextButton(
+            onPressed: _saving ? null : _save,
+            child: _saving
+                ? const SizedBox(
+                    height: Spacing.x5,
+                    width: Spacing.x5,
+                    child: CircularProgressIndicator(strokeWidth: 2))
+                : const Text('Save'),
+          ),
+        ],
       ),
       body: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(Spacing.x4),
           children: [
-            TextFormField(controller: _titleCtrl, decoration: const InputDecoration(labelText: 'Title *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,),
+            TextFormField(
+              controller: _titleCtrl,
+              decoration: const InputDecoration(labelText: 'Title *'),
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
+            ),
             const SizedBox(height: Spacing.x4),
-            TextFormField(controller: _courseIdCtrl, decoration: const InputDecoration(labelText: 'Course ID *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,),
+            TextFormField(
+              controller: _courseIdCtrl,
+              decoration: const InputDecoration(labelText: 'Course ID *'),
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
+            ),
             const SizedBox(height: Spacing.x4),
-            Row(children: [
-              Expanded(child: DropdownButtonFormField<String>(
-                initialValue: _examType, decoration: const InputDecoration(labelText: 'Exam Type'),
-                items: const [
-                  DropdownMenuItem(value: 'MIDTERM', child: Text('Midterm')),
-                  DropdownMenuItem(value: 'FINAL', child: Text('Final')),
-                  DropdownMenuItem(value: 'QUIZ', child: Text('Quiz')),
-                  DropdownMenuItem(value: 'ASSIGNMENT', child: Text('Assignment')),
-                ],
-                onChanged: (v) { if (v != null) setState(() => _examType = v); },
-              ),),
-              const SizedBox(width: Spacing.x4),
-              Expanded(child: DropdownButtonFormField<String>(
-                initialValue: _status, decoration: const InputDecoration(labelText: 'Status'),
-                items: const [
-                  DropdownMenuItem(value: 'SCHEDULED', child: Text('Scheduled')),
-                  DropdownMenuItem(value: 'IN_PROGRESS', child: Text('In Progress')),
-                  DropdownMenuItem(value: 'COMPLETED', child: Text('Completed')),
-                  DropdownMenuItem(value: 'CANCELLED', child: Text('Cancelled')),
-                ],
-                onChanged: (v) { if (v != null) setState(() => _status = v); },
-              ),),
-            ],),
+            Row(
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    initialValue: _examType,
+                    decoration: const InputDecoration(labelText: 'Exam Type'),
+                    items: const [
+                      DropdownMenuItem(
+                          value: 'MIDTERM', child: Text('Midterm')),
+                      DropdownMenuItem(value: 'FINAL', child: Text('Final')),
+                      DropdownMenuItem(value: 'QUIZ', child: Text('Quiz')),
+                      DropdownMenuItem(
+                          value: 'ASSIGNMENT', child: Text('Assignment')),
+                    ],
+                    onChanged: (v) {
+                      if (v != null) setState(() => _examType = v);
+                    },
+                  ),
+                ),
+                const SizedBox(width: Spacing.x4),
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    initialValue: _status,
+                    decoration: const InputDecoration(labelText: 'Status'),
+                    items: const [
+                      DropdownMenuItem(
+                          value: 'SCHEDULED', child: Text('Scheduled')),
+                      DropdownMenuItem(
+                          value: 'IN_PROGRESS', child: Text('In Progress')),
+                      DropdownMenuItem(
+                          value: 'COMPLETED', child: Text('Completed')),
+                      DropdownMenuItem(
+                          value: 'CANCELLED', child: Text('Cancelled')),
+                    ],
+                    onChanged: (v) {
+                      if (v != null) setState(() => _status = v);
+                    },
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: Spacing.x4),
             InkWell(
               onTap: () async {
                 final picked = await showDatePicker(
-                  context: context, initialDate: _examDate,
-                  firstDate: DateTime.now(), lastDate: DateTime.now().add(const Duration(days: 365)),
+                  context: context,
+                  initialDate: _examDate,
+                  firstDate: DateTime.now(),
+                  lastDate: DateTime.now().add(const Duration(days: 365)),
                 );
                 if (picked != null) setState(() => _examDate = picked);
               },
@@ -131,15 +181,33 @@ class _ExamFormPageState extends ConsumerState<ExamFormPage> {
               ),
             ),
             const SizedBox(height: Spacing.x4),
-            Row(children: [
-              Expanded(child: TextFormField(controller: _maxScoreCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Max Score'))),
-              const SizedBox(width: Spacing.x4),
-              Expanded(child: TextFormField(controller: _durationCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Duration (min)'))),
-            ],),
+            Row(
+              children: [
+                Expanded(
+                    child: TextFormField(
+                        controller: _maxScoreCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration:
+                            const InputDecoration(labelText: 'Max Score'))),
+                const SizedBox(width: Spacing.x4),
+                Expanded(
+                    child: TextFormField(
+                        controller: _durationCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                            labelText: 'Duration (min)'))),
+              ],
+            ),
             const SizedBox(height: Spacing.x4),
-            TextFormField(controller: _roomCtrl, decoration: const InputDecoration(labelText: 'Room')),
+            TextFormField(
+                controller: _roomCtrl,
+                decoration: const InputDecoration(labelText: 'Room')),
             const SizedBox(height: Spacing.x4),
-            TextFormField(controller: _notesCtrl, maxLines: 3, decoration: const InputDecoration(labelText: 'Notes', alignLabelWithHint: true)),
+            TextFormField(
+                controller: _notesCtrl,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                    labelText: 'Notes', alignLabelWithHint: true)),
           ],
         ),
       ),

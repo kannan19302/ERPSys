@@ -81,7 +81,8 @@ void main() {
 
   group('MfaChallengeModel.fromJson', () {
     test('parses the MFA branch of POST /auth/login', () {
-      final MfaChallengeModel challenge = MfaChallengeModel.fromJson(<String, dynamic>{
+      final MfaChallengeModel challenge =
+          MfaChallengeModel.fromJson(<String, dynamic>{
         'mfaRequired': true,
         'challengeToken': 'mfa-token',
         'pushSent': true,

@@ -56,8 +56,7 @@ class DeleteCustomerUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deleteCustomer(id);
 }
 
-class GetCustomerTimelineUseCase
-    extends UseCase<List<Activity>, String> {
+class GetCustomerTimelineUseCase extends UseCase<List<Activity>, String> {
   const GetCustomerTimelineUseCase(this._repository);
 
   final CrmRepository _repository;
@@ -67,8 +66,7 @@ class GetCustomerTimelineUseCase
       _repository.getCustomerTimeline(id);
 }
 
-class GetCustomerStatsUseCase
-    extends UseCase<Map<String, dynamic>, String> {
+class GetCustomerStatsUseCase extends UseCase<Map<String, dynamic>, String> {
   const GetCustomerStatsUseCase(this._repository);
 
   final CrmRepository _repository;
@@ -146,8 +144,7 @@ class DeleteContactUseCase extends UseCase<void, String> {
 
 // ── Leads ──────────────────────────────────────────────────────────────────
 
-class ListLeadsUseCase
-    extends UseCase<Cacheable<Paginated<Lead>>, ListQuery> {
+class ListLeadsUseCase extends UseCase<Cacheable<Paginated<Lead>>, ListQuery> {
   const ListLeadsUseCase(this._repository);
 
   final CrmRepository _repository;
@@ -218,8 +215,7 @@ class DisqualifyLeadUseCase extends UseCase<Lead, String> {
 
 // ── Activities ─────────────────────────────────────────────────────────────
 
-class ListActivitiesUseCase
-    extends UseCase<Paginated<Activity>, ListQuery> {
+class ListActivitiesUseCase extends UseCase<Paginated<Activity>, ListQuery> {
   const ListActivitiesUseCase(this._repository);
 
   final CrmRepository _repository;
@@ -229,8 +225,7 @@ class ListActivitiesUseCase
       _repository.listActivities(params);
 }
 
-class CreateActivityUseCase
-    extends UseCase<Activity, Map<String, dynamic>> {
+class CreateActivityUseCase extends UseCase<Activity, Map<String, dynamic>> {
   const CreateActivityUseCase(this._repository);
 
   final CrmRepository _repository;
@@ -312,14 +307,12 @@ class DeleteEmailTemplateUseCase extends UseCase<void, String> {
   final CrmRepository _repository;
 
   @override
-  Future<Result<void>> call(String id) =>
-      _repository.deleteEmailTemplate(id);
+  Future<Result<void>> call(String id) => _repository.deleteEmailTemplate(id);
 }
 
 // ── Lead Sources ────────────────────────────────────────────────────────────
 
-class ListLeadSourcesUseCase
-    extends UseCase<Paginated<LeadSource>, ListQuery> {
+class ListLeadSourcesUseCase extends UseCase<Paginated<LeadSource>, ListQuery> {
   const ListLeadSourcesUseCase(this._repository);
 
   final CrmRepository _repository;
@@ -346,6 +339,5 @@ class DeleteLeadSourceUseCase extends UseCase<void, String> {
   final CrmRepository _repository;
 
   @override
-  Future<Result<void>> call(String id) =>
-      _repository.deleteLeadSource(id);
+  Future<Result<void>> call(String id) => _repository.deleteLeadSource(id);
 }

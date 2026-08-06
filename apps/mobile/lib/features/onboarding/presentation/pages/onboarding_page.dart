@@ -106,7 +106,8 @@ class OnboardingPage extends ConsumerWidget {
                 Text('$error', textAlign: TextAlign.center),
                 const SizedBox(height: Spacing.x4),
                 OutlinedButton(
-                  onPressed: () => ref.read(onboardingControllerProvider.notifier).refresh(),
+                  onPressed: () =>
+                      ref.read(onboardingControllerProvider.notifier).refresh(),
                   child: const Text('Retry'),
                 ),
               ],
@@ -114,7 +115,8 @@ class OnboardingPage extends ConsumerWidget {
           ),
         ),
         data: (OnboardingChecklist checklist) => RefreshIndicator(
-          onRefresh: () => ref.read(onboardingControllerProvider.notifier).refresh(),
+          onRefresh: () =>
+              ref.read(onboardingControllerProvider.notifier).refresh(),
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(Spacing.x4),
@@ -150,7 +152,9 @@ class _ProgressHeader extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(
-          checklist.isComplete ? "You're all set" : 'Finish setting up your workspace',
+          checklist.isComplete
+              ? "You're all set"
+              : 'Finish setting up your workspace',
           style: Theme.of(context).textTheme.headlineSmall,
         ),
         const SizedBox(height: Spacing.x2),

@@ -26,5 +26,6 @@ class OnboardingChecklistModel extends OnboardingChecklist {
   }
 }
 
-List<String> _stringList(Object? value) =>
-    value is List ? value.whereType<String>().toList(growable: false) : const <String>[];
+List<String> _stringList(Object? value) => value is List
+    ? value.whereType<String>().toList(growable: false)
+    : const <String>[];

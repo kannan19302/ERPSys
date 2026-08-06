@@ -13,10 +13,12 @@ class SaasSubscriptionFormPage extends ConsumerStatefulWidget {
   final String? subscriptionId;
 
   @override
-  ConsumerState<SaasSubscriptionFormPage> createState() => _SaasSubscriptionFormPageState();
+  ConsumerState<SaasSubscriptionFormPage> createState() =>
+      _SaasSubscriptionFormPageState();
 }
 
-class _SaasSubscriptionFormPageState extends ConsumerState<SaasSubscriptionFormPage> {
+class _SaasSubscriptionFormPageState
+    extends ConsumerState<SaasSubscriptionFormPage> {
   final _formKey = GlobalKey<FormState>();
   final _planIdCtrl = TextEditingController();
   final _tenantIdCtrl = TextEditingController();
@@ -44,11 +46,14 @@ class _SaasSubscriptionFormPageState extends ConsumerState<SaasSubscriptionFormP
       'currentPeriodStart': _startDate?.toIso8601String(),
       'billingCycle': _billingCycle,
     };
-    final result = await ref.read(saasSubscriptionListControllerProvider.notifier).save(payload, id: widget.subscriptionId);
+    final result = await ref
+        .read(saasSubscriptionListControllerProvider.notifier)
+        .save(payload, id: widget.subscriptionId);
     if (!context.mounted) return;
     setState(() => _saving = false);
     result.fold(
-      (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(),
     );
   }
@@ -62,7 +67,10 @@ class _SaasSubscriptionFormPageState extends ConsumerState<SaasSubscriptionFormP
           TextButton(
             onPressed: _saving ? null : _save,
             child: _saving
-                ? const SizedBox(height: Spacing.x5, width: Spacing.x5, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    height: Spacing.x5,
+                    width: Spacing.x5,
+                    child: CircularProgressIndicator(strokeWidth: 2))
                 : const Text('Save'),
           ),
         ],
@@ -75,13 +83,15 @@ class _SaasSubscriptionFormPageState extends ConsumerState<SaasSubscriptionFormP
             TextFormField(
               controller: _planIdCtrl,
               decoration: const InputDecoration(labelText: 'Plan ID *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _tenantIdCtrl,
               decoration: const InputDecoration(labelText: 'Tenant ID *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.x4),
             InkWell(
@@ -99,7 +109,9 @@ class _SaasSubscriptionFormPageState extends ConsumerState<SaasSubscriptionFormP
                   labelText: 'Start Date',
                   suffixIcon: Icon(Icons.calendar_today),
                 ),
-                child: Text(_startDate != null ? Formatters.date(_startDate!) : 'Select date'),
+                child: Text(_startDate != null
+                    ? Formatters.date(_startDate!)
+                    : 'Select date'),
               ),
             ),
             const SizedBox(height: Spacing.x4),
@@ -111,7 +123,9 @@ class _SaasSubscriptionFormPageState extends ConsumerState<SaasSubscriptionFormP
                 DropdownMenuItem(value: 'YEARLY', child: Text('Yearly')),
                 DropdownMenuItem(value: 'QUARTERLY', child: Text('Quarterly')),
               ],
-              onChanged: (v) { if (v != null) setState(() => _billingCycle = v); },
+              onChanged: (v) {
+                if (v != null) setState(() => _billingCycle = v);
+              },
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
@@ -122,7 +136,9 @@ class _SaasSubscriptionFormPageState extends ConsumerState<SaasSubscriptionFormP
                 DropdownMenuItem(value: 'TRIALING', child: Text('Trialing')),
                 DropdownMenuItem(value: 'PAST_DUE', child: Text('Past Due')),
               ],
-              onChanged: (v) { if (v != null) setState(() => _status = v); },
+              onChanged: (v) {
+                if (v != null) setState(() => _status = v);
+              },
             ),
           ],
         ),

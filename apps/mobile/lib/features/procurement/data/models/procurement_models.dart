@@ -45,8 +45,10 @@ class PurchaseOrderModel extends PurchaseOrder {
       vendorName: json['vendorName'] as String? ?? '',
       status: json['status'] as String? ?? 'DRAFT',
       items: (json['items'] as List<dynamic>?)
-              ?.map((e) =>
-                  PurchaseOrderItemModel.fromJson(e as Map<String, dynamic>),)
+              ?.map(
+                (e) =>
+                    PurchaseOrderItemModel.fromJson(e as Map<String, dynamic>),
+              )
               .toList(growable: false) ??
           const [],
       subtotal: asDouble(json['subtotal']),
@@ -212,16 +214,20 @@ class RFQModel extends RFQ {
       vendorName: json['vendorName'] as String?,
       status: json['status'] as String? ?? 'DRAFT',
       items: (json['items'] as List<dynamic>?)
-              ?.map((e) =>
-                  RFQItemModel.fromJson(e as Map<String, dynamic>),)
+              ?.map(
+                (e) => RFQItemModel.fromJson(e as Map<String, dynamic>),
+              )
               .toList(growable: false) ??
           const [],
       deliveryDate: DateTime.tryParse('${json['deliveryDate']}'),
       responseDeadline: DateTime.tryParse('${json['responseDeadline']}'),
       vendorCount: asInt(json['vendorCount']),
       quotations: (json['quotations'] as List<dynamic>?)
-              ?.map((e) => SupplierQuotationModel.fromJson(
-                  e as Map<String, dynamic>,),)
+              ?.map(
+                (e) => SupplierQuotationModel.fromJson(
+                  e as Map<String, dynamic>,
+                ),
+              )
               .toList(growable: false) ??
           const [],
       notes: json['notes'] as String?,
@@ -295,7 +301,8 @@ class SupplierQuotationModel extends SupplierQuotation {
 
   factory SupplierQuotationModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('SupplierQuotation missing id');
+    if (id is! String)
+      throw const ParseException('SupplierQuotation missing id');
     return SupplierQuotationModel(
       id: id,
       rfqId: json['rfqId'] as String?,
@@ -304,8 +311,11 @@ class SupplierQuotationModel extends SupplierQuotation {
       vendorName: json['vendorName'] as String?,
       status: json['status'] as String? ?? 'DRAFT',
       items: (json['items'] as List<dynamic>?)
-              ?.map((e) => SupplierQuotationItemModel.fromJson(
-                  e as Map<String, dynamic>,),)
+              ?.map(
+                (e) => SupplierQuotationItemModel.fromJson(
+                  e as Map<String, dynamic>,
+                ),
+              )
               .toList(growable: false) ??
           const [],
       subtotal: asDouble(json['subtotal']),
@@ -393,7 +403,8 @@ class PurchaseRequisitionModel extends PurchaseRequisition {
 
   factory PurchaseRequisitionModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('PurchaseRequisition missing id');
+    if (id is! String)
+      throw const ParseException('PurchaseRequisition missing id');
     return PurchaseRequisitionModel(
       id: id,
       title: json['title'] as String? ?? '',
@@ -404,8 +415,11 @@ class PurchaseRequisitionModel extends PurchaseRequisition {
       status: json['status'] as String? ?? 'DRAFT',
       priority: json['priority'] as String? ?? 'MEDIUM',
       items: (json['items'] as List<dynamic>?)
-              ?.map((e) => PurchaseRequisitionItemModel.fromJson(
-                  e as Map<String, dynamic>,),)
+              ?.map(
+                (e) => PurchaseRequisitionItemModel.fromJson(
+                  e as Map<String, dynamic>,
+                ),
+              )
               .toList(growable: false) ??
           const [],
       totalEstimated: asDouble(json['totalEstimated']),
@@ -501,8 +515,11 @@ class PurchaseReceiptModel extends PurchaseReceipt {
       warehouseName: json['warehouseName'] as String?,
       status: json['status'] as String? ?? 'DRAFT',
       items: (json['items'] as List<dynamic>?)
-              ?.map((e) => PurchaseReceiptItemModel.fromJson(
-                  e as Map<String, dynamic>,),)
+              ?.map(
+                (e) => PurchaseReceiptItemModel.fromJson(
+                  e as Map<String, dynamic>,
+                ),
+              )
               .toList(growable: false) ??
           const [],
       receivedDate: DateTime.tryParse('${json['receivedDate']}'),
@@ -588,7 +605,8 @@ class SupplierContractModel extends SupplierContract {
 
   factory SupplierContractModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('SupplierContract missing id');
+    if (id is! String)
+      throw const ParseException('SupplierContract missing id');
     return SupplierContractModel(
       id: id,
       contractNumber: json['contractNumber'] as String? ?? '',
@@ -644,18 +662,25 @@ class ProcurementDashboardStatsModel extends ProcurementDashboardStats {
         pendingApprovals: asInt(json['pendingApprovals']),
         vendorCount: asInt(json['vendorCount']),
         spendByVendor: (json['spendByVendor'] as List<dynamic>?)
-                ?.map((e) => DashboardDataPointModel.fromJson(
-                    e as Map<String, dynamic>,),)
+                ?.map(
+                  (e) => DashboardDataPointModel.fromJson(
+                    e as Map<String, dynamic>,
+                  ),
+                )
                 .toList(growable: false) ??
             const [],
         spendByMonth: (json['spendByMonth'] as List<dynamic>?)
-                ?.map((e) => DashboardDataPointModel.fromJson(
-                    e as Map<String, dynamic>,),)
+                ?.map(
+                  (e) => DashboardDataPointModel.fromJson(
+                    e as Map<String, dynamic>,
+                  ),
+                )
                 .toList(growable: false) ??
             const [],
         recentPOs: (json['recentPOs'] as List<dynamic>?)
-                ?.map((e) =>
-                    PurchaseOrderModel.fromJson(e as Map<String, dynamic>),)
+                ?.map(
+                  (e) => PurchaseOrderModel.fromJson(e as Map<String, dynamic>),
+                )
                 .toList(growable: false) ??
             const [],
         overdueDeliveries: asInt(json['overdueDeliveries']),

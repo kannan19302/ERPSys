@@ -12,14 +12,17 @@ class ReorderSuggestionListPage extends ConsumerStatefulWidget {
   static const String routeName = 'reorder-suggestions';
   static const String routePath = '/supply-chain/reorder-suggestions';
   @override
-  ConsumerState<ReorderSuggestionListPage> createState() => _ReorderSuggestionListPageState();
+  ConsumerState<ReorderSuggestionListPage> createState() =>
+      _ReorderSuggestionListPageState();
 }
 
-class _ReorderSuggestionListPageState extends ConsumerState<ReorderSuggestionListPage> {
+class _ReorderSuggestionListPageState
+    extends ConsumerState<ReorderSuggestionListPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(reorderSuggestionListControllerProvider);
-    final controller = ref.read(reorderSuggestionListControllerProvider.notifier);
+    final controller =
+        ref.read(reorderSuggestionListControllerProvider.notifier);
     final t = context.tokens;
 
     return Scaffold(
@@ -30,14 +33,17 @@ class _ReorderSuggestionListPageState extends ConsumerState<ReorderSuggestionLis
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} suggestion${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} suggestion${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -45,7 +51,8 @@ class _ReorderSuggestionListPageState extends ConsumerState<ReorderSuggestionLis
     );
   }
 
-  Widget _body(ReorderSuggestionListState state, ReorderSuggestionListController controller) {
+  Widget _body(ReorderSuggestionListState state,
+      ReorderSuggestionListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -87,22 +94,28 @@ class _SuggestionTile extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(children: [
-              Expanded(
-                child: Text(suggestion.productName,
-                    style: Theme.of(context).textTheme.titleSmall,),
-              ),
-              if (suggestion.status != null)
-                UiStatusBadge(
-                  label: suggestion.status!,
-                  tone: suggestion.status == 'APPROVED'
-                      ? UiTone.success
-                      : UiTone.warning,
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    suggestion.productName,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
                 ),
-            ],),
+                if (suggestion.status != null)
+                  UiStatusBadge(
+                    label: suggestion.status!,
+                    tone: suggestion.status == 'APPROVED'
+                        ? UiTone.success
+                        : UiTone.warning,
+                  ),
+              ],
+            ),
             const SizedBox(height: Spacing.x1),
-            Text('Reorder qty: ${suggestion.reorderQuantity}',
-                style: TextStyle(color: t.textSecondary),),
+            Text(
+              'Reorder qty: ${suggestion.reorderQuantity}',
+              style: TextStyle(color: t.textSecondary),
+            ),
             if (onApprove != null) ...[
               const SizedBox(height: Spacing.x2),
               Align(
@@ -113,7 +126,8 @@ class _SuggestionTile extends StatelessWidget {
                   label: const Text('Approve'),
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: Spacing.x3, vertical: Spacing.x1_5,
+                      horizontal: Spacing.x3,
+                      vertical: Spacing.x1_5,
                     ),
                   ),
                 ),

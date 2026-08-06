@@ -35,7 +35,7 @@ class CrmRepositoryImpl implements CrmRepository {
       final Paginated<CustomerModel> page = await _remote.listCustomers(query);
 
       await _cache.write(
-        _tenantId, _customersNamespace, query.cacheKey, <String, Object?>{
+          _tenantId, _customersNamespace, query.cacheKey, <String, Object?>{
         'data': page.data.map((CustomerModel p) => p.toJson()).toList(),
         'meta': page.meta.toJson(),
       });
@@ -137,7 +137,8 @@ class CrmRepositoryImpl implements CrmRepository {
   @override
   Future<Result<Map<String, dynamic>>> getCustomerStats(String id) async {
     try {
-      return Result<Map<String, dynamic>>.ok(await _remote.getCustomerStats(id));
+      return Result<Map<String, dynamic>>.ok(
+          await _remote.getCustomerStats(id));
     } on Object catch (error) {
       return Result<Map<String, dynamic>>.err(mapExceptionToFailure(error));
     }
@@ -162,7 +163,7 @@ class CrmRepositoryImpl implements CrmRepository {
       final Paginated<ContactModel> page = await _remote.listContacts(query);
 
       await _cache.write(
-        _tenantId, _contactsNamespace, query.cacheKey, <String, Object?>{
+          _tenantId, _contactsNamespace, query.cacheKey, <String, Object?>{
         'data': page.data.map((ContactModel p) => p.toJson()).toList(),
         'meta': page.meta.toJson(),
       });
@@ -252,8 +253,8 @@ class CrmRepositoryImpl implements CrmRepository {
     try {
       final Paginated<LeadModel> page = await _remote.listLeads(query);
 
-      await _cache.write(
-        _tenantId, _leadsNamespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, _leadsNamespace, query.cacheKey, <String, Object?>{
         'data': page.data.map((LeadModel p) => p.toJson()).toList(),
         'meta': page.meta.toJson(),
       });
@@ -312,7 +313,8 @@ class CrmRepositoryImpl implements CrmRepository {
   }
 
   @override
-  Future<Result<Lead>> updateLead(String id, Map<String, dynamic> payload) async {
+  Future<Result<Lead>> updateLead(
+      String id, Map<String, dynamic> payload) async {
     try {
       final Lead updated = await _remote.updateLead(id, payload);
       await _cache.clearTenant(_tenantId);
@@ -419,7 +421,8 @@ class CrmRepositoryImpl implements CrmRepository {
   @override
   Future<Result<Paginated<LeadSource>>> listLeadSources(ListQuery query) async {
     try {
-      final Paginated<LeadSourceModel> page = await _remote.listLeadSources(query);
+      final Paginated<LeadSourceModel> page =
+          await _remote.listLeadSources(query);
       return Result<Paginated<LeadSource>>.ok(
         Paginated<LeadSource>(data: page.data, meta: page.meta),
       );
@@ -429,7 +432,8 @@ class CrmRepositoryImpl implements CrmRepository {
   }
 
   @override
-  Future<Result<LeadSource>> createLeadSource(Map<String, dynamic> payload) async {
+  Future<Result<LeadSource>> createLeadSource(
+      Map<String, dynamic> payload) async {
     try {
       return Result<LeadSource>.ok(await _remote.createLeadSource(payload));
     } on Object catch (error) {
@@ -478,7 +482,8 @@ class CrmRepositoryImpl implements CrmRepository {
     Map<String, dynamic> payload,
   ) async {
     try {
-      return Result<EmailTemplate>.ok(await _remote.createEmailTemplate(payload));
+      return Result<EmailTemplate>.ok(
+          await _remote.createEmailTemplate(payload));
     } on Object catch (error) {
       return Result<EmailTemplate>.err(mapExceptionToFailure(error));
     }

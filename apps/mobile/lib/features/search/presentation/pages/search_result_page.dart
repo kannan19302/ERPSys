@@ -45,7 +45,8 @@ class _SearchResultPageState extends ConsumerState<SearchResultPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -58,7 +59,10 @@ class _SearchResultPageState extends ConsumerState<SearchResultPage> {
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
@@ -66,14 +70,17 @@ class _SearchResultPageState extends ConsumerState<SearchResultPage> {
           if (_search.text.isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-              child: Row(children: [
-                Text(
-                  state.isLoading
-                      ? 'Searching...'
-                      : '${state.meta.total} result${state.meta.total == 1 ? '' : 's'}',
-                  style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-                ),
-              ],),
+              child: Row(
+                children: [
+                  Text(
+                    state.isLoading
+                        ? 'Searching...'
+                        : '${state.meta.total} result${state.meta.total == 1 ? '' : 's'}',
+                    style: TextStyle(
+                        color: t.textSecondary, fontSize: TypeScale.xs),
+                  ),
+                ],
+              ),
             ),
           Expanded(child: _body(state, controller)),
         ],
@@ -81,7 +88,8 @@ class _SearchResultPageState extends ConsumerState<SearchResultPage> {
     );
   }
 
-  Widget _body(SearchResultListState state, SearchResultListController controller) {
+  Widget _body(
+      SearchResultListState state, SearchResultListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -89,7 +97,9 @@ class _SearchResultPageState extends ConsumerState<SearchResultPage> {
     }
     final palette = context.tokens;
     if (_search.text.isEmpty) {
-      return const EmptyView(title: 'Search everything', message: 'Type a query to search across all modules.');
+      return const EmptyView(
+          title: 'Search everything',
+          message: 'Type a query to search across all modules.');
     }
     return PaginatedListView<SearchResult>(
       items: state.items,
@@ -99,7 +109,8 @@ class _SearchResultPageState extends ConsumerState<SearchResultPage> {
       onRefresh: controller.refresh,
       onLoadMore: controller.loadMore,
       emptyTitle: 'No results found',
-      emptyMessage: 'Nothing matches "${_search.text}". Try a different search term.',
+      emptyMessage:
+          'Nothing matches "${_search.text}". Try a different search term.',
       itemBuilder: (_, SearchResult result, __) => Card(
         margin: EdgeInsets.zero,
         child: Padding(
@@ -117,25 +128,39 @@ class _SearchResultPageState extends ConsumerState<SearchResultPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(result.title,
-                        style: Theme.of(context).textTheme.titleSmall,),
+                    Text(
+                      result.title,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
                     if (result.subtitle != null) ...[
                       const SizedBox(height: Spacing.x1),
-                      Text(result.subtitle!,
-                          style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs),),
+                      Text(
+                        result.subtitle!,
+                        style: TextStyle(
+                            color: palette.textSecondary,
+                            fontSize: TypeScale.xs),
+                      ),
                     ],
                     if (result.description != null) ...[
                       const SizedBox(height: Spacing.x1),
-                      Text(result.description!,
-                          maxLines: 2, overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: palette.textTertiary, fontSize: TypeScale.xs),),
+                      Text(
+                        result.description!,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            color: palette.textTertiary,
+                            fontSize: TypeScale.xs),
+                      ),
                     ],
                   ],
                 ),
               ),
               if (result.score != null)
-                Text(result.score!.toStringAsFixed(1),
-                    style: TextStyle(fontSize: TypeScale.xs, color: palette.textTertiary),),
+                Text(
+                  result.score!.toStringAsFixed(1),
+                  style: TextStyle(
+                      fontSize: TypeScale.xs, color: palette.textTertiary),
+                ),
             ],
           ),
         ),

@@ -41,9 +41,23 @@ class DriveFile extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, mimeType, size, storagePath, ownerId, folderId, extension,
-        checksum, description, isStarred, isDeleted, deletedAt, currentVersion,
-        metadata, createdAt, updatedAt,
+        id,
+        name,
+        mimeType,
+        size,
+        storagePath,
+        ownerId,
+        folderId,
+        extension,
+        checksum,
+        description,
+        isStarred,
+        isDeleted,
+        deletedAt,
+        currentVersion,
+        metadata,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -84,8 +98,21 @@ class DriveFolder extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, ownerId, parentId, description, color, icon, isStarred,
-        isDeleted, deletedAt, path, size, fileCount, createdAt, updatedAt,
+        id,
+        name,
+        ownerId,
+        parentId,
+        description,
+        color,
+        icon,
+        isStarred,
+        isDeleted,
+        deletedAt,
+        path,
+        size,
+        fileCount,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -106,7 +133,11 @@ class DriveTrashItem extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, fileId, deletedBy, originalPath, deletedAt,
+        id,
+        fileId,
+        deletedBy,
+        originalPath,
+        deletedAt,
       ];
 }
 
