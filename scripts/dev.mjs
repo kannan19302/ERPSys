@@ -35,7 +35,13 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const COMPOSE = ["compose", "-f", "docker-compose.dev.yml"];
-const REGISTRY_COMPOSE = join(ROOT, "..", "unierp-infra", "registry", "docker-compose.registry.yml");
+const REGISTRY_COMPOSE = join(
+  ROOT,
+  "..",
+  "unierp-infra",
+  "registry",
+  "docker-compose.registry.yml",
+);
 
 const argv = process.argv.slice(2);
 const has = (flag) => argv.includes(flag);
@@ -45,7 +51,11 @@ const withPlanes = argv
   .filter(Boolean);
 
 const docker = (args, opts = {}) =>
-  spawnSync("docker", args, { cwd: ROOT, stdio: opts.quiet ? "pipe" : "inherit", encoding: "utf8" });
+  spawnSync("docker", args, {
+    cwd: ROOT,
+    stdio: opts.quiet ? "pipe" : "inherit",
+    encoding: "utf8",
+  });
 
 const c = {
   dim: (s) => `\x1b[2m${s}\x1b[0m`,
@@ -65,23 +75,36 @@ if (has("--reset")) {
   process.exit(0);
 }
 
-console.log(`\n  ${c.cyan(c.bold("UniERP"))} — starting the development stack\n`);
+console.log(
+  `\n  ${c.cyan(c.bold("UniERP"))} — starting the development stack\n`,
+);
 
 // Docker has to be up before anything else is worth trying.
 if (docker(["info"], { quiet: true }).status !== 0) {
-  console.log(c.yellow("  Docker is not responding. Start Docker Desktop and run this again."));
+  console.log(
+    c.yellow(
+      "  Docker is not responding. Start Docker Desktop and run this again.",
+    ),
+  );
   process.exit(1);
 }
 
 // The registry lives in unierp-infra but the app containers install from it, so
 // it must exist and share this stack's network.
-const registryUp = docker(["ps", "--filter", "name=unerp-registry", "--format", "{{.Names}}"], { quiet: true });
+const registryUp = docker(
+  ["ps", "--filter", "name=unerp-registry", "--format", "{{.Names}}"],
+  { quiet: true },
+);
 if (!registryUp.stdout?.trim()) {
   if (existsSync(REGISTRY_COMPOSE)) {
     console.log(c.dim("  starting the package registry…"));
     docker(["compose", "-f", REGISTRY_COMPOSE, "up", "-d"], { quiet: true });
   } else {
-    console.log(c.yellow("  unierp-infra/registry not found — @unerp/* installs will fail."));
+    console.log(
+      c.yellow(
+        "  unierp-infra/registry not found — @unerp/* installs will fail.",
+      ),
+    );
   }
 }
 
@@ -92,11 +115,20 @@ if (!registryUp.stdout?.trim()) {
 // while the health probe below still succeeds, because something IS answering.
 // The script would then print a tick for a container that never started, which
 // is precisely the kind of false green this codebase has been full of.
-const PORTS = { api: 3001, web: 3000, console: 3002, developer: 3004, idp: 3005 };
+const PORTS = {
+  api: 3001,
+  web: 3000,
+  console: 3002,
+  developer: 3004,
+  idp: 3005,
+};
 const conflicts = [];
 for (const [svc, port] of Object.entries(PORTS)) {
   if (svc !== "api" && svc !== "web" && !withPlanes.includes(svc)) continue;
-  const inDocker = docker(["ps", "--filter", `publish=${port}`, "--format", "{{.Names}}"], { quiet: true });
+  const inDocker = docker(
+    ["ps", "--filter", `publish=${port}`, "--format", "{{.Names}}"],
+    { quiet: true },
+  );
   if (inDocker.stdout?.trim()) continue; // ours already
   try {
     const ctrl = new AbortController();
@@ -109,7 +141,9 @@ for (const [svc, port] of Object.entries(PORTS)) {
   }
 }
 if (conflicts.length) {
-  console.log(c.yellow("  Ports already in use by something outside this stack:"));
+  console.log(
+    c.yellow("  Ports already in use by something outside this stack:"),
+  );
   for (const { svc, port } of conflicts) {
     console.log(`    ${String(port).padEnd(6)} wanted by ${c.bold(svc)}`);
   }
@@ -134,12 +168,18 @@ const DOCKER_ONLY = has("--docker");
 // --docker runs everything in containers instead, for parity with CI when you
 // are debugging a container-only failure.
 const datastores = ["postgres", "redis", "minio"];
-const services = DOCKER_ONLY ? [...datastores, "api", "web", ...withPlanes] : datastores;
-const profileArgs = DOCKER_ONLY ? withPlanes.flatMap((p) => ["--profile", p]) : [];
+const services = DOCKER_ONLY
+  ? [...datastores, "api", "web", ...withPlanes]
+  : datastores;
+const profileArgs = DOCKER_ONLY
+  ? withPlanes.flatMap((p) => ["--profile", p])
+  : [];
 docker([...COMPOSE, ...profileArgs, "up", "-d", ...services]);
 
 // Containers share a network with the registry only if it joins theirs.
-docker(["network", "connect", "erpsys_default", "unerp-registry"], { quiet: true });
+docker(["network", "connect", "erpsys_default", "unerp-registry"], {
+  quiet: true,
+});
 
 const env = {
   ...process.env,
@@ -175,8 +215,11 @@ const env = {
 
 const children = [];
 if (!DOCKER_ONLY) {
+  // Eight minutes, not three. A cold `nest start --watch` over 45 modules on
+  // this machine takes four to six, so three minutes timed out on a service
+  // that was compiling perfectly well and would answer a minute later.
   const wait = async (url, label) => {
-    const deadline = Date.now() + 3 * 60_000;
+    const deadline = Date.now() + 8 * 60_000;
     while (Date.now() < deadline) {
       try {
         const ctrl = new AbortController();
@@ -196,7 +239,19 @@ if (!DOCKER_ONLY) {
   console.log(c.dim("  waiting for Postgres…"));
   let ready = false;
   for (let i = 0; i < 60 && !ready; i += 1) {
-    ready = docker(["exec", "unerp-postgres", "pg_isready", "-U", "unerp", "-d", "unerp_dev"], { quiet: true }).status === 0;
+    ready =
+      docker(
+        [
+          "exec",
+          "unerp-postgres",
+          "pg_isready",
+          "-U",
+          "unerp",
+          "-d",
+          "unerp_dev",
+        ],
+        { quiet: true },
+      ).status === 0;
     if (!ready) await new Promise((r) => setTimeout(r, 2_000));
   }
 
@@ -213,16 +268,56 @@ if (!DOCKER_ONLY) {
     return child;
   };
 
-  spawnApp("api", "apps/api", "npx", ["nest", "start", "--watch"], { API_PORT: "3001" });
-  spawnApp("idp", "apps/idp", "npx", ["nest", "start", "--watch"], { PORT: "3005", API_PORT: "3005" });
+  spawnApp("api", "apps/api", "npx", ["nest", "start", "--watch"], {
+    API_PORT: "3001",
+  });
+  spawnApp("idp", "apps/idp", "npx", ["nest", "start", "--watch"], {
+    PORT: "3005",
+    API_PORT: "3005",
+  });
   spawnApp("web", "apps/web", "npx", ["next", "dev", "-p", "3000"]);
 
-  await wait("http://localhost:3001/api/v1/health", "API");
-  console.log(`  ${c.green("✓")}  API`);
-  await wait("http://localhost:3005/api/v1/auth/check-email?email=x@y.z", "IdP");
-  console.log(`  ${c.green("✓")}  IdP`);
-  await wait("http://localhost:3000/", "Web");
-  console.log(`  ${c.green("✓")}  Web`);
+  // Report what `wait` actually returned.
+  //
+  // These three lines used to print a green tick unconditionally, discarding the
+  // boolean. The output read:
+  //
+  //     API did not become ready in time
+  //     ✓  API
+  //
+  // …and then printed the summary of URLs as though the stack were up. This
+  // script's own header says it "waits until each is genuinely answering rather
+  // than merely started", and forty lines above it refuses to report success for
+  // a process it did not start, "which is precisely the kind of false green this
+  // codebase has been full of". It was one itself.
+  const readiness = [
+    ["API", await wait("http://localhost:3001/api/v1/health", "API")],
+    [
+      "IdP",
+      await wait(
+        "http://localhost:3005/api/v1/auth/check-email?email=x@y.z",
+        "IdP",
+      ),
+    ],
+    ["Web", await wait("http://localhost:3000/", "Web")],
+  ];
+  for (const [label, ok] of readiness) {
+    console.log(
+      ok
+        ? `  ${c.green("✓")}  ${label}`
+        : `  ${c.yellow("✗")}  ${label}  ${c.dim("not answering")}`,
+    );
+  }
+  const notReady = readiness.filter(([, ok]) => !ok).map(([label]) => label);
+  if (notReady.length) {
+    console.log(
+      c.yellow(`\n  ${notReady.join(", ")} did not come up.`) +
+        c.dim(
+          "\n  The processes are still running and may yet compile — this is a\n" +
+            "  report, not a shutdown. `pnpm smoke` is the check that matters.\n",
+        ),
+    );
+  }
 
   const shutdown = () => {
     console.log(c.dim("\n  stopping…"));
@@ -238,7 +333,9 @@ console.log(`
   ${c.bold("Web")}         http://localhost:3000
   ${c.bold("API")}         http://localhost:3001/api/v1
   Swagger     http://localhost:3001/swagger${
-    withPlanes.includes("console") ? "\n  Console     http://localhost:3002" : ""
+    withPlanes.includes("console")
+      ? "\n  Console     http://localhost:3002"
+      : ""
   }${withPlanes.includes("developer") ? "\n  Developer   http://localhost:3004" : ""}
   MinIO       http://localhost:9001   ${c.dim("(minioadmin / minioadmin)")}
   Registry    http://localhost:4873
