@@ -1,0 +1,23 @@
+{
+  "extends": "./base.json",
+  "compilerOptions": {
+    "paths": {
+      "@unerp/ui": ["../../ui/dist/index.d.ts"],
+      "@unerp/shared": ["../../shared/dist/index.d.ts"],
+      "@unerp/auth": ["../../auth/dist/index.d.ts"],
+      "@unerp/ui/tokens": ["../../ui/dist/tokens/index.d.ts"],
+      "@unerp/ui/theme": ["../../ui/dist/theme/index.d.ts"],
+      "@unerp/ui/components": ["../../ui/dist/components/index.d.ts"],
+      "@unerp/ui/layout": ["../../ui/dist/layout/index.d.ts"],
+      "@unerp/ui/charts": ["../../ui/dist/charts/index.d.ts"],
+      "@unerp/ui/data-grid": ["../../ui/dist/data-grid/index.d.ts"],
+      "@unerp/ui/dashboard": ["../../ui/dist/dashboard/index.d.ts"],
+      "@unerp/ui/notifications": ["../../ui/dist/notifications/index.d.ts"],
+      "@unerp/ui/hooks": ["../../ui/dist/hooks/index.d.ts"],
+      "@unerp/ui/utils": ["../../ui/dist/utils/index.d.ts"],
+      "@unerp/ui/icons": ["../../ui/dist/icons/index.d.ts"],
+      "@unerp/ui/form-engine": ["../../ui/dist/form-engine/index.d.ts"],
+      "@unerp/ui/workflow": ["../../ui/dist/workflow/index.d.ts"]
+    }
+  }
+}

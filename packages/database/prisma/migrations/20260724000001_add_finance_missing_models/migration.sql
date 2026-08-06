@@ -1,0 +1,7 @@
+-- Intentionally empty migration.
+-- All changes this migration originally contained (finance table column
+-- alterations, dropped constraints/indexes, added deleted_at/updated_at
+-- columns) are fully performed by 20260723223000_baseline_schema_sync, which
+-- runs immediately before this migration in the chain. Re-running them here
+-- would fail on a fresh database (columns/constraints already exist or were
+-- already dropped), so this migration is a no-op.

@@ -1,0 +1,327 @@
+model Position {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  departmentId   String   @map("department_id")
+  title          String
+  code           String
+  budgetedSalary Decimal  @map("budgeted_salary") @db.Decimal(15, 2)
+  status         String   @default("VACANT") // VACANT, FILLED, APPROVED, FROZEN
+  employeeId     String?  @map("employee_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  department Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@map("positions")
+}
+
+model PosShiftCashDrawer {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  shiftId   String   @map("shift_id")
+  type      String // CASH_IN, CASH_OUT, DECLARE
+  amount    Decimal
+  reason    String?
+  createdBy String   @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  shift POSShift @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([shiftId])
+  @@map("pos_shift_cash_drawers")
+}
+
+model PosShiftTransaction {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  shiftId   String   @map("shift_id")
+  orderId   String   @map("order_id")
+  type      String // SALE, REFUND, VOID
+  amount    Decimal
+  createdAt DateTime @default(now()) @map("created_at")
+
+  shift POSShift @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([shiftId])
+  @@map("pos_shift_transactions")
+}
+
+model PosRegister2 {
+  id                String    @id @default(cuid())
+  tenantId          String    @map("tenant_id")
+  terminalId        String    @map("terminal_id")
+  openedById        String    @map("opened_by")
+  closedById        String?   @map("closed_by")
+  openedAt          DateTime  @default(now()) @map("opened_at")
+  closedAt          DateTime? @map("closed_at")
+  status            String    @default("OPEN")
+  startingCash      Decimal   @default(0) @map("starting_cash")
+  endingCash        Decimal?  @map("ending_cash")
+  actualCash        Decimal?  @map("actual_cash")
+  cashVariance      Decimal?  @map("cash_variance")
+  totalSales        Decimal   @default(0) @map("total_sales")
+  totalReturns      Decimal   @default(0) @map("total_returns")
+  totalTransactions Int       @default(0) @map("total_transactions")
+  totalDiscounts    Decimal   @default(0) @map("total_discounts")
+  totalTax          Decimal   @default(0) @map("total_tax")
+  notes             String?
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([terminalId])
+  @@index([tenantId, status])
+  @@map("pos_registers_v2")
+}
+
+model PosPaymentMethod {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  code        String
+  type        String // CASH, CARD, MOBILE, GIFT_CARD, CREDIT, OTHER
+  isActive    Boolean  @default(true) @map("is_active")
+  sortOrder   Int      @default(0) @map("sort_order")
+  requiresRef Boolean  @default(false) @map("requires_reference")
+  icon        String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("pos_payment_methods")
+}
+
+model PosRefund {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  orgId           String    @map("org_id")
+  refundNumber    String    @unique @map("refund_number")
+  originalOrderId String    @map("original_order_id")
+  type            String    @default("REFUND") // REFUND, EXCHANGE
+  status          String    @default("PENDING") // PENDING, APPROVED, REJECTED, COMPLETED
+  reason          String?
+  refundMethod    String?   @map("refund_method")
+  refundAmount    Decimal
+  taxAmount       Decimal   @default(0) @map("tax_amount")
+  exchangeOrderId String?   @map("exchange_order_id")
+  processedBy     String    @map("processed_by")
+  processedAt     DateTime  @default(now()) @map("processed_at")
+  approvedBy      String?   @map("approved_by")
+  approvedAt      DateTime? @map("approved_at")
+  notes           String?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  items PosRefundItem[]
+
+  @@index([tenantId])
+  @@index([originalOrderId])
+  @@index([refundNumber])
+  @@map("pos_refunds")
+}
+
+model PosRefundItem {
+  id           String  @id @default(cuid())
+  tenantId     String  @map("tenant_id")
+  refundId     String  @map("refund_id")
+  orderItemId  String  @map("order_item_id")
+  productId    String? @map("product_id")
+  productName  String  @map("product_name")
+  qty          Decimal
+  unitPrice    Decimal @map("unit_price")
+  refundAmount Decimal @map("refund_amount")
+  restock      Boolean @default(true)
+  reason       String?
+
+  refund PosRefund @relation(fields: [refundId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([refundId])
+  @@map("pos_refund_items")
+}
+
+model PosGiftCard2 {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  orgId          String    @map("org_id")
+  code           String
+  initialBalance Decimal   @map("initial_balance")
+  currentBalance Decimal   @map("current_balance")
+  currency       String    @default("USD")
+  issuedTo       String?   @map("issued_to")
+  issuedBy       String?   @map("issued_by")
+  expiresAt      DateTime? @map("expires_at")
+  status         String    @default("ACTIVE") // ACTIVE, INACTIVE, EXPIRED, REDEEMED
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  transactions PosGiftCardTransaction2[]
+
+  @@index([tenantId])
+  @@index([code])
+  @@map("pos_gift_cards_v2")
+}
+
+model PosGiftCardTransaction2 {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  giftCardId String   @map("gift_card_id")
+  orderId    String?  @map("order_id")
+  type       String // ISSUE, REDEEM, TOP_UP, REFUND
+  amount     Decimal
+  balance    Decimal
+  notes      String?
+  createdBy  String?  @map("created_by")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  giftCard PosGiftCard2 @relation(fields: [giftCardId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([giftCardId])
+  @@map("pos_gift_card_transactions_v2")
+}
+
+model PosCustomerDisplay {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  terminalId String   @map("terminal_id")
+  enabled    Boolean  @default(false)
+  template   String   @default("default")
+  showCart   Boolean  @default(true) @map("show_cart")
+  showTotal  Boolean  @default(true) @map("show_total")
+  showPromo  Boolean  @default(false) @map("show_promo")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([terminalId])
+  @@map("pos_customer_displays")
+}
+
+model PosOrderType {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  code        String
+  description String?
+  isDefault   Boolean  @default(false) @map("is_default")
+  sortOrder   Int      @default(0) @map("sort_order")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("pos_order_types")
+}
+
+model PosDiscountRule {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  orgId           String    @map("org_id")
+  name            String
+  description     String?
+  type            String // PERCENTAGE, FIXED, BUY_X_GET_Y, COMBO
+  value           Decimal
+  appliesTo       String    @default("ORDER") // ORDER, CATEGORY, PRODUCT, CUSTOMER_GROUP
+  categoryId      String?   @map("category_id")
+  productId       String?   @map("product_id")
+  customerGroupId String?   @map("customer_group_id")
+  minPurchase     Decimal?  @map("min_purchase")
+  maxDiscount     Decimal?  @map("max_discount")
+  minQty          Int?      @map("min_qty")
+  maxQty          Int?      @map("max_qty")
+  validFrom       DateTime? @map("valid_from")
+  validTo         DateTime? @map("valid_to")
+  usageLimit      Int?      @map("usage_limit")
+  usedCount       Int       @default(0) @map("used_count")
+  priority        Int       @default(10)
+  stackable       Boolean   @default(false)
+  status          String    @default("ACTIVE")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("pos_discount_rules")
+}
+
+model PosTaxRule {
+  id         String    @id @default(cuid())
+  tenantId   String    @map("tenant_id")
+  name       String
+  rate       Decimal
+  type       String    @default("INCLUSIVE") // INCLUSIVE, EXCLUSIVE
+  appliesTo  String    @default("ALL") // ALL, CATEGORY, PRODUCT
+  categoryId String?   @map("category_id")
+  productId  String?   @map("product_id")
+  validFrom  DateTime? @map("valid_from")
+  validTo    DateTime? @map("valid_to")
+  isDefault  Boolean   @default(false) @map("is_default")
+  isActive   Boolean   @default(true) @map("is_active")
+  sortOrder  Int       @default(0) @map("sort_order")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("pos_tax_rules")
+}
+
+model PosKitchenDisplay {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  code        String
+  terminalIds String[] @map("terminal_ids")
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("pos_kitchen_displays")
+}
+
+model PosKitchenOrder {
+  id               String    @id @default(cuid())
+  tenantId         String    @map("tenant_id")
+  kitchenDisplayId String    @map("kitchen_display_id")
+  orderId          String    @map("order_id")
+  orderNumber      String    @map("order_number")
+  terminalName     String?   @map("terminal_name")
+  items            Json
+  status           String    @default("PENDING") // PENDING, PREPARING, READY, SERVED, CANCELLED
+  priority         Int       @default(0)
+  note             String?
+  preparedBy       String?   @map("prepared_by")
+  startedAt        DateTime? @map("started_at")
+  completedAt      DateTime? @map("completed_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([kitchenDisplayId])
+  @@index([orderId])
+  @@index([tenantId, status])
+  @@map("pos_kitchen_orders")
+}
+
+model PosSplitPayment {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  orderId    String   @map("order_id")
+  method     String
+  amount     Decimal
+  reference  String?  @map("reference")
+  cardLast4  String?  @map("card_last4")
+  authCode   String?  @map("auth_code")
+  giftCardId String?  @map("gift_card_id")
+  status     String   @default("COMPLETED")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([orderId])
+  @@map("pos_split_payments")
+}

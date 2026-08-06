@@ -91,7 +91,15 @@ export class ControlPlaneGuard implements CanActivate {
     // Fails closed: a session with no MFA claim at all is refused, because an
     // absent claim and an unsatisfied one are indistinguishable from here and
     // the safe reading is the stricter one.
-    if (user.amr !== undefined || user.mfaVerified !== undefined) {
+    //
+    // This block used to be wrapped in
+    // `if (user.amr !== undefined || user.mfaVerified !== undefined)`, which
+    // meant a token carrying NEITHER claim skipped the check entirely and went
+    // straight to the permission test — the precise opposite of what the
+    // paragraph above promises, and an open door for any legacy or
+    // password-only platform session to reach a cross-tenant handler. The
+    // comment described the intent; the condition implemented the inverse.
+    {
       const methods: string[] = Array.isArray(user.amr) ? user.amr : [];
       const satisfied =
         user.mfaVerified === true ||

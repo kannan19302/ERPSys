@@ -1,0 +1,704 @@
+model WorkOrder {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  bomId           String    @map("bom_id")
+  workOrderNumber String    @map("work_order_number")
+  status          String    @default("DRAFT") // DRAFT, PLANNED, IN_PROGRESS, COMPLETED, CANCELLED
+  quantity        Decimal   @db.Decimal(15, 3)
+  startDate       DateTime? @map("start_date")
+  endDate         DateTime? @map("end_date")
+  oeeScore        Decimal?  @map("oee_score") @db.Decimal(5, 2)
+  scrapQuantity   Decimal?  @map("scrap_quantity") @db.Decimal(15, 3)
+  lotNumber       String?   @map("lot_number")
+  workstationId   String?   @map("workstation_id")
+  standardCost    Decimal?  @map("standard_cost") @db.Decimal(15, 3)
+  actualCost      Decimal?  @map("actual_cost") @db.Decimal(15, 3)
+  costVariance    Decimal?  @map("cost_variance") @db.Decimal(15, 3)
+  overheadCost    Decimal?  @map("overhead_cost") @db.Decimal(15, 3)
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  bom                   BOM                             @relation(fields: [bomId], references: [id])
+  workstation           Workstation?                    @relation(fields: [workstationId], references: [id])
+  ncrRecords            NonConformanceReport[]
+  operations            WorkOrderOperation[]
+  componentConsumptions WorkOrderComponentConsumption[]
+
+  @@unique([tenantId, workOrderNumber])
+  @@index([tenantId])
+  @@map("work_orders")
+}
+
+model WorkOrderOperation {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  workOrderId     String    @map("work_order_id")
+  sequence        Int
+  name            String
+  workstationCode String    @map("workstation_code")
+  durationMinutes Int       @map("duration_minutes")
+  status          String    @default("PENDING") // PENDING, RUNNING, COMPLETED
+  startedAt       DateTime? @map("started_at")
+  completedAt     DateTime? @map("completed_at")
+  operatorId      String?   @map("operator_id")
+
+  workOrder WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([workOrderId])
+  @@map("work_order_operations")
+}
+
+model WorkOrderComponentConsumption {
+  id               String  @id @default(cuid())
+  tenantId         String  @map("tenant_id")
+  workOrderId      String  @map("work_order_id")
+  productId        String  @map("product_id")
+  lotNumber        String  @map("lot_number") // Lot of raw component consumed
+  quantityConsumed Decimal @map("quantity_consumed") @db.Decimal(15, 3)
+
+  workOrder WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  product   Product   @relation(fields: [productId], references: [id])
+
+  @@index([tenantId])
+  @@index([workOrderId])
+  @@map("work_order_component_consumptions")
+}
+
+model FieldSalesRoute {
+  id                String    @id @default(cuid())
+  tenantId          String    @map("tenant_id")
+  orgId             String    @map("org_id")
+  name              String
+  description       String?
+  assignedToId      String    @map("assigned_to_id")
+  date              DateTime  @map("date")
+  startLocation     Json?     @map("start_location") // {lat, lng, address}
+  endLocation       Json?     @map("end_location")
+  totalDistance     Decimal?  @map("total_distance") @db.Decimal(10, 2)
+  distanceUnit      String    @default("KM") @map("distance_unit")
+  estimatedDuration Int?      @map("estimated_duration") // minutes
+  status            String    @default("PLANNED") // PLANNED, IN_PROGRESS, COMPLETED, CANCELLED
+  optimized         Boolean   @default(false)
+  startedAt         DateTime? @map("started_at")
+  completedAt       DateTime? @map("completed_at")
+  notes             String?   @db.Text
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  stops    FieldSalesRouteStop[]
+  checkins FieldSalesCheckin[]
+
+  @@index([tenantId])
+  @@index([assignedToId])
+  @@map("field_sales_routes")
+}
+
+model FieldSalesRouteStop {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  routeId         String    @map("route_id")
+  customerId      String?   @map("customer_id")
+  contactId       String?   @map("contact_id")
+  name            String
+  address         Json?
+  location        Json?     @default("{}") // {lat, lng}
+  visitOrder      Int       @map("visit_order")
+  plannedDuration Int       @default(30) @map("planned_duration") // minutes
+  actualDuration  Int?      @map("actual_duration")
+  status          String    @default("PENDING") // PENDING, VISITED, SKIPPED, CANCELLED
+  notes           String?
+  visitedAt       DateTime? @map("visited_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  route FieldSalesRoute @relation(fields: [routeId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([routeId])
+  @@map("field_sales_route_stops")
+}
+
+model FieldSalesCheckin {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  routeId     String?   @map("route_id")
+  stopId      String?   @map("stop_id")
+  userId      String    @map("user_id")
+  customerId  String?   @map("customer_id")
+  type        String    @default("VISIT") // VISIT, MEETING, APPOINTMENT
+  location    Json      @default("{}") // {lat, lng, accuracy}
+  address     String?
+  notes       String?   @db.Text
+  checkinAt   DateTime  @map("checkin_at")
+  checkoutAt  DateTime? @map("checkout_at")
+  durationMin Int?      @map("duration_min")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  customer Customer?        @relation(fields: [customerId], references: [id])
+  route    FieldSalesRoute? @relation(fields: [routeId], references: [id])
+
+  @@index([tenantId])
+  @@index([userId])
+  @@map("field_sales_checkins")
+}
+
+model FieldSalesExpense {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  orgId       String    @map("org_id")
+  userId      String    @map("user_id")
+  routeId     String?   @map("route_id")
+  category    String    @default("TRAVEL") // TRAVEL, MEALS, LODGING, PARKING, TOLLS, MILEAGE, OTHER
+  amount      Decimal   @db.Decimal(15, 2)
+  currency    String    @default("USD")
+  description String?
+  date        DateTime  @map("date")
+  receiptUrl  String?   @map("receipt_url")
+  billable    Boolean   @default(false)
+  status      String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  approvedBy  String?   @map("approved_by")
+  approvedAt  DateTime? @map("approved_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([userId])
+  @@map("field_sales_expenses")
+}
+
+model FieldSalesMeetingReport {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  orgId         String    @map("org_id")
+  customerId    String    @map("customer_id")
+  userId        String    @map("user_id")
+  title         String
+  meetingDate   DateTime  @map("meeting_date")
+  attendees     Json      @default("[]")
+  notes         String?   @db.Text
+  actionItems   Json?     @default("[]")
+  nextSteps     String?   @db.Text
+  outcome       String    @default("NO_DECISION") // NO_DECISION, POSITIVE, NEGATIVE, COMMITMENT
+  followUpDate  DateTime? @map("follow_up_date")
+  opportunityId String?   @map("opportunity_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([customerId])
+  @@index([userId])
+  @@map("field_sales_meeting_reports")
+}
+
+model FieldServiceSla {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  name            String
+  description     String?
+  priority        String   @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  responseTimeMin Int      @map("response_time_min") // in minutes
+  resolutionTimeMin Int    @map("resolution_time_min") // in minutes
+  escalationRules Json     @default("[]") // array of escalation step objects
+  penaltyClause   String?
+  maxEscalations  Int      @default(3) @map("max_escalations")
+  businessHoursOnly Boolean @default(true) @map("business_hours_only")
+  isDefault       Boolean  @default(false) @map("is_default")
+  status          String   @default("ACTIVE")
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  tickets   FieldServiceTicket[]
+  contracts FieldServiceContract[]
+
+  @@index([tenantId])
+  @@index([tenantId, priority])
+  @@map("field_service_slas")
+}
+
+model FieldServiceTicket {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  title         String
+  customerId    String?   @map("customer_id")
+  customerName  String    @map("customer_name")
+  customerEmail String?   @map("customer_email")
+  customerPhone String?   @map("customer_phone")
+  contactPerson String?   @map("contact_person")
+  priority      String    @default("MEDIUM")
+  status        String    @default("OPEN") // OPEN, ASSIGNED, IN_PROGRESS, RESOLVED, CLOSED, CANCELLED, ON_HOLD
+  category      String    @default("GENERAL") // GENERAL, INSTALLATION, REPAIR, MAINTENANCE, INSPECTION, EMERGENCY
+  source        String    @default("MANUAL") // MANUAL, PHONE, EMAIL, PORTAL, MOBILE, API
+  slaId         String?   @map("sla_id")
+  slaDeadline   DateTime? @map("sla_deadline")
+  slaBreached   Boolean   @default(false) @map("sla_breached")
+  escalationLevel Int     @default(0) @map("escalation_level")
+  description   String?
+  location      String?
+  latitude      Float?
+  longitude     Float?
+  scheduledDate DateTime? @map("scheduled_date")
+  completedDate DateTime? @map("completed_date")
+  resolution    String?
+  partsCost     Decimal   @default(0) @map("parts_cost")
+  laborCost     Decimal   @default(0) @map("labor_cost")
+  totalCost     Decimal   @default(0) @map("total_cost")
+  billable      Boolean   @default(true)
+  invoiced      Boolean   @default(false)
+  invoiceRef    String?   @map("invoice_ref")
+  tags          Json      @default("[]")
+  attachments   Json      @default("[]")
+  notes         String?
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  sla         FieldServiceSla?              @relation(fields: [slaId], references: [id])
+  dispatches  FieldServiceDispatch[]
+  appointments FieldServiceAppointment[]
+  timesheets  FieldServiceTimesheet[]
+  partsUsage  FieldServicePartsUsage[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, priority])
+  @@index([tenantId, category])
+  @@index([tenantId, slaDeadline])
+  @@index([tenantId, createdAt])
+  @@map("field_service_tickets")
+}
+
+model FieldServiceTechnician {
+  id                String   @id @default(cuid())
+  tenantId          String   @map("tenant_id")
+  employeeId        String   @map("employee_id")
+  name              String
+  email             String?
+  phone             String?
+  avatarUrl         String?  @map("avatar_url")
+  skills            Json     @default("[]") // array of skills
+  certifications    Json     @default("[]") // array of certification objects
+  maxTravelRadius   Int      @default(50) @map("max_travel_radius") // in miles/km
+  preferredRadius   Int      @default(25) @map("preferred_radius")
+  currentStatus     String   @default("AVAILABLE") // AVAILABLE, BUSY, ON_BREAK, OFFLINE, ON_LEAVE
+  shiftStart        String?  @map("shift_start") // HH:mm format
+  shiftEnd          String?  @map("shift_end")
+  workDays          Json     @default("[1,2,3,4,5]") // 0=Sun, 1=Mon, etc.
+  hourlyRate        Decimal  @default(0) @map("hourly_rate")
+  overtimeRate      Decimal  @default(0) @map("overtime_rate")
+  rating            Decimal  @default(5.0)
+  completedJobs     Int      @default(0) @map("completed_jobs")
+  locationLat       Float?   @map("location_lat")
+  locationLng       Float?   @map("location_lng")
+  lastLocationUpdate DateTime? @map("last_location_update")
+  status            String   @default("ACTIVE")
+  isActive          Boolean  @default(true) @map("is_active")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  dispatches  FieldServiceDispatch[]
+  appointments FieldServiceAppointment[]
+  timesheets  FieldServiceTimesheet[]
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([tenantId, currentStatus])
+  @@map("field_service_technicians")
+}
+
+model FieldServiceDispatch {
+  id                String    @id @default(cuid())
+  tenantId          String    @map("tenant_id")
+  ticketId          String    @map("ticket_id")
+  technicianId      String    @map("technician_id")
+  scheduledStart    DateTime? @map("scheduled_start")
+  estimatedDuration Int?      @map("estimated_duration") // in minutes
+  travelDistance    Float?    @map("travel_distance") // miles/km
+  travelTime        Int?      @map("travel_time") // in minutes
+  routePolyline     String?   @map("route_polyline")
+  notes             String?
+  status            String    @default("SCHEDULED") // SCHEDULED, EN_ROUTE, ON_SITE, IN_PROGRESS, COMPLETED, CANCELLED, NO_SHOW
+  isActive          Boolean   @default(true) @map("is_active")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  ticket     FieldServiceTicket     @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  technician FieldServiceTechnician @relation(fields: [technicianId], references: [id])
+
+  @@index([tenantId])
+  @@index([ticketId])
+  @@index([technicianId])
+  @@index([scheduledStart])
+  @@index([tenantId, status])
+  @@map("field_service_dispatches")
+}
+
+model FieldServiceAppointment {
+  id                String    @id @default(cuid())
+  tenantId          String    @map("tenant_id")
+  ticketId          String    @map("ticket_id")
+  technicianId      String    @map("technician_id")
+  startTime         DateTime? @map("start_time")
+  endTime           DateTime? @map("end_time")
+  duration          Int?      // actual duration in minutes
+  checkInTime       DateTime? @map("check_in_time")
+  checkOutTime      DateTime? @map("check_out_time")
+  customerSignature String?   @map("customer_signature") // base64 or URL
+  signatureName     String?   @map("signature_name")
+  customerRating    Int?      @map("customer_rating") // 1-5
+  customerFeedback  String?   @map("customer_feedback")
+  photos            Json      @default("[]")
+  checklistId       String?   @map("checklist_id")
+  checklistResults  Json      @default("{}")
+  partsUsed         Json      @default("[]")
+  notes             String?
+  status            String    @default("SCHEDULED") // SCHEDULED, CHECKED_IN, IN_PROGRESS, COMPLETED, CANCELLED, NO_SHOW
+  isActive          Boolean   @default(true) @map("is_active")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  ticket     FieldServiceTicket     @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  technician FieldServiceTechnician @relation(fields: [technicianId], references: [id])
+
+  @@index([tenantId])
+  @@index([ticketId])
+  @@index([technicianId])
+  @@index([startTime])
+  @@map("field_service_appointments")
+}
+
+model FieldServiceChecklist {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  name      String
+  category  String   @default("GENERAL") // GENERAL, SAFETY, INSTALLATION, REPAIR, INSPECTION, CUSTOM
+  items     Json     @default("[]") // array of { id, text, required, type: CHECKBOX/TEXT/PHOTO/SIGNATURE }
+  isTemplate Boolean @default(true) @map("is_template")
+  type      String?  @default("TEMPLATE")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, category])
+  @@map("field_service_checklists")
+}
+
+model FieldServiceInventoryItem {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  name           String
+  sku            String
+  description    String?
+  category       String   @default("PARTS") // PARTS, TOOLS, EQUIPMENT, SUPPLIES
+  unitPrice      Decimal  @default(0) @map("unit_price")
+  unitOfMeasure  String   @default("EA") @map("unit_of_measure")
+  quantityOnVan  Int      @default(0) @map("quantity_on_van")
+  minStockLevel  Int      @default(5) @map("min_stock_level")
+  maxStockLevel  Int      @default(50) @map("max_stock_level")
+  quantityWarehouse Int   @default(0) @map("quantity_warehouse")
+  lastRestocked  DateTime? @map("last_restocked")
+  reorderPoint   Int      @default(10) @map("reorder_point")
+  reorderQty     Int      @default(25) @map("reorder_qty")
+  supplierInfo   String?  @map("supplier_info")
+  manufacturer   String?
+  modelNumber    String?  @map("model_number")
+  serialNumber   String?  @map("serial_number")
+  location       String?  // van name or shelf location
+  imageUrl       String?  @map("image_url")
+  status         String   @default("IN_STOCK") // IN_STOCK, LOW_STOCK, OUT_OF_STOCK, DISCONTINUED
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, sku])
+  @@index([tenantId, category])
+  @@index([tenantId, status])
+  @@unique([tenantId, sku])
+  @@map("field_service_inventory_items")
+}
+
+model FieldServiceContract {
+  id                   String    @id @default(cuid())
+  tenantId             String    @map("tenant_id")
+  customerName         String    @map("customer_name")
+  customerEmail        String?   @map("customer_email")
+  customerPhone        String?   @map("customer_phone")
+  customerAddress      String?   @map("customer_address")
+  startDate            DateTime  @map("start_date")
+  endDate              DateTime  @map("end_date")
+  renewalDate          DateTime? @map("renewal_date")
+  scopeOfWork          String?   @map("scope_of_work")
+  billingType          String    @default("FIXED") // FIXED, HOURLY, RETAINER, USAGE_BASED
+  billingFrequency     String    @default("MONTHLY") // MONTHLY, QUARTERLY, YEARLY, ONE_TIME
+  contractValue        Decimal   @default(0) @map("contract_value")
+  monthlyRecurring     Decimal   @default(0) @map("monthly_recurring")
+  slaLevel             String    @default("STANDARD") // STANDARD, PREMIUM, ENTERPRISE
+  slaId                String?   @map("sla_id")
+  autoRenewal          Boolean   @default(false) @map("auto_renewal")
+  renewalNoticeDays    Int       @default(30) @map("renewal_notice_days")
+  terminationClause    String?   @map("termination_clause")
+  documents            Json      @default("[]")
+  notes                String?
+  totalInvoiced        Decimal   @default(0) @map("total_invoiced")
+  totalPaid            Decimal   @default(0) @map("total_paid")
+  status               String    @default("ACTIVE") // ACTIVE, EXPIRED, TERMINATED, RENEWED, PENDING, CANCELLED
+  isActive             Boolean   @default(true) @map("is_active")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  sla FieldServiceSla? @relation(fields: [slaId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, startDate, endDate])
+  @@map("field_service_contracts")
+}
+
+model FieldServiceTimesheet {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  ticketId       String    @map("ticket_id")
+  technicianId   String    @map("technician_id")
+  dateWorked     DateTime  @map("date_worked")
+  hoursWorked    Decimal   @default(0) @map("hours_worked")
+  overtimeHours  Decimal   @default(0) @map("overtime_hours")
+  travelTime     Decimal   @default(0) @map("travel_time") // in hours
+  hourlyRate     Decimal   @default(0) @map("hourly_rate")
+  overtimeRate   Decimal   @default(0) @map("overtime_rate")
+  totalPay       Decimal   @default(0) @map("total_pay")
+  billableHours  Decimal   @default(0) @map("billable_hours")
+  billableAmount Decimal   @default(0) @map("billable_amount")
+  description    String?
+  approvedBy     String?   @map("approved_by")
+  approvedAt     DateTime? @map("approved_at")
+  status         String    @default("PENDING") // PENDING, APPROVED, REJECTED, BILLED
+  isActive       Boolean   @default(true) @map("is_active")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  ticket     FieldServiceTicket     @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  technician FieldServiceTechnician @relation(fields: [technicianId], references: [id])
+
+  @@index([tenantId])
+  @@index([ticketId])
+  @@index([technicianId])
+  @@index([tenantId, dateWorked])
+  @@index([tenantId, status])
+  @@map("field_service_timesheets")
+}
+
+model FieldServicePartsUsage {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  ticketId    String   @map("ticket_id")
+  itemId      String   @map("item_id")
+  itemName    String   @map("item_name")
+  partNumber  String?  @map("part_number")
+  quantity    Int      @default(1)
+  unitPrice   Decimal  @default(0) @map("unit_price")
+  totalPrice  Decimal  @default(0) @map("total_price")
+  warrantyApplied Boolean @default(false) @map("warranty_applied")
+  warrantyRef     String?  @map("warranty_ref")
+  serialNumber    String?  @map("serial_number")
+  notes           String?
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  ticket FieldServiceTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([ticketId])
+  @@index([itemId])
+  @@map("field_service_parts_usage")
+}
+
+model FieldServiceTechnicianDashboard {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  technicianId  String   @map("technician_id")
+  date          DateTime @map("date")
+  totalJobs     Int      @default(0) @map("total_jobs")
+  completedJobs Int      @default(0) @map("completed_jobs")
+  cancelledJobs Int      @default(0) @map("cancelled_jobs")
+  totalHours    Decimal  @default(0) @map("total_hours")
+  travelHours   Decimal  @default(0) @map("travel_hours")
+  totalRevenue  Decimal  @default(0) @map("total_revenue")
+  partsCost     Decimal  @default(0) @map("parts_cost")
+  rating        Decimal  @default(0)
+  onTimeRate    Decimal  @default(0) @map("on_time_rate") // percentage
+  lastUpdatedAt DateTime @default(now()) @map("last_updated_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([technicianId])
+  @@index([tenantId, date])
+  @@index([tenantId, technicianId, date])
+  @@map("field_service_technician_dashboards")
+}
+
+model FieldServiceSchedule {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  technicianId  String    @map("technician_id")
+  ticketId      String?   @map("ticket_id")
+  title         String
+  description   String?
+  scheduledDate DateTime  @map("scheduled_date")
+  startTime     DateTime? @map("start_time")
+  endTime       DateTime? @map("end_time")
+  durationMin   Int       @default(60) @map("duration_min")
+  location      String?
+  latitude      Float?
+  longitude     Float?
+  status        String    @default("SCHEDULED") // SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED, NO_SHOW
+  notes         String?
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([technicianId])
+  @@index([ticketId])
+  @@index([tenantId, scheduledDate])
+  @@index([tenantId, status])
+  @@map("field_service_schedules")
+}
+
+model FieldServiceCalendarEvent {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  technicianId  String    @map("technician_id")
+  scheduleId    String?   @map("schedule_id")
+  ticketId      String?   @map("ticket_id")
+  title         String
+  description   String?
+  eventType     String    @default("APPOINTMENT") // APPOINTMENT, BREAK, TRAVEL, MEETING, PERSONAL, OTHER
+  startTime     DateTime  @map("start_time")
+  endTime       DateTime  @map("end_time")
+  allDay        Boolean   @default(false) @map("all_day")
+  color         String?   // hex color for calendar display
+  location      String?
+  status        String    @default("ACTIVE") // ACTIVE, CANCELLED, COMPLETED
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([technicianId])
+  @@index([tenantId, startTime, endTime])
+  @@map("field_service_calendar_events")
+}
+
+model FieldServicePartRequest {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  ticketId        String?   @map("ticket_id")
+  technicianId    String    @map("technician_id")
+  itemId          String    @map("item_id")
+  itemName        String    @map("item_name")
+  partNumber      String?   @map("part_number")
+  quantityRequested Int     @default(1) @map("quantity_requested")
+  quantityApproved Int?     @map("quantity_approved")
+  quantityFulfilled Int?    @map("quantity_fulfilled")
+  source          String    @default("WAREHOUSE") // WAREHOUSE, VAN, VENDOR, CUSTOMER
+  priority        String    @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  status          String    @default("PENDING") // PENDING, APPROVED, PARTIALLY_FULFILLED, FULFILLED, CANCELLED, REJECTED
+  unitPrice       Decimal   @default(0) @map("unit_price")
+  totalPrice      Decimal   @default(0) @map("total_price")
+  requestedBy     String?   @map("requested_by")
+  approvedBy      String?   @map("approved_by")
+  approvedAt      DateTime? @map("approved_at")
+  fulfilledAt     DateTime? @map("fulfilled_at")
+  notes           String?
+  isActive        Boolean   @default(true) @map("is_active")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([technicianId])
+  @@index([ticketId])
+  @@index([tenantId, status])
+  @@map("field_service_part_requests")
+}
+
+model FieldServiceVanStock {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  technicianId   String   @map("technician_id")
+  itemId         String   @map("item_id")
+  itemName       String   @map("item_name")
+  quantityOnVan  Int      @default(0) @map("quantity_on_van")
+  minStockLevel  Int      @default(5) @map("min_stock_level")
+  maxStockLevel  Int      @default(20) @map("max_stock_level")
+  reorderPoint   Int      @default(5) @map("reorder_point")
+  lastRestocked  DateTime? @map("last_restocked")
+  lastCounted    DateTime? @map("last_counted")
+  location       String?  // shelf/bin location in van
+  notes          String?
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([technicianId])
+  @@unique([tenantId, technicianId, itemId])
+  @@map("field_service_van_stock")
+}
+
+model FieldServiceWarranty {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  assetId      String   @map("asset_id")
+  warrantyNo   String   @map("warranty_no")
+  provider     String
+  startDate    DateTime @map("start_date")
+  endDate      DateTime @map("end_date")
+  coverageDetails String? @db.Text @map("coverage_details")
+  status       String   @default("ACTIVE") // ACTIVE, EXPIRED, CLAIMED
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, warrantyNo])
+  @@index([tenantId])
+  @@index([tenantId, assetId])
+  @@map("field_service_warranties")
+}
+
+model FieldServiceWorkOrderExpense {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  workOrderId String   @map("work_order_id")
+  techId      String   @map("tech_id")
+  category    String   // TRAVEL, PARTS, MEALS, MISC
+  amount      Decimal  @db.Decimal(15, 2)
+  receiptUrl  String?  @map("receipt_url")
+  status      String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, workOrderId])
+  @@map("field_service_work_order_expenses")
+}
+
+model FieldServiceInspectionChecklist {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  workOrderId String   @map("work_order_id")
+  title       String
+  items       Json     @default("[]")
+  completedBy String?  @map("completed_by")
+  completedAt DateTime? @map("completed_at")
+  status      String   @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, workOrderId])
+  @@map("field_service_inspection_checklists")
+}

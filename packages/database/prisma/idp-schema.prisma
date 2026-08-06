@@ -1,0 +1,696 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/idp-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(cuid())
+  tenantId     String    @map("tenant_id")
+  email        String
+  passwordHash String?   @map("password_hash")
+  firstName    String    @map("first_name")
+  lastName     String    @map("last_name")
+  avatar       String?
+  status       String    @default("ACTIVE")
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+  preferences  Json      @default("{}")
+
+  emailVerifiedAt DateTime? @map("email_verified_at")
+
+  mfaEnabled       Boolean @default(false) @map("mfa_enabled")
+  mfaSecret        String? @map("mfa_secret")
+  mfaPending       Boolean @default(false) @map("mfa_pending")
+  mfaRecoveryCodes Json    @default("[]") @map("mfa_recovery_codes")
+
+  failedLoginAttempts Int       @default(0) @map("failed_login_attempts")
+  lockedUntil         DateTime? @map("locked_until")
+  passwordChangedAt   DateTime? @map("password_changed_at")
+
+  roles                   UserRole[]
+  userSessions            UserSession[]
+  groupMemberships        UserGroupMember[]
+  identities              UserIdentity[]
+  apiTokens               AuthApiToken[]
+  profile                 UserProfile?
+  directReports           UserProfile[]            @relation("UserProfileManager")
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+  @@index([email])
+  @@map("users")
+}
+model UserProfile {
+  id         String @id @default(cuid())
+  tenantId   String @map("tenant_id")
+  userId     String @unique @map("user_id")
+  employeeId String @map("employee_id") // system-generated, 6 digits, unique per tenant
+
+  pronouns              String?
+  jobTitle              String? @map("job_title")
+  departmentId          String? @map("department_id")
+  managerId             String? @map("manager_id") // -> User.id (reports-to)
+  timezone              String?
+  workingHoursStart     String? @map("working_hours_start") // "09:00"
+  workingHoursEnd       String? @map("working_hours_end") // "18:00"
+  workingDays           Json    @default("[\"MON\",\"TUE\",\"WED\",\"THU\",\"FRI\"]") @map("working_days")
+  workingLocation       String? @map("working_location")
+  overview              String? @db.Text
+  pronunciationAudioUrl String? @map("pronunciation_audio_url") @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  manager    User?       @relation("UserProfileManager", fields: [managerId], references: [id], onDelete: SetNull)
+
+  @@unique([tenantId, employeeId])
+  @@index([tenantId])
+  @@index([managerId])
+  @@index([departmentId])
+  @@map("user_profiles")
+}
+model UserIdentity {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  userId    String   @map("user_id")
+  provider  String
+  subject   String
+  email     String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, subject])
+  @@index([userId])
+  @@map("user_identities")
+}
+model Role {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  description String?
+  isSystem    Boolean  @default(false) @map("is_system")
+  permissions Json     @default("[]")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  users          UserRole[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("roles")
+}
+model UserRole {
+  userId     String   @map("user_id")
+  roleId     String   @map("role_id")
+  assignedAt DateTime @default(now()) @map("assigned_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+model ApiKey {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  name        String
+  hashedKey   String    @unique @map("hashed_key")
+  prefix      String
+  rateLimit   Int       @default(60) @map("rate_limit") // Requests per min
+  status      String    @default("ACTIVE") // ACTIVE, REVOKED
+  apiScopes   String?   @map("api_scopes")
+  ipWhitelist String?   @map("ip_whitelist")
+  expiresAt   DateTime? @map("expires_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("api_keys")
+}
+model AuthApiToken {
+  id         String    @id @default(cuid())
+  tenantId   String    @map("tenant_id")
+  userId     String    @map("user_id")
+  name       String
+  tokenHash  String    @unique @map("token_hash")
+  scopes     Json      @default("[]")
+  expiresAt  DateTime? @map("expires_at")
+  lastUsedAt DateTime? @map("last_used_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([userId])
+  @@map("auth_api_tokens")
+}
+model UserSession {
+  id               String    @id @default(cuid())
+  tenantId         String    @map("tenant_id")
+  userId           String    @map("user_id")
+  token            String    @unique
+  device           String?
+  browser          String?
+  ipAddress        String?   @map("ip_address")
+  location         String?
+  isActive         Boolean   @default(true) @map("is_active")
+  startedAt        DateTime  @default(now()) @map("started_at")
+  lastActivityAt   DateTime  @default(now()) @map("last_activity_at")
+  expiresAt        DateTime? @map("expires_at")
+  refreshTokenHash String?   @unique @map("refresh_token_hash")
+  refreshExpiresAt DateTime? @map("refresh_expires_at")
+  rememberMe       Boolean   @default(false) @map("remember_me")
+  // Multi-client device identity (.ai/MULTI_CLIENT_MASTER_PLAN.md § 7) — set
+  // by Flutter mobile/desktop clients via X-Device-Id/X-Platform/X-App-Version
+  // headers; null for browser sessions. deviceId lets notifications bind a
+  // push token to a specific installed app instance.
+  deviceId         String?   @map("device_id")
+  platform         String?   @map("platform")
+  appVersion       String?   @map("app_version")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([deviceId])
+  @@map("user_sessions")
+}
+model UserGroup {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  members UserGroupMember[]
+
+  @@unique([tenantId, name])
+  @@map("user_groups")
+}
+model UserGroupMember {
+  groupId  String   @map("group_id")
+  userId   String   @map("user_id")
+  joinedAt DateTime @default(now()) @map("joined_at")
+
+  group UserGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([groupId, userId])
+  @@map("user_group_members")
+}
+enum ValuationMethod {
+  FIFO
+  LIFO
+  WEIGHTED_AVG
+  STANDARD_COST
+  ACTUAL_COST
+}
+enum ValuationStatus {
+  ACTIVE
+  SUPERSEDED
+  REVALUED
+}
+enum TransferOrderStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  IN_TRANSIT
+  PARTIALLY_RECEIVED
+  COMPLETED
+  CANCELLED
+}
+enum DockDoorType {
+  INBOUND
+  OUTBOUND
+  DUAL
+}
+enum DockDoorStatus {
+  AVAILABLE
+  OCCUPIED
+  MAINTENANCE
+  CLOSED
+}
+enum AppointmentStatus {
+  SCHEDULED
+  CHECKED_IN
+  LOADING
+  COMPLETE
+  NO_SHOW
+  CANCELLED
+}
+enum YardMoveStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETE
+  CANCELLED
+}
+enum StockTakeStatus {
+  DRAFT
+  IN_PROGRESS
+  COUNTING
+  VARIANCE_REVIEW
+  APPROVED
+  POSTED
+  CANCELLED
+}
+enum CountSheetStatus {
+  PENDING
+  COUNTING
+  RECOUNTED
+  APPROVED
+  REJECTED
+}
+enum StockTakeVarianceStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+enum HazardClass {
+  CLASS_1_EXPLOSIVES
+  CLASS_2_GASES
+  CLASS_3_FLAMMABLE_LIQUIDS
+  CLASS_4_FLAMMABLE_SOLIDS
+  CLASS_5_OXIDIZERS
+  CLASS_6_TOXIC
+  CLASS_7_RADIOACTIVE
+  CLASS_8_CORROSIVES
+  CLASS_9_MISC
+}
+enum PackingGroup {
+  I
+  II
+  III
+}
+enum HazmatRegulation {
+  ADR
+  IATA
+  IMDG
+  DOT
+  REACH
+}
+enum SdsStatus {
+  CURRENT
+  EXPIRED
+  PENDING_REVIEW
+  SUPERSEDED
+}
+enum HazmatManifestStatus {
+  DRAFT
+  SUBMITTED
+  ACKNOWLEDGED
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+}
+enum StorageCompatibilityResult {
+  COMPATIBLE
+  INCOMPATIBLE
+  CONDITIONAL
+}
+enum AslStatus {
+  APPROVED
+  CONDITIONAL
+  DISQUALIFIED
+  PENDING_APPROVAL
+}
+enum AslChangeType {
+  APPROVED
+  DISQUALIFIED
+  CONDITIONAL
+  PRICE_UPDATE
+  LEAD_TIME_UPDATE
+  PREFERRED_UPDATE
+}
+enum PalletTypeCategory {
+  STANDARD
+  EURO
+  CHEP
+  CUSTOM
+}
+enum ContainerTypeCategory {
+  DRY_VAN
+  REEFER
+  FLAT_RACK
+  OPEN_TOP
+  TANK
+  BULK
+}
+enum LoadPlanStatus {
+  DRAFT
+  OPTIMIZING
+  READY
+  IN_LOADING
+  LOADED
+  SHIPPED
+  CANCELLED
+}
+enum PackingPlanStatus {
+  DRAFT
+  CONFIRMED
+  PACKING
+  COMPLETED
+  CANCELLED
+}
+enum CatchWeightVariance {
+  WITHIN_TOLERANCE
+  OVER_TOLERANCE
+  UNDER_TOLERANCE
+}
+enum RecallClass {
+  CLASS_I
+  CLASS_II
+  CLASS_III
+}
+enum RecallStatus {
+  DRAFT
+  ISSUED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+enum RecallActionType {
+  RETURN
+  DESTROY
+  REWORK
+  QUARANTINE
+}
+enum PackagingLevel {
+  EACH
+  INNER
+  CASE
+  MASTER_CARTON
+  PALLET
+}
+enum BarcodeSymbology {
+  EAN13
+  EAN8
+  UPC_A
+  UPC_E
+  CODE128
+  CODE39
+  ITF14
+  GS1_128
+  DATA_MATRIX
+  QR_CODE
+  GS1_DATAMATRIX
+}
+enum LabelTemplateType {
+  ITEM
+  INNER
+  CASE
+  PALLET
+  SHIPPING
+  COMPLIANCE
+}
+enum TemperatureUnit {
+  CELSIUS
+  FAHRENHEIT
+}
+enum ExcursionSeverity {
+  MINOR
+  MODERATE
+  CRITICAL
+}
+enum ExcursionStatus {
+  OPEN
+  UNDER_REVIEW
+  QUARANTINED
+  RELEASED
+  DISPOSED
+}
+enum WriteDownStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  WRITTEN_DOWN
+}
+enum WriteOffStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+enum AbcClass {
+  A // top ~20% of products driving ~80% of value
+  B // middle tier
+  C // bottom tier — low value/volume
+}
+enum XyzClass {
+  X // highly stable demand (low CV)
+  Y // moderate variability
+  Z // highly erratic / unpredictable
+}
+enum VelocityClassificationStatus {
+  DRAFT
+  ACTIVE
+  SUPERSEDED
+}
+enum RmaStatus {
+  REQUESTED
+  APPROVED
+  REJECTED
+  RECEIVED
+  INSPECTED
+  CLOSED
+}
+enum ReturnDisposition {
+  RESTOCK // goes back to inventory
+  REFURBISH // needs repair/rework before restock
+  SCRAP // destroy / write off
+  RETURN_TO_VENDOR // send back to supplier
+  QUARANTINE // hold for QA decision
+}
+enum ReturnCreditStatus {
+  PENDING
+  ISSUED
+  VOIDED
+}
+enum ReplenishmentMethod {
+  PURCHASE_ORDER // order from supplier
+  TRANSFER // transfer from another warehouse
+  PRODUCTION // manufacturing order
+}
+enum ReplenSuggestionStatus {
+  OPEN
+  APPROVED
+  ORDERED
+  RECEIVED
+  CANCELLED
+}
+enum DamageReportStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  CLAIM_FILED
+  RESOLVED
+  CLOSED
+}
+enum DamageSeverity {
+  MINOR // cosmetic / partial damage; item still usable
+  MODERATE // partial loss; item degraded but repairable
+  SEVERE // item total loss
+}
+enum FreightClaimType {
+  DAMAGE // physical damage to cargo
+  SHORTAGE // quantity short-delivered
+  LOSS // cargo lost in transit
+  DELAY // time-sensitive cargo delayed
+  CONCEALED // damage discovered after delivery
+}
+enum FreightClaimStatus {
+  DRAFT
+  FILED
+  ACKNOWLEDGED
+  UNDER_INVESTIGATION
+  SETTLEMENT_OFFERED
+  ACCEPTED
+  REJECTED
+  CLOSED
+}
+enum VmiAgreementStatus {
+  DRAFT
+  ACTIVE
+  SUSPENDED
+  TERMINATED
+}
+enum VmiReplenTrigger {
+  BELOW_MIN
+  SCHEDULE
+  MANUAL
+}
+enum VmiOrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  RECEIVED
+  CANCELLED
+}
+enum CostingMethod {
+  FIFO
+  LIFO
+  WAC
+  STANDARD
+  SPECIFIC
+}
+enum CostLayerStatus {
+  OPEN
+  PARTIALLY_CONSUMED
+  FULLY_CONSUMED
+}
+enum CostAdjustmentType {
+  PURCHASE_PRICE_VARIANCE
+  FREIGHT_ABSORPTION
+  OVERHEAD_ABSORPTION
+  WRITE_DOWN
+  MANUAL
+}
+enum LotStatus {
+  ACTIVE
+  QUARANTINE
+  EXPIRED
+  DISPOSED
+  RECALLED
+}
+enum ExpiryAlertLevel {
+  INFO
+  WARNING
+  CRITICAL
+}
+enum DisposalMethod {
+  DESTROY
+  RETURN_TO_VENDOR
+  DONATE
+  REWORK
+  OTHER
+}
+enum CrossDockStatus {
+  PENDING
+  RECEIVING
+  STAGING
+  DISPATCHED
+  COMPLETED
+  CANCELLED
+}
+enum CrossDockType {
+  OPPORTUNISTIC
+  PLANNED
+  FLOW_THROUGH
+}
+enum PickWaveItemStatus {
+  PENDING
+  IN_PROGRESS
+  PICKED
+  SHORT
+  CANCELLED
+}
+enum PickTaskStatus {
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+enum AsnStatus {
+  PENDING
+  IN_TRANSIT
+  ARRIVED
+  RECEIVING
+  RECEIVED
+  PARTIALLY_RECEIVED
+  CANCELLED
+}
+enum AsnDiscrepancyType {
+  OVERAGE
+  SHORTAGE
+  WRONG_ITEM
+  DAMAGED
+}
+enum ShipmentDirection {
+  INBOUND
+  OUTBOUND
+}
+enum ShipmentExceptionStatus {
+  OPEN
+  INVESTIGATING
+  RESOLVED
+  ESCALATED
+}
+enum BlockchainTxStatus {
+  PENDING /// Queued, not yet submitted to Fabric
+  SUBMITTED /// Submitted to Fabric, awaiting confirmation
+  CONFIRMED /// Confirmed in a committed block
+  FAILED /// Submission failed (Fabric error)
+  RETRYING /// Queued for retry after failure
+}
+enum VerificationResult {
+  VERIFIED /// On-chain hash matches local data
+  TAMPERED /// Hash mismatch — data was modified after anchoring
+  NOT_FOUND /// No on-chain record exists yet
+  NETWORK_ERROR /// Fabric was unreachable during verification
+}
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  tenantId  String    @map("tenant_id")
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("password_reset_tokens")
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  tenantId  String    @map("tenant_id")
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("email_verification_tokens")
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  userId    String   @map("user_id")
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  label     String? // e.g. "Chrome on Windows" — set from the User-Agent at subscribe time
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, userId])
+  @@map("push_subscriptions")
+}
+
+model MfaPushChallenge {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  userId    String   @map("user_id")
+  token     String   @unique // hash of the MFA challenge JWT, ties this row to one login attempt
+  status    String   @default("PENDING") // PENDING, APPROVED, DENIED, EXPIRED
+  createdAt DateTime @default(now()) @map("created_at")
+  expiresAt DateTime @map("expires_at")
+
+  @@index([tenantId, userId])
+  @@map("mfa_push_challenges")
+}

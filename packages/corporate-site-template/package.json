@@ -1,0 +1,14 @@
+{
+  "name": "@unerp/corporate-site-template",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Standalone corporate marketing website template for UniERP company",
+  "main": "src/CorporateLandingPage.tsx",
+  "scripts": {
+    "build": "node -e \"process.exit(0)\""
+  },
+  "dependencies": {
+    "react": "^18.0.0",
+    "lucide-react": "^0.300.0"
+  }
+}

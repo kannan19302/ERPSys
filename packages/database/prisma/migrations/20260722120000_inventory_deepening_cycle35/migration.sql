@@ -1,0 +1,916 @@
+-- AlterTable
+ALTER TABLE "opportunities" ADD COLUMN     "competitor_id" TEXT,
+ADD COLUMN     "win_loss_reason_id" TEXT;
+
+-- CreateTable
+CREATE TABLE "drop_ship_providers" (
+    "id" TEXT NOT NULL,
+    "tenant_id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
+    "vendor_id" TEXT NOT NULL,
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+    "ship_methods" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "carrier" TEXT,
+    "lead_time" INTEGER DEFAULT 0,
+    "notes" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "drop_ship_providers_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "drop_ship_orders" (
+    "id" TEXT NOT NULL,
+    "tenant_id" TEXT NOT NULL,
+    "order_number" TEXT NOT NULL,
+    "provider_id" TEXT NOT NULL,
+    "vendor_id" TEXT NOT NULL,
+    "sales_order_id" TEXT,
+    "customer_id" TEXT,
+    "ship_to_address" JSONB NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'PENDING',
+    "shipMethod" TEXT,
+    "tracking_number" TEXT,
+    "carrier" TEXT,
+    "requested_date" TIMESTAMP(3),
+    "shipped_date" TIMESTAMP(3),
+    "delivered_date" TIMESTAMP(3),
+    "estimated_cost" DECIMAL(15,2),
+    "actual_cost" DECIMAL(15,2),
+    "currency" TEXT NOT NULL DEFAULT 'USD',
+    "notes" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "drop_ship_orders_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "drop_ship_order_items" (
+    "id" TEXT NOT NULL,
+    "tenant_id" TEXT NOT NULL,
+    "order_id" TEXT NOT NULL,
+    "product_id" TEXT NOT NULL,
+    "quantity" DECIMAL(15,3) NOT NULL,
+    "shipped_qty" DECIMAL(15,3) NOT NULL DEFAULT 0,
+    "unit_price" DECIMAL(15,2) NOT NULL,
+    "total_price" DECIMAL(15,2) NOT NULL,
+    "lineStatus" TEXT NOT NULL DEFAULT 'PENDING',
+
+    CONSTRAINT "drop_ship_order_items_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "available_to_promise" (
+    "id" TEXT NOT NULL,
+    "tenant_id" TEXT NOT NULL,
+    "product_id" TEXT NOT NULL,
+    "warehouse_id" TEXT NOT NULL,
+    "on_hand" DECIMAL(15,3) NOT NULL DEFAULT 0,
+    "on_order" DECIMAL(15,3) NOT NULL DEFAULT 0,
+    "allocated" DECIMAL(15,3) NOT NULL DEFAULT 0,
+    "available" DECIMAL(15,3) NOT NULL DEFAULT 0,
+    "computed_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "next_supply" TIMESTAMP(3),
+    "next_supply_qty" DECIMAL(15,3),
+
+    CONSTRAINT "available_to_promise_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "atp_reservations" (
+    "id" TEXT NOT NULL,
+    "tenant_id" TEXT NOT NULL,
+    "atp_id" TEXT NOT NULL,
+    "reference_id" TEXT NOT NULL,
+    "reference_type" TEXT NOT NULL,
+    "quantity" DECIMAL(15,3) NOT NULL,
+    "committed_until" TIMESTAMP(3),
+    "status" TEXT NOT NULL DEFAULT 'ACTIVE',
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "atp_reservations_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "rfid_tags" (
+    "id" TEXT NOT NULL,
+    "tenant_id" TEXT NOT NULL,
+    "epc" TEXT NOT NULL,
+    "tagType" TEXT NOT NULL DEFAULT 'ITEM',
+    "product_id" TEXT,
+    "license_plate_id" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'ACTIVE',
+    "last_location" TEXT,
+    "last_read_at" TIMESTAMP(3),
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "rfid_tags_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "rfid_read_events" (
+    "id" TEXT NOT NULL,
+    "tenant_id" TEXT NOT NULL,
+    "tag_id" TEXT NOT NULL,
+    "antenna" TEXT,
+    "reader" TEXT,
+    "location" TEXT,
+    "rssi" DOUBLE PRECISION,
+    "read_at" TIMESTAMP(3) NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "rfid_read_events_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "subinventories" (
+    "id" TEXT NOT NULL,
+    "tenant_id" TEXT NOT NULL,
+    "warehouse_id" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "type" TEXT NOT NULL DEFAULT 'STORAGE',
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+    "description" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "subinventories_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "customer_consignment_stocks" (
+    "id" TEXT NOT NULL,
+    "tenant_id" TEXT NOT NULL,
+    "customer_id" TEXT NOT NULL,
+    "product_id" TEXT NOT NULL,
+    "warehouse_id" TEXT NOT NULL,
+    "quantity_on_hand" DECIMAL(15,3) NOT NULL DEFAULT 0,
+    "unit_price" DECIMAL(15,2) NOT NULL,
+    "total_value" DECIMAL(15,2) NOT NULL,
+    "max_quantity" DECIMAL(15,3),
+    "reorder_point" DECIMAL(15,3),
+    "status" TEXT NOT NULL DEFAULT 'ACTIVE',
+    "shipped_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "last_consumed_at" TIMESTAMP(3),
+    "notes" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "customer_consignment_stocks_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "customer_consignment_consumptions" (
+    "id" TEXT NOT NULL,
+    "tenant_id" TEXT NOT NULL,
+    "consignment_id" TEXT NOT NULL,
+    "quantity" DECIMAL(15,3) NOT NULL,
+    "total_value" DECIMAL(15,2) NOT NULL,
+    "reference" TEXT,
+    "consumed_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "customer_consignment_consumptions_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "distribution_plan_runs" (
+    "id" TEXT NOT NULL,
+    "tenant_id" TEXT NOT NULL,
+    "run_number" TEXT NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'DRAFT',
+    "horizon_days" INTEGER NOT NULL DEFAULT 90,
+    "start_date" TIMESTAMP(3) NOT NULL,
+    "end_date" TIMESTAMP(3) NOT NULL,
+    "include_warehouses" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "notes" TEXT,
+    "started_at" TIMESTAMP(3),
+    "completed_at" TIMESTAMP(3),
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "distribution_plan_runs_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "distribution_plans" (
+    "id" TEXT NOT NULL,
+    "tenant_id" TEXT NOT NULL,
+    "run_id" TEXT NOT NULL,
+    "product_id" TEXT NOT NULL,
+    "source_warehouse_id" TEXT,
+    "dest_warehouse_id" TEXT,
+    "forecast_demand" DECIMAL(15,3) NOT NULL DEFAULT 0,
+    "projected_stock" DECIMAL(15,3) NOT NULL DEFAULT 0,
+    "suggested_transfer" DECIMAL(15,3) NOT NULL DEFAULT 0,
+    "suggested_po" DECIMAL(15,3) NOT NULL DEFAULT 0,
+    "priority" TEXT NOT NULL DEFAULT 'MEDIUM',
+    "notes" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "distribution_plans_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "edi_inventory_transactions" (
+    "id" TEXT NOT NULL,
+    "tenant_id" TEXT NOT NULL,
+    "transaction_id" TEXT NOT NULL,
+    "edi_type" TEXT NOT NULL,
+    "direction" TEXT NOT NULL DEFAULT 'INBOUND',
+    "sender_id" TEXT,
+    "receiver_id" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'RECEIVED',
+    "payload" JSONB NOT NULL DEFAULT '{}',
+    "raw_data" TEXT,
+    "error_message" TEXT,
+    "processed_at" TIMESTAMP(3),
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "edi_inventory_transactions_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "sales_promotions" (
+    "id" TEXT NOT NULL,
+    "tenant_id" TEXT NOT NULL,
+    "org_id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "type" TEXT NOT NULL DEFAULT 'PERCENTAGE',
+    "value" DECIMAL(15,2) NOT NULL,
+    "min_order_amount" DECIMAL(15,2),
+    "start_date" TIMESTAMP(3) NOT NULL,
+    "end_date" TIMESTAMP(3),
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+    "max_usage_count" INTEGER,
+    "used_count" INTEGER NOT NULL DEFAULT 0,
+    "applies_to_all" BOOLEAN NOT NULL DEFAULT true,
+    "product_ids" JSONB NOT NULL DEFAULT '[]',
+    "customer_ids" JSONB NOT NULL DEFAULT '[]',
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "sales_promotions_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "sales_coupons" (
+    "id" TEXT NOT NULL,
+    "tenant_id" TEXT NOT NULL,
+    "promotion_id" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
+    "usage_limit" INTEGER,
+    "used_count" INTEGER NOT NULL DEFAULT 0,
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+    "max_redemptions_per_customer" INTEGER,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "sales_coupons_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "sales_partner_tiers" (
+    "id" TEXT NOT NULL,
+    "tenant_id" TEXT NOT NULL,
+    "org_id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "commission_rate" DECIMAL(5,2) NOT NULL,
+    "min_revenue" DECIMAL(15,2),
+    "benefits" JSONB NOT NULL DEFAULT '{}',
+    "sort_order" INTEGER NOT NULL DEFAULT 0,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "sales_partner_tiers_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "sales_partners" (
+    "id" TEXT NOT NULL,
+    "tenant_id" TEXT NOT NULL,
+    "org_id" TEXT NOT NULL,
+    "tier_id" TEXT,
+    "name" TEXT NOT NULL,
+    "email" TEXT,
+    "phone" TEXT,
+    "website" TEXT,
+    "address" JSONB DEFAULT '{}',
+    "commission_rate" DECIMAL(5,2),
+    "referral_code" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'ACTIVE',
+    "type" TEXT NOT NULL DEFAULT 'RESELLER',
+    "total_revenue" DECIMAL(15,2) NOT NULL DEFAULT 0,
+    "commission_earned" DECIMAL(15,2) NOT NULL DEFAULT 0,
+    "notes" TEXT,
+    "created_by" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+    "deleted_at" TIMESTAMP(3),
+
+    CONSTRAINT "sales_partners_pkey" PRIMARY KEY ("id")
+);
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- CreateTable
+CREATE TABLE "knowledge_base_categories" (
+    "id" TEXT NOT NULL,
+    "tenant_id" TEXT NOT NULL,
+    "org_id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "description" TEXT,
+    "icon" TEXT,
+    "color" TEXT,
+    "parent_id" TEXT,
+    "sort_order" INTEGER NOT NULL DEFAULT 0,
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+    "deleted_at" TIMESTAMP(3),
+
+    CONSTRAINT "knowledge_base_categories_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "knowledge_base_articles" (
+    "id" TEXT NOT NULL,
+    "tenant_id" TEXT NOT NULL,
+    "org_id" TEXT NOT NULL,
+    "category_id" TEXT,
+    "title" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "excerpt" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'DRAFT',
+    "author_id" TEXT NOT NULL,
+    "published_at" TIMESTAMP(3),
+    "view_count" INTEGER NOT NULL DEFAULT 0,
+    "helpful_count" INTEGER NOT NULL DEFAULT 0,
+    "not_helpful_count" INTEGER NOT NULL DEFAULT 0,
+    "tags" JSONB NOT NULL DEFAULT '[]',
+    "is_internal" BOOLEAN NOT NULL DEFAULT false,
+    "sort_order" INTEGER NOT NULL DEFAULT 0,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+    "deleted_at" TIMESTAMP(3),
+
+    CONSTRAINT "knowledge_base_articles_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "knowledge_base_article_versions" (
+    "id" TEXT NOT NULL,
+    "tenant_id" TEXT NOT NULL,
+    "article_id" TEXT NOT NULL,
+    "version" INTEGER NOT NULL,
+    "title" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "change_log" TEXT,
+    "author_id" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "knowledge_base_article_versions_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "win_loss_reasons" (
+    "id" TEXT NOT NULL,
+    "tenant_id" TEXT NOT NULL,
+    "org_id" TEXT NOT NULL,
+    "category" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "sort_order" INTEGER NOT NULL DEFAULT 0,
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+    "deleted_at" TIMESTAMP(3),
+
+    CONSTRAINT "win_loss_reasons_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "competitors" (
+    "id" TEXT NOT NULL,
+    "tenant_id" TEXT NOT NULL,
+    "org_id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "website" TEXT,
+    "description" TEXT,
+    "strengths" JSONB NOT NULL DEFAULT '[]',
+    "weaknesses" JSONB NOT NULL DEFAULT '[]',
+    "logo_url" TEXT,
+    "market_share" DECIMAL(5,2),
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+    "deleted_at" TIMESTAMP(3),
+
+    CONSTRAINT "competitors_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "sales_partner_deal_registrations" (
+    "id" TEXT NOT NULL,
+    "tenant_id" TEXT NOT NULL,
+    "org_id" TEXT NOT NULL,
+    "partner_id" TEXT NOT NULL,
+    "opportunity_id" TEXT,
+    "company_name" TEXT NOT NULL,
+    "contact_name" TEXT NOT NULL,
+    "contact_email" TEXT NOT NULL,
+    "contact_phone" TEXT,
+    "estimated_value" DECIMAL(15,2) NOT NULL DEFAULT 0,
+    "currency" TEXT NOT NULL DEFAULT 'USD',
+    "status" TEXT NOT NULL DEFAULT 'SUBMITTED',
+    "notes" TEXT,
+    "submitted_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "approved_at" TIMESTAMP(3),
+    "approved_by" TEXT,
+    "rejection_reason" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+    "deleted_at" TIMESTAMP(3),
+
+    CONSTRAINT "sales_partner_deal_registrations_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "sales_partner_mdf_funds" (
+    "id" TEXT NOT NULL,
+    "tenant_id" TEXT NOT NULL,
+    "org_id" TEXT NOT NULL,
+    "partner_id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "budget_amount" DECIMAL(15,2) NOT NULL,
+    "spent_amount" DECIMAL(15,2) NOT NULL DEFAULT 0,
+    "currency" TEXT NOT NULL DEFAULT 'USD',
+    "fundType" TEXT NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'ACTIVE',
+    "start_date" TIMESTAMP(3) NOT NULL,
+    "end_date" TIMESTAMP(3) NOT NULL,
+    "description" TEXT,
+    "approval_required" BOOLEAN NOT NULL DEFAULT true,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+    "deleted_at" TIMESTAMP(3),
+
+    CONSTRAINT "sales_partner_mdf_funds_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "communication_channels" (
+    "id" TEXT NOT NULL,
+    "tenant_id" TEXT NOT NULL,
+    "org_id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "channel_type" TEXT NOT NULL,
+    "provider" TEXT,
+    "config" JSONB NOT NULL DEFAULT '{}',
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+    "deleted_at" TIMESTAMP(3),
+
+    CONSTRAINT "communication_channels_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "communication_templates" (
+    "id" TEXT NOT NULL,
+    "tenant_id" TEXT NOT NULL,
+    "org_id" TEXT NOT NULL,
+    "channel_id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "subject" TEXT,
+    "body" TEXT NOT NULL,
+    "variables" JSONB NOT NULL DEFAULT '[]',
+    "category" TEXT NOT NULL DEFAULT 'GENERAL',
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+    "deleted_at" TIMESTAMP(3),
+
+    CONSTRAINT "communication_templates_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "communication_logs" (
+    "id" TEXT NOT NULL,
+    "tenant_id" TEXT NOT NULL,
+    "org_id" TEXT NOT NULL,
+    "channel_id" TEXT NOT NULL,
+    "template_id" TEXT,
+    "recipient" TEXT NOT NULL,
+    "subject" TEXT,
+    "body" TEXT NOT NULL,
+    "entity_type" TEXT,
+    "entity_id" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'SENT',
+    "provider_message_id" TEXT,
+    "sent_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "delivered_at" TIMESTAMP(3),
+    "error" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "communication_logs_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE INDEX "drop_ship_providers_tenant_id_idx" ON "drop_ship_providers"("tenant_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "drop_ship_providers_tenant_id_code_key" ON "drop_ship_providers"("tenant_id", "code");
+
+-- CreateIndex
+CREATE INDEX "drop_ship_orders_tenant_id_idx" ON "drop_ship_orders"("tenant_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "drop_ship_orders_tenant_id_order_number_key" ON "drop_ship_orders"("tenant_id", "order_number");
+
+-- CreateIndex
+CREATE INDEX "drop_ship_order_items_tenant_id_idx" ON "drop_ship_order_items"("tenant_id");
+
+-- CreateIndex
+CREATE INDEX "drop_ship_order_items_order_id_idx" ON "drop_ship_order_items"("order_id");
+
+-- CreateIndex
+CREATE INDEX "available_to_promise_tenant_id_idx" ON "available_to_promise"("tenant_id");
+
+-- CreateIndex
+CREATE INDEX "available_to_promise_product_id_idx" ON "available_to_promise"("product_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "available_to_promise_tenant_id_product_id_warehouse_id_key" ON "available_to_promise"("tenant_id", "product_id", "warehouse_id");
+
+-- CreateIndex
+CREATE INDEX "atp_reservations_tenant_id_idx" ON "atp_reservations"("tenant_id");
+
+-- CreateIndex
+CREATE INDEX "atp_reservations_atp_id_idx" ON "atp_reservations"("atp_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "rfid_tags_epc_key" ON "rfid_tags"("epc");
+
+-- CreateIndex
+CREATE INDEX "rfid_tags_tenant_id_idx" ON "rfid_tags"("tenant_id");
+
+-- CreateIndex
+CREATE INDEX "rfid_tags_product_id_idx" ON "rfid_tags"("product_id");
+
+-- CreateIndex
+CREATE INDEX "rfid_read_events_tenant_id_idx" ON "rfid_read_events"("tenant_id");
+
+-- CreateIndex
+CREATE INDEX "rfid_read_events_tag_id_idx" ON "rfid_read_events"("tag_id");
+
+-- CreateIndex
+CREATE INDEX "rfid_read_events_read_at_idx" ON "rfid_read_events"("read_at");
+
+-- CreateIndex
+CREATE INDEX "subinventories_tenant_id_idx" ON "subinventories"("tenant_id");
+
+-- CreateIndex
+CREATE INDEX "subinventories_warehouse_id_idx" ON "subinventories"("warehouse_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "subinventories_tenant_id_warehouse_id_code_key" ON "subinventories"("tenant_id", "warehouse_id", "code");
+
+-- CreateIndex
+CREATE INDEX "customer_consignment_stocks_tenant_id_idx" ON "customer_consignment_stocks"("tenant_id");
+
+-- CreateIndex
+CREATE INDEX "customer_consignment_stocks_customer_id_idx" ON "customer_consignment_stocks"("customer_id");
+
+-- CreateIndex
+CREATE INDEX "customer_consignment_stocks_product_id_idx" ON "customer_consignment_stocks"("product_id");
+
+-- CreateIndex
+CREATE INDEX "customer_consignment_consumptions_tenant_id_idx" ON "customer_consignment_consumptions"("tenant_id");
+
+-- CreateIndex
+CREATE INDEX "customer_consignment_consumptions_consignment_id_idx" ON "customer_consignment_consumptions"("consignment_id");
+
+-- CreateIndex
+CREATE INDEX "distribution_plan_runs_tenant_id_idx" ON "distribution_plan_runs"("tenant_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "distribution_plan_runs_tenant_id_run_number_key" ON "distribution_plan_runs"("tenant_id", "run_number");
+
+-- CreateIndex
+CREATE INDEX "distribution_plans_tenant_id_idx" ON "distribution_plans"("tenant_id");
+
+-- CreateIndex
+CREATE INDEX "distribution_plans_run_id_idx" ON "distribution_plans"("run_id");
+
+-- CreateIndex
+CREATE INDEX "distribution_plans_product_id_idx" ON "distribution_plans"("product_id");
+
+-- CreateIndex
+CREATE INDEX "edi_inventory_transactions_tenant_id_edi_type_idx" ON "edi_inventory_transactions"("tenant_id", "edi_type");
+
+-- CreateIndex
+CREATE INDEX "edi_inventory_transactions_tenant_id_status_idx" ON "edi_inventory_transactions"("tenant_id", "status");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "edi_inventory_transactions_tenant_id_transaction_id_key" ON "edi_inventory_transactions"("tenant_id", "transaction_id");
+
+-- CreateIndex
+CREATE INDEX "sales_promotions_tenant_id_idx" ON "sales_promotions"("tenant_id");
+
+-- CreateIndex
+CREATE INDEX "sales_promotions_tenant_id_is_active_idx" ON "sales_promotions"("tenant_id", "is_active");
+
+-- CreateIndex
+CREATE INDEX "sales_coupons_tenant_id_idx" ON "sales_coupons"("tenant_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "sales_coupons_tenant_id_code_key" ON "sales_coupons"("tenant_id", "code");
+
+-- CreateIndex
+CREATE INDEX "sales_partner_tiers_tenant_id_idx" ON "sales_partner_tiers"("tenant_id");
+
+-- CreateIndex
+CREATE INDEX "sales_partners_tenant_id_idx" ON "sales_partners"("tenant_id");
+
+-- CreateIndex
+CREATE INDEX "sales_partners_tenant_id_status_idx" ON "sales_partners"("tenant_id", "status");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "sales_partners_tenant_id_name_key" ON "sales_partners"("tenant_id", "name");
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+
+-- CreateIndex
+CREATE INDEX "knowledge_base_categories_tenant_id_idx" ON "knowledge_base_categories"("tenant_id");
+
+-- CreateIndex
+CREATE INDEX "knowledge_base_categories_tenant_id_parent_id_idx" ON "knowledge_base_categories"("tenant_id", "parent_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "knowledge_base_categories_tenant_id_slug_key" ON "knowledge_base_categories"("tenant_id", "slug");
+
+-- CreateIndex
+CREATE INDEX "knowledge_base_articles_tenant_id_idx" ON "knowledge_base_articles"("tenant_id");
+
+-- CreateIndex
+CREATE INDEX "knowledge_base_articles_tenant_id_category_id_idx" ON "knowledge_base_articles"("tenant_id", "category_id");
+
+-- CreateIndex
+CREATE INDEX "knowledge_base_articles_tenant_id_status_idx" ON "knowledge_base_articles"("tenant_id", "status");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "knowledge_base_articles_tenant_id_slug_key" ON "knowledge_base_articles"("tenant_id", "slug");
+
+-- CreateIndex
+CREATE INDEX "knowledge_base_article_versions_tenant_id_idx" ON "knowledge_base_article_versions"("tenant_id");
+
+-- CreateIndex
+CREATE INDEX "knowledge_base_article_versions_article_id_idx" ON "knowledge_base_article_versions"("article_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "knowledge_base_article_versions_article_id_version_key" ON "knowledge_base_article_versions"("article_id", "version");
+
+-- CreateIndex
+CREATE INDEX "win_loss_reasons_tenant_id_idx" ON "win_loss_reasons"("tenant_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "win_loss_reasons_tenant_id_category_name_key" ON "win_loss_reasons"("tenant_id", "category", "name");
+
+-- CreateIndex
+CREATE INDEX "competitors_tenant_id_idx" ON "competitors"("tenant_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "competitors_tenant_id_name_key" ON "competitors"("tenant_id", "name");
+
+-- CreateIndex
+CREATE INDEX "sales_partner_deal_registrations_tenant_id_idx" ON "sales_partner_deal_registrations"("tenant_id");
+
+-- CreateIndex
+CREATE INDEX "sales_partner_deal_registrations_tenant_id_partner_id_idx" ON "sales_partner_deal_registrations"("tenant_id", "partner_id");
+
+-- CreateIndex
+CREATE INDEX "sales_partner_deal_registrations_tenant_id_status_idx" ON "sales_partner_deal_registrations"("tenant_id", "status");
+
+-- CreateIndex
+CREATE INDEX "sales_partner_mdf_funds_tenant_id_idx" ON "sales_partner_mdf_funds"("tenant_id");
+
+-- CreateIndex
+CREATE INDEX "sales_partner_mdf_funds_tenant_id_partner_id_idx" ON "sales_partner_mdf_funds"("tenant_id", "partner_id");
+
+-- CreateIndex
+CREATE INDEX "communication_channels_tenant_id_idx" ON "communication_channels"("tenant_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "communication_channels_tenant_id_name_key" ON "communication_channels"("tenant_id", "name");
+
+-- CreateIndex
+CREATE INDEX "communication_templates_tenant_id_idx" ON "communication_templates"("tenant_id");
+
+-- CreateIndex
+CREATE INDEX "communication_templates_tenant_id_channel_id_idx" ON "communication_templates"("tenant_id", "channel_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "communication_templates_tenant_id_channel_id_name_key" ON "communication_templates"("tenant_id", "channel_id", "name");
+
+-- CreateIndex
+CREATE INDEX "communication_logs_tenant_id_idx" ON "communication_logs"("tenant_id");
+
+-- CreateIndex
+CREATE INDEX "communication_logs_tenant_id_entity_type_entity_id_idx" ON "communication_logs"("tenant_id", "entity_type", "entity_id");
+
+-- CreateIndex
+CREATE INDEX "communication_logs_tenant_id_channel_id_idx" ON "communication_logs"("tenant_id", "channel_id");
+
+-- AddForeignKey
+ALTER TABLE "opportunities" ADD CONSTRAINT "opportunities_competitor_id_fkey" FOREIGN KEY ("competitor_id") REFERENCES "competitors"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "opportunities" ADD CONSTRAINT "opportunities_win_loss_reason_id_fkey" FOREIGN KEY ("win_loss_reason_id") REFERENCES "win_loss_reasons"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "drop_ship_orders" ADD CONSTRAINT "drop_ship_orders_provider_id_fkey" FOREIGN KEY ("provider_id") REFERENCES "drop_ship_providers"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "drop_ship_order_items" ADD CONSTRAINT "drop_ship_order_items_order_id_fkey" FOREIGN KEY ("order_id") REFERENCES "drop_ship_orders"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "drop_ship_order_items" ADD CONSTRAINT "drop_ship_order_items_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "available_to_promise" ADD CONSTRAINT "available_to_promise_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "available_to_promise" ADD CONSTRAINT "available_to_promise_warehouse_id_fkey" FOREIGN KEY ("warehouse_id") REFERENCES "warehouses"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "atp_reservations" ADD CONSTRAINT "atp_reservations_atp_id_fkey" FOREIGN KEY ("atp_id") REFERENCES "available_to_promise"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "rfid_tags" ADD CONSTRAINT "rfid_tags_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "rfid_read_events" ADD CONSTRAINT "rfid_read_events_tag_id_fkey" FOREIGN KEY ("tag_id") REFERENCES "rfid_tags"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "subinventories" ADD CONSTRAINT "subinventories_warehouse_id_fkey" FOREIGN KEY ("warehouse_id") REFERENCES "warehouses"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "customer_consignment_stocks" ADD CONSTRAINT "customer_consignment_stocks_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "customer_consignment_stocks" ADD CONSTRAINT "customer_consignment_stocks_warehouse_id_fkey" FOREIGN KEY ("warehouse_id") REFERENCES "warehouses"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "customer_consignment_consumptions" ADD CONSTRAINT "customer_consignment_consumptions_consignment_id_fkey" FOREIGN KEY ("consignment_id") REFERENCES "customer_consignment_stocks"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "distribution_plans" ADD CONSTRAINT "distribution_plans_run_id_fkey" FOREIGN KEY ("run_id") REFERENCES "distribution_plan_runs"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "distribution_plans" ADD CONSTRAINT "distribution_plans_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "distribution_plans" ADD CONSTRAINT "distribution_plans_source_warehouse_id_fkey" FOREIGN KEY ("source_warehouse_id") REFERENCES "warehouses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "distribution_plans" ADD CONSTRAINT "distribution_plans_dest_warehouse_id_fkey" FOREIGN KEY ("dest_warehouse_id") REFERENCES "warehouses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "sales_coupons" ADD CONSTRAINT "sales_coupons_promotion_id_fkey" FOREIGN KEY ("promotion_id") REFERENCES "sales_promotions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "sales_partners" ADD CONSTRAINT "sales_partners_tier_id_fkey" FOREIGN KEY ("tier_id") REFERENCES "sales_partner_tiers"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+
+-- AddForeignKey
+
+-- AddForeignKey
+
+-- AddForeignKey
+
+-- AddForeignKey
+
+-- AddForeignKey
+
+-- AddForeignKey
+
+-- AddForeignKey
+
+-- AddForeignKey
+
+-- AddForeignKey
+
+-- AddForeignKey
+ALTER TABLE "knowledge_base_categories" ADD CONSTRAINT "knowledge_base_categories_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "knowledge_base_categories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "knowledge_base_articles" ADD CONSTRAINT "knowledge_base_articles_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "knowledge_base_categories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "knowledge_base_article_versions" ADD CONSTRAINT "knowledge_base_article_versions_article_id_fkey" FOREIGN KEY ("article_id") REFERENCES "knowledge_base_articles"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "sales_partner_deal_registrations" ADD CONSTRAINT "sales_partner_deal_registrations_partner_id_fkey" FOREIGN KEY ("partner_id") REFERENCES "sales_partners"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "sales_partner_mdf_funds" ADD CONSTRAINT "sales_partner_mdf_funds_partner_id_fkey" FOREIGN KEY ("partner_id") REFERENCES "sales_partners"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "communication_templates" ADD CONSTRAINT "communication_templates_channel_id_fkey" FOREIGN KEY ("channel_id") REFERENCES "communication_channels"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "communication_logs" ADD CONSTRAINT "communication_logs_channel_id_fkey" FOREIGN KEY ("channel_id") REFERENCES "communication_channels"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "communication_logs" ADD CONSTRAINT "communication_logs_template_id_fkey" FOREIGN KEY ("template_id") REFERENCES "communication_templates"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+

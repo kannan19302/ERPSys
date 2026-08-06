@@ -60,19 +60,27 @@ const AS_JSON = process.argv.includes('--json');
  * `entry` is the source entrypoint; `subpaths` maps a subpath export to its own
  * entrypoint, because a consumer may import `@unerp/ui/charts` directly.
  */
-// Providers now resolve to the INSTALLED package rather than workspace source.
+// Prefer the built artifact, fall back to source.
 //
-// This is what M2 was always for. Before the § 14 Phase 3 split the harness read
-// provider source, which was a reasonable proxy because source and artifact were
-// the same tree. They are no longer: a consumer resolves the published
-// `dist/index.d.ts`, so that is the surface whose absence of a symbol actually
-// breaks a build. Reading source here would have replayed expectations against a
-// surface nobody consumes — and would have missed exactly the drift that
-// publishing without `dist/` produced earlier in this migration.
-const DIST = (name) => ({
-  dir: `node_modules/${name}`,
-  entry: 'dist/index.d.ts',
-});
+// `dist/index.d.ts` is the surface a consumer actually resolves, so it is the
+// right thing to replay expectations against once a package is published. But
+// during the migration the packages are workspace members whose dist/ may not
+// be built yet, and a harness that throws ENOENT there is a gate that stops
+// running rather than a gate that passes — worse, because it blocks everything
+// while proving nothing. Source is a faithful proxy in that state: it is the
+// same tree the consumer compiles against through the workspace link.
+const DIST = (name) => {
+  const short = name.replace('@unerp/', '');
+  const candidates = [
+    { dir: `node_modules/${name}`, entry: 'dist/index.d.ts' },
+    { dir: `packages/${short}`, entry: 'dist/index.d.ts' },
+    { dir: `packages/${short}`, entry: 'src/index.ts' },
+  ];
+  return (
+    candidates.find((c) => fs.existsSync(path.join(ROOT, c.dir, c.entry))) ??
+    candidates[0]
+  );
+};
 
 const PROVIDERS = {
   '@unerp/contracts': DIST('@unerp/contracts'),

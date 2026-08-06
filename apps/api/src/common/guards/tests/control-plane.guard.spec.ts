@@ -98,6 +98,23 @@ describe("ControlPlaneGuard", () => {
     await expect(guard.canActivate(ctx)).rejects.toThrow(/multi-factor/);
   });
 
+  it("refuses a control-plane session carrying NO mfa claim at all", async () => {
+    // The gap that let a fail-open survive review. Every existing case supplied
+    // either `amr` or `mfaVerified`, so the guard's `if (amr !== undefined ||
+    // mfaVerified !== undefined)` wrapper was never exercised with both absent
+    // — and with both absent it skipped the MFA check entirely and fell through
+    // to the permission test. A legacy or password-only platform session could
+    // reach a cross-tenant handler.
+    //
+    // An absent claim and an unsatisfied one are indistinguishable from here,
+    // so the stricter reading is the only safe one.
+    const ctx = contextFor({
+      permissions: ["system.tenant.read"],
+      user: { userId: "u1", permissions: ["system.tenant.read"] },
+    });
+    await expect(guard.canActivate(ctx)).rejects.toThrow(/multi-factor/);
+  });
+
   it("accepts webauthn as a second factor", async () => {
     const ctx = contextFor({
       permissions: ["system.tenant.read"],

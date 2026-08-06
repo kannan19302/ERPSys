@@ -26,7 +26,13 @@
  *   node scripts/ci/check-decimal-arithmetic.mjs --list    # print every site
  *   node scripts/ci/check-decimal-arithmetic.mjs --write   # lower the baseline
  */
-import { readFileSync, writeFileSync, readdirSync, statSync } from "node:fs";
+import {
+  existsSync,
+  readFileSync,
+  writeFileSync,
+  readdirSync,
+  statSync,
+} from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -41,19 +47,21 @@ const BASELINE = path.join(
   "ci",
   "decimal-arithmetic-baseline.json",
 );
-// The schema moved to the published @unerp/database in the § 14 Phase 3 split,
-// so the gate reads the installed artifact — the copy the running code is
-// actually typed against. It fell over with ENOENT the moment packages/ was
-// deleted, which is the right way for a gate to notice its target has moved:
-// loudly, rather than by scanning an empty set and reporting zero violations.
-const SCHEMA_DIR = path.join(
-  ROOT,
-  "node_modules",
-  "@unerp",
-  "database",
-  "prisma",
-  "schema",
-);
+// The schema moves with the database package: a workspace member during the
+// § 14 Phase 3 migration, an installed artifact once consumers have switched.
+// Take whichever exists, and fail loudly if neither does — scanning an empty
+// directory and reporting zero violations is how a gate stops protecting
+// anything without telling you.
+const SCHEMA_CANDIDATES = [
+  path.join(ROOT, "packages", "database", "prisma", "schema"),
+  path.join(ROOT, "node_modules", "@unerp", "database", "prisma", "schema"),
+];
+const SCHEMA_DIR = SCHEMA_CANDIDATES.find((dir) => existsSync(dir));
+if (!SCHEMA_DIR) {
+  console.error("Prisma schema not found in the workspace or the installed package.");
+  for (const candidate of SCHEMA_CANDIDATES) console.error(`  ${candidate}`);
+  process.exit(1);
+}
 const SCAN_ROOTS = [path.join(ROOT, "apps"), path.join(ROOT, "packages")];
 
 function decimalFieldNames() {

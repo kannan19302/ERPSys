@@ -113,17 +113,27 @@ const HARD = [
       // that quietly covers less than it claims is worse than no control.
       // Missing targets are now reported rather than skipped.
       //
-      // The seed moved AGAIN in the § 14 Phase 3 split: packages/database is now
-      // the published @unerp/database, so the file this gate must read is the
-      // installed artifact — which is the copy that actually runs. The gate
-      // caught its own staleness the moment packages/ was deleted, because it
-      // reports a missing target instead of skipping it.
-      //
-      // This rule properly belongs in unierp-data's CI now that the seed lives
-      // there; checking the installed package keeps the monorepo honest in the
-      // meantime, so the control is never absent during the handover.
-      const targets = [
+      // The seed moves with the database package: workspace member during the
+      // migration, installed artifact once consumers have switched. Check
+      // whichever exists rather than pinning one, but still fail loudly if
+      // NEITHER does — a control that quietly covers less than it claims is
+      // worse than no control, which is why this reports a missing target
+      // instead of skipping it.
+      const seedCandidates = [
+        join(ROOT, "packages/database/prisma/seed.ts"),
         join(ROOT, "node_modules/@unerp/database/prisma/seed.ts"),
+      ];
+      const seed = seedCandidates.find((f) => read(f));
+      if (!seed) {
+        hits.push(
+          `${seedCandidates.map((f) => relative(ROOT, f)).join(" | ")}  MISSING — ` +
+            "the seed is in neither the workspace nor the installed package; " +
+            "update the target list if it moved again.",
+        );
+      }
+
+      const targets = [
+        ...(seed ? [seed] : []),
         join(ROOT, "apps/idp/src/modules/auth/auth.service.ts"),
       ];
       for (const f of targets) {

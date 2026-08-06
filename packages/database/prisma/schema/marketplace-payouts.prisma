@@ -1,0 +1,88 @@
+// ─────────────────────────────────────────────────
+// Marketplace earnings and payouts — PLATFORM_ARCHITECTURE.md § 8, Phase 5
+// ("Marketplace listing, review, signing, and payout in the Platform Admin
+// Console").
+//
+// Platform-level, deliberately: an earning belongs to a PUBLISHER, and a
+// publisher sells across many tenants. Scoping these rows to the paying tenant
+// would hide a publisher's own ledger from them, which inverts who the record
+// is about. The paying tenant is therefore recorded as data
+// (`paying_tenant_id`) rather than as a scope — the column is deliberately not
+// named `tenant_id`, so neither the tenant-scope extension nor the RLS sweep
+// mistakes a platform ledger for tenant data.
+//
+// Access is controlled at the permission layer instead: a publisher may read
+// their own earnings, and only the platform operator may run a payout.
+// ─────────────────────────────────────────────────
+
+model MarketplaceEarning {
+  id          String @id @default(cuid())
+  vendorId    String @map("vendor_id")
+  appSlug     String @map("app_slug")
+
+  /// The tenant whose payment produced this earning. DATA, not scope.
+  payingTenantId String @map("paying_tenant_id")
+
+  /// Money is Decimal(19,4) here for the same reason it is everywhere else:
+  /// these figures are summed across thousands of rows and then paid to a real
+  /// company. ARCHITECTURE_REVIEW § F11.
+  grossAmount Decimal @db.Decimal(19, 4) @map("gross_amount")
+  /// The platform's cut, stored rather than recomputed at read time so a later
+  /// change to the commission rate cannot silently restate historical earnings.
+  commissionAmount Decimal @db.Decimal(19, 4) @map("commission_amount")
+  /// gross - commission, stored for the same reason.
+  netAmount   Decimal @db.Decimal(19, 4) @map("net_amount")
+  /// The rate actually applied, kept alongside the amounts it produced.
+  commissionRate Decimal @db.Decimal(9, 6) @map("commission_rate")
+  currency    String  @default("USD")
+
+  /// PENDING | PAYABLE | PAID | REVERSED
+  status      String  @default("PENDING")
+  /// Set once a payout batch has settled this earning.
+  payoutBatchId String? @map("payout_batch_id")
+
+  earnedAt    DateTime @default(now()) @map("earned_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  batch  MarketplacePayoutBatch? @relation(fields: [payoutBatchId], references: [id])
+
+  @@index([vendorId, status])
+  @@index([payoutBatchId])
+  @@map("marketplace_earnings")
+}
+
+model MarketplacePayoutBatch {
+  id        String @id @default(cuid())
+  vendorId  String @map("vendor_id")
+
+  periodStart DateTime @map("period_start")
+  periodEnd   DateTime @map("period_end")
+
+  /// Sum of the net amounts of the earnings this batch settles. Stored so the
+  /// statement a publisher receives is a fact, not a re-derivation that could
+  /// drift from what was actually transferred.
+  totalAmount Decimal @db.Decimal(19, 4) @map("total_amount")
+  currency    String  @default("USD")
+
+  /// DRAFT | APPROVED | PAID | FAILED
+  status      String  @default("DRAFT")
+
+  /// How the money left the platform. Null until a provider settles it —
+  /// a batch can be computed, approved and audited with no provider wired,
+  /// which is what separates the ledger from the transfer.
+  providerRef String? @map("provider_ref")
+  provider    String?
+
+  approvedByUserId String?   @map("approved_by_user_id")
+  approvedAt       DateTime? @map("approved_at")
+  paidAt           DateTime? @map("paid_at")
+  failureReason    String?   @map("failure_reason")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  earnings MarketplaceEarning[]
+
+  @@index([vendorId, status])
+  @@map("marketplace_payout_batches")
+}

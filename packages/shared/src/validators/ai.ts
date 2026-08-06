@@ -1,0 +1,165 @@
+import { z } from "zod";
+
+// ── AI Models ──
+export const createAiModelSchema = z.object({
+  name: z.string().min(1),
+  provider: z.string().optional(),
+  modelId: z.string().min(1),
+  version: z.string().optional(),
+  description: z.string().optional(),
+  capabilities: z.array(z.string()).optional(),
+  config: z.record(z.unknown()).optional(),
+  status: z.string().optional(),
+  metadata: z.record(z.unknown()).optional(),
+});
+export type CreateAiModelInput = z.infer<typeof createAiModelSchema>;
+
+export const updateAiModelSchema = createAiModelSchema.partial();
+export type UpdateAiModelInput = z.infer<typeof updateAiModelSchema>;
+
+// ── AI Deployments ──
+export const createAiDeploymentSchema = z.object({
+  modelId: z.string().min(1),
+  endpoint: z.string().optional(),
+  apiKey: z.string().optional(),
+  config: z.record(z.unknown()).optional(),
+});
+export type CreateAiDeploymentInput = z.infer<typeof createAiDeploymentSchema>;
+
+// ── AI Prompts ──
+export const createAiPromptSchema = z.object({
+  name: z.string().min(1),
+  slug: z.string().min(1),
+  description: z.string().optional(),
+  category: z.string().optional(),
+  prompt: z.string().min(1),
+  variables: z.array(z.string()).optional(),
+  config: z.record(z.unknown()).optional(),
+  tags: z.array(z.string()).optional(),
+});
+export type CreateAiPromptInput = z.infer<typeof createAiPromptSchema>;
+
+export const updateAiPromptSchema = createAiPromptSchema.partial();
+export type UpdateAiPromptInput = z.infer<typeof updateAiPromptSchema>;
+
+// ── AI Conversations ──
+export const createAiConversationSchema = z.object({
+  title: z.string().optional(),
+  context: z.record(z.unknown()).optional(),
+  metadata: z.record(z.unknown()).optional(),
+});
+export type CreateAiConversationInput = z.infer<
+  typeof createAiConversationSchema
+>;
+
+export const sendAiMessageSchema = z.object({
+  conversationId: z.string().min(1),
+  content: z.string().min(1),
+  metadata: z.record(z.unknown()).optional(),
+});
+export type SendAiMessageInput = z.infer<typeof sendAiMessageSchema>;
+
+// ── AI Documents ──
+export const createAiDocumentSchema = z.object({
+  name: z.string().min(1),
+  contentType: z.string().min(1),
+  content: z.string().optional(),
+  source: z.string().optional(),
+  metadata: z.record(z.unknown()).optional(),
+});
+export type CreateAiDocumentInput = z.infer<typeof createAiDocumentSchema>;
+
+// ── AI Agents ──
+export const createAiAgentSchema = z.object({
+  name: z.string().min(1),
+  slug: z.string().min(1),
+  description: z.string().optional(),
+  systemPrompt: z.string().optional(),
+  modelId: z.string().optional(),
+  config: z.record(z.unknown()).optional(),
+  metadata: z.record(z.unknown()).optional(),
+});
+export type CreateAiAgentInput = z.infer<typeof createAiAgentSchema>;
+
+export const updateAiAgentSchema = createAiAgentSchema.partial();
+export type UpdateAiAgentInput = z.infer<typeof updateAiAgentSchema>;
+
+// ── AI Training Jobs ──
+export const createAiTrainingJobSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().optional(),
+  modelId: z.string().optional(),
+  dataset: z.unknown().optional(),
+  config: z.record(z.unknown()).optional(),
+});
+export type CreateAiTrainingJobInput = z.infer<
+  typeof createAiTrainingJobSchema
+>;
+
+// ── AI Intent Classification ──
+export const classifyIntentSchema = z.object({
+  text: z.string().min(1).max(5000),
+});
+export type ClassifyIntentInput = z.infer<typeof classifyIntentSchema>;
+
+export const createIntentTrainingDataSchema = z.object({
+  intent: z.string().min(1),
+  text: z.string().min(1),
+  language: z.string().optional(),
+  entities: z
+    .array(
+      z.object({
+        entity: z.string(),
+        value: z.string(),
+        startPos: z.number().int().optional(),
+        endPos: z.number().int().optional(),
+      }),
+    )
+    .optional(),
+});
+export type CreateIntentTrainingDataInput = z.infer<
+  typeof createIntentTrainingDataSchema
+>;
+
+export const updateIntentTrainingDataSchema =
+  createIntentTrainingDataSchema.partial();
+export type UpdateIntentTrainingDataInput = z.infer<
+  typeof updateIntentTrainingDataSchema
+>;
+
+// ── AI NLU Training Data ──
+export const createNluTrainingDataSchema = z.object({
+  intent: z.string().min(1),
+  text: z.string().min(1),
+  language: z.string().default("en"),
+  entities: z
+    .array(
+      z.object({
+        entity: z.string(),
+        value: z.string(),
+        startPos: z.number().int().optional(),
+        endPos: z.number().int().optional(),
+      }),
+    )
+    .optional(),
+});
+export type CreateNluTrainingDataInput = z.infer<
+  typeof createNluTrainingDataSchema
+>;
+
+export const updateNluTrainingDataSchema =
+  createNluTrainingDataSchema.partial();
+export type UpdateNluTrainingDataInput = z.infer<
+  typeof updateNluTrainingDataSchema
+>;
+
+// ── AI Model Accuracy Metrics ──
+export const recordAiModelAccuracySchema = z.object({
+  modelId: z.string().min(1),
+  metric: z.string().min(1),
+  value: z.number(),
+  metadata: z.record(z.unknown()).optional(),
+});
+export type RecordAiModelAccuracyInput = z.infer<
+  typeof recordAiModelAccuracySchema
+>;

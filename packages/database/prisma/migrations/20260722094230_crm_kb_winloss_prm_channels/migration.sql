@@ -1,0 +1,5 @@
+-- Intentionally empty migration.
+-- The original migration.sql was accidentally committed as a failed
+-- `prisma migrate diff` error dump (a PowerShell error), not SQL. All tables
+-- this migration was meant to introduce are created by the next migration in
+-- the chain: 20260722120000_inventory_deepening_cycle35.

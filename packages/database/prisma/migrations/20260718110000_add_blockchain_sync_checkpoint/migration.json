@@ -1,0 +1,55 @@
+{
+  "version": "5.22.0",
+  "steps": [
+    {
+      "tag": "CreateTable",
+      "table": "blockchain_sync_checkpoints",
+      "columns": [
+        {
+          "name": "id",
+          "type": "Text",
+          "isRequired": true,
+          "isList": false,
+          "isId": true,
+          "default": {
+            "name": "cuid",
+            "args": []
+          }
+        },
+        {
+          "name": "channel_name",
+          "type": "Text",
+          "isRequired": true,
+          "isList": false
+        },
+        {
+          "name": "chaincode_name",
+          "type": "Text",
+          "isRequired": true,
+          "isList": false
+        },
+        {
+          "name": "last_block_number",
+          "type": "Text",
+          "isRequired": true,
+          "isList": false
+        },
+        {
+          "name": "updated_at",
+          "type": "DateTime",
+          "isRequired": true,
+          "isList": false
+        }
+      ],
+      "primaryKey": {
+        "columns": ["id"]
+      },
+      "uniqueConstraints": [
+        {
+          "name": "blockchain_sync_checkpoints_channel_name_chaincode_name_key",
+          "columns": ["channel_name", "chaincode_name"]
+        }
+      ]
+    }
+  ]
+}

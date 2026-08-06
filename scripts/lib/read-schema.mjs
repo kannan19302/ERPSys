@@ -63,15 +63,26 @@ export function idpSchemaFile(root) {
  */
 // Where the database package lives.
 //
-// Before the § 14 Phase 3 split this was the workspace path `packages/database`.
-// It is now the installed `@unerp/database`, because that is the copy the
-// running code is typed against — and every schema-reading gate routes through
-// this module, so pointing it here fixes all of them at once rather than each
-// gate carrying its own stale path.
+// It moves during the § 14 Phase 3 migration: a workspace member at
+// `packages/database` until consumers have switched, the installed
+// `@unerp/database` afterwards. Both are legitimate depending on where the
+// migration has reached, so resolve whichever is actually present rather than
+// pinning one and breaking every gate the day it moves.
 //
-// Overridable so a repository that still vendors the package (or unierp-data
-// itself, once these gates move there per § 4.6) can point it back.
-const PKG = process.env.UNERP_DB_PKG ?? "node_modules/@unerp/database";
+// The workspace copy wins when both exist: it is the source being edited, and a
+// gate should judge what is being changed rather than a published snapshot.
+//
+// Every schema-reading gate routes through this module, so this one resolution
+// covers all of them instead of each carrying its own stale path. Overridable
+// via UNERP_DB_PKG for a repository that vendors the package elsewhere — or for
+// unierp-data itself, once these gates move there per § 4.6.
+const PKG_CANDIDATES = ["packages/database", "node_modules/@unerp/database"];
+const PKG =
+  process.env.UNERP_DB_PKG ??
+  PKG_CANDIDATES.find((candidate) =>
+    existsSync(join(process.cwd(), candidate, "prisma")),
+  ) ??
+  PKG_CANDIDATES[PKG_CANDIDATES.length - 1];
 
 export function readSchema(root, options = {}) {
   const files = schemaFiles(root);
