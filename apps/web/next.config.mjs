@@ -35,6 +35,17 @@ const nextConfig = {
   // the middleware compiles in about a second now. The hang was the bind-mounted
   // Docker filesystem, not the transpilation — running natively (§ 12) took the
   // same compile from 962s to 1s.
+  // The design system must be TRANSPILED, not externalised.
+  //
+  // It ships React components. An external package is `require()`d at runtime
+  // and resolves its own React, so the server graph and the client graph end up
+  // with two copies and every hook fails with
+  // `Cannot read properties of null (reading 'useState')`. Webpack has to own
+  // it so there is one React.
+  //
+  // It could not be transpiled while its compiled output `require()`d CSS
+  // modules; that is fixed at the source now — the design system resolves CSS
+  // modules at build time, so dist/ imports no CSS at all.
   transpilePackages: [
     '@unerp/shared',
     '@unerp/auth',
