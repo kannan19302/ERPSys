@@ -1,6 +1,6 @@
-import http from 'k6/http';
-import { check, fail } from 'k6';
-import { env } from './env.js';
+import http from "k6/http";
+import { check, fail } from "k6";
+import { env } from "./env.js";
 
 export function login(session) {
   const url = `${env.API_URL}/auth/login`;
@@ -10,17 +10,17 @@ export function login(session) {
   });
   const params = {
     headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      "Content-Type": "application/json",
+      Accept: "application/json",
     },
-    tags: { name: 'auth_login' },
+    tags: { name: "auth_login" },
   };
 
   const res = http.post(url, payload, params);
 
   check(res, {
-    'login status 200': (r) => r.status === 200,
-    'login has token': (r) => {
+    "login status 200": (r) => r.status === 200,
+    "login has token": (r) => {
       try {
         const body = JSON.parse(r.body);
         return body.token !== undefined || body.accessToken !== undefined;
@@ -48,8 +48,8 @@ export function login(session) {
 
 export function getAuthHeaders(session) {
   return {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'Authorization': `Bearer ${session.token}`,
+    "Content-Type": "application/json",
+    Accept: "application/json",
+    Authorization: `Bearer ${session.token}`,
   };
 }

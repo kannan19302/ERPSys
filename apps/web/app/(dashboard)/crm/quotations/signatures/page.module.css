@@ -30,4 +30,6 @@
   white-space: pre-wrap;
   overflow-x: auto;
 }
-.s1 { flex: 1; }
+.s1 {
+  flex: 1;
+}

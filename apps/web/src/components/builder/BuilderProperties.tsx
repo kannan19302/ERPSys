@@ -78,7 +78,13 @@ const AccordionSection = ({
 // Simple dark input wrapper helper
 const DarkInput = ({ label, children, description }: any) => (
   <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-    <label style={{ fontSize: "12px", fontWeight: "500", color: "var(--studio-400)" }}>
+    <label
+      style={{
+        fontSize: "12px",
+        fontWeight: "500",
+        color: "var(--studio-400)",
+      }}
+    >
       {label}
     </label>
     {children}
@@ -143,7 +149,10 @@ export function BuilderProperties() {
             background: "rgba(255,255,255,0.02)",
           }}
         >
-          <Settings size={20} style={{ color: "var(--studio-accent-bright)" }} />
+          <Settings
+            size={20}
+            style={{ color: "var(--studio-accent-bright)" }}
+          />
           <div>
             <h3
               style={{
@@ -564,7 +573,10 @@ export function BuilderProperties() {
                     weight: parseInt(e.target.value),
                   })
                 }
-                style={{ width: "100%", accentColor: "var(--studio-accent-bright)" }}
+                style={{
+                  width: "100%",
+                  accentColor: "var(--studio-accent-bright)",
+                }}
               />
             </DarkInput>
           ) : (
@@ -583,7 +595,10 @@ export function BuilderProperties() {
                       columnSpan: parseInt(e.target.value),
                     })
                   }
-                  style={{ width: "100%", accentColor: "var(--studio-accent-bright)" }}
+                  style={{
+                    width: "100%",
+                    accentColor: "var(--studio-accent-bright)",
+                  }}
                 />
               </DarkInput>
               {(selectedField.type === "Text Editor" ||

@@ -4,6 +4,12 @@
   font-size: var(--text-sm);
 }
 
-.difference { font-weight: var(--weight-semibold); }
-.differenceBalanced { color: var(--color-success); }
-.differenceUnbalanced { color: var(--color-danger); }
+.difference {
+  font-weight: var(--weight-semibold);
+}
+.differenceBalanced {
+  color: var(--color-success);
+}
+.differenceUnbalanced {
+  color: var(--color-danger);
+}

@@ -572,7 +572,9 @@ export function ContactFormBlock({
               </div>
             ))}
             {state === "error" && (
-              <div style={{ color: "var(--studio-danger)", fontSize: "0.9rem" }}>
+              <div
+                style={{ color: "var(--studio-danger)", fontSize: "0.9rem" }}
+              >
                 Something went wrong. Please try again.
               </div>
             )}

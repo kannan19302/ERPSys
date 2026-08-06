@@ -59,11 +59,36 @@ const NODE_TYPES = [
     icon: CheckSquare,
     color: "var(--studio-success)",
   },
-  { type: "email", label: "Send Email", icon: Mail, color: "var(--studio-accent-bright)" },
-  { type: "notification", label: "In-App Alert", icon: Bell, color: "var(--studio-warning)" },
-  { type: "condition", label: "Condition", icon: Split, color: "var(--studio-violet)" },
-  { type: "delay", label: "Wait/Delay", icon: Clock, color: "var(--studio-500)" },
-  { type: "webhook", label: "Webhook", icon: Link2, color: "var(--studio-pink)" },
+  {
+    type: "email",
+    label: "Send Email",
+    icon: Mail,
+    color: "var(--studio-accent-bright)",
+  },
+  {
+    type: "notification",
+    label: "In-App Alert",
+    icon: Bell,
+    color: "var(--studio-warning)",
+  },
+  {
+    type: "condition",
+    label: "Condition",
+    icon: Split,
+    color: "var(--studio-violet)",
+  },
+  {
+    type: "delay",
+    label: "Wait/Delay",
+    icon: Clock,
+    color: "var(--studio-500)",
+  },
+  {
+    type: "webhook",
+    label: "Webhook",
+    icon: Link2,
+    color: "var(--studio-pink)",
+  },
 ];
 
 function CustomNode({ data, isConnectable }: any) {
@@ -114,7 +139,13 @@ function CustomNode({ data, isConnectable }: any) {
         >
           {nt?.label || "Node"}
         </div>
-        <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--studio-800)" }}>
+        <div
+          style={{
+            fontSize: "13px",
+            fontWeight: 500,
+            color: "var(--studio-800)",
+          }}
+        >
           {data.label}
         </div>
       </div>
@@ -665,7 +696,10 @@ function WorkflowEditorInner({
           >
             <Controls />
             <MiniMap
-              style={{ border: "1px solid var(--studio-200)", borderRadius: "8px" }}
+              style={{
+                border: "1px solid var(--studio-200)",
+                borderRadius: "8px",
+              }}
             />
             <Background color="var(--studio-300)" gap={16} />
           </ReactFlow>
@@ -1161,7 +1195,13 @@ function WorkflowEditorInner({
                 >
                   Execution History
                 </h3>
-                <p style={{ margin: 0, fontSize: "13px", color: "var(--studio-500)" }}>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "13px",
+                    color: "var(--studio-500)",
+                  }}
+                >
                   Recent runs for this workflow
                 </p>
               </div>

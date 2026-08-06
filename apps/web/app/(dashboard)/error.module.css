@@ -1,1 +1,4 @@
-.s1 { padding: var(--space-4); width: 100%; }
+.s1 {
+  padding: var(--space-4);
+  width: 100%;
+}

@@ -1,1 +1,5 @@
-.s1 { color: var(--color-primary); font-size: var(--text-sm); font-weight: var(--weight-medium); }
+.s1 {
+  color: var(--color-primary);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}

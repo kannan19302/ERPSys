@@ -391,7 +391,12 @@ export function DashboardEditorWorkspace({
             flexShrink: 0,
           }}
         >
-          <div style={{ padding: "16px", borderBottom: "1px solid var(--studio-200)" }}>
+          <div
+            style={{
+              padding: "16px",
+              borderBottom: "1px solid var(--studio-200)",
+            }}
+          >
             <span
               style={{
                 fontSize: "11px",
@@ -543,7 +548,10 @@ export function DashboardEditorWorkspace({
                           background: "white",
                         }}
                       >
-                        <Icon size={14} color={wt?.color || "var(--studio-500)"} />
+                        <Icon
+                          size={14}
+                          color={wt?.color || "var(--studio-500)"}
+                        />
                         <span
                           style={{
                             fontSize: "12px",

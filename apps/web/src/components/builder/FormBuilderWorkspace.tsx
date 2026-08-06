@@ -348,7 +348,9 @@ export function FormBuilderWorkspace({
             >
               Form Builder
             </h1>
-            <span style={{ fontSize: "var(--text-xs)", color: "var(--studio-400)" }}>
+            <span
+              style={{ fontSize: "var(--text-xs)", color: "var(--studio-400)" }}
+            >
               {currentId === "new"
                 ? "New Form"
                 : deploySettings.title || `ID: ${currentId}`}
@@ -433,7 +435,8 @@ export function FormBuilderWorkspace({
             style={{
               padding: "8px 16px",
               borderRadius: "var(--radius-md)",
-              background: "linear-gradient(135deg, var(--studio-success), var(--studio-accent-bright))",
+              background:
+                "linear-gradient(135deg, var(--studio-success), var(--studio-accent-bright))",
               color: "white",
               border: "none",
               cursor: "pointer",

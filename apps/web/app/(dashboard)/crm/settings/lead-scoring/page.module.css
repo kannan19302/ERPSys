@@ -48,5 +48,9 @@
   gap: var(--space-2);
   font-size: var(--text-sm);
 }
-.s1 { font-weight: var(--weight-bold); }
-.s2 { opacity: 0.4; }
+.s1 {
+  font-weight: var(--weight-bold);
+}
+.s2 {
+  opacity: 0.4;
+}

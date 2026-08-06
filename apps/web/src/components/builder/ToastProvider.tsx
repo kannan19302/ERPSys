@@ -71,7 +71,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         style={{ color: "var(--color-warning)", flexShrink: 0 }}
       />
     ),
-    info: <Info size={16} style={{ color: "var(--studio-accent-bright)", flexShrink: 0 }} />,
+    info: (
+      <Info
+        size={16}
+        style={{ color: "var(--studio-accent-bright)", flexShrink: 0 }}
+      />
+    ),
   };
 
   return (

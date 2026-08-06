@@ -188,7 +188,13 @@ export function CollectionBlock(props: CollectionBlockProps) {
             Loading {collectionSlug}…
           </div>
         ) : error ? (
-          <div style={{ textAlign: "center", padding: 40, color: "var(--studio-danger)" }}>
+          <div
+            style={{
+              textAlign: "center",
+              padding: 40,
+              color: "var(--studio-danger)",
+            }}
+          >
             Could not load “{collectionSlug}”.
           </div>
         ) : shown.length === 0 ? (
@@ -257,7 +263,12 @@ export function CollectionBlock(props: CollectionBlockProps) {
                           </div>
                         )}
                         {data.rating ? (
-                          <div style={{ color: "var(--studio-warning)", marginTop: 6 }}>
+                          <div
+                            style={{
+                              color: "var(--studio-warning)",
+                              marginTop: 6,
+                            }}
+                          >
                             {"★".repeat(Math.min(5, Number(data.rating) || 0))}
                           </div>
                         ) : null}
@@ -345,7 +356,8 @@ export function CollectionBlock(props: CollectionBlockProps) {
                                 padding: "10px",
                                 borderRadius: 10,
                                 border: "none",
-                                background: "var(--color-primary,var(--studio-indigo))",
+                                background:
+                                  "var(--color-primary,var(--studio-indigo))",
                                 color: "var(--studio-0)",
                                 fontWeight: 700,
                                 cursor: "pointer",

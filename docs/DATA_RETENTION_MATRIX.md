@@ -7,14 +7,14 @@
 > `--apply` to delete). Schedule explicitly (cron / CI nightly); never runs
 > implicitly.
 
-| Data class | Model | Clock | Retention | Conditions | Basis |
-|---|---|---|---|---|---|
-| Read notifications | `Notification` | createdAt | 180 d | status READ/ARCHIVED only — unread never auto-deleted | operational convenience |
-| Audit log | `AuditLog` | createdAt | 730 d | all | 2-year default; lengthen per-tenant for SOX/ISO — never shorten without legal review |
-| Change history | `ChangeHistory` | createdAt | 730 d | all | same clock as audit |
-| Webhook delivery logs | `WebhookDeliveryLog` | createdAt | 90 d | all | transport diagnostics |
-| Expired sessions | `UserSession` | **expiresAt** | 30 d past expiry | live sessions never matched | security hygiene |
-| Terminal background jobs | `BackgroundJob` | createdAt | 90 d | COMPLETED/FAILED/CANCELLED only | job bookkeeping |
+| Data class               | Model                | Clock         | Retention        | Conditions                                            | Basis                                                                                |
+| ------------------------ | -------------------- | ------------- | ---------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Read notifications       | `Notification`       | createdAt     | 180 d            | status READ/ARCHIVED only — unread never auto-deleted | operational convenience                                                              |
+| Audit log                | `AuditLog`           | createdAt     | 730 d            | all                                                   | 2-year default; lengthen per-tenant for SOX/ISO — never shorten without legal review |
+| Change history           | `ChangeHistory`      | createdAt     | 730 d            | all                                                   | same clock as audit                                                                  |
+| Webhook delivery logs    | `WebhookDeliveryLog` | createdAt     | 90 d             | all                                                   | transport diagnostics                                                                |
+| Expired sessions         | `UserSession`        | **expiresAt** | 30 d past expiry | live sessions never matched                           | security hygiene                                                                     |
+| Terminal background jobs | `BackgroundJob`      | createdAt     | 90 d             | COMPLETED/FAILED/CANCELLED only                       | job bookkeeping                                                                      |
 
 ## Out of scope here (governed elsewhere)
 

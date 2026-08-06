@@ -186,11 +186,11 @@
     transform: translateX(-100%);
     box-shadow: var(--shadow-xl);
   }
-  
+
   .sidebarOpen {
     transform: translateX(0);
   }
-  
+
   .backdrop {
     position: fixed;
     inset: 0;

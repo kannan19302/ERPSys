@@ -93,8 +93,16 @@ export function PageBuilderWorkspace({
       newWidget.title = "Counters";
       newWidget.config = {
         items: [
-          { label: "Total Invoices", value: "42", color: "var(--studio-accent-bright)" },
-          { label: "Pending Approvals", value: "7", color: "var(--studio-warning)" },
+          {
+            label: "Total Invoices",
+            value: "42",
+            color: "var(--studio-accent-bright)",
+          },
+          {
+            label: "Pending Approvals",
+            value: "7",
+            color: "var(--studio-warning)",
+          },
           { label: "Settled", value: "35", color: "var(--studio-success)" },
         ],
       };
@@ -302,7 +310,9 @@ export function PageBuilderWorkspace({
             >
               Page Layout Builder
             </h1>
-            <span style={{ fontSize: "var(--text-xs)", color: "var(--studio-400)" }}>
+            <span
+              style={{ fontSize: "var(--text-xs)", color: "var(--studio-400)" }}
+            >
               Design layouts dynamically for: <strong>{pageName}</strong>
             </span>
           </div>
@@ -499,7 +509,11 @@ export function PageBuilderWorkspace({
                     {p.label}
                   </div>
                   <div
-                    style={{ fontSize: "10px", color: "var(--studio-400)", marginTop: 1 }}
+                    style={{
+                      fontSize: "10px",
+                      color: "var(--studio-400)",
+                      marginTop: 1,
+                    }}
                   >
                     {p.desc}
                   </div>
@@ -649,7 +663,10 @@ export function PageBuilderWorkspace({
                               border: "none",
                               background: "none",
                               cursor: index === 0 ? "not-allowed" : "pointer",
-                              color: index === 0 ? "var(--studio-300)" : "var(--studio-500)",
+                              color:
+                                index === 0
+                                  ? "var(--studio-300)"
+                                  : "var(--studio-500)",
                             }}
                           >
                             <ArrowUp size={12} />
@@ -1682,7 +1699,9 @@ export function PageBuilderWorkspace({
                           >
                             <input
                               type="color"
-                              value={item.color || "var(--studio-accent-bright)"}
+                              value={
+                                item.color || "var(--studio-accent-bright)"
+                              }
                               onChange={(e) => {
                                 const nextItems = [
                                   ...selectedWidget.config.items,
@@ -1731,7 +1750,11 @@ export function PageBuilderWorkspace({
                       onClick={() => {
                         const nextItems = [
                           ...(selectedWidget.config.items || []),
-                          { label: "New Stat", value: "10", color: "var(--studio-accent-bright)" },
+                          {
+                            label: "New Stat",
+                            value: "10",
+                            color: "var(--studio-accent-bright)",
+                          },
                         ];
                         handleUpdateConfig(
                           selectedWidget.id,
